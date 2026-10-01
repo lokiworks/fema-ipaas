@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>概念测试分镜</title>
+<style>
+:root{
+  color-scheme: light;
+  --font: "PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono: ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --pg-bg:#e8e8e8;
+  --pg-panel:#ffffff;
+  --pg-ink:#1f1f1f;
+  --pg-muted:#666666;
+  --pg-line:#cbcbcb;
+  --pg-dark:#333333;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--pg-bg);color:var(--pg-ink);font-family:var(--font)}
+body{min-height:100vh}
+button{font:inherit;color:inherit}
+.pg-top{display:flex;align-items:center;gap:14px;padding:8px 16px;background:#f6f6f6;border-bottom:1px solid var(--pg-line);flex-wrap:wrap}
+.pg-title{font-weight:600;font-size:15px;margin-right:4px}
+.pg-seg{display:flex;gap:4px;flex-wrap:wrap}
+.pg-seg button{border:1px solid #bcbcbc;background:#fff;border-radius:5px;padding:4px 13px;font-size:14px;cursor:pointer}
+.pg-seg button.on{background:var(--pg-dark);border-color:var(--pg-dark);color:#fff}
+.pg-ord{display:flex;align-items:center;gap:4px;margin-left:auto;font-size:13px;color:var(--pg-muted)}
+.pg-ord button{width:28px;padding:3px 0;border:1px solid #c4c4c4;background:#fff;border-radius:4px;cursor:pointer;font-size:13px}
+.pg-ord button.on{background:var(--pg-dark);color:#fff;border-color:var(--pg-dark)}
+.pg-tool{border:1px solid #bcbcbc;background:#fff;border-radius:5px;padding:4px 11px;font-size:13px;cursor:pointer}
+button:focus-visible{outline:2px solid #000;outline-offset:2px}
+.pg-sub{display:flex;align-items:center;gap:14px;padding:10px 16px 6px;flex-wrap:wrap}
+.pg-where{font-size:17px;font-weight:600}
+.pg-task{font-size:15px;color:#333}
+.pg-pager{display:flex;align-items:center;gap:4px;margin-left:auto;font-size:13px;color:var(--pg-muted)}
+.pg-pager .grp{display:flex;gap:3px;align-items:center;margin:0 6px}
+.pg-pager .dot{min-width:26px;height:24px;border:1px solid #bcbcbc;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;padding:0 4px}
+.pg-pager .dot.on{background:var(--pg-dark);border-color:var(--pg-dark);color:#fff}
+.pg-pager .mv{border:1px solid #bcbcbc;background:#fff;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:13px}
+.pg-pager .mv:disabled{color:#b5b5b5;cursor:default}
+.pg-stage{display:flex;justify-content:center;padding:4px 16px 0}
+.pg-scaler{position:relative;flex:none}
+.pg-scaler>.wf{position:absolute;left:0;top:0;transform-origin:0 0;box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.pg-cap{margin:10px auto 0;padding:10px 16px;background:#fff;border:1px solid var(--pg-line);border-radius:6px;font-size:17px;line-height:1.6;min-width:min(560px,100%)}
+.pg-hint{text-align:center;font-size:12px;color:#888;padding:10px 16px 14px}
+.pg-cover{max-width:920px;margin:18px auto;background:#fff;border:1px solid var(--pg-line);border-radius:8px;padding:26px 34px}
+.pg-cover h1{font-size:24px;margin:0 0 10px}
+.pg-cover p{font-size:16px;line-height:1.75;color:#333;margin:0}
+.pg-cover h2{font-size:17px;margin:22px 0 8px}
+.pg-cover ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.pg-cover ol li{font-size:16px;line-height:1.6;display:grid;grid-template-columns:68px 1fr}
+.pg-cover ol b{font-weight:600}
+.pg-cover dl{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;margin:0;font-size:15px;line-height:1.7}
+.pg-cover dt{color:var(--pg-muted)}
+.pg-cover dd{margin:0}
+.pg-go{margin-top:22px;border:1px solid var(--pg-dark);background:var(--pg-dark);color:#fff;border-radius:6px;padding:8px 20px;font-size:15px;cursor:pointer}
+.pg-cmp{max-width:1260px;margin:6px auto 0;padding:0 16px}
+.pg-cmp h1{font-size:18px;margin:10px 0 2px}
+.pg-cmp p{margin:0 0 4px;font-size:13px;color:var(--pg-muted)}
+.pg-cmp table{border-collapse:separate;border-spacing:10px;width:100%}
+.pg-cmp th{font-size:15px;text-align:left;font-weight:600}
+.pg-cmp th.task{width:170px;vertical-align:top;font-weight:400;font-size:13.5px;color:#333;line-height:1.55}
+.pg-cmp th.task b{display:block;font-size:15px;color:#1f1f1f}
+.pg-cmp td{background:#fff;border:1px solid var(--pg-line);border-radius:6px;padding:8px;vertical-align:top}
+.pg-thumbs{display:flex;gap:8px}
+.pg-thumb{cursor:pointer;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--pg-muted);border:0;background:none;padding:0;text-align:left}
+.pg-thumb .box{position:relative;overflow:hidden;border:1px solid #bdbdbd;background:#fff}
+.pg-thumb .box>.wf{position:absolute;left:0;top:0;transform-origin:0 0}
+.pg-thumb:hover .box{border-color:#333}
+body.present .pg-top,body.present .pg-hint{display:none}
+[hidden]{display:none !important}
+
+.wf{width:1200px;height:680px;background:#fff;border:1px solid #a1a1a1;color:#1f1f1f;font-size:12.5px;line-height:1.45;overflow:hidden;font-family:var(--font);text-align:left;position:relative}
+.wf .bar{height:40px;display:flex;align-items:center;gap:12px;padding:0 14px;border-bottom:1px solid #cbcbcb;background:#f7f7f7}
+.wf .logo{width:16px;height:16px;border-radius:3px;background:#8a8a8a;flex:none}
+.wf .pname{font-weight:600}
+.wf .proj{border:1px solid #c6c6c6;border-radius:3px;padding:1px 8px;background:#fff;color:#444}
+.wf .sbox{width:250px;border:1px solid #b9b9b9;border-radius:3px;padding:2px 8px;background:#fff;color:#9a9a9a;white-space:nowrap;overflow:hidden}
+.wf .sbox.q{color:#1f1f1f;border-color:#555}
+.wf .grow{flex:1;min-width:0}
+.wf .when{color:#666;font-size:11.5px;white-space:nowrap}
+.wf .me{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.wf .me i{width:20px;height:20px;border-radius:50%;background:#c4c4c4;display:inline-block}
+.wf .body{display:flex;height:638px}
+.wf .side{width:112px;flex:none;border-right:1px solid #d5d5d5;padding:10px 8px;display:flex;flex-direction:column;gap:2px;background:#fbfbfb}
+.wf .side span{padding:5px 8px;border-radius:3px;color:#4a4a4a}
+.wf .side span.on{background:#e0e0e0;color:#111;font-weight:600}
+.wf .main{flex:1;min-width:0;padding:12px 16px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+.wf .crumb{font-size:11.5px;color:#7a7a7a}
+.wf .h1{font-size:16px;font-weight:600}
+.wf .h2{font-size:13px;font-weight:600}
+.wf .muted{color:#757575}
+.wf .sm{font-size:11.5px}
+.wf .rw{display:flex;gap:8px;align-items:center}
+.wf .rw.st{align-items:stretch}
+.wf .rw.ft{align-items:flex-start}
+.wf .rw.end{justify-content:flex-end}
+.wf .rw.sb{justify-content:space-between}
+.wf .col{display:flex;flex-direction:column;gap:8px}
+.wf .card{border:1px solid #bababa;border-radius:4px;background:#fff;padding:9px 11px}
+.wf .card.fill{background:#f3f3f3;border-color:#d0d0d0}
+.wf .card.hv{border:2px solid #4a4a4a}
+.wf .btn{display:inline-block;border:1px solid #8c8c8c;border-radius:3px;padding:2px 10px;background:#fff;font-size:12px;white-space:nowrap;color:#2a2a2a}
+.wf .btn.pri{background:#3d3d3d;border-color:#3d3d3d;color:#fff}
+.wf .btn.off{color:#a5a5a5;border-color:#d0d0d0}
+.wf .tag{display:inline-block;border:1px solid #9d9d9d;border-radius:9px;padding:0 7px;font-size:11px;line-height:17px;color:#444;background:#fff;white-space:nowrap;font-weight:400}
+.wf .tag.dk{background:#4d4d4d;border-color:#4d4d4d;color:#fff}
+.wf .tag.lt{background:#ebebeb;border-color:#ebebeb}
+.wf .chip{display:inline-block;border:1px solid #b5b5b5;border-radius:3px;padding:1px 9px;font-size:12px;background:#fff;white-space:nowrap}
+.wf .chip.on{background:#3d3d3d;border-color:#3d3d3d;color:#fff}
+.wf .inp{display:inline-block;border:1px solid #b0b0b0;border-radius:3px;padding:0 6px;background:#fff;white-space:nowrap;line-height:19px}
+.wf .pill{display:inline-block;border:1px solid #a5a5a5;border-radius:10px;padding:0 8px;background:#f0f0f0;font-size:11.5px;white-space:nowrap;line-height:18px}
+.wf .tabs{display:flex;border-bottom:1px solid #cdcdcd}
+.wf .tabs span{padding:4px 12px;color:#6a6a6a}
+.wf .tabs span.on{color:#111;font-weight:600;border-bottom:2px solid #333;margin-bottom:-1px}
+.wf .tabs.bare{border-bottom:0}
+.wf .tabs.bare span{padding:2px 10px}
+.wf table.t{width:100%;border-collapse:collapse;font-size:12px}
+.wf table.t th{background:#efefef;font-weight:600;text-align:left;padding:4px 6px;border-bottom:1px solid #cfcfcf;white-space:nowrap}
+.wf table.t td{padding:4px 6px;border-bottom:1px solid #e3e3e3;vertical-align:top}
+.wf table.t tr.sel td{background:#ececec}
+.wf table.t tr.dim td{color:#8a8a8a}
+.wf table.t tr:last-child td{border-bottom:0}
+.wf .cb{display:inline-block;width:12px;height:12px;border:1px solid #6a6a6a;border-radius:2px;vertical-align:-2px;background:#fff}
+.wf .cb.on{background:#4a4a4a;box-shadow:inset 0 0 0 2px #fff}
+.wf .rd{display:inline-block;width:12px;height:12px;border:1px solid #6a6a6a;border-radius:50%;vertical-align:-2px;background:#fff;margin-right:5px}
+.wf .rd.on{background:#4a4a4a;box-shadow:inset 0 0 0 2.5px #fff}
+.wf .big{font-size:20px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums}
+.wf .kv{display:grid;grid-template-columns:90px 1fr;gap:5px 10px;align-items:baseline}
+.wf .kv>.k{color:#767676}
+.wf .stats{display:grid;gap:8px}
+.wf .stats>div{border:1px solid #cfcfcf;border-radius:4px;padding:6px 9px;background:#fff}
+.wf .banner{display:flex;align-items:center;gap:10px;border:2px solid #3d3d3d;background:#efefef;border-radius:4px;padding:7px 11px}
+.wf .code{font-family:var(--mono);font-size:10.5px;line-height:1.45;background:#f4f4f4;border:1px solid #dedede;border-radius:3px;padding:6px 8px;white-space:pre;color:#333;overflow:hidden}
+.wf .strip{border:1px dashed #8e8e8e;border-radius:4px;padding:6px 10px;background:#fafafa}
+.wf .steps{display:flex;flex-direction:column;gap:7px}
+.wf .step{display:grid;grid-template-columns:20px 1fr;gap:8px;align-items:start}
+.wf .ic{width:18px;height:18px;border-radius:50%;border:1.5px solid #5a5a5a;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;line-height:1;margin-top:1px}
+.wf .ic.x{background:#3d3d3d;border-color:#3d3d3d;color:#fff}
+.wf .ic.o{border-style:dashed;color:#9a9a9a;border-color:#9a9a9a}
+.wf .tl{display:grid;grid-template-columns:78px 40px 1fr;gap:5px 10px;font-size:12px;align-items:baseline}
+.wf .tl .t0{color:#767676;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wf .tl .who{color:#4a4a4a;white-space:nowrap}
+.wf .canvas{position:relative;flex:none;border:1px solid #cfcfcf;border-radius:4px;background-color:#fbfbfb;background-image:radial-gradient(#d0d0d0 1px,transparent 1.2px);background-size:14px 14px}
+.wf .canvas svg{position:absolute;left:0;top:0}
+.wf .node{position:absolute;width:150px;height:48px;border:1.5px solid #5c5c5c;border-radius:6px;background:#fff;padding:5px 8px;font-size:11px;line-height:1.35;color:#444}
+.wf .node b{display:block;font-size:12px;color:#1f1f1f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wf .node.on{border:2.5px solid #1a1a1a;box-shadow:0 0 0 3px #d6d6d6}
+.wf .node.fold{border-style:dashed;background:#f4f4f4}
+.wf .node .nt{position:absolute;top:-9px;right:6px;font-size:10px;line-height:15px;padding:0 5px;border:1px solid #9a9a9a;border-radius:8px;background:#fff;color:#555;white-space:nowrap}
+.wf .node .nt.dk{background:#4d4d4d;border-color:#4d4d4d;color:#fff}
+.wf .dr{flex:1;min-height:0;display:flex;flex-direction:column;border:1px solid #bdbdbd;border-top:2px solid #3d3d3d;border-radius:4px;background:#fff}
+.wf .dr .dh{display:flex;align-items:center;gap:12px;padding:4px 10px;border-bottom:1px solid #e0e0e0}
+.wf .dr .db{flex:1;min-height:0;display:grid;grid-template-columns:282px 1fr 318px}
+.wf .dr .db>div{padding:8px 10px;display:flex;flex-direction:column;gap:6px;border-right:1px solid #e3e3e3;min-width:0}
+.wf .dr .db>div:last-child{border-right:0}
+.wf .shade{position:absolute;inset:0;background:rgba(0,0,0,.10)}
+.wf .modal{position:absolute;background:#fff;border:2px solid #3d3d3d;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.wf .sec{display:grid;grid-template-columns:22px 112px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid #e3e3e3;align-items:start}
+.wf .sec .no{width:20px;height:20px;border-radius:50%;background:#4d4d4d;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.wf .sec .sn{font-weight:600;padding-top:1px}
+.wf .sec table.t td{padding:2px 6px}
+.wf .sec table.t th{padding:2px 6px}
+.wf .stepbar{display:flex;gap:6px;align-items:center}
+.wf .stepbar span{border:1px solid #b5b5b5;border-radius:12px;padding:1px 10px;font-size:12px;color:#666;background:#fff}
+.wf .stepbar span.on{background:#3d3d3d;border-color:#3d3d3d;color:#fff}
+.wf .stepbar span.done{background:#e4e4e4;border-color:#e4e4e4;color:#333}
+.wf .stepbar i{width:16px;height:1px;background:#999;display:inline-block}
+.wf u{text-decoration:underline;text-underline-offset:2px;text-decoration-color:#8a8a8a}
+.wf .runrow{border-bottom:1px solid #e3e3e3;padding:7px 6px;display:flex;flex-direction:column;gap:2px}
+.wf .runrow.sel{background:#ececec}
+.wf .chg{padding:6px 6px;color:#8a8a8a;font-style:italic;border-bottom:1px solid #e3e3e3}
+</style>
+</head>
+<body>
+<noscript><p style="padding:16px">这个页面需要启用 JavaScript 才能翻页。</p></noscript>
+
+<header class="pg-top" id="pgTop">
+  <span class="pg-title">概念测试</span>
+  <nav class="pg-seg" id="pgTabs" aria-label="视图">
+    <button type="button" data-view="cover">开始</button>
+    <button type="button" data-view="plan" data-plan="0">方案一</button>
+    <button type="button" data-view="plan" data-plan="1">方案二</button>
+    <button type="button" data-view="plan" data-plan="2">方案三</button>
+    <button type="button" data-view="grid">对照</button>
+  </nav>
+  <div class="pg-ord" id="pgOrd" aria-label="观看顺序">顺序
+    <button type="button" data-order="1">1</button>
+    <button type="button" data-order="2">2</button>
+    <button type="button" data-order="3">3</button>
+    <button type="button" data-order="4">4</button>
+    <button type="button" data-order="5">5</button>
+    <button type="button" data-order="6">6</button>
+  </div>
+  <button type="button" class="pg-tool" id="pgPresent">演示模式</button>
+</header>
+
+<section class="pg-cover" id="pgCover">
+  <h1>三个方案的低保真分镜</h1>
+  <p>接下来依次看三个方案。每个方案都用同样的三个任务、同样的演示数据，各画两帧，一共六帧。画面只示意大致的样子，不是做好的产品；方案的编号只表示今天的观看顺序。</p>
+  <h2>三个任务</h2>
+  <ol>
+    <li><b>任务一</b><span>上线第一天：飞书里已有一千多个账号，接上北森后，入职、调岗、离职要自动带到飞书</span></li>
+    <li><b>任务二</b><span>HR 来问：张晓雨今天入职，为什么没有飞书账号</span></li>
+    <li><b>任务三</b><span>月底集中离职 40 人：怎么保证他们离职当天就用不了飞书，又不误伤在职的人</span></li>
+  </ol>
+  <h2>演示数据</h2>
+  <dl>
+    <dt>企业</dt><dd>约 1,200 人，北森管人事，飞书办公。没有买北森的飞书连接器，也没有用身份管理产品（IDaaS），以前靠脚本加手工开账号。</dd>
+    <dt>人</dt><dd>李航，集成工程师，本周值班；王磊，集成工程师，负责搭这条集成；陈思远，HR；周文，IT，飞书管理员。</dd>
+    <dt>员工</dt><dd>张晓雨、何俊：10 月 19 日入职，销售中心 / 华南大客户部。吴婷等 40 人：10 月 30 日是最后工作日。刘洋：原定 10 月 30 日离职，10 月 29 日撤销。</dd>
+    <dt>日子</dt><dd>10 月 12 日（周一）上线第一天；10 月 19 日（周一）张晓雨入职；10 月 30 日（周五）月底离职。</dd>
+    <dt>三个方案相同的约定</dt><dd>离职当天 18:00 暂停飞书账号：不能登录，不删除；7 天后再办离职、释放席位，这一步目前只生成待办。一次要停用的人数超过上限时，整批停下等人放行；上限按这家企业近 90 天的离职量算出，现在是 24 小时 9 人。<br>写进飞书之前都能先预演，看会动到哪些人；放行要登录并有权限。<br>报错按规则标出要谁处理。要飞书管理员动手时，平台把写清步骤的卡片发到他的飞书，他处理完在卡片上点「我已处理」。</dd>
+  </dl>
+  <button type="button" class="pg-go" id="pgGo">开始看方案一</button>
+</section>
+
+<section id="pgPlan" hidden>
+  <div class="pg-sub" id="pgSub">
+    <span class="pg-where" id="pgWhere"></span>
+    <span class="pg-task" id="pgTask"></span>
+    <div class="pg-pager" id="pgPager"></div>
+  </div>
+  <div class="pg-stage"><div class="pg-scaler" id="pgScaler"></div></div>
+  <div class="pg-cap" id="pgCap"></div>
+</section>
+
+<section class="pg-cmp" id="pgGrid" hidden>
+  <h1>三个方案对照</h1>
+  <p>同一行是同一个任务；点任意一帧放大。</p>
+  <table><tbody id="pgGridBody"></tbody></table>
+</section>
+
+<div class="pg-hint" id="pgHint">← → 翻帧　1 2 3 切换方案　0 对照　F 演示模式</div>
+
+<div id="frames" hidden>
+
+<div class="wf" data-dir="flow" data-t="1" data-s="1" data-nav="工作流" data-me="王磊" data-when="10 月 12 日 周一 10:20" data-cap="在画布上把处理步骤连起来，选一条真实的北森入职记录当样例，每个节点都能看到它的输入、参数和预演结果，不写进飞书。">
+<div class="crumb">工作流 › 北森员工变动 → 飞书账号</div>
+<div class="rw sb"><div class="rw"><span class="h1">北森员工变动 → 飞书账号</span><span class="tag">草稿 · 未发布</span></div><div class="rw"><span class="btn">发布前检查 0</span><span class="btn">试运行</span><span class="btn pri">发布…</span></div></div>
+<div class="canvas" style="height:236px">
+<svg width="1052" height="236" viewBox="0 0 1052 236"><g fill="none" stroke="#6a6a6a" stroke-width="1.3"><path d="M160 118H186"/><path d="M336 118H362"/><path d="M512 118H530V38H548"/><path d="M512 118H530V198H548"/><path d="M530 118H710V88H724"/><path d="M698 38H710V88"/><path d="M874 88H896"/></g><g fill="#6a6a6a"><path d="M186 118l-7-4v8z"/><path d="M362 118l-7-4v8z"/><path d="M548 38l-7-4v8z"/><path d="M548 198l-7-4v8z"/><path d="M724 88l-7-4v8z"/><path d="M896 88l-7-4v8z"/></g><g font-size="11" fill="#555"><text x="536" y="70">入职</text><text x="612" y="112">调岗</text><text x="536" y="174">离职</text></g></svg>
+<div class="node" style="left:10px;top:94px"><b>触发 · 北森 · 员工变动</b>每 5 分钟拉取<span class="nt">✓ 已试</span></div>
+<div class="node" style="left:186px;top:94px"><b>北森 · 读取当前状态</b>按工号<span class="nt">✓ 已试</span></div>
+<div class="node" style="left:362px;top:94px"><b>分支 · 变动类型</b>入职 · 调岗 · 离职<span class="nt">✓ 已试</span></div>
+<div class="node" style="left:548px;top:14px"><b>延迟</b>到入职日前 1 天 09:00<span class="nt">✓ 已试</span></div>
+<div class="node on" style="left:724px;top:64px"><b>飞书 · 确保账号</b>先按工号找，再按手机号<span class="nt dk">预演</span></div>
+<div class="node" style="left:896px;top:64px"><b>飞书 · 发 HR 群消息</b>只在新开通时<span class="nt">未试</span></div>
+<div class="node fold" style="left:548px;top:174px"><b>离职分支</b>4 个节点（已折叠）</div>
+</div>
+<div class="dr">
+<div class="dh"><b>飞书 · 确保账号</b><div class="tabs bare"><span class="on">参数</span><span>失败时</span><span>设置</span></div><span class="grow"></span><span class="muted sm">写操作默认只预演</span></div>
+<div class="db">
+<div>
+<div class="h2">输入样例</div>
+<div class="rw sm"><span class="muted">样例来自</span><span class="inp">按工号选一次真实运行 ▾</span></div>
+<div class="inp" style="display:block">E10231 · 张三 · 入职 · 10-09 14:12</div>
+<div class="kv sm" style="grid-template-columns:62px 1fr"><span class="k">工号</span><span>E10231</span><span class="k">姓名</span><span>张三</span><span class="k">手机</span><span>138****5521</span><span class="k">部门编码</span><span>D-0412</span><span class="k">部门</span><span>深圳研发中心 / 平台组</span><span class="k">职务</span><span>后端工程师</span></div>
+</div>
+<div>
+<div class="rw sb"><span class="h2">参数与映射</span><span class="muted sm">按飞书「创建用户」的入参列出</span></div>
+<table class="t">
+<tr><th>飞书字段</th><th>取值</th><th>样例值</th></tr>
+<tr><td>姓名 *</td><td><span class="pill">北森 › 姓名</span></td><td class="muted">张三</td></tr>
+<tr><td>手机号 *</td><td><span class="pill">北森 › 手机</span></td><td class="muted">138****5521</td></tr>
+<tr><td>部门 *</td><td><span class="pill">映射表「部门对照」› 部门编码</span></td><td class="muted">深圳研发中心 / 平台组</td></tr>
+<tr><td>工号</td><td><span class="pill">北森 › 工号</span></td><td class="muted">E10231</td></tr>
+<tr><td>职务</td><td><span class="pill">北森 › 职务</span></td><td class="muted">后端工程师</td></tr>
+<tr><td>找已有账号</td><td colspan="2">先按工号找，找不到再按手机号</td></tr>
+<tr><td>找不到部门时</td><td colspan="2"><span class="inp">报错 ▾</span></td></tr>
+</table>
+</div>
+<div>
+<div class="rw sb"><span class="h2">输出预览</span><span class="rw"><span class="btn pri">预演</span><span class="btn">真实执行…</span></span></div>
+<div class="card fill"><b>预演结果（未写入飞书）</b><br>将会：创建飞书用户「张三」<br>部门：深圳研发中心 / 平台组</div>
+<div class="code">POST /contact/v3/users
+{ "name": "张三",
+  "department_ids": ["od-4471"],
+  "employee_no": "E10231", … }</div>
+<div class="muted sm">真实执行要再确认一次，并写明用哪个连接、哪个环境。</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="flow" data-t="1" data-s="2" data-nav="工作流" data-me="王磊" data-when="10 月 12 日 周一 10:40" data-cap="发布时选从哪里开始处理；先拿北森现有的 1,229 人预演一遍，按节点看会创建、更新、暂停多少，再选先启用 20 条还是全部启用。">
+<div class="crumb">工作流 › 北森员工变动 → 飞书账号</div>
+<div class="rw sb"><div class="rw"><span class="h1">北森员工变动 → 飞书账号</span><span class="tag">草稿 · 未发布</span></div><div class="rw"><span class="btn">发布前检查 0</span><span class="btn">试运行</span><span class="btn pri">发布…</span></div></div>
+<div class="canvas" style="height:236px">
+<svg width="1052" height="236" viewBox="0 0 1052 236"><g fill="none" stroke="#6a6a6a" stroke-width="1.3"><path d="M160 118H186"/><path d="M336 118H362"/><path d="M512 118H530V38H548"/><path d="M512 118H530V198H548"/><path d="M530 118H710V88H724"/><path d="M698 38H710V88"/><path d="M874 88H896"/></g><g fill="#6a6a6a"><path d="M186 118l-7-4v8z"/><path d="M362 118l-7-4v8z"/><path d="M548 38l-7-4v8z"/><path d="M548 198l-7-4v8z"/><path d="M724 88l-7-4v8z"/><path d="M896 88l-7-4v8z"/></g></svg>
+<div class="node" style="left:10px;top:94px"><b>触发 · 北森 · 员工变动</b></div>
+<div class="node" style="left:186px;top:94px"><b>北森 · 读取当前状态</b></div>
+<div class="node" style="left:362px;top:94px"><b>分支 · 变动类型</b></div>
+<div class="node" style="left:548px;top:14px"><b>延迟</b></div>
+<div class="node" style="left:724px;top:64px"><b>飞书 · 确保账号</b></div>
+<div class="node" style="left:896px;top:64px"><b>飞书 · 发 HR 群消息</b></div>
+<div class="node fold" style="left:548px;top:174px"><b>离职分支</b></div>
+</div>
+<div class="shade"></div>
+<div class="modal" style="left:176px;top:30px;width:700px">
+<div class="rw sb"><span class="h1">发布 v1 并启用</span><span class="muted">✕</span></div>
+<div class="kv"><span class="k">版本</span><span>v1 · 王磊 10-12 10:18 · 发布前检查 0 项待修</span><span class="k">飞书连接</span><span>人事集成 · 通讯录权限范围 12 个部门</span><span class="k">写入方</span><span>飞书通讯录的其他写入方：未发现</span></div>
+<div class="h2">从哪里开始处理</div>
+<div class="col" style="gap:4px">
+<div><span class="rd"></span>只处理从现在起的新变动</div>
+<div><span class="rd on"></span>先对北森范围内现有的 1,229 人各跑一次，再处理新变动</div>
+<div><span class="rd"></span>从指定时间开始</div>
+</div>
+<div class="h2">预演结果 <span class="muted" style="font-weight:400">1,229 次运行，未写入飞书</span></div>
+<table class="t">
+<tr><th style="width:170px">节点</th><th>结果（数字可点开名单）</th></tr>
+<tr><td>飞书 · 确保账号</td><td>将创建 <u>31</u> · 将更新 <u>58</u>（部门 41、职务 17）· 无需操作 <u>1,131</u></td></tr>
+<tr><td>飞书 · 暂停账号</td><td>将暂停 <u>3</u>（北森已离职，飞书仍可登录）</td></tr>
+<tr><td>飞书 · 发 HR 群消息</td><td>将发送 <u>31</u></td></tr>
+<tr><td>出错</td><td><u>6</u> 条：手机号对应多个飞书账号，启用后进入问题</td></tr>
+</table>
+<div class="muted sm">估算耗时：创建每秒 50 次，改部门和暂停每秒 1 次，约 2 分钟。暂停 3 人，未超过停用上限。</div>
+<div class="rw end"><span class="btn">取消</span><span class="btn">先启用 20 条</span><span class="btn pri">全部启用</span></div>
+</div>
+</div>
+
+<div class="wf" data-dir="flow" data-t="2" data-s="1" data-nav="运行" data-q="张晓雨" data-when="10 月 19 日 周一 09:40" data-cap="在运行记录里搜张晓雨，找到她这次入职的那条运行，看到它停在哪一步、飞书返回了什么错误、同样出错的还有谁。">
+<div class="crumb">运行</div>
+<div class="rw sb"><span class="h1">运行记录</span><div class="rw sm"><span class="inp">工作流：全部 ▾</span><span class="inp">状态：全部 ▾</span><span class="inp">时间：近 7 天 ▾</span><span><span class="cb on"></span> 显示变更记录</span></div></div>
+<div class="rw ft" style="gap:12px">
+<div class="card" style="width:470px;padding:0">
+<div class="muted sm" style="padding:8px 10px;border-bottom:1px solid #e3e3e3">搜索「张晓雨」：2 条运行，按时间倒序</div>
+<div class="runrow sel"><div class="rw sb"><b>E10452 · 张晓雨 · 入职</b><span class="tag dk">失败</span></div><span class="muted sm">北森员工变动 → 飞书账号 · v3 · 开始 10-16 14:05</span><span class="sm">停在「飞书 · 确保账号」· 10-18 09:00</span></div>
+<div class="runrow"><div class="rw sb"><b>E10452 · 张晓雨 · 入职</b><span class="tag">等待中</span></div><span class="muted sm">新员工欢迎消息 · v2 · 开始 10-16 14:05</span><span class="sm">停在「等待飞书账号」</span></div>
+<div class="chg">王磊 发布了 北森员工变动 → 飞书账号 v3 · 10-15 16:40</div>
+</div>
+<div class="card grow col" style="gap:9px">
+<div class="rw sb"><span class="h2">E10452 · 张晓雨 · 入职</span><span class="muted sm">运行 58213 · v3 · 来源：触发</span></div>
+<div class="steps">
+<div class="step"><span class="ic">✓</span><div><b>触发 · 北森 · 员工变动</b><div class="muted sm">10-16 14:05 · 入职，生效日 10-19</div></div></div>
+<div class="step"><span class="ic">✓</span><div><b>北森 · 读取当前状态</b><div class="muted sm">部门 销售中心 / 华南大客户部 · 职务 大客户经理</div></div></div>
+<div class="step"><span class="ic">✓</span><div><b>分支 · 变动类型</b><div class="muted sm">入职</div></div></div>
+<div class="step"><span class="ic">✓</span><div><b>延迟</b><div class="muted sm">到 10-18 09:00</div></div></div>
+<div class="step"><span class="ic x">✕</span><div><b>飞书 · 确保账号</b><div class="sm">10-18 09:00 · 飞书返回 40004 无部门权限：部门「华南大客户部」不在应用的通讯录权限范围</div></div></div>
+<div class="step"><span class="ic o">·</span><div><b>飞书 · 发 HR 群消息</b><div class="muted sm">未执行</div></div></div>
+</div>
+<div class="strip sm">同一原因还有 1 条运行：E10453 · 何俊 · 入职，两条都归入问题 #20，要飞书管理员处理</div>
+<div class="rw"><span class="btn">查看输入输出</span><span class="btn">带到编辑器</span><span class="btn">重放…</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="flow" data-t="2" data-s="2" data-nav="问题" data-when="10 月 19 日 周一 10:30" data-cap="要飞书管理员加权限范围，卡片发到他的飞书；他点了「我已处理」，值班收到通知，选中 2 条运行重放，对话框写明版本、起点、每一步执行还是沿用。">
+<div class="crumb">问题 › #20</div>
+<div class="rw" style="gap:10px"><span class="h1">飞书 · 确保账号：40004 无部门权限</span><span class="tag">处理中</span><span class="muted sm">负责人 李航</span></div>
+<div class="muted sm">北森员工变动 → 飞书账号 · 2 次运行 · 首次 10-18 09:00</div>
+<div class="col" style="width:540px;gap:10px">
+<div class="card fill"><b>错误码说明</b><div class="sm">当前操作的部门需在应用的通讯录权限范围内。要飞书管理员处理：飞书管理后台 › 工作台 › 应用管理 › 人事集成 › 通讯录权限范围，添加部门后创建版本并发布。</div><div class="rw" style="margin-top:6px"><span class="btn">发卡片给飞书管理员</span><span class="btn">复制步骤</span></div></div>
+<div><div class="h2" style="margin-bottom:4px">受影响的运行</div>
+<table class="t"><tr><th style="width:26px"></th><th>运行</th><th>停在</th><th>时间</th></tr>
+<tr><td><span class="cb on"></span></td><td>E10452 · 张晓雨 · 入职</td><td>飞书 · 确保账号</td><td>10-18 09:00</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10453 · 何俊 · 入职</td><td>飞书 · 确保账号</td><td>10-18 09:00</td></tr>
+</table></div>
+<div><div class="h2" style="margin-bottom:4px">动态</div>
+<div class="tl"><span class="t0">10-19 09:52</span><span class="who">李航</span><span>发卡片给 IT 管理员群（周文）</span><span class="t0">10-19 10:24</span><span class="who">周文</span><span>在卡片上点了「我已处理」</span><span class="t0">10-19 10:24</span><span class="who">平台</span><span>通知李航，可以重放</span></div></div>
+</div>
+<div class="modal" style="right:16px;top:48px;width:470px">
+<div class="rw sb"><span class="h1">重放 2 条运行</span><span class="muted">✕</span></div>
+<div class="kv"><span class="k">工作流版本</span><span>当前发布 v3（与原运行相同）</span><span class="k">连接器</span><span>飞书 3.2（当前镜像）</span><span class="k">起点</span><span><span class="rd on"></span>从失败步骤「飞书 · 确保账号」继续<br><span class="rd"></span>从头开始（重新读取北森）</span></div>
+<div class="h2">逐步预判</div>
+<table class="t"><tr><th>步骤</th><th>幂等</th><th>处理</th></tr>
+<tr><td>北森 · 读取当前状态</td><td>只读</td><td>沿用原结果</td></tr>
+<tr><td>飞书 · 确保账号</td><td>幂等</td><td>执行</td></tr>
+<tr><td>飞书 · 发 HR 群消息</td><td>不幂等</td><td>原运行没执行到，执行</td></tr>
+</table>
+<div class="sm">汇总：确保账号执行 2 次，发 HR 群消息 2 次；新运行和原运行互相链接。</div>
+<div class="rw end"><span class="btn">取消</span><span class="btn">先预演</span><span class="btn pri">重放 2 条</span></div>
+</div>
+</div>
+
+<div class="wf" data-dir="flow" data-t="3" data-s="1" data-nav="工作流" data-when="10 月 30 日 周五 10:05" data-cap="离职当天上午，在离职分支上用两条真实记录试过，再预演在等的 41 条运行：40 条会暂停、刘洋在条件处跳过，超过停用上限会整批停下。">
+<div class="crumb">工作流 › 北森员工变动 → 飞书账号</div>
+<div class="rw sb"><div class="rw"><span class="h1">北森员工变动 → 飞书账号</span><span class="tag">v3 · 已发布</span></div><div class="rw"><span class="btn">停在「延迟」的运行 41</span><span class="btn">试运行</span></div></div>
+<div class="canvas" style="height:246px">
+<svg width="1052" height="246" viewBox="0 0 1052 246"><g fill="none" stroke="#6a6a6a" stroke-width="1.3"><path d="M160 123H173V38H186"/><path d="M160 123H173V173H186"/><path d="M336 173H362"/><path d="M512 173H538"/><path d="M688 173H706V123H724"/><path d="M688 173H706V213H724"/><path d="M874 123H896"/></g><g fill="#6a6a6a"><path d="M186 38l-7-4v8z"/><path d="M186 173l-7-4v8z"/><path d="M362 173l-7-4v8z"/><path d="M538 173l-7-4v8z"/><path d="M724 123l-7-4v8z"/><path d="M724 213l-7-4v8z"/><path d="M896 123l-7-4v8z"/></g><g font-size="11" fill="#555"><text x="104" y="66">入职 · 调岗</text><text x="132" y="194">离职</text><text x="712" y="152">是</text><text x="712" y="200">否</text></g></svg>
+<div class="node" style="left:10px;top:99px"><b>分支 · 变动类型</b>入职 · 调岗 · 离职</div>
+<div class="node fold" style="left:186px;top:14px"><b>入职、调岗分支</b>4 个节点（已折叠）</div>
+<div class="node" style="left:186px;top:149px"><b>延迟</b>到最后工作日 18:00<span class="nt">41 条在等</span></div>
+<div class="node" style="left:362px;top:149px"><b>北森 · 再读当前状态</b>按工号，取当前生效<span class="nt">✓ 已试</span></div>
+<div class="node" style="left:538px;top:149px"><b>条件 · 仍为离职？</b>北森状态 = 离职<span class="nt">✓ 已试</span></div>
+<div class="node on" style="left:724px;top:99px"><b>飞书 · 暂停账号</b>停用上限 24 小时 9 次<span class="nt dk">预演</span></div>
+<div class="node" style="left:896px;top:99px"><b>延迟 7 天 · 发 IT 群消息</b>办离职、转移资源</div>
+<div class="node" style="left:724px;top:189px"><b>结束 · 跳过</b>不写飞书</div>
+</div>
+<div class="dr">
+<div class="dh"><b>飞书 · 暂停账号</b><div class="tabs bare"><span class="on">参数</span><span>失败时</span><span>设置</span></div><span class="grow"></span><span class="muted sm">写操作默认只预演</span></div>
+<div class="db">
+<div>
+<div class="h2">输入样例</div>
+<div class="rw sm"><span class="muted">样例来自</span><span class="inp">停在「延迟」的 41 条运行 ▾</span></div>
+<div class="muted sm">其中试过 2 条：</div>
+<div class="card" style="padding:6px 8px;border-width:2px"><b>E10301 · 吴婷 · 离职</b><div class="sm">条件「仍为离职？」是 → 走到本节点</div></div>
+<div class="card" style="padding:6px 8px"><b>E10388 · 刘洋 · 离职</b><div class="sm">10-29 已撤销离职 → 条件否，跳过</div></div>
+</div>
+<div>
+<div class="h2">参数</div>
+<table class="t">
+<tr><td style="width:84px">用户</td><td><span class="pill">飞书 · 确保账号 › user_id</span> <span class="muted sm">由工号找到</span></td></tr>
+<tr><td>动作</td><td>暂停（不删除）</td></tr>
+<tr><td>停用上限</td><td>每 10 分钟汇总一次，24 小时内超过 <span class="inp">9</span> 次时整批停下，等人放行</td></tr>
+<tr><td></td><td class="muted sm">上限按近 90 天离职量算出，可调，不能关</td></tr>
+</table>
+</div>
+<div>
+<div class="rw sb"><span class="h2">输出预览 · 41 条</span><span class="rw"><span class="btn pri">预演</span><span class="btn">真实执行…</span></span></div>
+<div class="card fill"><b>预演结果（未写入飞书）</b><br>将暂停 40 个账号 · 跳过 1 条（刘洋）<br>40 次超过停用上限 9 次：<b>18:00 会整批停下，等人放行</b></div>
+<div class="code">PATCH /contact/v3/users/ou_7a2…
+{ "is_frozen": true }</div>
+<div class="muted sm">暂停接口每秒 1 次，约 1 分钟。</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="flow" data-t="3" data-s="2" data-nav="运行" data-when="10 月 30 日 周五 18:20" data-cap="18:00 这 40 条运行因超过停用上限停在暂停节点；值班看过名单后放行，放行前已重读北森，每条运行的输出显示飞书返回「已暂停」。">
+<div class="crumb">运行 › 筛选：北森员工变动 → 飞书账号 · 今天 · 离职</div>
+<div class="banner"><b>停用上限已触发</b><span>18:00 这一批 40 条运行要暂停账号，超过 24 小时 9 次，已整批停在「飞书 · 暂停账号」，等待放行。</span></div>
+<div class="rw st" style="gap:12px">
+<div class="card" style="width:600px;padding:6px 8px">
+<table class="t"><tr><th style="width:26px"></th><th>运行</th><th>停在</th><th>状态</th></tr>
+<tr><td><span class="cb on"></span></td><td>E10301 · 吴婷 · 离职</td><td>飞书 · 暂停账号</td><td>等待放行</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10297 · 孙浩 · 离职</td><td>飞书 · 暂停账号</td><td>等待放行</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10288 · 郑丽 · 离职</td><td>飞书 · 暂停账号</td><td>等待放行</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10276 · 马超 · 离职</td><td>飞书 · 暂停账号</td><td>等待放行</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10265 · 高敏 · 离职</td><td>飞书 · 暂停账号</td><td>等待放行</td></tr>
+<tr><td></td><td colspan="3" class="muted">… 共 40 条，已全选</td></tr>
+<tr class="dim"><td><span class="cb"></span></td><td>E10388 · 刘洋 · 离职</td><td>条件 · 仍为离职？</td><td>已跳过：北森状态为在职</td></tr>
+</table>
+</div>
+<div class="card hv grow col" style="gap:8px">
+<div class="h1">放行 40 条运行</div>
+<div class="kv"><span class="k">版本</span><span>工作流 v3 · 飞书 3.2（当前镜像）</span><span class="k">起点</span><span>从「飞书 · 暂停账号」继续</span><span class="k">北森状态</span><span>18:00 已重读，40 人仍为离职</span><span class="k">估算耗时</span><span>暂停接口每秒 1 次，约 1 分钟</span><span class="k">权限</span><span>需要登录，并有放行权限</span></div>
+<div class="rw end"><span class="btn">取消这些运行…</span><span class="btn">逐条放行</span><span class="btn pri">放行 40 条</span></div>
+</div>
+</div>
+<div class="strip">放行之后（18:23）：40 条运行成功，每条的输出里飞书返回「已暂停」（is_frozen = true）。</div>
+</div>
+
+<div class="wf" data-dir="sync" data-t="1" data-s="1" data-nav="同步" data-me="王磊" data-when="10 月 12 日 周一 10:20" data-cap="在七段设置表里写明从哪来、到哪去、怎么认出同一个人、管哪些人、写哪些字段、各阶段做什么、何时停下，每段按真实数据算出命中和重复。">
+<div class="crumb">同步 › 北森员工 → 飞书通讯录</div>
+<div class="rw sb"><div class="rw"><span class="h1">北森员工 → 飞书通讯录</span><span class="tag">草稿 · 未启用</span></div><div class="rw"><span class="btn">试一个人</span><span class="btn">预演</span><span class="btn pri">启用…</span></div></div>
+<div class="tabs"><span class="on">设置</span><span>记录</span><span>批次</span><span>对账</span><span>变更</span></div>
+<div class="rw ft" style="gap:14px;flex:1;min-height:0">
+<div class="grow">
+<div class="sec"><span class="no">1</span><span class="sn">源</span><div>北森 · 员工　<span class="muted">业务键</span> 工号</div></div>
+<div class="sec"><span class="no">2</span><span class="sn">目标</span><div>飞书 · 通讯录用户　<span class="muted">应用「人事集成」，通讯录权限范围 12 个部门</span><br>飞书通讯录的其他写入方：未发现</div></div>
+<div class="sec"><span class="no">3</span><span class="sn">怎么认出同一个人</span><div>
+<table class="t"><tr><td style="width:22px">①</td><td style="width:200px">北森 工号 = 飞书 工号</td><td class="muted">空值 0.4% · 重复 0</td></tr><tr><td>②</td><td>北森 手机号 = 飞书 手机号</td><td>空值 0% · 对应多个账号 <b>6</b>：这 6 人进入待确认，不自动处理</td></tr></table>
+<span class="muted sm">＋ 加一条规则　按顺序逐条试，先命中的为准</span></div></div>
+<div class="sec"><span class="no">4</span><span class="sn">谁在范围内</span><div>状态 = 在职　或　入职日在 3 天内　或　离职日在 30 天内　<span class="tag lt">当前命中 1,229 人</span></div></div>
+<div class="sec"><span class="no">5</span><span class="sn">字段</span><div>
+<table class="t"><tr><th>飞书字段</th><th>来源</th><th>写入时机</th></tr>
+<tr><td>姓名</td><td>北森 姓名</td><td>创建和更新</td></tr>
+<tr><td>手机号</td><td>北森 手机</td><td>仅创建</td></tr>
+<tr><td>部门</td><td>映射表「部门对照」　找不到时 <span class="inp">失败 ▾</span></td><td>创建和更新</td></tr>
+<tr><td>职务</td><td>北森 职务</td><td>创建和更新</td></tr>
+</table></div></div>
+<div class="sec"><span class="no">6</span><span class="sn">生命周期</span><div>入职：入职日前 <span class="inp">1</span> 天开通　调岗：移动部门　再入职：恢复原账号<br>离职：最后工作日 <span class="inp">18:00</span> 暂停，<span class="inp">7</span> 天后办离职（目前只生成待办）<br><span class="muted">状态变化后：新开通时通知 HR 群（由工作流执行）</span></div></div>
+<div class="sec" style="border-bottom:0"><span class="no">7</span><span class="sn">停用上限</span><div>24 小时内停用超过 <span class="inp">9</span> 人时整批停下，等人逐条放行<br><span class="muted">上限按近 90 天离职量算出，可调，不能关</span>　飞书里被人改过：<span class="inp">保留飞书的值，记为差异 ▾</span></div></div>
+</div>
+<div class="card fill col" style="width:200px;gap:6px">
+<div class="h2">样本</div><div class="muted sm">10-12 10:05 读取</div>
+<div>北森在范围内</div><div class="big">1,229 人</div>
+<div>飞书现有账号</div><div class="big">1,214 个</div>
+<div class="muted sm">第 3、4 段的空值、重复和命中人数，都按这份样本算。</div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="sync" data-t="1" data-s="2" data-nav="同步" data-me="王磊" data-when="10 月 12 日 周一 10:40" data-cap="启用前先把北森和飞书现有的人对上，处理对不上的；再预演一轮会创建、更新、停用多少人，然后选先启用 20 人还是全部启用。">
+<div class="crumb">同步 › 北森员工 → 飞书通讯录 › 启用</div>
+<div class="rw sb"><span class="h1">首次启用</span><div class="stepbar"><span class="done">① 存量对齐</span><i></i><span class="on">② 预演</span><i></i><span>③ 启用</span></div></div>
+<div class="card col" style="gap:8px">
+<div class="rw"><span class="h2">① 存量对齐</span><span class="tag lt">已完成</span><span class="muted sm">把北森的人和飞书现有账号逐个对上</span></div>
+<div class="stats" style="grid-template-columns:repeat(4,1fr)">
+<div><div class="muted">已匹配</div><div class="big">1,192</div><div class="sm muted">按工号 1,160 · 按手机号 32</div></div>
+<div><div class="muted">北森有、飞书无</div><div class="big">31</div><div class="sm muted">将新建</div></div>
+<div><div class="muted">飞书有、北森无</div><div class="big">14</div><div class="sm">按规则列为例外：部门 = 外部协作（9 个），2027-01-12 到期；其余 5 个逐条处理</div></div>
+<div><div class="muted">待确认</div><div class="big">6</div><div class="sm">手机号对应多个账号，逐条确认</div></div>
+</div>
+<table class="t"><tr><th>待确认</th><th>北森</th><th>飞书候选</th><th style="width:150px">判定</th></tr>
+<tr><td>E10088 · 李娜</td><td>手机 137****2210</td><td>2 个账号用同一手机号：李娜、李娜（实习）</td><td><span class="inp">选一个账号 ▾</span></td></tr>
+<tr><td>E10154 · 王强</td><td>手机 186****7342</td><td>2 个账号用同一手机号：王强、会议室 3F</td><td><span class="inp">选一个账号 ▾</span></td></tr>
+<tr><td colspan="4" class="muted">… 共 6 人，已确认 0 人；没确认的人启用后也不处理</td></tr>
+</table>
+</div>
+<div class="card hv col" style="gap:8px">
+<div class="rw"><span class="h2">② 预演</span><span class="muted sm">未写入飞书 · 每个数字可点开名单</span></div>
+<div class="stats" style="grid-template-columns:repeat(5,1fr)">
+<div><div class="muted">将创建</div><div class="big">31</div></div>
+<div><div class="muted">将更新</div><div class="big">58</div><div class="sm muted">部门 41、职务 17</div></div>
+<div><div class="muted">将停用</div><div class="big">3</div><div class="sm muted">北森已离职</div></div>
+<div><div class="muted">无变化</div><div class="big">1,131</div></div>
+<div><div class="muted">待确认</div><div class="big">6</div><div class="sm muted">不处理</div></div>
+</div>
+<div class="muted sm">估算耗时：创建每秒 50 次，改部门和暂停每秒 1 次，约 2 分钟。停用 3 人，未超过停用上限。</div>
+</div>
+<div class="card fill sm">③ 启用：可以先启用 20 人，看结果再全部启用；启用后，新的变动按设置自动同步，每天 02:00 再全量同步一次。</div>
+<div class="rw end"><span class="btn">保存这次预演</span><span class="btn">先启用 20 人</span><span class="btn pri">全部启用</span></div>
+</div>
+
+<div class="wf" data-dir="sync" data-t="2" data-s="1" data-nav="同步" data-q="张晓雨" data-when="10 月 19 日 周一 09:40" data-cap="在这个同步的记录表里搜张晓雨，看到北森和飞书两边各是什么状态、最近一次做了什么、为什么失败、同样失败的还有谁。">
+<div class="crumb">同步 › 北森员工 → 飞书通讯录</div>
+<div class="rw sb"><div class="rw"><span class="h1">北森员工 → 飞书通讯录</span><span class="tag">已启用</span></div><div class="rw"><span class="btn">试一个人</span><span class="btn">预演</span></div></div>
+<div class="tabs"><span>设置</span><span class="on">记录</span><span>批次</span><span>对账</span><span>变更</span></div>
+<div class="rw"><span class="chip">不一致 4</span><span class="chip">待确认 2</span><span class="chip">例外 14</span><span class="chip">失败 2</span><span class="grow"></span><span class="muted sm">每人一行 · 搜索「张晓雨」：1 条</span></div>
+<table class="t">
+<tr><th>工号</th><th>姓名</th><th>北森状态</th><th>飞书状态</th><th>一致</th><th>最近动作</th><th>结果</th><th>原因</th><th>最近同步</th></tr>
+<tr class="sel"><td>E10452</td><td>张晓雨</td><td>在职 · 10-19 入职</td><td>无账号</td><td>否</td><td>创建</td><td><span class="tag dk">失败</span></td><td>40004 部门不在通讯录权限范围</td><td>10-19 09:00</td></tr>
+</table>
+<div class="card col" style="gap:8px">
+<div class="rw sb"><span class="h2">张晓雨 · E10452</span><span class="muted sm">销售中心 / 华南大客户部 · 大客户经理</span></div>
+<div class="rw ft" style="gap:16px">
+<div style="width:430px"><div class="sm muted" style="margin-bottom:4px">字段差异</div>
+<table class="t"><tr><th>字段</th><th>北森</th><th>飞书</th></tr>
+<tr><td>账号</td><td>应存在</td><td>无</td></tr>
+<tr><td>部门</td><td>销售中心 / 华南大客户部</td><td>—</td></tr>
+<tr><td>职务</td><td>大客户经理</td><td>—</td></tr>
+<tr><td>手机号</td><td>139****0716</td><td>—</td></tr>
+</table></div>
+<div class="grow"><div class="sm muted" style="margin-bottom:4px">同步历史</div>
+<div class="tl"><span class="t0">10-18 09:00</span><span class="who">计划</span><span>创建 → 失败 40004</span><span class="t0">10-19 02:00</span><span class="who">全量</span><span>创建 → 失败 40004</span><span class="t0">10-19 09:00</span><span class="who">重试</span><span>创建 → 失败 40004</span></div>
+<div class="sm muted" style="margin-top:6px">状态变化后：通知 HR 群，账号开通后执行</div>
+<div class="strip sm" style="margin-top:10px">同样失败：E10453 · 何俊，两人都归入问题 #20，要飞书管理员处理</div></div>
+</div>
+<div class="rw"><span class="btn">试一个人</span><span class="btn">查看问题 #20</span></div>
+</div>
+</div>
+
+<div class="wf" data-dir="sync" data-t="2" data-s="2" data-nav="同步" data-when="10 月 19 日 周一 10:30" data-cap="要飞书管理员加权限范围，卡片发到他的飞书；他点了「我已处理」，平台对失败的 2 人重新同步，分五步显示读到什么、匹配到谁、写没写进去。">
+<div class="crumb">同步 › 北森员工 → 飞书通讯录 › 记录 › 张晓雨</div>
+<div class="rw ft" style="gap:12px;flex:1;min-height:0">
+<div class="col" style="width:330px;gap:10px">
+<div class="card fill"><div class="h2">问题 #20 · 已解决 10:25</div><div class="sm">40004 无部门权限：部门「销售中心 / 华南大客户部」不在应用的通讯录权限范围。张晓雨、何俊。</div></div>
+<div class="card"><div class="h2">排错建议</div><div class="sm">要飞书管理员处理：飞书管理后台 › 工作台 › 应用管理 › 人事集成 › 通讯录权限范围，添加该部门，创建版本并发布。</div><div class="rw" style="margin-top:6px"><span class="btn">发卡片给飞书管理员</span><span class="btn">复制步骤</span></div></div>
+<div class="card"><div class="h2">动态</div><div class="tl" style="grid-template-columns:40px 34px 1fr"><span class="t0">09:45</span><span class="who">李航</span><span>试一个人：第 5 步会报 40004</span><span class="t0">09:52</span><span class="who">李航</span><span>发卡片给 IT 管理员群（周文）</span><span class="t0">10:24</span><span class="who">周文</span><span>在卡片上点了「我已处理」</span><span class="t0">10:24</span><span class="who">平台</span><span>对失败的 2 人重新同步：创建 2</span><span class="t0">10:25</span><span class="who">平台</span><span>读取飞书：2 人与北森一致，问题关闭</span></div></div>
+</div>
+<div class="card hv grow col" style="gap:10px">
+<div class="rw sb"><span class="h1">同步记录 · E10452 张晓雨</span><span class="muted sm">10:24 · 周文处理后自动重新同步</span></div>
+<div class="steps" style="gap:10px">
+<div class="step"><span class="ic">1</span><div><b>读取北森</b><div class="sm">在职 · 入职日 10-19 · 销售中心 / 华南大客户部 · 大客户经理 · 139****0716</div></div></div>
+<div class="step"><span class="ic">2</span><div><b>是否在范围</b><div class="sm">状态 = 在职 → 通过（第 4 段的条件逐条列出）</div></div></div>
+<div class="step"><span class="ic">3</span><div><b>在飞书中匹配</b><div class="sm">工号 E10452 → 0 个账号；手机号 139****0716 → 0 个账号 → 新建</div></div></div>
+<div class="step"><span class="ic">4</span><div><b>计划动作</b><div class="sm">创建；部门映射为飞书「销售中心 / 华南大客户部」；创建后通知 HR 群</div></div></div>
+<div class="step"><span class="ic">5</span><div><b>写入飞书</b><div class="sm">部门已在通讯录权限范围内 ✓ → 已创建；读取飞书：与北森一致</div></div></div>
+</div>
+<div class="rw end" style="border-top:1px solid #e3e3e3;padding-top:10px"><span class="btn">试一个人</span><span class="btn">查看字段差异</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="sync" data-t="3" data-s="1" data-nav="同步" data-when="10 月 30 日 周五 10:05" data-cap="离职当天上午预演今晚 18:00 这一轮：41 人里 1 人已撤销离职、不会停用，其余 40 人超过停用上限，会整批停下等人放行。">
+<div class="crumb">同步 › 北森员工 → 飞书通讯录</div>
+<div class="rw sb"><div class="rw"><span class="h1">北森员工 → 飞书通讯录</span><span class="tag">已启用</span></div><div class="rw"><span class="btn">试一个人</span><span class="btn">预演</span></div></div>
+<div class="tabs"><span>设置</span><span>记录</span><span class="on">批次</span><span>对账</span><span>变更</span></div>
+<div class="rw ft" style="gap:12px;flex:1;min-height:0">
+<div class="col" style="width:370px;gap:10px">
+<div class="card fill sm"><b>6 生命周期</b><br>离职：最后工作日 18:00 暂停，7 天后办离职（目前只生成待办）</div>
+<div class="card fill sm"><b>7 停用上限</b><br>24 小时内停用超过 9 人时整批停下，等人逐条放行</div>
+<div class="card col" style="gap:6px"><div class="h2">试一个人 · E10388 刘洋</div>
+<div class="steps sm" style="gap:5px">
+<div class="step"><span class="ic">1</span><div>读取北森：在职（10-29 撤销离职）</div></div>
+<div class="step"><span class="ic">2</span><div>是否在范围：在职 → 在范围</div></div>
+<div class="step"><span class="ic">3</span><div>在飞书中匹配：工号 E10388 → 1 个账号</div></div>
+<div class="step"><span class="ic">4</span><div>计划动作：无变化，不停用</div></div>
+</div></div>
+</div>
+<div class="card hv grow col" style="gap:8px">
+<div class="rw sb"><span class="h2">预演 · 今晚 18:00 这一轮</span><span class="muted sm">未写入飞书</span></div>
+<div class="stats" style="grid-template-columns:repeat(3,1fr)">
+<div><div class="muted">将停用</div><div class="big">40</div></div>
+<div><div class="muted">不处理</div><div class="big">1</div><div class="sm muted">刘洋，北森已撤销离职</div></div>
+<div><div class="muted">其余</div><div class="big">无变化</div></div>
+</div>
+<div class="sm">读取北森：最后工作日为 10-30 的 41 人。匹配：40 人都按工号命中 1 个飞书账号。停用 40 人，超过停用上限 9 人：<b>这一轮会整批停下，等人放行。</b></div>
+<table class="t"><tr><th>工号</th><th>姓名</th><th>北森离职原因</th><th>最后工作日</th><th>计划</th></tr>
+<tr><td>E10301</td><td>吴婷</td><td>合同到期</td><td>10-30</td><td>停用</td></tr>
+<tr><td>E10297</td><td>孙浩</td><td>个人原因</td><td>10-30</td><td>停用</td></tr>
+<tr><td>E10288</td><td>郑丽</td><td>合同到期</td><td>10-30</td><td>停用</td></tr>
+<tr><td>E10276</td><td>马超</td><td>个人原因</td><td>10-30</td><td>停用</td></tr>
+<tr><td colspan="5" class="muted">… 共 40 人</td></tr>
+</table>
+<div class="muted sm">估算耗时：暂停每秒 1 次，约 1 分钟。</div>
+<div class="rw end"><span class="btn">查看全部 40 人</span><span class="btn">保存这次预演</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="sync" data-t="3" data-s="2" data-nav="同步" data-when="10 月 30 日 周五 18:20" data-cap="18:00 这一轮因超过停用上限整批停下；值班看过名单后放行，放行时按北森当前状态重算，完成后读取飞书：40 人已暂停、与北森一致。">
+<div class="crumb">同步 › 北森员工 → 飞书通讯录 › 批次 · 10-30 18:00</div>
+<div class="banner"><b>已整批停下</b><span>本轮将停用 40 人，超过停用上限（24 小时 9 人）。</span><span class="grow"></span><span class="btn">保持停下</span><span class="btn">放行选中</span><span class="btn pri">全部放行</span></div>
+<div class="muted sm">本轮：将停用 40 · 其余无变化。放行需要登录并有权限；放行时按北森当前状态重新计算这一轮；不放行的人可以保持停下，或转成带到期日的例外。</div>
+<div class="card" style="padding:6px 8px">
+<table class="t"><tr><th style="width:26px"></th><th>工号</th><th>姓名</th><th>北森状态</th><th>离职原因</th><th>最后工作日</th><th>计划</th></tr>
+<tr><td><span class="cb on"></span></td><td>E10301</td><td>吴婷</td><td>离职</td><td>合同到期</td><td>10-30</td><td>停用</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10297</td><td>孙浩</td><td>离职</td><td>个人原因</td><td>10-30</td><td>停用</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10288</td><td>郑丽</td><td>离职</td><td>合同到期</td><td>10-30</td><td>停用</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10276</td><td>马超</td><td>离职</td><td>个人原因</td><td>10-30</td><td>停用</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10265</td><td>高敏</td><td>离职</td><td>合同到期</td><td>10-30</td><td>停用</td></tr>
+<tr><td></td><td colspan="6" class="muted">… 共 40 人，已全选</td></tr>
+</table>
+</div>
+<div class="card fill col" style="gap:6px">
+<div class="h2">放行之后（18:23）</div>
+<div>本轮完成：已停用 40 人。读取飞书：40 人已暂停，与北森一致。</div>
+<div class="rw sm"><span class="muted">记录表 · 10-30 离职</span><span class="chip">飞书状态 已暂停 40</span><span class="chip">一致 40</span><span class="chip">失败 0</span></div>
+</div>
+</div>
+
+<div class="wf" data-dir="ledger" data-t="1" data-s="1" data-nav="集成" data-me="王磊" data-when="10 月 12 日 周一 10:20" data-cap="先写明北森每名员工在飞书里应有怎样的账号、多久之内办好，再只读地核对现状，看到哪些人已经符合、哪些还没有、差在哪里。">
+<div class="crumb">集成 › 新建</div>
+<div class="rw"><span class="h1">北森员工 → 飞书账号</span><span class="tag">新建 · 未启用</span></div>
+<div class="rw ft" style="gap:12px">
+<div class="card col" style="width:420px;gap:10px">
+<div class="h2">应有结果</div>
+<div class="kv" style="grid-template-columns:100px 1fr;gap:9px 10px">
+<span class="k">源</span><span>北森 · 员工（在职、3 天内入职、30 天内离职）　<span class="muted">业务键</span> 工号</span>
+<span class="k">应有结果</span><span>飞书 · 通讯录账号　形态 <span class="inp">保持一致 ▾</span></span>
+<span class="k">怎么认出同一个人</span><span>先按工号，找不到再按手机号</span>
+<span class="k">关键字段</span><span>部门、职务、状态</span>
+<span class="k">时限</span><span>入职日前 1 天开通；最后工作日 18:00 不能登录</span>
+<span class="k">附加动作</span><span>新开通时通知 HR 群（由处理工作流执行）</span>
+<span class="k">其余设置</span><span>字段写入时机、停用上限（24 小时 9 人）、飞书里被人改过时怎么办，已用默认值 ▸</span>
+<span class="k">飞书连接</span><span>人事集成 · 通讯录权限范围 12 个部门</span>
+<span class="k">写入方</span><span>飞书通讯录的其他写入方：未发现</span>
+</div>
+<div class="rw" style="margin-top:4px"><span class="btn pri">看现状（只读）</span><span class="muted sm">只读两边，不写飞书</span></div>
+</div>
+<div class="card hv grow col" style="gap:9px">
+<div class="rw sb"><span class="h2">现状 · 只读核对</span><span class="muted sm">10:18 完成 · 未写入飞书</span></div>
+<div class="muted sm">核对范围：飞书应用的通讯录权限范围，12 个部门。北森 1,229 人，飞书 1,214 个账号；对上 1,192 人，其中按工号 1,160、按手机号 32。每个数字可点开名单。</div>
+<div class="stats" style="grid-template-columns:1fr 2fr">
+<div><div class="muted">已到位</div><div class="big">1,131</div><div class="sm muted">账号、部门、职务、状态都和北森相同</div></div>
+<div><div class="muted">未到位</div><div class="big">92</div><div class="sm">应开通未开通 31 · 部门不同 41 · 职务不同 17 · 北森已离职、飞书仍可登录 3</div></div>
+</div>
+<div class="stats" style="grid-template-columns:1fr 1fr">
+<div><div class="muted">无法匹配</div><div class="big">6</div><div class="sm">手机号对应多个账号，进入待确认</div></div>
+<div><div class="muted">飞书有、北森无</div><div class="big">14</div><div class="sm">按规则列为例外：部门 = 外部协作（9 个），3 个月后到期；其余 5 个逐条处理</div></div>
+</div>
+<div class="rw end"><span class="btn">保存这次核对</span><span class="btn pri">下一步：补到位</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="ledger" data-t="1" data-s="2" data-nav="集成" data-me="王磊" data-when="10 月 12 日 周一 10:40" data-cap="选中还没办好的 92 人，先看补到位的预演：会创建、移动部门、改职务、暂停多少人，再选先补 20 人还是全部补上，并启用自动处理。">
+<div class="crumb">集成 › 北森员工 → 飞书账号</div>
+<div class="rw"><span class="h1">北森员工 → 飞书账号</span><span class="tag">未启用</span></div>
+<div class="tabs"><span>应有结果</span><span>处理工作流</span><span>对账</span><span class="on">台账</span><span>设置</span><span>变更</span></div>
+<div class="rw"><span class="chip on">未到位 92</span><span class="chip">待确认 6</span><span class="chip">例外 14</span><span class="chip">已到位 1,131</span></div>
+<div class="rw ft" style="gap:12px">
+<div class="card" style="width:520px;padding:6px 8px">
+<table class="t"><tr><th style="width:26px"></th><th>工号 · 姓名</th><th>差在哪</th><th>北森</th><th>飞书</th></tr>
+<tr><td><span class="cb on"></span></td><td>E10198 · 赵静</td><td>应开通未开通</td><td>在职 · 华东一部</td><td>无账号</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10205 · 钱磊</td><td>部门不同</td><td>研发中心 / 平台组</td><td>研发中心 / 测试组</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10211 · 冯雪</td><td>职务不同</td><td>高级会计</td><td>会计</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10129 · 何平</td><td>离职仍可登录</td><td>09-30 离职</td><td>可登录</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10217 · 褚明</td><td>应开通未开通</td><td>在职 · 华北二部</td><td>无账号</td></tr>
+<tr><td></td><td colspan="4" class="muted">… 共 92 人，已全选</td></tr>
+</table>
+</div>
+<div class="card hv grow col" style="gap:8px">
+<div class="rw sb"><span class="h1">补到位（92 人）</span><span class="muted sm">预演 · 未写入飞书</span></div>
+<div class="sm">读取北森当前生效状态后：</div>
+<div class="stats" style="grid-template-columns:repeat(4,1fr)">
+<div><div class="muted">创建</div><div class="big">31</div></div>
+<div><div class="muted">移动部门</div><div class="big">41</div></div>
+<div><div class="muted">改职务</div><div class="big">17</div></div>
+<div><div class="muted">暂停</div><div class="big">3</div></div>
+</div>
+<div class="kv sm" style="grid-template-columns:96px 1fr"><span class="k">附加动作</span><span>通知 HR 群，只发给新开通的 31 人</span><span class="k">处理工作流</span><span>v1</span><span class="k">被别的问题挡住</span><span>0 人</span><span class="k">停用上限</span><span>暂停 3 人，未超过</span><span class="k">估算耗时</span><span>创建每秒 50 次，改部门和暂停每秒 1 次，约 2 分钟</span></div>
+<div class="muted sm">执行后读回飞书核对，「已处理」变为「已到位」。</div>
+<div class="rw sm"><span class="cb on"></span><span>启用后，新的变动自动处理；每天 02:00 全量核对一次</span></div>
+<div class="rw end"><span class="btn">先补 20 人</span><span class="btn pri">补到位（92 人）</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="ledger" data-t="2" data-s="1" data-nav="台账" data-q="张晓雨" data-when="10 月 19 日 周一 09:40" data-cap="在台账里搜张晓雨，看到她的飞书账号和入职通知各处在什么状态、期限是哪天、卡在哪个问题上，以及之前经过了什么。">
+<div class="crumb">台账 · 搜索「张晓雨」：1 人</div>
+<div class="card rw sb"><span class="h1">E10452 · 张晓雨</span><span class="muted">销售中心 / 华南大客户部 · 大客户经理 · 10-19 入职 · 飞书里还没有对应的账号</span></div>
+<div class="h2">应有结果</div>
+<table class="t">
+<tr><th>应有结果</th><th>集成</th><th>状态</th><th>依据</th><th>期限</th></tr>
+<tr class="sel"><td>飞书账号</td><td>北森员工 → 飞书账号</td><td><span class="tag dk">未到位</span> 问题 #20 · 需要飞书管理员</td><td>读回核对</td><td>10-18 前 · 已逾期 1 天</td></tr>
+<tr><td>入职通知（HR 群）</td><td>北森员工 → 飞书账号</td><td><span class="tag">等前一项</span> 账号开通后再发</td><td>发送记录</td><td>开通后 10 分钟内</td></tr>
+</table>
+<div class="h2">经过</div>
+<div class="card">
+<div class="tl" style="grid-template-columns:86px 40px 1fr;gap:8px 10px"><span class="t0">10-16 14:05</span><span class="who">北森</span><span>录入入职，生效日 10-19</span><span class="t0">10-18 09:00</span><span class="who">平台</span><span>按时限开通，飞书返回 40004 无部门权限</span><span class="t0">10-18 09:00</span><span class="who">平台</span><span>归入问题 #20：部门「华南大客户部」不在通讯录权限范围，同一原因 2 人</span><span class="t0">10-19 02:00</span><span class="who">平台</span><span>每日核对：账号仍未到位</span></div>
+</div>
+<div class="strip sm">同一原因还有 1 人：E10453 · 何俊，同在问题 #20</div>
+<div class="rw"><span class="btn">打开问题 #20</span><span class="btn off">补到位…（被问题 #20 挡住）</span></div>
+</div>
+
+<div class="wf" data-dir="ledger" data-t="2" data-s="2" data-nav="问题" data-when="10 月 19 日 周一 10:30" data-cap="要飞书管理员加权限范围，卡片发到他的飞书；他点了「我已处理」，平台重新检查权限范围，给受影响的 2 人补到位，读回飞书确认后关闭问题。">
+<div class="crumb">问题 › #20</div>
+<div class="rw" style="gap:10px"><span class="h1">部门「华南大客户部」不在飞书应用的通讯录权限范围</span><span class="tag">已解决 · 10:26</span></div>
+<div class="muted sm">北森员工 → 飞书账号 · 影响 2 人（张晓雨、何俊），都是 10-19 入职</div>
+<div class="rw ft" style="gap:12px">
+<div class="col" style="width:560px;gap:10px">
+<div class="card fill rw"><b>谁能修：飞书管理员</b><span class="muted sm">常见原因 · 错误码 40004</span></div>
+<div class="card col" style="gap:6px"><div class="h2">给对方的待办</div>
+<div class="sm">1. 打开 飞书管理后台 › 工作台 › 应用管理 › 人事集成 › 通讯录权限范围<br>2. 添加部门「销售中心 / 华南大客户部」<br>3. 创建版本并审核发布</div>
+<div class="rw"><span class="btn">发卡片给飞书管理员</span><span class="btn">复制步骤</span></div></div>
+<div class="card"><div class="h2" style="margin-bottom:4px">经过</div>
+<div class="tl" style="grid-template-columns:40px 34px 1fr;gap:6px 10px"><span class="t0">09:52</span><span class="who">李航</span><span>发卡片给 IT 管理员群（周文），状态变为「等待对方 · 周文」</span><span class="t0">10:24</span><span class="who">周文</span><span>在卡片上点了「我已处理」</span><span class="t0">10:25</span><span class="who">平台</span><span>重新检查：权限范围已包含该部门，对 2 人补到位</span><span class="t0">10:26</span><span class="who">平台</span><span>读回飞书，2 人已到位；问题关闭，通知李航</span></div></div>
+</div>
+<div class="card hv grow col" style="gap:8px">
+<div class="rw sb"><span class="h2">补到位（2 人）</span><span class="muted sm">10:25 · 周文处理后自动开始</span></div>
+<table class="t"><tr><th>工号 · 姓名</th><th>飞书账号</th><th>入职通知</th></tr>
+<tr><td>E10452 · 张晓雨</td><td>已到位 · 写后读回</td><td>已发送</td></tr>
+<tr><td>E10453 · 何俊</td><td>已到位 · 写后读回</td><td>已发送</td></tr>
+</table>
+<div class="kv sm" style="grid-template-columns:72px 1fr"><span class="k">读到</span><span>北森当前生效状态：2 人在职，部门 销售中心 / 华南大客户部</span><span class="k">处理工作流</span><span>v3 · 创建 2，通知 HR 群 2 条</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="ledger" data-t="3" data-s="1" data-nav="台账" data-when="10 月 30 日 周五 10:05" data-cap="离职当天上午在台账里看今晚排好的 41 人：1 人已撤销离职、排程已取消；其余 40 人超过停用上限，18:00 会整批等人放行。">
+<div class="crumb">台账 · 筛选：已排程 · 生效日 10-30</div>
+<div class="rw"><span class="chip on">已排程 41</span><span class="chip">今天生效 41</span><span class="muted sm">离职有两项应有结果：当天不能登录；交接并释放席位</span></div>
+<div class="rw ft" style="gap:12px">
+<div class="card" style="width:520px;padding:6px 8px">
+<table class="t"><tr><th>工号</th><th>姓名</th><th>应有结果</th><th>生效</th><th>状态</th></tr>
+<tr><td>E10301</td><td>吴婷</td><td>当天不能登录</td><td>10-30 18:00</td><td>已排程</td></tr>
+<tr><td>E10297</td><td>孙浩</td><td>当天不能登录</td><td>10-30 18:00</td><td>已排程</td></tr>
+<tr><td>E10288</td><td>郑丽</td><td>当天不能登录</td><td>10-30 18:00</td><td>已排程</td></tr>
+<tr><td>E10276</td><td>马超</td><td>当天不能登录</td><td>10-30 18:00</td><td>已排程</td></tr>
+<tr class="dim"><td>E10388</td><td>刘洋</td><td>当天不能登录</td><td>北森 10-29 撤销离职</td><td>排程已撤销</td></tr>
+<tr><td colspan="5" class="muted">… 共 41 人</td></tr>
+</table>
+</div>
+<div class="card hv grow col" style="gap:8px">
+<div class="rw sb"><span class="h2">预演 · 今晚 18:00</span><span class="muted sm">未写入飞书</span></div>
+<div class="sm muted">执行前会再读一次北森当前生效状态</div>
+<div class="stats" style="grid-template-columns:repeat(2,1fr)">
+<div><div class="muted">将暂停</div><div class="big">40</div></div>
+<div><div class="muted">不处理</div><div class="big">1</div><div class="sm muted">刘洋，北森已撤销离职</div></div>
+</div>
+<div class="sm">对应关系：40 人都已对应到唯一的飞书账号。40 人超过停用上限（24 小时 9 人）：<b>18:00 会整批进入待放行，等人放行。</b></div>
+<div class="kv sm" style="grid-template-columns:72px 1fr"><span class="k">估算耗时</span><span>暂停每秒 1 次，约 1 分钟</span><span class="k">第二项</span><span>交接并释放席位：11-06 起，目前只生成待办</span></div>
+<div class="rw end"><span class="btn">查看 40 人名单</span><span class="btn">保存这次预演</span></div>
+</div>
+</div>
+</div>
+
+<div class="wf" data-dir="ledger" data-t="3" data-s="2" data-nav="首页" data-when="10 月 30 日 周五 18:20" data-cap="18:00 这 40 人因超过停用上限整批停下；值班看过名单后放行，放行前再读一次北森，执行后读回飞书，确认 40 人都已暂停。">
+<div class="crumb">首页 › 待放行 #7</div>
+<div class="banner"><b>已整批停下</b><span>来源：生效日排程 · 40 人要暂停，超过停用上限（24 小时 9 人）。</span><span class="grow"></span><span class="btn">拒绝并列为例外</span><span class="btn">逐条放行</span><span class="btn pri">整批放行</span></div>
+<div class="muted sm">放行需要登录并有权限；放行就是对这些人补到位，执行前再读一次北森；拒绝的人转成带到期日的例外。</div>
+<div class="card" style="padding:6px 8px">
+<table class="t"><tr><th style="width:26px"></th><th>工号</th><th>姓名</th><th>北森离职原因</th><th>最后工作日</th><th>将做</th></tr>
+<tr><td><span class="cb on"></span></td><td>E10301</td><td>吴婷</td><td>合同到期</td><td>10-30</td><td>暂停</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10297</td><td>孙浩</td><td>个人原因</td><td>10-30</td><td>暂停</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10288</td><td>郑丽</td><td>合同到期</td><td>10-30</td><td>暂停</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10276</td><td>马超</td><td>个人原因</td><td>10-30</td><td>暂停</td></tr>
+<tr><td><span class="cb on"></span></td><td>E10265</td><td>高敏</td><td>合同到期</td><td>10-30</td><td>暂停</td></tr>
+<tr><td></td><td colspan="5" class="muted">… 共 40 人，已全选</td></tr>
+</table>
+</div>
+<div class="card fill col" style="gap:6px">
+<div class="h2">放行之后</div>
+<div class="tl" style="grid-template-columns:40px 34px 1fr;gap:5px 10px"><span class="t0">18:22</span><span class="who">李航</span><span>放行 40 人</span><span class="t0">18:22</span><span class="who">平台</span><span>重读北森：40 人仍为离职，已处理 40</span><span class="t0">18:24</span><span class="who">平台</span><span>读回飞书：40 人已暂停，已到位 40 / 40</span></div>
+<div class="rw sm"><span class="muted">台账 · 10-30 离职</span><span class="chip">当天不能登录 已到位 40</span><span class="chip">交接并释放席位 待办 40</span></div>
+</div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var ORDERS = {
+    1:['flow','sync','ledger'],
+    2:['sync','ledger','flow'],
+    3:['ledger','flow','sync'],
+    4:['flow','ledger','sync'],
+    5:['ledger','sync','flow'],
+    6:['sync','flow','ledger']
+  };
+  var PLAN_NAMES = ['方案一','方案二','方案三'];
+  var TASK_NAMES = ['任务一','任务二','任务三'];
+  var TASKS = [
+    '上线第一天：飞书里已有一千多个账号，接上北森后，入职、调岗、离职要自动带到飞书',
+    'HR 来问：张晓雨今天入职，为什么没有飞书账号',
+    '月底集中离职 40 人：怎么保证他们离职当天就用不了飞书，又不误伤在职的人'
+  ];
+  var CHROME = {
+    flow:{nav:['首页','工作流','运行','问题','连接','映射表'],search:'搜工号、姓名或运行编号'},
+    sync:{nav:['首页','同步','问题','连接','工作流','管理'],search:'搜工号或姓名'},
+    ledger:{nav:['首页','台账','集成','问题','连接','变更'],search:'搜工号、姓名或单号'}
+  };
+  var SEQ = [[1,1],[1,2],[2,1],[2,2],[3,1],[3,2]];
+  var STORE_KEY = 'concept-test-state-v1';
+
+  var frames = {};
+  Array.prototype.forEach.call(document.querySelectorAll('#frames .wf'), function(el){
+    dress(el);
+    frames[el.getAttribute('data-dir') + '-' + el.getAttribute('data-t') + '-' + el.getAttribute('data-s')] = el;
+  });
+
+  var $ = function(id){ return document.getElementById(id); };
+  var els = {
+    top:$('pgTop'), tabs:$('pgTabs'), ord:$('pgOrd'), present:$('pgPresent'),
+    cover:$('pgCover'), go:$('pgGo'), plan:$('pgPlan'), where:$('pgWhere'), task:$('pgTask'),
+    pager:$('pgPager'), scaler:$('pgScaler'), cap:$('pgCap'), grid:$('pgGrid'),
+    gridBody:$('pgGridBody'), hint:$('pgHint'), sub:$('pgSub')
+  };
+
+  var state = initialState();
+  markHash(state.order);
+
+  els.tabs.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    var v = b.getAttribute('data-view');
+    if(v === 'plan') goPlan(+b.getAttribute('data-plan'), 0);
+    else if(v === 'grid') goGrid();
+    else goCover();
+  });
+  els.ord.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    setOrder(+b.getAttribute('data-order'));
+  });
+  els.go.addEventListener('click', function(){ goPlan(0, 0); });
+  els.present.addEventListener('click', togglePresent);
+  els.pager.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b || b.disabled) return;
+    if(b.hasAttribute('data-step')) step(+b.getAttribute('data-step'));
+    else if(b.hasAttribute('data-frame')) { state.frame = +b.getAttribute('data-frame'); render(); }
+  });
+  els.gridBody.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-p]'); if(!b) return;
+    goPlan(+b.getAttribute('data-p'), +b.getAttribute('data-f'));
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if(k === 'ArrowRight' || k === 'PageDown'){ step(1); e.preventDefault(); }
+    else if(k === 'ArrowLeft' || k === 'PageUp'){ step(-1); e.preventDefault(); }
+    else if(k === '1' || k === '2' || k === '3'){ goPlan(+k - 1, 0); }
+    else if(k === '0'){ goGrid(); }
+    else if(k === 'f' || k === 'F'){ togglePresent(); }
+    else if(k === 'Home'){ goCover(); }
+  });
+  document.addEventListener('fullscreenchange', function(){
+    if(!document.fullscreenElement) document.body.classList.remove('present');
+    fit();
+  });
+  window.addEventListener('hashchange', function(){
+    var m = /o([1-6])/.exec(window.location.hash || '');
+    if(m) setOrder(+m[1]);
+  });
+  window.addEventListener('resize', function(){
+    if(state.view === 'grid') renderGrid(); else fit();
+  });
+
+  render();
+
+  function dress(el){
+    var c = CHROME[el.getAttribute('data-dir')];
+    var q = el.getAttribute('data-q');
+    var on = el.getAttribute('data-nav');
+    var me = el.getAttribute('data-me') || '李航';
+    var bar = '<div class="bar"><span class="logo"></span><span class="pname">集成平台</span>' +
+      '<span class="proj">项目：人事集成 ▾</span>' +
+      '<span class="sbox' + (q ? ' q' : '') + '">' + (q || c.search) + '</span>' +
+      '<span class="grow"></span><span class="when">' + el.getAttribute('data-when') + '</span>' +
+      '<span class="me"><i></i>' + me + '</span></div>';
+    var side = '<div class="side">' + c.nav.map(function(n){
+      return '<span' + (n === on ? ' class="on"' : '') + '>' + n + '</span>';
+    }).join('') + '</div>';
+    el.innerHTML = bar + '<div class="body">' + side + '<div class="main">' + el.innerHTML + '</div></div>';
+  }
+
+  function initialState(){
+    var s = {order:1, view:'cover', plan:0, frame:0};
+    var saved = null;
+    try { saved = JSON.parse(window.localStorage.getItem(STORE_KEY) || 'null'); } catch(err) { saved = null; }
+    if(saved && ORDERS[saved.order]){
+      s.order = saved.order;
+      s.view = ['cover','plan','grid'].indexOf(saved.view) >= 0 ? saved.view : 'cover';
+      s.plan = clamp(saved.plan | 0, 0, 2);
+      s.frame = clamp(saved.frame | 0, 0, 5);
+    }
+    var m = /o([1-6])/.exec(window.location.hash || '');
+    if(m && +m[1] !== s.order){
+      s = {order:+m[1], view:'cover', plan:0, frame:0};
+    }
+    return s;
+  }
+
+  function save(){
+    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(err) {}
+  }
+
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  function setOrder(n){
+    if(n !== state.order){
+      if(state.view !== 'cover' && !window.confirm('切换到顺序 ' + n + ' 会回到开始页，确定吗？')){
+        markHash(state.order);
+        return;
+      }
+      state = {order:n, view:'cover', plan:0, frame:0};
+    }
+    markHash(state.order);
+    render();
+  }
+
+  function markHash(n){
+    if(window.location.hash === '#o' + n) return;
+    try { window.history.replaceState(null, '', '#o' + n); } catch(err) {}
+  }
+
+  function goCover(){ state.view = 'cover'; render(); }
+  function goGrid(){ state.view = 'grid'; render(); }
+  function goPlan(p, f){ state.view = 'plan'; state.plan = p; state.frame = f; render(); }
+
+  function step(d){
+    if(state.view === 'cover'){ if(d > 0) goPlan(0, 0); return; }
+    if(state.view !== 'plan') return;
+    var f = state.frame + d;
+    if(f < 0 || f > 5) return;
+    state.frame = f;
+    render();
+  }
+
+  function togglePresent(){
+    var on = !document.body.classList.contains('present');
+    document.body.classList.toggle('present', on);
+    try {
+      if(on && document.documentElement.requestFullscreen && !document.fullscreenElement){
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else if(!on && document.fullscreenElement && document.exitFullscreen){
+        document.exitFullscreen().catch(function(){});
+      }
+    } catch(err) {}
+    fit();
+  }
+
+  function render(){
+    Array.prototype.forEach.call(els.tabs.querySelectorAll('button'), function(b){
+      var v = b.getAttribute('data-view');
+      var on = v === state.view && (v !== 'plan' || +b.getAttribute('data-plan') === state.plan);
+      b.classList.toggle('on', on);
+    });
+    Array.prototype.forEach.call(els.ord.querySelectorAll('button'), function(b){
+      b.classList.toggle('on', +b.getAttribute('data-order') === state.order);
+    });
+    els.cover.hidden = state.view !== 'cover';
+    els.plan.hidden = state.view !== 'plan';
+    els.grid.hidden = state.view !== 'grid';
+    if(state.view === 'plan') renderPlan();
+    if(state.view === 'grid') renderGrid();
+    save();
+  }
+
+  function renderPlan(){
+    var dir = ORDERS[state.order][state.plan];
+    var tf = SEQ[state.frame];
+    var src = frames[dir + '-' + tf[0] + '-' + tf[1]];
+    var el = src.cloneNode(true);
+    els.scaler.innerHTML = '';
+    els.scaler.appendChild(el);
+    els.where.textContent = PLAN_NAMES[state.plan];
+    els.task.textContent = TASK_NAMES[tf[0] - 1] + '　' + TASKS[tf[0] - 1] + '（第 ' + tf[1] + ' 帧，共 2 帧）';
+    els.cap.textContent = src.getAttribute('data-cap');
+    var html = '<button type="button" class="mv" data-step="-1"' + (state.frame === 0 ? ' disabled' : '') + '>‹ 上一帧</button>';
+    for(var t = 0; t < 3; t++){
+      html += '<span class="grp">' + TASK_NAMES[t];
+      for(var s = 0; s < 2; s++){
+        var i = t * 2 + s;
+        html += ' <button type="button" class="dot' + (i === state.frame ? ' on' : '') + '" data-frame="' + i + '" aria-label="' + TASK_NAMES[t] + '第 ' + (s + 1) + ' 帧">' + (s + 1) + '</button>';
+      }
+      html += '</span>';
+    }
+    html += '<button type="button" class="mv" data-step="1"' + (state.frame === 5 ? ' disabled' : '') + '>下一帧 ›</button>';
+    els.pager.innerHTML = html;
+    fit();
+  }
+
+  function renderGrid(){
+    var order = ORDERS[state.order];
+    var colW = (Math.min(document.documentElement.clientWidth, 1260) - 32 - 170 - 40) / 3;
+    var THUMB = clamp((colW - 16 - 8) / 2 / 1200, 0.09, 0.2);
+    var thumbW = Math.round(1200 * THUMB), thumbH = Math.round(680 * THUMB);
+    var head = '<tr><th></th>' + PLAN_NAMES.map(function(n){ return '<th>' + n + '</th>'; }).join('') + '</tr>';
+    els.gridBody.innerHTML = head;
+    for(var t = 1; t <= 3; t++){
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<th class="task"><b>' + TASK_NAMES[t - 1] + '</b>' + TASKS[t - 1] + '</th>';
+      for(var p = 0; p < 3; p++){
+        var td = document.createElement('td');
+        var wrap = document.createElement('div');
+        wrap.className = 'pg-thumbs';
+        for(var s = 1; s <= 2; s++){
+          var src = frames[order[p] + '-' + t + '-' + s];
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'pg-thumb';
+          btn.setAttribute('data-p', p);
+          btn.setAttribute('data-f', (t - 1) * 2 + (s - 1));
+          btn.title = src.getAttribute('data-cap');
+          var box = document.createElement('div');
+          box.className = 'box';
+          box.style.width = thumbW + 'px';
+          box.style.height = thumbH + 'px';
+          var clone = src.cloneNode(true);
+          clone.style.transform = 'scale(' + THUMB + ')';
+          box.appendChild(clone);
+          var lab = document.createElement('span');
+          lab.textContent = '第 ' + s + ' 帧';
+          btn.appendChild(box);
+          btn.appendChild(lab);
+          wrap.appendChild(btn);
+        }
+        td.appendChild(wrap);
+        tr.appendChild(td);
+      }
+      els.gridBody.appendChild(tr);
+    }
+  }
+
+  function fit(){
+    if(state.view !== 'plan') return;
+    var wf = els.scaler.firstChild;
+    if(!wf) return;
+    var availW = document.documentElement.clientWidth - 32;
+    var s0 = Math.min(availW / 1200, 1.6);
+    var presenting = document.body.classList.contains('present');
+    var topH = presenting ? 0 : els.top.offsetHeight;
+    var hintH = presenting ? 0 : els.hint.offsetHeight;
+    var s = s0;
+    for(var i = 0; i < 5; i++){
+      els.cap.style.width = Math.max(Math.round(1200 * s), 320) + 'px';
+      var used = topH + els.sub.offsetHeight + els.cap.offsetHeight + hintH + 26;
+      var next = clamp(Math.min(s0, (window.innerHeight - used) / 680), 0.3, 1.6);
+      if(next >= s - 0.002) break;
+      s = next;
+    }
+    els.scaler.style.width = Math.round(1200 * s) + 'px';
+    els.scaler.style.height = Math.round(680 * s) + 'px';
+    wf.style.transform = 'scale(' + s + ')';
+    els.cap.style.width = Math.max(Math.round(1200 * s), 320) + 'px';
+  }
+})();
+</script>
+</body>
+</html>

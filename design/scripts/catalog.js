@@ -41,6 +41,9 @@ const CONNECTORS = [
       op('bitable_search_record', '查询多维表格记录', '按筛选条件查询记录，最多返回 500 条', { group: '多维表格' }),
       op('create_chat', '创建群组', '创建群聊并拉入成员', { group: '群组' }),
       op('get_user', '获取用户信息', '按 open_id、手机号或邮箱查询用户', { group: '通讯录' }),
+      op('create_user', '开通账号', '在指定部门开通员工账号；按工号查重，已存在时返回原账号', { group: '通讯录' }),
+      op('update_user', '调整部门和上级', '按工号更新员工的部门、直属上级和职务', { group: '通讯录' }),
+      op('freeze_user', '暂停账号', '暂停后不能登录，数据保留，可以恢复', { group: '通讯录' }),
       op('create_calendar_event', '创建日程', '在指定日历中创建日程并邀请参与人', { group: '日历' }),
       op('create_doc', '创建云文档', '在指定文件夹下新建文档', { group: '云文档' }),
     ],
@@ -51,6 +54,7 @@ const CONNECTORS = [
     triggers: [
       op('onboarding_completed', '员工入职完成', '北森中员工入职流程完成时触发', { type: 'polling' }),
       op('employee_left', '员工离职', '员工离职生效时触发', { type: 'polling' }),
+      op('employee_changed', '员工变动', '入职、调岗、离职等任职信息变化时，按员工逐条触发', { type: 'polling' }),
       op('offer_accepted', '候选人接受 Offer', '招聘模块中候选人接受 Offer 时触发', { type: 'polling' }),
     ],
     actions: [

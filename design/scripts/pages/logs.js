@@ -12,6 +12,7 @@ const LOGS_TIME_PRESETS = [
 const LOGS_FILTER_FIELDS = [
   { value: 'project', label: '项目', icon: 'Layers' },
   { value: 'workflow', label: '工作流', icon: 'Workflow' },
+  { value: 'bizkey', label: '业务标识', icon: 'Fingerprint' },
   { value: 'status', label: '运行状态', icon: 'CircleAlert' },
   { value: 'env', label: '环境', icon: 'Server' },
   { value: 'connector', label: '连接器', icon: 'Plug' },
@@ -111,11 +112,13 @@ function logsInitialFilter(query, state) {
     { field: 'status', raw: list(query.status), ok: (x) => LOGS_RUN_STATUSES.includes(x) },
     { field: 'env', raw: list(query.env), ok: (x) => Boolean(LOGS_ENVS[x]) },
   ];
-  const conds = specs
-    .filter((s) => s.raw.some(s.ok))
-    .map((s) => ({ id: uid('cond'), field: s.field, value: [...new Set(s.raw.filter(s.ok))] }));
+  const biz = String(query.biz || '').trim();
+  const conds = [
+    ...specs.filter((s) => s.raw.some(s.ok)).map((s) => ({ id: uid('cond'), field: s.field, value: [...new Set(s.raw.filter(s.ok))] })),
+    ...(biz ? [{ id: uid('cond'), field: 'bizkey', value: biz }] : []),
+  ];
   const timeOk = LOGS_TIME_PRESETS.some((p) => p.value === query.time);
-  const time = timeOk ? query.time : query.run ? '30d' : conds.length ? '7d' : '24h';
+  const time = timeOk ? query.time : query.run || biz ? '30d' : conds.length ? '7d' : '24h';
   const ignored = [
     ...(query.time && !timeOk ? ['时间'] : []),
     ...specs.filter((s) => s.raw.some((x) => !s.ok(x))).map((s) => LOGS_FILTER_FIELDS.find((f) => f.value === s.field).label),
@@ -126,7 +129,7 @@ function logsInitialFilter(query, state) {
 function logsCondState(c) {
   if (c.field === 'time') return 'ok';
   if (LOGS_LIST_FIELDS.includes(c.field)) return Array.isArray(c.value) && c.value.length ? 'ok' : 'empty';
-  if (c.field === 'content') return typeof c.value === 'string' && c.value.trim() ? 'ok' : 'empty';
+  if (c.field === 'content' || c.field === 'bizkey') return typeof c.value === 'string' && c.value.trim() ? 'ok' : 'empty';
   if (c.field === 'duration') {
     const text = c.value == null ? '' : String(c.value).trim();
     if (!text) return 'empty';
@@ -168,6 +171,10 @@ function logsCondTest(c, state, wfById) {
     const q = c.value.trim().toLowerCase();
     return (r) => logsRunText(r, wfById.get(r.workflowId)).includes(q);
   }
+  if (c.field === 'bizkey') {
+    const q = c.value.trim().toLowerCase();
+    return (r) => logsBizText(r).includes(q);
+  }
   const unit = LOGS_DURATION_UNITS[c.unit] || 1000;
   const target = Number(String(c.value).trim()) * unit;
   const op = LOGS_DURATION_OPS.includes(c.op) ? c.op : '大于';
@@ -192,6 +199,7 @@ function logsCondLabel(c, state) {
   if (c.field === 'connector') return `连接器：${values.map((id) => (resolveConnector(id) || { name: id }).name).join('、')}`;
   if (c.field === 'duration') return `运行时长${LOGS_DURATION_OPS.includes(c.op) ? c.op : '大于'} ${String(c.value == null ? '' : c.value).trim()} ${LOGS_DURATION_UNITS[c.unit] ? c.unit : '秒'}`;
   if (c.field === 'content') return `日志内容包含：${String(c.value || '').trim()}`;
+  if (c.field === 'bizkey') return `业务标识包含：${String(c.value || '').trim()}`;
   return '';
 }
 
@@ -385,7 +393,7 @@ function LogsFilterPanel({ filter, options, onApply, onCancel }) {
   const pending = draft.conds.filter((c) => c.field !== 'time' && logsCondState(c) !== 'ok').length;
   const apply = () => onApply(draft);
   const addCond = (field) => {
-    const blank = field === 'content' || field === 'duration' ? '' : [];
+    const blank = ['content', 'duration', 'bizkey'].includes(field) ? '' : [];
     setDraft((d) => ({ ...d, conds: [...d.conds, { id: uid('cond'), field, value: blank, ...(field === 'duration' ? { op: '大于', unit: '秒' } : {}) }] }));
     setAdding(false);
   };
@@ -402,11 +410,12 @@ function LogsFilterPanel({ filter, options, onApply, onCancel }) {
         <${Select} width=${90} value=${LOGS_DURATION_UNITS[c.unit] ? c.unit : '秒'} onChange=${(v) => setCond(c.id, { unit: v })} options=${Object.keys(LOGS_DURATION_UNITS).map((x) => ({ value: x, label: x }))} />
       </div>`;
     }
+    if (c.field === 'bizkey') return html`<${Input} value=${c.value} onChange=${(v) => setCond(c.id, { value: v })} placeholder="输入工号、审批单号、姓名，可以只输一部分" onKeyDown=${(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) apply(); }} />`;
     return html`<${Input} value=${c.value} onChange=${(v) => setCond(c.id, { value: v })} placeholder="匹配运行 ID、工作流名称、去重键或错误信息" onKeyDown=${(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) apply(); }} />`;
   };
   const opControl = (c) => {
     if (c.field === 'duration') return html`<${Select} width=${90} value=${LOGS_DURATION_OPS.includes(c.op) ? c.op : '大于'} onChange=${(v) => setCond(c.id, { op: v })} options=${LOGS_DURATION_OPS.map((x) => ({ value: x, label: x }))} />`;
-    return html`<span className="logs-fixed is-center" style=${{ width: 90 }}>${c.field === 'content' ? '包含' : '等于'}</span>`;
+    return html`<span className="logs-fixed is-center" style=${{ width: 90 }}>${c.field === 'content' || c.field === 'bizkey' ? '包含' : '等于'}</span>`;
   };
   const hint = (c) => {
     const st = logsCondState(c);
@@ -425,7 +434,7 @@ function LogsFilterPanel({ filter, options, onApply, onCancel }) {
     ${draft.conds.map((c) => html`<div key=${c.id} className="filter-row">
       ${c.field === 'time'
         ? html`<span className="logs-fixed" style=${{ width: 128 }}><${Icon} name="Clock" size=${14} />时间</span>`
-        : html`<${Select} width=${128} value=${c.field} onChange=${(v) => { if (v !== c.field) setCond(c.id, { field: v, value: v === 'content' || v === 'duration' ? '' : [], op: v === 'duration' ? '大于' : undefined, unit: v === 'duration' ? '秒' : undefined }); }} options=${fields.map((f) => ({ value: f.value, label: f.label, icon: f.icon, disabled: f.value !== c.field && used.includes(f.value) }))} />`}
+        : html`<${Select} width=${128} value=${c.field} onChange=${(v) => { if (v !== c.field) setCond(c.id, { field: v, value: ['content', 'duration', 'bizkey'].includes(v) ? '' : [], op: v === 'duration' ? '大于' : undefined, unit: v === 'duration' ? '秒' : undefined }); }} options=${fields.map((f) => ({ value: f.value, label: f.label, icon: f.icon, disabled: f.value !== c.field && used.includes(f.value) }))} />`}
       ${opControl(c)}
       <div className="grow">${valueControl(c)}${hint(c)}</div>
       ${c.field === 'time' ? html`<span className="logs-row-spacer" />` : html`<${IconButton} icon="X" size="sm" title="删除条件" onClick=${() => removeCond(c.id)} />`}
@@ -593,6 +602,7 @@ function LogsPage() {
       columns=${[
         { key: 'time', title: '日志产生时间', width: 158, render: (r) => fmt.dateTime(r.startedAt) },
         { key: 'wf', title: '工作流名称', render: (r) => { const name = wfName(r); return html`<a className=${cx('link', 'logs-wf-cell', !name && 'is-deleted')} title=${name || `已删除的工作流（${r.workflowId}）`} onClick=${(e) => { e.stopPropagation(); openRun(r.id); }}>${name || '已删除的工作流'}</a>`; } },
+        { key: 'biz', title: '业务标识', width: 168, render: (r) => html`<${LogsBizCell} run=${r} />` },
         { key: 'project', title: '所属项目', width: 116, render: (r) => { const p = state.projects.find((x) => x.id === r.projectId); return p ? html`<span className="row-4 logs-project-cell"><${ProjectAvatar} project=${p} size=${18} /><span className="logs-wf-cell">${p.name}</span></span>` : html`<span className="muted">-</span>`; } },
         { key: 'env', title: '环境', width: 64, render: (r) => (stagedPids.has(r.projectId) ? html`<${Tag} size="sm" tone=${r.env === 'test' ? 'info' : 'outline'}>${r.env === 'test' ? '测试' : '生产'}<//>` : html`<span className="muted text-xs">生产</span>`) },
         { key: 'kind', title: '类型', width: 116, render: (r) => html`<span className="row-4">${r.kind === 'debug' ? '调试日志' : '运行日志'}${r.retryBy && html`<${Tooltip} content=${`${personName(r.retryBy)} ${logsReplayLabel(r)}生成`}><${Tag} size="sm" icon="RotateCcw">重跑<//><//>`}</span>` },
@@ -791,6 +801,7 @@ function LogsRunDrawer({ run, open, onClose, onReplay, onOpenRun }) {
     subtitle=${html`<span className="row logs-drawer-sub">
       <${RunStatusDot} status=${run.status} />
       <span>耗时：${run.duration == null ? RUN_STATUS[run.status].label : fmt.duration(run.duration)}</span>
+      ${run.bizKey && html`<span className="row-4"><span className="muted">${run.bizKey.label}</span><span className="mono">${run.bizKey.value}</span>${run.bizKey.name && html`<span>${run.bizKey.name}</span>`}<a className="link" onClick=${() => { onClose(); navigate(`/logs?biz=${encodeURIComponent(run.bizKey.value)}`); }}>这条记录的全部日志</a></span>`}
       ${run.retryBy && html`<span>${personName(run.retryBy)} ${logsReplayLabel(run)}生成</span>`}
       ${run.retryOf && html`<a className="link" onClick=${() => onOpenRun(run.retryOf)}>查看原日志</a>`}
       ${retries.length > 0 && html`<a className="link" onClick=${() => onOpenRun(retries[0].id)}>已重跑 ${retries.length} 次，查看最近一次</a>`}
@@ -947,4 +958,15 @@ function LogsRunDrawer({ run, open, onClose, onReplay, onOpenRun }) {
       </div>
     <//>
   <//>`;
+}
+
+function logsBizText(run) {
+  const b = run.bizKey;
+  return b ? `${b.value} ${b.name || ''}`.toLowerCase() : '';
+}
+
+function LogsBizCell({ run }) {
+  const b = run.bizKey;
+  if (!b) return html`<span className="muted">-</span>`;
+  return html`<span className="logs-biz" title=${`${b.label} ${b.value}${b.name ? ` · ${b.name}` : ''}`}><span className="logs-biz-label">${b.label}</span><span className="mono">${b.value}</span>${b.name && html`<span className="logs-biz-name">${b.name}</span>`}</span>`;
 }

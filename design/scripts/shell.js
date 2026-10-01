@@ -9,6 +9,7 @@ const MODULES = [
       { to: '/connections', label: '连接', icon: 'Link2', match: (p) => p.startsWith('/connections') },
       { to: '/monitor', label: '监控', icon: 'Activity', match: (p) => p.startsWith('/monitor') },
       { to: '/templates', label: '模板', icon: 'LayoutTemplate', match: (p) => p.startsWith('/templates') },
+      { to: '/solutions', label: '方案', icon: 'Package', match: (p) => p.startsWith('/solutions') },
     ],
   },
   {
@@ -201,7 +202,7 @@ const searchBus = { listener: null, open: () => searchBus.listener && searchBus.
 
 const SEARCH_PAGES = [
   { label: '运行日志', to: '/logs', icon: 'ScrollText' }, { label: '连接', to: '/connections', icon: 'Link2' }, { label: '运行监控', to: '/monitor', icon: 'Activity' },
-  { label: '模板中心', to: '/templates', icon: 'LayoutTemplate' }, { label: '连接器市场', to: '/connectors', icon: 'Store' }, { label: '连接器开发', to: '/devkit', icon: 'SquareCode' },
+  { label: '模板中心', to: '/templates', icon: 'LayoutTemplate' }, { label: '方案', to: '/solutions', icon: 'Package' }, { label: '连接器市场', to: '/connectors', icon: 'Store' }, { label: '连接器开发', to: '/devkit', icon: 'SquareCode' },
   { label: 'MCP 服务', to: '/mcp', icon: 'Server' }, { label: '全部项目', to: '/projects', icon: 'FolderKanban' }, { label: '个人设置', to: '/account', icon: 'UserRound' },
   { label: '问题中心', to: '/issues', icon: 'Siren' }, { label: '告警策略', to: '/issues/alerts', icon: 'BellRing' },
   { label: '用户管理', to: '/admin/users', icon: 'Users' }, { label: '审计日志', to: '/admin/audit', icon: 'FileClock' }, { label: '品牌外观', to: '/admin/branding', icon: 'Palette' },

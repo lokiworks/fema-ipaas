@@ -554,7 +554,7 @@ function seedState() {
     { id: 'c_wecom', name: '企业微信 · 销售助手应用', connector: 'wecom', authType: 'apikey', scope: 'project', projectIds: ['p3'], status: 'active', owner: 'u6', shares: [{ userId: 'u1', perm: 'use' }], account: 'corp ww8a2c · 应用 1000012', createdAt: now - 26 * DAY, updatedAt: now - 26 * DAY },
     { id: 'c_oa', name: '泛微 OA 生产环境', connector: 'cc_oa', authType: 'apikey', scope: 'tenant', projectIds: [], status: 'active', owner: 'u3', shares: [{ userId: 'u1', perm: 'use' }], account: 'X-Api-Token · oa-integration', createdAt: now - 60 * DAY, updatedAt: now - 4 * DAY },
   ];
-  const runs = withFailures(seedRuns(workflows, versions, connections, now), workflows, versions, connections, now);
+  const runs = withBizKeys(withFailures(seedRuns(workflows, versions, connections, now), workflows, versions, connections, now), workflows);
   return {
     version: 7,
     anchorAt: now,
@@ -783,6 +783,10 @@ function seedState() {
         { id: 'er1', subject: '许诺（XH20210311）', requestedBy: 'u2', requestedAt: now - 2 * DAY, status: 'done', affected: 14, doneAt: now - 2 * DAY + HOUR },
       ],
     },
+    solutionInstalls: [
+      { id: 'si1', solutionId: 'attendance-alert', projectId: 'p1', version: '1.0', installedAt: now - 58 * DAY, by: 'u3', workflowIds: ['wf_attendance'], mappingTableIds: [], config: { at: '09:30' }, skippedChecks: [] },
+    ],
+    customSolutions: [],
     mappingTables: [
       { id: 'mt1', projectId: 'p1', name: '部门编码对照', description: '北森部门名称 → 飞书部门 ID，用于入职建档', keyLabel: '北森部门', valueLabel: '飞书部门 ID', missing: 'error', defaultValue: '', updatedAt: now - 12 * DAY, updatedBy: 'u2',
         rows: [{ k: '研发中心', v: 'od-rd-001' }, { k: '销售运营部', v: 'od-sales-002' }, { k: '人力资源部', v: 'od-hr-003' }, { k: '财务部', v: 'od-fin-004' }, { k: '信息技术部', v: 'od-it-005' }, { k: '行政部', v: 'od-admin-006' }] },
@@ -1099,5 +1103,40 @@ function buildRunTrace(run, workflow) {
       ? (run.failure || { code: status === 'timeout' ? 'STEP_TIMEOUT' : 'UPSTREAM_ERROR', message: status === 'timeout' ? '节点执行超过 600 秒，已被终止' : `${node.name} 调用失败：上游返回 422 Unprocessable Entity`, http_status: status === 'timeout' ? null : 422, attempts: 1 })
       : null;
     return { node, meta, status, startedAt, duration: ['pending', 'skipped'].includes(status) ? null : status === 'reused' ? 0 : duration, input, output, error };
+  });
+}
+
+const BIZ_KEY_FIELDS = { employee_id: '工号', instance_code: '审批单号', external_userid: '客户 ID' };
+
+const BIZ_KEY_NAMES = ['张晓雨', '周子航', '林书瑶', '唐一鸣', '许嘉', '陈立', '孙悦', '赵磊', '刘洋', '黄若彤', '郭振宇', '程静', '宋佳', '何悦', '吕艳', '马超', '韩梅', '冯浩然', '邓欣怡', '曹子墨'];
+
+function bizKeyField(key) {
+  const m = String(key || '').match(/trigger\.([A-Za-z_]+)/);
+  return m ? m[1] : '';
+}
+
+function bizKeyHash(id) {
+  return [...String(id)].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7);
+}
+
+function bizKeyFor(wf, seed) {
+  const rs = wf && wf.trigger && wf.trigger.runSettings;
+  const key = rs && rs.dedupe && rs.dedupe.enabled ? rs.dedupe.key : null;
+  const field = bizKeyField(key);
+  if (!BIZ_KEY_FIELDS[field]) return null;
+  const h = bizKeyHash(seed);
+  if (field === 'employee_id') return { label: '工号', value: `XH2026${String(1000 + (h % 9000))}`, name: BIZ_KEY_NAMES[h % BIZ_KEY_NAMES.length] };
+  if (field === 'instance_code') return { label: '审批单号', value: `${(h % 0xfffffff).toString(16).toUpperCase().padStart(7, '0')}-${String(h % 10000).padStart(4, '0')}`, name: BIZ_KEY_NAMES[(h >> 3) % BIZ_KEY_NAMES.length] };
+  return { label: '客户 ID', value: `wm${(h % 0xfffffff).toString(36)}` };
+}
+
+function withBizKeys(runs, workflows) {
+  const byWf = new Map(workflows.map((w) => [w.id, w]));
+  const base = new Map(runs.filter((r) => !r.dedupeOf && !r.retryOf).map((r) => [r.id, bizKeyFor(byWf.get(r.workflowId), r.id)]));
+  return runs.map((r) => {
+    const origin = r.dedupeOf || r.retryOf;
+    const key = origin && base.get(origin) ? base.get(origin) : base.get(r.id) || bizKeyFor(byWf.get(r.workflowId), origin || r.id);
+    if (!key) return r;
+    return { ...r, bizKey: key, ...(r.dedupeOf ? { dedupeKey: key.value } : {}) };
   });
 }

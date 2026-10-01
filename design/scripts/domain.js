@@ -332,6 +332,14 @@ function connectionPerm(state, conn, userId) {
   return s ? s.perm : null;
 }
 
+function defaultConnection(state, { connector, projectId }) {
+  const testTargets = new Set(projectEnvs(state, projectId).filter((e) => e.key === 'test').flatMap((e) => Object.values(e.connectionMap || {})));
+  const list = usableConnections(state, { connector, projectId }).filter((c) => !testTargets.has(c.id));
+  const active = list.filter((c) => c.status === 'active');
+  if (list.length === 1) return list[0].id;
+  return active.length === 1 ? active[0].id : null;
+}
+
 function usableConnections(state, { connector, connectors, projectId }) {
   const ids = connectors || [connector];
   return state.connections.filter((c) => ids.includes(c.connector) && connAvailableIn(c, projectId) && connectionPerm(state, c));
@@ -896,6 +904,13 @@ const MAPPING_SCHEMAS = {
     { key: 'LastName', type: '文本', required: true }, { key: 'Company', type: '文本', required: true }, { key: 'Email', type: '文本' },
     { key: 'Phone', type: '文本' }, { key: 'LeadSource', type: '单选', options: ['Web', 'Trade Show', 'Referral', 'WeCom', 'Other'] }, { key: 'Description', type: '文本' },
   ],
+  'feishu.create_user': [
+    { key: '工号', type: '文本', required: true }, { key: '姓名', type: '文本', required: true }, { key: '手机号', type: '文本', required: true },
+    { key: '部门', type: '文本', required: true }, { key: '直属上级', type: '人员' }, { key: '职务', type: '文本' }, { key: '邮箱', type: '文本' },
+  ],
+  'feishu.update_user': [
+    { key: '工号', type: '文本', required: true }, { key: '部门', type: '文本' }, { key: '直属上级', type: '人员' }, { key: '职务', type: '文本' },
+  ],
   'kingdee.save_bill': [
     { key: 'FDate', type: '日期', required: true }, { key: 'FSupplierId', type: '文本', required: true }, { key: 'FPurchaseOrgId', type: '文本' },
     { key: 'FEntity', type: '数组', required: true, item: [{ key: 'FMaterialId', type: '文本', required: true }, { key: 'FQty', type: '数字', required: true }, { key: 'FPrice', type: '数字' }] },
@@ -1060,4 +1075,18 @@ function diffGraphs(base, target) {
     return { node: n, before, fields };
   });
   return { added, removed, modified, same: !added.length && !removed.length && !modified.length };
+}
+
+function MissingAppGuide({ q, options, compact }) {
+  return html`<div className=${cx('missing-app', compact && 'is-compact')}>
+    <div className="missing-app-head">
+      <${Icon} name="SearchX" size=${compact ? 16 : 20} />
+      <div><b>${q ? `没有找到「${q}」` : '没有找到相关应用'}</b><div className="text-xs muted">还没有现成的连接器也能接，按需要选一种：</div></div>
+    </div>
+    ${options.filter(Boolean).map((o) => html`<button key=${o.title} type="button" className="missing-app-row" onClick=${o.onClick}>
+      <span className="missing-app-icon"><${Icon} name=${o.icon} size=${16} /></span>
+      <span className="grow"><span className="missing-app-title">${o.title}</span><span className="text-xs muted">${o.desc}</span></span>
+      <${Icon} name="ChevronRight" size=${14} className="muted" />
+    </button>`)}
+  </div>`;
 }

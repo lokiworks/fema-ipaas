@@ -536,7 +536,15 @@ function NodePicker({ onPick, state, mode = 'action', initialConnector, projectI
       <div className="ptile-grid">${tiles.map((item) => html`<${PaletteTile} key=${item.id} item=${item} onPick=${pickItem} />`)}</div>
       ${hits.length > 0 && html`<div className="menu-group">${mode === 'trigger' ? '触发事件' : '操作'}</div>`}
       ${hits.map((item) => html`<${OperationHit} key=${item.id} item=${item} onPick=${pickItem} />`)}
-      ${tiles.length === 0 && hits.length === 0 && html`<${Empty} size="sm" icon="SearchX" title="没有找到相关结果" description="可以换个关键词，或在连接器开发中自建连接器。" />`}
+      ${tiles.length === 0 && hits.length === 0 && html`<${MissingAppGuide} compact q=${q.trim()} options=${mode === 'trigger' ? [
+        { icon: 'Globe', title: '对方能推送事件：用 Webhook 触发器', desc: '把生成的网址填到对方系统的事件回调里', onClick: () => onPick({ kind: nodeKind, connector: 'webhook', op: 'catch', name: 'Webhook 触发器' }) },
+        { icon: 'AlarmClock', title: '对方不能推送：定时去查', desc: '用定时任务触发，再加「HTTP 请求」节点查询变化', onClick: () => onPick({ kind: nodeKind, connector: 'schedule', op: 'every', name: '定时任务' }) },
+        { icon: 'SquareCode', title: '自己开发连接器', desc: '在连接器开发里定义触发器，发布后出现在「应用事件」', onClick: () => navigate('/devkit') },
+      ] : [
+        { icon: 'Globe', title: '用 HTTP 请求先接上', desc: '加一个「HTTP 请求」节点，填接口地址和认证', onClick: () => onPick({ kind: nodeKind, connector: 'http', op: 'request', name: '发送 HTTP 请求' }) },
+        { icon: 'Server', title: '对方有 MCP 服务：接入 MCP 服务器', desc: '接入后它的工具出现在「应用」里', onClick: () => navigate('/connectors?cat=mcp') },
+        { icon: 'SquareCode', title: '自己开发连接器', desc: '可以从 OpenAPI 文档导入，本企业都能用', onClick: () => navigate('/devkit') },
+      ]} />`}
       ${!ql && tab === 'app' && html`<div className="picker-more"><${Link} to="/connectors" className="link">想发现更多连接器？前往连接器市场<//></div>`}
     </div>
   </div>`;

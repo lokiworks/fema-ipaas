@@ -716,13 +716,15 @@ function NewWorkflowModal({ open, onClose, projectId, folderId, pickProject }) {
     if (!canEditProject(s, target)) { toast.error('你在该项目中没有编辑权限'); return; }
     const folder = folderId && s.folders.some((f) => f.id === folderId && f.projectId === target) ? folderId : null;
     const base = TRIGGER_TYPES.find((t) => t.connector === trig) || TRIGGER_TYPES[0];
-    const trigger = appEvent ? triggerFromPick(appEvent.connector, appEvent.op) : triggerFromPick(base.connector, base.op);
+    const picked = appEvent ? triggerFromPick(appEvent.connector, appEvent.op) : triggerFromPick(base.connector, base.op);
+    const tc = resolveConnector(picked.connector);
+    const trigger = tc && tc.auth !== 'none' ? { ...picked, connectionId: defaultConnection(s, { connector: tc.id, projectId: target }) } : picked;
     const wf = newWorkflow({ projectId: target, name: trimmed, description: desc.trim(), folderId: folder, trigger });
     prependToList('workflows', wf);
     addAudit('创建工作流', wf.name, target);
     onClose();
     toast.success('创建成功');
-    navigate(`/integration/${target}/wf/${wf.id}`);
+    navigate(`/integration/${target}/wf/${wf.id}?mode=edit`);
   };
   const aiReady = Boolean(target && !limit && canEditProject(state, target));
   const openAi = () => {
@@ -760,7 +762,7 @@ function NewWorkflowModal({ open, onClose, projectId, folderId, pickProject }) {
     <div className="text-xs muted integ-app-tip">或选择应用事件触发流程运行</div>
     <div className="app-event-row">
       ${apps.map((c) => html`<${Tooltip} key=${c.id} content=${c.name}>
-        <button type="button" aria-label=${c.name} aria-pressed=${Boolean(appEvent && appEvent.connector === c.id)} className=${cx('app-event', appEvent && appEvent.connector === c.id && 'is-active')} onClick=${() => setAppEvent({ connector: c.id, op: c.triggers[0].key })}><${ConnectorIcon} connector=${c} size=${32} /></button>
+        <button type="button" aria-label=${c.name} aria-pressed=${Boolean(appEvent && appEvent.connector === c.id)} className=${cx('app-event', appEvent && appEvent.connector === c.id && 'is-active')} onClick=${() => setAppEvent({ connector: c.id, op: c.triggers[0].key })}><${ConnectorIcon} connector=${c} size=${28} /><span className="app-event-name">${c.name}</span></button>
       <//>`)}
     </div>
     ${eventApp && html`<div className="integ-gap-top"><${Field} label=${`${eventApp.name} 触发事件`} required>

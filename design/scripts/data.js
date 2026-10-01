@@ -868,6 +868,7 @@ function seedState() {
 
 const SAMPLE_OUTPUT = {
   'beisen.onboarding_completed': { employee_id: 'XH20260918', name: '唐可欣', email: 'tangkexin@xinghe.tech', mobile: '13812345678', id_card: '310101199203051234', department: '研发中心', position: '前端工程师', manager: '周宁', entry_date: '2026-09-22' },
+  'beisen.employee_changed': { employee_id: 'XH20230415', name: '赵磊', change_type: '调岗', department: '研发中心', previous_department: '销售运营部', position: '解决方案工程师', manager: '周宁', effective_date: '2026-10-08' },
   'beisen.employee_left': { employee_id: 'XH20210311', name: '许诺', mobile: '13987654321', department: '销售运营部', last_day: '2026-09-24', reason: '个人发展' },
   'beisen.offer_accepted': { candidate_id: 'C88412', name: '宋雨桐', position: '招聘专员', hrbp: '陈思远', expected_date: '2026-10-08' },
   'beisen.get_employee': { employee_id: 'XH20210311', name: '许诺', department: '销售运营部', position: '大客户经理', entry_date: '2021-03-11', status: '离职' },

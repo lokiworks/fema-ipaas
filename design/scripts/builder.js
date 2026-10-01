@@ -237,10 +237,7 @@ function WorkflowPage({ pid, wid, snapshot, mode, action, node: focusParam, tab:
     highlightTimer.current = setTimeout(() => setHighlightId(null), 1400);
   };
 
-  const autoConnection = (connector) => {
-    const list = usableConnections(state, { connector, projectId: stored.projectId });
-    return list.length === 1 ? list[0].id : null;
-  };
+  const autoConnection = (connector) => defaultConnection(state, { connector, projectId: stored.projectId });
 
   const insertNode = (target, pick) => {
     const base = createNodeFromPick(pick);
@@ -893,6 +890,12 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
   const used = new Set(allNodes(wf).map((n) => (['ai', 'agent'].includes(n.kind) ? n.config.connectionId : n.connectionId)).filter(Boolean));
   const swaps = Object.entries(env.connectionMap || {}).filter(([from]) => used.has(from)).map(([from, to]) => [state.connections.find((c) => c.id === from), state.connections.find((c) => c.id === to)]).filter(([a, b]) => a && b);
   const valid = (() => { try { JSON.parse(text); return true; } catch (e) { return false; } })();
+  const writes = allNodes(wf).filter((n) => n.kind === 'action' && n.connectionId && !/^(get|query|search|list|read|bitable_search)/.test(n.op || '')).map((n) => {
+    const swapped = Boolean(env && (env.connectionMap || {})[n.connectionId]);
+    const conn = state.connections.find((c) => c.id === (swapped ? env.connectionMap[n.connectionId] : n.connectionId));
+    return { id: n.id, name: n.name, conn: conn ? conn.name : '未选择连接', sameAsProd: Boolean(env && env.key === 'test' && !swapped) };
+  });
+  const risky = writes.some((w) => w.sameAsProd) || (env && env.key === 'prod');
   const editor = (rows) => html`<${CodeEditor} light value=${text} onChange=${setText} rows=${rows} label="调试出参" tools=${html`<${Fragment}>
     <${Button} size="xs" icon="CodeXml" onClick=${() => setText(sample)}>生成默认出参<//>
     <${Button} size="xs" icon="Trash2" onClick=${() => setText('{}')}>清除<//>
@@ -907,6 +910,10 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
         <${Segmented} value=${group} onChange=${setGroup} options=${envs.map((e) => ({ value: e.id, label: e.name }))} />
         ${swaps.map(([a, b]) => html`<div key=${a.id} className="field-hint">连接替换：${a.name} → ${b.name}</div>`)}
         ${env.key === 'prod' && html`<div className="field-hint is-warning">调试会真实调用生产环境的系统，写入类操作会产生真实数据。</div>`}
+      <//>`}
+      ${writes.length > 0 && html`<${Alert} tone=${risky ? 'warning' : 'info'} title=${`调试会真的执行 ${writes.length} 个写操作`}>
+        ${writes.map((w) => html`<div key=${w.id}>「${w.name}」→ ${w.conn}${w.sameAsProd ? '（测试环境没有替换，和生产是同一个连接）' : ''}</div>`)}
+        <div className="text-xs muted" style=${{ marginTop: 4 }}>建议用测试数据，例如测试员工的工号和手机号。</div>
       <//>`}
     <//>
     <${Modal} open=${open && full} onClose=${() => setFull(false)} title="配置调试出参信息" width=${1040} footer=${html`<${Button} variant="primary" onClick=${() => setFull(false)}>完成<//>`}>${editor(28)}<//>

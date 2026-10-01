@@ -89,15 +89,12 @@ function ConnectorsPage() {
             </div>
           </button>`)}
         </div>`}
-        ${list.length === 0 && serversInAll.length === 0 && html`<${Empty}
-          icon="SearchX"
-          title="没有找到相关连接器"
-          description=${canDevelop ? '可以向平台管理员提交需求，或者自己开发一个连接器。' : '可以向平台管理员提交需求。'}
-          action=${html`<${Fragment}>
-            <${Button} onClick=${() => setRequesting(true)}>提交需求<//>
-            ${canDevelop && html`<${Button} variant="primary" onClick=${() => navigate('/devkit')}>开发连接器<//>`}
-          <//>`}
-        />`}
+        ${list.length === 0 && serversInAll.length === 0 && html`<${MissingAppGuide} q=${q.trim()} options=${[
+          { icon: 'Globe', title: '用 HTTP 请求先接上', desc: '在工作流里加「HTTP 请求」节点，填接口地址和认证就能调用，适合只用一两个接口', onClick: () => navigate('/connectors/http') },
+          !addTip && { icon: 'Server', title: '对方有 MCP 服务：接入 MCP 服务器', desc: '接入后它的工具可以在工作流和 AI 智能体里用', onClick: () => setAdding(true) },
+          canDevelop && { icon: 'SquareCode', title: '自己开发连接器', desc: '可以从 OpenAPI 文档导入，配好认证和操作后发布，本企业都能用', onClick: () => navigate('/devkit') },
+          { icon: 'MessageSquarePlus', title: '向平台管理员提需求', desc: '很多人要用的应用，平台会做成官方连接器', onClick: () => setRequesting(true) },
+        ]} />`}
         ${serversInAll.length > 0 && html`<div className="mcpc-all">
           <div className="section-head">
             <span className="section-title">MCP 服务器</span>

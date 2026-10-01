@@ -654,8 +654,11 @@ function aigenOnboard(ctx) {
   const accountSaid = ctx.find(['开通', '账号', '账户']) >= 0;
   const namedGithub = ctx.mentioned('github');
   const namedJira = ctx.mentioned('jira');
-  const accounts = { github: namedGithub || (accountSaid && !namedJira), jira: namedJira || (accountSaid && !namedGithub) };
+  const feishuAccount = beisen && accountSaid && !namedGithub && !namedJira;
+  const accounts = feishuAccount ? { github: false, jira: false } : { github: namedGithub || (accountSaid && !namedJira), jira: namedJira || (accountSaid && !namedGithub) };
   const byDept = ctx.find(['按部门', '部门', '研发']) >= 0;
+  const deptMap = (ctx.state.mappingTables || []).find((t) => t.projectId === ctx.pid && t.keyLabel.includes('北森部门'));
+  const welcomeSaid = ctx.find(['欢迎']) >= 0;
   const accountSteps = [
     accounts.github && aigenAct('github', 'github', 'create_issue', { name: '邀请加入 GitHub 组织', phrase: '邀请加入 GitHub 组织', why: '在 it-requests 仓库建一条开通请求，由组织管理员发出邀请', config: { repo: 'xinghe/it-requests', title: `开通 GitHub：${ref.name}` } }),
     accounts.jira && aigenAct('jira', 'jira', 'create_issue', { name: '创建 Jira 账号工单', phrase: '建 Jira 账号工单', why: '在 Jira 的 IT 项目建一张工单，由 IT 开通账号', config: { project: 'IT', issueType: '任务', summary: `开通 Jira：${ref.name}` } }),
@@ -664,12 +667,13 @@ function aigenOnboard(ctx) {
   const profile = !beisen && byDept && accountSteps.length > 0;
   const deptTable = (ctx.state.mappingTables || []).find((t) => t.projectId === ctx.pid && t.rows.some((r) => r.k === '研发中心'));
   const deptId = deptTable ? deptTable.rows.find((r) => r.k === '研发中心').v : '研发中心';
-  const notifySaid = ctx.find(['通知', '提醒', '告知', '发到', '推送']) >= 0;
   const groupSaid = ctx.find(['群']) >= 0;
   const managerSaid = ctx.find(['上级', '经理', '主管', 'leader']) >= 0;
-  const qNotify = notifySaid ? { id: 'notify', short: '通知谁', title: '开通结果通知谁？', desc: '决定最后一步是发到 HR 群，还是私信新员工的直属上级。', options: [{ value: 'group', label: 'HR 群' }, { value: 'manager', label: '直属上级' }, { value: 'both', label: '都通知' }], recommended: groupSaid && managerSaid ? 'both' : managerSaid ? 'manager' : 'group' } : null;
+  const notifySaid = ctx.find(['通知', '提醒', '告知', '发到', '推送', '发消息', '欢迎']) >= 0 || groupSaid;
+  const notifyClear = groupSaid !== managerSaid;
+  const qNotify = notifySaid && !notifyClear ? { id: 'notify', short: '通知谁', title: '开通结果通知谁？', desc: '决定最后一步是发到 HR 群，还是私信新员工的直属上级。', options: [{ value: 'group', label: 'HR 群' }, { value: 'manager', label: '直属上级' }, { value: 'both', label: '都通知' }], recommended: groupSaid && managerSaid ? 'both' : managerSaid ? 'manager' : 'group' } : null;
   const qDedupe = { id: 'dedupe', short: '重复事件', title: '同一个员工的入职事件重复推送时怎么处理？', desc: `${beisen ? '北森' : '飞书'}偶尔会重复推送同一条记录，去重可以避免重复开通账号。`, options: [{ value: 'on', label: '去重（30 天内同一员工只处理一次）' }, { value: 'off', label: '不去重' }], recommended: 'on' };
-  const notify = qNotify ? aigenAnswer(ctx, qNotify) : null;
+  const notify = qNotify ? aigenAnswer(ctx, qNotify) : notifySaid ? (groupSaid ? 'group' : 'manager') : null;
   const dedupe = aigenAnswer(ctx, qDedupe) === 'on';
   const im = aigenImPick(ctx).im;
   const hrChat = im === 'feishu' && ctx.hasVar('hr_group_chat_id') ? '{{config.hr_group_chat_id}}' : 'HR 入职服务群';
@@ -679,6 +683,7 @@ function aigenOnboard(ctx) {
   const steps = [
     wantRecord && aigenAct('record', 'feishu', 'bitable_create_record', { name: '登记入职档案', phrase: '在飞书「入职管理」登记档案', why: '在飞书多维表格「入职管理 · 待入职」里建一条员工档案，字段按入职信息自动映射', config: { app: '入职管理', table: '待入职' }, map: { field: 'fields', constants: { 状态: '已入职' } } }),
     profile && aigenAct('profile', 'feishu', 'get_user', { name: '查询员工部门', phrase: '查询员工所在部门', why: '飞书通讯录事件里没有部门，先按邮箱查出员工所在部门', config: { lookup: '邮箱', email: ref.email } }),
+    feishuAccount && aigenAct('feishuUser', 'feishu', 'create_user', { name: '开通飞书账号', phrase: '在飞书按部门开通账号', why: `${deptMap ? `按映射表「${deptMap.name}」把北森部门换成飞书部门，` : ''}用手机号开通账号；同一工号已有账号时直接返回，不会重复开通`, config: {}, map: { field: 'employee', hints: { 工号: { source: ref.id, reason: '北森工号，用来查重' }, 姓名: { source: ref.name, reason: '按语义' }, 手机号: { source: '{{trigger.mobile}}', reason: '飞书用手机号发激活邀请' }, 部门: { source: ref.dept, transforms: deptMap ? [{ type: 'lookup', arg: deptMap.id }] : [], reason: deptMap ? `北森部门名称，用映射表「${deptMap.name}」换成飞书部门 ID` : '北森部门名称，需要换成飞书部门 ID' }, 直属上级: { source: ref.manager, reason: '按语义' }, 职务: { source: ref.position, reason: '按语义' }, 邮箱: { source: ref.email, reason: '按语义' } } } }),
     ...(byDept && accountSteps.length ? [{
       key: 'dept', kind: 'branch', name: '按部门开通账号', deps: [],
       why: `只有研发中心的新员工需要开通 ${accountNames} 账号，其他部门跳过`,
@@ -687,11 +692,11 @@ function aigenOnboard(ctx) {
         { key: 'other', name: '默认', label: '其他部门', isDefault: true, steps: [] },
       ],
     }] : accountSteps),
-    ['group', 'both'].includes(notify) && aigenNotify('notifyGroup', im, { target: 'group', name: '通知 HR 群', phrase: '通知 HR 群', why: `把入职和开通结果发到${aigenImLabel(im, 'group')}「HR 入职服务群」`, receiver: hrChat, content: `${ref.name} 已完成入职，账号开通情况见入职档案`, template: '入职开通结果卡片', deps: ['notify'] }),
-    ['manager', 'both'].includes(notify) && aigenNotify('notifyManager', im, { target: 'person', name: '通知直属上级', phrase: '私信直属上级', why: beisen ? '私信新员工的直属上级，提醒安排入职引导' : '飞书通讯录事件里没有直属上级，接收者需要在编辑器里补', receiver: ref.manager, content: `${ref.name} 今天入职，请安排入职引导`, deps: ['notify'] }),
+    ['group', 'both'].includes(notify) && aigenNotify('notifyGroup', im, { target: 'group', name: welcomeSaid ? '在 HR 群发欢迎消息' : '通知 HR 群', phrase: welcomeSaid ? '在 HR 群发欢迎消息' : '通知 HR 群', why: `${welcomeSaid ? '发一张欢迎卡片' : '把入职和开通结果发'}到${aigenImLabel(im, 'group')}「HR 入职服务群」`, receiver: hrChat, content: welcomeSaid ? `欢迎 ${ref.name} 加入 ${ref.dept || '公司'}！` : `${ref.name} 已完成入职，账号开通情况见入职档案`, template: welcomeSaid ? '入职欢迎卡片' : '入职开通结果卡片', deps: qNotify ? ['notify'] : [] }),
+    ['manager', 'both'].includes(notify) && aigenNotify('notifyManager', im, { target: 'person', name: '通知直属上级', phrase: '私信直属上级', why: beisen ? '私信新员工的直属上级，提醒安排入职引导' : '飞书通讯录事件里没有直属上级，接收者需要在编辑器里补', receiver: ref.manager, content: `${ref.name} 今天入职，请安排入职引导`, deps: qNotify ? ['notify'] : [] }),
   ].filter(Boolean);
   return {
-    title: wantRecord ? '新员工入职建档并开通账号' : accountSteps.length ? '新员工入职开通账号' : '新员工入职通知',
+    title: feishuAccount ? '员工入职开通飞书账号' : wantRecord ? '新员工入职建档并开通账号' : accountSteps.length ? '新员工入职开通账号' : '新员工入职通知',
     trigger,
     steps,
     questions: [qSource, qNotify, qDedupe].filter(Boolean),
@@ -699,6 +704,8 @@ function aigenOnboard(ctx) {
     assumptions: [
       beisen && '北森每 5 分钟检查一次入职完成的记录，入职后最多 5 分钟开始处理',
       wantRecord && '档案写进「入职管理 · 待入职」表，状态记为「已入职」',
+      feishuAccount && (deptMap ? `北森部门在映射表「${deptMap.name}」里找不到时，这次运行失败并进入问题中心，补上对照后可以重试` : '项目里还没有北森部门到飞书部门的映射表，开通账号的部门要在编辑器里补'),
+      feishuAccount && '北森没有手机号的员工无法开通，会进入问题中心',
       byDept && accountSteps.length > 0 && '只有研发中心开通研发账号，其他部门只登记和通知',
       !byDept && accountSteps.length > 0 && '所有新员工都开通这些账号',
       accountSaid && !namedGithub && !namedJira && '描述里没有说开通哪些系统，按研发常用的 GitHub 和 Jira 处理',
@@ -999,6 +1006,21 @@ function aigenCapStep(id, ctx, env) {
   const prevAi = [...env.prior].reverse().find((s) => s.kind === 'ai' && ctx.has(s.key));
   const prevQuery = [...env.prior].reverse().find((s) => s.key === 'query' && ctx.has(s.key));
   const input = prevQuery ? `{{@query.${AIGEN_QUERY_OUT[prevQuery.connector] || 'result'}}}` : headline;
+  if (id === 'feishuFreeze' || id === 'feishuUpdate') {
+    if (!ctx.available('feishu')) return { notes: [{ tone: 'warning', text: '这个项目里不能用飞书连接器，没有加飞书账号的步骤。' }] };
+    const empId = sample && sample.employee_id !== undefined ? '{{trigger.employee_id}}' : '';
+    if (id === 'feishuFreeze') {
+      return {
+        steps: [aigenAct('feishuFreeze', 'feishu', 'freeze_user', { name: '暂停飞书账号', phrase: '暂停飞书账号', why: '按工号找到飞书账号并暂停，不能登录但数据保留，可以恢复', config: { employeeId: empId } })],
+        assumptions: ['暂停而不是删除账号；需要删除时，在编辑器里换成删除操作并设置资源接收人', !empId && '触发数据里没有工号，暂停账号的工号要在编辑器里补'].filter(Boolean),
+      };
+    }
+    const deptMap = (ctx.state.mappingTables || []).find((t) => t.projectId === ctx.pid && t.keyLabel.includes('北森部门'));
+    return {
+      steps: [aigenAct('feishuUpdate', 'feishu', 'update_user', { name: '更新飞书部门和上级', phrase: '更新飞书里的部门和直属上级', why: `${deptMap ? `部门用映射表「${deptMap.name}」换成飞书部门，` : ''}按工号更新部门、直属上级和职务`, config: {}, map: { field: 'employee', hints: { 工号: { source: empId, reason: '北森工号' }, 部门: { source: '{{trigger.department}}', transforms: deptMap ? [{ type: 'lookup', arg: deptMap.id }] : [], reason: deptMap ? `用映射表「${deptMap.name}」换成飞书部门 ID` : '需要换成飞书部门 ID' }, 直属上级: { source: '{{trigger.manager}}', reason: '按语义' }, 职务: { source: '{{trigger.position}}', reason: '按语义' } } } })],
+      assumptions: [deptMap ? `新部门在映射表「${deptMap.name}」里找不到时，这次运行失败并进入问题中心，补上对照后可以重试` : '项目里还没有北森部门到飞书部门的映射表，部门要在编辑器里补'],
+    };
+  }
   if (id === 'record') {
     const rule = AIGEN_TABLES.find((t) => ctx.find(t.words) >= 0);
     return {
@@ -1149,8 +1171,9 @@ function aigenGeneric(ctx) {
   if (ctx.unavailable.length && !built.steps.some((s) => !/^notify/.test(s.key))) {
     return { vague: true, title: '描述里的系统暂时用不了', reason: `要用的「${ctx.unavailable.join('」「')}」现在还不能在工作流里使用，AI 不会拿别的系统代替。`, notes: built.notes };
   }
-  const idRef = !['schedule', 'manual-trigger', 'forms', 'subflows', 'alert'].includes(trigger.connector) ? aigenIdRef(sample) : '';
-  const qDedupe = idRef ? { id: 'dedupe', short: '重复事件', title: '同一个事件被重复推送时怎么处理？', desc: `上游重试或轮询重叠时会重复推送，去重键用 ${idRef}。`, options: [{ value: 'on', label: '去重（30 天内只处理一次）' }, { value: 'off', label: '不去重' }], recommended: 'on' } : null;
+  const changeEvent = trigger.connector === 'beisen' && trigger.op === 'employee_changed';
+  const idRef = changeEvent ? '{{trigger.employee_id}}-{{trigger.effective_date}}' : !['schedule', 'manual-trigger', 'forms', 'subflows', 'alert'].includes(trigger.connector) ? aigenIdRef(sample) : '';
+  const qDedupe = idRef ? { id: 'dedupe', short: '重复事件', title: '同一个事件被重复推送时怎么处理？', desc: changeEvent ? `同一个人可能多次变动，去重键用工号加生效日期（${idRef}），同一次变动只处理一次。` : `上游重试或轮询重叠时会重复推送，去重键用 ${idRef}。`, options: [{ value: 'on', label: '去重（30 天内只处理一次）' }, { value: 'off', label: '不去重' }], recommended: 'on' } : null;
   const all = [qWhen, ...built.questions, qDedupe].filter(Boolean);
   const leftover = ctx.mentions.map((m) => m.id).filter((id) => id !== trigger.connector && !built.steps.some((s) => s.connector === id) && !AI_CONNECTORS.includes(id));
   return {
@@ -1564,6 +1587,7 @@ const AIGEN_TRIGGERS = [
   { words: ['入职'], options: [['beisen', 'onboarding_completed'], ['feishu', 'user_created']] },
   { words: ['offer', '接受录用'], options: [['beisen', 'offer_accepted']] },
   { words: ['离职'], options: [['beisen', 'employee_left']] },
+  { words: ['调岗', '调动', '转岗', '部门变动', '岗位变动', '异动'], options: [['beisen', 'employee_changed']] },
   { words: ['审批通过', '审批结束', '审批完成', '审批后', '审批通过后'], options: [['feishu', 'approval_approved'], ['dingtalk', 'approval_finished']] },
   { words: ['发起审批时', '提交审批时', '新的审批'], options: [['feishu', 'approval_created']] },
   { words: ['添加客户', '加客户', '外部联系人', '加好友'], options: [['wecom', 'external_contact_added']] },
@@ -1608,10 +1632,13 @@ const AIGEN_TRIGGER_CONFIG = {
   'webhook.catch': { auth: '无鉴权', bodyType: 'JSON' },
   'beisen.onboarding_completed': { interval: '5 分钟' },
   'beisen.employee_left': { interval: '15 分钟' },
+  'beisen.employee_changed': { interval: '5 分钟' },
   'beisen.offer_accepted': { interval: '15 分钟' },
 };
 
 const AIGEN_CAPS = [
+  { id: 'feishuFreeze', words: ['暂停账号', '暂停飞书账号', '暂停他的飞书账号', '停用账号', '冻结账号', '禁用账号', '停用飞书账号'] },
+  { id: 'feishuUpdate', words: ['更新部门', '调整部门', '同步部门', '更新飞书里的部门', '直属上级', '更新上级', '飞书里的部门'] },
   { id: 'record', words: ['建档', '档案', '登记到', '台账', '记到表', '记录到', '写入多维表格', '写进多维表格', '写到多维表格', '多维表格'] },
   { id: 'ticket', words: ['工单', '建单', '报修', /(建|创建|提)(一个|个)?(问题|缺陷|issue)/] },
   { id: 'approval', words: ['发起审批', '走审批', '复核', '审批流程', '发起流程', 'oa流程'] },

@@ -873,3 +873,7 @@
 .missing-app-row .grow { display: flex; flex-direction: column; gap: 2px; }
 .missing-app-title { font-weight: 500; font-size: 13px; }
 .missing-app-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--surface-2); display: grid; place-items: center; flex-shrink: 0; color: var(--text-2); }
+.trig-grid.is-compact { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.trig-grid.is-compact .trig-card { padding: 8px 10px; }
+.trig-grid.is-compact + * { margin-top: 0; }
+.app-event-row + .integ-app-tip, .integ-gap-top + .integ-app-tip { margin-top: 14px; }

@@ -33,13 +33,16 @@ function makeDebugRun(wf, state, { payloadText, groupId }) {
     return onPath.has(node.id) && !inError.has(node.id) && conn && conn.status !== 'active';
   });
   const conn = bad && state.connections.find((c) => c.id === connOf(bad));
+  const dataBad = bad ? null : debugDataProblem({ wf, state, payload, path });
+  const failedNode = bad || (dataBad && dataBad.node);
   const run = {
-    id: uid('dbg'), workflowId: wf.id, projectId: wf.projectId, status: bad ? 'failed' : 'success', startedAt: Date.now(),
-    triggerType: '调试', version: wf.version, kind: 'debug', errors: bad ? 1 : 0, by: state.me,
+    id: uid('dbg'), workflowId: wf.id, projectId: wf.projectId, status: failedNode ? 'failed' : 'success', startedAt: Date.now(),
+    triggerType: '调试', version: wf.version, kind: 'debug', errors: failedNode ? 1 : 0, by: state.me,
     payload, vars, branchPicks, env: env.key, group: env.implicit ? '默认值' : env.name,
     graph: { trigger: wf.trigger, steps: wf.steps },
-    failedNodeId: bad ? bad.id : null,
-    failure: bad ? { code: 'CONNECTION_AUTH_FAILED', message: conn.error || '连接不可用，请重新授权', http_status: 401, attempts: 1, connectionId: conn.id } : null,
+    failedNodeId: failedNode ? failedNode.id : null,
+    failure: bad ? { code: 'CONNECTION_AUTH_FAILED', message: conn.error || '连接不可用，请重新授权', http_status: 401, attempts: 1, connectionId: conn.id }
+      : dataBad ? { code: 'MAPPING_ERROR', message: dataBad.message, http_status: null, attempts: 1 } : null,
   };
   const trace = buildRunTrace(run, wf);
   return { run: { ...run, duration: trace.reduce((a, t) => a + (t.duration || 0), 0) }, trace };
@@ -879,13 +882,57 @@ function SidePanel({ kind, wf, state, refs, errors, warnings, records, searchQ, 
   </div>`;
 }
 
+function debugRecentEvents(wf, state) {
+  const base = nodeOutput(wf.trigger);
+  const c = resolveConnector(wf.trigger.connector);
+  if (!c || c.auth === 'none' || !base || typeof base !== 'object') return [];
+  const table = (state.mappingTables || []).find((t) => t.projectId === wf.projectId && t.keyLabel.includes('北森部门'));
+  const missingDept = (d) => Boolean(table && d && !table.rows.some((r) => r.k === d));
+  if (base.employee_id !== undefined) {
+    return [base, ...DEBUG_PEOPLE.map(([id, name, mobile, department, position]) => ({ ...base, employee_id: id, name, ...(base.mobile !== undefined ? { mobile } : {}), ...(base.department !== undefined ? { department } : {}), ...(base.position !== undefined ? { position } : {}) }))]
+      .map((p, i) => ({ key: p.employee_id, title: `${p.name} · ${p.employee_id}`, sub: [p.department, p.position].filter(Boolean).join(' · '), at: Date.now() - (i * 7 + 3) * HOUR, tag: missingDept(p.department) ? `映射表「${table.name}」里没有这个部门` : base.mobile !== undefined && !p.mobile ? '没有手机号' : '', payload: p }));
+  }
+  if (base.instance_code !== undefined) {
+    return [0, 1, 2].map((i) => ({ ...base, instance_code: `${String(base.instance_code).slice(0, -2)}${String(17 + i * 9).padStart(2, '0')}` }))
+      .map((p, i) => ({ key: p.instance_code, title: `审批单 ${p.instance_code}`, sub: p.title || p.approval_name || '', at: Date.now() - (i * 5 + 1) * HOUR, tag: '', payload: p }));
+  }
+  return [];
+}
+
+function debugDataProblem({ wf, state, payload, path }) {
+  const tables = (state.mappingTables || []).filter((t) => t.projectId === wf.projectId);
+  const byId = Object.fromEntries(allNodes(wf).map((n) => [n.id, n]));
+  const resolve = (head) => (head === 'trigger' || head === wf.trigger.id ? payload : byId[head] ? nodeOutput(byId[head]) : undefined);
+  const found = path.map((p) => p.node).filter((n) => n.kind === 'action').map((node) => {
+    const hit = Object.entries(node.config || {}).find(([, v]) => isMapping(v));
+    if (!hit) return null;
+    const [fkey, v] = hit;
+    const ev = evalMapping(v.$map, { resolve, tables, schema: mappingSchema(node, fkey) || [] });
+    const row = ev.rows.find((r) => r.error);
+    return row ? { node, message: `「${row.target}」${row.error}` } : null;
+  }).find(Boolean);
+  return found || null;
+}
+
 function DebugModal({ open, onClose, wf, state, onRun }) {
   const sample = JSON.stringify(nodeOutput(wf.trigger), null, 2);
   const [text, setText] = useState('{}');
+  const events = useMemo(() => (open ? debugRecentEvents(wf, state) : []), [open, wf.trigger.connector, wf.trigger.op]);
+  const [src, setSrc] = useState('recent');
+  const [picked, setPicked] = useState(null);
+  const sourceName = (resolveConnector(wf.trigger.connector) || {}).name || '';
   const envs = projectEnvs(state, wf.projectId);
   const [group, setGroup] = useState(null);
   const [full, setFull] = useState(false);
-  useEffect(() => { if (open) { setText(wf.trigger.connector === 'manual-trigger' ? '{}' : sample); setGroup((envs.find((e) => e.key === 'test') || envs[0]).id); } }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const ev = debugRecentEvents(wf, state);
+    setSrc(ev.length ? 'recent' : 'manual');
+    setPicked(ev.length ? ev[0].key : null);
+    setText(ev.length ? JSON.stringify(ev[0].payload, null, 2) : wf.trigger.connector === 'manual-trigger' ? '{}' : sample);
+    setGroup((envs.find((e) => e.key === 'test') || envs[0]).id);
+  }, [open]);
+  const pick = (e) => { setPicked(e.key); setText(JSON.stringify(e.payload, null, 2)); };
   const env = envs.find((e) => e.id === group) || envs[0];
   const used = new Set(allNodes(wf).map((n) => (['ai', 'agent'].includes(n.kind) ? n.config.connectionId : n.connectionId)).filter(Boolean));
   const swaps = Object.entries(env.connectionMap || {}).filter(([from]) => used.has(from)).map(([from, to]) => [state.connections.find((c) => c.id === from), state.connections.find((c) => c.id === to)]).filter(([a, b]) => a && b);
@@ -903,8 +950,17 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
   <//>`} />`;
   return html`<${Fragment}>
     <${Modal} open=${open && !full} onClose=${onClose} title="调试" width=${760} footer=${html`<${Fragment}><${Button} onClick=${onClose}>取消<//><${Button} variant="primary" disabled=${!valid} onClick=${() => onRun({ payloadText: text, groupId: group })}>调试<//><//>`}>
-      <${Field} label="配置调试出参信息" required help="作为触发器的出参传给后续节点。可以用示例数据，也可以粘贴一条真实数据。" error=${valid ? null : 'JSON 格式不正确'}>
-        ${editor(14)}
+      <${Field} label="用这条数据试跑" required help="这条数据会当作触发器收到的数据，交给后面的节点。" error=${valid ? null : 'JSON 格式不正确'}>
+        ${events.length > 0 && html`<${Segmented} value=${src} onChange=${setSrc} options=${[{ value: 'recent', label: `${sourceName}里最近的记录` }, { value: 'manual', label: '自己填写' }]} />`}
+        ${src === 'recent' && events.length > 0
+          ? html`<div className="debug-events">${events.map((e) => html`<button key=${e.key} type="button" className=${cx('debug-event', picked === e.key && 'is-active')} onClick=${() => pick(e)}>
+              <span className=${cx('radio-dot', picked === e.key && 'is-checked')} />
+              <span className="grow"><b>${e.title}</b><span className="text-xs muted">${e.sub}</span></span>
+              ${e.tag && html`<${Tag} size="sm" tone="warning">${e.tag}<//>`}
+              <span className="text-xs muted">${fmt.relative(e.at)}</span>
+            </button>`)}</div>
+            <div className="text-xs muted" style=${{ marginTop: 6 }}>从${sourceName}读取最近的记录，只读，不会改动${sourceName}里的数据。可以挑一条带提示的，看看出错时会怎样。</div>`
+          : editor(14)}
       <//>
       ${envs.length > 1 && html`<${Field} label="运行环境" help="调试使用哪个环境的项目配置值和连接">
         <${Segmented} value=${group} onChange=${setGroup} options=${envs.map((e) => ({ value: e.id, label: e.name }))} />
@@ -916,7 +972,7 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
         <div className="text-xs muted" style=${{ marginTop: 4 }}>建议用测试数据，例如测试员工的工号和手机号。</div>
       <//>`}
     <//>
-    <${Modal} open=${open && full} onClose=${() => setFull(false)} title="配置调试出参信息" width=${1040} footer=${html`<${Button} variant="primary" onClick=${() => setFull(false)}>完成<//>`}>${editor(28)}<//>
+    <${Modal} open=${open && full} onClose=${() => setFull(false)} title="用这条数据试跑" width=${1040} footer=${html`<${Button} variant="primary" onClick=${() => setFull(false)}>完成<//>`}>${editor(28)}<//>
   <//>`;
 }
 
@@ -1031,7 +1087,7 @@ function DebugPanel({ state, debug, setDebug, records, run, trace, running, refs
               : io
                 ? html`<${Fragment}>
                   <${JsonView} value=${io} />
-                  ${ioTab === 'Error' && current.error && html`<div style=${{ padding: 8 }}><${Alert} tone="warning" title="排查建议">${current.error.code === 'CONNECTION_AUTH_FAILED' ? '连接的授权已失效。到「连接」页面重新授权后，再重新调试。' : current.error.code === 'STEP_TIMEOUT' ? '节点执行超时。检查上游数据量是否过大，或在「错误处理」中配置重试。' : '检查入参是否符合接口要求，必要时在「错误处理」中为该错误码配置重试策略。'}<//></div>`}
+                  ${ioTab === 'Error' && current.error && html`<div style=${{ padding: 8 }}><${Alert} tone="warning" title="排查建议">${current.error.code === 'CONNECTION_AUTH_FAILED' ? '连接的授权已失效。到「连接」页面重新授权后，再重新调试。' : current.error.code === 'MAPPING_ERROR' ? '数据对不上：按提示补映射表里的对照，或者改这个节点的字段映射，再重新调试。' : current.error.code === 'STEP_TIMEOUT' ? '节点执行超时。检查上游数据量是否过大，或在「错误处理」中配置重试。' : '检查入参是否符合接口要求，必要时在「错误处理」中为该错误码配置重试策略。'}<//></div>`}
                 <//>`
                 : html`<div className="muted text-xs" style=${{ padding: 8 }}>${ioTab === 'Error' ? '没有错误' : ioTab === 'Output' ? '该节点没有输出' : '{}'}</div>`}
           </div>
@@ -1304,3 +1360,9 @@ function GenerateTemplateModal({ open, onClose, wf, state }) {
     <${Field} label="分享范围"><${RadioGroup} value=${scope} onChange=${setScope} options=${[{ value: 'org', label: '分享到组织内' }, { value: 'public', label: '分享到互联网' }]} /><//>
   <//>`;
 }
+
+const DEBUG_PEOPLE = [
+  ['XH20260921', '林雨桐', '13811110001', '人力资源部', 'HR 专员'],
+  ['XH20260920', '高远', '13811110003', '深圳研发中心-平台组', '后端工程师'],
+  ['XH20260919', '陈一鸣', '', '销售运营部', '客户经理'],
+];

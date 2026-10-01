@@ -449,6 +449,13 @@ function Param({ name, required, help, children, error, mode, onModeChange, link
   </div>`;
 }
 
+function fieldSourceHint(fkey, ctx) {
+  const keys = FIELD_SOURCE_KEYS[fkey];
+  if (!keys) return null;
+  const cands = [...ctx.upstream].reverse().flatMap((n) => mapCandidates(outputOf(n, ctx.wf), n.id, n.name));
+  return cands.find((c) => keys.includes(String(c.key).toLowerCase())) || null;
+}
+
 function ConfigField({ fkey, node, onConfig, ctx }) {
   const def = fieldDef(node, fkey);
   const value = node.config[fkey];
@@ -468,7 +475,11 @@ function ConfigField({ fkey, node, onConfig, ctx }) {
   } else if (mode === 'expr') {
     control = html`<${CodeEditor} value=${value || ''} onChange=${set} rows=${3} light readOnly=${ctx.readOnly} label=${def.label} placeholderHint="表达式：可引用上游数据，例如 {{feishu-1.items}}" />`;
   } else {
-    control = html`<${VarInput} value=${value} onChange=${set} placeholder=${def.placeholder} multiline=${def.multiline} ctx=${ctx} invalid=${invalid} readOnly=${ctx.readOnly} />`;
+    const hint = !ctx.readOnly && isBlank(value) ? fieldSourceHint(fkey, ctx) : null;
+    control = html`<${Fragment}>
+      <${VarInput} value=${value} onChange=${set} placeholder=${def.placeholder} multiline=${def.multiline} ctx=${ctx} invalid=${invalid} readOnly=${ctx.readOnly} />
+      ${hint && html`<button type="button" className="param-suggest" onClick=${() => set(`{{${hint.path}}}`)}><${Icon} name="CornerDownRight" size=${12} />填入上游的「${hint.label} · ${hint.key}」<span className="muted">${String(hint.sample).slice(0, 24)}</span></button>`}
+    <//>`;
   }
   return html`<${Param}
     name=${def.label}
@@ -1413,3 +1424,14 @@ function NodePanel({ wf, node, issues, onChange, onClose, onDelete, onCopy, stat
     </div>`}
   </aside>`;
 }
+
+const FIELD_SOURCE_KEYS = {
+  employeeId: ['employee_id', 'employee_no', 'emp_no'],
+  email: ['email', 'mail'],
+  instanceCode: ['instance_code'],
+  recordId: ['record_id'],
+  user: ['user_id', 'open_id', 'submitter'],
+  title: ['title', 'summary', 'subject'],
+  summary: ['title', 'summary', 'subject'],
+  number: ['bill_no', 'number'],
+};

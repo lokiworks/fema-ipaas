@@ -1369,10 +1369,11 @@ function aigenApplyMappings(graph, draft, ids, ctx) {
     const hints = step.map.hints || {};
     const constants = step.map.constants || {};
     const rows = schema.flatMap((f) => {
-      const s = suggestions.find((x) => x.target === f.key && x.confidence >= AIGEN_MIN_CONFIDENCE);
-      if (s) return [{ id: uid('m'), target: f.key, source: s.source, transforms: s.transforms, ai: true, confidence: Math.round(s.confidence * 100) / 100, reason: s.reason }];
       const h = hints[f.key];
       const hs = h ? aigenRefs(h.source, ids) : '';
+      if (hs && (h.transforms || []).length) return [{ id: uid('m'), target: f.key, source: hs, transforms: h.transforms, ai: true, confidence: 0.8, reason: h.reason }];
+      const s = suggestions.find((x) => x.target === f.key && x.confidence >= AIGEN_MIN_CONFIDENCE);
+      if (s) return [{ id: uid('m'), target: f.key, source: s.source, transforms: s.transforms, ai: true, confidence: Math.round(s.confidence * 100) / 100, reason: s.reason }];
       if (hs) return [{ id: uid('m'), target: f.key, source: hs, transforms: h.transforms || [], ai: true, confidence: 0.8, reason: h.reason }];
       if (constants[f.key] !== undefined) return [{ id: uid('m'), target: f.key, source: '', constant: constants[f.key], transforms: [], ai: true, reason: '按描述设为固定值' }];
       return [];

@@ -693,14 +693,14 @@ function NewWorkflowModal({ open, onClose, projectId, folderId, pickProject }) {
   const [target, setTarget] = useState(projectId || null);
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
-  const [trig, setTrig] = useState('webhook');
+  const [trig, setTrig] = useState(null);
   const [appEvent, setAppEvent] = useState(null);
   const [dirty, setDirty] = useState(false);
   useEffect(() => {
     if (!open) return;
     const room = editable.filter((p) => !integLimitError(state, p.id));
     setTarget(editable.some((p) => p.id === projectId) ? projectId : ((room[0] || editable[0] || {}).id || null));
-    setName(''); setDesc(''); setTrig('webhook'); setAppEvent(null); setDirty(false);
+    setName(''); setDesc(''); setTrig(null); setAppEvent(null); setDirty(false);
   }, [open]);
   const apps = APP_EVENT_APPS.map((id) => resolveConnector(id)).filter((c) => c && c.triggers.length);
   const eventApp = appEvent ? resolveConnector(appEvent.connector) : null;
@@ -708,7 +708,7 @@ function NewWorkflowModal({ open, onClose, projectId, folderId, pickProject }) {
   const dup = Boolean(target && trimmed && state.workflows.some((w) => w.projectId === target && w.name === trimmed));
   const nameError = dup ? '项目内已有同名工作流' : dirty && !trimmed ? '请输入工作流名称' : null;
   const limit = target ? integLimitError(state, target) : null;
-  const canCreate = Boolean(target && trimmed && !dup && !limit && canEditProject(state, target));
+  const canCreate = Boolean(target && trimmed && (trig || appEvent) && !dup && !limit && canEditProject(state, target));
   const create = () => {
     if (!canCreate) return;
     const s = Store.get();
@@ -733,7 +733,7 @@ function NewWorkflowModal({ open, onClose, projectId, folderId, pickProject }) {
     onClose();
     aiBus.open({ projectId });
   };
-  return html`<${Modal} open=${open} onClose=${onClose} title="新建工作流" width=${760} footer=${html`<${Fragment}><${Button} onClick=${onClose}>取消<//><${Button} variant="primary" disabled=${!canCreate} onClick=${create}>创建<//><//>`}>
+  return html`<${Modal} open=${open} onClose=${onClose} title="新建工作流" width=${760} footer=${html`<${Fragment}>${!trig && !appEvent && trimmed && html`<span className="text-xs muted">还没选从哪里开始</span>`}<span className="spacer" /><${Button} onClick=${onClose}>取消<//><${Button} variant="primary" disabled=${!canCreate} onClick=${create}>创建<//><//>`}>
     <div className="integ-ai-entry">
       <span className="integ-ai-icon"><${Icon} name="Sparkles" size=${16} /></span>
       <div className="grow">
@@ -750,24 +750,22 @@ function NewWorkflowModal({ open, onClose, projectId, folderId, pickProject }) {
     ${limit && html`<div className="integ-gap"><${Alert} tone="warning">${limit}<//></div>`}
     <${Field} label="工作流名称" required error=${nameError}><${CharInput} value=${name} onChange=${(v) => { setName(v); setDirty(true); }} max=${100} placeholder="例：审批通过后自动发送飞书消息" autoFocus invalid=${Boolean(nameError)} onKeyDown=${(e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) create(); }} /><//>
     <${Field} label="描述"><${CharTextarea} value=${desc} onChange=${setDesc} max=${300} placeholder="说明这个工作流做什么，方便团队理解" rows=${2} /><//>
-    <${Field} label="选择触发器" required>
-      <div className="text-xs muted integ-trig-tip">选择一个触发器，通过触发事件或定时任务来触发自动化流程的运行<${Tooltip} content="Webhook 和表单触发器在收到数据时运行；定时任务按计划运行；子流程触发器由其他工作流调用；告警触发器在监控规则命中时运行。创建后可以在编辑器里替换触发器。"><span className="integ-help-icon" tabIndex=${0} aria-label="触发器说明"><${Icon} name="CircleHelp" size=${13} /></span><//></div>
-      <div className="trig-grid">
-        ${TRIGGER_TYPES.map((t) => html`<button key=${t.connector} type="button" aria-pressed=${!appEvent && trig === t.connector} className=${cx('trig-card', 'corner-check', !appEvent && trig === t.connector && 'is-active')} onClick=${() => { setTrig(t.connector); setAppEvent(null); }}>
-          <${KindTile} icon=${t.icon} size=${36} />
-          <span className="grow"><span className="trig-name">${t.name}</span><span className="trig-desc">${t.desc}</span></span>
+    <${Field} label="从哪里开始" required>
+      <div className="text-xs muted integ-trig-tip">某个系统里发生了什么事，就运行这个工作流<${Tooltip} content="应用事件：例如北森有员工入职、飞书审批通过。通用触发器：别的系统调用网址、按计划定时、被其他工作流调用等。创建后可以在编辑器里替换。"><span className="integ-help-icon" tabIndex=${0} aria-label="触发器说明"><${Icon} name="CircleHelp" size=${13} /></span><//></div>
+      <div className="app-event-row">
+        ${apps.map((c) => html`<button key=${c.id} type="button" aria-label=${c.name} aria-pressed=${Boolean(appEvent && appEvent.connector === c.id)} className=${cx('app-event', appEvent && appEvent.connector === c.id && 'is-active')} onClick=${() => { setAppEvent({ connector: c.id, op: c.triggers[0].key }); setTrig(null); }}><${ConnectorIcon} connector=${c} size=${28} /><span className="app-event-name">${c.name}</span></button>`)}
+      </div>
+      ${eventApp && html`<div className="integ-gap-top"><${Field} label=${`${eventApp.name}里发生什么事时`} required>
+        <${Select} value=${appEvent.op} onChange=${(v) => setAppEvent({ ...appEvent, op: v })} options=${eventApp.triggers.map((t) => ({ value: t.key, label: t.name, desc: t.desc }))} />
+      <//></div>`}
+      <div className="text-xs muted integ-app-tip">或者用通用触发器</div>
+      <div className="trig-grid is-compact">
+        ${TRIGGER_TYPES.map((t) => html`<button key=${t.connector} type="button" aria-pressed=${!appEvent && trig === t.connector} title=${t.desc} className=${cx('trig-card', 'corner-check', !appEvent && trig === t.connector && 'is-active')} onClick=${() => { setTrig(t.connector); setAppEvent(null); }}>
+          <${KindTile} icon=${t.icon} size=${28} />
+          <span className="grow"><span className="trig-name">${t.name}</span></span>
         </button>`)}
       </div>
     <//>
-    <div className="text-xs muted integ-app-tip">或选择应用事件触发流程运行</div>
-    <div className="app-event-row">
-      ${apps.map((c) => html`<${Tooltip} key=${c.id} content=${c.name}>
-        <button type="button" aria-label=${c.name} aria-pressed=${Boolean(appEvent && appEvent.connector === c.id)} className=${cx('app-event', appEvent && appEvent.connector === c.id && 'is-active')} onClick=${() => setAppEvent({ connector: c.id, op: c.triggers[0].key })}><${ConnectorIcon} connector=${c} size=${28} /><span className="app-event-name">${c.name}</span></button>
-      <//>`)}
-    </div>
-    ${eventApp && html`<div className="integ-gap-top"><${Field} label=${`${eventApp.name} 触发事件`} required>
-      <${Select} value=${appEvent.op} onChange=${(v) => setAppEvent({ ...appEvent, op: v })} options=${eventApp.triggers.map((t) => ({ value: t.key, label: t.name, desc: t.desc }))} />
-    <//></div>`}
   <//>`;
 }
 

@@ -1,9 +1,13 @@
 import {
   AuthenticationType,
+  HttpError,
   HttpMethod,
   httpClient,
 } from '@fema-ipaas/connector-common';
-import type { ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import {
+  tryCatch,
+  type ConnectionValueForAuthProperty,
+} from '@fema-ipaas/connector-sdk';
 
 import type { beisenAuth } from '../auth';
 import { BEISEN_BASE_URL } from '../constants';
@@ -75,13 +79,18 @@ async function callApi<T>({ auth, method, path, body, queryParams }: CallApiPara
     appKey: auth.props.appKey,
     appSecret: auth.props.appSecret,
   });
-  const response = await httpClient.sendRequest<T & Partial<GatewayError>>({
-    method,
-    url: `${BEISEN_BASE_URL}${path}`,
-    authentication: { type: AuthenticationType.BEARER_TOKEN, token },
-    ...(body ? { body } : {}),
-    ...(queryParams ? { queryParams } : {}),
-  });
+  const { data: response, error } = await tryCatch(() =>
+    httpClient.sendRequest<T & Partial<GatewayError>>({
+      method,
+      url: `${BEISEN_BASE_URL}${path}`,
+      authentication: { type: AuthenticationType.BEARER_TOKEN, token },
+      ...(body ? { body } : {}),
+      ...(queryParams ? { queryParams } : {}),
+    }),
+  );
+  if (error) {
+    throw isRateLimited(error) ? rateLimitError() : error;
+  }
   assertNoGatewayError(response.body);
   return response.body;
 }
@@ -97,13 +106,32 @@ async function callBusinessApi<T>(params: CallApiParams): Promise<T> {
   return body.data;
 }
 
+function isRateLimited(error: Error): boolean {
+  return error instanceof HttpError && error.response.status === HTTP_TOO_MANY_REQUESTS;
+}
+
+function rateLimitError(): Error {
+  return new Error(
+    `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day, so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)`,
+  );
+}
+
 function assertNoGatewayError(body: Partial<GatewayError>): void {
   if (!body.error) {
     return;
   }
+  if (isRateLimitMessage(body.error_description ?? body.error)) {
+    throw rateLimitError();
+  }
   const code = body.error_code ?? body.error;
   const description = body.error_description ?? body.error;
   throw new Error(`${description} (Beisen error ${code})`);
+}
+
+const HTTP_TOO_MANY_REQUESTS = 429;
+
+function isRateLimitMessage(message: string): boolean {
+  return message.toLowerCase().includes('rate limit exceeded');
 }
 
 const DEFAULT_TOKEN_LIFETIME_SECONDS = 3600;

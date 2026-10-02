@@ -1,4 +1,4 @@
-import { HttpMethod } from '@fema-ipaas/connector-common';
+import { HttpError, HttpMethod } from '@fema-ipaas/connector-common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const sendRequest = vi.fn();
@@ -156,5 +156,57 @@ describe('beisenCommon.columnsWith', () => {
 
   it('leaves an empty list empty so Beisen decides the columns', () => {
     expect(beisenCommon.columnsWith({ columns: [], column: 'Status' })).toEqual([]);
+  });
+});
+
+describe('beisenCommon.callApi rate limiting', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    sendRequest.mockResolvedValueOnce(
+      tokenResponse({ access_token: 'limit-token', expires_in: 3600 }),
+    );
+  });
+
+  it('turns an HTTP 429 into a clear, non-retryable message', async () => {
+    sendRequest.mockRejectedValueOnce(
+      new HttpError({}, { status: 429, responseBody: 'API rate limit exceeded' }),
+    );
+
+    await expect(
+      beisenCommon.callApi({
+        auth: authFor('limit-key-1'),
+        method: HttpMethod.POST,
+        path: '/any',
+      }),
+    ).rejects.toThrowError(/^HTTP 429: .*00:00 the next day/);
+  });
+
+  it('recognises the limit when Beisen reports it inside a 200 body', async () => {
+    sendRequest.mockResolvedValueOnce({
+      status: 200,
+      body: { error: 'limited', error_description: 'API rate limit exceeded' },
+      headers: {},
+    });
+
+    await expect(
+      beisenCommon.callApi({
+        auth: authFor('limit-key-2'),
+        method: HttpMethod.POST,
+        path: '/any',
+      }),
+    ).rejects.toThrowError(/^HTTP 429: /);
+  });
+
+  it('leaves other HTTP errors alone', async () => {
+    const failure = new HttpError({}, { status: 403, responseBody: 'IP not allowed' });
+    sendRequest.mockRejectedValueOnce(failure);
+
+    await expect(
+      beisenCommon.callApi({
+        auth: authFor('limit-key-3'),
+        method: HttpMethod.POST,
+        path: '/any',
+      }),
+    ).rejects.toBe(failure);
   });
 });

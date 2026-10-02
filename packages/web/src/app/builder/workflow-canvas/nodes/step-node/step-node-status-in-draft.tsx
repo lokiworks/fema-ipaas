@@ -9,6 +9,13 @@ import { t } from 'i18next';
 import { TriangleAlert } from 'lucide-react';
 import React, { useMemo } from 'react';
 
+import { useBuilderValidation } from '@/app/builder/validation/validation-context';
+import { validationMessages } from '@/app/builder/validation/validation-messages';
+import {
+  ValidationCode,
+  ValidationSeverity,
+  workflowValidator,
+} from '@/app/builder/validation/workflow-validator';
 import { InvalidStepIcon } from '@/components/custom/alert-icon';
 import {
   Tooltip,
@@ -23,6 +30,8 @@ import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';
 
 import { StepNodeBadgeContainer } from './step-node-badge-container';
 type DraftStepStatus =
+  | 'has-error'
+  | 'has-warning'
   | 'invalid'
   | 'testing'
   | 'failed'
@@ -67,6 +76,19 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     ];
   });
 
+  const validation = useBuilderValidation();
+  const stepIssues = workflowValidator.issuesForStep({
+    result: validation,
+    stepName,
+  });
+  const firstError = stepIssues.find(
+    (issue) => issue.severity === ValidationSeverity.ERROR,
+  );
+  const firstWarning = stepIssues.find(
+    (issue) =>
+      issue.severity === ValidationSeverity.WARNING &&
+      issue.code !== ValidationCode.WRITE_NOT_TESTED,
+  );
   const draftStatusConfig: Record<
     DraftStepStatus,
     {
@@ -75,6 +97,16 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       icon: React.ReactNode;
     }
   > = {
+    'has-error': {
+      variant: 'error',
+      text: t('Needs fixing'),
+      icon: <InvalidStepIcon className="size-3" />,
+    },
+    'has-warning': {
+      variant: 'warning',
+      text: t('Check this'),
+      icon: <TriangleAlert className="size-3" />,
+    },
     invalid: {
       variant: 'warning',
       text: t('Incomplete'),
@@ -124,9 +156,13 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       ),
     },
   };
+  const hasValidationError = !isNil(firstError);
+  const hasValidationWarning = !isNil(firstWarning);
   const status: DraftStepStatus = useMemo(() => {
+    if (hasValidationError) return 'has-error';
     if (!isStepValid) return 'invalid';
     if (isBeingTested) return 'testing';
+    if (hasValidationWarning) return 'has-warning';
 
     if (isNil(lastTestDate)) {
       return 'untested';
@@ -137,7 +173,15 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     if (hasError) return 'failed';
 
     return 'tested';
-  }, [isStepValid, isBeingTested, hasError, lastTestDate, lastUpdatedDate]);
+  }, [
+    hasValidationError,
+    hasValidationWarning,
+    isStepValid,
+    isBeingTested,
+    hasError,
+    lastTestDate,
+    lastUpdatedDate,
+  ]);
 
   const hasRun = !isNil(run);
   const shouldShowDraftStatusBadge =
@@ -166,6 +210,16 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
             <div>{config.text}</div>
           </div>
         </TooltipTrigger>
+        {status === 'has-error' && !isNil(firstError) && (
+          <TooltipContent>
+            {validationMessages.messageOf(firstError)}
+          </TooltipContent>
+        )}
+        {status === 'has-warning' && !isNil(firstWarning) && (
+          <TooltipContent>
+            {validationMessages.messageOf(firstWarning)}
+          </TooltipContent>
+        )}
         {status === 'untested' && (
           <TooltipContent>
             {t('This step has not been tested yet')}

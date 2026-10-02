@@ -16,6 +16,9 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 import { BuilderState } from '../../builder-hooks';
 
+import { useDeleteConfirmation } from './delete-confirmation-store';
+import { deleteImpactUtils } from './delete-impact';
+
 type CopyActionsRequest = {
   type: 'COPY_ACTIONS';
   actions: WorkflowAction[];
@@ -54,6 +57,28 @@ export function deleteSelectedNodes({
   if (selectedStep && selectedNodes.includes(selectedStep)) {
     exitStepSettings();
   }
+}
+
+export function requestNodeDeletion({
+  workflowVersion,
+  ...rest
+}: Pick<
+  BuilderState,
+  | 'selectedNodes'
+  | 'applyOperation'
+  | 'selectedStep'
+  | 'exitStepSettings'
+  | 'workflowVersion'
+>) {
+  const impact = deleteImpactUtils.impactOf({
+    trigger: workflowVersion.trigger,
+    names: rest.selectedNodes,
+  });
+  if (deleteImpactUtils.needsConfirmation({ impact })) {
+    useDeleteConfirmation.getState().open(impact);
+    return;
+  }
+  deleteSelectedNodes(rest);
 }
 
 export async function cutSelectedNodes({
@@ -213,6 +238,7 @@ export const canvasBulkActions = {
   copySelectedNodes,
   cutSelectedNodes,
   deleteSelectedNodes,
+  requestNodeDeletion,
   getActionsInClipboard,
   getLastStepName,
   pasteNodes,

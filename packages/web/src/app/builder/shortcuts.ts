@@ -107,11 +107,12 @@ export const useHandleKeyPressOnCanvas = () => {
           if (selectedNodesWithoutTrigger.length > 0) {
             e.stopPropagation();
             e.preventDefault();
-            canvasBulkActions.deleteSelectedNodes({
+            canvasBulkActions.requestNodeDeletion({
               exitStepSettings,
               selectedStep,
               selectedNodes: selectedNodesWithoutTrigger,
               applyOperation,
+              workflowVersion,
             });
           }
         },

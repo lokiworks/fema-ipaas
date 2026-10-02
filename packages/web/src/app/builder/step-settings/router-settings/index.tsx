@@ -1,5 +1,6 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import {
+  BranchExecutionType,
   WorkflowActionType,
   WorkflowOperationRequest,
   WorkflowOperationType,
@@ -11,7 +12,7 @@ import {
 import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import { Split } from 'lucide-react';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
 import { FormField, FormItem } from '../../../../components/ui/form';
@@ -27,6 +28,7 @@ import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasUtils } from '../../workflow-canvas/utils/workflow-canvas-utils';
 import { BranchSettings } from '../branch-settings';
 
+import { AllMatchConfirmDialog } from './all-match-confirm-dialog';
 import { BranchesList } from './branches-list';
 import BranchesToolbar from './branches-toolbar';
 
@@ -50,6 +52,10 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
     state.removeOperationListener,
   ]);
   const { fitView } = useReactFlow();
+  const [pendingAllMatch, setPendingAllMatch] = useState(false);
+  const conditionBranchCount = step.settings.branches.filter(
+    (branch) => branch.branchType !== BranchExecutionType.FALLBACK,
+  ).length;
 
   const { control, setValue, formState } =
     useFormContext<Omit<RouterAction, 'children' | 'nextAction'>>();
@@ -144,7 +150,17 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
               <Label>{t('Execute')}</Label>
               <Select
                 disabled={field.disabled}
-                onValueChange={field.onChange}
+                onValueChange={(value) => {
+                  const switchingToAll =
+                    value === RouterExecutionType.EXECUTE_ALL_MATCH &&
+                    field.value === RouterExecutionType.EXECUTE_FIRST_MATCH &&
+                    conditionBranchCount >= 2;
+                  if (switchingToAll) {
+                    setPendingAllMatch(true);
+                    return;
+                  }
+                  field.onChange(value);
+                }}
                 value={field.value}
               >
                 <SelectTrigger>
@@ -164,6 +180,15 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
                   </SelectItem>
                 </SelectContent>
               </Select>
+              <AllMatchConfirmDialog
+                open={pendingAllMatch}
+                branchCount={conditionBranchCount}
+                onCancel={() => setPendingAllMatch(false)}
+                onConfirm={() => {
+                  field.onChange(RouterExecutionType.EXECUTE_ALL_MATCH);
+                  setPendingAllMatch(false);
+                }}
+              />
             </FormItem>
           )}
         ></FormField>

@@ -31,6 +31,7 @@ import {
   CanvasContextMenu,
   ContextMenuType,
 } from './context-menu/canvas-context-menu';
+import { DeleteNodesDialog } from './delete-nodes-dialog';
 import { workflowCanvasHooks } from './hooks';
 import { workflowCanvasConsts } from './utils/consts';
 import { workflowCanvasUtils } from './utils/workflow-canvas-utils';
@@ -219,6 +220,7 @@ export const WorkflowCanvas = React.memo(
           setCursorPosition(cursorPosition);
         }}
       >
+        <DeleteNodesDialog />
         <WorkflowDragLayer>
           <CanvasContextMenu contextMenuType={contextMenuType}>
             <ReactFlow

@@ -11,8 +11,11 @@ import {
 } from '@fema-ipaas/shared';
 import { describe, expect, it, vi } from 'vitest';
 
+import {
+  CanvasEdgeType,
+  CanvasNodeType,
+} from '@/app/builder/workflow-canvas/utils/types';
 import { workflowCanvasUtils } from '@/app/builder/workflow-canvas/utils/workflow-canvas-utils';
-import { CanvasEdgeType, CanvasNodeType } from '@/app/builder/workflow-canvas/utils/types';
 
 vi.mock('@/features/executions', () => ({
   executionUtils: {

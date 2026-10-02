@@ -35,7 +35,7 @@ import { CanvasShortcuts } from '../../shortcuts';
 import {
   copySelectedNodes,
   cutSelectedNodes,
-  deleteSelectedNodes,
+  requestNodeDeletion,
   getLastLocationAsPasteLocation,
   pasteNodes,
   toggleSkipSelectedNodes,
@@ -467,11 +467,12 @@ export const CanvasContextMenuContent = ({
             <ContextMenuItem
               disabled={disabled}
               onClick={() => {
-                deleteSelectedNodes({
+                requestNodeDeletion({
                   selectedNodes,
                   applyOperation,
                   selectedStep,
                   exitStepSettings,
+                  workflowVersion,
                 });
               }}
             >

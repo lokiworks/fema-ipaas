@@ -210,3 +210,68 @@ describe('beisenCommon.callApi rate limiting', () => {
     ).rejects.toBe(failure);
   });
 });
+
+describe('beisenCommon.callApi credential problems', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('drops a token Beisen rejected, asks for a new one and repeats the call once', async () => {
+    sendRequest
+      .mockResolvedValueOnce(tokenResponse({ access_token: 'stale-token', expires_in: 3600 }))
+      .mockRejectedValueOnce(new HttpError({}, { status: 401, responseBody: 'invalid token' }))
+      .mockResolvedValueOnce(tokenResponse({ access_token: 'fresh-token', expires_in: 3600 }))
+      .mockResolvedValueOnce(tokenResponse({ data: [{ UserID: 'u-1' }] }));
+
+    const body = await beisenCommon.callApi({
+      auth: authFor('revoked-key'),
+      method: HttpMethod.POST,
+      path: '/any',
+    });
+
+    expect(body).toEqual({ data: [{ UserID: 'u-1' }] });
+    const retried = sendRequest.mock.calls.at(-1)?.[0];
+    expect(retried.authentication.token).toBe('fresh-token');
+  });
+
+  it('reports an HTTP 401 when the repeated call is rejected too', async () => {
+    sendRequest
+      .mockResolvedValueOnce(tokenResponse({ access_token: 'stale-token', expires_in: 3600 }))
+      .mockRejectedValueOnce(new HttpError({}, { status: 401, responseBody: 'invalid token' }))
+      .mockResolvedValueOnce(tokenResponse({ access_token: 'fresh-token', expires_in: 3600 }))
+      .mockRejectedValueOnce(new HttpError({}, { status: 401, responseBody: 'invalid token' }));
+
+    await expect(
+      beisenCommon.callApi({
+        auth: authFor('revoked-key-2'),
+        method: HttpMethod.POST,
+        path: '/any',
+      }),
+    ).rejects.toThrowError(/^HTTP 401: Beisen rejected the access token\. Check that the connector Key and Secret/);
+  });
+
+  it('reports an HTTP 401 without repeating when Beisen refuses to issue a token', async () => {
+    sendRequest.mockResolvedValueOnce(
+      tokenResponse({ error: 'invalid_client', error_description: 'Invalid app_key', error_code: '10001' }),
+    );
+
+    await expect(
+      beisenCommon.callApi({
+        auth: authFor('wrong-key'),
+        method: HttpMethod.POST,
+        path: '/any',
+      }),
+    ).rejects.toThrowError(/^HTTP 401: Invalid app_key \(Beisen error 10001\)/);
+    expect(sendRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the plain message when a connection is saved with wrong credentials', async () => {
+    sendRequest.mockResolvedValueOnce(
+      tokenResponse({ error: 'invalid_client', error_description: 'Invalid app_key', error_code: '10001' }),
+    );
+
+    await expect(
+      beisenCommon.obtainAccessToken({ appKey: 'wrong-key-2', appSecret: 's' }),
+    ).rejects.toThrowError(/^Invalid app_key \(Beisen error 10001\)$/);
+  });
+});

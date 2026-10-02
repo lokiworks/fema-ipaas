@@ -20,6 +20,10 @@ export const beisenCommon = {
   columnsWith,
 };
 
+class CredentialRejectedError extends Error {}
+
+class AccessTokenRejectedError extends Error {}
+
 function filterByColumn({ records, column, values }: FilterByColumnParams): Record<string, unknown>[] {
   const wanted = values.map((value) => value.trim()).filter((value) => value.length > 0);
   const name = column?.trim() ?? '';
@@ -47,7 +51,7 @@ type FilterByColumnParams = {
 };
 
 async function obtainAccessToken({ appKey, appSecret }: TokenParams): Promise<string> {
-  const cacheKey = `${appKey ?? ''}:${appSecret ?? ''}`;
+  const cacheKey = tokenCacheKey({ appKey, appSecret });
   const cached = tokenCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.token;
@@ -61,10 +65,12 @@ async function obtainAccessToken({ appKey, appSecret }: TokenParams): Promise<st
       app_secret: appSecret,
     },
   });
-  assertNoGatewayError(response.body);
+  assertNoGatewayError({ body: response.body, rejectsCredentials: true });
   const token = response.body.access_token;
   if (!token) {
-    throw new Error('Beisen did not return an access_token, check the connector Key and Secret');
+    throw new CredentialRejectedError(
+      'Beisen did not return an access_token, check the connector Key and Secret',
+    );
   }
   const lifetimeSeconds = response.body.expires_in ?? DEFAULT_TOKEN_LIFETIME_SECONDS;
   tokenCache.set(cacheKey, {
@@ -74,7 +80,28 @@ async function obtainAccessToken({ appKey, appSecret }: TokenParams): Promise<st
   return token;
 }
 
-async function callApi<T>({ auth, method, path, body, queryParams }: CallApiParams): Promise<T> {
+async function callApi<T>(params: CallApiParams): Promise<T> {
+  const { data, error } = await tryCatch(() => requestOnce<T>(params));
+  if (!error) {
+    return data;
+  }
+  if (error instanceof CredentialRejectedError) {
+    throw unauthorizedError(error);
+  }
+  if (!(error instanceof AccessTokenRejectedError)) {
+    throw error;
+  }
+  tokenCache.delete(tokenCacheKey({ appKey: params.auth.props.appKey, appSecret: params.auth.props.appSecret }));
+  const { data: retried, error: retryError } = await tryCatch(() => requestOnce<T>(params));
+  if (retryError) {
+    throw retryError instanceof CredentialRejectedError || retryError instanceof AccessTokenRejectedError
+      ? unauthorizedError(retryError)
+      : retryError;
+  }
+  return retried;
+}
+
+async function requestOnce<T>({ auth, method, path, body, queryParams }: CallApiParams): Promise<T> {
   const token = await obtainAccessToken({
     appKey: auth.props.appKey,
     appSecret: auth.props.appSecret,
@@ -89,9 +116,15 @@ async function callApi<T>({ auth, method, path, body, queryParams }: CallApiPara
     }),
   );
   if (error) {
-    throw isRateLimited(error) ? rateLimitError() : error;
+    if (isRateLimited(error)) {
+      throw rateLimitError();
+    }
+    if (isUnauthorized(error)) {
+      throw new AccessTokenRejectedError('Beisen rejected the access token');
+    }
+    throw error;
   }
-  assertNoGatewayError(response.body);
+  assertNoGatewayError({ body: response.body, rejectsCredentials: false });
   return response.body;
 }
 
@@ -110,13 +143,27 @@ function isRateLimited(error: Error): boolean {
   return error instanceof HttpError && error.response.status === HTTP_TOO_MANY_REQUESTS;
 }
 
+function isUnauthorized(error: Error): boolean {
+  return error instanceof HttpError && error.response.status === HTTP_UNAUTHORIZED;
+}
+
+function unauthorizedError(cause: Error): Error {
+  return new Error(
+    `HTTP ${HTTP_UNAUTHORIZED}: ${cause.message}. Check that the connector Key and Secret are still valid in the Beisen admin console and that the connection uses them (Beisen credentials)`,
+  );
+}
+
+function tokenCacheKey({ appKey, appSecret }: TokenParams): string {
+  return `${appKey ?? ''}:${appSecret ?? ''}`;
+}
+
 function rateLimitError(): Error {
   return new Error(
     `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day, so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)`,
   );
 }
 
-function assertNoGatewayError(body: Partial<GatewayError>): void {
+function assertNoGatewayError({ body, rejectsCredentials }: { body: Partial<GatewayError>; rejectsCredentials: boolean }): void {
   if (!body.error) {
     return;
   }
@@ -125,10 +172,13 @@ function assertNoGatewayError(body: Partial<GatewayError>): void {
   }
   const code = body.error_code ?? body.error;
   const description = body.error_description ?? body.error;
-  throw new Error(`${description} (Beisen error ${code})`);
+  const message = `${description} (Beisen error ${code})`;
+  throw rejectsCredentials ? new CredentialRejectedError(message) : new Error(message);
 }
 
 const HTTP_TOO_MANY_REQUESTS = 429;
+
+const HTTP_UNAUTHORIZED = 401;
 
 function isRateLimitMessage(message: string): boolean {
   return message.toLowerCase().includes('rate limit exceeded');

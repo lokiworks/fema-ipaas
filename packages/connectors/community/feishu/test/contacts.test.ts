@@ -188,6 +188,77 @@ describe('feishu HTTP errors', () => {
   });
 });
 
+describe('feishu retryable errors', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('reports a concurrent contact update as HTTP 429 so it is treated as transient', async () => {
+    const concurrentAuth = { ...auth, props: { ...auth.props, appId: 'cli_concurrent' } };
+    sendRequest.mockImplementation(async ({ url }: { url: string }) => {
+      if (url.endsWith('/tenant_access_token/internal')) {
+        return reply({ code: 0, msg: 'ok', tenant_access_token: 't-concurrent', expire: 7200 });
+      }
+      throw new HttpError({}, { status: 400, responseBody: { code: 44025, msg: 'concurrent update user limited' } });
+    });
+
+    await expect(
+      feishuContacts.setUserSuspended({ auth: concurrentAuth, input: { openId: 'ou_1', suspended: true } }),
+    ).rejects.toThrowError(/^HTTP 429: concurrent update user limited.*Feishu error 44025/);
+  });
+
+  it.each([
+    [230002, 'Bot/User can NOT be out of the chat'],
+    [40004, 'no dept authority error'],
+    [41050, 'no user authority error'],
+  ])('reports Feishu error %i as HTTP 403 so it is replayed after the fix in Feishu', async (code, msg) => {
+    const scopeAuth = { ...auth, props: { ...auth.props, appId: `cli_scope_${code}` } };
+    sendRequest.mockImplementation(async ({ url }: { url: string }) => {
+      if (url.endsWith('/tenant_access_token/internal')) {
+        return reply({ code: 0, msg: 'ok', tenant_access_token: 't-scope', expire: 7200 });
+      }
+      throw new HttpError({}, { status: 400, responseBody: { code, msg } });
+    });
+
+    await expect(
+      feishuContacts.setUserSuspended({ auth: scopeAuth, input: { openId: 'ou_1', suspended: true } }),
+    ).rejects.toThrowError(new RegExp(`^HTTP 403: ${msg}.*Feishu error ${code}`));
+  });
+
+  it('fetches a new tenant access token and repeats the call once when the cached one expired', async () => {
+    const expiringAuth = { ...auth, props: { ...auth.props, appId: 'cli_expiring' } };
+    const tokens = ['t-old', 't-new'];
+    sendRequest.mockImplementation(async ({ url, authentication }: { url: string; authentication?: { token: string } }) => {
+      if (url.endsWith('/tenant_access_token/internal')) {
+        return reply({ code: 0, msg: 'ok', tenant_access_token: tokens.shift(), expire: 7200 });
+      }
+      if (authentication?.token === 't-old') {
+        throw new HttpError({}, { status: 400, responseBody: { code: 99991664, msg: 'token expired' } });
+      }
+      return reply({ code: 0, msg: 'ok', data: {} });
+    });
+
+    const result = await feishuContacts.setUserSuspended({ auth: expiringAuth, input: { openId: 'ou_1', suspended: true } });
+
+    expect(result).toEqual({ open_id: 'ou_1', suspended: true });
+    expect(memberCalls('PATCH')).toHaveLength(2);
+  });
+
+  it('gives up with an HTTP 401 when the fresh token is rejected as well', async () => {
+    const rejectedAuth = { ...auth, props: { ...auth.props, appId: 'cli_rejected' } };
+    sendRequest.mockImplementation(async ({ url }: { url: string }) => {
+      if (url.endsWith('/tenant_access_token/internal')) {
+        return reply({ code: 0, msg: 'ok', tenant_access_token: 't-any', expire: 7200 });
+      }
+      return reply({ code: 99991664, msg: 'token expired' });
+    });
+
+    await expect(
+      feishuContacts.setUserSuspended({ auth: rejectedAuth, input: { openId: 'ou_1', suspended: true } }),
+    ).rejects.toThrowError(/^HTTP 401: token expired.*Feishu error 99991664/);
+  });
+});
+
 describe('feishuContacts.normalizeMobile', () => {
   it.each([
     ['13800000000', '+8613800000000'],

@@ -430,9 +430,11 @@ function CopilotPanel({ wf, state, editing, flush, onClose, onLocate, onApply, o
       setBusy(false);
     }, 800);
   };
+  const graphSig = (w) => JSON.stringify({ trigger: w.trigger, steps: w.steps });
   const apply = (m) => {
+    const beforeSig = graphSig(wf);
     onApply(m.patch, m.focus);
-    setMsg(m.id, { status: 'applied' });
+    setMsg(m.id, { status: 'applied', beforeSig });
     onPreview(null);
   };
   const suggestions = copilotSuggestions(wf, state);
@@ -473,6 +475,7 @@ function CopilotPanel({ wf, state, editing, flush, onClose, onLocate, onApply, o
       <//>`;
     }
     if (m.kind === 'proposal') {
+      const status = m.status === 'applied' && m.beforeSig && m.beforeSig === graphSig(wf) ? 'open' : m.status;
       return html`<${Fragment}>
         <p>${m.intro}</p>
         <div className="cp-card">
@@ -480,14 +483,14 @@ function CopilotPanel({ wf, state, editing, flush, onClose, onLocate, onApply, o
           <ul className="cp-changes">${m.changes.map((c, i) => html`<li key=${i}>
             <b>${c.name}</b><span>${c.text}</span>
           </li>`)}</ul>
-          ${m.status === 'open' && html`<div className="cp-actions">
+          ${status === 'open' && html`<div className="cp-actions">
             ${editing
               ? html`<${Button} size="xs" variant="primary" icon="Check" onClick=${() => apply(m)}>应用修改<//>`
               : html`<${Button} size="xs" variant="primary" icon="PenLine" onClick=${onEnterEdit}>进入编辑后应用<//>`}
             ${m.changes.some((c) => c.nodeId) && html`<${Button} size="xs" icon="ScanEye" onClick=${() => onPreview(m.changes.map((c) => c.nodeId).filter(Boolean))}>在画布中标出<//>`}
             <${Button} size="xs" variant="ghost" onClick=${() => { setMsg(m.id, { status: 'discarded' }); onPreview(null); }}>不用了<//>
           </div>`}
-          ${m.status === 'applied' && html`<div className="cp-state is-ok"><${Icon} name="CircleCheck" size=${14} />已应用，可以按 ${shortcutLabel('mod+z')} 撤销</div>`}
+          ${status === 'applied' && html`<div className="cp-state is-ok"><${Icon} name="CircleCheck" size=${14} />已应用，可以按 ${shortcutLabel('mod+z')} 撤销</div>`}
           ${m.status === 'discarded' && html`<div className="cp-state"><${Icon} name="CircleSlash" size=${14} />已放弃这组修改</div>`}
         </div>
       <//>`;

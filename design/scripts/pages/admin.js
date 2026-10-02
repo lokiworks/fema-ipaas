@@ -677,7 +677,7 @@ function AdminUsage() {
   const rows = [...perProject, ...(orphan > 0 ? [{ id: 'deleted', name: '已删除的项目', runs: orphan, rate: runMetrics(month.filter((r) => !state.projects.some((p) => p.id === r.projectId))).rate, deleted: true }] : [])].sort((a, b) => b.runs - a.runs);
   const shares = adminShares(rows.map((r) => r.runs));
   const limits = [
-    ['同时运行的工作流', `${running} / ${ADMIN_LIMITS.concurrentRuns}`, (running / ADMIN_LIMITS.concurrentRuns) * 100, 'FEMA_MAX_CONCURRENT_RUNS'],
+    ['同时运行的工作流（实例上限，还受在线节点容量限制）', `${running} / ${ADMIN_LIMITS.concurrentRuns}`, (running / ADMIN_LIMITS.concurrentRuns) * 100, 'FEMA_MAX_CONCURRENT_RUNS'],
     ['每月运行次数', `最多 ${fmt.number(ADMIN_LIMITS.runsPerMonth)} 次`, null, 'FEMA_MAX_RUNS_PER_MONTH'],
     ['每个项目的工作流', `最多 ${fmt.number(ADMIN_LIMITS.projectWorkflows)} 个`, null, 'FEMA_PROJECT_MAX_WORKFLOWS'],
     ['单次运行节点数', '最多 40,000', null, 'FEMA_MAX_NODES_PER_RUN'],

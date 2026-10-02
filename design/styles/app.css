@@ -212,6 +212,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .tab-count { font-size: 11px; padding: 0 6px; border-radius: 999px; background: var(--muted); color: var(--muted-foreground); line-height: 18px; font-weight: 500; }
 .tab.is-active .tab-count { background: var(--primary-100); color: var(--primary-text); }
 .tab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--destructive); }
+.tab-dot.is-warning { background: var(--warning); }
 
 .tag { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; background: var(--muted); color: var(--text-2); line-height: 1; }
 .tag-sm { height: 18px; padding: 0 6px; font-size: 11px; border-radius: 4px; }

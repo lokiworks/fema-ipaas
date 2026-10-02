@@ -925,7 +925,9 @@ function aigenSchedule(ctx, forced) {
 
 function aigenGroupName(text) {
   const m = /(?:发到|推送到|通知|同步到|发给|提醒|发送到)\s*([^，。,.；;！!？?\n]{1,14}?群)/.exec(String(text || ''));
-  return m ? m[1].trim() : '';
+  if (m) return m[1].trim();
+  const role = /(?:通知|提醒|告知|发给|发到)\s*(IT|HR|人力|行政|财务)/i.exec(String(text || ''));
+  return role ? ({ it: 'IT 桌面支持', hr: 'HR 入职服务', 人力: 'HR 入职服务', 行政: '行政综合群', 财务: '财务共享群' })[role[1].toLowerCase()] || '' : '';
 }
 
 function aigenTitleFrom(text) {
@@ -1120,13 +1122,15 @@ function aigenCapStep(id, ctx, env) {
     const multi = AIGEN_IMS.filter((x) => ctx.usable(x).length).length > 1;
     const qIm = !imPick.said && multi ? aigenImQuestion(ctx, 'im', imPick.im) : null;
     const im = qIm ? aigenAnswer(ctx, qIm) : imPick.im;
-    const groupAt = ctx.find(['群']);
+    const groupAt = aigenGroupName(ctx.text) ? 0 : ctx.find(['群']);
     const personAt = ctx.find(['申请人', '提交人', '提问人', '发起人', '本人', '负责人', '上级', '对方']);
     const qTarget = groupAt < 0 && personAt < 0 ? { id: 'notifyTarget', short: '通知发给谁', title: '通知发到群里还是发给个人？', desc: '描述里没有说通知谁。', options: [{ value: 'group', label: '群聊' }, { value: 'person', label: '个人' }], recommended: 'group' } : null;
     const targets = qTarget ? [aigenAnswer(ctx, qTarget)] : [groupAt >= 0 && 'group', personAt >= 0 && 'person'].filter(Boolean);
     const prevTicket = env.prior.find((s) => s.key === 'ticket' && s.connector === 'jira' && ctx.has(s.key));
     const base = prevAi ? `{{@${prevAi.key}.result}}` : headline;
-    const content = base && prevTicket ? `${base}，工单 {{@ticket.key}}` : base;
+    const sampleName = env.sample && typeof env.sample === 'object' && env.sample.name !== undefined;
+    const fallback = !base && sampleName ? `${env.trigger.name}：{{trigger.name}}${env.sample.employee_id !== undefined ? '（{{trigger.employee_id}}）' : ''}` : '';
+    const content = base && prevTicket ? `${base}，工单 {{@ticket.key}}` : base || fallback;
     const groupName = aigenGroupName(ctx.text);
     const deps = [qIm && 'im', qTarget && 'notifyTarget'].filter(Boolean);
     const steps = targets.map((target) => aigenNotify(target === 'group' ? 'notify' : 'notifyPerson', im, {

@@ -934,8 +934,10 @@ function BranchConfig({ node, onChange, ctx, focusBranch, readOnly }) {
   const setBranch = (bid, patch) => onChange({ branches: node.branches.map((b) => (b.id === bid ? { ...b, ...patch } : b)) });
   const isParallel = node.kind === 'parallel';
   const normal = node.branches.filter((b) => !b.isDefault);
-  const switchType = (v) => {
+  const switchType = async (v) => {
     if (readOnly || v === (isParallel ? 'parallel' : 'branch')) return;
+    const hasDefault = node.branches.some((b) => b.isDefault);
+    if (v === 'parallel' && hasDefault && !(await confirmDialog({ title: '切换为并行分支？', content: '并行分支没有「默认」的概念：原来的默认分支会变成普通分支，和其他分支同时运行，不再是「以上条件都不满足才运行」。切回互斥分支会恢复默认。', okText: '切换' }))) return;
     if (v === 'parallel') {
       onChange({ kind: 'parallel', branches: node.branches.map((b) => (b.isDefault ? { id: b.id, name: b.name, steps: b.steps, wasDefault: true } : b)) });
       return;
@@ -1288,7 +1290,11 @@ function NodePanel({ wf, node, issues, onChange, onClose, onDelete, onCopy, stat
     }
     onChange({ settings: next });
   };
-  const tabItems = tabs.map((t) => ({ ...t, dot: !readOnly && issues.some((i) => i.tab === t.value && i.level === 'error') }));
+  const tabItems = tabs.map((t) => {
+    const error = !readOnly && issues.some((i) => i.tab === t.value && i.level === 'error');
+    const warn = !readOnly && issues.some((i) => i.tab === t.value && i.level === 'warning');
+    return { ...t, dot: error || warn, dotTone: error ? 'error' : 'warning' };
+  });
   const c = node.connector && resolveConnector(node.connector);
   const fields = node.kind === 'action' || node.kind === 'trigger' ? fieldsFor(node) : [];
   const out = outputOf(node, wf);

@@ -493,7 +493,7 @@ function nodeIssues(node, state, context) {
     } else if (head === 'loop') {
       if (!ctx.loops.length) push('error', refTab, '「循环变量」只能在循环体内使用', true);
     } else if (!upstreamIds.has(head)) {
-      push('error', refTab, known[head] ? `引用了非上游节点「${known[head].name}」的出参` : '引用的节点已被删除', true);
+      push('error', refTab, known[head] ? `引用了非上游节点「${known[head].name}」的出参` : '引用的节点在这个工作流里不存在（已删除，或来自别的工作流）', true);
     }
   });
   return issues;

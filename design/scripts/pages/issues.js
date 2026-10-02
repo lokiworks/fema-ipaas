@@ -823,7 +823,7 @@ function IssuesPage() {
   const filtering = Boolean(ql || project || severity || env || owner || status !== 'active');
   const clear = () => { setQ(''); setProject(null); setSeverity(null); setEnv(null); setOwner(null); setStatus('active'); setPage(1); };
   const setQuick = (key) => { setStatus(status === key ? 'active' : key); setPage(1); };
-  const weekAgo = now - 7 * DAY;
+  const weekAgo = issuesDayStart(now) - 6 * DAY;
   const weekFailures = logsVisibleRuns(state).filter((r) => r.kind === 'run' && ['failed', 'timeout'].includes(r.status) && r.startedAt >= weekAgo).length;
   const weekIssues = issues.filter((i) => i.lastAt >= weekAgo).length;
   const sigSet = new Set(issues.map((i) => i.sig));
@@ -855,7 +855,7 @@ function IssuesPage() {
         </div>
       </div>`,
     },
-    { key: 'impact', title: '影响', width: 124, render: (i) => html`<div className="iss-two"><span><b>${i.count}</b> 次运行</span><span className="muted text-xs">${i.workflowIds.length} 个工作流</span></div>` },
+    { key: 'impact', title: '累计影响', width: 124, render: (i) => html`<div className="iss-two"><span><b>${i.count}</b> 次运行</span><span className="muted text-xs">${i.workflowIds.length} 个工作流</span></div>` },
     { key: 'spark', title: '近 7 天', width: 96, render: (i) => html`<${IssuesSpark} data=${issuesSpark(i, byId, now)} muted=${['resolved', 'ignored'].includes(i.status)} />` },
     { key: 'seen', title: '首次 / 最近', width: 118, render: (i) => html`<div className="iss-two"><span className="text-xs muted" title=${fmt.dateTime(i.firstAt)}>${fmt.relative(i.firstAt)}</span><span title=${fmt.dateTime(i.lastAt)}>${fmt.relative(i.lastAt)}</span></div>` },
     {
@@ -1102,7 +1102,7 @@ function IssuesAlertsCard({ issue, state }) {
     <div className="iss-noise">
       <div className="iss-noise-figure"><b>${issue.count}</b><span>次失败</span><${Icon} name="ArrowRight" size=${14} className="muted" /><b>${events.length}</b><span>条告警</span></div>
       <div className="text-xs muted">${events.length
-        ? `同一问题在聚合窗口内只通知一次，其余失败合并进已发出的告警${merged > events.length ? `（共合并 ${merged} 次）` : ''}。`
+        ? `同一问题在聚合窗口内只通知一次，其余失败合并进已发出的告警${merged > events.length ? `（共覆盖 ${Math.min(merged, issue.count)} 次失败${merged > issue.count ? '，不同策略的告警覆盖范围有重叠' : ''}）` : ''}。`
         : covering.length
           ? (covering[0].updatedAt > issue.firstAt
             ? `「${covering[0].name}」覆盖这个问题，但这个问题在策略生效（${fmt.date(covering[0].updatedAt)}）之前就出现了，没有发出过告警；它复发时才会通知。${issue.assignee ? '' : '它还没有负责人，建议先指派。'}`
@@ -1928,9 +1928,11 @@ function AlertPoliciesPage() {
   const recList = events.filter((e) => (!recPolicy || e.policyId === recPolicy) && (!recKind || e.kind === recKind));
   const recPages = Math.max(1, Math.ceil(recList.length / 10));
   const recCur = Math.min(recPage, recPages);
-  const weekAgo = Date.now() - 7 * DAY;
+  const weekAgo = issuesDayStart(Date.now()) - 6 * DAY;
   const week = events.filter((e) => e.at >= weekAgo);
-  const weekMerged = week.reduce((a, e) => a + (e.merged || 1), 0);
+  const issueCounts = Object.fromEntries(collectIssues(state).map((i) => [i.sig, i.count]));
+  const weekMergedBySig = week.reduce((acc, e) => ({ ...acc, [e.issue]: (acc[e.issue] || 0) + (e.merged || 1) }), {});
+  const weekMerged = Object.entries(weekMergedBySig).reduce((a, [sig, n]) => a + (issueCounts[sig] ? Math.min(n, issueCounts[sig]) : n), 0);
   const tabs = html`<${Tabs} value=${tab} onChange=${setTab} items=${[
     { value: 'policies', label: '告警策略', count: policies.length },
     { value: 'channels', label: '通知渠道', count: channels.length, dot: channels.some((c) => !issuesChannelState(state, c).ok) },

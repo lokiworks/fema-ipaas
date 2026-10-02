@@ -290,15 +290,18 @@ function McpListPage() {
     setPending({ connector: c.id, op: o.key, key: uid('pd') });
   }, [route.query.newTool, route.query.connector, route.query.op]);
   const ql = q.trim().toLowerCase();
-  const inTab = state.mcpServices.filter((s) => (tab === 'all' ? true : tab === 'mine' ? s.type === 'custom' && s.owner === state.me : Boolean(s.obtained)));
+  const inTab = state.mcpServices.filter((s) => (tab === 'all' ? true : tab === 'mine' ? s.type === 'custom' && s.owner === state.me : tab === 'others' ? s.type === 'custom' && s.owner !== state.me : Boolean(s.obtained)));
   const list = inTab.filter((s) => !ql || `${s.name}${s.description}${s.key}`.toLowerCase().includes(ql));
   const counts = {
     all: state.mcpServices.length,
     mine: state.mcpServices.filter((s) => s.type === 'custom' && s.owner === state.me).length,
     got: state.mcpServices.filter((s) => s.obtained).length,
+    others: state.mcpServices.filter((s) => s.type === 'custom' && s.owner !== state.me).length,
   };
   const empty = ql
     ? html`<${Empty} icon="SearchX" title="没有找到匹配的服务" description=${`没有名称、标识或描述包含「${q.trim()}」的服务`} action=${html`<${Button} onClick=${() => setQ('')}>清除搜索<//>`} />`
+    : tab === 'others'
+      ? html`<${Empty} icon="Users" title="还没有其他成员开发的服务" description="同事创建的 MCP 服务会出现在这里。" />`
     : tab === 'got'
       ? html`<${Empty} icon="Download" title="还没有获取任何服务" description="在「全部服务」中打开平台官方服务并点击「获取」，就能在 AI 助手里使用它。" />`
       : html`<${Empty} icon="Server" title="你还没有开发 MCP 服务" description="把连接器操作或已发布的工作流打包成服务，AI 助手就能直接调用。" action=${html`<${Button} variant="primary" icon="Plus" onClick=${() => setCreating({})}>创建 MCP 服务<//>`} />`;
@@ -309,7 +312,7 @@ function McpListPage() {
       actions=${html`<${Button} variant="primary" icon="Plus" onClick=${() => setCreating({})}>创建 MCP 服务<//>`}
     />
     <div className="toolbar">
-      <${Tabs} value=${tab} onChange=${setTab} items=${[{ value: 'all', label: '全部服务', count: counts.all }, { value: 'mine', label: '我开发的', count: counts.mine }, { value: 'got', label: '我获取的', count: counts.got }]} />
+      <${Tabs} value=${tab} onChange=${setTab} items=${[{ value: 'all', label: '全部服务', count: counts.all }, { value: 'mine', label: '我开发的', count: counts.mine }, { value: 'got', label: '我获取的', count: counts.got }, { value: 'others', label: '其他成员开发', count: counts.others }]} />
       <span className="spacer" />
       <${SearchInput} value=${q} onChange=${setQ} placeholder="搜索服务名称、标识或描述" width=${260} />
     </div>
@@ -319,7 +322,7 @@ function McpListPage() {
         <div className="conn-desc">${s.description}</div>
         <div className="conn-foot"><span>${s.tools.length} 个工具</span><span>近 7 天调用 ${fmt.number(s.calls7d)} 次</span><span className="spacer" />${s.owner ? html`<${Tooltip} content=${`所有者：${personName(s.owner)}`}><${Avatar} name=${personName(s.owner)} size=${20} /><//>` : html`<span>平台维护</span>`}</div>
       </button>`)}
-      ${!ql && tab !== 'got' && html`<button type="button" className="mcp-card is-new" onClick=${() => setCreating({})}><${Icon} name="Plus" size=${20} /><span>创建 MCP 服务</span></button>`}
+      ${!ql && !['got', 'others'].includes(tab) && html`<button type="button" className="mcp-card is-new" onClick=${() => setCreating({})}><${Icon} name="Plus" size=${20} /><span>创建 MCP 服务</span></button>`}
     </div>`}
     ${creating && html`<${McpInfoModal} key="create" onClose=${() => setCreating(null)} onCreated=${creating.then ? (svc) => navigate(`/mcp/${svc.id}?newTool=connector&connector=${encodeURIComponent(creating.then.connector)}&op=${encodeURIComponent(creating.then.op)}`) : null} />`}
     ${pending && html`<${McpAddToServiceModal} key=${pending.key} pending=${pending} onClose=${() => setPending(null)} onCreateNew=${() => { setCreating({ then: pending }); setPending(null); }} />`}

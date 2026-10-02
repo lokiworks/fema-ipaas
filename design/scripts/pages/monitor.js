@@ -619,7 +619,7 @@ function MonitorPage() {
       <${Stat} label="终止次数" value=${fmt.number(stopped)} delta=${`占比 ${share(stopped)}`} onClick=${() => setMetric('stopped')} active=${eff.metric === 'stopped'} />
       <${Stat} label="运行中工作流" value=${fmt.number(wfScope.filter((w) => w.status === 'enabled').length)} delta=${`共 ${wfScope.length} 个工作流`} help="已启动运行的工作流数量" />
       <${Stat} label="运行节点数" value=${fmt.number(nodeTotal)} delta=${m.total ? `平均每次 ${(nodeTotal / m.total).toFixed(1)} 个` : '所选范围内没有运行'} help="所选范围内实际执行的节点次数之和，未执行的节点不计入" />
-      <${Stat} label="峰值并发" value=${fmt.number(peak.max)} suffix=${capacity ? `/ ${capacity}` : undefined} delta=${peak.max ? `出现在 ${fmt.short(peak.at)}` : '所选范围内没有运行'} help=${capacity ? '同一时刻正在运行的工作流数量的最大值；上限为在线执行节点的并发数之和' : '同一时刻正在运行的工作流数量的最大值'} />
+      <${Stat} label="峰值并发" value=${fmt.number(peak.max)} suffix=${capacity ? `/ ${capacity}` : undefined} delta=${peak.max ? `出现在 ${fmt.short(peak.at)}` : '所选范围内没有运行'} help=${capacity ? `同一时刻正在运行的工作流数量的最大值；分母是在线执行节点的并发容量之和，实例设置的并发上限是 ${ADMIN_LIMITS.concurrentRuns}，实际生效的是两者中较小的` : '同一时刻正在运行的工作流数量的最大值'} />
     </div>
     <div className="monitor-grid">
       <${Card}

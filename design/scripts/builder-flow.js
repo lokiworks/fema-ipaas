@@ -12,13 +12,14 @@ function FlowNodeCard({ node, ctx }) {
   const run = ctx.runState && ctx.runState[node.id];
   const issues = ctx.issuesByNode[node.id] || [];
   const hasError = ctx.editing && issues.some((i) => i.level === 'error');
+  const hasWarn = ctx.editing && !hasError && issues.some((i) => i.level === 'warning');
   const isTrigger = node.kind === 'trigger';
   const empty = isTrigger && !node.connector;
   const linkable = ctx.linking && ctx.linking.upstreamIds.includes(node.id);
   const dimmed = ctx.linking && !linkable;
   const matched = ctx.searchIds && ctx.searchIds.includes(node.id);
   return html`<div
-    className=${cx('fnode', selected && 'is-selected', hasError && 'has-error', run && `run-${run}`, ctx.highlightId === node.id && 'is-highlight', linkable && 'is-linkable', dimmed && 'is-dimmed', matched && 'is-matched', empty && 'is-empty')}
+    className=${cx('fnode', selected && 'is-selected', hasError && 'has-error', hasWarn && 'has-warning', run && `run-${run}`, ctx.highlightId === node.id && 'is-highlight', linkable && 'is-linkable', dimmed && 'is-dimmed', matched && 'is-matched', empty && 'is-empty')}
     data-node=${node.id}
     onClick=${(e) => { e.stopPropagation(); ctx.onSelect(node.id); }}
     onContextMenu=${(e) => { e.preventDefault(); e.stopPropagation(); if (ctx.editing && !empty) ctx.onContextMenu(node.id, e); }}
@@ -29,6 +30,7 @@ function FlowNodeCard({ node, ctx }) {
         <${Icon} name=${run === 'success' ? 'Check' : run === 'reused' ? 'History' : run === 'running' ? 'LoaderCircle' : ['failed', 'timeout'].includes(run) ? 'X' : run === 'waiting' ? 'Pause' : 'Minus'} size=${11} strokeWidth=${3} className=${run === 'running' ? 'spin' : ''} />
       </span>`}
       ${!run && hasError && html`<span className="fnode-status tone-danger"><${Icon} name="X" size=${11} strokeWidth=${3} /></span>`}
+      ${!run && hasWarn && html`<span className="fnode-status tone-warning" title=${issues.filter((i) => i.level === 'warning').map((i) => i.text).join('；')}><${Icon} name="TriangleAlert" size=${11} strokeWidth=${3} /></span>`}
     </div>
     <div className="fnode-text">
       <div className="fnode-name">${empty ? '选择触发器' : node.name}</div>

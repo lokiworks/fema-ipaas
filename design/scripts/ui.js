@@ -439,7 +439,7 @@ function Tabs({ value, onChange, items, variant = 'line', className, extra }) {
       ${it.icon && html`<${Icon} name=${it.icon} size=${14} />`}
       ${it.label}
       ${it.count != null && html`<span className="tab-count">${it.count}</span>`}
-      ${it.dot && html`<span className="tab-dot" />`}
+      ${it.dot && html`<span className=${cx('tab-dot', it.dotTone === 'warning' && 'is-warning')} />`}
     </button>`)}
     ${extra && html`<div className="tabs-extra">${extra}</div>`}
   </div>`;

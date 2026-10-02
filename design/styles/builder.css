@@ -73,6 +73,8 @@
 .fnode-tile > .cicon.is-kind svg { width: 24px; height: 24px; }
 .fnode:hover .fnode-tile { border-color: var(--border-strong); }
 .fnode.is-selected .fnode-tile { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-100); }
+.fnode.has-warning .fnode-tile { border-color: color-mix(in srgb, var(--warning) 70%, transparent); }
+.fnode-status.tone-warning { background: var(--warning); }
 .fnode.has-error .fnode-tile { border-color: color-mix(in srgb, var(--destructive) 70%, transparent); }
 .fnode.has-error.is-selected .fnode-tile { box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 18%, transparent); }
 .fnode.is-empty .fnode-tile { border-style: dashed; border-color: var(--primary); background: var(--primary-50); color: var(--primary-text); }

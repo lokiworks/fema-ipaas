@@ -902,6 +902,14 @@ function referencesTo({ wf, id }) {
   return allNodes(wf).filter((n) => !removed.has(n.id) && re.test(JSON.stringify([n.config || {}, n.branches || [], n.conditions || []])));
 }
 
+function debugPathIds({ wf, state, text }) {
+  const payload = (() => { try { return JSON.parse(text); } catch (e) { return null; } })();
+  if (!payload) return null;
+  const vars = Object.fromEntries(state.variables.filter((v) => v.projectId === wf.projectId).map((v) => [v.key, (v.values || {}).default]));
+  const decide = branchDecider(wf, { payload, vars });
+  return new Set(flattenPath(wf.steps, () => 0, null, decide).map((p) => p.node.id));
+}
+
 function writeNodesOf({ wf, state, env }) {
   const readOnly = (n) => /^(get|query|search|list|read|bitable_search)/.test(n.op || '') || (typeof (n.config || {}).sql === 'string' && /^\s*select\b/i.test(n.config.sql));
   return allNodes(wf).filter((n) => n.kind === 'action' && n.connectionId && !readOnly(n)).map((n) => {
@@ -966,7 +974,8 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
   const used = new Set(allNodes(wf).map((n) => (['ai', 'agent'].includes(n.kind) ? n.config.connectionId : n.connectionId)).filter(Boolean));
   const swaps = Object.entries(env.connectionMap || {}).filter(([from]) => used.has(from)).map(([from, to]) => [state.connections.find((c) => c.id === from), state.connections.find((c) => c.id === to)]).filter(([a, b]) => a && b);
   const valid = (() => { try { JSON.parse(text); return true; } catch (e) { return false; } })();
-  const writes = writeNodesOf({ wf, state, env });
+  const pathIds = debugPathIds({ wf, state, text });
+  const writes = writeNodesOf({ wf, state, env }).filter((w) => !pathIds || pathIds.has(w.id));
   const risky = writes.some((w) => w.sameAsProd) || (env && env.key === 'prod');
   const editor = (rows) => html`<${CodeEditor} light value=${text} onChange=${setText} rows=${rows} label="调试出参" tools=${html`<${Fragment}>
     <${Button} size="xs" icon="CodeXml" onClick=${() => setText(sample)}>生成默认出参<//>
@@ -992,7 +1001,7 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
         ${swaps.map(([a, b]) => html`<div key=${a.id} className="field-hint">连接替换：${a.name} → ${b.name}</div>`)}
         ${env.key === 'prod' && html`<div className="field-hint is-warning">调试会真实调用生产环境的系统，写入类操作会产生真实数据。</div>`}
       <//>`}
-      ${writes.length > 0 && html`<${Alert} tone=${risky ? 'warning' : 'info'} title=${`调试${writes.some((w) => w.maybe) ? '最多' : ''}会真的执行 ${writes.length} 个写操作`}>
+      ${writes.length > 0 && html`<${Alert} tone=${risky ? 'warning' : 'info'} title=${`调试会真的执行 ${writes.length} 个写操作`}>
         ${writes.map((w) => html`<div key=${w.id}>「${w.name}」→ ${w.conn}${w.sameAsProd ? '（测试环境没有替换，和生产是同一个连接）' : ''}</div>`)}
         <div className="text-xs muted" style=${{ marginTop: 4 }}>建议用测试数据，例如测试员工的工号和手机号。</div>
       <//>`}
@@ -1164,7 +1173,9 @@ function PublishModal({ open, onClose, wf, state }) {
     return () => clearTimeout(timer.current);
   }, [open]);
   const current = deploymentOf(wf, staged ? 'test' : 'prod');
-  const base = current && state.versions.find((v) => v.workflowId === wf.id && v.version === current.version);
+  const prodDep = staged && !current && wf.published ? deploymentOf(wf, 'prod') : null;
+  const baseDep = current || prodDep;
+  const base = baseDep && state.versions.find((v) => v.workflowId === wf.id && v.version === baseDep.version);
   const diff = open && base && base.snapshot ? diffGraphs(base.snapshot, wf) : null;
   const nextVersion = nextVersionNumber(state, wf);
   const used = new Set(allNodes(wf).map((n) => (['ai', 'agent'].includes(n.kind) ? n.config.connectionId : n.connectionId)).filter(Boolean));
@@ -1204,7 +1215,7 @@ function PublishModal({ open, onClose, wf, state }) {
       <//>`
       : html`<${Alert} tone="warning">发布后，工作流将开始运行。若当前工作流正在运行，新版本会替换正在运行的版本，请慎重操作。<//>`}
     <div style=${{ height: 16 }} />
-    <${Field} label="本次改动" help=${current ? `和当前${staged ? '测试环境' : '线上'}的 v${current.version} 相比` : ''}>
+    <${Field} label="本次改动" help=${baseDep ? `和当前${current ? (staged ? '测试环境' : '线上') : '生产环境'}的 v${baseDep.version} 相比` : ''}>
       ${!diff
         ? html`<div className="text-sm muted">首次发布</div>`
         : diff.same

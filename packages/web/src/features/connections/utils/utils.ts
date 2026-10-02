@@ -84,6 +84,17 @@ export const connectionUtils = {
       ? accountIdentifier
       : undefined;
   },
+  onlyUsableConnection(
+    connections: ConnectionWithoutSensitiveData[],
+  ): ConnectionWithoutSensitiveData | null {
+    if (connections.length === 1) {
+      return connections[0];
+    }
+    const active = connections.filter(
+      (connection) => connection.status === ConnectionStatus.ACTIVE,
+    );
+    return active.length === 1 ? active[0] : null;
+  },
   getAuthTypeLabel(type: ConnectionType): string {
     switch (type) {
       case ConnectionType.OAUTH2:

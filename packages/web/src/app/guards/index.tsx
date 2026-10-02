@@ -69,6 +69,30 @@ const MonitorPage = lazyWithRetry(
   'run-monitor',
 );
 
+const SolutionsPage = lazyWithRetry(
+  () =>
+    import('../routes/solutions').then((m) => ({
+      default: m.SolutionsPage,
+    })),
+  'solutions',
+);
+
+const SolutionDetailPage = lazyWithRetry(
+  () =>
+    import('../routes/solutions/detail').then((m) => ({
+      default: m.SolutionDetailPage,
+    })),
+  'solution-detail',
+);
+
+const SolutionInstallPage = lazyWithRetry(
+  () =>
+    import('../routes/solutions/install').then((m) => ({
+      default: m.SolutionInstallPage,
+    })),
+  'solution-install',
+);
+
 const AccountPage = lazyWithRetry(
   () =>
     import('../routes/account').then((m) => ({
@@ -161,6 +185,48 @@ const routes = [
           <PageTitle title="Run monitoring">
             <Suspense fallback={<RouteLoadingBar />}>
               <MonitorPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
+    path: '/solutions',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Solutions">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <SolutionsPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
+    path: '/solutions/:id',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Solution">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <SolutionDetailPage />
+            </Suspense>
+          </PageTitle>
+        </ProjectDashboardLayout>
+      </AllowOnlyLoggedInUserOnlyGuard>
+    ),
+  },
+  {
+    path: '/solutions/:id/install',
+    element: (
+      <AllowOnlyLoggedInUserOnlyGuard>
+        <ProjectDashboardLayout>
+          <PageTitle title="Install solution">
+            <Suspense fallback={<RouteLoadingBar />}>
+              <SolutionInstallPage />
             </Suspense>
           </PageTitle>
         </ProjectDashboardLayout>

@@ -1,4 +1,4 @@
-import { TerminalIcon } from 'lucide-react';
+import { PackageIcon, TerminalIcon } from 'lucide-react';
 import { type ComponentType } from 'react';
 
 import { CompassIcon } from '@/components/icons/compass';
@@ -37,6 +37,12 @@ export const STATIC_PAGES: StaticPage[] = [
     label: 'Explore Templates',
     href: '/templates',
     icon: CompassIcon,
+  },
+  {
+    id: 'page-solutions',
+    label: 'Solutions',
+    href: '/solutions',
+    icon: PackageIcon,
   },
   // Tenant Admin pages
   {

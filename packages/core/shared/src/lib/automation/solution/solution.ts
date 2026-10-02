@@ -171,7 +171,7 @@ export type SolutionInstall = z.infer<typeof SolutionInstall>
 export const ListSolutionsRequestQuery = z.object({
     category: z.string().optional(),
     search: z.string().optional(),
-    mine: z.coerce.boolean().optional(),
+    mine: z.enum(['true', 'false']).transform((value) => value === 'true').optional(),
 })
 export type ListSolutionsRequestQuery = z.infer<typeof ListSolutionsRequestQuery>
 

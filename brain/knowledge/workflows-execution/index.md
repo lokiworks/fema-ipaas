@@ -85,3 +85,4 @@ Reusable workflow/table blueprints. Types: OFFICIAL (FEMA Integration Platform-c
 - **运行日志** — 跨项目的运行列表、全部 / 任一条件筛选、重跑血缘与重跑资格
 - **发布审批与测试环境** — 发布申请、测试值与测试连接替换、回滚
 - **字段映射与映射表** — `map_fields`、映射表、触发器去重
+- **方案** — 带版本的流程包、方案库、5 步安装向导、升级

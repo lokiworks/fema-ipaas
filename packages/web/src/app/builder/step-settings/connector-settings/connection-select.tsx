@@ -386,7 +386,7 @@ function AutoPickSingleConnection({
   onPick: (externalId: string) => void;
 }) {
   const picked = useRef(false);
-  const only = connectionSelectUtils.onlyUsableConnection(connections);
+  const only = connectionUtils.onlyUsableConnection(connections);
   useEffect(() => {
     if (!enabled || picked.current || isNil(only)) {
       return;
@@ -396,20 +396,6 @@ function AutoPickSingleConnection({
   }, [enabled, only, onPick]);
   return null;
 }
-
-const connectionSelectUtils = {
-  onlyUsableConnection(
-    connections: ConnectionWithoutSensitiveData[],
-  ): ConnectionWithoutSensitiveData | null {
-    if (connections.length === 1) {
-      return connections[0];
-    }
-    const active = connections.filter(
-      (connection) => connection.status === ConnectionStatus.ACTIVE,
-    );
-    return active.length === 1 ? active[0] : null;
-  },
-};
 
 function addBrackets(str: string) {
   return `{{connections['${str}']}}`;

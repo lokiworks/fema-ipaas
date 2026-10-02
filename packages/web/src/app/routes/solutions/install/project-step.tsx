@@ -1,0 +1,81 @@
+import { SolutionPackage } from '@fema-ipaas/shared';
+import { t } from 'i18next';
+import { useState } from 'react';
+
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { getProjectName, projectCollectionUtils } from '@/features/projects';
+
+import { WizardFooter } from './wizard-parts';
+
+function ProjectStep({ pkg, projectId, onNext }: ProjectStepProps) {
+  const { data: projects } = projectCollectionUtils.useAll();
+  const [selected, setSelected] = useState(projectId);
+
+  return (
+    <div className="flex max-w-xl flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <Label>{t('Install into project')}</Label>
+        <Select value={selected} onValueChange={setSelected}>
+          <SelectTrigger>
+            <SelectValue placeholder={t('Select a project')} />
+          </SelectTrigger>
+          <SelectContent>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.id}>
+                {getProjectName(project)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          {t('You need permission to edit workflows in the project.')}
+        </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="text-sm font-medium">
+          {t('After installing, the project gets')}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary">
+            {t('{count, plural, =1 {1 workflow} other {# workflows}}', {
+              count: pkg.workflows.length,
+            })}
+          </Badge>
+          {pkg.mappingTables.length > 0 && (
+            <Badge variant="secondary">
+              {t(
+                '{count, plural, =1 {1 mapping table} other {# mapping tables}}',
+                {
+                  count: pkg.mappingTables.length,
+                },
+              )}
+            </Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {t('Workflows are created disabled. Test them before enabling.')}
+        </p>
+      </div>
+      <WizardFooter
+        nextDisabled={selected.length === 0}
+        onNext={() => onNext(selected)}
+      />
+    </div>
+  );
+}
+
+export { ProjectStep };
+
+type ProjectStepProps = {
+  pkg: SolutionPackage;
+  projectId: string;
+  onNext: (projectId: string) => void;
+};

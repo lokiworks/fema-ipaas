@@ -8,6 +8,7 @@ import {
 import { t } from 'i18next';
 import {
   ActivityIcon,
+  PackageIcon,
   Search,
   PuzzleIcon,
   ScrollTextIcon,
@@ -156,6 +157,16 @@ export function ProjectDashboardSidebar({
     },
   };
 
+  const solutionsLink: SidebarItemType = {
+    type: 'link',
+    to: '/solutions',
+    label: t('Solutions'),
+    show: !embedState.isEmbedded,
+    icon: PackageIcon,
+    hasPermission: true,
+    isSubItem: false,
+  };
+
   const connectorsLink: SidebarItemType = {
     type: 'link',
     to: '/tenant/connectors',
@@ -198,6 +209,7 @@ export function ProjectDashboardSidebar({
 
   const items = [
     exploreLink,
+    solutionsLink,
     issuesLink,
     runLogsLink,
     monitorLink,

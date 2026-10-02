@@ -90,7 +90,8 @@ export function ProjectDashboardLayout({
   const hideHeader =
     itemsWithoutHeader.some((item) => location.pathname.includes(item.to)) ||
     isTenantPage ||
-    PROJECTLESS_PATHS.includes(location.pathname);
+    PROJECTLESS_PATHS.includes(location.pathname) ||
+    location.pathname.startsWith(SOLUTIONS_PATH);
 
   return (
     <ProjectChangedRedirector currentProjectId={currentProjectId}>
@@ -151,6 +152,8 @@ function ProjectDashboardLayoutInner({
     </SidebarProvider>
   );
 }
+
+const SOLUTIONS_PATH = '/solutions';
 
 const PROJECTLESS_PATHS = [
   '/',

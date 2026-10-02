@@ -64,6 +64,7 @@ import { projectWorkspaceModule } from './project-workspace/project-workspace.mo
 import { releaseModule } from './release/release.module'
 import { runLogModule } from './run-logs/run-log.module'
 import { runMonitorModule } from './run-monitor/run-monitor.module'
+import { solutionModule } from './solution/solution.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
@@ -199,6 +200,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(limitsModule)
     await app.register(releaseModule)
     await app.register(mappingTableModule)
+    await app.register(solutionModule)
     await app.register(projectWorkspaceModule)
     await app.register(dataStoreModule)
     await app.register(aiModule)

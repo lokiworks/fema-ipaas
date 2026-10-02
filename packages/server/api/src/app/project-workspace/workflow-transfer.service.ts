@@ -66,6 +66,46 @@ export const workflowTransferService = (log: FastifyBaseLogger) => ({
         })
     },
 
+    async createFromTrigger({ projectId, userId, tenantId, displayName, description, trigger, schemaVersion, notes }: CreateFromTriggerParams): Promise<WorkflowTransferResult> {
+        return createFromGraph({
+            log,
+            projectId,
+            userId,
+            tenantId,
+            displayName,
+            description,
+            trigger,
+            schemaVersion: schemaVersion ?? null,
+            notes: notes ?? [],
+            cleared: 0,
+        })
+    },
+
+    async replaceDraft({ projectId, workflowId, userId, tenantId, displayName, trigger, schemaVersion, notes }: ReplaceDraftParams): Promise<void> {
+        const migrated = await migrateWorkflowVersionTemplate({
+            displayName,
+            trigger,
+            schemaVersion: schemaVersion ?? undefined,
+            notes: notes ?? [],
+            valid: false,
+        })
+        await workflowService(log).update({
+            id: workflowId,
+            projectId,
+            tenantId,
+            userId,
+            operation: {
+                type: WorkflowOperationType.IMPORT_WORKFLOW,
+                request: {
+                    displayName,
+                    trigger: migrated.trigger,
+                    schemaVersion: migrated.schemaVersion,
+                    notes: migrated.notes,
+                },
+            },
+        })
+    },
+
     async copy({ sourceProjectId, workflowId, targetProjectId, folderId, userId, tenantId }: CopyParams): Promise<WorkflowTransferResult> {
         const workflow = await workflowService(log).getOnePopulatedOrThrow({ id: workflowId, projectId: sourceProjectId })
         const version = await workflowVersionService(log).getWorkflowVersionOrThrow({
@@ -176,6 +216,28 @@ type ImportParams = {
     file: WorkflowExportFile
     userId: UserId
     tenantId: TenantId
+}
+
+type CreateFromTriggerParams = {
+    projectId: ProjectId
+    userId: UserId
+    tenantId: TenantId
+    displayName: string
+    description?: string
+    trigger: WorkflowTrigger
+    schemaVersion?: string | null
+    notes?: Note[]
+}
+
+type ReplaceDraftParams = {
+    projectId: ProjectId
+    workflowId: string
+    userId: UserId
+    tenantId: TenantId
+    displayName: string
+    trigger: WorkflowTrigger
+    schemaVersion?: string | null
+    notes?: Note[]
 }
 
 type CopyParams = {

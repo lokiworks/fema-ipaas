@@ -32,6 +32,7 @@ import { ProjectEntity } from '../project/project-entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
 import { ConnectionReplacementEntity, WorkflowReleaseEntity } from '../release/release.entity'
 import { RunMonitorViewEntity } from '../run-monitor/run-monitor-view.entity'
+import { SolutionEntity, SolutionInstallEntity, SolutionVersionEntity } from '../solution/solution.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
 import { TenantEntity } from '../tenant/tenant.entity'
@@ -107,6 +108,9 @@ function getEntities(): EntitySchema<unknown>[] {
         PersonalAccessTokenEntity,
         DedupedEventEntity,
         HolidayCalendarEntity,
+        SolutionEntity,
+        SolutionVersionEntity,
+        SolutionInstallEntity,
     ]
 }
 

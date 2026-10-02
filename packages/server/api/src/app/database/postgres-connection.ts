@@ -23,6 +23,7 @@ import { AddDataErasureRequests1790474079361 } from './migration/postgres/179047
 import { AddAgentApprovals1790475172395 } from './migration/postgres/1790475172395-AddAgentApprovals'
 import { DesignDocRolloutSchema1790501279466 } from './migration/postgres/1790501279466-DesignDocRolloutSchema'
 import { AddExecutionBusinessKey1790851200000 } from './migration/postgres/1790851200000-AddExecutionBusinessKey'
+import { AddSolutions1790921911539 } from './migration/postgres/1790921911539-AddSolutions'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -53,6 +54,7 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddAgentApprovals1790475172395,
         DesignDocRolloutSchema1790501279466,
         AddExecutionBusinessKey1790851200000,
+        AddSolutions1790921911539,
     ]
 }
 

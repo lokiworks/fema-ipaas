@@ -1,26 +1,26 @@
 import { WebhookRenewStrategy } from '@fema-ipaas/connector-sdk'
 import {
-    WorkflowOperationType,
-    WorkflowStatus,
-    WorkflowTriggerType,
-    WorkflowVersionState,
-    PackageType,
     ConnectorType,
+    PackageType,
     PopulatedWorkflow,
     PrincipalType,
     PropertyExecutionType,
     TriggerStrategy,
     TriggerTestStrategy,
     WebhookHandshakeStrategy,
+    WorkflowOperationType,
+    WorkflowStatus,
+    WorkflowTriggerType,
+    WorkflowVersionState,
 } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
 import {
+    createMockConnectorMetadata,
     createMockWorkflow,
     createMockWorkflowVersion,
-    createMockConnectorMetadata,
 } from '../../../helpers/mocks'
 import { createTestContext } from '../../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../../helpers/test-setup'
@@ -49,7 +49,7 @@ describe('Workflow API', () => {
             expect(response?.statusCode).toBe(StatusCodes.CREATED)
             const responseBody = response?.json()
 
-            expect(Object.keys(responseBody)).toHaveLength(15)
+            expect(Object.keys(responseBody)).toHaveLength(17)
             expect(responseBody?.id).toHaveLength(21)
             expect(responseBody?.created).toBeDefined()
             expect(responseBody?.updated).toBeDefined()
@@ -62,7 +62,7 @@ describe('Workflow API', () => {
             expect(responseBody?.templateId).toBeNull()
             expect(responseBody?.createdBy).toBeNull()
 
-            expect(Object.keys(responseBody?.version)).toHaveLength(15)
+            expect(Object.keys(responseBody?.version)).toHaveLength(16)
             expect(responseBody?.version?.id).toHaveLength(21)
             expect(responseBody?.version?.created).toBeDefined()
             expect(responseBody?.version?.updated).toBeDefined()
@@ -149,7 +149,7 @@ describe('Workflow API', () => {
                 expect(responseBody.folderId).toBeNull()
                 expect(responseBody.publishedVersionId).toBe(mockWorkflowVersion.id)
                 expect(responseBody.metadata).toBeNull()
-                expect(Object.keys(responseBody.version)).toHaveLength(15)
+                expect(Object.keys(responseBody.version)).toHaveLength(16)
                 expect(responseBody.version.id).toBe(mockWorkflowVersion.id)
             }
         })
@@ -187,7 +187,7 @@ describe('Workflow API', () => {
             expect(responseBody?.publishedVersionId).toBe(mockWorkflowVersion.id)
             expect(responseBody?.metadata).toBeNull()
             expect(responseBody?.templateId).toBeNull()
-            expect(Object.keys(responseBody?.version)).toHaveLength(15)
+            expect(Object.keys(responseBody?.version)).toHaveLength(16)
             expect(responseBody?.version?.id).toBe(mockWorkflowVersion.id)
         })
     })
@@ -264,7 +264,7 @@ describe('Workflow API', () => {
                 expect(responseBody.status).toBe('ENABLED')
                 expect(responseBody.publishedVersionId).toBe(mockWorkflowVersion.id)
                 expect(responseBody.metadata).toBeNull()
-                expect(Object.keys(responseBody.version)).toHaveLength(15)
+                expect(Object.keys(responseBody.version)).toHaveLength(16)
                 expect(responseBody.version.id).toBe(mockWorkflowVersion.id)
                 expect(responseBody.version.state).toBe('LOCKED')
                 expect(responseBody.templateId).toBeNull()

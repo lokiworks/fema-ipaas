@@ -101,6 +101,72 @@ describe('feishuContacts.provisionUser', () => {
   });
 });
 
+function memberCalls(method: string) {
+  return sendRequest.mock.calls.map(([request]) => request).filter((request) => request.method === method && request.url.includes('/contact/v3/users/ou_1'));
+}
+
+function routeMemberRequests() {
+  sendRequest.mockImplementation(async ({ url }: { url: string }) => {
+    if (url.endsWith('/tenant_access_token/internal')) {
+      return reply({ code: 0, msg: 'ok', tenant_access_token: 't-1', expire: 7200 });
+    }
+    return reply({ code: 0, msg: 'ok', data: {} });
+  });
+}
+
+describe('feishuContacts.updateUser', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('sends only the fields that were filled in', async () => {
+    routeMemberRequests();
+
+    const result = await feishuContacts.updateUser({ auth, input: { openId: 'ou_1', departmentId: 'od-rd', leaderOpenId: 'ou_boss' } });
+
+    const [call] = memberCalls('PATCH');
+    expect(call.queryParams).toMatchObject({ user_id_type: 'open_id', department_id_type: 'open_department_id' });
+    expect(call.body).toEqual({ department_ids: ['od-rd'], leader_user_id: 'ou_boss' });
+    expect(result).toEqual({ updated: true, open_id: 'ou_1', changed: ['department_ids', 'leader_user_id'] });
+  });
+
+  it('does not call Feishu when nothing was filled in', async () => {
+    routeMemberRequests();
+
+    const result = await feishuContacts.updateUser({ auth, input: { openId: 'ou_1' } });
+
+    expect(memberCalls('PATCH')).toHaveLength(0);
+    expect(result).toEqual({ updated: false, open_id: 'ou_1', changed: [] });
+  });
+});
+
+describe('feishuContacts.offboardUser', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('deletes the member and hands every resource to the receiver', async () => {
+    routeMemberRequests();
+
+    const result = await feishuContacts.offboardUser({ auth, input: { openId: 'ou_1', receiverOpenId: 'ou_boss' } });
+
+    const [call] = memberCalls('DELETE');
+    expect(call.queryParams).toEqual({ user_id_type: 'open_id' });
+    expect(call.body).toEqual(feishuContacts.offboardUserBody('ou_boss'));
+    expect(Object.values(call.body)).toEqual(Array(7).fill('ou_boss'));
+    expect(result).toEqual({ offboarded: true, open_id: 'ou_1', resources_to: 'ou_boss' });
+  });
+
+  it('sends no transfer body when no receiver was given', async () => {
+    routeMemberRequests();
+
+    const result = await feishuContacts.offboardUser({ auth, input: { openId: 'ou_1' } });
+
+    expect(memberCalls('DELETE')[0].body).toBeUndefined();
+    expect(result.resources_to).toBeNull();
+  });
+});
+
 describe('feishu HTTP errors', () => {
   beforeEach(() => {
     vi.resetAllMocks();

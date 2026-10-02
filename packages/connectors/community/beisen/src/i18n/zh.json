@@ -55,5 +55,9 @@
   "The timezone Beisen reads the query window in. If this trigger keeps returning nothing while employees are clearly changing, this is the first setting to change.": "北森解读查询时间窗所用的时区。如果员工确实在变动而该触发器始终取不到数据，先改这一项。",
   "Beijing time (UTC+8)": "北京时间（UTC+8）",
   "UTC": "UTC",
-  "**Set up a Beisen connector**\n\n1. In the Beisen admin console, open **My Connectors** and create a connector.\n2. Copy its **Key** and **Secret** into the fields below.\n3. Grant the connector the data the steps read: employee records, organizations, and recruiting.\n\nIf **My Connectors** is missing, ask your Beisen project manager to enable Open Platform access. Saving checks the Key and Secret.": "**配置北森连接器**\n\n1. 在北森管理后台打开「我的连接器」，新建一个连接器。\n2. 复制它的 **Key** 和 **Secret**，填到下面。\n3. 给连接器开通步骤要读取的数据：员工信息、组织架构、招聘。\n\n找不到「我的连接器」时，请北森项目经理开通开放平台权限。保存时会校验 Key 和 Secret。"
+  "**Set up a Beisen connector**\n\n1. In the Beisen admin console, open **My Connectors** and create a connector.\n2. Copy its **Key** and **Secret** into the fields below.\n3. Grant the connector the data the steps read: employee records, organizations, and recruiting.\n\nIf **My Connectors** is missing, ask your Beisen project manager to enable Open Platform access. Saving checks the Key and Secret.": "**配置北森连接器**\n\n1. 在北森管理后台打开「我的连接器」，新建一个连接器。\n2. 复制它的 **Key** 和 **Secret**，填到下面。\n3. 给连接器开通步骤要读取的数据：员工信息、组织架构、招聘。\n\n找不到「我的连接器」时，请北森项目经理开通开放平台权限。保存时会校验 Key 和 Secret。",
+  "Only When This Column": "只处理这一列满足条件的记录",
+  "Optional. A field name from the returned records, for example the employment status column. Together with the values below it limits the trigger to records where the column matches, which is how you pick onboarding, transfer or leaving out of all changes.": "可选。填返回记录里的一个字段名，例如任职状态这一列。和下面的值一起使用，触发器只处理这一列匹配的记录，用来从全部变动里挑出入职、调岗或离职。",
+  "Has One Of These Values": "取值是下面之一",
+  "The trigger only starts for records whose column above equals one of these values. Ignored when the column is empty.": "只有上面那一列的取值等于其中之一的记录才会触发。上面的列为空时忽略这一项。"
 }

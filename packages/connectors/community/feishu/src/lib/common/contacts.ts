@@ -6,8 +6,62 @@ import { feishuCommon, type FeishuAuthValue } from './index';
 
 export const feishuContacts = {
   provisionUser,
+  updateUser,
+  offboardUser,
+  updateUserBody,
+  offboardUserBody,
   normalizeMobile,
 };
+
+async function updateUser({ auth, input }: UpdateUserParams): Promise<UpdateUserResult> {
+  const body = updateUserBody(input);
+  if (Object.keys(body).length === 0) {
+    return { updated: false, open_id: input.openId, changed: [] };
+  }
+  await feishuCommon.callApi<unknown>({
+    auth,
+    method: HttpMethod.PATCH,
+    path: `/open-apis/contact/v3/users/${encodeURIComponent(input.openId)}`,
+    queryParams: {
+      user_id_type: 'open_id',
+      ...(input.departmentId ? { department_id_type: departmentIdType(input.departmentId) } : {}),
+    },
+    body,
+  });
+  return { updated: true, open_id: input.openId, changed: Object.keys(body) };
+}
+
+function updateUserBody(input: UpdateUserInput): Record<string, unknown> {
+  return {
+    ...(input.name ? { name: input.name } : {}),
+    ...(input.departmentId ? { department_ids: [input.departmentId] } : {}),
+    ...(input.leaderOpenId ? { leader_user_id: input.leaderOpenId } : {}),
+    ...(input.jobTitle ? { job_title: input.jobTitle } : {}),
+  };
+}
+
+async function offboardUser({ auth, input }: OffboardUserParams): Promise<OffboardUserResult> {
+  await feishuCommon.callApi<unknown>({
+    auth,
+    method: HttpMethod.DELETE,
+    path: `/open-apis/contact/v3/users/${encodeURIComponent(input.openId)}`,
+    queryParams: { user_id_type: 'open_id' },
+    ...(input.receiverOpenId ? { body: offboardUserBody(input.receiverOpenId) } : {}),
+  });
+  return { offboarded: true, open_id: input.openId, resources_to: input.receiverOpenId ?? null };
+}
+
+function offboardUserBody(receiverOpenId: string): Record<string, string> {
+  return {
+    department_chat_acceptor_user_id: receiverOpenId,
+    external_chat_acceptor_user_id: receiverOpenId,
+    docs_acceptor_user_id: receiverOpenId,
+    calendar_acceptor_user_id: receiverOpenId,
+    application_acceptor_user_id: receiverOpenId,
+    minutes_acceptor_user_id: receiverOpenId,
+    survey_acceptor_user_id: receiverOpenId,
+  };
+}
 
 async function provisionUser({ auth, input }: ProvisionUserParams): Promise<ProvisionUserResult> {
   const mobile = normalizeMobile(input.mobile);
@@ -78,6 +132,41 @@ export type ProvisionUserInput = {
   email?: string;
   employeeNo?: string;
   jobTitle?: string;
+};
+
+export type UpdateUserInput = {
+  openId: string;
+  name?: string;
+  departmentId?: string;
+  leaderOpenId?: string;
+  jobTitle?: string;
+};
+
+export type UpdateUserResult = {
+  updated: boolean;
+  open_id: string;
+  changed: string[];
+};
+
+export type OffboardUserInput = {
+  openId: string;
+  receiverOpenId?: string;
+};
+
+export type OffboardUserResult = {
+  offboarded: boolean;
+  open_id: string;
+  resources_to: string | null;
+};
+
+type UpdateUserParams = {
+  auth: FeishuAuthValue;
+  input: UpdateUserInput;
+};
+
+type OffboardUserParams = {
+  auth: FeishuAuthValue;
+  input: OffboardUserInput;
 };
 
 export type ProvisionUserResult = {

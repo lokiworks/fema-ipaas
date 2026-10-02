@@ -16,18 +16,28 @@ import { beisenCommon } from '../common';
 
 const polling: Polling<
   ConnectionValueForAuthProperty<typeof beisenAuth>,
-  { columns?: unknown[] | undefined; timezone?: string | undefined }
+  {
+    columns?: unknown[] | undefined;
+    timezone?: string | undefined;
+    filterColumn?: string | undefined;
+    filterValues?: unknown[] | undefined;
+  }
 > = {
   strategy: DedupeStrategy.TIMEBASED,
   items: async ({ auth, propsValue, lastFetchEpochMS }) => {
     const stopTime = Date.now();
     const startTime = lastFetchEpochMS === 0 ? stopTime - INITIAL_LOOKBACK_MS : lastFetchEpochMS;
     const timezone = propsValue.timezone ?? DEFAULT_TIMEZONE;
-    const records = await drainTimeWindow({
+    const fetched = await drainTimeWindow({
       auth,
       startTime: formatTimestamp(startTime, timezone),
       stopTime: formatTimestamp(stopTime, timezone),
-      columns: toStringList(propsValue.columns),
+      columns: beisenCommon.columnsWith({ columns: toStringList(propsValue.columns), column: propsValue.filterColumn }),
+    });
+    const records = beisenCommon.filterByColumn({
+      records: fetched,
+      column: propsValue.filterColumn,
+      values: toStringList(propsValue.filterValues),
     });
     return records.map((record) => ({ epochMilliSeconds: stopTime, data: record }));
   },
@@ -62,6 +72,17 @@ export const employeeChanged = createTrigger({
       displayName: 'Columns',
       description:
         'Field names to return, for example UserID, Name, EmployeeNumber. Leave empty to let Beisen decide.',
+      required: false,
+    }),
+    filterColumn: Property.ShortText({
+      displayName: 'Only When This Column',
+      description:
+        'Optional. A field name from the returned records, for example the employment status column. Together with the values below it limits the trigger to records where the column matches, which is how you pick onboarding, transfer or leaving out of all changes.',
+      required: false,
+    }),
+    filterValues: Property.Array({
+      displayName: 'Has One Of These Values',
+      description: 'The trigger only starts for records whose column above equals one of these values. Ignored when the column is empty.',
       required: false,
     }),
   },

@@ -75,5 +75,18 @@
   "Intern": "实习",
   "Outsourced": "外包",
   "Contractor": "劳务",
-  "Consultant": "顾问"
+  "Consultant": "顾问",
+  "Update Employee": "调整员工信息",
+  "Change the department, manager, job title or name of a Feishu account": "调整飞书账号的部门、直属上级、职务或姓名",
+  "Member Open ID": "成员 open_id",
+  "The open_id of the member to update, from Find User or Provision Employee Account.": "要调整的成员的 open_id，来自「查找用户」或「开通员工账号」。",
+  "New Department ID": "新部门 ID",
+  "Replaces the member's departments. The department ID shown in the Feishu admin console, or an open_department_id starting with od-. Leave empty to keep the department.": "会替换成员所在的全部部门。填飞书管理后台里的部门 ID，或以 od- 开头的 open_department_id。留空表示部门不变。",
+  "Manager Open ID": "直属上级 open_id",
+  "The open_id of the new direct manager. Leave empty to keep the manager.": "新直属上级的 open_id。留空表示上级不变。",
+  "Offboard Employee": "离职处理",
+  "Remove a leaving employee from Feishu and hand their chats, documents and calendars to someone else": "把离职员工移出飞书，并把他的群、文档、日程交给别人",
+  "Resource Receiver Open ID": "资源接收人 open_id",
+  "The open_id of the leaving member, from Find User or Provision Employee Account.": "离职成员的 open_id，来自「查找用户」或「开通员工账号」。",
+  "The open_id of the person who takes over the member's chats, documents, calendars and apps, usually the direct manager. Leave empty to let Feishu apply its default handling.": "接手成员的群、文档、日程和应用的人的 open_id，通常是直属上级。留空表示按飞书的默认方式处理。"
 }

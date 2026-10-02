@@ -75,5 +75,18 @@
   "Intern": "Intern",
   "Outsourced": "Outsourced",
   "Contractor": "Contractor",
-  "Consultant": "Consultant"
+  "Consultant": "Consultant",
+  "Update Employee": "Update Employee",
+  "Change the department, manager, job title or name of a Feishu account": "Change the department, manager, job title or name of a Feishu account",
+  "Member Open ID": "Member Open ID",
+  "The open_id of the member to update, from Find User or Provision Employee Account.": "The open_id of the member to update, from Find User or Provision Employee Account.",
+  "New Department ID": "New Department ID",
+  "Replaces the member's departments. The department ID shown in the Feishu admin console, or an open_department_id starting with od-. Leave empty to keep the department.": "Replaces the member's departments. The department ID shown in the Feishu admin console, or an open_department_id starting with od-. Leave empty to keep the department.",
+  "Manager Open ID": "Manager Open ID",
+  "The open_id of the new direct manager. Leave empty to keep the manager.": "The open_id of the new direct manager. Leave empty to keep the manager.",
+  "Offboard Employee": "Offboard Employee",
+  "Remove a leaving employee from Feishu and hand their chats, documents and calendars to someone else": "Remove a leaving employee from Feishu and hand their chats, documents and calendars to someone else",
+  "Resource Receiver Open ID": "Resource Receiver Open ID",
+  "The open_id of the leaving member, from Find User or Provision Employee Account.": "The open_id of the leaving member, from Find User or Provision Employee Account.",
+  "The open_id of the person who takes over the member's chats, documents, calendars and apps, usually the direct manager. Leave empty to let Feishu apply its default handling.": "The open_id of the person who takes over the member's chats, documents, calendars and apps, usually the direct manager. Leave empty to let Feishu apply its default handling."
 }

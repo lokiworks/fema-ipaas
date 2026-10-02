@@ -12,6 +12,34 @@ export const beisenCommon = {
   obtainAccessToken,
   callApi,
   callBusinessApi,
+  filterByColumn,
+  columnsWith,
+};
+
+function filterByColumn({ records, column, values }: FilterByColumnParams): Record<string, unknown>[] {
+  const wanted = values.map((value) => value.trim()).filter((value) => value.length > 0);
+  const name = column?.trim() ?? '';
+  if (name.length === 0 || wanted.length === 0) {
+    return records;
+  }
+  return records.filter((record) => {
+    const value = record[name];
+    return value !== undefined && value !== null && wanted.includes(String(value).trim());
+  });
+}
+
+function columnsWith({ columns, column }: { columns: string[]; column: string | undefined }): string[] {
+  const name = column?.trim() ?? '';
+  if (columns.length === 0 || name.length === 0 || columns.includes(name)) {
+    return columns;
+  }
+  return [...columns, name];
+}
+
+type FilterByColumnParams = {
+  records: Record<string, unknown>[];
+  column: string | undefined;
+  values: string[];
 };
 
 async function obtainAccessToken({ appKey, appSecret }: TokenParams): Promise<string> {

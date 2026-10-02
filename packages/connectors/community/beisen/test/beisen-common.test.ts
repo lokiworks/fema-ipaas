@@ -123,3 +123,38 @@ describe('beisenCommon.callBusinessApi', () => {
     ).rejects.toThrowError(/no data/);
   });
 });
+
+describe('beisenCommon.filterByColumn', () => {
+  const records = [
+    { UserID: 'u1', Status: '试用', Name: '甲' },
+    { UserID: 'u2', Status: '正式', Name: '乙' },
+    { UserID: 'u3', Name: '丙' },
+  ];
+
+  it('keeps every record when no column or no value is given', () => {
+    expect(beisenCommon.filterByColumn({ records, column: undefined, values: ['试用'] })).toHaveLength(3);
+    expect(beisenCommon.filterByColumn({ records, column: 'Status', values: [] })).toHaveLength(3);
+    expect(beisenCommon.filterByColumn({ records, column: '  ', values: ['试用'] })).toHaveLength(3);
+  });
+
+  it('keeps only the records whose column equals one of the values', () => {
+    const kept = beisenCommon.filterByColumn({ records, column: 'Status', values: ['试用', ' 离职 '] });
+    expect(kept.map((record) => record['UserID'])).toEqual(['u1']);
+  });
+
+  it('drops records that do not have the column at all', () => {
+    const kept = beisenCommon.filterByColumn({ records, column: 'Status', values: ['正式'] });
+    expect(kept.map((record) => record['UserID'])).toEqual(['u2']);
+  });
+});
+
+describe('beisenCommon.columnsWith', () => {
+  it('adds the filter column to an explicit column list so it comes back', () => {
+    expect(beisenCommon.columnsWith({ columns: ['UserID'], column: 'Status' })).toEqual(['UserID', 'Status']);
+    expect(beisenCommon.columnsWith({ columns: ['UserID', 'Status'], column: 'Status' })).toEqual(['UserID', 'Status']);
+  });
+
+  it('leaves an empty list empty so Beisen decides the columns', () => {
+    expect(beisenCommon.columnsWith({ columns: [], column: 'Status' })).toEqual([]);
+  });
+});

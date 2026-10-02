@@ -59,13 +59,7 @@ function bucketStarts({ range, now, timezone }: { range: RunMonitorRange, now: n
     const spec = rangeSpec(range)
     const wall = wallClock({ instant: now, timezone })
     if (spec.unit === RunMonitorBucketUnit.DAY) {
-        return Array.from({ length: spec.count }, (_, index) => {
-            const date = new Date(Date.UTC(wall.year, wall.month - 1, wall.day - (spec.count - 1 - index)))
-            return instantOf({
-                wall: { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: date.getUTCDate(), hour: 0, minute: 0, second: 0 },
-                timezone,
-            })
-        })
+        return dayStarts({ count: spec.count, now, timezone })
     }
     const aligned = spec.unit === RunMonitorBucketUnit.HOUR
         ? { ...wall, minute: 0, second: 0 }
@@ -73,6 +67,26 @@ function bucketStarts({ range, now, timezone }: { range: RunMonitorRange, now: n
     const last = Math.min(instantOf({ wall: aligned, timezone }), now)
     const stepMs = spec.step * (spec.unit === RunMonitorBucketUnit.HOUR ? HOUR_MS : MINUTE_MS)
     return Array.from({ length: spec.count }, (_, index) => last - (spec.count - 1 - index) * stepMs)
+}
+
+function dayStarts({ count, now, timezone }: { count: number, now: number, timezone: string }): number[] {
+    const wall = wallClock({ instant: now, timezone })
+    return Array.from({ length: count }, (_, index) => {
+        const date = new Date(Date.UTC(wall.year, wall.month - 1, wall.day - (count - 1 - index)))
+        return instantOf({
+            wall: { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: date.getUTCDate(), hour: 0, minute: 0, second: 0 },
+            timezone,
+        })
+    })
+}
+
+function calendarDaysStart({ days, now, timezone }: { days: number, now: number, timezone: string }): number {
+    return dayStarts({ count: days, now, timezone })[0]
+}
+
+function calendarMonthStart({ now, timezone }: { now: number, timezone: string }): number {
+    const wall = wallClock({ instant: now, timezone })
+    return instantOf({ wall: { year: wall.year, month: wall.month, day: 1, hour: 0, minute: 0, second: 0 }, timezone })
 }
 
 function timeWindow({ range, now, timezone }: { range: RunMonitorRange, now: number, timezone: string }): MonitorWindow {
@@ -176,6 +190,8 @@ export const runMonitorUtils = {
     wallClock,
     instantOf,
     bucketStarts,
+    calendarDaysStart,
+    calendarMonthStart,
     timeWindow,
     statusGroup,
     countsOf,

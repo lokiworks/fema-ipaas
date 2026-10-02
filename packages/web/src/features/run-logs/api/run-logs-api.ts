@@ -10,10 +10,14 @@ import {
 } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
+import { timezoneUtils } from '@/lib/timezone-utils';
 
 export const runLogsApi = {
   list(query: ListRunLogsRequestQuery): Promise<SeekPage<RunLogRow>> {
-    return api.get<SeekPage<RunLogRow>>('/v1/run-logs', query);
+    return api.get<SeekPage<RunLogRow>>('/v1/run-logs', {
+      ...query,
+      timezone: timezoneUtils.browser(),
+    });
   },
   scope(): Promise<RunLogScope> {
     return api.get<RunLogScope>('/v1/run-logs/scope');

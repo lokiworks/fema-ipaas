@@ -82,6 +82,7 @@ export type ListIssuesRequestQuery = z.infer<typeof ListIssuesRequestQuery>
 
 export const IssueProjectQuery = z.object({
     projectId: z.string(),
+    timezone: z.string().max(64).optional(),
 })
 export type IssueProjectQuery = z.infer<typeof IssueProjectQuery>
 

@@ -33,7 +33,7 @@ export const projectWorkspaceController: FastifyPluginAsyncZod = async (app) => 
     })
 
     app.get('/stats', StatsRequest, async (request): Promise<ProjectOverviewStats> => {
-        return projectStatsService(request.log).getStats({ projectId: request.projectId })
+        return projectStatsService(request.log).getStats({ projectId: request.projectId, timezone: request.query.timezone })
     })
 
     app.post('/batch/publish-check', PublishCheckRequest, async (request): Promise<BatchPublishCheckResponse> => {

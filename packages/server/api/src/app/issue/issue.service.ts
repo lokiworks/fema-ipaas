@@ -28,6 +28,7 @@ import { Brackets, In, SelectQueryBuilder } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
 import { projectAccess } from '../project/project-access'
+import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { issueAssignmentSideEffects } from './issue-assignment-side-effects'
@@ -98,11 +99,12 @@ export const issueService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async summary({ projectId, currentUserId }: SummaryParams): Promise<IssueSummary> {
+    async summary({ projectId, currentUserId, timezone }: SummaryParams): Promise<IssueSummary> {
         const issues = await issueRepo().find({ where: { projectId }, select: ['id', 'kind', 'status', 'occurrences', 'assigneeId', 'mutedUntil', 'firstSeenAt', 'lastSeenAt', 'reopened'] })
         const now = dayjsUtil()
-        const startOfDay = now.startOf('day')
-        const weekAgo = now.subtract(7, 'day')
+        const zone = runMonitorUtils.safeTimezone(timezone)
+        const startOfDay = dayjsUtil(runMonitorUtils.calendarDaysStart({ days: 1, now: now.valueOf(), timezone: zone }))
+        const weekAgo = dayjsUtil(runMonitorUtils.calendarDaysStart({ days: 7, now: now.valueOf(), timezone: zone }))
         const muted = issues.filter((issue) => isMuted({ issue, now: now.toISOString() }))
         const active = issues.filter((issue) => !isMuted({ issue, now: now.toISOString() }))
         const open = active.filter((issue) => issue.status === IssueStatus.OPEN)
@@ -121,7 +123,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
             newOrReopenedToday: active.filter((issue) => isNewOrReopenedSince({ issue, since: startOfDay.toISOString() })).length,
             muted: muted.length,
             failuresLast7Days,
-            issuesLast7Days: issues.filter((issue) => dayjsUtil(issue.lastSeenAt).isAfter(weekAgo)).length,
+            issuesLast7Days: issues.filter((issue) => !dayjsUtil(issue.lastSeenAt).isBefore(weekAgo)).length,
             alertsLast7Days: 0,
         }
     },
@@ -528,6 +530,7 @@ type OverviewParams = {
 type SummaryParams = {
     projectId: ProjectId
     currentUserId: UserId
+    timezone?: string
 }
 
 type UpdateParams = IssueRef & {

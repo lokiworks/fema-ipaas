@@ -1,8 +1,8 @@
 import { SeekPage, TenantId } from '@fema-ipaas/core-utils'
-import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { AlertRecord, AlertRecordStats, ListAlertRecordsRequestQuery } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { MoreThanOrEqual } from 'typeorm'
+import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { alertRecordRepo } from './alert-dispatcher'
 import { AlertRecordSchema } from './alert.entity'
 
@@ -27,8 +27,9 @@ export const alertRecordService = (_log: FastifyBaseLogger) => ({
         }
     },
 
-    async stats({ tenantId, projectId }: StatsParams): Promise<AlertRecordStats> {
-        const since = dayjsUtil().subtract(7, 'day').toISOString()
+    async stats({ tenantId, projectId, timezone }: StatsParams): Promise<AlertRecordStats> {
+        const now = Date.now()
+        const since = new Date(runMonitorUtils.calendarDaysStart({ days: 7, now, timezone: runMonitorUtils.safeTimezone(timezone) })).toISOString()
         const rows = await alertRecordRepo().find({
             where: {
                 tenantId,
@@ -85,4 +86,5 @@ type ListParams = {
 type StatsParams = {
     tenantId: TenantId
     projectId: string | undefined
+    timezone?: string
 }

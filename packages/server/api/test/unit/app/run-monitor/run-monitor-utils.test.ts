@@ -123,3 +123,26 @@ describe('runMonitorUtils.aiSource', () => {
         expect(runMonitorUtils.aiSource({ feature: AiFeature.ASK_MODEL, environment: null })).toBe(RunMonitorAiSource.WORKFLOW_RUN)
     })
 })
+
+describe('runMonitorUtils calendar windows', () => {
+    const now = Date.parse('2026-10-02T10:00:00.000Z')
+
+    it('starts the 7-day window at local midnight six days before today', () => {
+        expect(iso(runMonitorUtils.calendarDaysStart({ days: 7, now, timezone: 'Asia/Shanghai' }))).toBe('2026-09-25T16:00:00.000Z')
+        expect(iso(runMonitorUtils.calendarDaysStart({ days: 7, now, timezone: 'UTC' }))).toBe('2026-09-26T00:00:00.000Z')
+    })
+
+    it('agrees with the first bucket of the monitor 7-day range', () => {
+        const [first] = runMonitorUtils.bucketStarts({ range: RunMonitorRange.LAST_7_DAYS, now, timezone: 'Asia/Shanghai' })
+        expect(runMonitorUtils.calendarDaysStart({ days: 7, now, timezone: 'Asia/Shanghai' })).toBe(first)
+    })
+
+    it('counts today as the only day for a 1-day window', () => {
+        expect(iso(runMonitorUtils.calendarDaysStart({ days: 1, now, timezone: 'Asia/Shanghai' }))).toBe('2026-10-01T16:00:00.000Z')
+    })
+
+    it('starts the month at local midnight on the first', () => {
+        expect(iso(runMonitorUtils.calendarMonthStart({ now, timezone: 'Asia/Shanghai' }))).toBe('2026-09-30T16:00:00.000Z')
+        expect(iso(runMonitorUtils.calendarMonthStart({ now, timezone: 'UTC' }))).toBe('2026-10-01T00:00:00.000Z')
+    })
+})

@@ -147,5 +147,6 @@ export type ProjectOverviewStats = z.infer<typeof ProjectOverviewStats>
 
 export const ProjectWorkspaceQuery = z.object({
     projectId: z.string(),
+    timezone: z.string().max(64).optional(),
 })
 export type ProjectWorkspaceQuery = z.infer<typeof ProjectWorkspaceQuery>

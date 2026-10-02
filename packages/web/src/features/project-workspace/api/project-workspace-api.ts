@@ -23,6 +23,7 @@ import {
 } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
+import { timezoneUtils } from '@/lib/timezone-utils';
 
 export const projectWorkspaceApi = {
   tree(projectId: string): Promise<ProjectTree> {
@@ -31,6 +32,7 @@ export const projectWorkspaceApi = {
   stats(projectId: string): Promise<ProjectOverviewStats> {
     return api.get<ProjectOverviewStats>('/v1/project-workspace/stats', {
       projectId,
+      timezone: timezoneUtils.browser(),
     });
   },
   publishCheck(

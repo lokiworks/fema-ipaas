@@ -2,16 +2,18 @@ import { isNil, ProjectId } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ExecutionStatus, ProjectOverviewStats, ProjectWorkflowStats, RunEnvironment, WorkflowVersionState } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { projectStatsUtils } from './project-stats-utils'
 
 export const projectStatsService = (_log: FastifyBaseLogger) => ({
-    async getStats({ projectId }: { projectId: ProjectId }): Promise<ProjectOverviewStats> {
+    async getStats({ projectId, timezone }: { projectId: ProjectId, timezone?: string }): Promise<ProjectOverviewStats> {
         const now = dayjsUtil()
-        const since7d = now.subtract(7, 'day').toISOString()
-        const since14d = now.subtract(14, 'day').toISOString()
-        const monthStart = now.startOf('month').toISOString()
+        const zone = runMonitorUtils.safeTimezone(timezone)
+        const since7d = new Date(runMonitorUtils.calendarDaysStart({ days: 7, now: now.valueOf(), timezone: zone })).toISOString()
+        const since14d = new Date(runMonitorUtils.calendarDaysStart({ days: 14, now: now.valueOf(), timezone: zone })).toISOString()
+        const monthStart = new Date(runMonitorUtils.calendarMonthStart({ now: now.valueOf(), timezone: zone })).toISOString()
         const failedStatuses = projectStatsUtils.FAILED_STATUSES
 
         const [perWorkflow, lastRuns, totals, versionRows, workflows] = await Promise.all([

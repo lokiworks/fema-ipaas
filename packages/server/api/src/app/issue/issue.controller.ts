@@ -43,8 +43,8 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/summary', SummaryRequest, async (request): Promise<IssueSummary> => {
-        const summary = await issueService(request.log).summary({ projectId: request.projectId, currentUserId: request.principal.id })
-        const alerts = await alertRecordService(request.log).stats({ tenantId: request.principal.tenant.id, projectId: request.projectId })
+        const summary = await issueService(request.log).summary({ projectId: request.projectId, currentUserId: request.principal.id, timezone: request.query.timezone })
+        const alerts = await alertRecordService(request.log).stats({ tenantId: request.principal.tenant.id, projectId: request.projectId, timezone: request.query.timezone })
         return { ...summary, alertsLast7Days: alerts.alertsLast7Days }
     })
 

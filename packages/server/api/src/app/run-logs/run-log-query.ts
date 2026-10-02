@@ -10,19 +10,19 @@ import {
     RunLogType,
 } from '@fema-ipaas/shared'
 import { Brackets, SelectQueryBuilder, WhereExpressionBuilder } from 'typeorm'
+import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { RunLogAccessProject } from './run-log-access'
 
 export const runLogQuery = {
+    sinceOf,
     build({ query, projects, now }: BuildParams): SelectQueryBuilder<Execution> | null {
         if (projects.length === 0) {
             return null
         }
         const scopedIds = projects.map((project) => project.id)
         const retentionGroups = groupByRetention({ projects, now })
-        const since = isNil(query.createdAfter)
-            ? new Date(now.getTime() - runLogFilterUtils.timeRangeMs(query.time ?? RunLogTimeRange.HOURS_24)).toISOString()
-            : query.createdAfter
+        const since = sinceOf({ query, now })
         const builder = executionRepo()
             .createQueryBuilder('execution')
             .where('execution."projectId" IN (:...scopedIds)', { scopedIds })
@@ -154,6 +154,29 @@ type Predicate = (qb: WhereExpressionBuilder) => WhereExpressionBuilder
 type RetentionGroup = {
     projectIds: string[]
     since: string
+}
+
+function sinceOf({ query, now }: { query: ListRunLogsRequestQuery, now: Date }): string {
+    if (!isNil(query.createdAfter)) {
+        return query.createdAfter
+    }
+    const time = query.time ?? RunLogTimeRange.HOURS_24
+    const calendarDays = CALENDAR_DAYS[time]
+    if (isNil(calendarDays)) {
+        return new Date(now.getTime() - runLogFilterUtils.timeRangeMs(time)).toISOString()
+    }
+    return new Date(runMonitorUtils.calendarDaysStart({
+        days: calendarDays,
+        now: now.getTime(),
+        timezone: runMonitorUtils.safeTimezone(query.timezone),
+    })).toISOString()
+}
+
+const CALENDAR_DAYS: Partial<Record<RunLogTimeRange, number>> = {
+    [RunLogTimeRange.DAYS_3]: 3,
+    [RunLogTimeRange.DAYS_7]: 7,
+    [RunLogTimeRange.DAYS_15]: 15,
+    [RunLogTimeRange.DAYS_30]: 30,
 }
 
 type BuildParams = {

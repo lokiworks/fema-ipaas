@@ -91,6 +91,7 @@ export const ListRunLogsRequestQuery = z.object({
     type: z.enum(RunLogType).optional(),
     match: z.enum(RunLogMatch).optional(),
     time: z.enum(RunLogTimeRange).optional(),
+    timezone: z.string().max(64).optional(),
     createdAfter: z.string().optional(),
     createdBefore: z.string().optional(),
     projectId: OptionalArrayFromQuery(z.string()),

@@ -18,6 +18,7 @@ import {
 } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
+import { timezoneUtils } from '@/lib/timezone-utils';
 
 export const issuesApi = {
   list(request: ListIssuesRequestQuery): Promise<SeekPage<IssueWithSeverity>> {
@@ -27,7 +28,10 @@ export const issuesApi = {
     return api.get<IssueOverview>('/v1/issues/overview');
   },
   summary(projectId: string): Promise<IssueSummary> {
-    return api.get<IssueSummary>('/v1/issues/summary', { projectId });
+    return api.get<IssueSummary>('/v1/issues/summary', {
+      projectId,
+      timezone: timezoneUtils.browser(),
+    });
   },
   get(id: string): Promise<IssueWithSeverity> {
     return api.get<IssueWithSeverity>(`/v1/issues/${id}`);

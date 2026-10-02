@@ -2,16 +2,12 @@ import { isNil, ProjectId, UserId } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import {
     ConnectionStatus,
-    Execution,
-    ExecutionStatus,
     IssueActivityType,
     IssueKind,
     IssueReplayResult,
     issueUtils,
     ReplayCategory,
-    ReplayCheckItem,
     ReplayCheckResult,
-    ReplayReason,
     WorkflowRetryStrategy,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -20,6 +16,7 @@ import { In } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
+import { ChainVerdict, issueReplayUtils, ReplayConnectionState } from './issue-replay-utils'
 import { issueService } from './issue.service'
 
 export const issueReplayService = (log: FastifyBaseLogger) => ({
@@ -37,20 +34,29 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
         const workflowUpdatedAt = new Map(workflows.map((workflow) => [workflow.id, workflow.updated]))
         const connectionState = issue.kind === IssueKind.CONNECTION && !isNil(issue.connectionExternalId)
             ? await readConnectionState({ externalId: issue.connectionExternalId, projectId })
-            : ConnectionState.NOT_APPLICABLE
-        const items = executions.map((execution) => classify({
+            : ReplayConnectionState.NOT_APPLICABLE
+        const roots = [...new Set(executions.map((execution) => execution.rerunOfExecutionId ?? execution.id))]
+        const chain = roots.length === 0 ? [] : await executionRepo().find({
+            where: { rerunOfExecutionId: In(roots), projectId },
+            select: ['id', 'status', 'rerunOfExecutionId'],
+        })
+        const verdicts = issueReplayUtils.chainVerdicts({ candidates: executions, chain })
+        const items = executions.map((execution) => issueReplayUtils.classify({
             execution,
-            workflowUpdatedAt: workflowUpdatedAt.get(execution.workflowId),
+            verdict: verdicts.get(execution.id) ?? ChainVerdict.TARGET,
+            workflowExists: workflowUpdatedAt.has(execution.workflowId),
+            workflowChangedAfterFailure: dayjsUtil(workflowUpdatedAt.get(execution.workflowId)).isAfter(execution.finishTime ?? execution.created),
             connectionState,
             connectionExternalId: issue.connectionExternalId ?? null,
             transient: issueUtils.isTransientHttpStatus(issue.errorCode),
             authorization: issueUtils.isAuthorizationHttpStatus(issue.errorCode),
+            rejectedByTarget: issueUtils.isRejectedByTargetHttpStatus(issue.errorCode),
         }))
         return { items }
     },
 
     async connectionHealthy({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<boolean> {
-        return (await readConnectionState({ externalId, projectId })) === ConnectionState.HEALTHY
+        return (await readConnectionState({ externalId, projectId })) === ReplayConnectionState.HEALTHY
     },
 
     async replay({ id, projectId, strategy, includeDataProblems, actorId }: ReplayParams): Promise<IssueReplayResult> {
@@ -75,62 +81,17 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
     },
 })
 
-function classify({ execution, workflowUpdatedAt, connectionState, connectionExternalId, transient, authorization }: ClassifyParams): ReplayCheckItem {
-    const item = (category: ReplayCategory, reason: ReplayReason): ReplayCheckItem => ({
-        executionId: execution.id,
-        category,
-        reason,
-        connectionExternalId,
-        rawDataExpired: isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId),
-    })
-    if (isNil(workflowUpdatedAt)) {
-        return item(ReplayCategory.NOT_NEEDED, ReplayReason.WORKFLOW_DELETED)
-    }
-    if (!FAILED_STATUSES.includes(execution.status)) {
-        return item(ReplayCategory.NOT_NEEDED, ReplayReason.ALREADY_RETRIED)
-    }
-    switch (connectionState) {
-        case ConnectionState.MISSING:
-            return item(ReplayCategory.BLOCKED, ReplayReason.CONNECTION_DELETED)
-        case ConnectionState.BROKEN:
-            return item(ReplayCategory.BLOCKED, ReplayReason.CONNECTION_STILL_BROKEN)
-        case ConnectionState.HEALTHY:
-            return item(ReplayCategory.REPLAYABLE, ReplayReason.CONNECTION_RECOVERED)
-        case ConnectionState.NOT_APPLICABLE:
-            break
-    }
-    if (transient) {
-        return item(ReplayCategory.REPLAYABLE, ReplayReason.TRANSIENT_ERROR)
-    }
-    if (authorization) {
-        return item(ReplayCategory.REPLAYABLE, ReplayReason.AUTHORIZATION_ERROR)
-    }
-    const failedAt = execution.finishTime ?? execution.created
-    if (dayjsUtil(workflowUpdatedAt).isAfter(failedAt)) {
-        return item(ReplayCategory.REPLAYABLE, ReplayReason.WORKFLOW_CHANGED)
-    }
-    return item(ReplayCategory.DATA_PROBLEM, ReplayReason.UNCHANGED_SINCE_FAILURE)
-}
-
-async function readConnectionState({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<ConnectionState> {
+async function readConnectionState({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<ReplayConnectionState> {
     const connections = await connectionsRepo().find({ where: { externalId }, select: ['id', 'status', 'projectIds'] })
     const connection = connections.find((candidate) => candidate.projectIds.includes(projectId))
     if (isNil(connection)) {
-        return ConnectionState.MISSING
+        return ReplayConnectionState.MISSING
     }
-    return connection.status === ConnectionStatus.ACTIVE ? ConnectionState.HEALTHY : ConnectionState.BROKEN
-}
-
-enum ConnectionState {
-    NOT_APPLICABLE = 'NOT_APPLICABLE',
-    MISSING = 'MISSING',
-    BROKEN = 'BROKEN',
-    HEALTHY = 'HEALTHY',
+    return connection.status === ConnectionStatus.ACTIVE ? ReplayConnectionState.HEALTHY : ReplayConnectionState.BROKEN
 }
 
 const MAX_REPLAY_CANDIDATES = 500
 const REPLAY_CONCURRENCY = 3
-const FAILED_STATUSES: ExecutionStatus[] = [ExecutionStatus.FAILED, ExecutionStatus.TIMEOUT, ExecutionStatus.INTERNAL_ERROR, ExecutionStatus.MEMORY_LIMIT_EXCEEDED]
 
 type IssueRef = {
     id: string
@@ -141,13 +102,4 @@ type ReplayParams = IssueRef & {
     strategy: WorkflowRetryStrategy
     includeDataProblems: boolean
     actorId: UserId
-}
-
-type ClassifyParams = {
-    execution: Execution
-    workflowUpdatedAt: string | undefined
-    connectionState: ConnectionState
-    connectionExternalId: string | null
-    transient: boolean
-    authorization: boolean
 }

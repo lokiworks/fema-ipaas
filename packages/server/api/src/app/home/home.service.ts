@@ -111,6 +111,11 @@ async function hourlyCounts({ projectIds, from }: RunScope): Promise<HourlyBucke
 async function latestFailedRuns({ projectIds, from }: RunScope): Promise<HomeFailedRun[]> {
     const rows: { id: string, projectId: string, workflowId: string, status: ExecutionStatus, created: Date | string, displayName: string | null }[] = await productionRuns({ projectIds, from })
         .andWhere('execution.status IN (:...failedStates)', { failedStates: FAILED_STATES })
+        .andWhere(`NOT EXISTS (
+            SELECT 1 FROM execution retry
+            WHERE retry."rerunOfExecutionId" = COALESCE(execution."rerunOfExecutionId", execution.id)
+            AND (retry.status = :retriedStatus OR retry.created > execution.created)
+        )`, { retriedStatus: ExecutionStatus.SUCCEEDED })
         .leftJoin('workflow_version', 'version', 'version.id = execution."workflowVersionId"')
         .select('execution.id', 'id')
         .addSelect('execution."projectId"', 'projectId')

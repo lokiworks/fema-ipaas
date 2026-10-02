@@ -4873,5 +4873,6 @@
   "Build the connector yourself": "Build the connector yourself",
   "Import an OpenAPI document and publish it for your organization": "Import an OpenAPI document and publish it for your organization",
   "Ask the administrator for a connector": "Ask the administrator for a connector",
-  "Apps many teams need are built as official connectors": "Apps many teams need are built as official connectors"
+  "Apps many teams need are built as official connectors": "Apps many teams need are built as official connectors",
+  "The other system rejected the data; fix it there first, editing the workflow will not change the result": "The other system rejected the data; fix it there first, editing the workflow will not change the result"
 }

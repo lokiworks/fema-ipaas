@@ -58,8 +58,9 @@ export const issueService = (log: FastifyBaseLogger) => ({
                     return { issue: created, event: IssueRecordEvent.NEW }
                 }
                 const reopening = existing.status === IssueStatus.RESOLVED
+                const repeatAttempt = issueUtils.isRepeatAttempt({ execution, existingIssueId: existing.id })
                 await issueRepo().update({ id: existing.id, projectId: existing.projectId }, {
-                    occurrences: existing.occurrences + 1,
+                    occurrences: repeatAttempt ? existing.occurrences : existing.occurrences + 1,
                     lastSeenAt: now,
                     message: classification.message,
                     ...(reopening ? { status: IssueStatus.OPEN, reopened: true, resolvedAt: null, resolvedById: null } : {}),
@@ -109,6 +110,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
         const failuresLast7Days = await executionRepo().createQueryBuilder('execution')
             .innerJoin('issue', 'issue', 'issue.id = execution."issueId"')
             .where('issue."projectId" = :projectId', { projectId })
+            .andWhere('execution."rerunOfExecutionId" IS NULL')
             .andWhere('execution.created >= :since', { since: weekAgo.toISOString() })
             .getCount()
         return {
@@ -216,6 +218,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
             .addSelect('COUNT(*)', 'count')
             .where('execution."issueId" = :id', { id })
             .andWhere('execution."projectId" = :projectId', { projectId })
+            .andWhere('execution."rerunOfExecutionId" IS NULL')
             .andWhere('execution.created >= :start', { start: start.toISOString() })
             .groupBy('bucket')
             .getRawMany<{ bucket: string | Date, count: string }>()

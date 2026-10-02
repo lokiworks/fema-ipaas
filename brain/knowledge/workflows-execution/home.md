@@ -12,6 +12,7 @@ icon: 🏠
 **我的项目** —— 来自 `GET /v1/projects/directory`，只显示 `myRole` 非空的项目。
 
 ## Gotchas
+- 「需要关注」的失败运行只列每条触发链的最近一次尝试，链上有成功重跑的失败不再出现（`latestFailedRuns` 里的 NOT EXISTS）。
 - 今日运行只算 `environment = PRODUCTION` 且未归档的运行，编辑器里的测试运行不计入；成功率 = 成功 ÷ 已结束（含取消），运行中不进分母。
 - 小时柱按「距 `since` 的小时数」分桶，不是按 UTC 小时，所以半小时时区也对得上；`since` 超出最近 26 小时会退回最近 24 小时。
 - 运行日志页是项目级的：跨多个项目的统计点击后先弹出项目列表，再带 `status` 和 `createdAfter` 跳到对应项目的运行页。

@@ -4873,5 +4873,6 @@
   "Build the connector yourself": "自己开发连接器",
   "Import an OpenAPI document and publish it for your organization": "可以从 OpenAPI 文档导入，发布后本企业都能用",
   "Ask the administrator for a connector": "向管理员提需求",
-  "Apps many teams need are built as official connectors": "很多团队都要用的应用，会做成官方连接器"
+  "Apps many teams need are built as official connectors": "很多团队都要用的应用，会做成官方连接器",
+  "The other system rejected the data; fix it there first, editing the workflow will not change the result": "目标系统里的数据有问题，先在对方系统里处理好；改工作流不会让结果不同"
 }

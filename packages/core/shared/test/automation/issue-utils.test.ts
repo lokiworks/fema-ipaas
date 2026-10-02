@@ -88,3 +88,39 @@ describe('issueUtils.insightOf', () => {
         expect(issueUtils.isTransientHttpStatus(null)).toBe(false)
     })
 })
+
+describe('issueUtils.isRejectedByTargetHttpStatus', () => {
+    it('treats client errors other than auth and rate limits as data problems', () => {
+        expect(issueUtils.isRejectedByTargetHttpStatus('HTTP_422')).toBe(true)
+        expect(issueUtils.isRejectedByTargetHttpStatus('HTTP_400')).toBe(true)
+        expect(issueUtils.isRejectedByTargetHttpStatus('HTTP_404')).toBe(true)
+    })
+
+    it('leaves authorization, rate limits, server errors and non-http codes alone', () => {
+        expect(issueUtils.isRejectedByTargetHttpStatus('HTTP_401')).toBe(false)
+        expect(issueUtils.isRejectedByTargetHttpStatus('HTTP_403')).toBe(false)
+        expect(issueUtils.isRejectedByTargetHttpStatus('HTTP_429')).toBe(false)
+        expect(issueUtils.isRejectedByTargetHttpStatus('HTTP_503')).toBe(false)
+        expect(issueUtils.isRejectedByTargetHttpStatus('STEP_TIMEOUT')).toBe(false)
+        expect(issueUtils.isRejectedByTargetHttpStatus(null)).toBe(false)
+    })
+})
+
+describe('issueUtils.isRepeatAttempt', () => {
+    it('does not count a rerun of an already counted trigger as a new failure', () => {
+        expect(issueUtils.isRepeatAttempt({ execution: { rerunOfExecutionId: 'root1' }, existingIssueId: 'i1' })).toBe(true)
+    })
+
+    it('does not count an in-place retry that fails again', () => {
+        expect(issueUtils.isRepeatAttempt({ execution: { inPlaceRetryCount: 1 }, existingIssueId: 'i1' })).toBe(true)
+    })
+
+    it('does not count the same execution twice for the same issue', () => {
+        expect(issueUtils.isRepeatAttempt({ execution: { issueId: 'i1' }, existingIssueId: 'i1' })).toBe(true)
+    })
+
+    it('counts a first failure of a fresh trigger', () => {
+        expect(issueUtils.isRepeatAttempt({ execution: { rerunOfExecutionId: null, inPlaceRetryCount: 0, issueId: null }, existingIssueId: 'i1' })).toBe(false)
+        expect(issueUtils.isRepeatAttempt({ execution: { issueId: 'other' }, existingIssueId: 'i1' })).toBe(false)
+    })
+})

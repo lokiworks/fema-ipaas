@@ -9,6 +9,8 @@ export const issueUtils = {
     insightOf,
     isTransientHttpStatus,
     isAuthorizationHttpStatus,
+    isRejectedByTargetHttpStatus,
+    isRepeatAttempt,
 }
 
 function classifyFailure({ workflowId, executionStatus, failedStep }: ClassifyFailureParams): FailureClassification {
@@ -110,6 +112,18 @@ function isAuthorizationHttpStatus(errorCode: string | null | undefined): boolea
     return !isNil(status) && AUTHORIZATION_HTTP_STATUSES.includes(status)
 }
 
+function isRejectedByTargetHttpStatus(errorCode: string | null | undefined): boolean {
+    const status = httpStatusOf(errorCode)
+    if (isNil(status) || status < 400 || status >= 500) {
+        return false
+    }
+    return !TRANSIENT_HTTP_STATUSES.includes(status) && !AUTHORIZATION_HTTP_STATUSES.includes(status)
+}
+
+function isRepeatAttempt({ execution, existingIssueId }: IsRepeatAttemptParams): boolean {
+    return !isNil(execution.rerunOfExecutionId) || (execution.inPlaceRetryCount ?? 0) > 0 || execution.issueId === existingIssueId
+}
+
 function httpStatusOf(errorCode: string | null | undefined): number | null {
     if (isNil(errorCode) || !errorCode.startsWith('HTTP_')) {
         return null
@@ -127,6 +141,15 @@ const HIGH_SEVERITY_OCCURRENCES = 10
 const MEDIUM_SEVERITY_OCCURRENCES = 3
 const TRANSIENT_HTTP_STATUSES = [429, 502, 503, 504, 529]
 const AUTHORIZATION_HTTP_STATUSES = [401, 403]
+
+type IsRepeatAttemptParams = {
+    execution: {
+        rerunOfExecutionId?: string | null
+        inPlaceRetryCount?: number
+        issueId?: string | null
+    }
+    existingIssueId: string
+}
 
 type ClassifyFailureParams = {
     workflowId: string

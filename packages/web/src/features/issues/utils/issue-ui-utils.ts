@@ -117,6 +117,10 @@ function replayReasonLabel(reason: ReplayReason): string {
       return t(
         'Nothing changed since the failure; it will most likely fail again',
       );
+    case ReplayReason.REJECTED_BY_TARGET:
+      return t(
+        'The other system rejected the data; fix it there first, editing the workflow will not change the result',
+      );
     case ReplayReason.CONNECTION_STILL_BROKEN:
       return t('The connection is still broken');
     case ReplayReason.CONNECTION_DELETED:

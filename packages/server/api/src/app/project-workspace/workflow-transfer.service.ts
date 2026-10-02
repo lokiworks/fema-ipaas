@@ -19,6 +19,7 @@ import { workflowNaming } from '../workflows/workflow/workflow-naming'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { migrateWorkflowVersionTemplate } from '../workflows/workflow-version/migrations'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
+import { workflowTransferTables } from './workflow-transfer-tables'
 import { workflowTransferUtils } from './workflow-transfer-utils'
 
 export const workflowTransferService = (log: FastifyBaseLogger) => ({
@@ -32,6 +33,7 @@ export const workflowTransferService = (log: FastifyBaseLogger) => ({
             projectId,
         })
         const { trigger } = workflowTransferUtils.stripUnavailableConnections({ trigger: version.trigger, isAvailable: () => false })
+        const mappingTables = await workflowTransferTables.exportTables({ log, projectId, ids: workflowTransferTables.referencedTableIds(trigger) })
         return {
             format: WORKFLOW_EXPORT_FORMAT,
             version: WORKFLOW_EXPORT_VERSION,
@@ -43,14 +45,18 @@ export const workflowTransferService = (log: FastifyBaseLogger) => ({
                 schemaVersion: version.schemaVersion ?? null,
                 notes: version.notes,
             },
+            ...(mappingTables.length > 0 ? { mappingTables } : {}),
         }
     },
 
     async importFile({ projectId, folderId, file, userId, tenantId }: ImportParams): Promise<WorkflowTransferResult> {
-        const { trigger, cleared } = workflowTransferUtils.stripUnavailableConnections({
+        const stripped = workflowTransferUtils.stripUnavailableConnections({
             trigger: workflowTransferUtils.clearSampleData(file.workflow.trigger),
             isAvailable: () => false,
         })
+        const idMap = await workflowTransferTables.resolveInProject({ log, projectId, userId, tables: file.mappingTables ?? [] })
+        const trigger = workflowTransferUtils.remapIds({ trigger: stripped.trigger, idMap })
+        const { cleared } = stripped
         return createFromGraph({
             log,
             projectId,
@@ -117,7 +123,17 @@ export const workflowTransferService = (log: FastifyBaseLogger) => ({
         const isAvailable = sourceProjectId === targetProjectId
             ? () => true
             : await connectionAvailability({ tenantId, projectId: targetProjectId, trigger: version.trigger })
-        const { trigger, cleared } = workflowTransferUtils.stripUnavailableConnections({ trigger: version.trigger, isAvailable })
+        const stripped = workflowTransferUtils.stripUnavailableConnections({ trigger: version.trigger, isAvailable })
+        const idMap = sourceProjectId === targetProjectId
+            ? new Map<string, string>()
+            : await workflowTransferTables.resolveInProject({
+                log,
+                projectId: targetProjectId,
+                userId,
+                tables: await workflowTransferTables.exportTables({ log, projectId: sourceProjectId, ids: workflowTransferTables.referencedTableIds(stripped.trigger) }),
+            })
+        const trigger = workflowTransferUtils.remapIds({ trigger: stripped.trigger, idMap })
+        const { cleared } = stripped
         return createFromGraph({
             log,
             projectId: targetProjectId,

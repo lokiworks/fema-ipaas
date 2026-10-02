@@ -1,11 +1,13 @@
 import { isNil } from '@fema-ipaas/core-utils'
 import { CreateTemplateRequestBody, GenerateTemplateFromWorkflowRequestBody, templateConnectionUtils, TemplateType, WorkflowVersion, WorkflowVersionTemplate } from '@fema-ipaas/shared'
 
+import { workflowTransferTables } from '../project-workspace/workflow-transfer-tables'
+
 export const templateFromWorkflow = {
     toWorkflowTemplate(version: WorkflowVersion): WorkflowVersionTemplate {
         return {
             displayName: version.displayName,
-            trigger: templateConnectionUtils.stripTrigger(version.trigger),
+            trigger: workflowTransferTables.withoutLookupTables(templateConnectionUtils.stripTrigger(version.trigger)),
             valid: version.valid,
             schemaVersion: version.schemaVersion,
             notes: version.notes,

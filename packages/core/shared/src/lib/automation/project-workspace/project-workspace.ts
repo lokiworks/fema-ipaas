@@ -1,4 +1,5 @@
-import { Nullable } from '@fema-ipaas/core-utils'
+import { MappingMissingBehavior, Nullable } from '@fema-ipaas/core-utils'
+import { MappingTableRow } from '../mapping-table/mapping-table'
 import { ExecutionStatus, Folder, Note, WorkflowStatus, WorkflowTrigger } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
@@ -8,6 +9,18 @@ export const WORKFLOW_EXPORT_FORMAT = 'workflow-export'
 export const WORKFLOW_EXPORT_VERSION = 1
 export const WORKFLOW_BATCH_LIMIT = 100
 export const PUBLISH_DESCRIPTION_MAX_LENGTH = 300
+
+export const WorkflowExportMappingTable = z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
+    keyLabel: z.string(),
+    valueLabel: z.string(),
+    missingBehavior: z.enum(MappingMissingBehavior),
+    defaultValue: z.string().nullable(),
+    rows: z.array(MappingTableRow),
+})
+export type WorkflowExportMappingTable = z.infer<typeof WorkflowExportMappingTable>
 
 export const WorkflowExportFile = z.object({
     format: z.literal(WORKFLOW_EXPORT_FORMAT),
@@ -20,6 +33,7 @@ export const WorkflowExportFile = z.object({
         schemaVersion: Nullable(z.string()),
         notes: z.array(Note).optional(),
     }),
+    mappingTables: z.array(WorkflowExportMappingTable).optional(),
 })
 export type WorkflowExportFile = z.infer<typeof WorkflowExportFile>
 

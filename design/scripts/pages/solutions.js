@@ -23,8 +23,8 @@ function solLookup(table) {
 const SOLUTION_CATALOG = [
   {
     id: 'beisen-feishu', name: '北森 → 飞书 人员同步', category: '人力资源', provider: 'official', version: '1.2', installs: 860, updatedAt: Date.now() - 12 * DAY,
-    summary: '员工入职、调岗、离职后，自动在飞书通讯录开通账号、调整部门、暂停或删除账号，并通知 HR 群和 IT 群。',
-    points: ['入职后按部门对照开通飞书账号，可以提前一天发出激活邀请', '调岗时同步部门、直属上级和职务，只处理调岗，不处理入职和离职', '离职当天暂停账号（可以恢复）或删除账号，并通知 IT 回收设备', '同一员工的变动按顺序处理，重复推送的事件自动去重'],
+    summary: '员工入职、调岗、离职后，自动在飞书通讯录开通账号、调整部门、暂停账号，并通知 HR 群和 IT 群。',
+    points: ['入职后按部门对照开通飞书账号，可以提前一天发出激活邀请', '调岗时同步部门、直属上级和职务，只处理调岗，不处理入职和离职', '离职当天暂停账号（不能登录、数据保留、可以恢复），并通知 IT 回收设备', '同一员工的变动按顺序处理，重复推送的事件自动去重'],
     connectors: ['beisen', 'feishu'],
     workflows: [
       {
@@ -49,15 +49,13 @@ const SOLUTION_CATALOG = [
         }),
       },
       {
-        key: 'leave', name: '员工离职处理飞书账号', desc: '北森离职生效当天暂停或删除飞书账号（安装时选择），并通知 IT 回收设备。',
+        key: 'leave', name: '员工离职处理飞书账号', desc: '北森离职生效当天暂停飞书账号，并通知 IT 回收设备。',
         trigger: { connector: 'beisen', op: 'employee_left' }, steps: [{ connector: 'feishu', op: 'freeze_user' }, { connector: 'feishu', op: 'send_message' }],
         build: (cfg) => ({
           trigger: { connector: 'beisen', op: 'employee_left', name: '员工离职', config: { interval: '15 分钟' }, dedupe: '{{trigger.employee_id}}' },
           steps: [
-            cfg.leaveAction === 'delete'
-              ? { connector: 'feishu', op: 'delete_user', name: '删除飞书账号', config: { employeeId: '{{trigger.employee_id}}', heir: '直属上级' } }
-              : { connector: 'feishu', op: 'freeze_user', name: '暂停飞书账号', config: { employeeId: '{{trigger.employee_id}}' } },
-            { connector: 'feishu', op: 'send_message', name: '通知 IT 回收设备', config: { receiveType: '群聊', receiver: cfg.itChat, content: `{{trigger.name}}（{{trigger.employee_id}}）已离职，飞书账号已${cfg.leaveAction === 'delete' ? '删除，文档和邮件已转给直属上级' : '暂停'}，请回收设备` } },
+            { connector: 'feishu', op: 'freeze_user', name: '暂停飞书账号', config: { employeeId: '{{trigger.employee_id}}' } },
+            { connector: 'feishu', op: 'send_message', name: '通知 IT 回收设备', config: { receiveType: '群聊', receiver: cfg.itChat, content: `{{trigger.name}}（{{trigger.employee_id}}）已离职，飞书账号已暂停，请回收设备` } },
           ],
         }),
       },
@@ -68,7 +66,6 @@ const SOLUTION_CATALOG = [
       { key: 'hrChat', label: 'HR 通知群', type: 'select', options: SOL_FEISHU_CHATS, defaultValue: 'HR 入职服务', affects: ['员工入职开通飞书账号'], hint: '入职欢迎卡片发到这个群' },
       { key: 'itChat', label: 'IT 通知群', type: 'select', options: SOL_FEISHU_CHATS, defaultValue: 'IT 桌面支持', affects: ['员工离职处理飞书账号'], hint: '离职后提醒回收设备' },
       { key: 'openAt', label: '开通时间', type: 'radio', options: [{ value: 'day0', label: '入职当天 08:00' }, { value: 'day-1', label: '入职前 1 天 08:00', desc: '新员工第一天就能登录；飞书会提前发出激活邀请' }], defaultValue: 'day-1', affects: ['员工入职开通飞书账号'] },
-      { key: 'leaveAction', label: '离职处理', type: 'radio', options: [{ value: 'freeze', label: '暂停账号（推荐）', desc: '不能登录，数据保留，可以恢复' }, { value: 'delete', label: '直接删除账号', desc: '不可恢复；文档、邮件转给直属上级', danger: true }], defaultValue: 'freeze', affects: ['员工离职处理飞书账号'] },
       { key: 'deptMap', label: '部门对照', type: 'radio', options: [{ value: 'auto', label: '按部门名称自动匹配，安装后确认' }, { value: 'manual', label: '安装后手工维护映射表' }], defaultValue: 'auto', affects: ['员工入职开通飞书账号', '员工调岗同步部门'], table: true },
     ],
     checks: [
@@ -79,7 +76,7 @@ const SOLUTION_CATALOG = [
       { key: 'ip', label: '北森开放平台的 IP 白名单包含本实例出口 IP', detail: '本实例出口 IP：118.31.42.17', who: '北森管理员', blocking: false, sim: 'warn', failText: '无法从这里确认，请北森管理员核对白名单；不在白名单时，北森会拒绝调用' },
     ],
     versions: [
-      { v: '1.2', at: Date.now() - 12 * DAY, notes: '新增「员工调岗同步部门」；离职默认改为暂停账号' },
+      { v: '1.2', at: Date.now() - 12 * DAY, notes: '新增「员工调岗同步部门」；离职处理改为只暂停账号' },
       { v: '1.1', at: Date.now() - 40 * DAY, notes: '入职开通改为按工号查重，已有账号时直接返回' },
       { v: '1.0', at: Date.now() - 90 * DAY, notes: '首个版本' },
     ],
@@ -658,7 +655,6 @@ function SolutionInstallPage({ id, query }) {
               ? html`<${Input} width=${320} value=${config[c.key]} onChange=${(v) => setConfig({ ...config, [c.key]: v })} />`
               : html`<${RadioCards} columns=${c.options.length > 2 ? 3 : 2} disabled=${Boolean(c.table && reusable)} value=${config[c.key]} onChange=${(v) => setConfig({ ...config, [c.key]: v })} options=${c.options.map((o) => ({ value: o.value, label: o.label, desc: o.desc }))} />`}
           ${c.table && reusable && html`<${Alert} tone="info" className="sol-gap">项目里已有映射表「${reusable.name}」（${reusable.rows.length} 条对照），会直接沿用，这一项不会生效。<//>`}
-          ${c.key === 'leaveAction' && config.leaveAction === 'delete' && html`<${Alert} tone="warning" className="sol-gap">删除不可恢复。文档、邮件会转给直属上级，没有上级时保留在原账号名下；日程和问卷会被删除。<//>`}
         <//>`)}
       </div>`}
       ${step === 3 && html`<div className="col" style=${{ gap: 12, maxWidth: 820 }}>

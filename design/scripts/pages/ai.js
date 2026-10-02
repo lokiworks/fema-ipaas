@@ -1014,7 +1014,7 @@ function aigenCapStep(id, ctx, env) {
     if (id === 'feishuFreeze') {
       return {
         steps: [aigenAct('feishuFreeze', 'feishu', 'freeze_user', { name: '暂停飞书账号', phrase: '暂停飞书账号', why: '按工号找到飞书账号并暂停，不能登录但数据保留，可以恢复', config: { employeeId: empId } })],
-        assumptions: ['暂停而不是删除账号；需要删除时，在编辑器里换成删除操作并设置资源接收人', !empId && '触发数据里没有工号，暂停账号的工号要在编辑器里补'].filter(Boolean),
+        assumptions: ['只暂停账号，不删除；删除账号不在首发范围', !empId && '触发数据里没有工号，暂停账号的工号要在编辑器里补'].filter(Boolean),
       };
     }
     const deptMap = (ctx.state.mappingTables || []).find((t) => t.projectId === ctx.pid && t.keyLabel.includes('北森部门'));

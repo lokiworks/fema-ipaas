@@ -875,7 +875,6 @@ const SAMPLE_OUTPUT = {
   'feishu.create_user': { open_id: 'ou_9c4b21d7e0', employee_id: 'XH20260918', created: true, activate_invite_sent: true },
   'feishu.update_user': { open_id: 'ou_9c4b21d7e0', employee_id: 'XH20230415', updated: ['部门', '直属上级', '职务'] },
   'feishu.freeze_user': { open_id: 'ou_5a8e03b1c4', employee_id: 'XH20210311', status: '已暂停' },
-  'feishu.delete_user': { open_id: 'ou_5a8e03b1c4', employee_id: 'XH20210311', status: '已删除', resources_to: '周宁' },
   'wecom.create_member': { userid: 'tangkexin', employee_id: 'XH20260918', created: true },
   'wecom.disable_member': { userid: 'xunuo', employee_id: 'XH20210311', status: '已禁用' },
   'beisen.employee_left': { employee_id: 'XH20210311', name: '许诺', mobile: '13987654321', department: '销售运营部', last_day: '2026-09-24', reason: '个人发展' },

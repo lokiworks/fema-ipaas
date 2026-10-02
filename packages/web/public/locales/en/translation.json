@@ -3148,6 +3148,7 @@
   "{ref} uses a loop variable outside the loop": "{ref} uses a loop variable outside the loop",
   "Project config {name} does not exist": "Project config {name} does not exist",
   "AI-generated step not confirmed": "AI-generated step not confirmed",
+  "{step} writes data and has not been tested since it was last edited": "{step} writes data and has not been tested since it was last edited",
   "{count, plural, =1 {1 error} other {# errors}}": "{count, plural, =1 {1 error} other {# errors}}",
   "{count, plural, =1 {1 warning} other {# warnings}}": "{count, plural, =1 {1 warning} other {# warnings}}",
   "No problems found. Errors block debugging and publishing.": "No problems found. Errors block debugging and publishing.",

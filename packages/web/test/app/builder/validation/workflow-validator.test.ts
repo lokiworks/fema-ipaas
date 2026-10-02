@@ -28,6 +28,7 @@ function connectorAction({
   actionName = 'send',
   nextAction,
   pendingReview,
+  sampleData,
   valid = true,
 }: {
   name: string;
@@ -36,6 +37,7 @@ function connectorAction({
   actionName?: string;
   nextAction?: WorkflowAction;
   pendingReview?: boolean;
+  sampleData?: { lastTestDate: string };
   valid?: boolean;
 }): WorkflowAction {
   return {
@@ -52,6 +54,7 @@ function connectorAction({
       propertySettings: {},
       errorHandlingOptions: undefined,
       ...(pendingReview ? { pendingReview } : {}),
+      ...(sampleData ? { sampleData } : {}),
     },
     nextAction,
   };
@@ -168,6 +171,22 @@ function context(
 function codes(ctx: ValidationContext): ValidationCode[] {
   return workflowValidator.validate(ctx).issues.map((issue) => issue.code);
 }
+
+const feishuWriteSpec: ConnectorSpec = {
+  status: ConnectorSpecStatus.LOADED,
+  requiresAuth: true,
+  actions: {
+    send: {
+      requiresAuth: true,
+      classification: 'WRITE',
+      props: [
+        { name: 'auth', displayName: 'Connection', required: true },
+        { name: 'text', displayName: 'Text', required: true },
+      ],
+    },
+  },
+  triggers: {},
+};
 
 const feishuSpec: ConnectorSpec = {
   status: ConnectorSpecStatus.LOADED,
@@ -403,5 +422,61 @@ describe('workflowValidator', () => {
     expect(
       workflowValidator.firstTabWithError({ result, stepName: 'step_1' }),
     ).toBe(ValidationTab.INPUT);
+  });
+});
+
+describe('untested write steps', () => {
+  const writeStep = (sampleData?: { lastTestDate: string }) =>
+    webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        input: { auth: "{{connections['feishu']}}", text: 'hi' },
+        sampleData,
+      }),
+    });
+  const ctx = (trigger: WorkflowTrigger, spec: ConnectorSpec) =>
+    context(trigger, {
+      connectors: { '@fema-ipaas/connector-feishu': spec },
+      connections: {
+        feishu: { displayName: 'Feishu', status: ConnectionStatus.ACTIVE },
+      },
+    });
+
+  it('warns when a write step has never been tested', () => {
+    const result = workflowValidator.validate(
+      ctx(writeStep(), feishuWriteSpec),
+    );
+    expect(result.errorCount).toBe(0);
+    expect(result.issues.map((issue) => issue.code)).toEqual([
+      ValidationCode.WRITE_NOT_TESTED,
+    ]);
+    expect(result.issues[0].severity).toBe(ValidationSeverity.WARNING);
+    expect(result.issues[0].tab).toBe(ValidationTab.OUTPUT);
+  });
+
+  it('warns when the test is older than the last edit', () => {
+    expect(
+      codes(
+        ctx(
+          writeStep({ lastTestDate: '2026-05-01T00:00:00.000Z' }),
+          feishuWriteSpec,
+        ),
+      ),
+    ).toEqual([ValidationCode.WRITE_NOT_TESTED]);
+  });
+
+  it('stays quiet after a test that came after the last edit', () => {
+    expect(
+      codes(
+        ctx(
+          writeStep({ lastTestDate: '2026-05-03T00:00:00.000Z' }),
+          feishuWriteSpec,
+        ),
+      ),
+    ).toEqual([]);
+  });
+
+  it('ignores steps that only read or have no classification', () => {
+    expect(codes(ctx(writeStep(), feishuSpec))).toEqual([]);
   });
 });

@@ -1,3 +1,4 @@
+import { ActionClassification } from '@fema-ipaas/connector-sdk';
 import { isNil } from '@fema-ipaas/core-utils';
 import {
   BranchExecutionType,
@@ -172,7 +173,51 @@ function validateStep({
         }),
       ]
     : [];
-  return [...specific, ...incomplete, ...review];
+  const untested = hasError ? [] : untestedWriteIssues({ step, context });
+  return [...specific, ...incomplete, ...review, ...untested];
+}
+
+function untestedWriteIssues({
+  step,
+  context,
+}: {
+  step: WorkflowAction | WorkflowTrigger;
+  context: ValidationContext;
+}): ValidationIssue[] {
+  if (step.type !== WorkflowActionType.CONNECTOR) {
+    return [];
+  }
+  const connector = context.connectors[step.settings.connectorName];
+  if (connector?.status !== ConnectorSpecStatus.LOADED) {
+    return [];
+  }
+  const classification =
+    connector.actions[step.settings.actionName ?? '']?.classification;
+  if (
+    classification !== WRITE_CLASSIFICATION &&
+    classification !== DESTRUCTIVE_CLASSIFICATION
+  ) {
+    return [];
+  }
+  return isTestedAfterLastEdit(step)
+    ? []
+    : [
+        issue({
+          step,
+          code: ValidationCode.WRITE_NOT_TESTED,
+          tab: ValidationTab.OUTPUT,
+          severity: ValidationSeverity.WARNING,
+          params: { step: step.displayName },
+        }),
+      ];
+}
+
+function isTestedAfterLastEdit(step: WorkflowAction): boolean {
+  const lastTestDate = readRecord(step.settings.sampleData)['lastTestDate'];
+  if (typeof lastTestDate !== 'string') {
+    return false;
+  }
+  return Date.parse(lastTestDate) >= Date.parse(step.lastUpdatedDate);
 }
 
 function structureIssues({
@@ -773,6 +818,8 @@ export const workflowValidator = {
 };
 
 const AUTH_PROPERTY = 'auth';
+const WRITE_CLASSIFICATION: ActionClassification = 'WRITE';
+const DESTRUCTIVE_CLASSIFICATION: ActionClassification = 'DESTRUCTIVE';
 const CRON_TRIGGER = 'cron_expression';
 const INTERVAL_TRIGGER = 'every_x_minutes';
 const FORMS_CONNECTOR = '@fema-ipaas/connector-forms';
@@ -837,6 +884,7 @@ export enum ValidationCode {
   LOOP_VARIABLE_OUTSIDE_LOOP = 'LOOP_VARIABLE_OUTSIDE_LOOP',
   VARIABLE_MISSING = 'VARIABLE_MISSING',
   AI_PENDING_REVIEW = 'AI_PENDING_REVIEW',
+  WRITE_NOT_TESTED = 'WRITE_NOT_TESTED',
 }
 
 export enum ConnectorSpecStatus {
@@ -852,6 +900,7 @@ export type PropSpec = {
 
 export type OperationSpec = {
   requiresAuth: boolean;
+  classification?: ActionClassification;
   props: PropSpec[];
 };
 

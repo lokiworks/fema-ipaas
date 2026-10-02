@@ -3148,6 +3148,7 @@
   "{ref} uses a loop variable outside the loop": "{ref} 在循环外使用了循环变量",
   "Project config {name} does not exist": "项目配置 {name} 不存在",
   "AI-generated step not confirmed": "AI 生成的节点未确认",
+  "{step} writes data and has not been tested since it was last edited": "「{step}」会写入数据，且自上次修改后还没有测试过",
   "{count, plural, =1 {1 error} other {# errors}}": "{count, plural, other {# 个错误}}",
   "{count, plural, =1 {1 warning} other {# warnings}}": "{count, plural, other {# 个警告}}",
   "No problems found. Errors block debugging and publishing.": "没有发现问题。出现错误时会阻止调试和发布。",

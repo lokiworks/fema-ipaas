@@ -1,4 +1,5 @@
 import {
+  ActionClassification,
   ConnectorMetadataModel,
   PropertyType,
 } from '@fema-ipaas/connector-sdk';
@@ -163,6 +164,7 @@ function specOf(model: ConnectorMetadataModel): ConnectorSpec {
       string,
       {
         requireAuth?: boolean;
+        classification?: ActionClassification;
         props: Record<
           string,
           { displayName: string; required: boolean; type: PropertyType }
@@ -175,6 +177,7 @@ function specOf(model: ConnectorMetadataModel): ConnectorSpec {
         name,
         {
           requiresAuth: operation.requireAuth !== false,
+          classification: operation.classification,
           props: Object.entries(operation.props)
             .filter(([, prop]) => !IGNORED_PROP_TYPES.includes(prop.type))
             .map(([propName, prop]) => ({

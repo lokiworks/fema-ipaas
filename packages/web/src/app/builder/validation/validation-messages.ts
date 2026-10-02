@@ -64,4 +64,9 @@ const MESSAGES: Record<
     t('Project config {name} does not exist', params),
   [ValidationCode.AI_PENDING_REVIEW]: () =>
     t('AI-generated step not confirmed'),
+  [ValidationCode.WRITE_NOT_TESTED]: (params) =>
+    t(
+      '{step} writes data and has not been tested since it was last edited',
+      params,
+    ),
 };

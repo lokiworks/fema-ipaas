@@ -16,6 +16,8 @@ icon: 🩺
 **值班（Operator）** —— ADR 0013 的项目角色，有 `ISSUE:MANAGE`，可以重放和处理问题但不能改工作流。
 
 ## Gotchas
+
+- **重放成功会自动关闭问题，但要这个问题名下每一次失败都被救回来。** 生产环境里一次重跑（`rerunOfExecutionId`）或原地重试成功结束时，`executionHooks.onFinish` 调 `issueService.resolveIfRecovered`：数这个问题名下没有被成功重跑覆盖的失败根运行，为 0 才把 OPEN 或 INVESTIGATING 的问题标成已解决，系统操作，活动记录里 `reason` 是 `REPLAY_SUCCEEDED`。只救回一部分、重放自己又失败、普通的成功运行都不会关；已解决后同一失败再来仍按原逻辑重新打开。
 - 只有 `environment = PRODUCTION` 的失败会进问题中心；编辑器里的测试运行不会。
 - 问题记录走 `distributedLock`（按签名），多实例同时失败只会建一条。
 - 已解决的问题再次出现会重新打开并标记 `reopened`，不会新建。

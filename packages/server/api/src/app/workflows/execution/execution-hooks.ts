@@ -1,5 +1,5 @@
 import { isManualConnectorTrigger, isNil, isObject } from '@fema-ipaas/core-utils'
-import { Execution, isExecutionStateTerminal, isFailedState, RunEnvironment, StepOutputStatus, WebsocketClientEvent, WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
+import { Execution, ExecutionStatus, isExecutionStateTerminal, isFailedState, RunEnvironment, StepOutputStatus, WebsocketClientEvent, WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
 import { otelExecutionMetrics } from '../../helper/otel-execution-metrics'
@@ -24,6 +24,12 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
             websocketService.to(execution.projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, {
                 execution,
             })
+        }
+        const isRecoveredRun = execution.status === ExecutionStatus.SUCCEEDED
+            && execution.environment === RunEnvironment.PRODUCTION
+            && (!isNil(execution.rerunOfExecutionId) || (execution.inPlaceRetryCount ?? 0) > 0)
+        if (isRecoveredRun) {
+            await issueSideEffects(log).onRunRecovered({ execution })
         }
         const failedStep = isFailedState(execution.status) && execution.environment === RunEnvironment.PRODUCTION
             ? await issueFailedStep(log).resolve({ execution, workflowVersion })

@@ -117,6 +117,37 @@ export const issueService = (log: FastifyBaseLogger) => ({
         })
     },
 
+    async resolveIfRecovered({ execution }: { execution: Execution }): Promise<boolean> {
+        const rootId = execution.rerunOfExecutionId ?? execution.id
+        const root = await executionRepo().findOne({ where: { id: rootId, projectId: execution.projectId }, select: ['id', 'issueId'] })
+        if (isNil(root?.issueId)) {
+            return false
+        }
+        const issue = await issueRepo().findOne({ where: { id: root.issueId, projectId: execution.projectId }, select: ['id', 'status'] })
+        if (isNil(issue) || (issue.status !== IssueStatus.OPEN && issue.status !== IssueStatus.INVESTIGATING)) {
+            return false
+        }
+        const [{ count }] = await executionRepo().query(UNRECOVERED_ROOTS_SQL, [issue.id, execution.projectId])
+        if (Number(count) > 0) {
+            return false
+        }
+        await issueRepo().update({ id: issue.id, projectId: execution.projectId }, {
+            status: IssueStatus.RESOLVED,
+            resolvedAt: dayjsUtil().toISOString(),
+            resolvedById: null,
+            reopened: false,
+        })
+        await issueActivityRepo().insert({
+            id: generateId(),
+            issueId: issue.id,
+            projectId: execution.projectId,
+            type: IssueActivityType.STATUS_CHANGED,
+            actorId: null,
+            data: { from: issue.status, to: IssueStatus.RESOLVED, reason: AUTO_RESOLVED_REASON },
+        })
+        return true
+    },
+
     async resolveTriggerFailures({ projectId, workflowId, triggerName }: ResolveTriggerFailuresParams): Promise<void> {
         const stale = await issueRepo().find({
             where: { projectId, workflowId, stepName: triggerName, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
@@ -627,6 +658,19 @@ type OverviewParams = {
     tenantId: string
     projectId: ProjectId | undefined
 }
+
+const AUTO_RESOLVED_REASON = 'REPLAY_SUCCEEDED'
+
+const UNRECOVERED_ROOTS_SQL = `SELECT COUNT(*)::int AS count
+    FROM execution failed
+    WHERE failed."issueId" = $1
+      AND failed."projectId" = $2
+      AND failed."rerunOfExecutionId" IS NULL
+      AND failed.status <> 'SUCCEEDED'
+      AND NOT EXISTS (
+          SELECT 1 FROM execution rerun
+          WHERE rerun."rerunOfExecutionId" = failed.id AND rerun.status = 'SUCCEEDED'
+      )`
 
 type SummaryParams = {
     projectId: ProjectId

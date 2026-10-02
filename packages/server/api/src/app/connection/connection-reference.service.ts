@@ -1,4 +1,4 @@
-import { isNil, unique } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, unique } from '@fema-ipaas/core-utils'
 import { connectionAccessUtils, ConnectionMcpServiceReference, ConnectionProjectConfigReference, ConnectionProjectRef, ConnectionReferences, ConnectionWorkflowReference, PopulatedWorkflow } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In, IsNull } from 'typeorm'
@@ -61,6 +61,24 @@ export const connectionReferenceService = (log: FastifyBaseLogger) => ({
         }
     },
 
+    async assertUnreferenced({ tenantId, connection }: AssertUnreferencedParams): Promise<void> {
+        const [workflowsByConnection, mcpServices, replacements] = await Promise.all([
+            this.workflowReferences({ tenantId, connections: [connection] }),
+            this.mcpServiceReferences({ tenantId, connection }),
+            connectionReplacementReferenceRepo().find({
+                where: [{ sourceConnectionId: connection.id }, { targetConnectionId: connection.id }],
+            }),
+        ])
+        const message = connectionReferenceUtils.blockingMessage({
+            workflowCount: (workflowsByConnection.get(connection.id) ?? []).length,
+            mcpServiceCount: mcpServices.length,
+            environmentReplacementCount: replacements.length,
+        })
+        if (!isNil(message)) {
+            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message } })
+        }
+    },
+
     async mcpServiceReferences({ tenantId, connection }: { tenantId: string, connection: ReferenceConnection }): Promise<ConnectionMcpServiceReference[]> {
         const services = await mcpServiceReferenceRepo()
             .createQueryBuilder('service')
@@ -92,12 +110,34 @@ export const connectionReferenceService = (log: FastifyBaseLogger) => ({
     },
 })
 
+export const connectionReferenceUtils = {
+    blockingMessage({ workflowCount, mcpServiceCount, environmentReplacementCount }: BlockingCounts): string | null {
+        const parts = [
+            workflowCount > 0 ? `${workflowCount} workflows` : null,
+            mcpServiceCount > 0 ? `${mcpServiceCount} MCP services` : null,
+            environmentReplacementCount > 0 ? `${environmentReplacementCount} environment connection replacements` : null,
+        ].filter((part): part is string => !isNil(part))
+        return parts.length === 0 ? null : `Connection is still used by ${parts.join(', ')}. Replace it there before deleting it`
+    },
+}
+
 function referencesConnection({ workflow, connection }: { workflow: PopulatedWorkflow, connection: ReferenceConnection }): boolean {
     const connectionIds = workflow.version?.connectionIds
     if (isNil(connectionIds) || !connectionIds.includes(connection.externalId)) {
         return false
     }
     return connectionAccessUtils.isAvailableInProject({ connection, projectId: workflow.projectId })
+}
+
+type BlockingCounts = {
+    workflowCount: number
+    mcpServiceCount: number
+    environmentReplacementCount: number
+}
+
+type AssertUnreferencedParams = {
+    tenantId: string
+    connection: ReferenceConnection
 }
 
 type ReferenceConnection = Pick<ConnectionSchema, 'id' | 'externalId' | 'scope' | 'projectIds' | 'preSelectForNewProjects'>

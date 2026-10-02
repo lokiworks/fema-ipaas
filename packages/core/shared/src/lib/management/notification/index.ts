@@ -16,6 +16,7 @@ export enum NotificationType {
     PROJECT_MEMBER_ADDED = 'PROJECT_MEMBER_ADDED',
     RUN_FAILED = 'RUN_FAILED',
     CONNECTION_BROKEN = 'CONNECTION_BROKEN',
+    CONNECTION_REAUTH_REQUESTED = 'CONNECTION_REAUTH_REQUESTED',
 }
 
 export const Notification = z.object({

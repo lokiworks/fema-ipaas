@@ -52,6 +52,8 @@ function headline(notification: Notification): string {
       return t('A workflow run failed');
     case NotificationType.CONNECTION_BROKEN:
       return t('A connection needs to be reconnected');
+    case NotificationType.CONNECTION_REAUTH_REQUESTED:
+      return t('{actor} asks you to reconnect a connection', { actor });
   }
 }
 
@@ -94,6 +96,7 @@ function icon(type: NotificationType): NotificationIcon {
     case NotificationType.RUN_FAILED:
       return { icon: CircleX, className: 'text-destructive' };
     case NotificationType.CONNECTION_BROKEN:
+    case NotificationType.CONNECTION_REAUTH_REQUESTED:
       return { icon: Link2Off, className: 'text-warning' };
     default:
       return { icon: BellIcon, className: 'text-muted-foreground' };

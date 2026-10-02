@@ -35,6 +35,8 @@ Encrypted credential records (OAuth2 tokens, API keys, basic/custom auth, OIDC p
 - `metadata.accountIdentifier` (the "which account is this" label) must be **rewritten on every upsert, never left untouched** — `spreadIfDefined` omits the column and TypeORM `upsert(connection, ['id'])` then leaves the old value in place, so a reconnect that fails to resolve would keep labelling the connection with an account it no longer authenticates as. `mergeConnectionMetadata` also strips the key from caller-supplied `metadata`, because `metadata` is a caller-owned jsonb bag: without that, any `WRITE_CONNECTION` holder can forge the label. Note `POST /:id` (update) still replaces the whole bag.
 
 - **迁移要给存量连接回填 `projectMembersPermission = 'EDIT'`。** 引入分享之前项目成员都能用、能改项目里的连接；不回填的话升级后除所有者外所有人都看不到存量连接，工作流编辑时换不了步骤。新建的连接默认是空（只有所有者和被分享的人）。
+- **删除连接前必须没有任何引用。** `DELETE /:id`（项目路由和租户级 `global-connections` 都是）先调 `connectionReferenceService.assertUnreferenced`：还有工作流（含你看不到的项目里的）、MCP 服务固定连接、环境连接替换在用，就返回 `VALIDATION` 并写明各有几处，要先把它们换成别的连接。「批量替换并删除」（`/replace` 的 `deleteSourceConnection`）不受这条限制，它先换后删。前端删除弹窗在有引用时只列引用方，不给确认输入框。
+- **只有「使用」权限的人可以提醒所有者重新授权。** `POST /v1/connections/:id/remind-reauth`，连接失效才允许，自己是所有者不允许；同一个人对同一个连接 6 小时内只发一次，所有者收到 `CONNECTION_REAUTH_REQUESTED` 站内通知（和令牌刷新失败自动发的 `CONNECTION_BROKEN` 是两种）。
 - **`POST /:id`、`/:id/revalidate`、`DELETE /:id` 现在是租户级路由。** 以前靠 `ProjectResourceType.TABLE` 取 `projectIds[0]` 判项目权限，多项目连接、全部项目连接（`projectIds` 为空）会被误拒；现在按连接权限判：改名要可编辑，测试要能使用，删除只有所有者。
 - **重新授权不改所有者、不改可用范围。** `upsert` 命中已有连接时沿用原 `ownerId`、`projectIds`、`scope`；以前可编辑成员重新授权会顺手把自己变成所有者，并把多项目连接缩成当前项目。
 - **引用判断只看新增的连接。** `applyOperation` 比较操作前后的 `connectionIds`，只校验新出现的；别人配置好的步骤照样能改其他字段。`USE_AS_DRAFT`（回滚草稿）不校验。

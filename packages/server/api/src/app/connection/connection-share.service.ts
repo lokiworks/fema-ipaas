@@ -1,10 +1,12 @@
 import { ApplicationError, ErrorCode, generateId, isNil, SeekPage, unique } from '@fema-ipaas/core-utils'
-import { AccessibleConnection, AddConnectionSharesRequestBody, connectionAccessUtils, ConnectionDetail, ConnectionOwnershipFilter, ConnectionPermission, ConnectionScopeImpact, ConnectionScopeImpactRequestBody, ConnectionShare, ConnectionSharePermission, ListAccessibleConnectionsRequestQuery, PrincipalType, UpdateConnectionAccessRequestBody, UserWithMetaInformation } from '@fema-ipaas/shared'
+import { AccessibleConnection, AddConnectionSharesRequestBody, connectionAccessUtils, ConnectionDetail, ConnectionOwnershipFilter, ConnectionPermission, ConnectionScope, ConnectionScopeImpact, ConnectionScopeImpactRequestBody, ConnectionShare, ConnectionSharePermission, ConnectionStatus, ListAccessibleConnectionsRequestQuery, NotificationType, PrincipalType, RemindConnectionOwnerResponse, UpdateConnectionAccessRequestBody, UserWithMetaInformation } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
+import { distributedStore } from '../database/redis-connections'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
+import { notificationService } from '../notification/notification.service'
 import { userRepo } from '../user/user-service'
 import { connectionAccessService, connectionScopeHelper, connectionShareRepo } from './connection-access.service'
 import { connectionReferenceService } from './connection-reference.service'
@@ -98,6 +100,32 @@ export const connectionShareService = (log: FastifyBaseLogger) => ({
             connectionAccessService(log).listShares({ connectionId: id }),
         ])
         return { ...accessible, references, shares }
+    },
+
+    async remindOwner({ tenantId, userId, id }: ConnectionRef): Promise<RemindConnectionOwnerResponse> {
+        const detail = await this.detail({ tenantId, userId, id })
+        const connection = await findConnectionOrThrow({ tenantId, id })
+        const ownerId = connection.ownerId
+        if (isNil(ownerId) || ownerId === userId) {
+            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'Only a member who does not own the connection can remind its owner' } })
+        }
+        if (connection.status === ConnectionStatus.ACTIVE) {
+            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'The connection works, there is nothing to reconnect' } })
+        }
+        const ownerDisplayName = detail.owner?.firstName ?? detail.owner?.email ?? ''
+        const reminded = await distributedStore.runOnceWithin(`connection-reauth-reminded:${connection.id}:${userId}`, REMIND_WINDOW_SECONDS, async () => {
+            await notificationService(log).notify({
+                tenantId,
+                projectId: null,
+                recipientIds: [ownerId],
+                type: NotificationType.CONNECTION_REAUTH_REQUESTED,
+                title: connection.displayName,
+                body: connection.connectorName,
+                link: connection.scope === ConnectionScope.TENANT || isNil(connection.projectIds[0]) ? `/tenant/connections?id=${connection.id}` : `/projects/${connection.projectIds[0]}/connections?id=${connection.id}`,
+                actorId: userId,
+            })
+        })
+        return { reminded, ownerDisplayName }
     },
 
     async addShares({ tenantId, principal, id, request }: AddSharesParams): Promise<AddSharesResult> {
@@ -274,6 +302,7 @@ async function emailOf(userId: string): Promise<string> {
 }
 
 const DEFAULT_PAGE_SIZE = 20
+const REMIND_WINDOW_SECONDS = 6 * 60 * 60
 
 const ACCESSIBLE_SQL = [
     '(connection."ownerId" = :accessUserId',

@@ -4874,5 +4874,10 @@
   "Import an OpenAPI document and publish it for your organization": "可以从 OpenAPI 文档导入，发布后本企业都能用",
   "Ask the administrator for a connector": "向管理员提需求",
   "Apps many teams need are built as official connectors": "很多团队都要用的应用，会做成官方连接器",
-  "The other system rejected the data; fix it there first, editing the workflow will not change the result": "目标系统里的数据有问题，先在对方系统里处理好；改工作流不会让结果不同"
+  "The other system rejected the data; fix it there first, editing the workflow will not change the result": "目标系统里的数据有问题，先在对方系统里处理好；改工作流不会让结果不同",
+  "It is still in use. Replace it where it is used before deleting it, otherwise those places stop working.": "还有地方在用它。先把那些地方换成别的连接再删除，否则它们会直接失效。",
+  "Reminded {name}": "已提醒 {name}，对方会在通知里看到",
+  "You already reminded {name} recently": "你刚提醒过 {name}，对方还没处理",
+  "Remind the owner to reconnect": "提醒所有者重新授权",
+  "{actor} asks you to reconnect a connection": "{actor} 请你重新授权一个连接"
 }

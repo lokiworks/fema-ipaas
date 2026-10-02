@@ -77,14 +77,27 @@ function DeleteConnectionContent({
     shareCount: detail.shareCount,
   });
   const nameMatches = confirmText.trim() === detail.displayName;
+  const inUse =
+    consequences.workflowCount +
+      consequences.mcpServiceCount +
+      consequences.projectConfigCount >
+    0;
 
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          {t('Delete "{name}"?', { name: detail.displayName })}
+          {inUse
+            ? t('Cannot delete "{name}"', { name: detail.displayName })
+            : t('Delete "{name}"?', { name: detail.displayName })}
         </DialogTitle>
-        <DialogDescription>{t('This cannot be undone.')}</DialogDescription>
+        <DialogDescription>
+          {inUse
+            ? t(
+                'It is still in use. Replace it where it is used before deleting it, otherwise those places stop working.',
+              )
+            : t('This cannot be undone.')}
+        </DialogDescription>
       </DialogHeader>
       <Alert variant="warning">
         <TriangleAlert className="h-4 w-4" />
@@ -132,34 +145,38 @@ function DeleteConnectionContent({
           </ul>
         </AlertDescription>
       </Alert>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="delete-connection-confirm">
-          {t('Type "{name}" to confirm', { name: detail.displayName })}
-        </Label>
-        <Input
-          id="delete-connection-confirm"
-          value={confirmText}
-          onChange={(event) => setConfirmText(event.target.value)}
-          autoComplete="off"
-        />
-      </div>
+      {!inUse && (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="delete-connection-confirm">
+            {t('Type "{name}" to confirm', { name: detail.displayName })}
+          </Label>
+          <Input
+            id="delete-connection-confirm"
+            value={confirmText}
+            onChange={(event) => setConfirmText(event.target.value)}
+            autoComplete="off"
+          />
+        </div>
+      )}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          {t('Cancel')}
+          {inUse ? t('Got it') : t('Cancel')}
         </Button>
-        <Button
-          type="button"
-          variant="destructive"
-          disabled={!nameMatches}
-          loading={isPending}
-          onClick={() =>
-            deleteConnection(connectionId, {
-              onSuccess: onDeleted,
-            })
-          }
-        >
-          {t('Delete')}
-        </Button>
+        {!inUse && (
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={!nameMatches}
+            loading={isPending}
+            onClick={() =>
+              deleteConnection(connectionId, {
+                onSuccess: onDeleted,
+              })
+            }
+          >
+            {t('Delete')}
+          </Button>
+        )}
       </DialogFooter>
     </>
   );

@@ -9,6 +9,7 @@ import {
     ConnectionShare,
     ListAccessibleConnectionsRequestQuery,
     PrincipalType,
+    RemindConnectionOwnerResponse,
     UpdateConnectionAccessRequestBody,
     UpdateConnectionShareRequestBody,
 } from '@fema-ipaas/shared'
@@ -30,6 +31,14 @@ export const connectionShareController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/:id/detail', DetailRequest, async (request): Promise<ConnectionDetail> => {
         return connectionShareService(request.log).detail({
+            tenantId: request.principal.tenant.id,
+            userId: request.principal.id,
+            id: request.params.id,
+        })
+    })
+
+    app.post('/:id/remind-reauth', RemindReauthRequest, async (request): Promise<RemindConnectionOwnerResponse> => {
+        return connectionShareService(request.log).remindOwner({
             tenantId: request.principal.tenant.id,
             userId: request.principal.id,
             id: request.params.id,
@@ -156,6 +165,16 @@ const DetailRequest = {
         description: 'Get a connection with its references and the members it is shared with.',
         params: IdParams,
         response: { [StatusCodes.OK]: ConnectionDetail },
+    },
+}
+
+const RemindReauthRequest = {
+    config: { security: userOnly },
+    schema: {
+        tags: ['connections'],
+        description: 'Ask the owner of a broken connection to reconnect it. Limited to one reminder per member every six hours.',
+        params: IdParams,
+        response: { [StatusCodes.OK]: RemindConnectionOwnerResponse },
     },
 }
 

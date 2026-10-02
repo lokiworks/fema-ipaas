@@ -392,6 +392,25 @@ export const connectionsMutations = {
     });
   },
 
+  useRemindConnectionOwner: () => {
+    return useMutation({
+      mutationFn: (connectionId: string) =>
+        connectionsApi.remindOwner(connectionId),
+      onSuccess: (result) => {
+        toast.success(
+          result.reminded
+            ? t('Reminded {name}', { name: result.ownerDisplayName })
+            : t('You already reminded {name} recently', {
+                name: result.ownerDisplayName,
+              }),
+        );
+      },
+      onError: () => {
+        internalErrorToast();
+      },
+    });
+  },
+
   useDeleteAccessibleConnection: () => {
     const queryClient = useQueryClient();
     return useMutation({

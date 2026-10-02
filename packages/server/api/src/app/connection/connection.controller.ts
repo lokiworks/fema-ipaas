@@ -11,6 +11,7 @@ import { auditEvents } from '../helper/audit-events'
 import { securityHelper } from '../helper/security-helper'
 import { mcpServerService } from '../mcp-server/mcp-server.service'
 import { connectionAccessService } from './connection-access.service'
+import { connectionReferenceService } from './connection-reference.service'
 import { connectionService } from './connection-service/connection-service'
 import { oauth2Util } from './connection-service/oauth2/oauth2-util'
 import { ConnectionEntity } from './connection.entity'
@@ -189,6 +190,7 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         }
         else {
             await connectionAccessService(request.log).assertOwner({ connection, principal: principalOf(request.principal) })
+            await connectionReferenceService(request.log).assertUnreferenced({ tenantId: request.principal.tenant.id, connection })
             await connectionService(request.log).delete({
                 id: request.params.id,
                 tenantId: request.principal.tenant.id,

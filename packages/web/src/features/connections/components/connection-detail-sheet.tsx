@@ -26,7 +26,10 @@ import {
   ConnectionPermissionTag,
   ConnectionScopeCell,
 } from '@/features/connections/components/connection-list-cells';
-import { connectionsQueries } from '@/features/connections/hooks/connections-hooks';
+import {
+  connectionsMutations,
+  connectionsQueries,
+} from '@/features/connections/hooks/connections-hooks';
 import { connectionUtils } from '@/features/connections/utils/utils';
 import {
   ConnectorIconWithConnectorName,
@@ -98,6 +101,8 @@ function ConnectionDetailContent({
   const { summary } = connectorsHooks.useConnectorSummary({
     name: detail?.connectorName ?? '',
   });
+  const { mutate: remindOwner, isPending: isReminding } =
+    connectionsMutations.useRemindConnectionOwner();
 
   if (isNil(detail)) {
     return null;
@@ -143,11 +148,21 @@ function ConnectionDetailContent({
                     {t('Reconnect')}
                   </Button>
                 ) : (
-                  <span>
-                    {t(
-                      'You can only use this connection. Ask the owner or an editor to reconnect it.',
-                    )}
-                  </span>
+                  <>
+                    <span>
+                      {t(
+                        'You can only use this connection. Ask the owner or an editor to reconnect it.',
+                      )}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={isReminding}
+                      onClick={() => remindOwner(connectionId)}
+                    >
+                      {t('Remind the owner to reconnect')}
+                    </Button>
+                  </>
                 )}
               </AlertDescription>
             </Alert>

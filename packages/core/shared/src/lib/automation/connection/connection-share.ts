@@ -178,6 +178,12 @@ export const ConnectionReferences = z.object({
 })
 export type ConnectionReferences = z.infer<typeof ConnectionReferences>
 
+export const RemindConnectionOwnerResponse = z.object({
+    reminded: z.boolean(),
+    ownerDisplayName: z.string(),
+})
+export type RemindConnectionOwnerResponse = z.infer<typeof RemindConnectionOwnerResponse>
+
 export const ConnectionDetail = AccessibleConnection.extend({
     references: ConnectionReferences,
     shares: z.array(ConnectionShare),

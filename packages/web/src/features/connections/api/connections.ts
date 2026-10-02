@@ -13,6 +13,7 @@ import {
   ListAccessibleConnectionsRequestQuery,
   ListConnectionOwnersRequestQuery,
   ListConnectionsRequestQuery,
+  RemindConnectionOwnerResponse,
   ReplaceConnectionsRequestBody,
   UpdateConnectionAccessRequestBody,
   UpdateConnectionShareRequestBody,
@@ -39,6 +40,12 @@ export const connectionsApi = {
   },
   delete(id: string): Promise<void> {
     return api.delete<void>(`/v1/connections/${id}`);
+  },
+  remindOwner(id: string): Promise<RemindConnectionOwnerResponse> {
+    return api.post<RemindConnectionOwnerResponse>(
+      `/v1/connections/${id}/remind-reauth`,
+      {},
+    );
   },
   revalidate(id: string): Promise<ConnectionWithoutSensitiveData> {
     return api.post<ConnectionWithoutSensitiveData>(

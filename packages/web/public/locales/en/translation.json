@@ -4874,5 +4874,10 @@
   "Import an OpenAPI document and publish it for your organization": "Import an OpenAPI document and publish it for your organization",
   "Ask the administrator for a connector": "Ask the administrator for a connector",
   "Apps many teams need are built as official connectors": "Apps many teams need are built as official connectors",
-  "The other system rejected the data; fix it there first, editing the workflow will not change the result": "The other system rejected the data; fix it there first, editing the workflow will not change the result"
+  "The other system rejected the data; fix it there first, editing the workflow will not change the result": "The other system rejected the data; fix it there first, editing the workflow will not change the result",
+  "It is still in use. Replace it where it is used before deleting it, otherwise those places stop working.": "It is still in use. Replace it where it is used before deleting it, otherwise those places stop working.",
+  "Reminded {name}": "Reminded {name}",
+  "You already reminded {name} recently": "You already reminded {name} recently",
+  "Remind the owner to reconnect": "Remind the owner to reconnect",
+  "{actor} asks you to reconnect a connection": "{actor} asks you to reconnect a connection"
 }

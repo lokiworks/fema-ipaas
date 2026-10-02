@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
 import { securityHelper } from '../helper/security-helper'
+import { connectionReferenceService } from './connection-reference.service'
 import { connectionService } from './connection-service/connection-service'
 
 export const globalConnectionController: FastifyPluginAsyncZod = async (app) => {
@@ -70,6 +71,12 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
     })
 
     app.delete('/:id', DeleteGlobalConnectionRequest, async (request, reply) => {
+        const connection = await connectionService(request.log).getOneOrThrowWithoutValue({
+            id: request.params.id,
+            tenantId: request.principal.tenant.id,
+            projectId: null,
+        })
+        await connectionReferenceService(request.log).assertUnreferenced({ tenantId: request.principal.tenant.id, connection })
         await connectionService(request.log).delete({
             id: request.params.id,
             tenantId: request.principal.tenant.id,

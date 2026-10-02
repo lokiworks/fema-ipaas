@@ -767,15 +767,16 @@ function collectIssues(state) {
     const reopened = saved.status === 'resolved' && saved.resolvedAt && latest.startedAt > saved.resolvedAt;
     const status = reopened ? 'open' : saved.status || 'open';
     const workflowIds = [...new Set(sorted.map((r) => r.workflowId))];
+    const triggers = sorted.filter((r) => !r.retryOf).length || sorted.length;
     const title = conn ? `${conn.name}：${conn.error || '连接认证失败'}` : latest.failure.message;
     return {
       sig, kind: conn ? 'connection' : 'node', code: latest.failure.code, http: latest.failure.http_status, connectionId: connId, nodeId: conn ? null : latest.failedNodeId,
       workflowName: wf ? wf.name : '已删除的工作流', nodeName: conn ? conn.name : node ? node.name : '未知节点',
       title, message: latest.failure.message, workflowIds, projectIds: [...new Set(sorted.map((r) => r.projectId))],
-      runIds: sorted.map((r) => r.id), count: sorted.length, firstAt: sorted[sorted.length - 1].startedAt, lastAt: latest.startedAt,
+      runIds: sorted.map((r) => r.id), count: triggers, firstAt: sorted[sorted.length - 1].startedAt, lastAt: latest.startedAt,
       envs: [...new Set(sorted.map((r) => r.env || 'prod'))], status, reopened, assignee: saved.assignee || null, mutedUntil: saved.mutedUntil || null,
       notes: saved.notes || [], resolvedAt: saved.resolvedAt || null, resolvedBy: saved.resolvedBy || null,
-      severity: conn || sorted.length >= 10 ? 'high' : sorted.length >= 3 ? 'medium' : 'low',
+      severity: conn || triggers >= 10 ? 'high' : triggers >= 3 ? 'medium' : 'low',
     };
   }).sort((a, b) => b.lastAt - a.lastAt);
 }
@@ -967,6 +968,7 @@ function applyTransform(value, t, tables) {
   if (t.type === 'lookup') {
     const table = tables.find((x) => x.id === t.arg);
     if (!table) return { value, error: '映射表不存在' };
+    if (value === undefined || value === null) return { value, error: '来源不可用，无法查映射表' };
     const row = table.rows.find((r) => r.k === String(value));
     if (row) return { value: row.v };
     if (table.missing === 'default') return { value: table.defaultValue };

@@ -52,3 +52,4 @@
 .sol-toolbar { margin-top: 16px; }
 .sol-cfg { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
 .sol-cfg .text-xs { padding-left: 17px; }
+.sol-pick-row.is-disabled { opacity: 0.55; cursor: not-allowed; }

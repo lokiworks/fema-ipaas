@@ -239,6 +239,7 @@ function AdminUsers() {
     });
     if (!ok) return;
     patchList('users', u.id, { status: dis ? 'disabled' : (u.lastActiveAt ? 'active' : 'invited') });
+    if (dis) Store.set((s) => ({ ...s, editLocks: Object.fromEntries(Object.entries(s.editLocks || {}).filter(([, l]) => l.userId !== u.id)) }));
     addAudit(dis ? '禁用用户' : '启用用户', u.name);
     toast.success(dis ? '已禁用' : '已启用');
   };
@@ -429,6 +430,7 @@ function AdminRequests() {
       ...s,
       permissionRequests: s.permissionRequests.map((x) => (x.id === r.id ? { ...x, status, decidedBy: s.me, decidedAt: Date.now() } : x)),
       users: status === 'approved' ? s.users.map((u) => (u.id === r.userId ? { ...u, modules: [...new Set([...(u.modules || []), r.module])] } : u)) : s.users,
+      notifications: [{ id: uid('nt'), type: 'member', title: status === 'approved' ? `你申请的「${label}」已通过` : `你申请的「${label}」被拒绝了`, desc: status === 'approved' ? `${personName(s.me)} 已同意，现在可以使用` : `${personName(s.me)} 拒绝了申请，可以补充理由后重新提交`, time: Date.now(), read: false, to: '/', userId: r.userId }, ...(s.notifications || [])],
     }));
     addAudit(status === 'approved' ? '同意权限申请' : '拒绝权限申请', `${who} · ${label}`);
     toast.success(status === 'approved' ? `已同意，${who} 现在可以使用「${label}」` : '已拒绝');
@@ -724,6 +726,13 @@ function AdminUsageAlert({ rows }) {
   const error = d.enabled && !d.receivers.length ? '请至少选择一位接收人' : null;
   const dirty = JSON.stringify(d) !== JSON.stringify(saved);
   const over = rows.filter((p) => p.usage * 100 >= d.threshold);
+  const monthKey = new Date().toISOString().slice(0, 7);
+  useEffect(() => {
+    if (!saved.enabled || !over.length || !(saved.receivers || []).length) return;
+    const have = new Set((Store.get().notifications || []).map((n) => n.id));
+    const fresh = over.filter((p) => !p.deleted && p.id).flatMap((p) => saved.receivers.map((uidv) => ({ id: `cap_${p.id}_${monthKey}_${uidv}`, type: 'alert', title: `项目「${p.name}」本月运行次数已达上限的 ${(p.usage * 100).toFixed(0)}%`, desc: `上限 ${fmt.number(p.limits.runsPerMonth)} 次，每个项目每月只通知一次`, time: Date.now(), read: false, to: '/admin/usage', userId: uidv }))).filter((n) => !have.has(n.id));
+    if (fresh.length) Store.set((s) => ({ ...s, notifications: [...fresh, ...(s.notifications || [])] }));
+  }, [saved.enabled, saved.threshold, JSON.stringify(saved.receivers), over.map((p) => p.id).join()]);
   const save = () => {
     Store.set((s) => ({ ...s, usageAlert: d }));
     addAudit('修改容量告警', d.enabled ? `阈值 ${d.threshold}%` : '已关闭');

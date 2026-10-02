@@ -133,7 +133,7 @@ const SOLUTION_CATALOG = [
   {
     id: 'onboard-it', name: '入职前一天提醒 IT 准备设备', category: '人力资源', provider: 'official', version: '1.1', installs: 540, updatedAt: Date.now() - 30 * DAY,
     summary: '每个工作日下午查询预计入职的员工，把名单发到 IT 群。',
-    points: ['工作日 17:00 运行，跳过法定节假日', '名单里带部门、岗位和入职日期'],
+    points: ['工作日 17:00 运行', '名单里带部门、岗位和入职日期'],
     connectors: ['schedule', 'beisen', 'feishu'],
     workflows: [{
       key: 'remind', name: '入职前一天提醒 IT', desc: '查询预计入职的员工并通知 IT。',
@@ -161,7 +161,7 @@ const SOLUTION_CATALOG = [
   {
     id: 'attendance-alert', name: '每日考勤异常提醒', category: '人力资源', provider: 'official', version: '1.1', installs: 1260, updatedAt: Date.now() - 8 * DAY,
     summary: '工作日早上汇总前一天的迟到、缺卡，发到管理群。',
-    points: ['工作日运行，跳过法定节假日', '只发到管理群，不在大群里公开'],
+    points: ['工作日运行', '只发到管理群，不在大群里公开'],
     connectors: ['schedule', 'mysql', 'feishu'],
     workflows: [{
       key: 'daily', name: '每日考勤异常日报', desc: '汇总前一天的考勤异常并发到管理群。',
@@ -267,6 +267,13 @@ function solVersionCmp(a, b) {
     if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
   }
   return 0;
+}
+
+function solCapacityError(state, pid, need) {
+  const p = state.projects.find((x) => x.id === pid);
+  const cap = p && p.limits && p.limits.workflows;
+  const count = state.workflows.filter((w) => w.projectId === pid).length;
+  return cap && count + need > cap ? `装完会超过工作流上限：这个方案要 ${need} 个名额，项目 ${count} / ${cap} 个，只剩 ${Math.max(0, cap - count)} 个` : null;
 }
 
 function solProviderLabel(sol) {
@@ -520,7 +527,7 @@ function SolutionInstallPage({ id, query }) {
   const reusable = target === 'existing' && pid ? (state.mappingTables || []).find((t) => t.projectId === pid && sol.mappingTables.some((m) => m.keyLabel === t.keyLabel && m.valueLabel === t.valueLabel)) : null;
   const needConnectors = solConnectorsOf(sol).filter((c) => (resolveConnector(c) || {}).auth !== 'none');
   const connOf = (c) => state.connections.find((x) => x.id === conns[c]);
-  const projectError = target === 'existing' ? (!pid ? '请选择项目' : integLimitError(state, pid)) : (!newName.trim() ? '请输入项目名称' : state.projects.some((p) => p.name === newName.trim()) ? '已有同名项目' : null);
+  const projectError = target === 'existing' ? (!pid ? '请选择项目' : integLimitError(state, pid) || solCapacityError(state, pid, sol.workflows.length)) : (!newName.trim() ? '请输入项目名称' : state.projects.some((p) => p.name === newName.trim()) ? '已有同名项目' : null);
   const connErrors = needConnectors.map((c) => { const conn = connOf(c); if (!conn) return `请为「${(resolveConnector(c) || {}).name || c}」选择连接`; if (conn.status !== 'active') return `「${conn.name}」不可用：${conn.error || '请重新授权'}`; return null; }).filter(Boolean);
   const runChecks = (only) => {
     setChecking(true);
@@ -609,7 +616,7 @@ function SolutionInstallPage({ id, query }) {
       ${step === 0 && html`<div className="col" style=${{ gap: 16, maxWidth: 640 }}>
         <${RadioCards} columns=${2} value=${target} onChange=${setTarget} options=${[{ value: 'existing', label: '安装到已有项目', icon: 'FolderOpen' }, { value: 'new', label: '新建一个项目', icon: 'FolderPlus' }]} />
         ${target === 'existing'
-          ? html`<${Field} label="目标项目" required error=${pid && projectError} hint="只列出你有编辑权限的项目"><${Select} value=${pid} onChange=${setPid} placeholder="请选择项目" options=${editable.map((p) => ({ value: p.id, label: p.name, iconNode: html`<${ProjectAvatar} project=${p} size=${18} />`, disabled: Boolean(integLimitError(state, p.id)), desc: integLimitError(state, p.id) || '' }))} /><//>`
+          ? html`<${Field} label="目标项目" required error=${pid && projectError} hint="只列出你有编辑权限的项目"><${Select} value=${pid} onChange=${setPid} placeholder="请选择项目" options=${editable.map((p) => ({ value: p.id, label: p.name, iconNode: html`<${ProjectAvatar} project=${p} size=${18} />`, disabled: Boolean(integLimitError(state, p.id) || solCapacityError(state, p.id, sol.workflows.length)), desc: integLimitError(state, p.id) || solCapacityError(state, p.id, sol.workflows.length) || '' }))} /><//>`
           : html`<${Field} label="项目名称" required error=${newName && projectError}><${Input} value=${newName} onChange=${setNewName} /><//>`}
         <div className="sol-summary">
           <div className="sol-label">安装后，${target === 'new' ? '新项目' : '这个项目'}里会多出</div>
@@ -747,7 +754,7 @@ function SolGenerateModal({ open, onClose }) {
       <${Field} label="来源项目" required><${Select} value=${pid} onChange=${(v) => { setPid(v); setPicked([]); }} options=${editable.map((p) => ({ value: p.id, label: p.name, iconNode: html`<${ProjectAvatar} project=${p} size=${18} />` }))} /><//>
       <div className="sol-label">选择要打包的工作流</div>
       <div className="sol-pick">
-        ${wfs.map((w) => html`<label key=${w.id} className="sol-pick-row"><${Checkbox} checked=${picked.includes(w.id)} onChange=${(v) => setPicked(v ? [...picked, w.id] : picked.filter((x) => x !== w.id))} /><span className="grow">${w.name}</span><span className="text-xs muted">${w.published ? `v${w.version}` : '未发布'}</span></label>`)}
+        ${wfs.map((w) => html`<label key=${w.id} className=${cx('sol-pick-row', !w.published && 'is-disabled')} title=${w.published ? '' : '先发布再打包'}><${Checkbox} checked=${picked.includes(w.id)} disabled=${!w.published} onChange=${(v) => setPicked(v ? [...picked, w.id] : picked.filter((x) => x !== w.id))} /><span className="grow">${w.name}</span><span className="text-xs muted">${w.published ? `v${w.version}` : '未发布，先发布再打包'}</span></label>`)}
         ${wfs.length === 0 && html`<div className="muted text-xs">这个项目里还没有工作流。</div>`}
       </div>
       ${chosen.length > 0 && html`<div className="text-xs muted">用到的连接器：${connectorsUsed.map((c) => (resolveConnector(c) || { name: c }).name).join('、') || '无'}；安装时由安装人选择连接。</div>`}

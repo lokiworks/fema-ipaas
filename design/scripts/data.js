@@ -576,6 +576,7 @@ function seedState() {
     members: [
       { projectId: 'p1', userId: 'u1', role: 'owner', joinedAt: now - 120 * DAY },
       { projectId: 'p1', userId: 'u2', role: 'editor', joinedAt: now - 100 * DAY },
+      { projectId: 'p1', userId: 'u3', role: 'editor', joinedAt: now - 95 * DAY },
       { projectId: 'p1', userId: 'u4', role: 'editor', joinedAt: now - 90 * DAY },
       { projectId: 'p1', userId: 'u7', role: 'editor', joinedAt: now - 60 * DAY },
       { projectId: 'p1', userId: 'u8', role: 'editor', joinedAt: now - 70 * DAY },

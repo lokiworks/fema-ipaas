@@ -903,7 +903,8 @@ function referencesTo({ wf, id }) {
 }
 
 function writeNodesOf({ wf, state, env }) {
-  return allNodes(wf).filter((n) => n.kind === 'action' && n.connectionId && !/^(get|query|search|list|read|bitable_search)/.test(n.op || '')).map((n) => {
+  const readOnly = (n) => /^(get|query|search|list|read|bitable_search)/.test(n.op || '') || (typeof (n.config || {}).sql === 'string' && /^\s*select\b/i.test(n.config.sql));
+  return allNodes(wf).filter((n) => n.kind === 'action' && n.connectionId && !readOnly(n)).map((n) => {
     const swapped = Boolean(env && (env.connectionMap || {})[n.connectionId]);
     const conn = state.connections.find((c) => c.id === (swapped ? env.connectionMap[n.connectionId] : n.connectionId));
     return { id: n.id, name: n.name, conn: conn ? conn.name : '未选择连接', sameAsProd: Boolean(env && env.key === 'test' && !swapped) };
@@ -991,7 +992,7 @@ function DebugModal({ open, onClose, wf, state, onRun }) {
         ${swaps.map(([a, b]) => html`<div key=${a.id} className="field-hint">连接替换：${a.name} → ${b.name}</div>`)}
         ${env.key === 'prod' && html`<div className="field-hint is-warning">调试会真实调用生产环境的系统，写入类操作会产生真实数据。</div>`}
       <//>`}
-      ${writes.length > 0 && html`<${Alert} tone=${risky ? 'warning' : 'info'} title=${`调试会真的执行 ${writes.length} 个写操作`}>
+      ${writes.length > 0 && html`<${Alert} tone=${risky ? 'warning' : 'info'} title=${`调试${writes.some((w) => w.maybe) ? '最多' : ''}会真的执行 ${writes.length} 个写操作`}>
         ${writes.map((w) => html`<div key=${w.id}>「${w.name}」→ ${w.conn}${w.sameAsProd ? '（测试环境没有替换，和生产是同一个连接）' : ''}</div>`)}
         <div className="text-xs muted" style=${{ marginTop: 4 }}>建议用测试数据，例如测试员工的工号和手机号。</div>
       <//>`}

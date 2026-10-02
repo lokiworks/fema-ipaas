@@ -630,8 +630,8 @@ function ReleaseDetailPage({ pid, rid }) {
           </li>`)}
         </ol>
       <//>
-      <${Card} title=${pending ? '上线前检查' : '上线时的检查'} icon="ListChecks" subtitle=${pending ? `按${toName}当前的连接和配置检查` : ''}>
-        ${checks ? html`<${RelChecks} checks=${checks} />` : html`<div className="text-xs muted">这条记录没有保存上线时的检查结果。</div>`}
+      <${Card} title=${pending ? '上线前检查' : ['rejected', 'cancelled'].includes(release.status) ? '提交时的检查' : '上线时的检查'} icon="ListChecks" subtitle=${pending ? `按${toName}当前的连接和配置检查` : ''}>
+        ${checks ? html`<${RelChecks} checks=${checks} />` : html`<div className="text-xs muted">${['rejected', 'cancelled'].includes(release.status) ? '这条申请没有上线过，也没有保存提交时的检查结果。' : '这条记录没有保存上线时的检查结果。'}</div>`}
       <//>
       <${Card} title="测试环境验证" icon="FlaskConical" subtitle=${`v${release.version} 在测试环境的运行记录`}>
         ${wf ? html`<${RelEvidence} state=${state} wfId=${wf.id} version=${release.version} />` : html`<div className="text-xs muted">工作流已被删除。</div>`}

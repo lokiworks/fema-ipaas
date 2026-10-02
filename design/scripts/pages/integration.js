@@ -381,9 +381,11 @@ function ProjectSidebar({ project }) {
     if (!list.length) return;
     const single = list.length === 1 ? list[0] : null;
     const pendingCount = (state.releases || []).filter((r) => r.status === 'pending' && ids.includes(r.workflowId)).length;
+    const usedByMcp = (state.mcpServices || []).filter((m) => (m.tools || []).some((t) => t.source && t.source.type === 'workflow' && ids.includes(t.source.workflowId)));
+    const usedBySub = state.workflows.filter((w) => !ids.includes(w.id) && allNodes(w).some((n) => n.op === 'call' && n.connector === 'subflows' && ids.includes((n.config || {}).workflowId)));
     const ok = await confirmDialog({
       title: single ? `删除工作流「${single.name}」？` : `删除 ${list.length} 个工作流？`,
-      content: `删除后无法恢复，运行日志保留 30 天。${pendingCount ? `${pendingCount} 个待审批的推广申请会自动撤回。` : ''}`,
+      content: `删除后无法恢复，运行日志保留 30 天。${pendingCount ? `${pendingCount} 个待审批的推广申请会自动撤回。` : ''}${usedByMcp.length ? `${usedByMcp.map((m) => `MCP 服务「${m.name}」`).join('、')}里有工具来自它，删除后这些工具会失效，但服务仍显示已启用，需要你去处理。` : ''}${usedBySub.length ? `${usedBySub.length} 个工作流把它当子流程调用，删除后调用会失败。` : ''}`,
       danger: true,
       okText: '删除',
       confirmText: single ? single.name : undefined,

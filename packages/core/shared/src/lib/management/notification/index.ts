@@ -17,6 +17,7 @@ export enum NotificationType {
     RUN_FAILED = 'RUN_FAILED',
     CONNECTION_BROKEN = 'CONNECTION_BROKEN',
     CONNECTION_REAUTH_REQUESTED = 'CONNECTION_REAUTH_REQUESTED',
+    CAPACITY_THRESHOLD = 'CAPACITY_THRESHOLD',
 }
 
 export const Notification = z.object({

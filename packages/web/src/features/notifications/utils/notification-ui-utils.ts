@@ -54,6 +54,8 @@ function headline(notification: Notification): string {
       return t('A connection needs to be reconnected');
     case NotificationType.CONNECTION_REAUTH_REQUESTED:
       return t('{actor} asks you to reconnect a connection', { actor });
+    case NotificationType.CAPACITY_THRESHOLD:
+      return t('A project reached its monthly run limit threshold');
   }
 }
 
@@ -95,6 +97,8 @@ function icon(type: NotificationType): NotificationIcon {
       return { icon: UserPlus, className: 'text-info' };
     case NotificationType.RUN_FAILED:
       return { icon: CircleX, className: 'text-destructive' };
+    case NotificationType.CAPACITY_THRESHOLD:
+      return { icon: Siren, className: 'text-warning' };
     case NotificationType.CONNECTION_BROKEN:
     case NotificationType.CONNECTION_REAUTH_REQUESTED:
       return { icon: Link2Off, className: 'text-warning' };

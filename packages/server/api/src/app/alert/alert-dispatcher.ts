@@ -10,8 +10,11 @@ import {
     IssueActivityType,
     IssueKind,
     IssueStatus,
+    NotificationType,
     QuietHours,
     RunEnvironment,
+    TenantRole,
+    UserStatus,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In, IsNull, LessThanOrEqual, MoreThanOrEqual } from 'typeorm'
@@ -21,7 +24,9 @@ import { IssueRecordEvent, issueRepo, issueService } from '../issue/issue.servic
 import { instanceLimits } from '../limits/instance-limits'
 import { runQuotaUtils } from '../limits/run-quota-utils'
 import { runQuota } from '../limits/run-quota.service'
+import { notificationService } from '../notification/notification.service'
 import { projectRepo } from '../project/project-repo'
+import { userRepo } from '../user/user-service'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { alertPolicyService } from './alert-policy.service'
 import { AlertPolicySchema, AlertRecordEntity, AlertRecordSchema } from './alert.entity'
@@ -249,7 +254,7 @@ async function checkCapacity({ policy, log }: { policy: AlertPolicySchema, log: 
     }
     const projects = await projectRepo().find({
         where: policy.projectIds.length > 0 ? { tenantId: policy.tenantId, id: In(policy.projectIds) } : { tenantId: policy.tenantId },
-        select: ['id', 'monthlyRunsLimit'],
+        select: ['id', 'displayName', 'ownerId', 'monthlyRunsLimit'],
     })
     if (projects.length === 0) {
         return
@@ -284,7 +289,21 @@ async function checkCapacity({ policy, log }: { policy: AlertPolicySchema, log: 
             error: null,
             summary: `本月运行 ${used.toLocaleString('en-US')} / ${limit.toLocaleString('en-US')} 次（${percent}%），达到容量告警阈值 ${threshold}%`,
         })
+        await notifyCapacityInApp({ tenantId: policy.tenantId, project, used, limit, percent, log })
     }
+}
+
+async function notifyCapacityInApp({ tenantId, project, used, limit, percent, log }: NotifyCapacityParams): Promise<void> {
+    const admins = await userRepo().find({ where: { tenantId, tenantRole: TenantRole.ADMIN, status: UserStatus.ACTIVE }, select: ['id'] })
+    await notificationService(log).notify({
+        tenantId,
+        projectId: project.id,
+        recipientIds: [project.ownerId, ...admins.map((admin) => admin.id)],
+        type: NotificationType.CAPACITY_THRESHOLD,
+        title: project.displayName,
+        body: `${used.toLocaleString('en-US')} / ${limit.toLocaleString('en-US')} (${percent}%)`,
+        link: '/tenant/limits/usage',
+    })
 }
 
 async function buildMessage({ record, issue }: { record: AlertRecordSchema, issue: Issue | null }): Promise<AlertMessage> {
@@ -387,5 +406,14 @@ type CreateAndDeliverParams = {
     issue: Issue | null
     kind: AlertRecordKind
     channelIds: string[]
+    log: FastifyBaseLogger
+}
+
+type NotifyCapacityParams = {
+    tenantId: TenantId
+    project: { id: string, displayName: string, ownerId: string }
+    used: number
+    limit: number
+    percent: string
     log: FastifyBaseLogger
 }

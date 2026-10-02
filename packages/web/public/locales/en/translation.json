@@ -4879,5 +4879,6 @@
   "Reminded {name}": "Reminded {name}",
   "You already reminded {name} recently": "You already reminded {name} recently",
   "Remind the owner to reconnect": "Remind the owner to reconnect",
-  "{actor} asks you to reconnect a connection": "{actor} asks you to reconnect a connection"
+  "{actor} asks you to reconnect a connection": "{actor} asks you to reconnect a connection",
+  "A project reached its monthly run limit threshold": "A project reached its monthly run limit threshold"
 }

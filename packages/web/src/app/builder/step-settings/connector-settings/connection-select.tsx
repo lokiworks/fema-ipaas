@@ -13,7 +13,7 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Plus, Globe, Cable, Check, Unplug, X, LucideIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { AutoFormFieldWrapper } from '@/app/builder/connector-properties/auto-form-field-wrapper';
@@ -123,6 +123,16 @@ function ConnectionSelect(params: ConnectionSelectProps) {
       name={'settings.input.auth'}
       render={({ field }) => (
         <>
+          <AutoPickSingleConnection
+            enabled={
+              !params.disabled &&
+              !isLoadingConnections &&
+              selectedExternalId.length === 0 &&
+              !dynamicInputModeToggled
+            }
+            connections={connections?.data ?? []}
+            onPick={(externalId) => field.onChange(addBrackets(externalId))}
+          />
           {(isLoadingConnections || !connectorWithCorrectVersion) && (
             <div className="flex flex-col gap-2">
               <FormLabel showRequiredIndicator>{t('Connection')}</FormLabel>
@@ -366,6 +376,41 @@ type ConnectionSelectProps = {
   connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   isTrigger: boolean;
 };
+function AutoPickSingleConnection({
+  enabled,
+  connections,
+  onPick,
+}: {
+  enabled: boolean;
+  connections: ConnectionWithoutSensitiveData[];
+  onPick: (externalId: string) => void;
+}) {
+  const picked = useRef(false);
+  const only = connectionSelectUtils.onlyUsableConnection(connections);
+  useEffect(() => {
+    if (!enabled || picked.current || isNil(only)) {
+      return;
+    }
+    picked.current = true;
+    onPick(only.externalId);
+  }, [enabled, only, onPick]);
+  return null;
+}
+
+const connectionSelectUtils = {
+  onlyUsableConnection(
+    connections: ConnectionWithoutSensitiveData[],
+  ): ConnectionWithoutSensitiveData | null {
+    if (connections.length === 1) {
+      return connections[0];
+    }
+    const active = connections.filter(
+      (connection) => connection.status === ConnectionStatus.ACTIVE,
+    );
+    return active.length === 1 ? active[0] : null;
+  },
+};
+
 function addBrackets(str: string) {
   return `{{connections['${str}']}}`;
 }

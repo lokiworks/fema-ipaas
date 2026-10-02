@@ -367,7 +367,19 @@ function NewWorkflowForm({
                     'Choose what starts the workflow. You can replace the trigger in the editor later.',
                   )}
                 </FormDescription>
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <TriggerCard
+                  icon={AppWindow}
+                  label={t('App event')}
+                  description={t(
+                    'Pick the app and its event in the editor after creating',
+                  )}
+                  selected={field.value === APP_EVENT_TRIGGER}
+                  onSelect={() => field.onChange(APP_EVENT_TRIGGER)}
+                />
+                <span className="pt-2 text-xs text-muted-foreground">
+                  {t('Or use a general trigger')}
+                </span>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                   {NEW_WORKFLOW_TRIGGER_CHOICES.map((choice) => (
                     <TriggerCard
                       key={choice.value}
@@ -379,18 +391,6 @@ function NewWorkflowForm({
                     />
                   ))}
                 </div>
-                <span className="pt-2 text-xs text-muted-foreground">
-                  {t('Or start the workflow from an app event')}
-                </span>
-                <TriggerCard
-                  icon={AppWindow}
-                  label={t('App event')}
-                  description={t(
-                    'Pick the app and its event in the editor after creating',
-                  )}
-                  selected={field.value === APP_EVENT_TRIGGER}
-                  onSelect={() => field.onChange(APP_EVENT_TRIGGER)}
-                />
                 <FormMessage />
               </FormItem>
             )}

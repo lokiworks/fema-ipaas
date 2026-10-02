@@ -5,9 +5,11 @@ import { useState } from 'react';
 
 import { useGlobalSearch } from '@/app/components/global-search/global-search-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GenerateWorkflowDialog } from '@/features/ai';
 import { launchTour } from '@/features/help';
 import {
   HOME_RECENT_LIMIT,
+  HomeAiBox,
   HomeAttentionCard,
   HomeHero,
   HomeIssuesCard,
@@ -48,6 +50,7 @@ export function WorkspaceHomePage() {
     projectDirectoryHooks.useDirectory({ primary: true });
   const { data: summary } = homeHooks.useSummary({ since });
   const [newWorkflowOpen, setNewWorkflowOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState<string | null>(null);
 
   const projects = (directory ?? []).filter(projectDirectoryUtils.isMember);
   const memberProjectIds = projects.map((project) => project.id);
@@ -82,6 +85,10 @@ export function WorkspaceHomePage() {
         onSearch={() => setSearchOpen(true)}
         onNewWorkflow={() => setNewWorkflowOpen(true)}
       />
+      <HomeAiBox
+        disabledReason={newWorkflowDisabledReason}
+        onSubmit={setAiPrompt}
+      />
       {!isDirectoryLoading && (
         <HomeOnboardingCard
           productName={branding.websiteName}
@@ -93,24 +100,6 @@ export function WorkspaceHomePage() {
           onStartTour={() => launchTour('console')}
         />
       )}
-      <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <HomeTodayRunsCard
-          runs={summary?.runs}
-          projects={projects}
-          fallbackProjectId={fallbackProjectId}
-          now={now}
-        />
-        <HomeIssuesCard />
-        {summary && (
-          <HomeAttentionCard
-            failedRuns={summary.failedRuns}
-            brokenConnections={summary.brokenConnections}
-            runs={summary.runs}
-            projects={projects}
-            fallbackProjectId={fallbackProjectId}
-          />
-        )}
-      </div>
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-6">
           <HomeRecentVisits visits={visits} projects={projects} />
@@ -129,6 +118,22 @@ export function WorkspaceHomePage() {
             todos={summary?.todos ?? []}
             total={summary?.todoTotal ?? 0}
           />
+          <HomeTodayRunsCard
+            runs={summary?.runs}
+            projects={projects}
+            fallbackProjectId={fallbackProjectId}
+            now={now}
+          />
+          {summary && (
+            <HomeAttentionCard
+              failedRuns={summary.failedRuns}
+              brokenConnections={summary.brokenConnections}
+              runs={summary.runs}
+              projects={projects}
+              fallbackProjectId={fallbackProjectId}
+            />
+          )}
+          <HomeIssuesCard />
           {isTenantAdmin && <SetupChecklistCard />}
           <HomeLearnCard mcpProjectId={mcpProjectIdFor(projects)} />
         </div>
@@ -138,6 +143,16 @@ export function WorkspaceHomePage() {
         onOpenChange={setNewWorkflowOpen}
         projectId={targetProject?.id}
         pickProject={true}
+      />
+      <GenerateWorkflowDialog
+        open={aiPrompt !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAiPrompt(null);
+          }
+        }}
+        initialPrompt={aiPrompt ?? undefined}
+        projectId={targetProject?.id}
       />
     </div>
   );

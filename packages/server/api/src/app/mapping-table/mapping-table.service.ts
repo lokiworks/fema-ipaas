@@ -1,4 +1,5 @@
 import { ApplicationError, ErrorCode, generateId, isNil, MappingTableData, ProjectId, UserId } from '@fema-ipaas/core-utils'
+import { dayjsUtil } from '@fema-ipaas/server-utils'
 import {
     MappingTable,
     MappingTableReference,
@@ -58,18 +59,22 @@ export const mappingTableService = (log: FastifyBaseLogger) => ({
     },
 
     async references({ id, projectId }: TableRef): Promise<MappingTableReference[]> {
-        const workflows = await workflowRepo().find({ where: { projectId }, select: ['id', 'publishedVersionId'] })
-        if (workflows.length === 0) {
-            return []
-        }
-        const latest = await workflowVersionService(log).getLatestVersionsByWorkflowIds(workflows.map((workflow) => workflow.id), projectId)
-        const publishedIds = workflows.map((workflow) => workflow.publishedVersionId).filter((versionId): versionId is string => !isNil(versionId))
-        const published = publishedIds.length === 0 ? [] : await workflowVersionRepo().find({ where: { id: In(publishedIds) } })
-        const versions: VersionWithFlag[] = [
-            ...[...latest.values()].map((version) => ({ version, published: publishedIds.includes(version.id) })),
-            ...published.filter((version) => !isNil(latest.get(version.workflowId)) && latest.get(version.workflowId)?.id !== version.id).map((version) => ({ version, published: true })),
-        ]
+        const versions = await versionsOf({ projectId, log })
         return versions.flatMap(({ version, published: isPublished }) => referencesIn({ version, tableId: id, published: isPublished }))
+    },
+
+    async lastUpdatedByWorkflow({ projectId }: { projectId: ProjectId }): Promise<Map<string, string>> {
+        const tables = await mappingTableRepo().find({ where: { projectId }, select: ['id', 'updated'] })
+        if (tables.length === 0) {
+            return new Map()
+        }
+        const versions = await versionsOf({ projectId, log })
+        return tables.reduce((acc, table) => versions
+            .filter(({ version, published }) => referencesIn({ version, tableId: table.id, published }).length > 0)
+            .reduce((inner, { version }) => {
+                const known = inner.get(version.workflowId)
+                return isNil(known) || dayjsUtil(table.updated).isAfter(known) ? new Map(inner).set(version.workflowId, table.updated) : inner
+            }, acc), new Map<string, string>())
     },
 
     async getForWorker({ id, projectId }: TableRef): Promise<MappingTableData> {
@@ -83,6 +88,20 @@ export const mappingTableService = (log: FastifyBaseLogger) => ({
         }
     },
 })
+
+async function versionsOf({ projectId, log }: { projectId: ProjectId, log: FastifyBaseLogger }): Promise<VersionWithFlag[]> {
+    const workflows = await workflowRepo().find({ where: { projectId }, select: ['id', 'publishedVersionId'] })
+    if (workflows.length === 0) {
+        return []
+    }
+    const latest = await workflowVersionService(log).getLatestVersionsByWorkflowIds(workflows.map((workflow) => workflow.id), projectId)
+    const publishedIds = workflows.map((workflow) => workflow.publishedVersionId).filter((versionId): versionId is string => !isNil(versionId))
+    const published = publishedIds.length === 0 ? [] : await workflowVersionRepo().find({ where: { id: In(publishedIds) } })
+    return [
+        ...[...latest.values()].map((version) => ({ version, published: publishedIds.includes(version.id) })),
+        ...published.filter((version) => !isNil(latest.get(version.workflowId)) && latest.get(version.workflowId)?.id !== version.id).map((version) => ({ version, published: true })),
+    ]
+}
 
 function referencesIn({ version, tableId, published }: { version: WorkflowVersion, tableId: string, published: boolean }): MappingTableReference[] {
     return workflowStructureUtil.getAllSteps(version.trigger)

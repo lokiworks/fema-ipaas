@@ -1,5 +1,5 @@
 import { ContextVersion } from '@fema-ipaas/connector-sdk'
-import { ConnectionStatus, ConnectionType, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionConnectorMismatchError, FetchError } from '@fema-ipaas/shared'
+import { ConnectionConnectorMismatchError, ConnectionExpiredError, ConnectionLoadingError, ConnectionNotFoundError, ConnectionStatus, ConnectionType, FetchError } from '@fema-ipaas/shared'
 import { createConnectionResolver } from '../../src/lib/connector-context/connection-resolver'
 
 const RESOLVER_PARAMS = {

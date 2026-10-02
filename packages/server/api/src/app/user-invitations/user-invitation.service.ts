@@ -25,7 +25,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
             key: await jwtUtils.getJwtSecret(),
             audience: JwtAudience.USER_INVITATION,
         }))
-        if (!isNil(tokenError)) {
+        if (!isNil(tokenError) || isNil(decodedToken)) {
             throw new ApplicationError({
                 code: ErrorCode.ENTITY_NOT_FOUND,
                 params: {

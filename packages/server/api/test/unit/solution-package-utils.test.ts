@@ -113,3 +113,39 @@ describe('solutionPackageUtils.instantiate', () => {
         expect(workflowStructureUtil.getAllSteps(result)[1].settings?.input?.chat).toBe('HR group')
     })
 })
+
+describe('solutionPackageUtils.instantiate with option based configuration', () => {
+    const pkg = solutionPackageUtils.buildPackage({ workflows: [workflow()], tables: [table], manualChecks: [] })
+    const items = [{
+        key: 'mode',
+        label: 'Mode',
+        type: SolutionConfigType.SELECT,
+        options: [{ value: 'full', label: 'Full' }, { value: 'delta', label: 'Delta' }],
+        defaultValue: 'delta',
+        affectsWorkflows: ['onboard'],
+        patches: [{ workflowKey: 'onboard', stepName: 'step_1', inputKey: 'chat', valueByOption: { full: 'Everyone', delta: 'Changed only' } }],
+    }, {
+        key: 'offboard',
+        label: 'Offboarding',
+        type: SolutionConfigType.RADIO,
+        options: [{ value: 'suspend', label: 'Suspend' }, { value: 'delete', label: 'Delete', danger: true }],
+        defaultValue: 'suspend',
+        affectsWorkflows: ['other'],
+        patches: [{ workflowKey: 'other', stepName: 'step_1', inputKey: 'chat', value: 'untouched' }],
+    }]
+
+    function chatOf(config: Record<string, string>): unknown {
+        const result = solutionPackageUtils.instantiate({ workflow: pkg.workflows[0], items, config, connections: {}, tableIdByKey: new Map([['dept', 'mt_new']]) })
+        return workflowStructureUtil.getAllSteps(result)[1].settings?.input?.chat
+    }
+
+    it('writes the value mapped to the chosen option', () => {
+        expect(chatOf({ mode: 'full' })).toBe('Everyone')
+        expect(chatOf({ mode: 'delta' })).toBe('Changed only')
+    })
+
+    it('falls back to the default option and ignores patches aimed at other workflows', () => {
+        expect(chatOf({})).toBe('Changed only')
+        expect(chatOf({ mode: 'delta', offboard: 'delete' })).toBe('Changed only')
+    })
+})

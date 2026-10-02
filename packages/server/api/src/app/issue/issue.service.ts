@@ -2,6 +2,8 @@ import { ApplicationError, ErrorCode, generateId, isNil, Permission, ProjectId, 
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import {
     Execution,
+    ExecutionStatus,
+    FailedStep,
     Issue,
     IssueActivity,
     IssueActivityData,
@@ -29,6 +31,7 @@ import { Brackets, In, SelectQueryBuilder } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { databaseConnection } from '../database/database-connection'
 import { distributedLock } from '../database/redis-connections'
+import { likePatternUtils } from '../helper/like-pattern'
 import { projectAccess } from '../project/project-access'
 import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
@@ -56,7 +59,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
             fn: async (): Promise<RecordFailureResult> => {
                 const existing = await issueRepo().findOneBy({ projectId: execution.projectId, signature: classification.signature })
                 if (isNil(existing)) {
-                    const created = await insertIssue({ execution, workflowVersion, classification, now })
+                    const created = await insertIssue({ projectId: execution.projectId, workflowId: execution.workflowId, failedStep: execution.failedStep, workflowVersion, classification, now })
                     await recordActivity({ issue: created, type: IssueActivityType.FIRST_SEEN, actorId: null, data: { executionId: execution.id } })
                     return { issue: created, event: IssueRecordEvent.NEW, counted: true }
                 }
@@ -78,6 +81,64 @@ export const issueService = (log: FastifyBaseLogger) => ({
         await executionRepo().update({ id: execution.id, projectId: execution.projectId }, { issueId: outcome.issue.id })
         log.info({ issue: { id: outcome.issue.id, event: outcome.event }, execution: { id: execution.id } }, '[issueService#recordFailure] Failure recorded')
         return outcome
+    },
+
+    async recordTriggerFailure({ projectId, workflowVersion, message }: RecordTriggerFailureParams): Promise<RecordFailureResult> {
+        const failedStep: FailedStep = { name: workflowVersion.trigger.name, displayName: workflowVersion.trigger.displayName, message }
+        const classification = issueUtils.classifyFailure({
+            workflowId: workflowVersion.workflowId,
+            executionStatus: ExecutionStatus.FAILED,
+            failedStep,
+        })
+        const now = dayjsUtil().toISOString()
+        return distributedLock(log).runExclusive({
+            key: `issue:${projectId}:${classification.signature}`,
+            timeoutInSeconds: 15,
+            fn: async (): Promise<RecordFailureResult> => {
+                const existing = await issueRepo().findOneBy({ projectId, signature: classification.signature })
+                if (isNil(existing)) {
+                    const created = await insertIssue({ projectId, workflowId: workflowVersion.workflowId, failedStep, workflowVersion, classification, now })
+                    await recordActivity({ issue: created, type: IssueActivityType.FIRST_SEEN, actorId: null, data: {} })
+                    return { issue: created, event: IssueRecordEvent.NEW, counted: true }
+                }
+                const reopening = existing.status === IssueStatus.RESOLVED
+                await issueRepo().update({ id: existing.id, projectId }, {
+                    occurrences: reopening ? existing.occurrences + 1 : existing.occurrences,
+                    lastSeenAt: now,
+                    message: classification.message,
+                    ...(reopening ? { status: IssueStatus.OPEN, reopened: true, resolvedAt: null, resolvedById: null } : {}),
+                })
+                const updated = await getOneOrThrow({ id: existing.id, projectId })
+                if (reopening) {
+                    await recordActivity({ issue: updated, type: IssueActivityType.REOPENED, actorId: null, data: {} })
+                }
+                return { issue: updated, event: reopening ? IssueRecordEvent.REOPENED : IssueRecordEvent.OCCURRED, counted: reopening }
+            },
+        })
+    },
+
+    async resolveTriggerFailures({ projectId, workflowId, triggerName }: ResolveTriggerFailuresParams): Promise<void> {
+        const stale = await issueRepo().find({
+            where: { projectId, workflowId, stepName: triggerName, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
+            select: ['id', 'status'],
+        })
+        if (stale.length === 0) {
+            return
+        }
+        await issueRepo().update({ id: In(stale.map((issue) => issue.id)), projectId }, {
+            status: IssueStatus.RESOLVED,
+            resolvedAt: dayjsUtil().toISOString(),
+            resolvedById: null,
+            reopened: false,
+        })
+        await issueActivityRepo().insert(stale.map((issue) => ({
+            id: generateId(),
+            issueId: issue.id,
+            projectId,
+            type: IssueActivityType.STATUS_CHANGED,
+            actorId: null,
+            data: { from: issue.status, to: IssueStatus.RESOLVED },
+        })))
     },
 
     async list({ query, currentUserId }: ListParams): Promise<SeekPage<IssueWithSeverity>> {
@@ -268,15 +329,14 @@ export const issueService = (log: FastifyBaseLogger) => ({
     },
 })
 
-async function insertIssue({ execution, workflowVersion, classification, now }: InsertIssueParams): Promise<Issue> {
+async function insertIssue({ projectId, workflowId, failedStep, workflowVersion, classification, now }: InsertIssueParams): Promise<Issue> {
     const id = generateId()
-    const failedStep = execution.failedStep
     await issueRepo().insert({
         id,
-        projectId: execution.projectId,
+        projectId,
         kind: classification.kind,
         signature: classification.signature,
-        workflowId: classification.kind === IssueKind.CONNECTION ? null : execution.workflowId,
+        workflowId: classification.kind === IssueKind.CONNECTION ? null : workflowId,
         stepName: classification.kind === IssueKind.CONNECTION ? null : failedStep?.name ?? null,
         stepDisplayName: classification.kind === IssueKind.CONNECTION ? null : failedStep?.displayName ?? null,
         connectionExternalId: classification.connectionExternalId,
@@ -293,7 +353,7 @@ async function insertIssue({ execution, workflowVersion, classification, now }: 
         resolvedAt: null,
         resolvedById: null,
     })
-    return getOneOrThrow({ id, projectId: execution.projectId })
+    return getOneOrThrow({ id, projectId })
 }
 
 function titleFor({ classification, workflowVersion, stepDisplayName }: TitleForParams): string {
@@ -417,7 +477,7 @@ function applyListFilters({ builder, query, currentUserId }: ApplyListFiltersPar
     if (isNil(query.search) || query.search.trim().length === 0) {
         return withWorkflow
     }
-    const search = `%${query.search.trim()}%`
+    const search = `%${likePatternUtils.escape(query.search.trim())}%`
     return withWorkflow.andWhere(new Brackets((qb) => {
         qb.where('issue.title ILIKE :search', { search })
             .orWhere('issue.message ILIKE :search', { search })
@@ -520,13 +580,27 @@ export type RecordFailureResult = {
     counted: boolean
 }
 
+type RecordTriggerFailureParams = {
+    projectId: ProjectId
+    workflowVersion: WorkflowVersion
+    message: string
+}
+
+type ResolveTriggerFailuresParams = {
+    projectId: ProjectId
+    workflowId: string
+    triggerName: string
+}
+
 type RecordFailureParams = {
     execution: Execution
     workflowVersion: WorkflowVersion | null
 }
 
 type InsertIssueParams = {
-    execution: Execution
+    projectId: ProjectId
+    workflowId: string
+    failedStep: FailedStep | null | undefined
     workflowVersion: WorkflowVersion | null
     classification: ReturnType<typeof issueUtils.classifyFailure>
     now: string

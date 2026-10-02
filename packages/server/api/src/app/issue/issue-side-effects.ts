@@ -25,7 +25,45 @@ export const issueSideEffects = (log: FastifyBaseLogger) => ({
             log.error({ error: alertError, execution: { id: execution.id } }, '[issueSideEffects#onProductionFailure] Failed to dispatch alerts')
         }
     },
+
+    async onTriggerFailure({ projectId, workflowVersion, message }: OnTriggerFailureParams): Promise<void> {
+        const { data: outcome, error } = await tryCatch(() => issueService(log).recordTriggerFailure({ projectId, workflowVersion, message }))
+        if (!isNil(error)) {
+            log.error({ error, workflow: { id: workflowVersion.workflowId } }, '[issueSideEffects#onTriggerFailure] Failed to record issue')
+            return
+        }
+        if (isNil(outcome)) {
+            return
+        }
+        const { error: alertError } = await tryCatch(async () => alertDispatcher(log).onIssueRecorded({
+            issue: outcome.issue,
+            event: outcome.event,
+            counted: outcome.counted,
+            tenantId: await projectService(log).getTenantId(projectId),
+        }))
+        if (!isNil(alertError)) {
+            log.error({ error: alertError, workflow: { id: workflowVersion.workflowId } }, '[issueSideEffects#onTriggerFailure] Failed to dispatch alerts')
+        }
+    },
+
+    async onTriggerRecovered({ projectId, workflowVersion }: OnTriggerRecoveredParams): Promise<void> {
+        const { error } = await tryCatch(() => issueService(log).resolveTriggerFailures({ projectId, workflowId: workflowVersion.workflowId, triggerName: workflowVersion.trigger.name }))
+        if (!isNil(error)) {
+            log.error({ error, workflow: { id: workflowVersion.workflowId } }, '[issueSideEffects#onTriggerRecovered] Failed to resolve trigger issues')
+        }
+    },
 })
+
+type OnTriggerFailureParams = {
+    projectId: string
+    workflowVersion: WorkflowVersion
+    message: string
+}
+
+type OnTriggerRecoveredParams = {
+    projectId: string
+    workflowVersion: WorkflowVersion
+}
 
 type OnProductionFailureParams = {
     execution: Execution

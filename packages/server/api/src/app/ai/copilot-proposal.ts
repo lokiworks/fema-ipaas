@@ -17,7 +17,7 @@ import {
     WorkflowVersion,
 } from '@fema-ipaas/shared'
 import { z } from 'zod'
-
+import { aiReferences } from './ai-references'
 function parseDraft(text: string): ProposalDraft | null {
     const start = text.indexOf('{')
     const end = text.lastIndexOf('}')
@@ -102,7 +102,7 @@ function planAdd({ change, version, catalog, connectorVersions, connections }: {
     }
     const name = workflowStructureUtil.findUnusedName(version.trigger)
     const displayName = clipName(change.displayName.trim().length > 0 ? change.displayName : operation.displayName)
-    const input = Object.fromEntries(Object.entries(change.input ?? {}).filter(([key]) => key !== AUTH_PROPERTY && key in operation.props))
+    const input = Object.fromEntries(Object.entries(change.input ?? {}).filter(([key]) => key !== AUTH_PROPERTY && key in operation.props).map(([key, value]) => [key, aiReferences.canonicalize(value)]))
     const connection = isNil(connector.auth) ? undefined : connections.find((candidate) => candidate.connectorName === connector.name)
     const operationRequest: WorkflowOperationRequest = {
         type: WorkflowOperationType.ADD_ACTION,
@@ -151,7 +151,7 @@ function planUpdateInput({ change, version, catalog }: {
     const request = actionRequest({
         step,
         displayName: step.displayName,
-        input: { ...step.settings.input, ...Object.fromEntries(allowed) },
+        input: { ...step.settings.input, ...Object.fromEntries(allowed.map(([key, value]) => [key, aiReferences.canonicalize(value)])) },
     })
     return {
         operations: [{ type: WorkflowOperationType.UPDATE_ACTION, request }],

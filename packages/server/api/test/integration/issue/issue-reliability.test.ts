@@ -2,10 +2,10 @@ import { ExecutionStatus, IssueStatus, RunEnvironment, RunMonitorRange, Workflow
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
-import { runMonitorUtils } from '../../../src/app/run-monitor/run-monitor-utils'
-import { executionHooks } from '../../../src/app/workflows/execution/execution-hooks'
 import { issueSideEffects } from '../../../src/app/issue/issue-side-effects'
 import { issueRepo, issueService } from '../../../src/app/issue/issue.service'
+import { runMonitorUtils } from '../../../src/app/run-monitor/run-monitor-utils'
+import { executionHooks } from '../../../src/app/workflows/execution/execution-hooks'
 import { db } from '../../helpers/db'
 import { createMockExecution, createMockProject, createMockWorkflow, createMockWorkflowVersion } from '../../helpers/mocks'
 import { createTestContext, TestContext } from '../../helpers/test-context'
@@ -29,7 +29,7 @@ async function seedWorkflow({ ctx, projectId }: { ctx: TestContext, projectId?: 
     return { workflowId: workflow.id, versionId: version.id }
 }
 
-async function seedFailedExecution({ ctx, workflowId, versionId, rerunOfExecutionId, status, projectId }: SeedExecutionParams): Promise<string> {
+async function seedFailedExecution({ ctx, workflowId, versionId, rerunOfExecutionId, status, projectId, message }: SeedExecutionParams): Promise<string> {
     const execution = {
         ...createMockExecution({
             projectId: projectId ?? ctx.project.id,
@@ -41,7 +41,7 @@ async function seedFailedExecution({ ctx, workflowId, versionId, rerunOfExecutio
             startTime: dayjs().subtract(1, 'minute').toISOString(),
             finishTime: dayjs().toISOString(),
         }),
-        failedStep: { name: 'step_1', displayName: 'Create account', message: JSON.stringify({ message: 'Unprocessable entity', status: 422 }) },
+        failedStep: { name: 'step_1', displayName: 'Create account', message: message ?? JSON.stringify({ message: 'Unprocessable entity', status: 422 }) },
         rerunOfExecutionId: rerunOfExecutionId ?? null,
     }
     await db.save('execution', execution)
@@ -196,6 +196,80 @@ describe('Issue list views agree with the summary cards', () => {
 
         expect(list).toHaveLength(card)
         expect(card).toBe(0)
+    })
+})
+
+describe('Issue status after a new failure', () => {
+    it('reopens a resolved issue and keeps counting on an ignored one without touching its status', async () => {
+        const ctx = await createTestContext(app!)
+        const first = await seedWorkflow({ ctx })
+        const second = await seedWorkflow({ ctx })
+        await recordFailureOf({ executionId: await seedFailedExecution({ ctx, workflowId: first.workflowId, versionId: first.versionId }) })
+        await recordFailureOf({ executionId: await seedFailedExecution({ ctx, workflowId: second.workflowId, versionId: second.versionId }) })
+        const issues = await issueRepo().findBy({ projectId: ctx.project.id })
+        const resolved = issues.find((issue) => issue.workflowId === first.workflowId)!
+        const ignored = issues.find((issue) => issue.workflowId === second.workflowId)!
+        await ctx.post(`/v1/issues/${resolved.id}`, { status: IssueStatus.RESOLVED })
+        await ctx.post(`/v1/issues/${ignored.id}`, { status: IssueStatus.IGNORED })
+
+        await recordFailureOf({ executionId: await seedFailedExecution({ ctx, workflowId: first.workflowId, versionId: first.versionId }) })
+        await recordFailureOf({ executionId: await seedFailedExecution({ ctx, workflowId: second.workflowId, versionId: second.versionId }) })
+
+        const reopened = await issueRepo().findOneByOrFail({ id: resolved.id })
+        const stillIgnored = await issueRepo().findOneByOrFail({ id: ignored.id })
+        const activities = (await ctx.get(`/v1/issues/${resolved.id}/activities`)).json().map((activity: { type: string }) => activity.type)
+        expect(reopened).toMatchObject({ status: IssueStatus.OPEN, reopened: true, occurrences: 2 })
+        expect(activities).toContain('REOPENED')
+        expect(stillIgnored).toMatchObject({ status: IssueStatus.IGNORED, occurrences: 2 })
+    })
+
+    it('reopens a resolved issue when a rerun fails again without counting it as a new failure', async () => {
+        const ctx = await createTestContext(app!)
+        const { workflowId, versionId } = await seedWorkflow({ ctx })
+        const original = await seedFailedExecution({ ctx, workflowId, versionId })
+        await recordFailureOf({ executionId: original })
+        const [issue] = await issueRepo().findBy({ projectId: ctx.project.id })
+        await ctx.post(`/v1/issues/${issue.id}`, { status: IssueStatus.RESOLVED })
+
+        await recordFailureOf({ executionId: await seedFailedExecution({ ctx, workflowId, versionId, rerunOfExecutionId: original }) })
+
+        expect(await issueRepo().findOneByOrFail({ id: issue.id })).toMatchObject({ status: IssueStatus.OPEN, reopened: true, occurrences: 1 })
+    })
+})
+
+describe('Issue search', () => {
+    it('treats % and _ as plain characters', async () => {
+        const ctx = await createTestContext(app!)
+        const messages = ['rate 100% reached', 'rate 100 reached', 'file_name missing', 'fileXname missing']
+        for (const message of messages) {
+            const { workflowId, versionId } = await seedWorkflow({ ctx })
+            await recordFailureOf({ executionId: await seedFailedExecution({ ctx, workflowId, versionId, message }) })
+        }
+        const search = async (text: string): Promise<string[]> => (await ctx.get('/v1/issues', { projectId: ctx.project.id, view: 'ALL', search: text })).json().data.map((issue: { message: string }) => issue.message)
+
+        expect(await search('%')).toEqual(['rate 100% reached'])
+        expect(await search('_')).toEqual(['file_name missing'])
+        expect(await search('file_name')).toEqual(['file_name missing'])
+        expect((await search('missing')).sort()).toEqual(['fileXname missing', 'file_name missing'])
+    })
+})
+
+describe('Muting an issue', () => {
+    it('counts the issue as open again once the mute has run out, and lists it as muted only while it lasts', async () => {
+        const ctx = await createTestContext(app!)
+        const { workflowId, versionId } = await seedWorkflow({ ctx })
+        await recordFailureOf({ executionId: await seedFailedExecution({ ctx, workflowId, versionId }) })
+        const [issue] = await issueRepo().findBy({ projectId: ctx.project.id })
+        const countOf = async (view: string): Promise<number> => (await ctx.get('/v1/issues', { projectId: ctx.project.id, view })).json().data.length
+        const summary = async () => (await ctx.get('/v1/issues/summary', { projectId: ctx.project.id })).json()
+
+        await ctx.post(`/v1/issues/${issue.id}`, { mutedForHours: 4 })
+        const whileMuted = { open: await countOf('OPEN'), muted: await countOf('MUTED'), card: await summary() }
+        await issueRepo().update({ id: issue.id }, { mutedUntil: dayjs().subtract(1, 'minute').toISOString() })
+        const afterExpiry = { open: await countOf('OPEN'), muted: await countOf('MUTED'), card: await summary() }
+
+        expect(whileMuted).toMatchObject({ open: 0, muted: 1, card: { open: 0, muted: 1 } })
+        expect(afterExpiry).toMatchObject({ open: 1, muted: 0, card: { open: 1, muted: 0 } })
     })
 })
 
@@ -368,6 +442,7 @@ type SeedCutOffParams = {
 type SeedExecutionParams = {
     ctx: TestContext
     projectId?: string
+    message?: string
     workflowId: string
     versionId: string
     rerunOfExecutionId?: string

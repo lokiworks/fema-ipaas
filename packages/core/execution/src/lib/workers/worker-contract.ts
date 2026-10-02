@@ -62,6 +62,14 @@ export type RecordTriggerRunRequest = {
     tenantId: string
     connectorName: string
     status: TriggerRunStatus
+    workflow?: TriggerRunWorkflow
+}
+
+export type TriggerRunWorkflow = {
+    id: string
+    versionId: string
+    projectId: string
+    failureMessage: string | null
 }
 
 export type WorkerToApiContract = {

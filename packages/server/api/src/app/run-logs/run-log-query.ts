@@ -10,6 +10,7 @@ import {
     RunLogType,
 } from '@fema-ipaas/shared'
 import { Brackets, SelectQueryBuilder, WhereExpressionBuilder } from 'typeorm'
+import { likePatternUtils } from '../helper/like-pattern'
 import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { RunLogAccessProject } from './run-log-access'
@@ -101,11 +102,11 @@ function conditionPredicates({ query, scopedIds }: { query: ListRunLogsRequestQu
     const content = query.content?.trim() ?? ''
     const contentFilter = content.length === 0
         ? []
-        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where(CONTENT_SQL, { conditionContent: `%${escapeLike(content)}%` })]
+        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where(CONTENT_SQL, { conditionContent: `%${likePatternUtils.escape(content)}%` })]
     const businessKey = query.businessKey?.trim() ?? ''
     const businessKeyFilter = businessKey.length === 0
         ? []
-        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where('execution."businessKey" ILIKE :conditionBusinessKey', { conditionBusinessKey: `%${escapeLike(businessKey)}%` })]
+        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where('execution."businessKey" ILIKE :conditionBusinessKey', { conditionBusinessKey: `%${likePatternUtils.escape(businessKey)}%` })]
     const durationFilter = isNil(query.durationSeconds)
         ? []
         : [durationPredicate({ operator: query.durationOperator ?? RunLogDurationOperator.GTE, seconds: query.durationSeconds })]
@@ -126,10 +127,6 @@ function durationPredicate({ operator, seconds }: { operator: RunLogDurationOper
         `execution."startTime" IS NOT NULL AND execution."finishTime" IS NOT NULL AND EXTRACT(EPOCH FROM (execution."finishTime" - execution."startTime")) ${comparator} :conditionDurationSeconds`,
         { conditionDurationSeconds: seconds },
     )
-}
-
-function escapeLike(value: string): string {
-    return value.replace(/[\\%_]/g, (char) => `\\${char}`)
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000

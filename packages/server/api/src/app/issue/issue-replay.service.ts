@@ -14,6 +14,7 @@ import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { In } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
+import { mappingTableService } from '../mapping-table/mapping-table.service'
 import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { ChainVerdict, issueReplayUtils, ReplayConnectionState } from './issue-replay-utils'
@@ -32,6 +33,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             select: ['id', 'updated'],
         })
         const workflowUpdatedAt = new Map(workflows.map((workflow) => [workflow.id, workflow.updated]))
+        const mappingUpdatedAt = await mappingTableService(log).lastUpdatedByWorkflow({ projectId })
         const connectionState = issue.kind === IssueKind.CONNECTION && !isNil(issue.connectionExternalId)
             ? await readConnectionState({ externalId: issue.connectionExternalId, projectId })
             : ReplayConnectionState.NOT_APPLICABLE
@@ -46,6 +48,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             verdict: verdicts.get(execution.id) ?? ChainVerdict.TARGET,
             workflowExists: workflowUpdatedAt.has(execution.workflowId),
             workflowChangedAfterFailure: dayjsUtil(workflowUpdatedAt.get(execution.workflowId)).isAfter(execution.finishTime ?? execution.created),
+            mappingTableChangedAfterFailure: isAfterFailure({ changedAt: mappingUpdatedAt.get(execution.workflowId), execution }),
             connectionState,
             connectionExternalId: issue.connectionExternalId ?? null,
             transient: issueUtils.isTransientHttpStatus(issue.errorCode),
@@ -88,6 +91,10 @@ async function readConnectionState({ externalId, projectId }: { externalId: stri
         return ReplayConnectionState.MISSING
     }
     return connection.status === ConnectionStatus.ACTIVE ? ReplayConnectionState.HEALTHY : ReplayConnectionState.BROKEN
+}
+
+function isAfterFailure({ changedAt, execution }: { changedAt: string | undefined, execution: { finishTime?: string | null, created: string } }): boolean {
+    return !isNil(changedAt) && dayjsUtil(changedAt).isAfter(execution.finishTime ?? execution.created)
 }
 
 const MAX_REPLAY_CANDIDATES = 500

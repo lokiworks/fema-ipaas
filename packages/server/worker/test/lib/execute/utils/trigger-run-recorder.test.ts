@@ -54,6 +54,34 @@ describe('recordTriggerRun', () => {
         expect(recordTriggerRunRpc).toHaveBeenCalledWith({ tenantId: 'p1', connectorName: '@fema-ipaas/connector-slack', status: TriggerRunStatus.FAILED })
     })
 
+    it('passes the workflow and the failure text along when the caller knows the project', async () => {
+        const recordTriggerRunRpc = vi.fn(async () => undefined)
+        const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
+
+        await recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema-ipaas/connector-slack'), tenantId: 'p1', status: EngineResponseStatus.USER_FAILURE, projectId: 'project1', failureMessage: 'HTTP 429: limited' })
+
+        expect(recordTriggerRunRpc).toHaveBeenCalledWith({
+            tenantId: 'p1',
+            connectorName: '@fema-ipaas/connector-slack',
+            status: TriggerRunStatus.FAILED,
+            workflow: { id: 'workflow1', versionId: 'fv1', projectId: 'project1', failureMessage: 'HTTP 429: limited' },
+        })
+    })
+
+    it('does not send a failure text with a successful run', async () => {
+        const recordTriggerRunRpc = vi.fn(async () => undefined)
+        const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract
+
+        await recordTriggerRun({ apiClient, log, workflowVersion: buildConnectorWorkflowVersion('@fema-ipaas/connector-slack'), tenantId: 'p1', status: EngineResponseStatus.OK, projectId: 'project1', failureMessage: 'stale' })
+
+        expect(recordTriggerRunRpc).toHaveBeenCalledWith({
+            tenantId: 'p1',
+            connectorName: '@fema-ipaas/connector-slack',
+            status: TriggerRunStatus.COMPLETED,
+            workflow: { id: 'workflow1', versionId: 'fv1', projectId: 'project1', failureMessage: null },
+        })
+    })
+
     it('skips non-connector triggers', async () => {
         const recordTriggerRunRpc = vi.fn(async () => undefined)
         const apiClient = { recordTriggerRun: recordTriggerRunRpc } as unknown as WorkerToApiContract

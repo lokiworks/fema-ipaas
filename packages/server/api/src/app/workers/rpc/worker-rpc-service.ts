@@ -14,6 +14,7 @@ import { AppSystemProp } from '../../helper/system/system-props'
 import { projectService } from '../../project/project-service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
+import { triggerRunIssues } from '../../trigger/trigger-run/trigger-run-issues'
 import { triggerRunStats } from '../../trigger/trigger-run/trigger-run-stats'
 import { triggerRunPolicy } from '../../trigger/trigger-run-policy'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
@@ -179,6 +180,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
         async recordTriggerRun(input) {
             const redisConnection = await redisConnections.useExisting()
             await triggerRunStats(log, redisConnection).save(input)
+            await triggerRunIssues(log).record(input)
         },
 
         async getPrewarmData(input) {

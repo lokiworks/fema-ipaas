@@ -24,7 +24,7 @@ function chainVerdicts({ candidates, chain }: ChainVerdictsParams): Map<string, 
     return verdicts
 }
 
-function classify({ execution, verdict, workflowExists, connectionState, connectionExternalId, transient, authorization, rejectedByTarget, workflowChangedAfterFailure }: ClassifyParams): ClassifiedReplay {
+function classify({ execution, verdict, workflowExists, connectionState, connectionExternalId, transient, authorization, rejectedByTarget, workflowChangedAfterFailure, mappingTableChangedAfterFailure }: ClassifyParams): ClassifiedReplay {
     const item = (category: ReplayCategory, reason: ReplayReason): ClassifiedReplay => ({
         executionId: execution.id,
         category,
@@ -62,6 +62,9 @@ function classify({ execution, verdict, workflowExists, connectionState, connect
     }
     if (workflowChangedAfterFailure) {
         return item(ReplayCategory.REPLAYABLE, ReplayReason.WORKFLOW_CHANGED)
+    }
+    if (mappingTableChangedAfterFailure) {
+        return item(ReplayCategory.REPLAYABLE, ReplayReason.MAPPING_TABLE_CHANGED)
     }
     return item(ReplayCategory.DATA_PROBLEM, ReplayReason.UNCHANGED_SINCE_FAILURE)
 }
@@ -108,6 +111,7 @@ type ClassifyParams = {
     verdict: ChainVerdict
     workflowExists: boolean
     workflowChangedAfterFailure: boolean
+    mappingTableChangedAfterFailure: boolean
     connectionState: ReplayConnectionState
     connectionExternalId: string | null
     transient: boolean

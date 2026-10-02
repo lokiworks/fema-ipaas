@@ -105,7 +105,7 @@ describe('copilotProposal', () => {
         const applied = workflowOperations.apply(version(), operation)
         const added = workflowStructureUtil.getStepOrThrow('step_2', applied.trigger)
         expect(added.settings.pendingReview).toBe(true)
-        expect(added.settings.input).toEqual({ text: '{{trigger.body}}', auth: '{{connections[\'feishu-conn\']}}' })
+        expect(added.settings.input).toEqual({ text: '{{trigger[\'output\'][\'body\']}}', auth: '{{connections[\'feishu-conn\']}}' })
     })
 
     it('merges input updates, renames and deletes existing steps', () => {

@@ -7,6 +7,7 @@ const base = {
     verdict: ChainVerdict.TARGET,
     workflowExists: true,
     workflowChangedAfterFailure: false,
+    mappingTableChangedAfterFailure: false,
     connectionState: ReplayConnectionState.NOT_APPLICABLE,
     connectionExternalId: null,
     transient: false,
@@ -25,6 +26,18 @@ describe('issueReplayUtils.classify', () => {
         const result = issueReplayUtils.classify({ ...base, workflowChangedAfterFailure: true })
         expect(result.category).toBe(ReplayCategory.REPLAYABLE)
         expect(result.reason).toBe(ReplayReason.WORKFLOW_CHANGED)
+    })
+
+    it('replays after a mapping table the workflow uses was edited', () => {
+        const result = issueReplayUtils.classify({ ...base, mappingTableChangedAfterFailure: true })
+        expect(result.category).toBe(ReplayCategory.REPLAYABLE)
+        expect(result.reason).toBe(ReplayReason.MAPPING_TABLE_CHANGED)
+    })
+
+    it('does not call a rejected-by-target failure fixed just because a mapping table was edited', () => {
+        const result = issueReplayUtils.classify({ ...base, rejectedByTarget: true, mappingTableChangedAfterFailure: true })
+        expect(result.category).toBe(ReplayCategory.DATA_PROBLEM)
+        expect(result.reason).toBe(ReplayReason.REJECTED_BY_TARGET)
     })
 
     it('flags an untouched workflow as likely to fail again', () => {

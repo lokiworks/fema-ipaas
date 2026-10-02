@@ -57,19 +57,21 @@ export const solutionService = (log: FastifyBaseLogger) => ({
     async list({ tenantId, userId, query }: ListParams): Promise<SolutionSummary[]> {
         const visible = await visibleSolutions({ tenantId, userId, log })
         const installs = await solutionInstallRepo().find({ where: { tenantId } })
+        const readableProjectIds = await readableProjectIdsOf({ tenantId, userId, log })
         const mine = query.mine === true
         const search = query.search?.trim().toLowerCase() ?? ''
         return visible
             .filter((entry) => !mine || entry.solution.createdBy === userId)
             .filter((entry) => isNil(query.category) || query.category === 'all' || entry.solution.category === query.category)
             .filter((entry) => search.length === 0 || `${entry.solution.name}${entry.solution.summary}`.toLowerCase().includes(search))
-            .map((entry) => summaryOf({ entry, installs }))
+            .map((entry) => summaryOf({ entry, installs, readableProjectIds }))
     },
 
     async getDetail({ id, tenantId, userId }: SolutionRef): Promise<SolutionDetail> {
         const entry = await findVisibleOrThrow({ id, tenantId, userId, log })
         const installs = await solutionInstallRepo().find({ where: { tenantId, solutionId: id } })
-        return { ...summaryOf({ entry, installs }), package: entry.package, versions: entry.versions }
+        const readableProjectIds = await readableProjectIdsOf({ tenantId, userId, log })
+        return { ...summaryOf({ entry, installs, readableProjectIds }), package: entry.package, versions: entry.versions }
     },
 
     async createFromProject({ tenantId, userId, request }: CreateFromProjectParams): Promise<SolutionDetail> {
@@ -517,14 +519,19 @@ function officialEntry(official: OfficialSolution): CatalogEntry {
     }
 }
 
-function summaryOf({ entry, installs }: { entry: CatalogEntry, installs: SolutionInstallSchema[] }): SolutionSummary {
+async function readableProjectIdsOf({ tenantId, userId, log }: { tenantId: TenantId, userId: UserId, log: FastifyBaseLogger }): Promise<Set<string>> {
+    const readable = await projectAccess(log).projectsWithPermission({ userId, tenantId, permission: Permission.READ_WORKFLOW })
+    return new Set(readable.map((project) => project.id))
+}
+
+function summaryOf({ entry, installs, readableProjectIds }: { entry: CatalogEntry, installs: SolutionInstallSchema[], readableProjectIds: Set<string> }): SolutionSummary {
     const own = installs.filter((install) => install.solutionId === entry.solution.id)
     return {
         ...entry.solution,
         workflowCount: entry.package.workflows.length,
         connectorNames: entry.package.connections.map((slot) => slot.connectorName),
         installCount: own.length,
-        installedProjectIds: [...new Set(own.map((install) => install.projectId))],
+        installedProjectIds: [...new Set(own.map((install) => install.projectId).filter((projectId) => readableProjectIds.has(projectId)))],
     }
 }
 

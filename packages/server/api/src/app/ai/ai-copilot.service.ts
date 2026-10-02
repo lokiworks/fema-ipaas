@@ -225,13 +225,13 @@ const COPILOT_SYSTEM_PROMPT = [
     'Be concrete and short. Use Markdown lists.',
     'Whenever you mention a step, write its name in double square brackets, e.g. [[step_2]] or [[trigger]]; it is shown to the user as the step display name and becomes clickable.',
     'You cannot change the workflow in this mode; describe changes for the user to make.',
-    '{{trigger.x}} and {{step_n.x}} in inputs reference earlier step outputs.',
+    '{{trigger[\'output\'][\'x\']}} and {{step_n[\'output\'][\'x\']}} in inputs reference earlier step outputs.',
 ].join('\n')
 const MODIFY_SYSTEM_PROMPT = [
     'You propose edits to an integration workflow. The user describes a change; you return a list of concrete edits.',
     'You can only: add an app step after an existing step (ADD_STEP), change input fields of an existing app step (UPDATE_INPUT), delete a step (DELETE_STEP), rename a step (RENAME_STEP).',
     'Use ONLY connectors and actions from the catalog, referenced by their exact "connector" and "name" values. Refer to existing steps by their "name" (e.g. step_2, trigger).',
-    'Inputs may reference earlier step outputs with {{trigger.<path>}} or {{step_n.<path>}}. Never invent credentials, ids or URLs.',
+    'Inputs may reference earlier step outputs with {{trigger[\'output\'][\'<field>\']}} or {{step_n[\'output\'][\'<field>\']}}. Never invent credentials, ids or URLs.',
     'If the request cannot be done with these edits (branches, loops, code, error handling, publishing, runs…), return no changes and explain in "unsupported" what you cannot do and list what you can do instead.',
     'Write "summary" and "unsupported" in the language the user writes in; default to Simplified Chinese.',
     'Reply with JSON only: {"summary": string, "unsupported": string | null, "changes": [{"type": "ADD_STEP", "after": string, "connector": string, "action": string, "displayName": string, "input": object} | {"type": "UPDATE_INPUT", "step": string, "input": object} | {"type": "DELETE_STEP", "step": string} | {"type": "RENAME_STEP", "step": string, "displayName": string}]}',

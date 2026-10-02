@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { db } from '../../helpers/db'
-import { createMockWorkflow, createMockWorkflowVersion } from '../../helpers/mocks'
+import { createMockProject, createMockWorkflow, createMockWorkflowVersion } from '../../helpers/mocks'
 import { createMemberContext, createTestContext, TestContext } from '../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
@@ -214,7 +214,7 @@ describe('Solutions API', () => {
 
     it('only lets the creator publish a new version', async () => {
         const ctx = await createTestContext(app!)
-        const editor = await createMemberContext(app!, ctx, { projectRole: DefaultProjectRole.EDITOR })
+        const editor = await createMemberContext(app!, ctx, { projectRole: DefaultProjectRole.DEVELOPER })
         const workflowId = await savePublishedWorkflow({ ctx, name: 'Onboard' })
         const solution = (await ctx.post('/v1/solutions', createBody({ ctx, workflowIds: [workflowId] }))).json()
 
@@ -348,5 +348,24 @@ describe('Solutions API', () => {
             expect(await draftName({ ctx, workflowId: idsV1[0] })).toBe('A (2)')
             expect((await fetchInstall({ ctx, installId })).version).toBe('1.0')
         })
+    })
+
+    it('does not reveal projects the viewer cannot read in the installed list', async () => {
+        const ctx = await createTestContext(app!)
+        const hidden = createMockProject({ tenantId: ctx.tenant.id, ownerId: ctx.user.id })
+        await db.save('project', hidden)
+        const member = await createMemberContext(app!, ctx, { projectRole: DefaultProjectRole.VIEWER })
+        const workflowId = await savePublishedWorkflow({ ctx, name: 'Onboard' })
+        const solution = (await ctx.post('/v1/solutions', createBody({ ctx, workflowIds: [workflowId] }))).json()
+        const install = (projectId: string) => ctx.post(`/v1/solutions/${solution.id}/install`, { projectId, connections: {}, config: {}, acknowledgedChecks: [] })
+        expect((await install(ctx.project.id)).statusCode).toBe(StatusCodes.CREATED)
+        expect((await install(hidden.id)).statusCode).toBe(StatusCodes.CREATED)
+
+        const ownerView = (await ctx.get(`/v1/solutions/${solution.id}`)).json()
+        const memberView = (await member.get(`/v1/solutions/${solution.id}`)).json()
+
+        expect([...ownerView.installedProjectIds].sort()).toEqual([ctx.project.id, hidden.id].sort())
+        expect(memberView.installedProjectIds).toEqual([ctx.project.id])
+        expect(memberView.installCount).toBe(2)
     })
 })

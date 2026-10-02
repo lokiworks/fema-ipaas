@@ -31,6 +31,7 @@ import { connectionsRepo } from '../connection/connection-service/connection-ser
 import { connectorMetadataService } from '../connectors/metadata/connector-metadata-service'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { aiModelService } from './ai-model.service'
+import { aiReferences } from './ai-references'
 
 export const aiPlanService = (log: FastifyBaseLogger) => ({
     async generate({ request, tenantId, userId }: { request: GenerateWorkflowPlanRequestBody, tenantId: TenantId, userId: UserId }): Promise<WorkflowPlan> {
@@ -117,7 +118,7 @@ function planSystemPrompt(): string {
     return [
         'You design integration workflows for an iPaaS. A workflow has exactly one trigger followed by a linear list of steps.',
         'Use ONLY connectors, triggers and actions from the catalog the user gives you, referenced by their exact "connector" and "name" values.',
-        'Step outputs are referenced in inputs with {{trigger.<path>}} for the trigger and {{step_1.<path>}}, {{step_2.<path>}}… for steps in order.',
+        'Step outputs are referenced in inputs with {{trigger[\'output\'][\'<field>\']}} for the trigger and {{step_1[\'output\'][\'<field>\']}}, {{step_2[\'output\'][\'<field>\']}}… for steps in order; a nested field is written as {{step_1[\'output\'][\'<field>\'][\'<child>\']}}.',
         'Only fill inputs you are confident about; leave the rest out. Never invent credentials, ids or URLs.',
         'If information is missing, ask at most 3 short questions. Put risks or assumptions in warnings.',
         'Write displayName, summary, questions and warnings in the language the user writes in.',
@@ -192,7 +193,7 @@ function resolveStep({ step, catalog, connections, kind }: { step: DraftStep, ca
         operationName: operation.name,
         operationDisplayName: operation.displayName,
         displayName: (step.displayName.trim().length > 0 ? step.displayName : operation.displayName).slice(0, MAX_NAME_LENGTH),
-        input: Object.fromEntries(Object.entries(step.input ?? {}).filter(([name]) => name !== 'auth' && name in operation.props)),
+        input: Object.fromEntries(Object.entries(step.input ?? {}).filter(([name]) => name !== 'auth' && name in operation.props).map(([name, value]) => [name, aiReferences.canonicalize(value)])),
         requiresConnection,
         connectionExternalId: requiresConnection ? connections.find((connection) => connection.connectorName === connector.name)?.externalId ?? null : null,
     }

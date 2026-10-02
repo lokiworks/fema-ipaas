@@ -17,14 +17,14 @@ export class AddExecutionBusinessKey1790851200000 implements Migration {
             ALTER TABLE "execution" ADD COLUMN IF NOT EXISTS "businessKey" character varying
         `)
         await queryRunner.query(isPGlite
-            ? `CREATE INDEX IF NOT EXISTS "idx_execution_project_business_key" ON "execution" ("projectId", "businessKey")`
-            : `CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_execution_project_business_key" ON "execution" ("projectId", "businessKey")`)
+            ? 'CREATE INDEX IF NOT EXISTS "idx_execution_project_business_key" ON "execution" ("projectId", "businessKey")'
+            : 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_execution_project_business_key" ON "execution" ("projectId", "businessKey")')
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(isPGlite
-            ? `DROP INDEX IF EXISTS "idx_execution_project_business_key"`
-            : `DROP INDEX CONCURRENTLY IF EXISTS "idx_execution_project_business_key"`)
-        await queryRunner.query(`ALTER TABLE "execution" DROP COLUMN IF EXISTS "businessKey"`)
+            ? 'DROP INDEX IF EXISTS "idx_execution_project_business_key"'
+            : 'DROP INDEX CONCURRENTLY IF EXISTS "idx_execution_project_business_key"')
+        await queryRunner.query('ALTER TABLE "execution" DROP COLUMN IF EXISTS "businessKey"')
     }
 }

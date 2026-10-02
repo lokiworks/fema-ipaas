@@ -12,6 +12,7 @@ import { networkUtils } from '../../helper/network-utils'
 import { workflowReleaseService } from '../../release/workflow-release.service'
 import { userService } from '../../user/user-service'
 import { migrateWorkflowVersionTemplate } from '../workflow-version/migrations'
+import { workflowReferenceService } from './workflow-reference.service'
 import { WorkflowEntity } from './workflow.entity'
 import { workflowService } from './workflow.service'
 
@@ -142,6 +143,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             id: request.params.id,
             projectId: request.projectId,
         })
+        await workflowReferenceService(request.log).assertNotReferenced({ workflow })
         await workflowService(request.log).delete({
             id: request.params.id,
             projectId: request.projectId,

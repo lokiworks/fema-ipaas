@@ -27,7 +27,11 @@ export const triggerRunPolicy = (log: FastifyBaseLogger) => ({
         const { accepted, duplicates } = await dedupeService.claimWorkflowDedupe({ workflowId, settings: settings?.dedupe, payloads })
         const enqueuedAt = Date.now()
         const started = await Promise.all(accepted.map(async ({ payload, claim }, index) => {
-            const execution = await startRun({ payload, concurrency: triggerRunPolicyUtils.ticketFor({ settings, payload, enqueuedAt: enqueuedAt + index }) })
+            const execution = await startRun({
+                payload,
+                concurrency: triggerRunPolicyUtils.ticketFor({ settings, payload, enqueuedAt: enqueuedAt + index }),
+                businessKey: triggerRunPolicyUtils.businessKeyOf({ settings, payload }),
+            })
             if (!isNil(claim)) {
                 await dedupeService.bindFirstExecution({ claim, executionId: execution.id })
             }
@@ -88,7 +92,7 @@ type StartRunsParams = {
     projectId: ProjectId
     tenantId: TenantId
     payloads: unknown[]
-    startRun: (params: { payload: unknown, concurrency: RunConcurrencyTicket | undefined }) => Promise<Execution>
+    startRun: (params: { payload: unknown, concurrency: RunConcurrencyTicket | undefined, businessKey: string | null }) => Promise<Execution>
 }
 
 type ScheduleSkipParams = {

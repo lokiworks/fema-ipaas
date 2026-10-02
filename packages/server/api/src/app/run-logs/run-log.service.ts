@@ -247,6 +247,7 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         triggeredBy: execution.triggeredBy ?? null,
         issueId: execution.issueId ?? null,
         rerunOfExecutionId: execution.rerunOfExecutionId ?? null,
+        businessKey: execution.businessKey ?? null,
         inPlaceRetryCount,
         rerunCount: (isRoot ? rerunsOfRoot.length : 0) + inPlaceRetryCount,
         latestRerunId: isRoot ? rerunsOfRoot[0]?.id ?? null : null,

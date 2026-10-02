@@ -61,6 +61,8 @@ function fieldLabel(field: RunLogConditionField): string {
       return t('Connector');
     case RunLogConditionField.CONTENT:
       return t('Log content');
+    case RunLogConditionField.BUSINESS_KEY:
+      return t('Business key');
     case RunLogConditionField.DURATION:
       return t('Run duration');
   }
@@ -205,6 +207,10 @@ function conditionLabel({
         .join(t('listSeparator'))}`;
     case RunLogConditionField.CONTENT:
       return t('Log content contains: {text}', { text: condition.text.trim() });
+    case RunLogConditionField.BUSINESS_KEY:
+      return t('Business key contains: {text}', {
+        text: condition.text.trim(),
+      });
     case RunLogConditionField.DURATION:
       return t('Run duration {operator} {seconds} seconds', {
         operator: durationOperatorLabel(condition.operator),

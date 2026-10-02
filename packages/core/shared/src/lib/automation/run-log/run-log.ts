@@ -35,6 +35,7 @@ export enum RunLogConditionField {
     STATUS = 'status',
     CONNECTOR = 'connector',
     CONTENT = 'content',
+    BUSINESS_KEY = 'businessKey',
     DURATION = 'duration',
 }
 
@@ -65,6 +66,7 @@ export const RunLogCondition = z.discriminatedUnion('field', [
     z.object({ field: z.literal(RunLogConditionField.STATUS), values: z.array(z.enum(ExecutionStatus)) }),
     z.object({ field: z.literal(RunLogConditionField.CONNECTOR), values: z.array(z.string()) }),
     z.object({ field: z.literal(RunLogConditionField.CONTENT), text: z.string() }),
+    z.object({ field: z.literal(RunLogConditionField.BUSINESS_KEY), text: z.string() }),
     z.object({ field: z.literal(RunLogConditionField.DURATION), operator: z.enum(RunLogDurationOperator), seconds: z.string() }),
 ])
 export type RunLogCondition = z.infer<typeof RunLogCondition>
@@ -96,6 +98,7 @@ export const ListRunLogsRequestQuery = z.object({
     status: OptionalArrayFromQuery(z.enum(ExecutionStatus)),
     connector: OptionalArrayFromQuery(z.string()),
     content: z.string().max(200).optional(),
+    businessKey: z.string().max(200).optional(),
     durationOperator: z.enum(RunLogDurationOperator).optional(),
     durationSeconds: z.coerce.number().min(0).optional(),
     runIds: OptionalArrayFromQuery(z.string()),
@@ -126,6 +129,7 @@ export const RunLogRow = z.object({
     triggeredBy: Nullable(z.string()),
     issueId: Nullable(z.string()),
     rerunOfExecutionId: Nullable(z.string()),
+    businessKey: Nullable(z.string()),
     inPlaceRetryCount: z.number(),
     rerunCount: z.number(),
     latestRerunId: Nullable(z.string()),

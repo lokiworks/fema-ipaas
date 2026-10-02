@@ -117,6 +117,19 @@ describe('runLogFilterUtils round trip', () => {
         })
     })
 
+    it('keeps the business key filter through the URL and the list query', () => {
+        const parsed = runLogFilterUtils.parseSearchParams({ params: new URLSearchParams('businessKey=XH2026'), presetProjectId: null })
+        expect(parsed.state.conditions).toEqual([{ field: RunLogConditionField.BUSINESS_KEY, text: 'XH2026' }])
+        const params = runLogFilterUtils.writeSearchParams({ state: parsed.state, base: new URLSearchParams(), presetProjectId: null })
+        expect(params.get('businessKey')).toBe('XH2026')
+        expect(runLogFilterUtils.toListQuery({ state: parsed.state }).businessKey).toBe('XH2026')
+    })
+
+    it('treats an empty business key as an incomplete condition', () => {
+        expect(runLogFilterUtils.conditionState({ field: RunLogConditionField.BUSINESS_KEY, text: '  ' })).toBe(RunLogConditionState.EMPTY)
+        expect(runLogFilterUtils.emptyCondition(RunLogConditionField.BUSINESS_KEY)).toEqual({ field: RunLogConditionField.BUSINESS_KEY, text: '' })
+    })
+
     it('marks all projects when the preset project condition was removed', () => {
         const state = { ...runLogFilterUtils.defaultState({ runDeepLink: false, presetProjectId: null }) }
         const params = runLogFilterUtils.writeSearchParams({ state, base: new URLSearchParams(), presetProjectId: 'p1' })

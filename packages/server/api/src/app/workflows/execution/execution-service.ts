@@ -208,6 +208,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
                     failParentOnFailure: oldExecution.failParentOnFailure,
                     parentRunId: oldExecution.parentRunId,
                     rerunOfExecutionId: oldExecution.rerunOfExecutionId ?? oldExecution.id,
+                    businessKey: oldExecution.businessKey,
                 })
             }
         }
@@ -293,6 +294,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
         environment,
         concurrency,
         rerunOfExecutionId,
+        businessKey,
     }: StartParams): Promise<Execution> {
         const countsTowardQuota = environment === RunEnvironment.PRODUCTION && executionType === ExecutionType.BEGIN
         const quota = countsTowardQuota ? await runQuota(log).admit({ projectId }) : null
@@ -308,6 +310,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             stepNameToTest,
             environment,
             rerunOfExecutionId,
+            businessKey,
         }, log)
 
         wideEvent.set({
@@ -851,6 +854,7 @@ async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogg
         steps: {},
         triggeredBy: params.triggeredBy,
         rerunOfExecutionId: params.rerunOfExecutionId,
+        businessKey: params.businessKey,
     }
     switch (params.environment) {
         case RunEnvironment.TESTING:
@@ -876,6 +880,7 @@ type CreateParams = {
     workflowId: WorkflowId
     environment: RunEnvironment
     rerunOfExecutionId?: ExecutionId
+    businessKey?: string | null
 }
 
 type ListParams = {
@@ -941,6 +946,7 @@ type StartParams = {
     sampleData?: Record<string, unknown>
     concurrency?: RunConcurrencyTicket
     rerunOfExecutionId?: ExecutionId
+    businessKey?: string | null
 }
 
 

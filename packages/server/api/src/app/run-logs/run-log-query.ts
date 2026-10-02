@@ -102,10 +102,14 @@ function conditionPredicates({ query, scopedIds }: { query: ListRunLogsRequestQu
     const contentFilter = content.length === 0
         ? []
         : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where(CONTENT_SQL, { conditionContent: `%${escapeLike(content)}%` })]
+    const businessKey = query.businessKey?.trim() ?? ''
+    const businessKeyFilter = businessKey.length === 0
+        ? []
+        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where('execution."businessKey" ILIKE :conditionBusinessKey', { conditionBusinessKey: `%${escapeLike(businessKey)}%` })]
     const durationFilter = isNil(query.durationSeconds)
         ? []
         : [durationPredicate({ operator: query.durationOperator ?? RunLogDurationOperator.GTE, seconds: query.durationSeconds })]
-    return [...projectFilter, ...workflowFilter, ...statusFilter, ...connectorFilter, ...contentFilter, ...durationFilter]
+    return [...projectFilter, ...workflowFilter, ...statusFilter, ...connectorFilter, ...contentFilter, ...businessKeyFilter, ...durationFilter]
 }
 
 function projectPredicate({ requested, scopedIds }: { requested: string[], scopedIds: string[] }): Predicate {
@@ -141,6 +145,7 @@ const CONTENT_SQL = `(
     OR execution."failedStep"->>'message' ILIKE :conditionContent
     OR execution."failedStep"->>'displayName' ILIKE :conditionContent
     OR EXISTS (SELECT 1 FROM issue run_issue WHERE run_issue.id = execution."issueId" AND run_issue."errorCode" ILIKE :conditionContent)
+    OR execution."businessKey" ILIKE :conditionContent
     OR EXISTS (SELECT 1 FROM deduped_event run_dedupe WHERE run_dedupe."firstExecutionId" = execution.id AND run_dedupe."keyPreview" ILIKE :conditionContent)
 )`
 

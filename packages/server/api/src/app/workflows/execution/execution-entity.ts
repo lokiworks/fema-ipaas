@@ -105,6 +105,10 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             nullable: false,
             default: 0,
         },
+        businessKey: {
+            type: String,
+            nullable: true,
+        },
         // @deprecated — kept for backwards compatibility, use waitpoint table instead
         pauseMetadata: {
             type: 'jsonb',
@@ -164,6 +168,10 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
         {
             name: 'idx_execution_rerun_of_execution_id',
             columns: ['rerunOfExecutionId'],
+        },
+        {
+            name: 'idx_execution_project_business_key',
+            columns: ['projectId', 'businessKey'],
         },
     ],
     relations: {

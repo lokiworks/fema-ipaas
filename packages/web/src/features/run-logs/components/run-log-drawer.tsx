@@ -473,6 +473,26 @@ function RunInfo({ detail }: { detail: RunLogDetail }) {
               ? '-'
               : `v${row.versionNumber}`}
           </dd>
+          {!isNil(row.businessKey) && (
+            <>
+              <dt className="text-muted-foreground">{t('Business key')}</dt>
+              <dd className="flex flex-col gap-1">
+                <span className="break-all font-mono text-xs">
+                  {row.businessKey}
+                </span>
+                <Link
+                  className="text-xs text-primary hover:underline"
+                  to={`/projects/${
+                    row.projectId
+                  }/runs?businessKey=${encodeURIComponent(
+                    row.businessKey,
+                  )}&time=30d`}
+                >
+                  {t('All logs of this record')}
+                </Link>
+              </dd>
+            </>
+          )}
           {!isNil(detail.dedupeKey) && (
             <>
               <dt className="text-muted-foreground">{t('Dedupe key')}</dt>

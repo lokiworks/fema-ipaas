@@ -390,7 +390,8 @@ function ConditionOperator({
   }
   return (
     <span className="w-24 shrink-0 pt-2 text-center text-sm text-muted-foreground">
-      {condition.field === RunLogConditionField.CONTENT
+      {condition.field === RunLogConditionField.CONTENT ||
+      condition.field === RunLogConditionField.BUSINESS_KEY
         ? t('contains')
         : t('equals')}
     </span>
@@ -482,6 +483,20 @@ function ConditionValue({
           }
         />
       );
+    case RunLogConditionField.BUSINESS_KEY:
+      return (
+        <Input
+          className="h-9"
+          value={condition.text}
+          maxLength={200}
+          placeholder={t(
+            'Employee ID, approval number or name; a part of it is enough',
+          )}
+          onChange={(event) =>
+            onChange({ ...condition, text: event.target.value })
+          }
+        />
+      );
     case RunLogConditionField.DURATION:
       return (
         <div className="flex items-center gap-2">
@@ -550,5 +565,6 @@ const FIELDS: RunLogConditionField[] = [
   RunLogConditionField.STATUS,
   RunLogConditionField.CONNECTOR,
   RunLogConditionField.CONTENT,
+  RunLogConditionField.BUSINESS_KEY,
   RunLogConditionField.DURATION,
 ];

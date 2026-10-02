@@ -5,7 +5,19 @@ import { DedupeClaim, DuplicatePayload } from './dedupe-service'
 export const triggerRunPolicyUtils = {
     ticketFor,
     firstExecutionIdOf,
+    businessKeyOf,
 }
+
+function businessKeyOf({ settings, payload }: { settings: ConnectorTriggerSettings | undefined, payload: unknown }): string | null {
+    const keyPath = settings?.dedupe?.keyPath
+    if (isNil(keyPath)) {
+        return null
+    }
+    const key = triggerRunSettingsUtils.readKey({ payload, keyPath })
+    return isNil(key) ? null : key.slice(0, MAX_BUSINESS_KEY_LENGTH)
+}
+
+const MAX_BUSINESS_KEY_LENGTH = 255
 
 function ticketFor({ settings, payload, enqueuedAt }: { settings: ConnectorTriggerSettings | undefined, payload: unknown, enqueuedAt: number }): RunConcurrencyTicket | undefined {
     if (isNil(settings)) {

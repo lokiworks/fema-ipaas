@@ -115,7 +115,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                 projectId,
                 tenantId,
                 payloads: connectorDeduped,
-                startRun: ({ payload, concurrency }) => executionService(log).start({
+                startRun: ({ payload, concurrency, businessKey }) => executionService(log).start({
                     workflowId: workflowVersion.workflowId,
                     environment,
                     workflowVersionId,
@@ -130,6 +130,7 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                     parentRunId,
                     failParentOnFailure,
                     concurrency,
+                    businessKey,
                 }),
             })
         },

@@ -4880,5 +4880,9 @@
   "You already reminded {name} recently": "你刚提醒过 {name}，对方还没处理",
   "Remind the owner to reconnect": "提醒所有者重新授权",
   "{actor} asks you to reconnect a connection": "{actor} 请你重新授权一个连接",
-  "A project reached its monthly run limit threshold": "有项目的本月运行次数达到了容量告警阈值"
+  "A project reached its monthly run limit threshold": "有项目的本月运行次数达到了容量告警阈值",
+  "Business key": "业务标识",
+  "Business key contains: {text}": "业务标识包含：{text}",
+  "Employee ID, approval number or name; a part of it is enough": "输入工号、审批单号、姓名，可以只输一部分",
+  "All logs of this record": "这条记录的全部日志"
 }

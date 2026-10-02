@@ -4880,5 +4880,9 @@
   "You already reminded {name} recently": "You already reminded {name} recently",
   "Remind the owner to reconnect": "Remind the owner to reconnect",
   "{actor} asks you to reconnect a connection": "{actor} asks you to reconnect a connection",
-  "A project reached its monthly run limit threshold": "A project reached its monthly run limit threshold"
+  "A project reached its monthly run limit threshold": "A project reached its monthly run limit threshold",
+  "Business key": "Business key",
+  "Business key contains: {text}": "Business key contains: {text}",
+  "Employee ID, approval number or name; a part of it is enough": "Employee ID, approval number or name; a part of it is enough",
+  "All logs of this record": "All logs of this record"
 }

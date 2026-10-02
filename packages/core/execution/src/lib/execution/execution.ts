@@ -98,6 +98,7 @@ export const Execution = z.object({
     stepsCount: z.number().optional(),
     issueId: Nullable(z.string()),
     rerunOfExecutionId: z.string().nullish(),
+    businessKey: z.string().nullish(),
     inPlaceRetryCount: z.number().optional(),
     privacyMaskedFields: z.number().optional(),
     payloadRedacted: z.boolean().optional(),

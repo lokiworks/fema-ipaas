@@ -194,6 +194,24 @@ function columns({
       },
     },
     {
+      accessorKey: 'businessKey',
+      size: 150,
+      enableSorting: false,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('Business key')} />
+      ),
+      cell: ({ row }) =>
+        isNil(row.original.businessKey) ? (
+          <span className="text-sm text-muted-foreground">-</span>
+        ) : (
+          <TextWithTooltip tooltipMessage={row.original.businessKey}>
+            <p className="truncate font-mono text-xs">
+              {row.original.businessKey}
+            </p>
+          </TextWithTooltip>
+        ),
+    },
+    {
       accessorKey: 'projectDisplayName',
       size: 140,
       header: ({ column }) => (

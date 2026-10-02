@@ -22,6 +22,7 @@ function conditionState(condition: RunLogCondition): RunLogConditionState {
         case RunLogConditionField.CONNECTOR:
             return condition.values.length > 0 ? RunLogConditionState.COMPLETE : RunLogConditionState.EMPTY
         case RunLogConditionField.CONTENT:
+        case RunLogConditionField.BUSINESS_KEY:
             return condition.text.trim().length > 0 ? RunLogConditionState.COMPLETE : RunLogConditionState.EMPTY
         case RunLogConditionField.DURATION: {
             const text = condition.seconds.trim()
@@ -53,6 +54,8 @@ function emptyCondition(field: RunLogConditionField): RunLogCondition {
         case RunLogConditionField.CONNECTOR:
             return { field, values: [] }
         case RunLogConditionField.CONTENT:
+            return { field, text: '' }
+        case RunLogConditionField.BUSINESS_KEY:
             return { field, text: '' }
         case RunLogConditionField.DURATION:
             return { field, operator: RunLogDurationOperator.GTE, seconds: '' }
@@ -91,6 +94,7 @@ function parseSearchParams({ params, presetProjectId }: ParseSearchParamsInput):
         ...statusCondition(validStatuses),
         ...listCondition({ field: RunLogConditionField.CONNECTOR, values: readList(params, PARAM.CONNECTOR) }),
         ...contentCondition(content),
+        ...businessKeyCondition((params.get(PARAM.BUSINESS_KEY) ?? '').trim()),
         ...durationCondition({ valid: durationValid, operator: durationOperator.value ?? RunLogDurationOperator.GTE, seconds: durationText }),
     ]
     const ignoredParams = [
@@ -148,6 +152,7 @@ function toListQuery({ state }: { state: RunLogFilterState }): ListRunLogsReques
         status: byField(RunLogConditionField.STATUS)?.values,
         connector: byField(RunLogConditionField.CONNECTOR)?.values,
         content: byField(RunLogConditionField.CONTENT)?.text.trim(),
+        businessKey: byField(RunLogConditionField.BUSINESS_KEY)?.text.trim(),
         durationOperator: duration?.operator,
         durationSeconds: isNil(duration) ? undefined : Number(duration.seconds.trim()),
         runIds: state.runIds.length > 0 ? state.runIds : undefined,
@@ -266,6 +271,10 @@ function contentCondition(text: string): RunLogCondition[] {
     return text.length > 0 ? [{ field: RunLogConditionField.CONTENT, text }] : []
 }
 
+function businessKeyCondition(text: string): RunLogCondition[] {
+    return text.length > 0 ? [{ field: RunLogConditionField.BUSINESS_KEY, text }] : []
+}
+
 function durationCondition({ valid, operator, seconds }: { valid: boolean, operator: RunLogDurationOperator, seconds: string }): RunLogCondition[] {
     return valid ? [{ field: RunLogConditionField.DURATION, operator, seconds }] : []
 }
@@ -296,6 +305,8 @@ function conditionEntries(condition: RunLogCondition): [string, string][] {
             return condition.values.map((value): [string, string] => [PARAM.CONNECTOR, value])
         case RunLogConditionField.CONTENT:
             return [[PARAM.CONTENT, condition.text.trim()]]
+        case RunLogConditionField.BUSINESS_KEY:
+            return [[PARAM.BUSINESS_KEY, condition.text.trim()]]
         case RunLogConditionField.DURATION:
             return [[PARAM.DURATION_OPERATOR, condition.operator], [PARAM.DURATION_SECONDS, condition.seconds.trim()]]
     }
@@ -317,6 +328,7 @@ const PARAM = {
     STATUS: 'status',
     CONNECTOR: 'connector',
     CONTENT: 'content',
+    BUSINESS_KEY: 'businessKey',
     LEGACY_FAILED_STEP_MESSAGE: 'failedStepMessage',
     DURATION_OPERATOR: 'durationOperator',
     DURATION_SECONDS: 'durationSeconds',
@@ -337,6 +349,7 @@ const FILTER_KEYS: string[] = [
     PARAM.STATUS,
     PARAM.CONNECTOR,
     PARAM.CONTENT,
+    PARAM.BUSINESS_KEY,
     PARAM.LEGACY_FAILED_STEP_MESSAGE,
     PARAM.DURATION_OPERATOR,
     PARAM.DURATION_SECONDS,

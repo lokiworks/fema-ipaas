@@ -71,7 +71,7 @@ const RUNS_METADATA_UPSERT_KEYS: (keyof RunsMetadataUpsertData)[] = [
     'triggeredBy', 'startTime', 'finishTime', 'status', 'tags',
     'failedStep', 'stepNameToTest', 'parentRunId', 'failParentOnFailure',
     'logsFileId', 'updated', 'stepsCount', 'requestId',
-    'provisionMs', 'bootMs', 'runMs', 'rerunOfExecutionId',
+    'provisionMs', 'bootMs', 'runMs', 'rerunOfExecutionId', 'businessKey',
 ]
 
 function stripToRunsMetadataUpsertData(params: RunsMetadataUpsertData): RunsMetadataUpsertData {
@@ -121,6 +121,7 @@ export type RunsMetadataUpsertData = {
     stepsCount?: number
     requestId?: string
     rerunOfExecutionId?: string | null
+    businessKey?: string | null
     // Transient worker-measured phase durations, merged then folded into the `timeline` column. Not persisted directly.
     provisionMs?: number
     bootMs?: number

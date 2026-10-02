@@ -7,9 +7,8 @@ import { feishuCommon, type FeishuAuthValue } from './index';
 export const feishuContacts = {
   provisionUser,
   updateUser,
-  offboardUser,
+  setUserSuspended,
   updateUserBody,
-  offboardUserBody,
   normalizeMobile,
 };
 
@@ -40,27 +39,15 @@ function updateUserBody(input: UpdateUserInput): Record<string, unknown> {
   };
 }
 
-async function offboardUser({ auth, input }: OffboardUserParams): Promise<OffboardUserResult> {
+async function setUserSuspended({ auth, input }: SetUserSuspendedParams): Promise<SetUserSuspendedResult> {
   await feishuCommon.callApi<unknown>({
     auth,
-    method: HttpMethod.DELETE,
+    method: HttpMethod.PATCH,
     path: `/open-apis/contact/v3/users/${encodeURIComponent(input.openId)}`,
     queryParams: { user_id_type: 'open_id' },
-    ...(input.receiverOpenId ? { body: offboardUserBody(input.receiverOpenId) } : {}),
+    body: { status: { is_frozen: input.suspended } },
   });
-  return { offboarded: true, open_id: input.openId, resources_to: input.receiverOpenId ?? null };
-}
-
-function offboardUserBody(receiverOpenId: string): Record<string, string> {
-  return {
-    department_chat_acceptor_user_id: receiverOpenId,
-    external_chat_acceptor_user_id: receiverOpenId,
-    docs_acceptor_user_id: receiverOpenId,
-    calendar_acceptor_user_id: receiverOpenId,
-    application_acceptor_user_id: receiverOpenId,
-    minutes_acceptor_user_id: receiverOpenId,
-    survey_acceptor_user_id: receiverOpenId,
-  };
+  return { open_id: input.openId, suspended: input.suspended };
 }
 
 async function provisionUser({ auth, input }: ProvisionUserParams): Promise<ProvisionUserResult> {
@@ -148,15 +135,14 @@ export type UpdateUserResult = {
   changed: string[];
 };
 
-export type OffboardUserInput = {
+export type SetUserSuspendedInput = {
   openId: string;
-  receiverOpenId?: string;
+  suspended: boolean;
 };
 
-export type OffboardUserResult = {
-  offboarded: boolean;
+export type SetUserSuspendedResult = {
   open_id: string;
-  resources_to: string | null;
+  suspended: boolean;
 };
 
 type UpdateUserParams = {
@@ -164,9 +150,9 @@ type UpdateUserParams = {
   input: UpdateUserInput;
 };
 
-type OffboardUserParams = {
+type SetUserSuspendedParams = {
   auth: FeishuAuthValue;
-  input: OffboardUserInput;
+  input: SetUserSuspendedInput;
 };
 
 export type ProvisionUserResult = {

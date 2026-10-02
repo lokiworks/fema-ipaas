@@ -84,9 +84,10 @@
   "Replaces the member's departments. The department ID shown in the Feishu admin console, or an open_department_id starting with od-. Leave empty to keep the department.": "会替换成员所在的全部部门。填飞书管理后台里的部门 ID，或以 od- 开头的 open_department_id。留空表示部门不变。",
   "Manager Open ID": "直属上级 open_id",
   "The open_id of the new direct manager. Leave empty to keep the manager.": "新直属上级的 open_id。留空表示上级不变。",
-  "Offboard Employee": "离职处理",
-  "Remove a leaving employee from Feishu and hand their chats, documents and calendars to someone else": "把离职员工移出飞书，并把他的群、文档、日程交给别人",
-  "Resource Receiver Open ID": "资源接收人 open_id",
   "The open_id of the leaving member, from Find User or Provision Employee Account.": "离职成员的 open_id，来自「查找用户」或「开通员工账号」。",
-  "The open_id of the person who takes over the member's chats, documents, calendars and apps, usually the direct manager. Leave empty to let Feishu apply its default handling.": "接手成员的群、文档、日程和应用的人的 open_id，通常是直属上级。留空表示按飞书的默认方式处理。"
+  "Suspend Employee Account": "暂停员工账号",
+  "Suspend a leaving employee so they can no longer sign in, keeping all their data": "暂停离职员工的账号，不能再登录，数据全部保留",
+  "Resume Employee Account": "恢复员工账号",
+  "Lift the suspension of an employee account so they can sign in again": "解除账号的暂停，员工可以重新登录",
+  "The open_id of the suspended member.": "被暂停成员的 open_id。"
 }

@@ -140,30 +140,29 @@ describe('feishuContacts.updateUser', () => {
   });
 });
 
-describe('feishuContacts.offboardUser', () => {
+describe('feishuContacts.setUserSuspended', () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
 
-  it('deletes the member and hands every resource to the receiver', async () => {
+  it('suspends the account through is_frozen without deleting anything', async () => {
     routeMemberRequests();
 
-    const result = await feishuContacts.offboardUser({ auth, input: { openId: 'ou_1', receiverOpenId: 'ou_boss' } });
+    const result = await feishuContacts.setUserSuspended({ auth, input: { openId: 'ou_1', suspended: true } });
 
-    const [call] = memberCalls('DELETE');
+    const [call] = memberCalls('PATCH');
     expect(call.queryParams).toEqual({ user_id_type: 'open_id' });
-    expect(call.body).toEqual(feishuContacts.offboardUserBody('ou_boss'));
-    expect(Object.values(call.body)).toEqual(Array(7).fill('ou_boss'));
-    expect(result).toEqual({ offboarded: true, open_id: 'ou_1', resources_to: 'ou_boss' });
+    expect(call.body).toEqual({ status: { is_frozen: true } });
+    expect(memberCalls('DELETE')).toHaveLength(0);
+    expect(result).toEqual({ open_id: 'ou_1', suspended: true });
   });
 
-  it('sends no transfer body when no receiver was given', async () => {
+  it('resumes the account by clearing is_frozen', async () => {
     routeMemberRequests();
 
-    const result = await feishuContacts.offboardUser({ auth, input: { openId: 'ou_1' } });
+    await feishuContacts.setUserSuspended({ auth, input: { openId: 'ou_1', suspended: false } });
 
-    expect(memberCalls('DELETE')[0].body).toBeUndefined();
-    expect(result.resources_to).toBeNull();
+    expect(memberCalls('PATCH')[0].body).toEqual({ status: { is_frozen: false } });
   });
 });
 

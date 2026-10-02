@@ -3,11 +3,12 @@ import { ConnectorCategory, createConnector } from '@fema-ipaas/connector-sdk';
 import { feishuAuth } from './lib/auth';
 import { createBitableRecord } from './lib/actions/create-bitable-record';
 import { findUser } from './lib/actions/find-user';
-import { offboardUser } from './lib/actions/offboard-user';
 import { provisionUser } from './lib/actions/provision-user';
+import { resumeUser } from './lib/actions/resume-user';
 import { searchBitableRecords } from './lib/actions/search-bitable-records';
 import { sendDirectMessage } from './lib/actions/send-direct-message';
 import { sendGroupMessage } from './lib/actions/send-group-message';
+import { suspendUser } from './lib/actions/suspend-user';
 import { updateUser } from './lib/actions/update-user';
 import { eventReceived } from './lib/triggers/event-received';
 
@@ -25,7 +26,8 @@ export const feishu = createConnector({
     findUser,
     provisionUser,
     updateUser,
-    offboardUser,
+    suspendUser,
+    resumeUser,
     createBitableRecord,
     searchBitableRecords,
   ],

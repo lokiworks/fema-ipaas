@@ -163,6 +163,8 @@ function connectionStatusLabel(status: string | null | undefined): string {
       return t('Connected');
     case ConnectionStatus.ERROR:
       return t('Connection error');
+    case ConnectionStatus.EXPIRED:
+      return t('Authorization expired');
     case ConnectionStatus.MISSING:
       return t('Not connected');
     default:

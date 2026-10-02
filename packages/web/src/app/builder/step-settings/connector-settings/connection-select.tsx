@@ -427,6 +427,12 @@ function getConnectionStatusDisplay(status: ConnectionStatus): {
         iconClassName: 'text-destructive',
         label: t('Error'),
       };
+    case ConnectionStatus.EXPIRED:
+      return {
+        Icon: X,
+        iconClassName: 'text-warning',
+        label: t('Expired'),
+      };
     case ConnectionStatus.MISSING:
       return {
         Icon: Unplug,

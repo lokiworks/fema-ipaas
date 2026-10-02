@@ -10,6 +10,7 @@ export enum ConnectionStatus {
     ACTIVE = 'ACTIVE',
     MISSING = 'MISSING',
     ERROR = 'ERROR',
+    EXPIRED = 'EXPIRED',
 }
 
 export enum ConnectionScope {

@@ -2691,6 +2691,7 @@
   "Clear Filters": "Clear Filters",
   "The link points to a connection that does not exist, or has not been shared with you.": "The link points to a connection that does not exist, or has not been shared with you.",
   "This connection is no longer working": "This connection is no longer working",
+  "The authorization of this connection has expired": "The authorization of this connection has expired",
   "This connection has not been authorized yet": "This connection has not been authorized yet",
   "Can Edit": "Can Edit",
   "Can Use": "Can Use",

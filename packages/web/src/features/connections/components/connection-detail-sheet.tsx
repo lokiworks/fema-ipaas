@@ -138,9 +138,7 @@ function ConnectionDetailContent({
           {!isActive && (
             <Alert variant="warning">
               <AlertTitle>
-                {detail.status === ConnectionStatus.ERROR
-                  ? t('This connection is no longer working')
-                  : t('This connection has not been authorized yet')}
+                {connectionUtils.getBrokenReason(detail.status)}
               </AlertTitle>
               <AlertDescription className="flex flex-col gap-2">
                 {manage ? (

@@ -24,6 +24,7 @@ import {
     ConnectionSchema,
 } from '../connection.entity'
 import { connectionAvailability } from './connection-availability'
+import { connectionIdentityUtils } from './connection-identity'
 import { mergeConnectionMetadata } from './connection-metadata'
 import { connectionHandler } from './connection.handler'
 import { oauth2Handler } from './oauth2'
@@ -82,6 +83,14 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             tenantId,
             log,
         })
+        const sameAccountError = connectionIdentityUtils.sameAccountError({
+            existingStatus: existingConnection?.status,
+            existingIdentifier: existingConnection?.metadata?.['accountIdentifier'],
+            resolvedIdentifier: accountIdentifier,
+        })
+        if (!isNil(sameAccountError)) {
+            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: sameAccountError } })
+        }
         const connectionMetadata = mergeConnectionMetadata({
             requestMetadata: metadata,
             existingMetadata: existingConnection?.metadata,

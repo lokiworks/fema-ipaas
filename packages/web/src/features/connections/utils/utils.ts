@@ -64,6 +64,11 @@ export const connectionUtils = {
           variant: 'error',
           icon: XIcon,
         };
+      case ConnectionStatus.EXPIRED:
+        return {
+          variant: 'error',
+          icon: XIcon,
+        };
     }
   },
   getStatusLabel(status: ConnectionStatus): string {
@@ -74,6 +79,19 @@ export const connectionUtils = {
         return t('Missing');
       case ConnectionStatus.ERROR:
         return t('Error');
+      case ConnectionStatus.EXPIRED:
+        return t('Expired');
+    }
+  },
+  getBrokenReason(status: ConnectionStatus): string {
+    switch (status) {
+      case ConnectionStatus.ERROR:
+        return t('This connection is no longer working');
+      case ConnectionStatus.EXPIRED:
+        return t('The authorization of this connection has expired');
+      case ConnectionStatus.ACTIVE:
+      case ConnectionStatus.MISSING:
+        return t('This connection has not been authorized yet');
     }
   },
   getConnectionAccountIdentifier(

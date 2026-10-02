@@ -71,3 +71,20 @@ describe('connectionUtils.onlyUsableConnection', () => {
     ).toBeNull();
   });
 });
+
+describe('connectionUtils status wording', () => {
+  it('labels an expired connection and explains it needs reauthorization', () => {
+    expect(connectionUtils.getStatusLabel(ConnectionStatus.EXPIRED)).toBe(
+      'Expired',
+    );
+    expect(connectionUtils.getBrokenReason(ConnectionStatus.EXPIRED)).toBe(
+      'The authorization of this connection has expired',
+    );
+  });
+
+  it('keeps the error wording separate from expiry', () => {
+    expect(connectionUtils.getBrokenReason(ConnectionStatus.ERROR)).toBe(
+      'This connection is no longer working',
+    );
+  });
+});

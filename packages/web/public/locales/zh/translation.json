@@ -2691,6 +2691,7 @@
   "Clear Filters": "清除筛选",
   "The link points to a connection that does not exist, or has not been shared with you.": "链接指向的连接不存在，或者没有分享给你。",
   "This connection is no longer working": "这个连接当前不可用",
+  "The authorization of this connection has expired": "这个连接的授权已过期，需要重新授权",
   "This connection has not been authorized yet": "这个连接还没有完成授权",
   "Can Edit": "可编辑",
   "Can Use": "可使用",

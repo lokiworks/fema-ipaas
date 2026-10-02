@@ -27,6 +27,9 @@ Encrypted credential records (OAuth2 tokens, API keys, basic/custom auth, OIDC p
 `POST /v1/connections` (upsert, validates via worker EXECUTE_VALIDATION), `POST /:id` (update meta), `GET` (filters), `GET /owners`, `POST /replace`, `DELETE /:id`, `POST /oauth2/authorization-url` (optional scope subset).
 
 ### Gotchas
+
+- **`EXPIRED` 和 `ERROR` 是两种坏连接。** 令牌刷新失败（OAuth2 用户类错误、自定义认证刷新错误）记为 `EXPIRED`，重新授权就能恢复；连接校验没通过记为 `ERROR`。两者都不再自动刷新，运行前检查和构建器校验都按「非 ACTIVE」处理。旧数据里已有的 `ERROR` 不会自动改成 `EXPIRED`。
+- **重新授权必须是同一个账号。** `connectionService.upsert` 对已存在的连接，会拿新凭证解析出的 `accountIdentifier` 和库里的比较（忽略大小写和首尾空格），不一致就拒绝，提示新建连接；占位连接（`MISSING`）和任一侧解析不出账号时不拦。账号标识取自 OAuth 令牌里的邮箱或连接器的 `resolveConnectionIdentifier`，连接器没实现的就校验不到。
 - Deleting a PLATFORM-scope connection via the project route is rejected `403` — delete those via platform admin `DELETE /v1/global-connections/:id`.
 - Replace: platform/global connections can be the source, but `deleteSourceConnection` on a platform source → `403`; deleting a project source while a published version still references it → `409`. Draft versions always updated; published only when requested.
 - Deleting a connection does NOT cascade to workflows; they fail at runtime with a validation error.

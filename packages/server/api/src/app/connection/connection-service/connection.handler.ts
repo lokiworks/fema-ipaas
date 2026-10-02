@@ -185,7 +185,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                     const isOAuth2Error = oauth2Util(log).isUserError(e)
                     const isCustomAuthError = e instanceof CustomAuthRefreshError
                     if (!isNil(connection) && (isOAuth2Error || isCustomAuthError)) {
-                        connection.status = ConnectionStatus.ERROR
+                        connection.status = ConnectionStatus.EXPIRED
                         await connectionsRepo().update(connection.id, {
                             status: connection.status,
                             updated: dayjs().toISOString(),
@@ -241,9 +241,9 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
                     if (!isOAuth2Error && !isCustomAuthError) {
                         throw e
                     }
-                    connection.status = ConnectionStatus.ERROR
+                    connection.status = ConnectionStatus.EXPIRED
                     await connectionsRepo().update(connection.id, {
-                        status: ConnectionStatus.ERROR,
+                        status: ConnectionStatus.EXPIRED,
                         updated: dayjs().toISOString(),
                     })
                     return connection
@@ -272,7 +272,7 @@ export const connectionHandler = (log: FastifyBaseLogger) => ({
         return connection
     },
     async needRefresh(connection: Connection, log: FastifyBaseLogger): Promise<boolean> {
-        if (connection.status === ConnectionStatus.ERROR) {
+        if (connection.status === ConnectionStatus.ERROR || connection.status === ConnectionStatus.EXPIRED) {
             return false
         }
         switch (connection.value.type) {

@@ -159,7 +159,11 @@ function ConnectionsPage() {
     statusGroup === 'ACTIVE'
       ? [ConnectionStatus.ACTIVE]
       : statusGroup === 'BROKEN'
-      ? [ConnectionStatus.ERROR, ConnectionStatus.MISSING]
+      ? [
+          ConnectionStatus.ERROR,
+          ConnectionStatus.EXPIRED,
+          ConnectionStatus.MISSING,
+        ]
       : undefined;
 
   const request: ListAccessibleConnectionsRequestQuery = {
@@ -320,9 +324,7 @@ function ConnectionsPage() {
             </TooltipTrigger>
             {!isActive && (
               <TooltipContent>
-                {row.original.status === ConnectionStatus.ERROR
-                  ? t('This connection is no longer working')
-                  : t('This connection has not been authorized yet')}
+                {connectionUtils.getBrokenReason(row.original.status)}
               </TooltipContent>
             )}
           </Tooltip>

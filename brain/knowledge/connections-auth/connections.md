@@ -28,6 +28,11 @@ Encrypted credential records (OAuth2 tokens, API keys, basic/custom auth, OIDC p
 
 ### Gotchas
 
+- **引擎拿到 `EXPIRED` 或 `ERROR` 的连接都抛 `ConnectionExpiredError`。** `connection-resolver` 以前只认 `ERROR`，`EXPIRED` 出现后带着过期令牌继续调第三方，失败原因变成各家的 401，也建不出 `conn:<externalId>` 问题，运行日志里没有「授权已过期」。改引擎代码后要重新构建 `dist/packages/engine` 并重启 worker 才会生效（沙箱缓存会重装）。
+- **分享对话框的候选人来自 `GET /v1/connections/share-candidates`。** `GET /v1/users` 实际只有租户管理员能调，普通所有者以前打开分享框看到「没有可以添加的成员」；新接口返回本租户的活跃成员（不含自己），支持 `search` 和 `limit`（最多 500）。
+- **`GET /v1/connections/:id` 看不到的连接返回 `404`；`POST /replace` 的源和目标都必须是调用者能用的连接**，否则操作员可以把工作流改指到别人的私有连接。引用面板里的 MCP 服务和环境替换也按成员项目过滤，不可见的只给 `hiddenMcpServiceCount`、`hiddenProjectConfigCount`；删除时仍然按全部引用拦。
+- **连接显示名上限 30 个字符**（`CONNECTION_DISPLAY_NAME_MAX_LENGTH`），创建、重命名、全局连接更新都在 shared 的请求 schema 里校验。
+- **连接列表搜索里的 `%`、`_` 按字面匹配**，用 `likePatternUtils.escape` 转义，否则搜 `_` 会命中所有连接。
 - **`EXPIRED` 和 `ERROR` 是两种坏连接。** 令牌刷新失败（OAuth2 用户类错误、自定义认证刷新错误）记为 `EXPIRED`，重新授权就能恢复；连接校验没通过记为 `ERROR`。两者都不再自动刷新，运行前检查和构建器校验都按「非 ACTIVE」处理。旧数据里已有的 `ERROR` 不会自动改成 `EXPIRED`。
 - **重新授权必须是同一个账号。** `connectionService.upsert` 对已存在的连接，会拿新凭证解析出的 `accountIdentifier` 和库里的比较（忽略大小写和首尾空格），不一致就拒绝，提示新建连接；占位连接（`MISSING`）和任一侧解析不出账号时不拦。账号标识取自 OAuth 令牌里的邮箱或连接器的 `resolveConnectionIdentifier`，连接器没实现的就校验不到。
 - Deleting a PLATFORM-scope connection via the project route is rejected `403` — delete those via platform admin `DELETE /v1/global-connections/:id`.

@@ -21,6 +21,8 @@ Lets platform owners (and project members with `WRITE_INVITATION`) invite users 
 - Invitation link: JWT-signed URL (7-day default) to `<platform-domain>/invitation?token=...&email=...`.
 
 ### Gotchas
+- **`assertPrincipalHasPermissionToProject` 必须把权限传下去。** 以前参数名是 `_permission`，只校验成员身份，查看者能给任意邮箱发「管理员」邀请，已注册用户自动接受，查看者就能把自己升成项目管理员。现在创建/撤销要 `WRITE_INVITATION`，列表要 `READ_INVITATION`，租户邀请列表只有租户管理员能看。
+- 没配 SMTP 时项目邀请的响应里带 `link`，成员设置里的邀请对话框会显示可复制的链接；已注册用户自动接受时没有链接可发。
 - **Auto-accept**: SERVICE-key callers always auto-accept; project invites for already-registered users also auto-accept (added immediately, no click).
 - Project invitations require `projectMustBeTeamType` + `WRITE_INVITATION` + `projectRolesEnabled` plan flag; platform invitations require platform ownership.
 - If SMTP unconfigured, the `link` field is included in the response for the caller to surface manually; if configured, `link` is omitted and email is sent. Auto-accept + SMTP sends a "project member added" notification instead.

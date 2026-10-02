@@ -43,6 +43,22 @@ set `FEMA_DEV_CONNECTORS` in production, unset it to get every built-in connecto
 If you build your own image on top of ours and install system packages, check them
 against Debian 12.
 
+#### Community and support links are hidden by default
+
+The "Help translate" link in the language menu and the support entries in the
+workflow editor header used to be shown on every instance. They point at an
+upstream community that a self-hosted deployment does not run, so they are now
+hidden unless you opt in.
+
+- New variable `FEMA_SHOW_COMMUNITY` (default `false`) controls them.
+- The static page title shown before the app loads is now the neutral
+  `Integration Platform`; the title after load still comes from your tenant
+  appearance settings.
+
+**When is action necessary?**
+
+Only if you want the links back: set `FEMA_SHOW_COMMUNITY=true`.
+
 #### The last of the billing and plan vocabulary is gone
 
 This fork has no editions, plans or credits, but several leftovers from upstream

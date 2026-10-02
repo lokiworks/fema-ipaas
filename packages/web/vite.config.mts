@@ -11,7 +11,7 @@ import customHtmlPlugin from './vite-plugins/html-plugin';
 export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve' || mode === 'development';
 
-  const FEMA_TITLE = 'FEMA Integration Platform';
+  const FEMA_TITLE = 'Integration Platform';
   const FEMA_FAVICON = '/favicon.ico';
 
   return {

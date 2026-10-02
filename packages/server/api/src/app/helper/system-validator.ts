@@ -139,6 +139,7 @@ const systemPropValidators: {
     [AppSystemProp.POSTGRES_IDLE_TIMEOUT_MS]: numberValidator,
     [AppSystemProp.PROJECT_RATE_LIMITER_ENABLED]: booleanValidator,
     [AppSystemProp.QUEUE_UI_ENABLED]: booleanValidator,
+    [AppSystemProp.SHOW_COMMUNITY]: booleanValidator,
     [AppSystemProp.QUEUE_UI_PASSWORD]: stringValidator,
     [AppSystemProp.QUEUE_UI_USERNAME]: stringValidator,
     [AppSystemProp.REDIS_TYPE]: enumValidator(Object.values(RedisType)),

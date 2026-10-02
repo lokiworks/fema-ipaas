@@ -152,6 +152,7 @@ run timeouts, and the network egress posture for user code. Read
 | `FEMA_TRIGGER_TIMEOUT_SECONDS` | Maximum runtime for a trigger's polling, in seconds. | `60` |
 | `FEMA_DEFAULT_CONCURRENT_JOBS_LIMIT` | Default maximum concurrent runs per project. Can be overridden per project in settings. | `5` |
 | `FEMA_PROJECT_RATE_LIMITER_ENABLED` | Enforce per-project rate limits to prevent excessive usage. | `false` |
+| `FEMA_SHOW_COMMUNITY` | Show the "Help translate" link and the support entries that point at an external community. | `false` |
 | `FEMA_NETWORK_MODE` | Egress posture for user code. `STRICT` installs the engine's in-process SSRF guard, blocking outbound connections to private, loopback, link-local, and cloud-metadata IPs across every Node egress path (`axios`, `fetch`, `undici`, raw `http`/`net`). This is best-effort, in-process protection — enforce the real boundary in infrastructure (see [Network Security](/install/architecture/network-security)). `UNRESTRICTED` disables the guard. | `UNRESTRICTED` |
 | `FEMA_SSRF_ALLOW_LIST` | Comma-separated IPs or CIDR ranges that bypass `FEMA_NETWORK_MODE=STRICT`, e.g. `10.0.0.5,10.10.0.0/24`. Only applies when `FEMA_NETWORK_MODE=STRICT`. | `None` |
 

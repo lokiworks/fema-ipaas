@@ -120,7 +120,7 @@ export const flagService = (log: FastifyBaseLogger) => ({
             },
             {
                 id: FlagId.SHOW_COMMUNITY,
-                value: true,
+                value: system.getBoolean(AppSystemProp.SHOW_COMMUNITY) ?? false,
                 created,
                 updated,
             },

@@ -40,7 +40,8 @@ function HomePage() {
   midnight.setHours(0, 0, 0, 0);
   const todayRuns = state.runs.filter((r) => r.kind === 'run' && r.startedAt >= midnight.getTime() && myIds.has(r.projectId));
   const today = runMetrics(todayRuns);
-  const todayFailed = todayRuns.filter((r) => ['failed', 'timeout'].includes(r.status)).sort((a, b) => b.startedAt - a.startedAt);
+  const retriedOk = (r) => issuesChain(state, issuesChainRoot(state, r)).some((x) => x.retryOf && x.status === 'success');
+  const todayFailed = todayRuns.filter((r) => ['failed', 'timeout'].includes(r.status) && !retriedOk(r)).sort((a, b) => b.startedAt - a.startedAt);
   const hourNow = new Date().getHours();
   const hourly = Array.from({ length: Math.max(2, hourNow + 1) }, (_, h) => todayRuns.filter((r) => new Date(r.startedAt).getHours() === h).length);
   const brokenConns = state.connections.filter((c) => c.status !== 'active' && connectionPerm(state, c));

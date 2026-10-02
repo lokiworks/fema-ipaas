@@ -542,7 +542,7 @@ function seedState() {
   const connections = [
     { id: 'c_feishu', name: '飞书 · 星河科技企业自建应用', connector: 'feishu', authType: 'oauth2', scope: 'tenant', projectIds: [], status: 'active', owner: 'u1', shares: [{ userId: 'u2', perm: 'use' }, { userId: 'u4', perm: 'use' }, { userId: 'u3', perm: 'edit' }, { userId: 'u7', perm: 'use' }, { userId: 'u8', perm: 'use' }], account: 'cli_a5f3e8b2c1（星河集成助手）', createdAt: now - 118 * DAY, updatedAt: now - 7 * DAY },
     { id: 'c_beisen', name: '北森 iTalent 生产环境', connector: 'beisen', authType: 'apikey', scope: 'project', projectIds: ['p1'], status: 'active', owner: 'u2', shares: [{ userId: 'u1', perm: 'edit' }, { userId: 'u10', perm: 'use' }], account: 'tenant-80321', createdAt: now - 95 * DAY, updatedAt: now - 30 * DAY },
-    { id: 'c_kingdee', name: '金蝶云星空 · 正式账套', connector: 'kingdee', authType: 'custom', scope: 'project', projectIds: ['p1'], status: 'error', owner: 'u4', shares: [{ userId: 'u1', perm: 'edit' }, { userId: 'u12', perm: 'use' }], account: '账套 100231 · kd_api', createdAt: now - 88 * DAY, updatedAt: now - 17 * MIN, error: '登录失败：用户密码已过期，请重新授权' },
+    { id: 'c_kingdee', name: '金蝶云星空 · 正式账套', connector: 'kingdee', authType: 'custom', scope: 'project', projectIds: ['p1'], status: 'error', owner: 'u4', shares: [{ userId: 'u1', perm: 'edit' }, { userId: 'u12', perm: 'use' }], account: '账套 100231 · kd_api', fieldValues: { site: 'https://k3.xinghe.tech/k3cloud', acct: '100231', username: 'kd_api', appId: '202609_kd01' }, createdAt: now - 88 * DAY, updatedAt: now - 17 * MIN, error: '登录失败：用户密码已过期，请重新授权' },
     { id: 'c_github', name: 'GitHub · xinghe 组织', connector: 'github', authType: 'oauth2', scope: 'tenant', projectIds: [], status: 'active', owner: 'u5', shares: [{ userId: 'u1', perm: 'use' }, { userId: 'u9', perm: 'use' }], account: '@xinghe-bot', createdAt: now - 80 * DAY, updatedAt: now - 12 * DAY },
     { id: 'c_gitlab', name: 'GitLab 自建实例', connector: 'gitlab', authType: 'apikey', scope: 'project', projectIds: ['p2'], status: 'active', owner: 'u5', shares: [{ userId: 'u1', perm: 'use' }, { userId: 'u9', perm: 'use' }], account: 'gitlab.xinghe.tech · ci-bot', createdAt: now - 25 * DAY, updatedAt: now - 25 * DAY },
     { id: 'c_jira', name: 'Jira Cloud', connector: 'jira', authType: 'basic', scope: 'project', projectIds: ['p1', 'p2'], status: 'active', owner: 'u7', shares: [{ userId: 'u1', perm: 'use' }, { userId: 'u9', perm: 'use' }], account: 'it-bot@xinghe.tech', createdAt: now - 70 * DAY, updatedAt: now - 20 * DAY },
@@ -1050,30 +1050,49 @@ function branchDecider(graph, { payload, vars }) {
   };
 }
 
-function resolveRunRefs(value, run) {
+function resolveRunRefs(value, run, outs) {
   if (typeof value === 'string') {
-    return value.replace(/\{\{\s*(config|trigger)\.([^}\s]+)\s*\}\}/g, (m, head, path) => {
+    return value.replace(/\{\{\s*([\w-]+)\.([^}\s]+)\s*\}\}/g, (m, head, path) => {
       if (head === 'config') return run.vars && run.vars[path] !== undefined ? String(run.vars[path]) : m;
-      const hit = path.split('.').reduce((acc, k) => (acc && typeof acc === 'object' ? acc[k] : undefined), run.payload);
-      return hit !== undefined && typeof hit !== 'object' ? String(hit) : m;
+      const root = head === 'trigger' ? run.payload : outs && outs[head];
+      const hit = root === undefined ? undefined : readPath(root, path);
+      return hit !== undefined && hit !== null && typeof hit !== 'object' ? String(hit) : m;
     });
   }
-  if (Array.isArray(value)) return value.map((v) => resolveRunRefs(v, run));
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, resolveRunRefs(v, run)]));
+  if (Array.isArray(value)) return value.map((v) => resolveRunRefs(v, run, outs));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, resolveRunRefs(v, run, outs)]));
   return value;
 }
 
-function runNodeInput(node, run, graph, byId) {
-  if (!Object.values(node.config || {}).some(isMapping)) return resolveRunRefs(Object.fromEntries(Object.entries(node.config || {}).filter(([k]) => !k.startsWith('__'))), run);
+function personalizeSample(value, subs) {
+  if (!subs.length) return value;
+  if (typeof value === 'string') return subs.reduce((acc, [from, to]) => acc.split(from).join(to), value);
+  if (Array.isArray(value)) return value.map((v) => personalizeSample(v, subs));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, personalizeSample(v, subs)]));
+  return value;
+}
+
+function sampleSubstitutions(graph, run) {
+  const base = nodeOutput(graph.trigger);
+  const payload = run.payload;
+  if (!payload || !base || typeof base !== 'object') return [];
+  return Object.entries(payload)
+    .filter(([k, v]) => typeof v === 'string' && typeof base[k] === 'string' && v !== base[k] && String(base[k]).length >= 2)
+    .map(([k]) => [base[k], payload[k]]);
+}
+
+function runNodeInput(node, run, graph, byId, outs) {
+  if (!Object.values(node.config || {}).some(isMapping)) return resolveRunRefs(Object.fromEntries(Object.entries(node.config || {}).filter(([k]) => !k.startsWith('__'))), run, outs);
   const state = typeof Store !== 'undefined' ? Store.get() : null;
   const tables = state ? (state.mappingTables || []).filter((t) => t.projectId === run.projectId) : [];
   const resolve = (head) => {
     if (head === 'config') return run.vars || {};
     if (head === graph.trigger.id) return run.payload || nodeOutput(graph.trigger);
+    if (outs && outs[head] !== undefined) return outs[head];
     return byId[head] ? nodeOutput(byId[head]) : undefined;
   };
   const plain = Object.fromEntries(Object.entries(node.config || {}).filter(([k]) => !k.startsWith('__')).map(([k, v]) => [k, isMapping(v) ? evalMapping(v.$map, { resolve, tables, schema: mappingSchema(node, k) }).value : v]));
-  return resolveRunRefs(plain, run);
+  return resolveRunRefs(plain, run, outs);
 }
 
 function buildRunTrace(run, workflow) {
@@ -1095,6 +1114,8 @@ function buildRunTrace(run, workflow) {
     : -1;
   const reuseUntil = run.startNodeId ? path.findIndex(({ node }) => node.id === run.startNodeId) : -1;
   const byId = Object.fromEntries(allNodes(graph).map((n) => [n.id, n]));
+  const subs = sampleSubstitutions(graph, run);
+  const outs = { [graph.trigger.id]: run.payload || nodeOutput(graph.trigger) };
   let offset = 0;
   return path.map(({ node, meta }, i) => {
     const duration = node.kind === 'trigger' ? 0 : Math.round(60 + rand() * 900);
@@ -1106,8 +1127,10 @@ function buildRunTrace(run, workflow) {
     else if (failIndex >= 0 && i > failIndex) status = 'skipped';
     else if (stopIndex >= 0 && i === stopIndex) status = run.status === 'stopped' ? 'stopped' : run.status;
     else if (stopIndex >= 0 && i > stopIndex) status = 'pending';
-    const input = node.kind === 'trigger' ? (run.payload || null) : runNodeInput(node, run, graph, byId);
-    const output = ['success', 'reused'].includes(status) ? (node.kind === 'trigger' && run.payload ? run.payload : nodeOutput(node)) : null;
+    const input = node.kind === 'trigger' ? (run.payload || null) : runNodeInput(node, run, graph, byId, outs);
+    const sampled = node.kind === 'branch' && meta.branch ? { branch: meta.branch } : personalizeSample(nodeOutput(node), subs);
+    const output = ['success', 'reused'].includes(status) ? (node.kind === 'trigger' && run.payload ? run.payload : sampled) : null;
+    if (output) outs[node.id] = output;
     const error = ['failed', 'timeout'].includes(status)
       ? (run.failure || { code: status === 'timeout' ? 'STEP_TIMEOUT' : 'UPSTREAM_ERROR', message: status === 'timeout' ? '节点执行超过 600 秒，已被终止' : `${node.name} 调用失败：上游返回 422 Unprocessable Entity`, http_status: status === 'timeout' ? null : 422, attempts: 1 })
       : null;

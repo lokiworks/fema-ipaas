@@ -512,6 +512,11 @@ function issuesReplayPlan(state, runIds, { mode, version }) {
     const connFailure = code.startsWith('CONNECTION_');
     const transient = ISSUES_TRANSIENT_HTTP.includes(f.http_status);
     const fixed = wf.updatedAt > target.startedAt && (version === 'latest' || target.version === dep.version);
+    const dataError = f.http_status === 422 || /未审核|不存在|缺少|不匹配/.test(String(f.message || ''));
+    if (dataError && !connFailure) {
+      items.push({ ...base, category: 'stale', reason: '这是目标系统里的数据问题，改工作流不会让结果不同；先在目标系统里处理好，再重跑', outcome: { status: target.status === 'timeout' ? 'timeout' : 'failed', failedNodeId: target.failedNodeId, failure: target.failure } });
+      return;
+    }
     if (connFailure) { items.push({ ...base, category: 'ready', note: '连接已恢复', outcome: { status: 'success' } }); return; }
     if (transient) { items.push({ ...base, category: 'ready', note: `偶发错误（HTTP ${f.http_status}）`, outcome: { status: 'success' } }); return; }
     if (fixed) { items.push({ ...base, category: 'ready', note: `工作流在失败后修改过（${fmt.short(wf.updatedAt)}）`, outcome: { status: 'success' } }); return; }
@@ -531,6 +536,7 @@ function issuesReplayMake(item, { mode, me, at }) {
     startedAt: at, triggerType: ISSUES_REPLAY_MODES[mode].label, retryOf: run.id, retryBy: me,
     ...(mode === 'node' && run.failedNodeId ? { startNodeId: run.failedNodeId } : {}),
     ...(run.payload ? { payload: run.payload } : {}),
+    ...(run.bizKey ? { bizKey: run.bizKey } : {}),
     ...(run.vars ? { vars: run.vars } : {}),
     ...(run.ai && (mode === 'full' || (item.node && ['ai', 'agent'].includes(item.node.kind))) ? { ai: run.ai } : {}),
   };
@@ -1097,7 +1103,11 @@ function IssuesAlertsCard({ issue, state }) {
       <div className="iss-noise-figure"><b>${issue.count}</b><span>次失败</span><${Icon} name="ArrowRight" size=${14} className="muted" /><b>${events.length}</b><span>条告警</span></div>
       <div className="text-xs muted">${events.length
         ? `同一问题在聚合窗口内只通知一次，其余失败合并进已发出的告警${merged > events.length ? `（共合并 ${merged} 次）` : ''}。`
-        : covering.length ? `「${covering[0].name}」覆盖这个问题，但还没有达到通知条件。` : '没有启用的告警策略覆盖这个问题。'}</div>
+        : covering.length
+          ? (covering[0].updatedAt > issue.firstAt
+            ? `「${covering[0].name}」覆盖这个问题，但这个问题在策略生效（${fmt.date(covering[0].updatedAt)}）之前就出现了，没有发出过告警；它复发时才会通知。${issue.assignee ? '' : '它还没有负责人，建议先指派。'}`
+            : `「${covering[0].name}」覆盖这个问题，出现新问题或复发时通知；目前还没有触发。`)
+          : '没有启用的告警策略覆盖这个问题。'}</div>
     </div>
     ${events.length === 0 && covering.length === 0 && html`<${Button} size="sm" icon="Plus" onClick=${() => navigate('/issues/alerts')}>配置告警策略<//>`}
     <div className="iss-alert-list">

@@ -192,14 +192,18 @@ function WorkflowPage({ pid, wid, snapshot, mode, action, node: focusParam, tab:
     setSaving(true);
     Store.set((s) => ({
       ...s,
-      workflows: s.workflows.map((w) => (w.id === stored.id ? withRefs({ ...w, ...patchFn(w), updatedAt: now, draftChanged: true }) : w)),
+      workflows: s.workflows.map((w) => {
+        if (w.id !== stored.id) return w;
+        const next = withRefs({ ...w, ...patchFn(w), updatedAt: now });
+        return { ...next, draftChanged: draftDiffersFromDeployed(s, next) };
+      }),
     }));
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => setSaving(false), 700);
   };
 
   const restore = (graph) => {
-    Store.set((s) => ({ ...s, workflows: s.workflows.map((w) => (w.id === stored.id ? { ...w, trigger: graph.trigger, steps: graph.steps, updatedAt: Date.now(), draftChanged: true } : w)) }));
+    Store.set((s) => ({ ...s, workflows: s.workflows.map((w) => (w.id === stored.id ? { ...w, trigger: graph.trigger, steps: graph.steps, updatedAt: Date.now(), draftChanged: draftDiffersFromDeployed(s, { ...w, trigger: graph.trigger, steps: graph.steps }) } : w)) }));
     lastCommit.current = { key: null, at: 0 };
   };
   const undo = () => {
@@ -260,7 +264,9 @@ function WorkflowPage({ pid, wid, snapshot, mode, action, node: focusParam, tab:
     const node = findNode(stored.steps, id);
     if (!node) return;
     const inner = countDescendants(node);
-    const ok = await confirmDialog({ title: '确定删除此节点？', content: inner ? `「${node.name}」及其中的 ${inner} 个节点会一起删除，可以用撤销恢复。` : `「${node.name}」会从工作流中移除，可以用撤销恢复。`, danger: true, okText: '删除' });
+    const refs = referencesTo({ wf: stored, id });
+    const refText = refs.length ? `后面有 ${refs.length} 个节点（${refs.slice(0, 3).map((n) => `「${n.name}」`).join('')}${refs.length > 3 ? ' 等' : ''}）引用了它的出参，删除后这些引用会失效、校验会报错。` : '';
+    const ok = await confirmDialog({ title: '确定删除此节点？', content: `${inner ? `「${node.name}」及其中的 ${inner} 个节点会一起删除，可以用撤销恢复。` : `「${node.name}」会从工作流中移除，可以用撤销恢复。`}${refText}`, danger: true, okText: '删除' });
     if (!ok) return;
     commit((w) => ({ steps: removeFromSteps(w.steps, id) }));
     if (selectedId === id) setSelectedId(null);
@@ -648,7 +654,7 @@ function WorkflowPage({ pid, wid, snapshot, mode, action, node: focusParam, tab:
             onClose=${() => setSide(null)}
             onLocate=${(id, tab) => { if (findInWorkflow(stored, id)) focusNode(id, { tab }); else toast.info('该节点已不在当前工作流中'); }}
             onPreview=${(ids) => { setPreviewIds(ids && ids.length ? ids : null); if (ids && ids.length) setFocus((f) => ({ id: ids[0], tick: f.tick + 1 })); }}
-            onEnterEdit=${() => navigate(`/integration/${pid}/wf/${wid}?mode=edit`)}
+            onEnterEdit=${() => { if (lockedBy) { toast.warning(`${personName(lockedBy.userId)} 正在编辑，等对方完成后再应用；项目所有者可以在页面顶部接管编辑`); return; } navigate(`/integration/${pid}/wf/${wid}?mode=edit`); }}
             onApply=${(patch, target) => {
               commit((w) => patch(w));
               toast.success('已应用修改，可以撤销');
@@ -882,6 +888,20 @@ function SidePanel({ kind, wf, state, refs, errors, warnings, records, searchQ, 
   </div>`;
 }
 
+function draftDiffersFromDeployed(state, wf) {
+  const staged = isStagedProject(state, wf.projectId);
+  const dep = deploymentOf(wf, staged ? 'test' : 'prod');
+  const base = dep && state.versions.find((v) => v.workflowId === wf.id && v.version === dep.version);
+  if (!base || !base.snapshot) return true;
+  return JSON.stringify({ trigger: wf.trigger, steps: wf.steps }) !== JSON.stringify(base.snapshot);
+}
+
+function referencesTo({ wf, id }) {
+  const removed = new Set(allNodes({ trigger: wf.trigger, steps: [findNode(wf.steps, id)] }).map((n) => n.id));
+  const re = new RegExp(`\\{\\{\\s*${id}[.\\[]`);
+  return allNodes(wf).filter((n) => !removed.has(n.id) && re.test(JSON.stringify([n.config || {}, n.branches || [], n.conditions || []])));
+}
+
 function writeNodesOf({ wf, state, env }) {
   return allNodes(wf).filter((n) => n.kind === 'action' && n.connectionId && !/^(get|query|search|list|read|bitable_search)/.test(n.op || '')).map((n) => {
     const swapped = Boolean(env && (env.connectionMap || {})[n.connectionId]);
@@ -897,7 +917,7 @@ function debugRecentEvents(wf, state) {
   const table = (state.mappingTables || []).find((t) => t.projectId === wf.projectId && t.keyLabel.includes('北森部门'));
   const missingDept = (d) => Boolean(table && d && !table.rows.some((r) => r.k === d));
   if (base.employee_id !== undefined) {
-    return [base, ...DEBUG_PEOPLE.map(([id, name, mobile, department, position]) => ({ ...base, employee_id: id, name, ...(base.mobile !== undefined ? { mobile } : {}), ...(base.department !== undefined ? { department } : {}), ...(base.position !== undefined ? { position } : {}) }))]
+    return [base, ...DEBUG_PEOPLE.map(([id, name, mobile, department, position, email]) => ({ ...base, employee_id: id, name, ...(base.email !== undefined ? { email } : {}), ...(base.mobile !== undefined ? { mobile } : {}), ...(base.department !== undefined ? { department } : {}), ...(base.position !== undefined ? { position } : {}) }))]
       .map((p, i) => ({ key: p.employee_id, title: `${p.name} · ${p.employee_id}`, sub: [p.department, p.position].filter(Boolean).join(' · '), at: Date.now() - (i * 7 + 3) * HOUR, tag: missingDept(p.department) ? `映射表「${table.name}」里没有这个部门` : base.mobile !== undefined && !p.mobile ? '没有手机号' : '', payload: p }));
   }
   if (base.instance_code !== undefined) {
@@ -1222,7 +1242,7 @@ function VersionsDrawer({ open, onClose, wf, state, pid, canEdit }) {
         `会把 v${r.version} 的内容重新发布为 v${next}，${staged ? '同时部署到测试环境和生产环境' : '立即替换线上版本'}。历史版本不会被改写。`,
         wf.draftChanged ? `草稿里还没发布的修改会被 v${r.version} 的内容覆盖。` : '',
         pending.length ? `待审批的推广申请会自动撤回。` : '',
-        approvers.length ? `紧急回滚不需要审批，会通知审批人${approvers.map((u) => personName(u)).join('、')}。` : '',
+        approvers.filter((u) => u !== state.me).length ? `紧急回滚不需要审批，会通知审批人${approvers.filter((u) => u !== state.me).map((u) => personName(u)).join('、')}。` : approvers.length ? '紧急回滚不需要审批；你就是审批人，不会再通知别人。' : '',
       ].filter(Boolean).join(''),
       okText: '回滚',
     });
@@ -1372,7 +1392,7 @@ function GenerateTemplateModal({ open, onClose, wf, state }) {
 }
 
 const DEBUG_PEOPLE = [
-  ['XH20260921', '林雨桐', '13811110001', '人力资源部', 'HR 专员'],
-  ['XH20260920', '高远', '13811110003', '深圳研发中心-平台组', '后端工程师'],
-  ['XH20260919', '陈一鸣', '', '销售运营部', '客户经理'],
+  ['XH20260921', '林雨桐', '13811110001', '人力资源部', 'HR 专员', 'linyutong@xinghe.tech'],
+  ['XH20260920', '高远', '13811110003', '深圳研发中心-平台组', '后端工程师', 'gaoyuan@xinghe.tech'],
+  ['XH20260919', '陈一鸣', '', '销售运营部', '客户经理', 'chenyiming@xinghe.tech'],
 ];

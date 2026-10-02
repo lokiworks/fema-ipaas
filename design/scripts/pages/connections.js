@@ -12,7 +12,23 @@ function connsReferences(state, connId) {
     workflows: connectionUsage(state, connId),
     mcp: (state.mcpServices || []).filter((s) => Object.values(s.fixedConnections || {}).includes(connId)),
     variables: (state.variables || []).filter((v) => v.type === 'connection' && Object.values(v.values || {}).includes(connId)),
+    envs: (state.configGroups || []).filter((g) => g.key && Object.entries(g.connectionMap || {}).some(([from, to]) => from === connId || to === connId)).map((g) => ({ ...g, project: (state.projects.find((p) => p.id === g.projectId) || {}).name || '', asTest: Object.values(g.connectionMap || {}).includes(connId) })),
   };
+}
+
+function connsRefTotal(refs) {
+  return refs.workflows.length + refs.mcp.length + refs.variables.length + refs.envs.length;
+}
+
+function connsRemindOwner(conn) {
+  const s = Store.get();
+  Store.set((st) => ({
+    ...st,
+    connections: st.connections.map((x) => (x.id === conn.id ? { ...x, remindedAt: Date.now() } : x)),
+    notifications: [{ id: uid('nt'), type: 'connection', title: `${personName(s.me)} 请你重新授权「${conn.name}」`, desc: `${conn.error || CONN_STATUS[conn.status].reason}，${connectionUsage(st, conn.id).length} 个工作流受影响`, time: Date.now(), read: false, to: `/connections?id=${conn.id}`, userId: conn.owner }, ...(st.notifications || [])],
+  }));
+  addAudit('提醒所有者重新授权', conn.name, null);
+  toast.success(`已提醒${personName(conn.owner)}，对方会在通知里看到`);
 }
 
 function connsIsAdmin(state) {
@@ -67,6 +83,7 @@ function connsDirectOauth(conn) {
 
 function connsInitialFields(c, existing) {
   if (!c) return {};
+  if (existing && existing.fieldValues) return { ...(CONNS_DB_PORT[c.id] ? { port: CONNS_DB_PORT[c.id], ssl: true } : {}), ...existing.fieldValues };
   if (CONNS_DB_PORT[c.id]) return { port: CONNS_DB_PORT[c.id], ssl: true };
   if (c.id === 'feishu' && existing) {
     const app = CONNS_FEISHU_APPS.find((a) => (existing.account || '').includes(a.value) || (existing.account || '').includes(a.label));
@@ -196,7 +213,9 @@ function ConnsScopeCell({ conn }) {
 function ConnsUsageCell({ conn }) {
   const state = useStore();
   const used = connectionUsage(state, conn.id);
-  if (!used.length) return html`<span className="muted">未引用</span>`;
+  const refs = connsReferences(state, conn.id);
+  if (!used.length && connsRefTotal(refs) === 0) return html`<span className="muted">未引用</span>`;
+  if (!used.length) return html`<button type="button" className="link conns-usage-link" onClick=${(e) => { e.stopPropagation(); navigate(`/connections?id=${conn.id}`); }}>${refs.envs.length ? '环境替换' : refs.mcp.length ? 'MCP 服务' : '项目配置'}引用</button>`;
   return html`<span className="conns-usage" onClick=${(e) => e.stopPropagation()}>
     <${Popover} width=${300} trigger=${html`<button type="button" className="link conns-usage-link">${used.length} 个工作流</button>`}>
       ${({ close }) => html`<div className="conns-usage-pop">
@@ -267,7 +286,7 @@ function ConnectionsPage() {
     const perm = connectionPerm(state, c);
     if (needle && !`${c.name} ${c.account || ''} ${connsConnectorName(c.connector)}`.toLowerCase().includes(needle)) return false;
     if (app && c.connector !== app) return false;
-    if (status && (status === 'active') !== (c.status === 'active')) return false;
+    if (status && (status === 'broken' ? c.status === 'active' : c.status !== status)) return false;
     if (project && !connAvailableIn(c, project)) return false;
     if (owned === 'mine' && perm !== 'owner') return false;
     if (owned === 'shared' && perm === 'owner') return false;
@@ -296,6 +315,23 @@ function ConnectionsPage() {
     if (connectionPerm(s, c) !== 'owner') { toast.error('只有所有者可以删除连接'); return; }
     const refs = connsReferences(s, c.id);
     const names = refs.workflows.slice(0, 3).map((w) => `「${w.name}」`).join('');
+    if (refs.workflows.length || refs.mcp.length || refs.envs.length) {
+      const goto = await confirmDialog({
+        title: `不能删除「${c.name}」`,
+        content: html`<div>
+          <div>还有地方在用它，删除会让这些地方直接失效。先把它们换成别的连接：</div>
+          <ul className="conns-consequences">
+            ${refs.workflows.length > 0 && html`<li><b>${refs.workflows.length}</b> 个工作流（${names}${refs.workflows.length > 3 ? ' 等' : ''}）</li>`}
+            ${refs.mcp.length > 0 && html`<li>${refs.mcp.length} 个 MCP 服务把它设为固定连接</li>`}
+            ${refs.envs.map((g) => html`<li key=${g.id}>项目「${g.project}」${g.name}的连接替换${g.asTest ? '用它作为替换目标' : '替换了它'}</li>`)}
+          </ul>
+        </div>`,
+        okText: '查看引用',
+        cancelText: '知道了',
+      });
+      if (goto) navigate(`/connections?id=${c.id}`);
+      return;
+    }
     const ok = await confirmDialog({
       title: `删除连接「${c.name}」？`,
       content: html`<div>
@@ -379,7 +415,7 @@ function ConnectionsPage() {
     <div className="toolbar">
       <${SearchInput} value=${q} onChange=${setQ} placeholder="搜索名称、账号或连接器" />
       <${Select} width=${160} clearable value=${app} onChange=${setApp} placeholder="连接的应用" options=${appOptions} />
-      <${Select} width=${120} clearable value=${status} onChange=${setStatus} placeholder="状态" options=${[{ value: 'active', label: '已连接' }, { value: 'broken', label: '未连接' }]} />
+      <${Select} width=${120} clearable value=${status} onChange=${setStatus} placeholder="状态" options=${[{ value: 'active', label: '已连接' }, { value: 'expired', label: '已过期' }, { value: 'error', label: '异常' }]} />
       <${Select} width=${140} clearable value=${project} onChange=${setProject} placeholder="可用项目" options=${myProjects.map((p) => ({ value: p.id, label: p.name }))} />
       <span className="spacer" />
       <${Segmented} value=${owned} onChange=${setOwned} options=${[{ value: 'all', label: '全部' }, { value: 'mine', label: '我创建的' }, { value: 'shared', label: '共享给我的' }]} />
@@ -441,7 +477,9 @@ function ConnectionDetailDrawer({ connId, onClose, onAction }) {
         action=${manage && c ? html`<${Button} size="xs" variant="primary" onClick=${() => onAction(conn.pending ? 'test' : 'reauth', conn)}>${conn.pending ? '测试连接' : '重新授权'}<//>` : null}
       >
         ${conn.error || '连接当前不可用'}
-        ${!manage && html`<div className="conns-alert-note">你只能使用这个连接，需要所有者${personName(conn.owner)}或有编辑权限的成员重新授权。</div>`}
+        ${!manage && html`<div className="conns-alert-note">你只能使用这个连接，需要所有者${personName(conn.owner)}或有编辑权限的成员重新授权。
+          <div style=${{ marginTop: 8 }}><${Button} size="xs" variant="primary" icon="BellRing" disabled=${Boolean(conn.remindedAt && Date.now() - conn.remindedAt < 6 * HOUR)} onClick=${() => connsRemindOwner(conn)}>${conn.remindedAt && Date.now() - conn.remindedAt < 6 * HOUR ? `已提醒${personName(conn.owner)}` : `提醒${personName(conn.owner)}重新授权`}<//></div>
+        </div>`}
         ${manage && !c && html`<div className="conns-alert-note">连接器已下架，无法重新授权。</div>`}
       <//>
     </div>`}
@@ -471,8 +509,9 @@ function ConnectionDetailDrawer({ connId, onClose, onAction }) {
     </div>
     <div className="conns-section">
       <div className="conns-section-title">被引用<span className="conns-count-badge">${refs.workflows.length}</span></div>
+      ${refs.envs.length > 0 && html`<div className="conns-empty-line">${refs.envs.map((g) => `项目「${g.project}」${g.name}的连接替换${g.asTest ? '把它作为替换目标' : '替换了它'}`).join('；')}</div>`}
       ${refs.workflows.length === 0
-        ? html`<div className="conns-empty-line">还没有工作流使用这个连接</div>`
+        ? html`<div className="conns-empty-line">${refs.envs.length ? '没有工作流直接使用这个连接' : '还没有工作流使用这个连接'}</div>`
         : html`<div className="conns-ref-list">${refs.workflows.map((w) => {
           const allowed = Boolean(projectRole(state, w.projectId));
           const p = state.projects.find((x) => x.id === w.projectId);
@@ -624,6 +663,7 @@ function NewConnectionModal({ open, onClose, presetConnector, presetProject, onC
     setOauth(false);
     onClose();
   };
+  const plainFields = () => (spec && spec.fields.length ? Object.fromEntries(spec.fields.filter((f) => !f.secret && fields[f.key] !== undefined).map((f) => [f.key, fields[f.key]])) : null);
   const finish = (connected) => {
     const now = Date.now();
     const scopePatch = { scope, projectIds: scope === 'tenant' ? [] : projects };
@@ -634,7 +674,7 @@ function NewConnectionModal({ open, onClose, presetConnector, presetProject, onC
         close();
         return;
       }
-      const credPatch = connected ? { status: 'active', error: null, pending: false, account: draftAccount() || live.account, authType: draftAuthType() } : {};
+      const credPatch = connected ? { status: 'active', error: null, pending: false, account: draftAccount() || live.account, authType: draftAuthType(), ...(plainFields() ? { fieldValues: plainFields() } : {}) } : {};
       patchList('connections', existing.id, { ...(reauth ? {} : { name: name.trim(), ...scopePatch }), ...credPatch, updatedAt: now });
       addAudit(reauth ? '重新授权连接' : '更新连接', reauth ? live.name : name.trim(), null);
       toast.success(reauth ? '重新授权成功，连接已恢复' : connected ? '已保存，连接正常' : '已保存');
@@ -651,6 +691,7 @@ function NewConnectionModal({ open, onClose, presetConnector, presetProject, onC
       owner: state.me,
       shares: [],
       account: draftAccount(),
+      ...(plainFields() ? { fieldValues: plainFields() } : {}),
       createdAt: now,
       updatedAt: now,
       error: connected ? null : usesOauth ? '尚未完成授权，请点击「重新授权」完成连接' : '尚未测试连接，点击「测试连接」验证后即可使用',
@@ -683,6 +724,11 @@ function NewConnectionModal({ open, onClose, presetConnector, presetProject, onC
     setLoading(true);
     timer.current = setTimeout(() => {
       setLoading(false);
+      const changed = reauth && existing && existing.fieldValues && spec ? spec.fields.filter((f) => !f.secret && f.type !== 'switch' && connsTrim(fields[f.key]) !== connsTrim(existing.fieldValues[f.key])).map((f) => f.label) : [];
+      if (changed.length) {
+        setError(`重新授权只更新凭证，不能改${changed.join('、')}。要换账号或服务器，请新建一个连接。`);
+        return;
+      }
       const secrets = [fields.apiKey, fields.password, fields.appSecret, fields.clientSecret, fields.consumerSecret, fields.tokenSecret];
       if (secrets.some((x) => /wrong/i.test(connsTrim(x)))) {
         setError(kind === 'feishu' ? '{"code":99991663,"msg":"app secret invalid","log_id":"20260925104522A1B2C3"}' : '{"status":401,"error":"invalid_credentials","message":"认证信息无效"}');

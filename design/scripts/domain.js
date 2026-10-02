@@ -592,7 +592,7 @@ function WorkflowStatusTag({ wf, size }) {
 
 const CONN_STATUS = {
   active: { label: '已连接', tone: 'success', reason: '' },
-  expired: { label: '未连接', tone: 'warning', reason: '授权已过期' },
+  expired: { label: '已过期', tone: 'warning', reason: '授权已过期' },
   error: { label: '未连接', tone: 'danger', reason: '连接异常' },
 };
 

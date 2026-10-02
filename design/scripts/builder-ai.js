@@ -7,7 +7,7 @@ function recordAiUsage({ source, model, input, output, projectId, workflowId }) 
 }
 
 function isWriteOp(op) {
-  return /^(create|update|delete|remove|send|submit|save|put|insert|execute|call|approve|reply|post|add|set|robot)/i.test(String(op || ''));
+  return /^(create|update|delete|remove|send|submit|save|put|insert|execute|call|approve|reply|post|add|set|robot|freeze|disable|bitable_(create|update|delete))/i.test(String(op || ''));
 }
 
 function modelLabel(value) {

@@ -33,6 +33,7 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { usePublishGuard } from './publish-guard';
+import { useDraftChanged } from './use-draft-changed';
 
 export const BuilderPublishSection = () => {
   const { project } = projectCollectionUtils.useCurrentProject();
@@ -73,6 +74,8 @@ function SingleEnvironmentPublishSection() {
   const guard = usePublishGuard({
     lockedByName: editLockHolder?.userDisplayName ?? null,
   });
+  const draftChanged = useDraftChanged();
+  const hasNoChanges = draftChanged === false;
   const canPublish = useCanPublish({
     workflowVersion,
     isPublishing,
@@ -132,6 +135,7 @@ function SingleEnvironmentPublishSection() {
     isDiscardingChanges,
     isPublishing,
     isSaving,
+    hasNoChanges,
   });
   const canDiscard =
     !isNil(workflow.publishedVersionId) &&
@@ -165,7 +169,12 @@ function SingleEnvironmentPublishSection() {
               loading={isSaving}
               name="Publish"
               onClick={() => guard.run(() => publish())}
-              disabled={!isValid || isBusy || !isNil(guard.blockedReason)}
+              disabled={
+                !isValid ||
+                isBusy ||
+                hasNoChanges ||
+                !isNil(guard.blockedReason)
+              }
             >
               {t('Publish')}
             </Button>
@@ -175,6 +184,10 @@ function SingleEnvironmentPublishSection() {
           <TooltipContent>{t('Saving...')}</TooltipContent>
         ) : !isNil(guard.blockedReason) ? (
           <TooltipContent>{guard.blockedReason}</TooltipContent>
+        ) : hasNoChanges ? (
+          <TooltipContent>
+            {t('Nothing to publish, the live version is already up to date')}
+          </TooltipContent>
         ) : (
           !isValid && (
             <TooltipContent>{t('You have incomplete steps')}</TooltipContent>
@@ -414,10 +427,12 @@ function pickStatusText({
   isDiscardingChanges,
   isPublishing,
   isSaving,
+  hasNoChanges,
 }: {
   isDiscardingChanges: boolean;
   isPublishing: boolean;
   isSaving: boolean;
+  hasNoChanges: boolean;
 }) {
   if (isSaving) {
     return t('Saving...');
@@ -428,7 +443,7 @@ function pickStatusText({
   if (isPublishing) {
     return t('Publishing...');
   }
-  return t('Unpublished changes');
+  return hasNoChanges ? t('No unpublished changes') : t('Unpublished changes');
 }
 
 const DEPLOYED_STATUS_LABELS: Record<

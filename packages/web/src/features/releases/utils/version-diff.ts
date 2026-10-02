@@ -1,8 +1,31 @@
 import {
   WorkflowAction,
   WorkflowTrigger,
+  WorkflowVersion,
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
+
+function hasChanges({
+  before,
+  after,
+}: {
+  before: WorkflowVersion;
+  after: WorkflowVersion;
+}): boolean {
+  if (before.displayName !== after.displayName) {
+    return true;
+  }
+  const beforeNames = stepNames(before.trigger);
+  const afterNames = stepNames(after.trigger);
+  if (beforeNames.join('|') !== afterNames.join('|')) {
+    return true;
+  }
+  return diffSteps({ before: before.trigger, after: after.trigger }).length > 0;
+}
+
+function stepNames(trigger: WorkflowTrigger): string[] {
+  return workflowStructureUtil.getAllSteps(trigger).map((step) => step.name);
+}
 
 function diffSteps({
   before,
@@ -130,6 +153,7 @@ export enum StepChangeKind {
 }
 
 export const versionDiff = {
+  hasChanges,
   diffSteps,
   fieldChanges,
 };

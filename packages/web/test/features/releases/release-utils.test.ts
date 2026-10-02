@@ -7,6 +7,8 @@ import {
   UserStatus,
   WorkflowActionType,
   WorkflowTriggerType,
+  WorkflowVersion,
+  WorkflowVersionState,
 } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
@@ -83,6 +85,87 @@ describe('versionDiff.diffSteps', () => {
       changes.every((change) => change.kind === StepChangeKind.ADDED),
     ).toBe(true);
     expect(changes).toHaveLength(2);
+  });
+});
+
+const versionWith = ({
+  displayName = 'Onboarding',
+  trigger,
+}: {
+  displayName?: string;
+  trigger: EmptyTrigger;
+}): WorkflowVersion => ({
+  id: 'v1',
+  created: '2026-01-01T00:00:00.000Z',
+  updated: '2026-01-01T00:00:00.000Z',
+  workflowId: 'wf',
+  displayName,
+  trigger,
+  agentIds: [],
+  connectionIds: [],
+  state: WorkflowVersionState.DRAFT,
+  valid: true,
+  notes: [],
+  schemaVersion: null,
+  backupFiles: null,
+});
+
+describe('versionDiff.hasChanges', () => {
+  const published = versionWith({
+    trigger: triggerWith(codeStep({ name: 'step_1', code: 'a' })),
+  });
+
+  it('is false when the draft only differs in test data or timestamps', () => {
+    const draft = versionWith({
+      trigger: {
+        ...triggerWith(codeStep({ name: 'step_1', code: 'a' })),
+        lastUpdatedDate: '2026-02-02T00:00:00.000Z',
+      },
+    });
+    expect(versionDiff.hasChanges({ before: published, after: draft })).toBe(
+      false,
+    );
+  });
+
+  it('is true when a step was edited', () => {
+    const draft = versionWith({
+      trigger: triggerWith(codeStep({ name: 'step_1', code: 'b' })),
+    });
+    expect(versionDiff.hasChanges({ before: published, after: draft })).toBe(
+      true,
+    );
+  });
+
+  it('is true when the workflow was renamed', () => {
+    const draft = versionWith({
+      displayName: 'Onboarding v2',
+      trigger: triggerWith(codeStep({ name: 'step_1', code: 'a' })),
+    });
+    expect(versionDiff.hasChanges({ before: published, after: draft })).toBe(
+      true,
+    );
+  });
+
+  it('is true when steps only changed order', () => {
+    const before = versionWith({
+      trigger: triggerWith(
+        codeStep({
+          name: 'step_1',
+          code: 'a',
+          nextAction: codeStep({ name: 'step_2', code: 'b' }),
+        }),
+      ),
+    });
+    const after = versionWith({
+      trigger: triggerWith(
+        codeStep({
+          name: 'step_2',
+          code: 'b',
+          nextAction: codeStep({ name: 'step_1', code: 'a' }),
+        }),
+      ),
+    });
+    expect(versionDiff.hasChanges({ before, after })).toBe(true);
   });
 });
 

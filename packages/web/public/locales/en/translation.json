@@ -3149,6 +3149,7 @@
   "{ref} uses a loop variable outside the loop": "{ref} uses a loop variable outside the loop",
   "Project config {name} does not exist": "Project config {name} does not exist",
   "AI-generated step not confirmed": "AI-generated step not confirmed",
+  "Nothing to publish, the live version is already up to date": "Nothing to publish, the live version is already up to date",
   "Run every matching branch?": "Run every matching branch?",
   "With {count} branches, one record can match several of them and each matching branch runs. If those branches write to the same system, the same person may be written more than once. The default branch still runs only when no other branch matches.": "With {count} branches, one record can match several of them and each matching branch runs. If those branches write to the same system, the same person may be written more than once. The default branch still runs only when no other branch matches.",
   "Run every matching branch": "Run every matching branch",

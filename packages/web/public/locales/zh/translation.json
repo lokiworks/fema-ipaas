@@ -3149,6 +3149,7 @@
   "{ref} uses a loop variable outside the loop": "{ref} 在循环外使用了循环变量",
   "Project config {name} does not exist": "项目配置 {name} 不存在",
   "AI-generated step not confirmed": "AI 生成的节点未确认",
+  "Nothing to publish, the live version is already up to date": "没有可发布的修改，线上已是最新版本",
   "Run every matching branch?": "确定让每个命中的分支都执行？",
   "With {count} branches, one record can match several of them and each matching branch runs. If those branches write to the same system, the same person may be written more than once. The default branch still runs only when no other branch matches.": "现在有 {count} 个条件分支，同一条记录可能同时命中多个，命中的分支都会执行。这些分支如果写同一个系统，同一个人可能被写多次。默认分支仍然只在其他分支都没命中时才执行。",
   "Run every matching branch": "每个命中的分支都执行",

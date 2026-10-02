@@ -338,7 +338,7 @@ function parseLabelFromMention(
     const name = path[0] ?? '';
     const displayName = variableByName?.get(name) ?? name;
     return {
-      displayText: `Variable · ${displayName}`,
+      displayText: `${t('Variable')} · ${displayName}`,
       serverValue: mention,
       logoUrl: undefined,
       isVariable: true,

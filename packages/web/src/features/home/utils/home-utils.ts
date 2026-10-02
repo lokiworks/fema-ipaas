@@ -1,5 +1,6 @@
 import {
   DefaultProjectRole,
+  ExecutionStatus,
   FAILED_STATES,
   HOME_HOURS_PER_DAY,
   ProjectDirectoryItem,
@@ -103,7 +104,7 @@ function runsHref({
 }): string {
   const params = new URLSearchParams();
   if (failedOnly) {
-    FAILED_STATES.forEach((status) => params.append('status', status));
+    HOME_FAILED_STATUSES.forEach((status) => params.append('status', status));
   }
   params.set('createdAfter', since);
   return `/projects/${projectId}/runs?${params.toString()}`;
@@ -160,6 +161,10 @@ function nextBatch({
 }
 
 const MS_PER_HOUR = 60 * 60 * 1000;
+const HOME_FAILED_STATUSES: ExecutionStatus[] = [
+  ...FAILED_STATES,
+  ExecutionStatus.LOG_SIZE_EXCEEDED,
+];
 const MIN_VISIBLE_HOURS = 2;
 
 export const homeUtils = {

@@ -295,6 +295,7 @@ function useEncryptionStatus() {
   return useQuery({
     queryKey: tenantAccessKeys.encryption,
     queryFn: () => tenantAccessApi.getEncryptionStatus(),
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
   });
 }
 

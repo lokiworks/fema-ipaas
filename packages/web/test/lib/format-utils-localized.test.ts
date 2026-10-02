@@ -2,7 +2,15 @@ import { readFileSync } from 'fs';
 import path from 'path';
 
 import i18n from 'i18next';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 import { formatUtils } from '@/lib/format-utils';
 

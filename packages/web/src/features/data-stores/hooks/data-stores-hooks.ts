@@ -30,6 +30,7 @@ function useRecords({ id, search }: { id: string; search: string }) {
     queryKey: [DATA_STORES_KEY, 'records', id, search],
     queryFn: () => dataStoresApi.listRecords({ id, search }),
     placeholderData: keepPreviousData,
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
   });
 }
 

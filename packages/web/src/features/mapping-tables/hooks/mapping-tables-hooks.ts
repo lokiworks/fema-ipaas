@@ -23,6 +23,7 @@ function useMappingTable(id: string | null) {
     queryKey: [MAPPING_TABLES_KEY, 'one', id],
     queryFn: () => mappingTablesApi.get(id!),
     enabled: !!id,
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
   });
 }
 

@@ -54,7 +54,10 @@ describe('api.extractServerErrorMessage', () => {
   it('prefers the message the server attached to the error', () => {
     const error = axiosError({
       status: 400,
-      data: { code: ErrorCode.VALIDATION, params: { message: 'Name is taken' } },
+      data: {
+        code: ErrorCode.VALIDATION,
+        params: { message: 'Name is taken' },
+      },
     });
     expect(api.extractServerErrorMessage(error, 'fallback')).toBe(
       'Name is taken',

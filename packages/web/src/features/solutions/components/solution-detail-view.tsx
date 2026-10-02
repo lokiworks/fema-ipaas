@@ -273,11 +273,13 @@ function ConfigRow({ item }: { item: SolutionConfigItem }) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-sm font-medium">{item.label}</span>
-      <span className="text-xs text-muted-foreground">
-        {t('Default: {value}', {
-          value: defaultOption?.label ?? item.defaultValue,
-        })}
-      </span>
+      {item.defaultValue.length > 0 && (
+        <span className="text-xs text-muted-foreground">
+          {t('Default: {value}', {
+            value: defaultOption?.label ?? item.defaultValue,
+          })}
+        </span>
+      )}
     </div>
   );
 }

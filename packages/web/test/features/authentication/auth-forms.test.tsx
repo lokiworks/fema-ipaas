@@ -18,11 +18,14 @@ declare global {
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const mocks = vi.hoisted(() => ({
-  signIn: vi.fn(),
-  sendOtpEmail: vi.fn(),
-  flags: {} as Record<string, unknown>,
-}));
+const mocks = vi.hoisted(() => {
+  const flags: Record<string, unknown> = {};
+  return {
+    signIn: vi.fn(),
+    sendOtpEmail: vi.fn(),
+    flags,
+  };
+});
 
 vi.mock('@/api/authentication-api', () => ({
   authenticationApi: {
@@ -80,6 +83,10 @@ async function type({ selector, value }: { selector: string; value: string }) {
   });
 }
 
+function pageText() {
+  return container.textContent ?? '';
+}
+
 async function clickButton(label: string) {
   const button = [...container.querySelectorAll('button')].find((candidate) =>
     candidate.textContent?.includes(label),
@@ -114,11 +121,10 @@ describe('auth forms', () => {
       await type({ selector: '#email', value: 'not-an-email' });
       await clickButton('Sign in');
 
-      const text = container.textContent ?? '';
-      expect(text).toContain('Email is invalid');
-      expect(text).toContain('Password is required');
-      expect(text).not.toContain('must match pattern');
-      expect(text).not.toContain('Too small');
+      expect(pageText()).toContain('Email is invalid');
+      expect(pageText()).toContain('Password is required');
+      expect(pageText()).not.toContain('must match pattern');
+      expect(pageText()).not.toContain('Too small');
       expect(mocks.signIn).not.toHaveBeenCalled();
     });
 
@@ -142,9 +148,9 @@ describe('auth forms', () => {
     it('tells the user to ask an administrator when email delivery is not configured', async () => {
       await render(<ResetPasswordForm />);
 
-      expect(container.textContent).toContain('Email is not set up');
+      expect(pageText()).toContain('Email is not set up');
       expect(container.querySelector('#email')).toBeNull();
-      expect(container.textContent).not.toContain('If the user exists');
+      expect(pageText()).not.toContain('If the user exists');
     });
 
     it('asks for the email in words when the field is left empty', async () => {
@@ -153,8 +159,8 @@ describe('auth forms', () => {
 
       await clickButton('Send Password Reset Link');
 
-      expect(container.textContent).toContain('Please enter your email');
-      expect(container.textContent).not.toContain('expected string');
+      expect(pageText()).toContain('Please enter your email');
+      expect(pageText()).not.toContain('expected string');
       expect(mocks.sendOtpEmail).not.toHaveBeenCalled();
     });
 

@@ -48,7 +48,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { DataErasureSection, privacyHooks } from '@/features/privacy';
 
 export function PrivacyPage() {
-  const { data: settings, isLoading } = privacyHooks.useSettings();
+  const { data: settings, isLoading } = privacyHooks.useSettings({
+    showErrorDialog: true,
+  });
   return (
     <CenteredPage
       title={t('Data and privacy')}

@@ -234,7 +234,7 @@ const ImportWorkflowDialog = (
       }}
     >
       <DialogTrigger asChild>{props.children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" aria-describedby={undefined}>
         <DialogHeader>
           <div className="flex flex-col gap-3">
             <DialogTitle>{t('Import Workflow')}</DialogTitle>

@@ -82,10 +82,7 @@ export function HomeAttentionCard({
             iconClassName="text-warning"
             title={connection.displayName}
             subtitle={t('{reason}, {count} workflows affected', {
-              reason:
-                connection.status === ConnectionStatus.MISSING
-                  ? t('Authorization expired')
-                  : t('Connection error'),
+              reason: brokenReason(connection.status),
               count: connection.affectedWorkflowCount,
             })}
             to={`/projects/${
@@ -104,4 +101,16 @@ export function HomeAttentionCard({
       </div>
     </SideCard>
   );
+}
+
+function brokenReason(status: ConnectionStatus): string {
+  switch (status) {
+    case ConnectionStatus.EXPIRED:
+      return t('Authorization expired');
+    case ConnectionStatus.MISSING:
+      return t('Not connected');
+    case ConnectionStatus.ERROR:
+    case ConnectionStatus.ACTIVE:
+      return t('Connection error');
+  }
 }

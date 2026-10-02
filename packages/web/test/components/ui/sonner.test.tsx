@@ -15,7 +15,10 @@ vi.mock('@/components/providers/theme-provider', () => ({
   useTheme: () => ({ theme: 'light' }),
 }));
 
-import { internalErrorToast, unsavedChangesToast } from '@/components/ui/sonner';
+import {
+  internalErrorToast,
+  unsavedChangesToast,
+} from '@/components/ui/sonner';
 
 describe('error toasts follow the interface language', () => {
   beforeAll(async () => {

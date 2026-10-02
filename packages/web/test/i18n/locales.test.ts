@@ -8,7 +8,8 @@ type Catalog = Record<string, string>;
 const WEB_ROOT = path.resolve(__dirname, '../..');
 const SHARED_SRC = path.resolve(WEB_ROOT, '../core/shared/src');
 const KANA_PATTERN = /[぀-ヿㇰ-ㇿｦ-ﾟ]/;
-const HALF_WIDTH_PUNCTUATION_IN_CHINESE = /[\u4e00-\u9fff][,;!?]|[\u4e00-\u9fff]\(|\)[\u4e00-\u9fff]/;
+const HALF_WIDTH_PUNCTUATION_IN_CHINESE =
+  /[\u4e00-\u9fff][,;!?]|[\u4e00-\u9fff]\(|\)[\u4e00-\u9fff]/;
 const PRODUCT_NAME_PATTERN = /FEMA Integration|Activepieces/i;
 const KEPT_IN_ENGLISH = new Set([
   'HTTP {status}',
@@ -112,7 +113,9 @@ function routeTitleKeys(): string[] {
   const titles = files.flatMap((file) => {
     const source = readFileSync(file, 'utf-8');
     const jsx = [...source.matchAll(/<PageTitle\s+title="([^"]+)"/g)];
-    const tenant = [...source.matchAll(/tenantRoute\(\s*'[^']+',\s*'([^']+)'/g)];
+    const tenant = [
+      ...source.matchAll(/tenantRoute\(\s*'[^']+',\s*'([^']+)'/g),
+    ];
     return [...jsx, ...tenant].map((match) => match[1]);
   });
   return [...new Set(titles)];

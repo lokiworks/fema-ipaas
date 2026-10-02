@@ -33,10 +33,13 @@ function useDedupedEventStats({
   });
 }
 
-function useHolidayCalendar() {
+function useHolidayCalendar({
+  showErrorDialog = false,
+}: { showErrorDialog?: boolean } = {}) {
   return useQuery({
     queryKey: [TRIGGER_RUNTIME_KEY, 'holiday-calendar'],
     queryFn: () => triggerRuntimeApi.getHolidayCalendar(),
+    meta: { showErrorDialog, loadSubsetOptions: {} },
   });
 }
 

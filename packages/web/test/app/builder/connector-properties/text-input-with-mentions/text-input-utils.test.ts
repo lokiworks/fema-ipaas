@@ -23,6 +23,19 @@ describe('textMentionUtils.parseLabelFromMention — flattenNestedKeys', () => {
   });
 });
 
+describe('textMentionUtils.parseLabelFromMention — project variables', () => {
+  it('labels a project variable mention with its display name', () => {
+    const label = textMentionUtils.parseLabelFromMention(
+      '{{variables.ed_threshold}}',
+      [],
+      [],
+      new Map([['ed_threshold', 'Threshold']]),
+    );
+    expect(label.displayText).toBe('Variable · Threshold');
+    expect(label.isVariable).toBe(true);
+  });
+});
+
 const convert = (text: string) =>
   textMentionUtils.convertTextToTipTapJsonContent(text, [], []);
 

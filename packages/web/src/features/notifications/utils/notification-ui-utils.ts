@@ -1,4 +1,6 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
+  DefaultProjectRole,
   Notification,
   NotificationType,
   TenantModule,
@@ -71,6 +73,28 @@ function subject(notification: Notification): string {
   return notification.title;
 }
 
+function bodyText({
+  notification,
+  connectorDisplayName,
+}: {
+  notification: Notification;
+  connectorDisplayName: string | undefined;
+}): string | null {
+  const body = notification.body;
+  if (isNil(body) || body.length === 0) {
+    return null;
+  }
+  switch (notification.type) {
+    case NotificationType.PROJECT_MEMBER_ADDED:
+      return isProjectRole(body) ? t(body) : body;
+    case NotificationType.CONNECTION_BROKEN:
+    case NotificationType.CONNECTION_REAUTH_REQUESTED:
+      return connectorDisplayName ?? body;
+    default:
+      return body;
+  }
+}
+
 function icon(type: NotificationType): NotificationIcon {
   switch (type) {
     case NotificationType.RELEASE_REQUESTED:
@@ -107,6 +131,10 @@ function icon(type: NotificationType): NotificationIcon {
   }
 }
 
+function isProjectRole(value: string): value is DefaultProjectRole {
+  return Object.values<string>(DefaultProjectRole).includes(value);
+}
+
 function isTenantModule(value: string): value is TenantModule {
   return Object.values<string>(TenantModule).includes(value);
 }
@@ -118,6 +146,7 @@ function badgeLabel(count: number): string {
 export const notificationUiUtils = {
   headline,
   subject,
+  bodyText,
   icon,
   badgeLabel,
 };

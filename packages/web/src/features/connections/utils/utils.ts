@@ -74,11 +74,11 @@ export const connectionUtils = {
   getStatusLabel(status: ConnectionStatus): string {
     switch (status) {
       case ConnectionStatus.ACTIVE:
-        return t('Active');
+        return t('Connected');
       case ConnectionStatus.MISSING:
         return t('Missing');
       case ConnectionStatus.ERROR:
-        return t('Error');
+        return t('Connection error');
       case ConnectionStatus.EXPIRED:
         return t('Expired');
     }

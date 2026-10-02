@@ -425,7 +425,7 @@ function getConnectionStatusDisplay(status: ConnectionStatus): {
       return {
         Icon: X,
         iconClassName: 'text-destructive',
-        label: t('Error'),
+        label: t('Connection error'),
       };
     case ConnectionStatus.EXPIRED:
       return {

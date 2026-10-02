@@ -6,12 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import { StrictMode, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import {
-  MemoryRouter,
-  Route,
-  Routes,
-  useLocation,
-} from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AcceptInvitation } from '@/features/invitations/components/accept-invitation';

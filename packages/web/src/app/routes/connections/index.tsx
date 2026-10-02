@@ -298,7 +298,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'status',
-      size: 110,
+      size: 140,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -350,7 +350,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'workflowIds',
-      size: 110,
+      size: 130,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -627,8 +627,8 @@ function ConnectionsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">{t('All')}</SelectItem>
-              <SelectItem value="ACTIVE">{t('Active')}</SelectItem>
-              <SelectItem value="BROKEN">{t('Needs attention')}</SelectItem>
+              <SelectItem value="ACTIVE">{t('Connected')}</SelectItem>
+              <SelectItem value="BROKEN">{t('Needs action')}</SelectItem>
             </SelectContent>
           </Select>,
           <Select

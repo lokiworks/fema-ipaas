@@ -1826,7 +1826,7 @@
   "Connection {name} failed to authenticate": "Connection {name} failed to authenticate",
   "The connection failed to authenticate. Every step that uses it fails at the authentication stage, regardless of the workflow configuration.": "The connection failed to authenticate. Every step that uses it fails at the authentication stage, regardless of the workflow configuration.",
   "The step ran longer than its time limit. The most common cause is querying or processing too much data at once, followed by a slow downstream system.": "The step ran longer than its time limit. The most common cause is querying or processing too much data at once, followed by a slow downstream system.",
-  "The downstream service is rate limiting or busy. This is transient and unrelated to the workflow; the retry interval is too short.": "The downstream service is rate limiting or busy. This is transient and unrelated to the workflow; the retry interval is too short.",
+  "The downstream service is rate limiting. Replaying right away usually fails again: wait until its limit window passes (some services, such as Beisen, refuse calls until the next day) and lower how often or how much the workflow calls it.": "The downstream service is rate limiting. Replaying right away usually fails again: wait until its limit window passes (some services, such as Beisen, refuse calls until the next day) and lower how often or how much the workflow calls it.",
   "The record the step operates on no longer exists in the downstream system. Replaying will not succeed.": "The record the step operates on no longer exists in the downstream system. Replaying will not succeed.",
   "The other system refused access (HTTP {status}). Fix the permission or credential there, then replay.": "The other system refused access (HTTP {status}). Fix the permission or credential there, then replay.",
   "The downstream system returned a server error (HTTP {status}). It is usually temporary; replay once it recovers.": "The downstream system returned a server error (HTTP {status}). It is usually temporary; replay once it recovers.",
@@ -1841,6 +1841,7 @@
   "The connection has recovered": "The connection has recovered",
   "Transient error (rate limit or timeout)": "Transient error (rate limit or timeout)",
   "The workflow changed after the failure": "The workflow changed after the failure",
+  "A mapping table the workflow uses changed after the failure": "A mapping table the workflow uses changed after the failure",
   "Nothing changed since the failure; it will most likely fail again": "Nothing changed since the failure; it will most likely fail again",
   "The connection is still broken": "The connection is still broken",
   "The connection was deleted": "The connection was deleted",
@@ -5028,5 +5029,7 @@
   "{count}d ago": "{count}d ago",
   "Last modified: {time}": "Last modified: {time}",
   "App container only": "App container only",
-  "Worker container only": "Worker container only"
+  "Worker container only": "Worker container only",
+  "Unexpected error, please contact support": "Unexpected error, please contact support",
+  "Needs action": "Needs action"
 }

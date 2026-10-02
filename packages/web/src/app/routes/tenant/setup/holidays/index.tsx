@@ -32,8 +32,9 @@ import {
 } from '@/features/trigger-runtime';
 
 export function HolidayCalendarPage() {
-  const { data: calendar, isLoading } =
-    triggerRuntimeHooks.useHolidayCalendar();
+  const { data: calendar, isLoading } = triggerRuntimeHooks.useHolidayCalendar({
+    showErrorDialog: true,
+  });
   return (
     <CenteredPage
       title={t('Holiday calendar')}

@@ -66,7 +66,7 @@ function causeText({
       );
     case IssueInsightCause.RATE_LIMITED:
       return t(
-        'The downstream service is rate limiting or busy. This is transient and unrelated to the workflow; the retry interval is too short.',
+        'The downstream service is rate limiting. Replaying right away usually fails again: wait until its limit window passes (some services, such as Beisen, refuse calls until the next day) and lower how often or how much the workflow calls it.',
       );
     case IssueInsightCause.NOT_FOUND:
       return t(
@@ -127,6 +127,8 @@ function replayReasonLabel(reason: ReplayReason): string {
       );
     case ReplayReason.WORKFLOW_CHANGED:
       return t('The workflow changed after the failure');
+    case ReplayReason.MAPPING_TABLE_CHANGED:
+      return t('A mapping table the workflow uses changed after the failure');
     case ReplayReason.UNCHANGED_SINCE_FAILURE:
       return t(
         'Nothing changed since the failure; it will most likely fail again',

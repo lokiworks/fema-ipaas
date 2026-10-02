@@ -82,6 +82,18 @@ describe('connectionUtils status wording', () => {
     );
   });
 
+  it('uses the same wording as the builder and the run log for the other statuses', () => {
+    expect(connectionUtils.getStatusLabel(ConnectionStatus.ACTIVE)).toBe(
+      'Connected',
+    );
+    expect(connectionUtils.getStatusLabel(ConnectionStatus.ERROR)).toBe(
+      'Connection error',
+    );
+    expect(connectionUtils.getStatusLabel(ConnectionStatus.MISSING)).toBe(
+      'Missing',
+    );
+  });
+
   it('keeps the error wording separate from expiry', () => {
     expect(connectionUtils.getBrokenReason(ConnectionStatus.ERROR)).toBe(
       'This connection is no longer working',

@@ -1826,7 +1826,7 @@
   "Connection {name} failed to authenticate": "连接 {name} 认证失败",
   "The connection failed to authenticate. Every step that uses it fails at the authentication stage, regardless of the workflow configuration.": "连接认证失败。所有使用这个连接的节点都会在认证阶段失败，和工作流本身的配置无关。",
   "The step ran longer than its time limit. The most common cause is querying or processing too much data at once, followed by a slow downstream system.": "节点执行超过了时间上限。最常见的原因是一次查询或处理的数据量过大，其次是下游系统响应慢。",
-  "The downstream service is rate limiting or busy. This is transient and unrelated to the workflow; the retry interval is too short.": "下游服务限流或繁忙，属于偶发问题，和工作流配置无关，说明重试间隔太短。",
+  "The downstream service is rate limiting. Replaying right away usually fails again: wait until its limit window passes (some services, such as Beisen, refuse calls until the next day) and lower how often or how much the workflow calls it.": "下游服务在限频。马上重放通常还会失败：等它的限流窗口过去再重放（有些服务如北森要到次日才恢复），并降低工作流调用它的频率或数据量。",
   "The record the step operates on no longer exists in the downstream system. Replaying will not succeed.": "要操作的数据在下游系统里已经不存在，重跑也不会成功。",
   "The other system refused access (HTTP {status}). Fix the permission or credential there, then replay.": "对方系统拒绝了访问（HTTP {status}）。先在对方系统里修好权限或凭据，再重跑。",
   "The downstream system returned a server error (HTTP {status}). It is usually temporary; replay once it recovers.": "下游系统返回了服务端错误（HTTP {status}），通常是暂时的，等对方恢复后再重跑。",
@@ -1841,6 +1841,7 @@
   "The connection has recovered": "连接已恢复",
   "Transient error (rate limit or timeout)": "偶发错误（限流或超时）",
   "The workflow changed after the failure": "失败后工作流已修改",
+  "A mapping table the workflow uses changed after the failure": "失败后工作流用到的映射表已修改",
   "Nothing changed since the failure; it will most likely fail again": "失败后没有任何修改，重跑大概率会再失败",
   "The connection is still broken": "连接仍未恢复",
   "The connection was deleted": "连接已被删除",
@@ -5028,5 +5029,7 @@
   "{count}d ago": "{count} 天前",
   "Last modified: {time}": "最近修改：{time}",
   "App container only": "仅应用容器",
-  "Worker container only": "仅工作节点容器"
+  "Worker container only": "仅工作节点容器",
+  "Unexpected error, please contact support": "发生了意外错误，请联系支持",
+  "Needs action": "需要处理"
 }

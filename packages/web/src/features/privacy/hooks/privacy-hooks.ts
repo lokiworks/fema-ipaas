@@ -12,10 +12,13 @@ import { api } from '@/lib/api';
 
 import { privacyApi } from '../api/privacy-api';
 
-function useSettings() {
+function useSettings({
+  showErrorDialog = false,
+}: { showErrorDialog?: boolean } = {}) {
   return useQuery({
     queryKey: [PRIVACY_KEY],
     queryFn: () => privacyApi.get(),
+    meta: { showErrorDialog, loadSubsetOptions: {} },
   });
 }
 

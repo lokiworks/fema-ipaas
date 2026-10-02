@@ -135,6 +135,9 @@ describe('homeUtils links', () => {
     expect(failed.searchParams.getAll('status')).toContain(
       ExecutionStatus.FAILED,
     );
+    expect(failed.searchParams.getAll('status')).toContain(
+      ExecutionStatus.LOG_SIZE_EXCEEDED,
+    );
   });
 });
 

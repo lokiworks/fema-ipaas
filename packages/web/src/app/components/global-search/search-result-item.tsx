@@ -19,7 +19,6 @@ import {
 
 import { TableIcon } from '@/components/icons/table';
 import { WorkflowIcon } from '@/components/icons/workflow';
-
 import { formatUtils } from '@/lib/format-utils';
 
 import { type SearchResultItem } from './use-global-search-results';

@@ -102,11 +102,12 @@ export async function cutSelectedNodes({
     return;
   }
   await copySelectedNodes({ selectedNodes: actions, workflowVersion });
-  deleteSelectedNodes({
+  requestNodeDeletion({
     selectedNodes: actions,
     applyOperation,
     selectedStep,
     exitStepSettings,
+    workflowVersion,
   });
 }
 

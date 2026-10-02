@@ -7,32 +7,36 @@ import { z } from 'zod';
 
 type FieldValue = string | number | null | undefined | string[];
 
-const FORM_SCHEMA_NAMES = [
-  'UpsertNotificationChannelRequestBody',
-  'UpsertDataStoreRecordRequestBody',
-  'UpsertAlertPolicyRequestBody',
-  'UpdateTenantMemberAccessRequestBody',
-  'UpdateProfileRequestBody',
-  'UpdatePrivacySettingsRequestBody',
-  'UpdateModuleAccessSettingsRequestBody',
-  'UpdateMcpServiceInfoRequestBody',
-  'UpdateDataStoreRequestBody',
-  'UpdateConnectionAccessRequestBody',
-  'UpdateBlueprintCanaryRequest',
-  'TransferMcpServiceRequestBody',
-  'TransferBlueprintOwnershipRequest',
-  'SaveProjectInfoRequestBody',
-  'PublishMcpServiceRequestBody',
-  'CreateWorkflowReleaseRequestBody',
-  'CreatePersonalAccessTokenRequestBody',
-  'CreateModuleAccessRequestBody',
-  'CreateMcpServiceRequestBody',
-  'CreateDataErasureRequestBody',
-  'CreateConnectorDemandRequestBody',
-  'CreateConnectorBlueprintRequest',
-  'ImportOpenApiBlueprintRequest',
-  'AddConnectionSharesRequestBody',
-];
+const FORM_SCHEMAS: Record<string, z.ZodType> = {
+  UpsertNotificationChannelRequestBody:
+    shared.UpsertNotificationChannelRequestBody,
+  UpsertDataStoreRecordRequestBody: shared.UpsertDataStoreRecordRequestBody,
+  UpsertAlertPolicyRequestBody: shared.UpsertAlertPolicyRequestBody,
+  UpdateTenantMemberAccessRequestBody:
+    shared.UpdateTenantMemberAccessRequestBody,
+  UpdateProfileRequestBody: shared.UpdateProfileRequestBody,
+  UpdatePrivacySettingsRequestBody: shared.UpdatePrivacySettingsRequestBody,
+  UpdateModuleAccessSettingsRequestBody:
+    shared.UpdateModuleAccessSettingsRequestBody,
+  UpdateMcpServiceInfoRequestBody: shared.UpdateMcpServiceInfoRequestBody,
+  UpdateDataStoreRequestBody: shared.UpdateDataStoreRequestBody,
+  UpdateConnectionAccessRequestBody: shared.UpdateConnectionAccessRequestBody,
+  UpdateBlueprintCanaryRequest: shared.UpdateBlueprintCanaryRequest,
+  TransferMcpServiceRequestBody: shared.TransferMcpServiceRequestBody,
+  TransferBlueprintOwnershipRequest: shared.TransferBlueprintOwnershipRequest,
+  SaveProjectInfoRequestBody: shared.SaveProjectInfoRequestBody,
+  PublishMcpServiceRequestBody: shared.PublishMcpServiceRequestBody,
+  CreateWorkflowReleaseRequestBody: shared.CreateWorkflowReleaseRequestBody,
+  CreatePersonalAccessTokenRequestBody:
+    shared.CreatePersonalAccessTokenRequestBody,
+  CreateModuleAccessRequestBody: shared.CreateModuleAccessRequestBody,
+  CreateMcpServiceRequestBody: shared.CreateMcpServiceRequestBody,
+  CreateDataErasureRequestBody: shared.CreateDataErasureRequestBody,
+  CreateConnectorDemandRequestBody: shared.CreateConnectorDemandRequestBody,
+  CreateConnectorBlueprintRequest: shared.CreateConnectorBlueprintRequest,
+  ImportOpenApiBlueprintRequest: shared.ImportOpenApiBlueprintRequest,
+  AddConnectionSharesRequestBody: shared.AddConnectionSharesRequestBody,
+};
 const RANGE_CODES = ['too_big', 'too_small', 'invalid_format'];
 const PROBE_VALUES: FieldValue[] = [
   '',
@@ -64,12 +68,8 @@ function untranslatedRangeMessages({
   schema: z.ZodType;
   catalog: Record<string, string>;
 }): string[] {
-  const shape = (schema as unknown as { shape?: Record<string, z.ZodType> })
-    .shape;
-  if (!shape) {
-    return [];
-  }
-  const offenders = Object.keys(shape).flatMap((field) =>
+  const fields = schema instanceof z.ZodObject ? Object.keys(schema.shape) : [];
+  const offenders = fields.flatMap((field) =>
     PROBE_VALUES.flatMap((value) => {
       const result = schema.safeParse({ [field]: value });
       return result.success
@@ -89,17 +89,12 @@ describe('schemas that back web forms', () => {
   const en = loadCatalog('en');
   const zh = loadCatalog('zh');
 
-  it.each(FORM_SCHEMA_NAMES)(
+  it.each(Object.entries(FORM_SCHEMAS))(
     '%s reports length and range problems with translated keys',
-    (name) => {
-      const schema = (shared as Record<string, unknown>)[name];
+    (_name, schema) => {
       expect(schema).toBeDefined();
-      expect(
-        untranslatedRangeMessages({ schema: schema as z.ZodType, catalog: en }),
-      ).toEqual([]);
-      expect(
-        untranslatedRangeMessages({ schema: schema as z.ZodType, catalog: zh }),
-      ).toEqual([]);
+      expect(untranslatedRangeMessages({ schema, catalog: en })).toEqual([]);
+      expect(untranslatedRangeMessages({ schema, catalog: zh })).toEqual([]);
     },
   );
 });

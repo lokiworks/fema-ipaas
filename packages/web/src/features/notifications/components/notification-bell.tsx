@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/sidebar-shadcn';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { connectorsHooks } from '@/features/connectors';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
@@ -175,6 +176,13 @@ function NotificationRow({
 }) {
   const { icon: Icon, className } = notificationUiUtils.icon(notification.type);
   const subject = notificationUiUtils.subject(notification);
+  const { summary } = connectorsHooks.useConnectorSummary({
+    name: notification.body ?? '',
+  });
+  const body = notificationUiUtils.bodyText({
+    notification,
+    connectorDisplayName: summary?.displayName,
+  });
   return (
     <button
       type="button"
@@ -192,9 +200,9 @@ function NotificationRow({
         {subject.length > 0 && (
           <span className="truncate text-xs text-foreground/80">{subject}</span>
         )}
-        {!isNil(notification.body) && notification.body.length > 0 && (
+        {!isNil(body) && (
           <span className="line-clamp-2 text-xs text-muted-foreground">
-            {notification.body}
+            {body}
           </span>
         )}
         <span className="text-[11px] text-muted-foreground">

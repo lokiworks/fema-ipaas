@@ -1,4 +1,5 @@
 import {
+  DefaultProjectRole,
   Notification,
   NotificationType,
   TenantModule,
@@ -45,6 +46,51 @@ describe('notificationUiUtils', () => {
     expect(notificationUiUtils.subject(notification({}))).toBe(
       'Timeout in Orders sync',
     );
+  });
+
+  it('shows the connector name and the project role in readable form', () => {
+    expect(
+      notificationUiUtils.bodyText({
+        notification: notification({
+          type: NotificationType.CONNECTION_REAUTH_REQUESTED,
+          body: '@fema-ipaas/connector-beisen',
+        }),
+        connectorDisplayName: 'Beisen',
+      }),
+    ).toBe('Beisen');
+    expect(
+      notificationUiUtils.bodyText({
+        notification: notification({
+          type: NotificationType.CONNECTION_BROKEN,
+          body: '@fema-ipaas/connector-beisen',
+        }),
+        connectorDisplayName: undefined,
+      }),
+    ).toBe('@fema-ipaas/connector-beisen');
+    expect(
+      notificationUiUtils.bodyText({
+        notification: notification({
+          type: NotificationType.PROJECT_MEMBER_ADDED,
+          body: DefaultProjectRole.DEVELOPER,
+        }),
+        connectorDisplayName: undefined,
+      }),
+    ).toBe('Developer');
+    expect(
+      notificationUiUtils.bodyText({
+        notification: notification({ body: null }),
+        connectorDisplayName: undefined,
+      }),
+    ).toBeNull();
+    expect(
+      notificationUiUtils.bodyText({
+        notification: notification({
+          type: NotificationType.CAPACITY_THRESHOLD,
+          body: '2 / 2 (100.0%)',
+        }),
+        connectorDisplayName: undefined,
+      }),
+    ).toBe('2 / 2 (100.0%)');
   });
 
   it('caps the badge at 99+', () => {

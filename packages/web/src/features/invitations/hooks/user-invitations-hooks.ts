@@ -2,6 +2,7 @@ import {
   DefaultProjectRole,
   InvitationType,
   UserInvitation,
+  UserInvitationWithLink,
 } from '@fema-ipaas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -55,7 +56,11 @@ export const userInvitationQueries = {
 };
 
 export const userInvitationMutations = {
-  useInviteToProject: ({ onSuccess }: { onSuccess: () => void }) => {
+  useInviteToProject: ({
+    onSuccess,
+  }: {
+    onSuccess: (invitation: UserInvitationWithLink) => void;
+  }) => {
     const queryClient = useQueryClient();
     const projectId = authenticationSession.getProjectId();
     return useMutation({
@@ -66,11 +71,11 @@ export const userInvitationMutations = {
           projectId: projectId!,
           projectRole,
         }),
-      onSuccess: () => {
+      onSuccess: (invitation) => {
         queryClient.invalidateQueries({
           queryKey: [userInvitationsQueryKey, projectId],
         });
-        onSuccess();
+        onSuccess(invitation);
       },
     });
   },

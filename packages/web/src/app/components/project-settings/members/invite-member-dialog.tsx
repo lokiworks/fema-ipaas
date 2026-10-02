@@ -1,4 +1,8 @@
-import { formErrors, DefaultProjectRole } from '@fema-ipaas/shared';
+import {
+  formErrors,
+  DefaultProjectRole,
+  UserInvitationWithLink,
+} from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useState } from 'react';
@@ -6,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { userInvitationMutations } from '@/features/invitations';
+import { invitationUtils } from '@/features/invitations/utils/invitation-utils';
 
 export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false);
@@ -47,14 +53,16 @@ export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
         </DialogHeader>
         <InviteMemberForm
           key={open ? 'open' : 'closed'}
-          onInvited={() => setOpen(false)}
+          onDone={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>
   );
 }
 
-function InviteMemberForm({ onInvited }: { onInvited: () => void }) {
+function InviteMemberForm({ onDone }: { onDone: () => void }) {
+  const [sentWithoutEmail, setSentWithoutEmail] =
+    useState<UserInvitationWithLink | null>(null);
   const form = useForm<InviteFormValues>({
     mode: 'onChange',
     resolver: zodResolver(
@@ -68,11 +76,37 @@ function InviteMemberForm({ onInvited }: { onInvited: () => void }) {
 
   const { mutate: invite, isPending } =
     userInvitationMutations.useInviteToProject({
-      onSuccess: () => {
+      onSuccess: (invitation) => {
+        if (invitationUtils.needsManualDelivery(invitation)) {
+          setSentWithoutEmail(invitation);
+          return;
+        }
         toast.success(t('invitationsSentCount', { count: 1 }));
-        onInvited();
+        onDone();
       },
     });
+
+  if (sentWithoutEmail?.link) {
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground">
+          {t(
+            'Send each person their link through a channel you trust. Links expire after 7 days.',
+          )}
+        </p>
+        <div className="flex flex-col gap-1">
+          <span className="text-sm">{sentWithoutEmail.email}</span>
+          <CopyToClipboardInput
+            textToCopy={sentWithoutEmail.link}
+            useInput={true}
+          />
+        </div>
+        <DialogFooter>
+          <Button onClick={onDone}>{t('Done')}</Button>
+        </DialogFooter>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>

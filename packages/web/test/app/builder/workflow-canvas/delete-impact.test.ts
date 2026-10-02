@@ -117,4 +117,26 @@ describe('deleteImpactUtils.impactOf', () => {
     expect(impact.nestedCount).toBe(1);
     expect(deleteImpactUtils.needsConfirmation({ impact })).toBe(true);
   });
+
+  it('counts steps inside parallel branches as nested', () => {
+    const parallel: WorkflowAction = {
+      name: 'parallel',
+      type: WorkflowActionType.PARALLEL,
+      valid: true,
+      displayName: 'Parallel',
+      lastUpdatedDate: DATE,
+      settings: { branches: [{ branchName: 'A' }, { branchName: 'B' }] },
+      children: [action({ name: 'inner_1' }), action({ name: 'inner_2' })],
+      nextAction: action({
+        name: 'after',
+        input: { text: '{{inner_1.output.id}}' },
+      }),
+    };
+    const impact = deleteImpactUtils.impactOf({
+      trigger: trigger(parallel),
+      names: ['parallel'],
+    });
+    expect(impact.nestedCount).toBe(2);
+    expect(deleteImpactUtils.needsConfirmation({ impact })).toBe(true);
+  });
 });

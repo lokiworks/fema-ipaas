@@ -50,7 +50,7 @@ export const UpdatePrivacySettingsRequestBody = z.object({
     logRetentionDays: z.number().int().refine(isLogRetentionOption, 'invalidRetentionDays'),
     payloadLevel: z.enum(PayloadLevel),
     rawPayloadRetentionDays: z.number().int().refine(isRawRetentionOption, 'invalidRetentionDays'),
-    maskRules: z.array(MaskRuleSchema).max(50),
+    maskRules: z.array(MaskRuleSchema).max(50, 'maskRulesTooMany'),
     rawViewRoles: z.array(z.enum(RawViewRole)).min(1, 'rawViewRolesRequired'),
     requireRawViewReason: z.boolean(),
 }).superRefine((body, ctx) => {
@@ -107,8 +107,8 @@ export type DataErasureRequest = z.infer<typeof DataErasureRequest>
 
 export const CreateDataErasureRequestBody = z.object({
     kind: z.enum(ErasureSubjectKind),
-    value: z.string().trim().min(1, 'formErrors.required').max(100),
-    subjectName: z.string().trim().max(20).optional(),
+    value: z.string().trim().min(1, 'formErrors.required').max(100, 'erasureValueTooLong'),
+    subjectName: z.string().trim().max(20, 'erasureSubjectNameTooLong').optional(),
     reason: z.string().trim().min(1, 'erasureReasonRequired').max(100, 'erasureReasonTooLong'),
 }).superRefine((body, ctx) => {
     if (!ERASURE_VALUE_PATTERNS[body.kind].test(body.value)) {

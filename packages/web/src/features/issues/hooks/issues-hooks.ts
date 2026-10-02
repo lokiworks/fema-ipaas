@@ -5,7 +5,12 @@ import {
   ListIssuesRequestQuery,
   UpdateIssueRequestBody,
 } from '@fema-ipaas/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
@@ -22,10 +27,17 @@ function useIssues(request: ListIssuesRequestQuery) {
   });
 }
 
-function useOverview({ showErrorDialog }: { showErrorDialog: boolean }) {
+function useOverview({
+  showErrorDialog,
+  projectId,
+}: {
+  showErrorDialog: boolean;
+  projectId?: string;
+}) {
   return useQuery({
-    queryKey: [ISSUES_KEY, 'overview'],
-    queryFn: () => issuesApi.overview(),
+    queryKey: [ISSUES_KEY, 'overview', projectId ?? null],
+    queryFn: () => issuesApi.overview(projectId),
+    placeholderData: keepPreviousData,
     meta: { showErrorDialog, loadSubsetOptions: {} },
   });
 }

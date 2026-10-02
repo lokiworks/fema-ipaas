@@ -23,6 +23,53 @@ function hasChanges({
   return diffSteps({ before: before.trigger, after: after.trigger }).length > 0;
 }
 
+function workflowChanges({
+  before,
+  after,
+}: {
+  before: WorkflowVersion;
+  after: WorkflowVersion;
+}): FieldChange[] {
+  const nameChange: FieldChange[] =
+    before.displayName === after.displayName
+      ? []
+      : [
+          {
+            path: 'displayName',
+            before: before.displayName,
+            after: after.displayName,
+          },
+        ];
+  const beforeOrder = sharedSteps({ own: before, other: after });
+  const afterOrder = sharedSteps({ own: after, other: before });
+  const orderChange: FieldChange[] =
+    beforeOrder.map((step) => step.name).join('|') ===
+    afterOrder.map((step) => step.name).join('|')
+      ? []
+      : [
+          {
+            path: 'stepOrder',
+            before: beforeOrder.map((step) => step.displayName).join(' → '),
+            after: afterOrder.map((step) => step.displayName).join(' → '),
+          },
+        ];
+  return [...nameChange, ...orderChange];
+}
+
+function sharedSteps({
+  own,
+  other,
+}: {
+  own: WorkflowVersion;
+  other: WorkflowVersion;
+}): { name: string; displayName: string }[] {
+  const otherNames = new Set(stepNames(other.trigger));
+  return workflowStructureUtil
+    .getAllSteps(own.trigger)
+    .filter((step) => otherNames.has(step.name))
+    .map((step) => ({ name: step.name, displayName: step.displayName }));
+}
+
 function stepNames(trigger: WorkflowTrigger): string[] {
   return workflowStructureUtil.getAllSteps(trigger).map((step) => step.name);
 }
@@ -59,7 +106,21 @@ function diffSteps({
 }
 
 function signature(step: WorkflowTrigger | WorkflowAction): string {
-  return JSON.stringify(comparable(step));
+  return JSON.stringify(sortKeys(comparable(step)));
+}
+
+function sortKeys(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortKeys);
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, child]) => [key, sortKeys(child)]),
+    );
+  }
+  return value;
 }
 
 function fieldChanges({
@@ -156,6 +217,7 @@ export const versionDiff = {
   hasChanges,
   diffSteps,
   fieldChanges,
+  workflowChanges,
 };
 
 export type StepChange = {

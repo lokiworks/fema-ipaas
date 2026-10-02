@@ -4,7 +4,6 @@ import {
     ConnectionStatus,
     Execution,
     ExecutionStatus,
-    FAILED_STATES,
     HOME_BROKEN_CONNECTIONS_LIMIT,
     HOME_FAILED_RUNS_LIMIT,
     HOME_TODO_LIMIT,
@@ -22,6 +21,7 @@ import { ArrayContains, Brackets, In, MoreThan, SelectQueryBuilder } from 'typeo
 import { agentApprovalRepo } from '../agent-approval/agent-approval.service'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { projectRepo } from '../project/project-repo'
+import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 import { workflowReleaseRepo } from '../release/workflow-release.service'
 import { userRepo } from '../user/user-service'
 import { executionRepo } from '../workflows/execution/execution-service'
@@ -110,7 +110,7 @@ async function hourlyCounts({ projectIds, from }: RunScope): Promise<HourlyBucke
 
 async function latestFailedRuns({ projectIds, from }: RunScope): Promise<HomeFailedRun[]> {
     const rows: { id: string, projectId: string, workflowId: string, status: ExecutionStatus, created: Date | string, displayName: string | null }[] = await productionRuns({ projectIds, from })
-        .andWhere('execution.status IN (:...failedStates)', { failedStates: FAILED_STATES })
+        .andWhere('execution.status IN (:...failedStates)', { failedStates: projectStatsUtils.FAILED_STATUSES })
         .andWhere(`NOT EXISTS (
             SELECT 1 FROM execution retry
             WHERE retry."rerunOfExecutionId" = COALESCE(execution."rerunOfExecutionId", execution.id)

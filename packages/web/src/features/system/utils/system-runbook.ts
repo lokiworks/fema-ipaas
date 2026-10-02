@@ -9,7 +9,26 @@ export const systemRunbook = {
   scheduleCommand,
   keyBackupCommand,
   isVersionSkewed,
+  containerTypeLabel,
 };
+
+function containerTypeLabel({
+  containerType,
+}: {
+  containerType: string | null;
+}): string {
+  switch (containerType) {
+    case null:
+    case 'WORKER_AND_APP':
+      return t('App and worker in one container');
+    case 'APP':
+      return t('App container only');
+    case 'WORKER':
+      return t('Worker container only');
+    default:
+      return containerType;
+  }
+}
 
 function upgradeSteps({
   kind,

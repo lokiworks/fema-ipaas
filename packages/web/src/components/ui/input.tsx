@@ -42,6 +42,7 @@ function Input({
           className={cn('grow cursor-pointer outline-hidden bg-transparent', {
             'text-muted-foreground': !fileName,
           })}
+          aria-label={props['aria-label'] ?? t('Select a file')}
           value={fileName || defaultFileName || t('Select a file')}
           readOnly
         />

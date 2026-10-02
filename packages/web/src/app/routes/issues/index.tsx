@@ -108,12 +108,14 @@ function IssuesPage() {
       type: 'select',
       title: t('Status'),
       accessorKey: 'view',
+      single: true,
       options: VIEW_ORDER.map((value) => ({ value, label: viewLabel(value) })),
     },
     {
       type: 'select',
       title: t('Severity'),
       accessorKey: 'severity',
+      single: true,
       options: Object.values(IssueSeverity).map((value) => ({
         value,
         label: issueUiUtils.severityLabel(value),
@@ -123,6 +125,7 @@ function IssuesPage() {
       type: 'select',
       title: t('Assignee'),
       accessorKey: 'assignee',
+      single: true,
       options: [
         { value: 'me', label: t('Assigned to me') },
         { value: 'unassigned', label: t('Unassigned') },
@@ -136,6 +139,7 @@ function IssuesPage() {
       type: 'select',
       title: t('Sort by'),
       accessorKey: 'sort',
+      single: true,
       options: [
         { value: IssueSort.LAST_SEEN, label: t('Last seen') },
         { value: IssueSort.OCCURRENCES, label: t('Failure count') },

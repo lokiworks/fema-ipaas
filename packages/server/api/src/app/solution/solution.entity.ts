@@ -20,6 +20,7 @@ export type SolutionVersionSchema = {
 
 export type SolutionInstallSchema = Omit<SolutionInstall, 'latestVersion' | 'solutionName'> & {
     solutionName: string
+    workflowKeys: string[] | null
     project?: Project
 }
 
@@ -142,6 +143,11 @@ export const SolutionInstallEntity = new EntitySchema<SolutionInstallSchema>({
         workflowIds: {
             type: String,
             array: true,
+        },
+        workflowKeys: {
+            type: String,
+            array: true,
+            nullable: true,
         },
         mappingTableIds: {
             type: String,

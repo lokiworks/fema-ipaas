@@ -27,6 +27,11 @@ const MESSAGES: Record<
     ),
   [ValidationCode.CONNECTION_UNHEALTHY]: (params) =>
     t('Connection {connection} is not working', params),
+  [ValidationCode.CONNECTION_EXPIRED]: (params) =>
+    t(
+      'Connection {connection} has expired and needs to be re-authorized',
+      params,
+    ),
   [ValidationCode.REQUIRED_FIELD_MISSING]: (params) =>
     t('{field} is required', params),
   [ValidationCode.STEP_INCOMPLETE]: () => t('Some settings are incomplete'),

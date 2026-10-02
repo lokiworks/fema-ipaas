@@ -72,8 +72,12 @@ function DeleteConnectionContent({
   const consequences = connectionAccessUiUtils.buildDeleteConsequences({
     workflows: detail.references.workflows,
     hiddenWorkflowCount: detail.references.hiddenWorkflowCount,
-    mcpServiceCount: detail.references.mcpServices.length,
-    projectConfigCount: detail.references.projectConfigs.length,
+    mcpServiceCount:
+      detail.references.mcpServices.length +
+      detail.references.hiddenMcpServiceCount,
+    projectConfigCount:
+      detail.references.projectConfigs.length +
+      detail.references.hiddenProjectConfigCount,
     shareCount: detail.shareCount,
   });
   const nameMatches = confirmText.trim() === detail.displayName;

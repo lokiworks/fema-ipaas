@@ -18,6 +18,7 @@ export const issueSideEffects = (log: FastifyBaseLogger) => ({
         const { error: alertError } = await tryCatch(async () => alertDispatcher(log).onIssueRecorded({
             issue: outcome.issue,
             event: outcome.event,
+            counted: outcome.counted,
             tenantId: await projectService(log).getTenantId(execution.projectId),
         }))
         if (!isNil(alertError)) {

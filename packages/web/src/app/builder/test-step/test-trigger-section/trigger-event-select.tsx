@@ -33,7 +33,7 @@ export const TriggerEventSelect = React.memo(
     return (
       <div className="mb-3 px-3 pt-3">
         <Select
-          value={selectedId}
+          value={selectedId ?? ''}
           onValueChange={(value: string) => {
             const triggerEvent = pollResults?.data.find(
               (triggerEvent) => triggerEvent.id === value,

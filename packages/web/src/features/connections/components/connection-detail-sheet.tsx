@@ -109,6 +109,12 @@ function ConnectionDetailContent({
   }
 
   const manage = connectionAccessUtils.canManage(detail.myPermission);
+  const mcpServiceCount =
+    detail.references.mcpServices.length +
+    detail.references.hiddenMcpServiceCount;
+  const projectConfigCount =
+    detail.references.projectConfigs.length +
+    detail.references.hiddenProjectConfigCount;
   const isActive = detail.status === ConnectionStatus.ACTIVE;
   const myProjectIds = new Set(myProjects.map((project) => project.id));
   const { icon: StatusIcon, variant } = connectionUtils.getStatusIcon(
@@ -270,8 +276,8 @@ function ConnectionDetailContent({
                 })}
               </div>
             )}
-            {(detail.references.mcpServices.length > 0 ||
-              detail.references.projectConfigs.length > 0 ||
+            {(mcpServiceCount > 0 ||
+              projectConfigCount > 0 ||
               detail.references.hiddenWorkflowCount > 0) && (
               <p className="text-xs text-muted-foreground">
                 {[
@@ -279,13 +285,13 @@ function ConnectionDetailContent({
                     t('and {count} more workflows you cannot view', {
                       count: detail.references.hiddenWorkflowCount,
                     }),
-                  detail.references.mcpServices.length > 0 &&
+                  mcpServiceCount > 0 &&
                     t('{count} MCP services use it as a fixed connection', {
-                      count: detail.references.mcpServices.length,
+                      count: mcpServiceCount,
                     }),
-                  detail.references.projectConfigs.length > 0 &&
+                  projectConfigCount > 0 &&
                     t('{count} project configs reference it', {
-                      count: detail.references.projectConfigs.length,
+                      count: projectConfigCount,
                     }),
                 ]
                   .filter(Boolean)

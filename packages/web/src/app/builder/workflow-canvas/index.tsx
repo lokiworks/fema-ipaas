@@ -171,6 +171,7 @@ export const WorkflowCanvas = React.memo(
         if (
           step.type === WorkflowActionType.LOOP_ON_ITEMS ||
           step.type === WorkflowActionType.ROUTER ||
+          step.type === WorkflowActionType.PARALLEL ||
           sharedWorkflowCanvasUtils.hasContinueOnFailureBranches(step)
         ) {
           const childrenNotSelected = workflowStructureUtil
@@ -282,6 +283,7 @@ const getChildrenKey = (step: Step) => {
     case WorkflowActionType.LOOP_ON_ITEMS:
       return step.firstLoopAction ? step.firstLoopAction.name : '';
     case WorkflowActionType.ROUTER:
+    case WorkflowActionType.PARALLEL:
       return step.children.reduce((routerKey, child) => {
         const childrenKey = child
           ? workflowStructureUtil
@@ -321,7 +323,8 @@ const createGraphKey = (
     .getAllSteps(workflowVersion.trigger)
     .reduce((acc, step) => {
       const branchesNames =
-        step.type === WorkflowActionType.ROUTER
+        step.type === WorkflowActionType.ROUTER ||
+        step.type === WorkflowActionType.PARALLEL
           ? step.settings.branches.map((branch) => branch.branchName).join('-')
           : '0';
       const childrenKey = getChildrenKey(step);

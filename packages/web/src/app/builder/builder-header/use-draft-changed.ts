@@ -5,29 +5,30 @@ import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { versionDiff } from '@/features/releases';
 import { workflowsApi } from '@/features/workflows';
 
-export function useDraftChanged(): boolean | null {
-  const [workflowId, publishedVersionId, draft] = useBuilderStateContext(
-    (state) => [
-      state.workflow.id,
-      state.workflow.publishedVersionId,
-      state.workflowVersion,
-    ],
-  );
-  const { data: published } = useQuery({
-    queryKey: ['workflow-version-compare', workflowId, publishedVersionId],
+export function useDraftChanged({
+  baselineVersionId,
+}: {
+  baselineVersionId: string | null | undefined;
+}): boolean | null {
+  const [workflowId, draft] = useBuilderStateContext((state) => [
+    state.workflow.id,
+    state.workflowVersion,
+  ]);
+  const { data: baseline } = useQuery({
+    queryKey: ['workflow-version-compare', workflowId, baselineVersionId],
     queryFn: async () =>
       (
         await workflowsApi.get(workflowId, {
-          versionId: publishedVersionId ?? undefined,
+          versionId: baselineVersionId ?? undefined,
         })
       ).version,
-    enabled: !isNil(publishedVersionId),
+    enabled: !isNil(baselineVersionId),
   });
-  if (isNil(publishedVersionId)) {
+  if (isNil(baselineVersionId)) {
     return true;
   }
-  if (isNil(published) || published.id === draft.id) {
+  if (isNil(baseline) || baseline.id === draft.id) {
     return null;
   }
-  return versionDiff.hasChanges({ before: published, after: draft });
+  return versionDiff.hasChanges({ before: baseline, after: draft });
 }

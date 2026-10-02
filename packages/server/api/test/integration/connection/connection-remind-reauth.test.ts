@@ -34,7 +34,7 @@ async function notificationsFor(userId: string): Promise<{ type: string, title: 
 describe('POST /v1/connections/:id/remind-reauth', () => {
     it('notifies the owner once and rate limits repeat reminders from the same member', async () => {
         const owner = await createTestContext(app!)
-        const member = await createMemberContext(app!, owner, { projectRole: DefaultProjectRole.EDITOR })
+        const member = await createMemberContext(app!, owner, { projectRole: DefaultProjectRole.OPERATOR })
         const connectionId = await saveOwnedConnection({ ctx: owner, status: ConnectionStatus.EXPIRED })
 
         const first = await member.post(`/v1/connections/${connectionId}/remind-reauth`)
@@ -51,7 +51,7 @@ describe('POST /v1/connections/:id/remind-reauth', () => {
 
     it('refuses when the connection still works', async () => {
         const owner = await createTestContext(app!)
-        const member = await createMemberContext(app!, owner, { projectRole: DefaultProjectRole.EDITOR })
+        const member = await createMemberContext(app!, owner, { projectRole: DefaultProjectRole.OPERATOR })
         const connectionId = await saveOwnedConnection({ ctx: owner, status: ConnectionStatus.ACTIVE })
 
         const response = await member.post(`/v1/connections/${connectionId}/remind-reauth`)

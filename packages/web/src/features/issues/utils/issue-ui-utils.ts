@@ -79,7 +79,21 @@ function causeText({
     case IssueInsightCause.REJECTED_INPUT:
       return t(
         'The downstream API rejected the request (HTTP {status}). This is a data or configuration problem; fix it before replaying or the runs will fail again.',
-        { status: httpStatus ?? 422 },
+        { status: httpStatus ?? '' },
+      );
+    case IssueInsightCause.ACCESS_DENIED:
+      return t(
+        'The other system refused access (HTTP {status}). Fix the permission or credential there, then replay.',
+        { status: httpStatus ?? '' },
+      );
+    case IssueInsightCause.UPSTREAM_ERROR:
+      return t(
+        'The downstream system returned a server error (HTTP {status}). It is usually temporary; replay once it recovers.',
+        { status: httpStatus ?? '' },
+      );
+    case IssueInsightCause.STEP_ERROR:
+      return t(
+        'The step failed without an HTTP status, for example a network or script error. Check the error below and the step inputs before replaying.',
       );
   }
 }

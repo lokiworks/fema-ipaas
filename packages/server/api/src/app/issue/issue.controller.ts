@@ -39,7 +39,7 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/overview', OverviewRequest, async (request): Promise<IssueOverview> => {
-        return issueService(request.log).overview({ userId: request.principal.id, tenantId: request.principal.tenant.id })
+        return issueService(request.log).overview({ userId: request.principal.id, tenantId: request.principal.tenant.id, projectId: request.query.projectId })
     })
 
     app.get('/summary', SummaryRequest, async (request): Promise<IssueSummary> => {
@@ -98,7 +98,7 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/:id/trend', TrendRequest, async (request): Promise<IssueTrend> => {
-        return issueService(request.log).trend({ id: request.params.id, projectId: request.projectId, granularity: request.query.granularity })
+        return issueService(request.log).trend({ id: request.params.id, projectId: request.projectId, granularity: request.query.granularity, timezone: request.query.timezone })
     })
 
     app.get('/:id/insight', GetIssueRequest, async (request): Promise<IssueInsight> => {
@@ -157,6 +157,7 @@ const OverviewRequest = {
     },
     schema: {
         tags: ['issues'],
+        querystring: z.object({ projectId: z.string().optional() }),
         response: { [StatusCodes.OK]: IssueOverview },
     },
 }

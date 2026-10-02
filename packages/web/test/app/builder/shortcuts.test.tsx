@@ -170,6 +170,22 @@ describe('canvas shortcuts while editing step inputs (GIT-1445)', () => {
     expect(applyOperation).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { key: 'Delete', ctrlKey: false },
+    { key: 'Backspace', ctrlKey: false },
+    { key: 'x', ctrlKey: true },
+    { key: 'e', ctrlKey: true },
+  ])(
+    'ignores $key when focus is on a button outside the canvas',
+    async (init) => {
+      const { container, applyOperation } = await setup();
+      const tab = document.createElement('button');
+      container.appendChild(tab);
+      dispatchKeyFrom(tab, init);
+      expect(applyOperation).not.toHaveBeenCalled();
+    },
+  );
+
   it('still toggles skip with Ctrl+E when focus is on the canvas', async () => {
     const { applyOperation } = await setup();
     dispatchKeyFrom(document.body, { key: 'e', ctrlKey: true });

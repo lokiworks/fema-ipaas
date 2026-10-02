@@ -1,4 +1,4 @@
-import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isNil, SeekPage, spreadIfDefined, tryCatch } from '@fema-ipaas/core-utils'
 import { DefaultProjectRole, InvitationStatus, InvitationType, TenantModule, TenantRole, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -20,11 +20,19 @@ const repo = userInvitationRepo
 
 export const userInvitationsService = (log: FastifyBaseLogger) => ({
     async getOneByInvitationTokenOrThrow(invitationToken: string): Promise<UserInvitation> {
-        const decodedToken = await jwtUtils.decodeAndVerify<UserInvitationToken>({
+        const { data: decodedToken, error: tokenError } = await tryCatch(async () => jwtUtils.decodeAndVerify<UserInvitationToken>({
             jwt: invitationToken,
             key: await jwtUtils.getJwtSecret(),
             audience: JwtAudience.USER_INVITATION,
-        })
+        }))
+        if (!isNil(tokenError)) {
+            throw new ApplicationError({
+                code: ErrorCode.ENTITY_NOT_FOUND,
+                params: {
+                    entityType: 'UserInvitation',
+                },
+            })
+        }
         const invitation = await repo().findOneBy({
             id: decodedToken.id,
         })

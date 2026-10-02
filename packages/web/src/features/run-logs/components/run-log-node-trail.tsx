@@ -41,11 +41,13 @@ export function RunLogNodeTrail({
     run,
     {},
   );
-  const nodes = runLogUiUtils.stepNodes({
-    trigger,
-    steps: run.steps ?? {},
-    loopIndexes,
-  });
+  const nodes = runLogUiUtils
+    .stepNodes({
+      trigger,
+      steps: run.steps ?? {},
+      loopIndexes,
+    })
+    .map((node) => markInterruptedStep({ node, run }));
   const errorNodes = nodes.filter(
     (node) => node.status === StepOutputStatus.FAILED,
   );
@@ -147,6 +149,26 @@ export function RunLogNodeTrail({
       </div>
     </div>
   );
+}
+
+function markInterruptedStep({
+  node,
+  run,
+}: {
+  node: RunLogStepNode;
+  run: Execution;
+}): RunLogStepNode {
+  const interrupted =
+    INTERRUPTED_RUN_STATUSES.includes(run.status) &&
+    node.status === StepOutputStatus.RUNNING &&
+    run.failedStep?.name === node.name;
+  return interrupted
+    ? {
+        ...node,
+        status: StepOutputStatus.FAILED,
+        errorMessage: node.errorMessage ?? run.failedStep?.message ?? null,
+      }
+    : node;
 }
 
 function NodeStatusIcon({ node }: { node: RunLogStepNode }) {
@@ -295,3 +317,8 @@ function ErrorCard({
     </div>
   );
 }
+
+const INTERRUPTED_RUN_STATUSES: ExecutionStatus[] = [
+  ExecutionStatus.TIMEOUT,
+  ExecutionStatus.MEMORY_LIMIT_EXCEEDED,
+];

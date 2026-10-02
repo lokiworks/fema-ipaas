@@ -76,6 +76,26 @@ export const connectionAccessService = (log: FastifyBaseLogger) => ({
         return permission
     },
 
+    async assertCanUse({ connection, principal }: PermissionForParams): Promise<void> {
+        const permission = await this.permissionFor({ connection, principal })
+        if (!connectionAccessUtils.canUse(permission)) {
+            throw new ApplicationError({
+                code: ErrorCode.AUTHORIZATION,
+                params: { message: 'This connection is not shared with you' },
+            })
+        }
+    },
+
+    async assertVisible({ connection, principal }: PermissionForParams): Promise<void> {
+        const permission = await this.permissionFor({ connection, principal })
+        if (!connectionAccessUtils.canUse(permission)) {
+            throw new ApplicationError({
+                code: ErrorCode.ENTITY_NOT_FOUND,
+                params: { entityType: 'Connection', entityId: connection.id },
+            })
+        }
+    },
+
     async assertOwner({ connection, principal }: PermissionForParams): Promise<void> {
         const permission = await this.permissionFor({ connection, principal })
         if (permission !== ConnectionPermission.OWNER) {

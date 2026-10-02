@@ -10,6 +10,7 @@ import {
 } from '@fema-ipaas/connector-sdk';
 import { Metadata, isNil, parseToJsonIfPossible } from '@fema-ipaas/core-utils';
 import {
+  CONNECTION_DISPLAY_NAME_MAX_LENGTH,
   ConnectionScope,
   ConnectionType,
   CodeActionSchema,
@@ -242,10 +243,13 @@ const EXTERNAL_ID_SCHEMA = z
   });
 
 function displayNameSchema(required: boolean) {
+  const bounded = z
+    .string()
+    .max(CONNECTION_DISPLAY_NAME_MAX_LENGTH, 'connectionDisplayNameTooLong');
   if (required) {
-    return z.string().min(1, { error: t('required') });
+    return bounded.min(1, { error: t('required') });
   }
-  return z.string();
+  return bounded;
 }
 
 const PROJECT_FORM_EXTRAS_SCHEMA = z.object({

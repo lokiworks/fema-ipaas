@@ -51,13 +51,17 @@ export const connectionReferenceService = (log: FastifyBaseLogger) => ({
         const visibleWorkflows = workflows.filter((workflow) => memberProjectIds.includes(workflow.projectId))
         const [mcpServices, projectConfigs] = await Promise.all([
             this.mcpServiceReferences({ tenantId, connection }),
-            this.projectConfigReferences({ tenantId, connection, memberProjectIds }),
+            this.projectConfigReferences({ tenantId, connection }),
         ])
+        const visibleMcpServices = mcpServices.filter((service) => memberProjectIds.includes(service.projectId))
+        const visibleProjectConfigs = projectConfigs.filter((config) => memberProjectIds.includes(config.projectId))
         return {
             workflows: visibleWorkflows,
             hiddenWorkflowCount: workflows.length - visibleWorkflows.length,
-            mcpServices,
-            projectConfigs,
+            mcpServices: visibleMcpServices,
+            hiddenMcpServiceCount: mcpServices.length - visibleMcpServices.length,
+            projectConfigs: visibleProjectConfigs,
+            hiddenProjectConfigCount: projectConfigs.length - visibleProjectConfigs.length,
         }
     },
 
@@ -92,16 +96,15 @@ export const connectionReferenceService = (log: FastifyBaseLogger) => ({
             .map((service) => ({ serviceId: service.id, name: service.name, projectId: service.projectId }))
     },
 
-    async projectConfigReferences({ tenantId, connection, memberProjectIds }: ReferencesParams): Promise<ConnectionProjectConfigReference[]> {
+    async projectConfigReferences({ tenantId, connection }: { tenantId: string, connection: ReferenceConnection }): Promise<ConnectionProjectConfigReference[]> {
         const replacements = await connectionReplacementReferenceRepo().find({
             where: [
                 { sourceConnectionId: connection.id },
                 { targetConnectionId: connection.id },
             ],
         })
-        const visible = replacements.filter((replacement) => memberProjectIds.includes(replacement.projectId))
-        const projects = await this.projectRefs({ tenantId, projectIds: unique(visible.map((replacement) => replacement.projectId)) })
-        return visible.map((replacement) => ({
+        const projects = await this.projectRefs({ tenantId, projectIds: unique(replacements.map((replacement) => replacement.projectId)) })
+        return replacements.map((replacement) => ({
             id: replacement.id,
             projectId: replacement.projectId,
             projectDisplayName: projects.get(replacement.projectId)?.displayName ?? '',

@@ -112,6 +112,13 @@ function CompareVersionsBody({
           after: rightQuery.data.trigger,
         })
       : [];
+  const workflowChanges =
+    leftQuery.data && rightQuery.data
+      ? versionDiff.workflowChanges({
+          before: leftQuery.data,
+          after: rightQuery.data,
+        })
+      : [];
   const isLoading = leftQuery.isLoading || rightQuery.isLoading;
 
   return (
@@ -136,13 +143,20 @@ function CompareVersionsBody({
         <div className="flex py-10">
           <LoadingSpinner />
         </div>
-      ) : changes.length === 0 ? (
+      ) : changes.length === 0 && workflowChanges.length === 0 ? (
         <p className="py-6 text-sm text-muted-foreground">
           {t('These two versions have the same steps and settings.')}
         </p>
       ) : (
         <ScrollArea className="max-h-[60vh]">
           <div className="flex flex-col gap-1">
+            {workflowChanges.length > 0 && (
+              <StepChangeRow
+                kind={StepChangeKind.MODIFIED}
+                displayName={t('Workflow')}
+                fields={workflowChanges}
+              />
+            )}
             {changes.map((change) => (
               <StepChangeRow
                 key={`${change.kind}-${change.name}`}

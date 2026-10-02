@@ -8,6 +8,7 @@ import {
     TriggerStrategy,
     TriggerTestStrategy,
     WebhookHandshakeStrategy,
+    WorkflowActionType,
     WorkflowOperationType,
     WorkflowStatus,
     WorkflowTriggerType,
@@ -403,6 +404,44 @@ describe('Workflow API', () => {
             expect(responseBody).toHaveProperty('workflows')
             expect(responseBody.workflows).toHaveLength(1)
             expect(responseBody.workflows[0]).toHaveProperty('trigger')
+        })
+
+        it('Leaves connection references out of the exported template', async () => {
+            const ctx = await createTestContext(app!)
+            const mockWorkflow = createMockWorkflow({ projectId: ctx.project.id, status: WorkflowStatus.ENABLED })
+            await db.save('workflow', mockWorkflow)
+            const now = new Date().toISOString()
+            await db.save('workflow_version', createMockWorkflowVersion({
+                workflowId: mockWorkflow.id,
+                updatedBy: ctx.user.id,
+                trigger: {
+                    type: WorkflowTriggerType.EMPTY,
+                    name: 'trigger',
+                    settings: {},
+                    valid: true,
+                    displayName: 'Trigger',
+                    lastUpdatedDate: now,
+                    nextAction: {
+                        type: WorkflowActionType.CODE,
+                        name: 'step_1',
+                        valid: true,
+                        displayName: 'Code',
+                        lastUpdatedDate: now,
+                        settings: {
+                            sourceCodeHash: 'x',
+                            input: { auth: '{{connections[\'hr-prod\']}}', legacy: '{{connections.hr-prod}}', note: 'keep' },
+                            sourceCode: { code: 'export const code = async () => 1', packageJson: '{}' },
+                        },
+                    },
+                },
+            }))
+
+            const response = await ctx.get(`/v1/workflows/${mockWorkflow.id}/template`)
+
+            expect(response.statusCode).toBe(StatusCodes.OK)
+            const exported = JSON.stringify(response.json().workflows[0].trigger)
+            expect(exported).not.toContain('hr-prod')
+            expect(exported).toContain('keep')
         })
     })
 })

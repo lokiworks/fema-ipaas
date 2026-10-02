@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { toast } from 'sonner';
@@ -30,14 +31,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
             toast.dismiss(toastIdRef.current);
             toastIdRef.current = null;
           }
-          console.log('connected to socket');
         });
 
         socket.on('disconnect', (reason) => {
           if (!toastIdRef.current) {
-            const id = toast('Connection Lost', {
+            const id = toast(t('Connection lost'), {
               id: 'websocket-disconnected',
-              description: 'We are trying to reconnect...',
+              description: t('We are trying to reconnect...'),
               duration: Infinity,
             });
             toastIdRef.current = id?.toString() ?? null;

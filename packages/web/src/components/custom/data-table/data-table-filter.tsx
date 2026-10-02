@@ -16,6 +16,7 @@ import { CURSOR_QUERY_PARAM } from '.';
 
 type DropdownFilterProps = {
   type: 'select';
+  single?: boolean;
   options: {
     label: string;
     value: string;
@@ -130,6 +131,7 @@ export function DataTableFilter<TData, TValue>({
           title={title}
           selectedValues={selectedValues}
           options={props.options}
+          single={props.single}
           handleFilterChange={handleFilterChange}
           facets={facets}
         />

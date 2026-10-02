@@ -85,6 +85,7 @@ export const useHandleKeyPressOnCanvas = () => {
         Cut: () => {
           if (
             readonly ||
+            !onCanvas ||
             selectedNodesWithoutTrigger.length === 0 ||
             document.getSelection()?.toString() !== ''
           ) {
@@ -101,7 +102,7 @@ export const useHandleKeyPressOnCanvas = () => {
           });
         },
         Delete: () => {
-          if (readonly) {
+          if (readonly || !onCanvas) {
             return;
           }
           if (selectedNodesWithoutTrigger.length > 0) {
@@ -117,7 +118,7 @@ export const useHandleKeyPressOnCanvas = () => {
           }
         },
         Skip: () => {
-          if (readonly) {
+          if (readonly || !onCanvas) {
             return;
           }
           if (selectedNodesWithoutTrigger.length > 0) {

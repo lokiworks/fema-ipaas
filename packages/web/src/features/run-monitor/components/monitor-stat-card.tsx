@@ -48,7 +48,12 @@ export function MonitorStatCard({
           </span>
         )}
       </span>
-      <span className="truncate text-xs text-muted-foreground">{delta}</span>
+      <span
+        className="w-full truncate text-xs text-muted-foreground"
+        title={typeof delta === 'string' ? delta : undefined}
+      >
+        {delta}
+      </span>
     </>
   );
   return (

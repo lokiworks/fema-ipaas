@@ -167,12 +167,12 @@ export const tenantRoutes = [
   ),
   tenantRoute(
     '/tenant/connectors/mcp/:serverId',
-    'MCP Server',
+    'MCP server',
     McpServerDetailPage,
   ),
   tenantRoute(
     '/tenant/connectors/requests',
-    'Connector Requests',
+    'Connector requests',
     ConnectorRequestsPage,
   ),
   tenantRoute(

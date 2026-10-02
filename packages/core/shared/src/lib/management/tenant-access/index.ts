@@ -50,7 +50,7 @@ const MAX_USERS_PER_BATCH = 10
 const PASSWORD_MIN_LENGTH_FLOOR = 8
 const PASSWORD_MIN_LENGTH_CEILING = 64
 
-const httpUrl = z.string().max(500).regex(/^https?:\/\/\S+\.\S+/, 'invalidHttpUrl')
+const httpUrl = z.string().max(500, 'urlTooLong').regex(/^https?:\/\/\S+\.\S+/, 'invalidHttpUrl')
 
 export const ModuleAccessSettings = z.object({
     deniedHint: z.enum(PermissionDeniedHint),

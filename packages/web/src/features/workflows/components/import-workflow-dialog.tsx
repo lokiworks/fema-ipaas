@@ -157,7 +157,6 @@ const ImportWorkflowDialog = (
         err.response?.status === HttpStatusCode.BadRequest
       ) {
         setErrorMessage(t('Template file is invalid'));
-        console.log(err);
       } else {
         internalErrorToast();
       }

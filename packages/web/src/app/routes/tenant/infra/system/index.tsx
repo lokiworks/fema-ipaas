@@ -115,7 +115,9 @@ function CurrentVersionCard({ overview }: { overview: SystemOverview }) {
     },
     {
       label: t('Container type'),
-      value: overview.containerType ?? t('App and worker in one container'),
+      value: systemRunbook.containerTypeLabel({
+        containerType: overview.containerType,
+      }),
     },
   ];
   return (

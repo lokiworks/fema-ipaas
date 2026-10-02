@@ -20,6 +20,7 @@ export function GlobalSearchCommand() {
   return (
     <Button
       variant="ghost"
+      aria-label={t('Search...')}
       onClick={() => setOpen(true)}
       className={cn(
         'h-8 w-full justify-start gap-2 overflow-hidden rounded-md p-2!  text-sm font-normal mr-auto',

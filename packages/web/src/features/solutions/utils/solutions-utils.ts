@@ -185,6 +185,14 @@ function workflowNamesOf({
   );
 }
 
+function generatedConnectionCheckConnector(label: string): string | null {
+  return label.match(GENERATED_CONNECTION_CHECK_LABEL)?.[1] ?? null;
+}
+
+function versionNotesLabel(notes: string): string {
+  return notes === FIRST_VERSION_NOTES ? t('First version') : notes;
+}
+
 function workflowPath({
   projectId,
   workflowId,
@@ -194,6 +202,9 @@ function workflowPath({
 }): string {
   return `/projects/${projectId}/workflows/${workflowId}`;
 }
+
+const GENERATED_CONNECTION_CHECK_LABEL = /^Connection for (@\S+) works$/;
+const FIRST_VERSION_NOTES = 'First version';
 
 export const WIZARD_STEPS = [
   'project',
@@ -216,6 +227,8 @@ export const solutionsUtils = {
   checkMessage,
   capacityMessage,
   workflowNamesOf,
+  generatedConnectionCheckConnector,
+  versionNotesLabel,
   workflowPath,
 };
 

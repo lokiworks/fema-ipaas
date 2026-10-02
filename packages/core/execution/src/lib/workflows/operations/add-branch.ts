@@ -1,5 +1,5 @@
 import { insertAt } from '@fema-ipaas/core-utils'
-import { WorkflowActionType, RouterAction } from '../actions/action'
+import { WorkflowActionType, ParallelAction, RouterAction } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { workflowStructureUtil } from '../util/workflow-structure-util'
 import { AddBranchRequest } from '.'
@@ -7,6 +7,17 @@ import { AddBranchRequest } from '.'
 
 function _addBranch(workflowVersion: WorkflowVersion, request: AddBranchRequest): WorkflowVersion {
     return workflowStructureUtil.transferWorkflow(workflowVersion, (parentStep) => {
+        if (parentStep.name === request.stepName && parentStep.type === WorkflowActionType.PARALLEL) {
+            const parallelAction = parentStep as ParallelAction
+            return {
+                ...parallelAction,
+                settings: {
+                    ...parallelAction.settings,
+                    branches: insertAt(parallelAction.settings.branches, request.branchIndex, { branchName: request.branchName }),
+                },
+                children: insertAt(parallelAction.children, request.branchIndex, null),
+            }
+        }
         if (parentStep.name !== request.stepName || parentStep.type !== WorkflowActionType.ROUTER) {
             return parentStep
         }

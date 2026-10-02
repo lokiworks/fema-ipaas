@@ -30,7 +30,7 @@ import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 import { CheckEmailNote } from './check-email-note';
 
 const SignInSchema = z.object({
-  email: z.string().regex(formatUtils.emailRegex, t('Email is invalid')),
+  email: z.string().trim().regex(formatUtils.emailRegex, t('Email is invalid')),
   password: z.string().min(1, t('Password is required')),
 });
 

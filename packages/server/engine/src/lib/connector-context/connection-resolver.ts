@@ -23,7 +23,7 @@ export const createConnectionResolver = ({ projectId, engineToken, apiUrl, conte
                     })
                 }
                 const connection: Connection = await response.json()
-                if (connection.status === ConnectionStatus.ERROR) {
+                if (UNUSABLE_CONNECTION_STATUSES.includes(connection.status)) {
                     throw new ConnectionExpiredError(externalId)
                 }
                 assertConnectorBinding({ externalId, connectorName, connection })
@@ -43,6 +43,8 @@ export const createConnectionResolver = ({ projectId, engineToken, apiUrl, conte
         },
     }
 }
+
+const UNUSABLE_CONNECTION_STATUSES: ConnectionStatus[] = [ConnectionStatus.ERROR, ConnectionStatus.EXPIRED]
 
 const handleResponseError = ({ externalId, httpStatus }: HandleResponseErrorParams): never => {
     if (httpStatus === 404) {

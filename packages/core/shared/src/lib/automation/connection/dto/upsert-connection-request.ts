@@ -1,11 +1,12 @@
 import { Metadata } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ConnectionScope, ConnectionType } from '../connection'
+import { CONNECTION_DISPLAY_NAME_MAX_LENGTH } from '../connection-limits'
 import { OAuth2AuthorizationMethod } from '../oauth2-authorization-method'
 
 const commonAuthProps = {
     externalId: z.string(),
-    displayName: z.string(),
+    displayName: z.string().max(CONNECTION_DISPLAY_NAME_MAX_LENGTH, 'connectionDisplayNameTooLong'),
     connectorName: z.string(),
     projectId: z.string(),
     metadata: z.optional(Metadata),
@@ -142,12 +143,12 @@ export type UpsertConnectionRequestBody = z.infer<typeof UpsertConnectionRequest
 
 
 export const UpdateConnectionValueRequestBody = z.object({
-    displayName: z.string().min(1),
+    displayName: z.string().min(1).max(CONNECTION_DISPLAY_NAME_MAX_LENGTH, 'connectionDisplayNameTooLong'),
     metadata: z.optional(Metadata),
 })
 
 export const UpdateGlobalConnectionValueRequestBody = z.object({
-    displayName: z.string().min(1),
+    displayName: z.string().min(1).max(CONNECTION_DISPLAY_NAME_MAX_LENGTH, 'connectionDisplayNameTooLong'),
     projectIds: z.array(z.string()).optional(),
     metadata: z.optional(Metadata),
     preSelectForNewProjects: z.boolean().optional(),

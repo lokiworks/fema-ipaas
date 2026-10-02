@@ -2,8 +2,9 @@ import './polyfills';
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 
+import { i18nReady } from '@/i18n';
+
 import App from './app/app';
-import { i18nReady } from './i18n';
 import { errorReporting } from './lib/error-reporting';
 import { reloadOnceForStaleChunk } from './lib/lazy-with-retry';
 

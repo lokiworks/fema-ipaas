@@ -42,7 +42,9 @@ export function SolutionsPage() {
       >
         <TabsList>
           <TabsTrigger value={LIBRARY_TAB}>{t('Solution library')}</TabsTrigger>
-          <TabsTrigger value={INSTALLED_TAB}>{t('Installed')}</TabsTrigger>
+          <TabsTrigger value={INSTALLED_TAB}>
+            {t('Installed solutions')}
+          </TabsTrigger>
         </TabsList>
         <TabsContent value={LIBRARY_TAB}>
           <SolutionLibrary onGenerate={() => setGenerating(true)} />

@@ -115,11 +115,13 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
     },
     )
     app.get('/:id', GetConnectionRequest, async (request): Promise<ConnectionWithoutSensitiveData> => {
-        return connectionService(request.log).getOnePublicOrThrow({
+        const connection = await connectionService(request.log).getOnePublicOrThrow({
             id: request.params.id,
             tenantId: request.principal.tenant.id,
             projectId: request.projectId,
         })
+        await connectionAccessService(request.log).assertVisible({ connection, principal: principalOf(request.principal) })
+        return connection
     })
 
     app.post('/:id/revalidate', RevalidateConnectionRequest, async (request): Promise<ConnectionWithoutSensitiveData> => {
@@ -151,13 +153,16 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
 
     app.post('/replace', ReplaceConnectionsRequest, async (request, reply) => {
         const { sourceConnectionId, targetConnectionId, deleteSourceConnection, applyToPublishedVersions } = request.body
+        const [sourceConnection, targetConnection] = await Promise.all([sourceConnectionId, targetConnectionId].map((id) => connectionService(request.log).getOneOrThrowWithoutValue({
+            id,
+            tenantId: request.principal.tenant.id,
+            projectId: request.projectId,
+        })))
+        const principal = principalOf(request.principal)
+        await connectionAccessService(request.log).assertCanUse({ connection: sourceConnection, principal })
+        await connectionAccessService(request.log).assertCanUse({ connection: targetConnection, principal })
         if (deleteSourceConnection) {
-            const sourceConnection = await connectionService(request.log).getOneOrThrowWithoutValue({
-                id: sourceConnectionId,
-                tenantId: request.principal.tenant.id,
-                projectId: request.projectId,
-            })
-            await connectionAccessService(request.log).assertOwner({ connection: sourceConnection, principal: principalOf(request.principal) })
+            await connectionAccessService(request.log).assertOwner({ connection: sourceConnection, principal })
         }
         await connectionService(request.log).replace({
             sourceConnectionId,

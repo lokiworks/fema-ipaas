@@ -36,6 +36,24 @@ export const userInvitationsHooks = {
   },
 };
 
+export const userInvitationQueries = {
+  useAcceptInvitation: ({ token }: { token: string | null }) => {
+    return useQuery<boolean>({
+      queryKey: [userInvitationsQueryKey, 'accept', token],
+      queryFn: async () => {
+        const { registered } = await userInvitationApi.accept(token ?? '');
+        return registered;
+      },
+      enabled: token !== null && token.length > 0,
+      retry: false,
+      staleTime: Infinity,
+      gcTime: 0,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    });
+  },
+};
+
 export const userInvitationMutations = {
   useInviteToProject: ({ onSuccess }: { onSuccess: () => void }) => {
     const queryClient = useQueryClient();
@@ -67,22 +85,6 @@ export const userInvitationMutations = {
         });
         onSuccess();
       },
-    });
-  },
-  useAcceptInvitation: ({
-    onSuccess,
-    onError,
-  }: {
-    onSuccess: (registered: boolean) => void;
-    onError: (error: unknown) => void;
-  }) => {
-    return useMutation({
-      mutationFn: async (token: string) => {
-        const { registered } = await userInvitationApi.accept(token);
-        return registered;
-      },
-      onSuccess,
-      onError,
     });
   },
 };

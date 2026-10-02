@@ -116,3 +116,26 @@ describe('systemRunbook.isVersionSkewed', () => {
     ).toBe(false);
   });
 });
+
+describe('systemRunbook.containerTypeLabel', () => {
+  it('describes every container type the server can report in words', () => {
+    expect(systemRunbook.containerTypeLabel({ containerType: null })).toBe(
+      'App and worker in one container',
+    );
+    expect(
+      systemRunbook.containerTypeLabel({ containerType: 'WORKER_AND_APP' }),
+    ).toBe('App and worker in one container');
+    expect(systemRunbook.containerTypeLabel({ containerType: 'APP' })).toBe(
+      'App container only',
+    );
+    expect(systemRunbook.containerTypeLabel({ containerType: 'WORKER' })).toBe(
+      'Worker container only',
+    );
+  });
+
+  it('shows an unknown container type as reported instead of hiding it', () => {
+    expect(systemRunbook.containerTypeLabel({ containerType: 'SIDECAR' })).toBe(
+      'SIDECAR',
+    );
+  });
+});

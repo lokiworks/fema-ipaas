@@ -20,12 +20,14 @@ import {
     issueUtils,
     IssueWithSeverity,
     ListIssuesRequestQuery,
+    RunMonitorRange,
     UpdateIssueRequestBody,
     WorkflowVersion,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { Brackets, In, SelectQueryBuilder } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { databaseConnection } from '../database/database-connection'
 import { distributedLock } from '../database/redis-connections'
 import { projectAccess } from '../project/project-access'
 import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
@@ -56,7 +58,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
                 if (isNil(existing)) {
                     const created = await insertIssue({ execution, workflowVersion, classification, now })
                     await recordActivity({ issue: created, type: IssueActivityType.FIRST_SEEN, actorId: null, data: { executionId: execution.id } })
-                    return { issue: created, event: IssueRecordEvent.NEW }
+                    return { issue: created, event: IssueRecordEvent.NEW, counted: true }
                 }
                 const reopening = existing.status === IssueStatus.RESOLVED
                 const repeatAttempt = issueUtils.isRepeatAttempt({ execution, existingIssueId: existing.id })
@@ -70,7 +72,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
                 if (reopening) {
                     await recordActivity({ issue: updated, type: IssueActivityType.REOPENED, actorId: null, data: { executionId: execution.id } })
                 }
-                return { issue: updated, event: reopening ? IssueRecordEvent.REOPENED : IssueRecordEvent.OCCURRED }
+                return { issue: updated, event: reopening ? IssueRecordEvent.REOPENED : IssueRecordEvent.OCCURRED, counted: !repeatAttempt }
             },
         })
         await executionRepo().update({ id: execution.id, projectId: execution.projectId }, { issueId: outcome.issue.id })
@@ -128,7 +130,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async overview({ userId, tenantId }: OverviewParams): Promise<IssueOverview> {
+    async overview({ userId, tenantId, projectId }: OverviewParams): Promise<IssueOverview> {
         const projects = await projectAccess(log).projectsWithPermission({ userId, tenantId, permission: Permission.READ_ISSUE })
         if (projects.length === 0) {
             return { projects: [], latest: [] }
@@ -140,11 +142,12 @@ export const issueService = (log: FastifyBaseLogger) => ({
                 builder: issueRepo().createQueryBuilder('issue').where('issue."projectId" IN (:...projectIds)', { projectIds }),
                 view: IssueListView.UNRESOLVED,
                 now,
+                todayStart: now,
             }),
             sort: IssueSort.LAST_SEEN,
         }).getMany()
         const active = unresolved.filter((issue) => !isMuted({ issue, now }))
-        const latest = active.slice(0, OVERVIEW_LATEST_LIMIT)
+        const latest = active.filter((issue) => isNil(projectId) || issue.projectId === projectId).slice(0, OVERVIEW_LATEST_LIMIT)
         const nameByProject = new Map(projects.map((project) => [project.id, project.displayName]))
         const latestWithSeverity = await withSeverityAcrossProjects({ issues: latest, log })
         return {
@@ -209,27 +212,50 @@ export const issueService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async trend({ id, projectId, granularity }: TrendParams): Promise<IssueTrend> {
+    async trend({ id, projectId, granularity, timezone }: TrendParams): Promise<IssueTrend> {
         await getOneOrThrow({ id, projectId })
-        const unit = granularity === IssueTrendGranularity.HOUR ? 'hour' : 'day'
-        const bucketCount = granularity === IssueTrendGranularity.HOUR ? HOURLY_BUCKETS : DAILY_BUCKETS
-        const end = dayjsUtil().startOf(unit)
-        const start = end.subtract(bucketCount - 1, unit)
-        const rows = await executionRepo().createQueryBuilder('execution')
-            .select(`date_trunc('${unit}', execution.created)`, 'bucket')
-            .addSelect('COUNT(*)', 'count')
-            .where('execution."issueId" = :id', { id })
-            .andWhere('execution."projectId" = :projectId', { projectId })
-            .andWhere('execution."rerunOfExecutionId" IS NULL')
-            .andWhere('execution.created >= :start', { start: start.toISOString() })
-            .groupBy('bucket')
-            .getRawMany<{ bucket: string | Date, count: string }>()
-        const counts = new Map(rows.map((row) => [dayjsUtil(new Date(row.bucket).toISOString()).startOf(unit).valueOf(), Number(row.count)]))
-        const buckets = Array.from({ length: bucketCount }, (_, index) => {
-            const bucketStart = start.add(index, unit)
-            return { start: bucketStart.toISOString(), count: counts.get(bucketStart.valueOf()) ?? 0 }
+        const resolved = granularity ?? IssueTrendGranularity.DAY
+        const starts = runMonitorUtils.bucketStarts({
+            range: resolved === IssueTrendGranularity.HOUR ? RunMonitorRange.LAST_24_HOURS : RunMonitorRange.LAST_30_DAYS,
+            now: Date.now(),
+            timezone: runMonitorUtils.safeTimezone(timezone),
         })
-        return { granularity: granularity ?? IssueTrendGranularity.DAY, buckets }
+        const rows: { bucket: number | string, count: string }[] = await databaseConnection().query(
+            `SELECT width_bucket(e.created, $3::timestamptz[]) AS bucket, COUNT(*) AS count
+            FROM "execution" e
+            WHERE e."issueId" = $1 AND e."projectId" = $2 AND e."rerunOfExecutionId" IS NULL AND e.created >= $4
+            GROUP BY 1`,
+            [id, projectId, starts.map((start) => new Date(start).toISOString()), new Date(starts[0]).toISOString()],
+        )
+        const counts = new Map(rows.map((row) => [Number(row.bucket), Number(row.count)]))
+        return {
+            granularity: resolved,
+            buckets: starts.map((start, index) => ({ start: new Date(start).toISOString(), count: counts.get(index + 1) ?? 0 })),
+        }
+    },
+
+    async onWorkflowDeleted({ workflowId, projectId }: { workflowId: string, projectId: ProjectId }): Promise<void> {
+        const stale = await issueRepo().find({
+            where: { workflowId, projectId, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
+            select: ['id', 'status'],
+        })
+        if (stale.length === 0) {
+            return
+        }
+        await issueRepo().update({ id: In(stale.map((issue) => issue.id)), projectId }, {
+            status: IssueStatus.RESOLVED,
+            resolvedAt: dayjsUtil().toISOString(),
+            resolvedById: null,
+            reopened: false,
+        })
+        await issueActivityRepo().insert(stale.map((issue) => ({
+            id: generateId(),
+            issueId: issue.id,
+            projectId,
+            type: IssueActivityType.STATUS_CHANGED,
+            actorId: null,
+            data: { from: issue.status, to: IssueStatus.RESOLVED },
+        })))
     },
 
     async affectedWorkflowIds({ id, projectId }: IssueRef): Promise<string[]> {
@@ -383,7 +409,8 @@ async function countAffectedWorkflows(issueIds: string[]): Promise<Map<string, n
 
 function applyListFilters({ builder, query, currentUserId }: ApplyListFiltersParams): SelectQueryBuilder<Issue> {
     const now = dayjsUtil().toISOString()
-    const withView = applyView({ builder, view: query.view ?? IssueListView.UNRESOLVED, now })
+    const todayStart = new Date(runMonitorUtils.calendarDaysStart({ days: 1, now: Date.now(), timezone: runMonitorUtils.safeTimezone(query.timezone) })).toISOString()
+    const withView = applyView({ builder, view: query.view ?? IssueListView.UNRESOLVED, now, todayStart })
     const withSeverityFilter = isNil(query.severity) ? withView : applySeverityFilter({ builder: withView, severity: query.severity })
     const withAssignee = isNil(query.assignee) ? withSeverityFilter : applyAssigneeFilter({ builder: withSeverityFilter, assignee: query.assignee, currentUserId })
     const withWorkflow = isNil(query.workflowId) ? withAssignee : withAssignee.andWhere('issue."workflowId" = :workflowId', { workflowId: query.workflowId })
@@ -398,7 +425,7 @@ function applyListFilters({ builder, query, currentUserId }: ApplyListFiltersPar
     }))
 }
 
-function applyView({ builder, view, now }: { builder: SelectQueryBuilder<Issue>, view: IssueListView, now: string }): SelectQueryBuilder<Issue> {
+function applyView({ builder, view, now, todayStart }: { builder: SelectQueryBuilder<Issue>, view: IssueListView, now: string, todayStart: string }): SelectQueryBuilder<Issue> {
     const notMuted = '(issue."mutedUntil" IS NULL OR issue."mutedUntil" <= :now)'
     switch (view) {
         case IssueListView.UNRESOLVED:
@@ -408,12 +435,12 @@ function applyView({ builder, view, now }: { builder: SelectQueryBuilder<Issue>,
         case IssueListView.REOPENED:
             return builder.andWhere('issue.reopened = true').andWhere('issue.status = :status', { status: IssueStatus.OPEN })
         case IssueListView.INVESTIGATING:
-            return builder.andWhere('issue.status = :status', { status: IssueStatus.INVESTIGATING })
+            return builder.andWhere('issue.status = :status', { status: IssueStatus.INVESTIGATING }).andWhere(notMuted, { now })
         case IssueListView.TODAY:
-            return builder.andWhere(new Brackets((qb) => {
-                qb.where('issue."firstSeenAt" >= :today', { today: dayjsUtil().startOf('day').toISOString() })
+            return builder.andWhere(notMuted, { now }).andWhere(new Brackets((qb) => {
+                qb.where('issue."firstSeenAt" >= :today', { today: todayStart })
                     .orWhere(new Brackets((inner) => {
-                        inner.where('issue.reopened = true').andWhere('issue."lastSeenAt" >= :today', { today: dayjsUtil().startOf('day').toISOString() })
+                        inner.where('issue.reopened = true').andWhere('issue."lastSeenAt" >= :today', { today: todayStart })
                     }))
             }))
         case IssueListView.MUTED:
@@ -478,8 +505,6 @@ const DEFAULT_PAGE_SIZE = 20
 const OVERVIEW_LATEST_LIMIT = 50
 const MAX_ACTIVITIES = 200
 const MAX_TITLE_LENGTH = 200
-const HOURLY_BUCKETS = 24
-const DAILY_BUCKETS = 30
 const ASSIGNEE_ME = 'me'
 const ASSIGNEE_UNASSIGNED = 'unassigned'
 
@@ -492,6 +517,7 @@ export enum IssueRecordEvent {
 export type RecordFailureResult = {
     issue: Issue
     event: IssueRecordEvent
+    counted: boolean
 }
 
 type RecordFailureParams = {
@@ -525,6 +551,7 @@ type ListParams = {
 type OverviewParams = {
     userId: UserId
     tenantId: string
+    projectId: ProjectId | undefined
 }
 
 type SummaryParams = {
@@ -571,6 +598,7 @@ type ListExecutionsParams = IssueRef & {
 
 type TrendParams = IssueRef & {
     granularity: IssueTrendGranularity | undefined
+    timezone: string | undefined
 }
 
 type WithSeverityParams = {

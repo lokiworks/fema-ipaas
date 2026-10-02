@@ -25,6 +25,7 @@ import { authenticationSession } from '@/lib/authentication-session';
 import { solutionsUtils } from '../utils/solutions-utils';
 
 import { PublishVersionDialog } from './publish-version-dialog';
+import { SolutionCheckLabel } from './solution-check-label';
 import { SolutionConnectorIcons } from './solution-connector-icons';
 
 function SolutionDetailView({ solution }: SolutionDetailViewProps) {
@@ -210,7 +211,7 @@ function SolutionDetailView({ solution }: SolutionDetailViewProps) {
                     />
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {version.notes}
+                    {solutionsUtils.versionNotesLabel(version.notes)}
                   </div>
                 </div>
               ))}
@@ -248,7 +249,9 @@ function CheckRow({ check }: { check: SolutionCheck }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 flex-col">
-        <span className="text-sm font-medium">{check.label}</span>
+        <span className="text-sm font-medium">
+          <SolutionCheckLabel label={check.label} />
+        </span>
         {check.detail && (
           <span className="text-xs text-muted-foreground">{check.detail}</span>
         )}

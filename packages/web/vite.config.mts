@@ -12,7 +12,7 @@ export default defineConfig(({ command, mode }) => {
   const isDev = command === 'serve' || mode === 'development';
 
   const FEMA_TITLE = 'FEMA Integration Platform';
-  const FEMA_FAVICON = 'https://fema.local/favicon.ico';
+  const FEMA_FAVICON = '/favicon.ico';
 
   return {
     root: __dirname,

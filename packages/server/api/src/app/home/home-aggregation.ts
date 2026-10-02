@@ -1,12 +1,12 @@
 import { isNil } from '@fema-ipaas/core-utils'
 import {
     ExecutionStatus,
-    FAILED_STATES,
     HOME_HOURS_PER_DAY,
     HomeProjectRunCount,
     HomeTodo,
     isExecutionStateTerminal,
 } from '@fema-ipaas/shared'
+import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 
 function resolveSince({ since, now }: { since: string, now: Date }): Date {
     const parsed = new Date(since)
@@ -43,7 +43,7 @@ function fillHourly(rows: HourlyBucketRow[]): number[] {
 }
 
 function isFailedOrTimeout(status: ExecutionStatus): boolean {
-    return FAILED_STATES.includes(status)
+    return projectStatsUtils.FAILED_STATUSES.includes(status)
 }
 
 function canDecideRelease({ approverIds, requestedById, userId }: { approverIds: string[], requestedById: string, userId: string }): boolean {

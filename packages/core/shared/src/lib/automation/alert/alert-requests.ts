@@ -31,7 +31,7 @@ export const UpsertAlertPolicyRequestBody = z.object({
     events: z.array(z.enum(AlertTriggerEvent)).min(1, 'alertPolicyEventsRequired'),
     failureRate: FailureRateCondition.nullable(),
     capacityThresholdPercent: z.number().int().refine(isCapacityThreshold, 'invalidCapacityThreshold').nullable().optional(),
-    groupWindowMinutes: z.number().int().min(1).max(1440),
+    groupWindowMinutes: z.number().int('alertGroupWindowOutOfRange').min(1, 'alertGroupWindowOutOfRange').max(1440, 'alertGroupWindowOutOfRange'),
     quietHours: QuietHours,
     escalation: AlertEscalation,
     channelIds: z.array(z.string()).min(1, 'alertPolicyChannelsRequired'),

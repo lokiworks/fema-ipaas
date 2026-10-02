@@ -54,7 +54,8 @@ function _getImportOperationsForSteps(step: WorkflowAction | WorkflowTrigger | u
                 }
                 break
             }
-            case WorkflowActionType.ROUTER: {
+            case WorkflowActionType.ROUTER:
+            case WorkflowActionType.PARALLEL: {
                 if (step.children) {
                     for (const [index, child] of step.children.entries()) {
                         if (!isNil(child)) {

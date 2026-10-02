@@ -1,5 +1,6 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import {
+  AlertRecordKind,
   IssueFixKind,
   IssueKind,
   IssueStatus,
@@ -652,10 +653,9 @@ function OverviewCard({
 
 function AlertsCard({ issueId }: { issueId: string }) {
   const { data: alerts } = issuesHooks.useAlerts(issueId);
-  const merged = (alerts ?? []).reduce(
-    (sum, alert) => sum + alert.mergedCount,
-    0,
-  );
+  const merged = (alerts ?? [])
+    .filter((alert) => FAILURE_ALERT_KINDS.includes(alert.kind))
+    .reduce((sum, alert) => sum + alert.mergedCount, 0);
   return (
     <Card>
       <CardHeader>
@@ -694,6 +694,11 @@ function AlertsCard({ issueId }: { issueId: string }) {
 }
 
 const MUTE_HOURS = [1, 4, 24] as const;
+const FAILURE_ALERT_KINDS: AlertRecordKind[] = [
+  AlertRecordKind.NEW,
+  AlertRecordKind.REOPENED,
+  AlertRecordKind.STILL_FAILING,
+];
 const RUNS_PAGE_SIZE = 8;
 const NOTE_MAX_LENGTH = 500;
 

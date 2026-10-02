@@ -156,18 +156,22 @@ export const formatUtils = {
     const diffInDays = now.diff(inputDate, 'day');
 
     if (diffInSeconds < 60) {
-      return `${diffInSeconds}s ago`;
+      return t('{count}s ago', { count: diffInSeconds });
     }
     if (diffInMinutes < 60) {
-      return `${diffInMinutes}m ago`;
+      return t('{count}m ago', { count: diffInMinutes });
     }
     if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
+      return t('{count}h ago', { count: diffInHours });
     }
     if (diffInDays < 30) {
-      return `${diffInDays}d ago`;
+      return t('{count}d ago', { count: diffInDays });
     }
-    return inputDate.format('MMM D, YYYY');
+    return Intl.DateTimeFormat(i18next.language, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(date);
   },
   formatDuration(durationMs: number | undefined, short?: boolean): string {
     if (durationMs === undefined) {

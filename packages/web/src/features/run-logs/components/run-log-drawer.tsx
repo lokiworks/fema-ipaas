@@ -89,9 +89,15 @@ export function RunLogDrawer({
     >
       <SheetContent className="w-full overflow-y-auto sm:max-w-5xl">
         {isLoading && (
-          <div className="flex h-40 items-center justify-center">
-            <LoadingSpinner />
-          </div>
+          <>
+            <SheetHeader className="sr-only">
+              <SheetTitle>{t('Run logs')}</SheetTitle>
+              <SheetDescription>{t('Run logs')}</SheetDescription>
+            </SheetHeader>
+            <div className="flex h-40 items-center justify-center">
+              <LoadingSpinner />
+            </div>
+          </>
         )}
         {isError && (
           <div className="p-6">

@@ -25,7 +25,8 @@ function _deleteAction(
                     }
                     break
                 }
-                case WorkflowActionType.ROUTER: {
+                case WorkflowActionType.ROUTER:
+                case WorkflowActionType.PARALLEL: {
                     parentStep.children = parentStep.children.map((child) => {
                         if (child && child.name === name) {
                             return child.nextAction ?? null

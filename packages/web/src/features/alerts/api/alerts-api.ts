@@ -11,6 +11,7 @@ import {
 } from '@fema-ipaas/shared';
 
 import { api } from '@/lib/api';
+import { timezoneUtils } from '@/lib/timezone-utils';
 
 export const alertsApi = {
   capabilities(): Promise<{ emailConfigured: boolean }> {
@@ -60,6 +61,8 @@ export const alertsApi = {
     return api.get<SeekPage<AlertRecord>>('/v1/alerts/records', request);
   },
   recordStats(): Promise<AlertRecordStats> {
-    return api.get<AlertRecordStats>('/v1/alerts/records/stats');
+    return api.get<AlertRecordStats>('/v1/alerts/records/stats', {
+      timezone: timezoneUtils.browser(),
+    });
   },
 };

@@ -91,7 +91,8 @@ function _updateAction(workflowVersion: WorkflowVersion, request: UpdateActionRe
 
             case WorkflowActionType.PARALLEL: {
                 const existingSampleData = stepToUpdate.type === WorkflowActionType.PARALLEL ? stepToUpdate.settings.sampleData : undefined
-                const children = stepToUpdate.type === WorkflowActionType.PARALLEL ? stepToUpdate.children : request.settings.branches.map(() => null)
+                const existingChildren = stepToUpdate.type === WorkflowActionType.PARALLEL ? stepToUpdate.children : []
+                const children = request.settings.branches.map((_, index) => existingChildren[index] ?? null)
                 updatedAction = {
                     ...baseProps,
                     settings: { ...request.settings, sampleData: existingSampleData, displayNumber: carriedDisplayNumber },

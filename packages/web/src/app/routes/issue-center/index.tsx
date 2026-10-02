@@ -77,6 +77,7 @@ function UnresolvedIssues() {
   const selectedProjectId = searchParams.get('project');
   const { data: overview, isLoading } = issuesHooks.useOverview({
     showErrorDialog: true,
+    projectId: selectedProjectId ?? undefined,
   });
 
   if (isLoading || !overview) {
@@ -96,9 +97,7 @@ function UnresolvedIssues() {
     );
   }
 
-  const issues = overview.latest.filter(
-    (issue) => !selectedProjectId || issue.projectId === selectedProjectId,
-  );
+  const issues = overview.latest;
   const toggleProject = (projectId: string) =>
     setSearchParams(
       projectId === selectedProjectId ? {} : { project: projectId },

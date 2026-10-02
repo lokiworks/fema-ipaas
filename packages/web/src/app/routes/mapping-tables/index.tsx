@@ -8,7 +8,7 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Download, Plus, Table2, Trash2, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
@@ -617,42 +617,50 @@ function NewTableDialog({
     defaultValue: null,
     rows: [],
   };
+  const canSubmit = name.trim().length > 0 && !isPending;
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!canSubmit) {
+      return;
+    }
+    save(
+      { id: null, request },
+      {
+        onSuccess: (table) => {
+          onCreated(table.id);
+          setName('');
+          onOpenChange(false);
+        },
+      },
+    );
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('New mapping table')}</DialogTitle>
-        </DialogHeader>
-        <LabeledInput
-          label={t('Name')}
-          value={name}
-          disabled={false}
-          maxLength={30}
-          onChange={setName}
-        />
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            disabled={name.trim().length === 0 || isPending}
-            loading={isPending}
-            onClick={() =>
-              save(
-                { id: null, request },
-                {
-                  onSuccess: (table) => {
-                    onCreated(table.id);
-                    setName('');
-                    onOpenChange(false);
-                  },
-                },
-              )
-            }
-          >
-            {t('Create')}
-          </Button>
-        </DialogFooter>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>{t('New mapping table')}</DialogTitle>
+          </DialogHeader>
+          <LabeledInput
+            label={t('Name')}
+            value={name}
+            disabled={false}
+            maxLength={30}
+            onChange={setName}
+          />
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button type="submit" disabled={!canSubmit} loading={isPending}>
+              {t('Create')}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
@@ -671,10 +679,12 @@ function LabeledInput({
   maxLength: number;
   onChange: (value: string) => void;
 }) {
+  const inputId = useId();
   return (
     <div className="flex flex-col gap-1">
-      <Label>{label}</Label>
+      <Label htmlFor={inputId}>{label}</Label>
       <Input
+        id={inputId}
         value={value}
         disabled={disabled}
         maxLength={maxLength}

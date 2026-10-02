@@ -375,7 +375,7 @@ function connectionIssues({
           issue({
             step,
             code: ValidationCode.CONNECTION_REQUIRED,
-            tab: ValidationTab.INPUT,
+            tab: ValidationTab.ACTION,
           }),
         ]
       : [];
@@ -391,7 +391,7 @@ function connectionIssues({
         issue({
           step,
           code: ValidationCode.CONNECTION_UNAVAILABLE,
-          tab: ValidationTab.INPUT,
+          tab: ValidationTab.ACTION,
           params: { connection: externalId },
         }),
       ];
@@ -401,8 +401,11 @@ function connectionIssues({
       : [
           issue({
             step,
-            code: ValidationCode.CONNECTION_UNHEALTHY,
-            tab: ValidationTab.INPUT,
+            code:
+              connection.status === ConnectionStatus.EXPIRED
+                ? ValidationCode.CONNECTION_EXPIRED
+                : ValidationCode.CONNECTION_UNHEALTHY,
+            tab: ValidationTab.ACTION,
             severity: ValidationSeverity.WARNING,
             params: { connection: connection.displayName },
           }),
@@ -862,6 +865,7 @@ export enum ValidationCode {
   CONNECTION_REQUIRED = 'CONNECTION_REQUIRED',
   CONNECTION_UNAVAILABLE = 'CONNECTION_UNAVAILABLE',
   CONNECTION_UNHEALTHY = 'CONNECTION_UNHEALTHY',
+  CONNECTION_EXPIRED = 'CONNECTION_EXPIRED',
   REQUIRED_FIELD_MISSING = 'REQUIRED_FIELD_MISSING',
   STEP_INCOMPLETE = 'STEP_INCOMPLETE',
   MAPPING_TABLE_MISSING = 'MAPPING_TABLE_MISSING',

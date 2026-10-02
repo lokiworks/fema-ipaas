@@ -13,6 +13,8 @@
   "Use Proxy": "使用代理",
   "Proxy Settings": "代理设置",
   "Timeout(in seconds)": "超时（秒）",
+  "Allow untrusted TLS certificate": "允许不受信任的 TLS 证书",
+  "Skip certificate verification for this request only. Turn this on solely for an internal host with a self-signed certificate, since it removes the protection against an intercepted connection.": "仅对本次请求跳过证书校验。只应在内部主机使用自签名证书时开启，因为这会失去对连接被截获的防护。",
   "Follow redirects": "跟随重定向",
   "On Failure": "失败时",
   "Enable for files like PDFs, images, etc. A base64 body will be returned.": "处理 PDF、图片等文件时请开启，响应体将以 base64 返回。",

@@ -74,8 +74,6 @@ export enum ConnectionOwnershipFilter {
     SHARED = 'SHARED',
 }
 
-export const CONNECTION_DISPLAY_NAME_MAX_LENGTH = 30
-
 const PERMISSION_RANK: Record<ConnectionPermission, number> = {
     [ConnectionPermission.OWNER]: 3,
     [ConnectionPermission.EDIT]: 2,
@@ -90,6 +88,12 @@ export const ConnectionShareUser = z.object({
 })
 export type ConnectionShareUser = z.infer<typeof ConnectionShareUser>
 
+export const ListConnectionShareCandidatesRequestQuery = z.object({
+    search: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(500).optional(),
+})
+export type ListConnectionShareCandidatesRequestQuery = z.infer<typeof ListConnectionShareCandidatesRequestQuery>
+
 export const ConnectionShare = z.object({
     ...BaseModelSchema,
     tenantId: z.string(),
@@ -101,7 +105,7 @@ export const ConnectionShare = z.object({
 export type ConnectionShare = z.infer<typeof ConnectionShare>
 
 export const AddConnectionSharesRequestBody = z.object({
-    userIds: z.array(z.string()).min(1, 'connectionShareSelectMember').max(100),
+    userIds: z.array(z.string()).min(1, 'connectionShareSelectMember').max(100, 'connectionShareTooManyMembers'),
     permission: z.enum(ConnectionSharePermission),
 })
 export type AddConnectionSharesRequestBody = z.infer<typeof AddConnectionSharesRequestBody>
@@ -174,7 +178,9 @@ export const ConnectionReferences = z.object({
     workflows: z.array(ConnectionWorkflowReference),
     hiddenWorkflowCount: z.number(),
     mcpServices: z.array(ConnectionMcpServiceReference),
+    hiddenMcpServiceCount: z.number(),
     projectConfigs: z.array(ConnectionProjectConfigReference),
+    hiddenProjectConfigCount: z.number(),
 })
 export type ConnectionReferences = z.infer<typeof ConnectionReferences>
 

@@ -79,7 +79,24 @@ describe('issueUtils.insightOf', () => {
         expect(issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_429' }, connectionHealthy: true }).cause).toBe(IssueInsightCause.RATE_LIMITED)
         expect(issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_404' }, connectionHealthy: true }).cause).toBe(IssueInsightCause.NOT_FOUND)
         expect(issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_504' }, connectionHealthy: true }).cause).toBe(IssueInsightCause.UPSTREAM_TIMEOUT)
-        expect(issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'STEP_FAILED' }, connectionHealthy: true }).cause).toBe(IssueInsightCause.REJECTED_INPUT)
+        expect(issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_422' }, connectionHealthy: true }).cause).toBe(IssueInsightCause.REJECTED_INPUT)
+    })
+
+    it('tells access problems and server errors apart from rejected input', () => {
+        const forbidden = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_403' }, connectionHealthy: true })
+        const unavailable = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_503' }, connectionHealthy: true })
+        const internal = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_500' }, connectionHealthy: true })
+        expect(forbidden.cause).toBe(IssueInsightCause.ACCESS_DENIED)
+        expect(forbidden.httpStatus).toBe(403)
+        expect(unavailable.cause).toBe(IssueInsightCause.UPSTREAM_ERROR)
+        expect(internal.cause).toBe(IssueInsightCause.UPSTREAM_ERROR)
+        expect(internal.httpStatus).toBe(500)
+    })
+
+    it('does not invent an http status for failures that have none', () => {
+        const insight = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'STEP_FAILED' }, connectionHealthy: true })
+        expect(insight.cause).toBe(IssueInsightCause.STEP_ERROR)
+        expect(insight.httpStatus).toBeNull()
     })
 
     it('recognises transient statuses', () => {

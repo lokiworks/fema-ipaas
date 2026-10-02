@@ -9,6 +9,7 @@ import {
   RunLogMatch,
   RunLogScope,
   RunLogTimeRange,
+  RUN_LOG_TEXT_MAX_LENGTH,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Clock, ListFilter, Plus, X } from 'lucide-react';
@@ -474,7 +475,7 @@ function ConditionValue({
         <Input
           className="h-9"
           value={condition.text}
-          maxLength={200}
+          maxLength={RUN_LOG_TEXT_MAX_LENGTH}
           placeholder={t(
             'Matches run ID, dedupe key, error code or error message',
           )}
@@ -488,7 +489,7 @@ function ConditionValue({
         <Input
           className="h-9"
           value={condition.text}
-          maxLength={200}
+          maxLength={RUN_LOG_TEXT_MAX_LENGTH}
           placeholder={t(
             'Employee ID, approval number or name; a part of it is enough',
           )}

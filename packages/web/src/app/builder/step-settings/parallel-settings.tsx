@@ -1,4 +1,4 @@
-import { ParallelAction } from '@fema-ipaas/shared';
+import { ParallelAction, WorkflowOperationType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
@@ -8,11 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+import { useBuilderStateContext } from '../builder-hooks';
+
 const MINIMUM_BRANCHES = 2;
 
 const ParallelSettings = React.memo(({ readonly }: { readonly: boolean }) => {
   const form = useFormContext<ParallelAction>();
   const branches = form.watch('settings.branches') ?? [];
+  const applyOperation = useBuilderStateContext(
+    (state) => state.applyOperation,
+  );
+  const stepName = form.getValues('name');
 
   const setBranches = (next: { branchName: string }[]) => {
     form.setValue('settings.branches', next, { shouldValidate: true });
@@ -48,11 +54,15 @@ const ParallelSettings = React.memo(({ readonly }: { readonly: boolean }) => {
             size="icon"
             variant="ghost"
             disabled={readonly || branches.length <= MINIMUM_BRANCHES}
-            onClick={() =>
+            onClick={() => {
+              applyOperation({
+                type: WorkflowOperationType.DELETE_BRANCH,
+                request: { stepName, branchIndex: index },
+              });
               setBranches(
                 branches.filter((_current, position) => position !== index),
-              )
-            }
+              );
+            }}
             aria-label={t('Remove branch')}
           >
             <Trash2Icon className="size-4" />

@@ -4,7 +4,6 @@ import {
     errorHandlingUtils,
     Execution,
     ExecutionStatus,
-    isFailedState,
     ListRunLogsRequestQuery,
     RerunRunLogResult,
     RerunRunLogsResponse,
@@ -30,6 +29,7 @@ import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { Order } from '../helper/pagination/paginator'
 import { issueRepo } from '../issue/issue.service'
+import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 import { dedupedEventRepo } from '../trigger/deduped-event/deduped-event.service'
 import { ExecutionEntity } from '../workflows/execution/execution-entity'
 import { executionRepo, executionService } from '../workflows/execution/execution-service'
@@ -241,7 +241,7 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         type: debug ? RunLogType.DEBUG : RunLogType.RUN,
         status: execution.status,
         durationMs: durationOf(execution),
-        errorCount: isFailedState(execution.status) ? 1 : 0,
+        errorCount: projectStatsUtils.FAILED_STATUSES.includes(execution.status) ? 1 : 0,
         failedStep: execution.failedStep,
         parentRunId: execution.parentRunId ?? null,
         triggeredBy: execution.triggeredBy ?? null,

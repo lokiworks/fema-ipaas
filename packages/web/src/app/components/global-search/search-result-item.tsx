@@ -20,18 +20,9 @@ import {
 import { TableIcon } from '@/components/icons/table';
 import { WorkflowIcon } from '@/components/icons/workflow';
 
-import { type SearchResultItem } from './use-global-search-results';
+import { formatUtils } from '@/lib/format-utils';
 
-function timeAgo(date: Date | string): string {
-  const ms = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(ms / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
+import { type SearchResultItem } from './use-global-search-results';
 
 type ItemIconProps = {
   type: string;
@@ -140,9 +131,11 @@ function ItemMeta({
         <Dot className="size-3! shrink-0 text-muted-foreground/80" />
       )}
       {hasUpdated && (
-        <span className="whitespace-nowrap">{`Last Modified: ${timeAgo(
-          updated!,
-        )}`}</span>
+        <span className="whitespace-nowrap">
+          {t('Last modified: {time}', {
+            time: formatUtils.formatDateToAgo(new Date(updated!)),
+          })}
+        </span>
       )}
     </span>
   );

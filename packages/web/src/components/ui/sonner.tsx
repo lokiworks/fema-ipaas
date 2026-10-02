@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from 'i18next';
 import {
   CircleCheckIcon,
   InfoIcon,
@@ -11,25 +12,28 @@ import { Toaster as Sonner, toast, type ToasterProps } from 'sonner';
 
 import { useTheme } from '@/components/providers/theme-provider';
 
-export const INTERNAL_ERROR_MESSAGE =
-  'An unexpected error occurred. Please try again in a moment.';
+export function internalErrorMessage() {
+  return t('An unexpected error occurred. Please try again in a moment.');
+}
 
 export function internalErrorToast() {
-  console.error('internalErrorToast', INTERNAL_ERROR_MESSAGE);
-  toast.error('Something went wrong', {
-    description: INTERNAL_ERROR_MESSAGE,
+  const description = internalErrorMessage();
+  console.error('internalErrorToast', description);
+  toast.error(t('Something went wrong'), {
+    description,
     duration: 3000,
   });
 }
 
-export const UNSAVED_CHANGES_TOAST = {
-  id: 'unsaved-changes',
-  title: 'Unsaved Changes',
-  description:
-    'Something went wrong and there are unsaved changes, please refresh and contact support if the problem persists.',
-  variant: 'destructive',
-  duration: Infinity,
-};
+export function unsavedChangesToast() {
+  toast.error(t('Unsaved Changes'), {
+    description: t(
+      'Something went wrong and there are unsaved changes, please refresh and contact support if the problem persists.',
+    ),
+    duration: Infinity,
+    id: 'unsaved-changes',
+  });
+}
 
 function Toaster({ ...props }: ToasterProps) {
   const { theme } = useTheme();

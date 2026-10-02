@@ -54,7 +54,8 @@ export const convertStepMetadataToConnectorSelectorItems = (
     }
     case WorkflowActionType.CODE:
     case WorkflowActionType.LOOP_ON_ITEMS:
-    case WorkflowActionType.ROUTER: {
+    case WorkflowActionType.ROUTER:
+    case WorkflowActionType.PARALLEL: {
       return getCoreActionsMetadata().filter(
         (step) => step.type === stepMetadataWithSuggestions.type,
       );

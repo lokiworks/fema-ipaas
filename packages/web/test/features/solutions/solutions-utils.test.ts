@@ -401,3 +401,38 @@ describe('solutionsUtils.checkMessage', () => {
     expect(solutionsUtils.checkMessage(null)).toBeNull();
   });
 });
+
+describe('solutionsUtils.generatedConnectionCheckConnector', () => {
+  it('reads the connector out of the label the server generates', () => {
+    expect(
+      solutionsUtils.generatedConnectionCheckConnector(
+        'Connection for @fema-ipaas/connector-http works',
+      ),
+    ).toBe('@fema-ipaas/connector-http');
+  });
+
+  it('leaves labels written by people alone', () => {
+    expect(
+      solutionsUtils.generatedConnectionCheckConnector('HTTP 连接可用'),
+    ).toBeNull();
+    expect(
+      solutionsUtils.generatedConnectionCheckConnector(
+        'Connection for the payroll system works',
+      ),
+    ).toBeNull();
+  });
+});
+
+describe('solutionsUtils.versionNotesLabel', () => {
+  it('keeps notes people wrote', () => {
+    expect(solutionsUtils.versionNotesLabel('Fixed the mapping')).toBe(
+      'Fixed the mapping',
+    );
+  });
+
+  it('turns the notes of the first version into a label', () => {
+    expect(solutionsUtils.versionNotesLabel('First version')).toBe(
+      'First version',
+    );
+  });
+});

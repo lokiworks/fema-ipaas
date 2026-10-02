@@ -47,25 +47,27 @@ import {
   connectionsQueries,
 } from '@/features/connections/hooks/connections-hooks';
 
-const sharePermissionOptions: {
+function getSharePermissionOptions(): {
   value: ConnectionSharePermission;
   label: string;
   description: string;
-}[] = [
-  {
-    value: ConnectionSharePermission.USE,
-    label: t('Can Use'),
-    description: t('View the connection and use it in workflows'),
-  },
-  {
-    value: ConnectionSharePermission.EDIT,
-    label: t('Can Edit'),
-    description: t('Can also edit, reconnect and share it'),
-  },
-];
+}[] {
+  return [
+    {
+      value: ConnectionSharePermission.USE,
+      label: t('Can Use'),
+      description: t('View the connection and use it in workflows'),
+    },
+    {
+      value: ConnectionSharePermission.EDIT,
+      label: t('Can Edit'),
+      description: t('Can also edit, reconnect and share it'),
+    },
+  ];
+}
 
 function getPermissionLabel(permission: ConnectionSharePermission): string {
-  const option = sharePermissionOptions.find(
+  const option = getSharePermissionOptions().find(
     (item) => item.value === permission,
   );
   return option ? option.label : permission;
@@ -261,7 +263,7 @@ function ShareRowActions({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {sharePermissionOptions.map((option) => (
+          {getSharePermissionOptions().map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>
@@ -288,8 +290,8 @@ function AddShareForm({
   connectionId: string;
   detail: ConnectionDetail;
 }) {
-  const { data: usersPage } = connectionsQueries.useShareCandidates();
-  const candidates = (usersPage?.data ?? []).filter(
+  const { data: members } = connectionsQueries.useShareCandidates();
+  const candidates = (members ?? []).filter(
     (user) =>
       user.id !== detail.ownerId &&
       !detail.shares.some((share) => share.userId === user.id),
@@ -368,7 +370,7 @@ function AddShareForm({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {sharePermissionOptions.map((option) => (
+                  {getSharePermissionOptions().map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -441,7 +443,7 @@ function DefaultMembersPermissionSelector({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="NONE">{t('None')}</SelectItem>
-          {sharePermissionOptions.map((option) => (
+          {getSharePermissionOptions().map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>

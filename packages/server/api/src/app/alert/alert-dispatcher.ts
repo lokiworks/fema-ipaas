@@ -4,8 +4,6 @@ import {
     AlertRecordKind,
     AlertRecordStatus,
     AlertTriggerEvent,
-    ExecutionStatus,
-    isFailedState,
     Issue,
     IssueActivityType,
     IssueKind,
@@ -26,6 +24,7 @@ import { runQuotaUtils } from '../limits/run-quota-utils'
 import { runQuota } from '../limits/run-quota.service'
 import { notificationService } from '../notification/notification.service'
 import { projectRepo } from '../project/project-repo'
+import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 import { userRepo } from '../user/user-service'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { alertPolicyService } from './alert-policy.service'
@@ -36,8 +35,11 @@ import { notificationChannelService } from './notification-channel.service'
 export const alertRecordRepo = repoFactory(AlertRecordEntity)
 
 export const alertDispatcher = (log: FastifyBaseLogger) => ({
-    async onIssueRecorded({ issue, event, tenantId }: OnIssueRecordedParams): Promise<void> {
+    async onIssueRecorded({ issue, event, counted, tenantId }: OnIssueRecordedParams): Promise<void> {
         if (isMuted(issue) || issue.status === IssueStatus.IGNORED) {
+            return
+        }
+        if (event === IssueRecordEvent.OCCURRED && !counted) {
             return
         }
         const policies = (await alertPolicyService(log).listEnabled({ tenantId })).filter((policy) => policyCoversIssue({ policy, issue }))
@@ -295,14 +297,19 @@ async function checkCapacity({ policy, log }: { policy: AlertPolicySchema, log: 
 
 async function notifyCapacityInApp({ tenantId, project, used, limit, percent, log }: NotifyCapacityParams): Promise<void> {
     const admins = await userRepo().find({ where: { tenantId, tenantRole: TenantRole.ADMIN, status: UserStatus.ACTIVE }, select: ['id'] })
-    await notificationService(log).notify({
+    const adminIds = admins.map((admin) => admin.id)
+    const content = {
         tenantId,
         projectId: project.id,
-        recipientIds: [project.ownerId, ...admins.map((admin) => admin.id)],
         type: NotificationType.CAPACITY_THRESHOLD,
         title: project.displayName,
         body: `${used.toLocaleString('en-US')} / ${limit.toLocaleString('en-US')} (${percent}%)`,
-        link: '/tenant/limits/usage',
+    }
+    await notificationService(log).notify({ ...content, recipientIds: adminIds, link: '/tenant/limits/usage' })
+    await notificationService(log).notify({
+        ...content,
+        recipientIds: [project.ownerId].filter((ownerId) => !adminIds.includes(ownerId)),
+        link: `/projects/${project.id}/automations`,
     })
 }
 
@@ -378,7 +385,7 @@ function parseTimeOfDay(value: string): number {
     return hour * 60 + minute
 }
 
-const FAILED_STATUSES = Object.values(ExecutionStatus).filter((status) => isFailedState(status))
+const FAILED_STATUSES = projectStatsUtils.FAILED_STATUSES
 const FLUSH_BATCH_SIZE = 100
 const ESCALATION_LOOKBACK_HOURS = 48
 const MIN_RUNS_FOR_RATE = 5
@@ -397,6 +404,7 @@ const KIND_LABELS: Record<AlertRecordKind, string> = {
 type OnIssueRecordedParams = {
     issue: Issue
     event: IssueRecordEvent
+    counted: boolean
     tenantId: TenantId
 }
 

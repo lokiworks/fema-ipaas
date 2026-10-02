@@ -3,6 +3,7 @@ import { Execution, isExecutionStateTerminal, isFailedState, RunEnvironment, Ste
 import { FastifyBaseLogger } from 'fastify'
 import { websocketService } from '../../core/websockets.service'
 import { otelExecutionMetrics } from '../../helper/otel-execution-metrics'
+import { issueFailedStep } from '../../issue/issue-failed-step'
 import { issueSideEffects } from '../../issue/issue-side-effects'
 import { workflowVersionService } from '../workflow-version/workflow-version.service'
 import { executionFailureNotifier } from './execution-failure-notifier'
@@ -24,16 +25,19 @@ export const executionHooks = (log: FastifyBaseLogger) => ({
                 execution,
             })
         }
-        if (isFailedState(execution.status) && execution.environment === RunEnvironment.PRODUCTION && !isNil(execution.failedStep)) {
+        const failedStep = isFailedState(execution.status) && execution.environment === RunEnvironment.PRODUCTION
+            ? await issueFailedStep(log).resolve({ execution, workflowVersion })
+            : null
+        if (!isNil(failedStep)) {
             log.info({
                 execution: { id: execution.id, status: execution.status },
                 workflow: { id: execution.workflowId },
                 project: { id: execution.projectId },
-                step: { name: execution.failedStep },
+                step: { name: failedStep.name },
             }, '[executionHooks#onFinish] Production run failed')
-            await issueSideEffects(log).onProductionFailure({ execution, workflowVersion })
+            await issueSideEffects(log).onProductionFailure({ execution: { ...execution, failedStep }, workflowVersion })
             if (!isNil(workflowVersion)) {
-                await executionFailureNotifier(log).notifyOwner({ execution, workflowVersion })
+                await executionFailureNotifier(log).notifyOwner({ execution: { ...execution, failedStep }, workflowVersion })
             }
         }
     },

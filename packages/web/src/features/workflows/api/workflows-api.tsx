@@ -12,9 +12,8 @@ import {
   SharedTemplate,
   CountWorkflowsRequest,
 } from '@fema-ipaas/shared';
-import { toast } from 'sonner';
 
-import { UNSAVED_CHANGES_TOAST } from '@/components/ui/sonner';
+import { unsavedChangesToast } from '@/components/ui/sonner';
 import { api } from '@/lib/api';
 
 export const workflowsApi = {
@@ -33,11 +32,7 @@ export const workflowsApi = {
       .post<PopulatedWorkflow>(`/v1/workflows/${workflowId}`, request)
       .catch((error) => {
         if (showErrorToast) {
-          toast.error(UNSAVED_CHANGES_TOAST.title, {
-            description: UNSAVED_CHANGES_TOAST.description,
-            duration: UNSAVED_CHANGES_TOAST.duration,
-            id: UNSAVED_CHANGES_TOAST.id,
-          });
+          unsavedChangesToast();
         }
         throw error;
       });

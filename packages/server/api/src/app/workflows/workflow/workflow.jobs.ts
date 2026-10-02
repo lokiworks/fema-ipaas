@@ -3,6 +3,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../../core/db/repo-factory'
 import { SystemJobData, SystemJobName } from '../../helper/system-jobs/common'
 import { systemJobsSchedule } from '../../helper/system-jobs/system-job'
+import { issueService } from '../../issue/issue.service'
 import { executionRepo } from '../execution/execution-service'
 import { WaitpointEntity } from '../execution/waitpoint/waitpoint-entity'
 import { workflowVersionRepo } from '../workflow-version/workflow-version.service'
@@ -66,6 +67,7 @@ export const workflowBackgroundJobs = (log: FastifyBaseLogger) => ({
             })
         }
         await batchDeleteByWorkflowId(workflow.id)
+        await issueService(log).onWorkflowDeleted({ workflowId: workflow.id, projectId: workflow.projectId })
         await workflowRepo().delete({ id: workflow.id })
         await workflowExecutionCache(log).invalidate(workflow.id)
     },

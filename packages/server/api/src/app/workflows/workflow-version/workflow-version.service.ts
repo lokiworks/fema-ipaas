@@ -376,7 +376,7 @@ function removeConnectionsFromInput(
             replacedObj[key] = removeConnectionsFromInput(value as Record<string, unknown>)
         }
         else if (typeof value === 'string') {
-            const replacedValue = value.replace(/\{{connections\.[^}]*}}/g, '')
+            const replacedValue = value.replace(CONNECTION_REFERENCE_PATTERN, '')
             replacedObj[key] = replacedValue === '' ? undefined : replacedValue
         }
         else {
@@ -422,6 +422,7 @@ type ListWorkflowVersionParams = {
 }
 
 const EXEMPT_FROM_CONNECTION_ACCESS: WorkflowOperationType[] = [WorkflowOperationType.USE_AS_DRAFT]
+const CONNECTION_REFERENCE_PATTERN = /\{\{\s*connections\s*(\[|\.)[^}]*\}\}/g
 
 type AssertNewConnectionsParams = {
     log: FastifyBaseLogger

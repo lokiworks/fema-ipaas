@@ -11,6 +11,7 @@ import {
 import { repoFactory } from '../../core/db/repo-factory'
 import { encryptUtils } from '../../helper/encryption'
 import { jwtUtils } from '../../helper/jwt-utils'
+import { likePatternUtils } from '../../helper/like-pattern'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { system } from '../../helper/system/system'
@@ -142,12 +143,16 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             },
         })
 
-        const storedMetadata = isNil(request.metadata)
-            ? undefined
-            : (await connectionsRepo().findOneByOrFail(filter)).metadata
+        const target = await connectionsRepo().findOne({ where: filter })
+        if (isNil(target)) {
+            throw new ApplicationError({
+                code: ErrorCode.ENTITY_NOT_FOUND,
+                params: { entityType: 'Connection', entityId: id },
+            })
+        }
+        const storedMetadata = isNil(request.metadata) ? undefined : target.metadata
         const storedAccountIdentifier = storedMetadata?.['accountIdentifier']
 
-        const target = await connectionsRepo().findOneOrFail({ where: filter, select: ['id'] })
         await connectionsRepo().update({ id: target.id, tenantId }, {
             displayName: request.displayName,
             ...spreadIfDefined('projectIds', request.projectIds),
@@ -442,7 +447,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
             querySelector.connectorName = Equal(connectorName)
         }
         if (!isNil(displayName)) {
-            querySelector.displayName = ILike(`%${displayName}%`)
+            querySelector.displayName = ILike(`%${likePatternUtils.escape(displayName)}%`)
         }
         if (!isNil(status)) {
             querySelector.status = In(status)

@@ -81,8 +81,8 @@ export const alertController: FastifyPluginAsyncZod = async (app) => {
         return alertRecordService(request.log).list({ tenantId: request.principal.tenant.id, query: request.query })
     })
 
-    app.get('/records/stats', AdminRequest, async (request): Promise<AlertRecordStats> => {
-        return alertRecordService(request.log).stats({ tenantId: request.principal.tenant.id, projectId: undefined })
+    app.get('/records/stats', StatsRequest, async (request): Promise<AlertRecordStats> => {
+        return alertRecordService(request.log).stats({ tenantId: request.principal.tenant.id, projectId: undefined, timezone: request.query.timezone })
     })
 }
 
@@ -117,6 +117,11 @@ const UpsertPolicyRequest = {
 const UpsertPolicyWithIdRequest = {
     config: { security: adminOnly },
     schema: { tags: ['alerts'], params: IdParams, body: UpsertAlertPolicyRequestBody },
+}
+
+const StatsRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['alerts'], querystring: z.object({ timezone: z.string().max(64).optional() }) },
 }
 
 const ListRecordsRequest = {

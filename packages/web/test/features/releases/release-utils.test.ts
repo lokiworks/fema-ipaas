@@ -127,6 +127,29 @@ describe('versionDiff.hasChanges', () => {
     );
   });
 
+  it('is false when settings hold the same values in a different key order', () => {
+    const reordered = codeStep({ name: 'step_1', code: 'a' });
+    const draft = versionWith({
+      trigger: triggerWith({
+        ...reordered,
+        settings: {
+          errorHandlingOptions: {},
+          input: {},
+          sourceCode: { packageJson: '{}', code: 'a' },
+        },
+      }),
+    });
+    expect(versionDiff.hasChanges({ before: published, after: draft })).toBe(
+      false,
+    );
+    expect(
+      versionDiff.diffSteps({
+        before: published.trigger,
+        after: draft.trigger,
+      }),
+    ).toEqual([]);
+  });
+
   it('is true when a step was edited', () => {
     const draft = versionWith({
       trigger: triggerWith(codeStep({ name: 'step_1', code: 'b' })),
@@ -166,6 +189,72 @@ describe('versionDiff.hasChanges', () => {
       ),
     });
     expect(versionDiff.hasChanges({ before, after })).toBe(true);
+  });
+});
+
+describe('versionDiff.workflowChanges', () => {
+  const chain = (names: string[]): CodeAction | undefined =>
+    names.reduceRight<CodeAction | undefined>(
+      (next, name) => codeStep({ name, code: name, nextAction: next }),
+      undefined,
+    );
+
+  it('reports nothing when only step contents differ', () => {
+    const before = versionWith({ trigger: triggerWith(chain(['step_1'])) });
+    const after = versionWith({
+      trigger: triggerWith(
+        codeStep({ name: 'step_1', code: 'changed', nextAction: undefined }),
+      ),
+    });
+    expect(versionDiff.workflowChanges({ before, after })).toEqual([]);
+  });
+
+  it('does not report a reorder when a step was only renamed', () => {
+    const before = versionWith({ trigger: triggerWith(chain(['step_1'])) });
+    const after = versionWith({
+      trigger: triggerWith({
+        ...codeStep({ name: 'step_1', code: 'step_1' }),
+        displayName: 'Renamed',
+      }),
+    });
+    expect(versionDiff.workflowChanges({ before, after })).toEqual([]);
+  });
+
+  it('reports a renamed workflow', () => {
+    const before = versionWith({ trigger: triggerWith(chain(['step_1'])) });
+    const after = versionWith({
+      displayName: 'Onboarding v2',
+      trigger: triggerWith(chain(['step_1'])),
+    });
+    expect(versionDiff.workflowChanges({ before, after })).toEqual([
+      { path: 'displayName', before: 'Onboarding', after: 'Onboarding v2' },
+    ]);
+  });
+
+  it('reports reordered steps using only the steps both versions share', () => {
+    const before = versionWith({
+      trigger: triggerWith(chain(['step_1', 'step_2', 'step_3'])),
+    });
+    const after = versionWith({
+      trigger: triggerWith(chain(['step_2', 'step_1', 'step_4'])),
+    });
+    expect(versionDiff.workflowChanges({ before, after })).toEqual([
+      {
+        path: 'stepOrder',
+        before: 'Trigger → step_1 → step_2',
+        after: 'Trigger → step_2 → step_1',
+      },
+    ]);
+  });
+
+  it('ignores added or removed steps when the shared order is unchanged', () => {
+    const before = versionWith({
+      trigger: triggerWith(chain(['step_1', 'step_2'])),
+    });
+    const after = versionWith({
+      trigger: triggerWith(chain(['step_1', 'step_3', 'step_2'])),
+    });
+    expect(versionDiff.workflowChanges({ before, after })).toEqual([]);
   });
 });
 

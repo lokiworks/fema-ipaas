@@ -76,6 +76,20 @@ describe('Run log business key search', () => {
         expect(percent.map((row) => row.businessKey)).toEqual(['E%1'])
     })
 
+    it('finds a run by the longest business key a trigger can store', async () => {
+        const ctx = await createTestContext(app!)
+        const longestKey = `E${'x'.repeat(254)}`
+        const [target] = await seedRuns({ ctx, businessKeys: [longestKey, `${longestKey.slice(0, 200)}other`] })
+
+        const byKey = await searchByBusinessKey({ ctx, businessKey: longestKey })
+        const byContent = await ctx.get('/v1/run-logs', { content: longestKey, time: '24h' })
+
+        expect(longestKey).toHaveLength(255)
+        expect(byKey.map((row) => row.id)).toEqual([target])
+        expect(byContent.statusCode).toBe(StatusCodes.OK)
+        expect(byContent.json().data.map((row: { id: string }) => row.id)).toEqual([target])
+    })
+
     it('also surfaces the run from the general content search', async () => {
         const ctx = await createTestContext(app!)
         const [target] = await seedRuns({ ctx, businessKeys: ['APPROVAL-7788', 'APPROVAL-1'] })

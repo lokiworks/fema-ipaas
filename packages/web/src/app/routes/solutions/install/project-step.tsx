@@ -2,6 +2,7 @@ import { SolutionPackage } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useState } from 'react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import {
@@ -12,23 +13,37 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
+import {
+  projectDirectoryHooks,
+  projectDirectoryUtils,
+} from '@/features/projects/api/project-directory-api';
 
 import { WizardFooter } from './wizard-parts';
 
 function ProjectStep({ pkg, projectId, onNext }: ProjectStepProps) {
   const { data: projects } = projectCollectionUtils.useAll();
-  const [selected, setSelected] = useState(projectId);
+  const { data: directory, isLoading } = projectDirectoryHooks.useDirectory();
+  const [picked, setPicked] = useState(projectId);
+  const editableIds = new Set(
+    (directory ?? [])
+      .filter(projectDirectoryUtils.canEdit)
+      .map((project) => project.id),
+  );
+  const choices = projects.filter((project) => editableIds.has(project.id));
+  const selected = choices.some((project) => project.id === picked)
+    ? picked
+    : '';
 
   return (
     <div className="flex max-w-xl flex-col gap-6">
       <div className="flex flex-col gap-2">
         <Label>{t('Install into project')}</Label>
-        <Select value={selected} onValueChange={setSelected}>
+        <Select value={selected} onValueChange={setPicked}>
           <SelectTrigger>
             <SelectValue placeholder={t('Select a project')} />
           </SelectTrigger>
           <SelectContent>
-            {projects.map((project) => (
+            {choices.map((project) => (
               <SelectItem key={project.id} value={project.id}>
                 {getProjectName(project)}
               </SelectItem>
@@ -36,8 +51,17 @@ function ProjectStep({ pkg, projectId, onNext }: ProjectStepProps) {
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          {t('You need permission to edit workflows in the project.')}
+          {t('Only projects you can edit are listed')}
         </p>
+        {!isLoading && choices.length === 0 && (
+          <Alert variant="warning">
+            <AlertDescription>
+              {t(
+                'You cannot edit any project yet. Ask a project admin for edit access, or create a project of your own.',
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <div className="text-sm font-medium">
@@ -65,7 +89,7 @@ function ProjectStep({ pkg, projectId, onNext }: ProjectStepProps) {
         </p>
       </div>
       <WizardFooter
-        nextDisabled={selected.length === 0}
+        nextDisabled={isLoading || selected.length === 0}
         onNext={() => onNext(selected)}
       />
     </div>

@@ -1,6 +1,6 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { DefaultProjectRole, InvitationStatus, InvitationType, ListUserInvitationsRequest, Principal, PrincipalType, SendUserInvitationRequest, SERVICE_KEY_SECURITY_OPENAPI, UserInvitation, UserInvitationWithLink } from '@fema-ipaas/shared'
-import { FastifyBaseLogger, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
@@ -24,7 +24,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         switch (type) {
             case InvitationType.PROJECT:
                 await tenantGuards.assertProjectIsTeamType({ projectId: request.body.projectId, log: request.log })
-                await assertPrincipalHasPermissionToProject(app, request, reply, request.principal, request.body.projectId, Permission.WRITE_INVITATION)
+                await assertPrincipalHasPermissionToProject({ request, projectId: request.body.projectId, permission: Permission.WRITE_INVITATION })
                 break
             case InvitationType.TENANT:
                 await tenantGuards.assertPrincipalIsTenantAdmin({ principal: request.principal, log: request.log })
@@ -57,7 +57,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         if (!isNil(request.query.projectId) && request.query.type === InvitationType.PROJECT) {
             await tenantGuards.assertProjectIsTeamType({ projectId: request.query.projectId, log: request.log })
         }
-        const projectId = await getProjectIdAndAssertPermission(app, request, reply, request.principal, request.query)
+        const projectId = await getProjectIdAndAssertPermission({ request, requestQuery: request.query })
         const invitations = await userInvitationsService(request.log).list({
             tenantId: request.principal.tenant.id,
             projectId: request.query.type === InvitationType.PROJECT ? projectId : null,
@@ -86,7 +86,7 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         switch (invitation.type) {
             case InvitationType.PROJECT: {
                 assertNotNullOrUndefined(invitation.projectId, 'projectId')
-                await assertPrincipalHasPermissionToProject(app, request, reply, request.principal, invitation.projectId, Permission.WRITE_INVITATION)
+                await assertPrincipalHasPermissionToProject({ request, projectId: invitation.projectId, permission: Permission.WRITE_INVITATION })
                 break
             }
             case InvitationType.TENANT:
@@ -117,21 +117,23 @@ const resolveProjectRoleOrThrow = (request: SendUserInvitationRequest): DefaultP
     }
     return role
 }
-async function getProjectIdAndAssertPermission<R extends Principal>(
-    app: FastifyInstance,
-    request: FastifyRequest,
-    reply: FastifyReply,
-    principal: R,
-    requestQuery: ListUserInvitationsRequest,
-): Promise<string | null> {
-    if (principal.type === PrincipalType.SERVICE) {
-        if (isNil(requestQuery.projectId)) {
+async function getProjectIdAndAssertPermission({ request, requestQuery }: ListPermissionParams): Promise<string | null> {
+    const { principal } = request
+    if (requestQuery.type === InvitationType.TENANT) {
+        await tenantGuards.assertPrincipalIsTenantAdmin({ principal, log: request.log })
+        return null
+    }
+    if (isNil(requestQuery.projectId)) {
+        if (principal.type === PrincipalType.SERVICE) {
             return null
         }
-        await assertPrincipalHasPermissionToProject(app, request, reply, principal, requestQuery.projectId, Permission.READ_INVITATION)
-        return requestQuery.projectId
+        throw new ApplicationError({
+            code: ErrorCode.AUTHORIZATION,
+            params: { message: 'Project ID is required' },
+        })
     }
-    return requestQuery.projectId ?? null
+    await assertPrincipalHasPermissionToProject({ request, projectId: requestQuery.projectId, permission: Permission.READ_INVITATION })
+    return requestQuery.projectId
 }
 
 async function shouldAutoAcceptInvitation(principal: Principal, request: SendUserInvitationRequest, tenantId: string, log: FastifyBaseLogger): Promise<boolean> {
@@ -155,12 +157,9 @@ async function shouldAutoAcceptInvitation(principal: Principal, request: SendUse
     return !isNil(user)
 }
 
-async function assertPrincipalHasPermissionToProject<R extends Principal & { tenant: { id: string } }>(
-    fastify: FastifyInstance,
-    request: FastifyRequest, reply: FastifyReply, principal: R,
-    projectId: string, _permission: Permission): Promise<void> {
+async function assertPrincipalHasPermissionToProject({ request, projectId, permission }: ProjectPermissionParams): Promise<void> {
     const project = await projectService(request.log).getOneOrThrow(projectId)
-    if (isNil(project) || project.tenantId !== principal.tenant.id) {
+    if (isNil(project) || project.tenantId !== request.principal.tenant.id) {
         throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: {
@@ -168,7 +167,7 @@ async function assertPrincipalHasPermissionToProject<R extends Principal & { ten
             },
         })
     }
-    await projectAccess(request.log).assertPrincipalCanAccessProject({ principal: request.principal, projectId })
+    await projectAccess(request.log).assertPrincipalCanAccessProject({ principal: request.principal, projectId, permission })
 }
 
 
@@ -231,4 +230,15 @@ const UpsertUserInvitationRequestParams = {
             [StatusCodes.CREATED]: UserInvitationWithLink,
         },
     },
+}
+
+type ProjectPermissionParams = {
+    request: FastifyRequest
+    projectId: string
+    permission: Permission
+}
+
+type ListPermissionParams = {
+    request: FastifyRequest
+    requestQuery: ListUserInvitationsRequest
 }

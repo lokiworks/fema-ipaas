@@ -96,12 +96,13 @@ function rotationRecommended(ageDays: number | null): boolean {
 }
 
 const ALGORITHM = 'AES-256-CBC'
-const OBSERVATION_FLAG_ID = 'ENCRYPTION_KEY_OBSERVATION'
+const OBSERVATION_FLAG_ID = 'ENC_KEY_OBSERVATION'
 const FINGERPRINT_LENGTH = 8
 
 export const encryptionStatusUtils = {
     fingerprint,
     rotationRecommended,
+    observationFlagId: OBSERVATION_FLAG_ID,
 }
 
 type KeyObservation = {

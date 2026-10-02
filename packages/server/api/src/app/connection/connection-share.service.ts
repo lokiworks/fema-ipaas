@@ -1,9 +1,10 @@
 import { ApplicationError, ErrorCode, generateId, isNil, SeekPage, unique } from '@fema-ipaas/core-utils'
-import { AccessibleConnection, AddConnectionSharesRequestBody, connectionAccessUtils, ConnectionDetail, ConnectionOwnershipFilter, ConnectionPermission, ConnectionScope, ConnectionScopeImpact, ConnectionScopeImpactRequestBody, ConnectionShare, ConnectionSharePermission, ConnectionStatus, ListAccessibleConnectionsRequestQuery, NotificationType, PrincipalType, RemindConnectionOwnerResponse, UpdateConnectionAccessRequestBody, UserWithMetaInformation } from '@fema-ipaas/shared'
+import { AccessibleConnection, AddConnectionSharesRequestBody, connectionAccessUtils, ConnectionDetail, ConnectionOwnershipFilter, ConnectionPermission, ConnectionScope, ConnectionScopeImpact, ConnectionScopeImpactRequestBody, ConnectionShare, ConnectionSharePermission, ConnectionShareUser, ConnectionStatus, ListAccessibleConnectionsRequestQuery, ListConnectionShareCandidatesRequestQuery, NotificationType, PrincipalType, RemindConnectionOwnerResponse, UpdateConnectionAccessRequestBody, UserStatus, UserWithMetaInformation } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { distributedStore } from '../database/redis-connections'
+import { likePatternUtils } from '../helper/like-pattern'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { notificationService } from '../notification/notification.service'
@@ -38,7 +39,7 @@ export const connectionShareService = (log: FastifyBaseLogger) => ({
                 hasMemberProjects: memberProjectIds.length > 0,
             })
         if (!isNil(query.search) && query.search.trim().length > 0) {
-            builder.andWhere('(connection."displayName" ILIKE :search OR connection."connectorName" ILIKE :search OR connection."metadata"->>\'accountIdentifier\' ILIKE :search)', { search: `%${query.search.trim()}%` })
+            builder.andWhere('(connection."displayName" ILIKE :search OR connection."connectorName" ILIKE :search OR connection."metadata"->>\'accountIdentifier\' ILIKE :search)', { search: `%${likePatternUtils.escape(query.search.trim())}%` })
         }
         if (!isNil(query.connectorName)) {
             builder.andWhere('connection."connectorName" = :connectorName', { connectorName: query.connectorName })
@@ -58,6 +59,28 @@ export const connectionShareService = (log: FastifyBaseLogger) => ({
         const { data, cursor } = await paginator.paginate(builder)
         const enriched = await this.enrich({ tenantId, userId, connections: data, memberProjectIds })
         return paginationHelper.createPage(enriched, cursor)
+    },
+
+    async listShareCandidates({ tenantId, userId, query }: ListShareCandidatesParams): Promise<ConnectionShareUser[]> {
+        const builder = userRepo()
+            .createQueryBuilder('candidate')
+            .innerJoinAndSelect('candidate.identity', 'identity')
+            .where('candidate."tenantId" = :tenantId', { tenantId })
+            .andWhere('candidate."status" = :activeStatus', { activeStatus: UserStatus.ACTIVE })
+            .andWhere('candidate."id" <> :userId', { userId })
+        if (!isNil(query.search) && query.search.trim().length > 0) {
+            builder.andWhere('(identity."email" ILIKE :search OR identity."firstName" ILIKE :search OR identity."lastName" ILIKE :search)', { search: `%${likePatternUtils.escape(query.search.trim())}%` })
+        }
+        const candidates = await builder
+            .orderBy('identity."email"', 'ASC')
+            .limit(query.limit ?? DEFAULT_CANDIDATE_LIMIT)
+            .getMany()
+        return candidates.flatMap((candidate) => isNil(candidate.identity) ? [] : [{
+            id: candidate.id,
+            email: candidate.identity.email,
+            firstName: candidate.identity.firstName,
+            lastName: candidate.identity.lastName,
+        }])
     },
 
     async enrich({ tenantId, userId, connections, memberProjectIds }: EnrichParams): Promise<AccessibleConnection[]> {
@@ -302,6 +325,7 @@ async function emailOf(userId: string): Promise<string> {
 }
 
 const DEFAULT_PAGE_SIZE = 20
+const DEFAULT_CANDIDATE_LIMIT = 500
 const REMIND_WINDOW_SECONDS = 6 * 60 * 60
 
 const ACCESSIBLE_SQL = [
@@ -320,6 +344,12 @@ type ListAccessibleParams = {
     tenantId: string
     userId: string
     query: ListAccessibleConnectionsRequestQuery
+}
+
+type ListShareCandidatesParams = {
+    tenantId: string
+    userId: string
+    query: ListConnectionShareCandidatesRequestQuery
 }
 
 type EnrichParams = {

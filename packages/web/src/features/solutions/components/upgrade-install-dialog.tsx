@@ -14,6 +14,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { solutionsHooks } from '../hooks/solutions-hooks';
+import { solutionsUtils } from '../utils/solutions-utils';
 
 function UpgradeInstallDialog({
   install,
@@ -60,7 +61,9 @@ function UpgradeInstallDialog({
                       date={new Date(version.publishedAt)}
                     />
                   </div>
-                  <div className="text-muted-foreground">{version.notes}</div>
+                  <div className="text-muted-foreground">
+                    {solutionsUtils.versionNotesLabel(version.notes)}
+                  </div>
                 </div>
               ))
             )}
@@ -68,7 +71,7 @@ function UpgradeInstallDialog({
           <ul className="list-disc pl-5 text-sm text-muted-foreground">
             <li>
               {t(
-                'The new version goes into the drafts of {count, plural, =1 {1 workflow} other {# workflows}}. What is running now stays as it is until you publish.',
+                'The new version replaces the drafts of {count, plural, =1 {1 workflow} other {# workflows}}. Unpublished edits in those drafts are lost. What is running now stays as it is until you publish.',
                 { count: install.workflowIds.length },
               )}
             </li>

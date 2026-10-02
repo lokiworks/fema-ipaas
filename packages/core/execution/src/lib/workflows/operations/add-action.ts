@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { isNil } from '@fema-ipaas/core-utils'
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
-import { WorkflowAction, WorkflowActionType, LoopOnItemsAction, RouterAction, SingleActionSchema } from '../actions/action'
+import { WorkflowAction, WorkflowActionType, LoopOnItemsAction, ParallelAction, RouterAction, SingleActionSchema } from '../actions/action'
 import { WorkflowVersion } from '../workflow-version'
 import { workflowStructureUtil, Step } from '../util/workflow-structure-util'
 import { AddActionRequest, StepLocationRelativeToParent, UpdateActionRequest } from './index'
@@ -126,6 +126,28 @@ function handleRouter(parentStep: RouterAction, request: AddActionRequest): Step
     return parentStep
 }
 
+function handleParallel(parentStep: ParallelAction, request: AddActionRequest): Step {
+    if (request.stepLocationRelativeToParent === StepLocationRelativeToParent.INSIDE_BRANCH && !isNil(request.branchIndex)) {
+        parentStep.children[request.branchIndex] = createAction(request.action, {
+            nextAction: parentStep.children[request.branchIndex] ?? undefined,
+        })
+    }
+    else if (request.stepLocationRelativeToParent === StepLocationRelativeToParent.AFTER) {
+        parentStep.nextAction = createAction(request.action, {
+            nextAction: parentStep.nextAction,
+        })
+    }
+    else {
+        throw new ApplicationError({
+            code: ErrorCode.WORKFLOW_OPERATION_INVALID,
+            params: {
+                message: `Parallel step parent ${request.stepLocationRelativeToParent} not found`,
+            },
+        })
+    }
+    return parentStep
+}
+
 function handleContinueOnFailureBranches(parentStep: Step, request: AddActionRequest): Step {
     if (parentStep.type !== WorkflowActionType.CODE && parentStep.type !== WorkflowActionType.CONNECTOR) {
         throw new ApplicationError({
@@ -166,6 +188,8 @@ function _addAction(workflowVersion: WorkflowVersion, request: AddActionRequest)
                 return handleLoopOnItems(parentStep, request)
             case WorkflowActionType.ROUTER:
                 return handleRouter(parentStep, request)
+            case WorkflowActionType.PARALLEL:
+                return handleParallel(parentStep, request)
             default: {
                 parentStep.nextAction = createAction(request.action, {
                     nextAction: parentStep.nextAction,

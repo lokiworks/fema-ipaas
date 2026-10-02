@@ -1,12 +1,13 @@
 import { SolutionInstallResult } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { CircleCheck } from 'lucide-react';
+import { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { solutionsUtils } from '@/features/solutions';
+import { SolutionCheckLabel, solutionsUtils } from '@/features/solutions';
 
 function DoneStep({ result }: DoneStepProps) {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function DoneStep({ result }: DoneStepProps) {
       <div className="flex items-start gap-3">
         <CircleCheck className="size-6 shrink-0 text-success" />
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-medium">{t('Installed')}</h2>
+          <h2 className="text-lg font-medium">{t('Installation complete')}</h2>
           <p className="text-sm text-muted-foreground">
             {t(
               'Workflows are disabled. Open each one, test it, then enable it.',
@@ -74,9 +75,13 @@ function DoneStep({ result }: DoneStepProps) {
       {result.skippedChecks.length > 0 && (
         <Alert variant="warning">
           <AlertDescription>
-            {t('Checks skipped during install: {names}', {
-              names: result.skippedChecks.join(', '),
-            })}
+            {t('Checks skipped during install:')}{' '}
+            {result.skippedChecks.map((label, index) => (
+              <Fragment key={label}>
+                {index > 0 && ', '}
+                <SolutionCheckLabel label={label} />
+              </Fragment>
+            ))}
           </AlertDescription>
         </Alert>
       )}

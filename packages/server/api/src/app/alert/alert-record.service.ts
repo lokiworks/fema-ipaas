@@ -1,5 +1,5 @@
 import { SeekPage, TenantId } from '@fema-ipaas/core-utils'
-import { AlertRecord, AlertRecordStats, ListAlertRecordsRequestQuery } from '@fema-ipaas/shared'
+import { AlertRecord, AlertRecordKind, AlertRecordStats, ListAlertRecordsRequestQuery } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { MoreThanOrEqual } from 'typeorm'
 import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
@@ -36,11 +36,11 @@ export const alertRecordService = (_log: FastifyBaseLogger) => ({
                 created: MoreThanOrEqual(since),
                 ...(projectId === undefined ? {} : { projectId }),
             },
-            select: ['id', 'issueId', 'mergedCount'],
+            select: ['id', 'issueId', 'kind', 'mergedCount'],
         })
         return {
             alertsLast7Days: rows.length,
-            mergedFailuresLast7Days: rows.reduce((sum, row) => sum + row.mergedCount, 0),
+            mergedFailuresLast7Days: rows.filter((row) => ISSUE_FAILURE_KINDS.includes(row.kind)).reduce((sum, row) => sum + row.mergedCount, 0),
             issuesLast7Days: new Set(rows.map((row) => row.issueId).filter((id) => id !== null)).size,
         }
     },
@@ -77,6 +77,7 @@ function decodeOffset(cursor: string | undefined): number {
 }
 
 const DEFAULT_PAGE_SIZE = 20
+const ISSUE_FAILURE_KINDS: AlertRecordKind[] = [AlertRecordKind.NEW, AlertRecordKind.REOPENED, AlertRecordKind.STILL_FAILING]
 
 type ListParams = {
     tenantId: TenantId

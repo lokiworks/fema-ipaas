@@ -270,6 +270,60 @@ describe('workflowValidator', () => {
     ]);
   });
 
+  it('reports an expired connection as its own warning', () => {
+    const trigger = webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        input: { auth: "{{connections['stale']}}", text: 'hi' },
+      }),
+    });
+    const result = workflowValidator.validate(
+      context(trigger, {
+        connectors: { '@fema-ipaas/connector-feishu': feishuSpec },
+        connections: {
+          stale: { displayName: 'Stale', status: ConnectionStatus.EXPIRED },
+        },
+      }),
+    );
+    const codes = result.issues.map((issue) => issue.code);
+    expect(result.errorCount).toBe(0);
+    expect(codes).toContain(ValidationCode.CONNECTION_EXPIRED);
+    expect(codes).not.toContain(ValidationCode.CONNECTION_UNHEALTHY);
+  });
+
+  it('points connection issues at the action tab where the connection is chosen', () => {
+    const trigger = webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        input: { text: 'hi' },
+        nextAction: connectorAction({
+          name: 'step_2',
+          input: { auth: "{{connections['other']}}", text: 'hi' },
+        }),
+      }),
+    });
+    const result = workflowValidator.validate(
+      context(trigger, {
+        connectors: { '@fema-ipaas/connector-feishu': feishuSpec },
+        connections: {},
+      }),
+    );
+    const connectionIssues = result.issues.filter((issue) =>
+      [
+        ValidationCode.CONNECTION_REQUIRED,
+        ValidationCode.CONNECTION_UNAVAILABLE,
+      ].includes(issue.code),
+    );
+    expect(connectionIssues).toHaveLength(2);
+    expect(connectionIssues.map((issue) => issue.tab)).toEqual([
+      ValidationTab.ACTION,
+      ValidationTab.ACTION,
+    ]);
+    expect(
+      workflowValidator.firstTabWithError({ result, stepName: 'step_1' }),
+    ).toBe(ValidationTab.ACTION);
+  });
+
   it('rejects references to later steps, other branches and deleted steps', () => {
     const trigger = webhookTrigger({
       nextAction: router({

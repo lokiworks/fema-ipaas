@@ -138,9 +138,6 @@ const ColorButton = forwardRef<HTMLButtonElement, ColorButtonProps>(
           'size-6': big,
         })}
         onClick={onClick}
-        onFocus={() => {
-          console.log('focus');
-        }}
       >
         <div
           className={cn(

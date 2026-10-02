@@ -19,6 +19,9 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
+import { unpublishedChanges } from './unpublished-changes';
+import { useDraftChanged } from './use-draft-changed';
+
 export function WorkflowStateTags() {
   const [workflow, workflowVersion, editLockHolder] = useBuilderStateContext(
     (state) => [state.workflow, state.workflowVersion, state.editLockHolder],
@@ -28,6 +31,11 @@ export function WorkflowStateTags() {
   const { checkAccess } = useAuthorization();
   const canEdit = checkAccess(Permission.WRITE_WORKFLOW);
   const numbers = useVersionNumbers(workflow.id);
+  const draftChanged = useDraftChanged({
+    baselineVersionId: project.releasesEnabled
+      ? workflow.testVersionId
+      : workflow.publishedVersionId,
+  });
   const { data: overview } = releasesHooks.useEnvironments({
     projectId: project.id,
     enabled:
@@ -53,8 +61,11 @@ export function WorkflowStateTags() {
   const hasDeployment =
     !isNil(workflow.publishedVersionId) ||
     (project.releasesEnabled && !isNil(workflow.testVersionId));
-  const hasUnpublishedChanges =
-    hasDeployment && workflowVersion.state === WorkflowVersionState.DRAFT;
+  const hasUnpublishedChanges = unpublishedChanges.hasUnpublishedChanges({
+    hasDeployment,
+    isDraft: workflowVersion.state === WorkflowVersionState.DRAFT,
+    draftChanged,
+  });
 
   return (
     <div className="flex shrink-0 items-center gap-1.5">

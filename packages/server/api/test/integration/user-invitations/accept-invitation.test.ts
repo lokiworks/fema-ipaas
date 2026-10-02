@@ -69,6 +69,32 @@ describe('Accept User Invitation API', () => {
         expect(response?.statusCode).toBe(StatusCodes.OK)
         expect(response?.json()?.registered).toBe(true)
     })
+
+    it('Answers 404 instead of crashing when the token is malformed', async () => {
+        const response = await app?.inject({
+            method: 'POST',
+            url: '/api/v1/user-invitations/accept',
+            body: { invitationToken: 'bogus' },
+        })
+
+        expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
+    })
+
+    it('Answers 404 when the token is signed for another purpose', async () => {
+        const invitationToken = await jwtUtils.sign({
+            payload: { id: generateId() },
+            key: await jwtUtils.getJwtSecret(),
+            audience: JwtAudience.FILE_READ,
+        })
+
+        const response = await app?.inject({
+            method: 'POST',
+            url: '/api/v1/user-invitations/accept',
+            body: { invitationToken },
+        })
+
+        expect(response?.statusCode).toBe(StatusCodes.NOT_FOUND)
+    })
 })
 
 async function saveInvitationAndSignToken({ email, tenantId }: { email: string, tenantId: string }): Promise<string> {

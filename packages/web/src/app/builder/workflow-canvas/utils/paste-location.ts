@@ -36,7 +36,8 @@ function before({
                 },
               ]
             : [];
-        case WorkflowActionType.ROUTER: {
+        case WorkflowActionType.ROUTER:
+        case WorkflowActionType.PARALLEL: {
           const branchIndex = step.children.findIndex(
             (child) => child?.name === stepName,
           );

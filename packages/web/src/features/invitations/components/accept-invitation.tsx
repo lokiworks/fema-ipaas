@@ -1,77 +1,66 @@
-import { HttpStatusCode } from 'axios';
 import { t } from 'i18next';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { LoadingSpinner } from '@/components/custom/spinner';
-import { internalErrorToast } from '@/components/ui/sonner';
 
-import { api } from '../../../lib/api';
-import { userInvitationMutations } from '../hooks/user-invitations-hooks';
+import { userInvitationQueries } from '../hooks/user-invitations-hooks';
+
+const REDIRECT_DELAY_MS = 3000;
 
 const AcceptInvitation = () => {
-  const [isInvitationLinkValid, setIsInvitationLinkValid] = useState(true);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { mutate, isPending } = userInvitationMutations.useAcceptInvitation({
-    onSuccess: (registered) => {
-      setIsInvitationLinkValid(true);
-      if (!registered) {
-        setTimeout(() => {
-          const email = searchParams.get('email');
-          navigate(`/sign-up?email=${email}`);
-        }, 3000);
-      } else {
-        navigate('/sign-in');
-      }
-    },
-    onError: (error) => {
-      setIsInvitationLinkValid(false);
-      if (api.isError(error)) {
-        switch (error.response?.status) {
-          case HttpStatusCode.InternalServerError: {
-            console.log(error);
-            internalErrorToast();
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      }
-    },
-  });
+  const invitationToken = searchParams.get('token');
+  const email = searchParams.get('email');
+  const { data: registered, isError } =
+    userInvitationQueries.useAcceptInvitation({ token: invitationToken });
+
   useEffect(() => {
-    const invitationToken = searchParams.get('token');
-    if (!invitationToken) {
-      setIsInvitationLinkValid(false);
+    if (registered === undefined) {
       return;
     }
-    mutate(invitationToken);
-  }, [mutate, searchParams]);
+    const timer = setTimeout(
+      () => {
+        navigate(
+          registered || !email
+            ? '/sign-in'
+            : `/sign-up?${new URLSearchParams({ email }).toString()}`,
+        );
+      },
+      registered ? 0 : REDIRECT_DELAY_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [registered, email, navigate]);
 
-  return isPending ? (
-    <div className="w-screen h-screen flex justify-center items-center">
-      <LoadingSpinner isLarge={true}></LoadingSpinner>
-    </div>
-  ) : (
-    <div className="container mx-auto mt-10 max-w-md">
-      {isInvitationLinkValid ? (
-        <>
-          <p className="text-2xl font-bold text-center">
-            {t('Team Invitation Accepted')}
-          </p>
-          <p className="mt-4 text-lg text-center text-gray-700">
-            {t(
-              'Thank you for accepting the invitation. We are redirecting you right now...',
-            )}
-          </p>
-        </>
-      ) : (
+  if (!invitationToken || isError) {
+    return (
+      <div className="container mx-auto mt-10 max-w-md">
         <p className="mt-4 text-lg text-center text-destructive">
           {t('Invalid invitation token. Please try again.')}
         </p>
-      )}
+      </div>
+    );
+  }
+
+  if (registered === undefined) {
+    return (
+      <div className="w-screen h-screen flex justify-center items-center">
+        <LoadingSpinner isLarge={true}></LoadingSpinner>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto mt-10 max-w-md">
+      <p className="text-2xl font-bold text-center">
+        {t('Team Invitation Accepted')}
+      </p>
+      <p className="mt-4 text-lg text-center text-gray-700">
+        {t(
+          'Thank you for accepting the invitation. We are redirecting you right now...',
+        )}
+      </p>
     </div>
   );
 };

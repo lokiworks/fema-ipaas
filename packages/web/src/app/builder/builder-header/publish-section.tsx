@@ -32,6 +32,7 @@ import { workflowHooks, workflowsApi } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
+import { DiscardChangesDialog } from './discard-changes-dialog';
 import { usePublishGuard } from './publish-guard';
 import { useDraftChanged } from './use-draft-changed';
 
@@ -74,7 +75,9 @@ function SingleEnvironmentPublishSection() {
   const guard = usePublishGuard({
     lockedByName: editLockHolder?.userDisplayName ?? null,
   });
-  const draftChanged = useDraftChanged();
+  const draftChanged = useDraftChanged({
+    baselineVersionId: workflow.publishedVersionId,
+  });
   const hasNoChanges = draftChanged === false;
   const canPublish = useCanPublish({
     workflowVersion,
@@ -99,6 +102,7 @@ function SingleEnvironmentPublishSection() {
         setLeftSidebar(LeftSideBarType.NONE);
       },
     });
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
   const { mutate: discardChange, isPending: isDiscardingChanges } = useMutation(
     {
       mutationFn: async () => {
@@ -109,7 +113,6 @@ function SingleEnvironmentPublishSection() {
           workflowId: workflow.id,
           versionId: workflow.publishedVersionId,
         });
-        await publish();
       },
     },
   );
@@ -140,6 +143,7 @@ function SingleEnvironmentPublishSection() {
   const canDiscard =
     !isNil(workflow.publishedVersionId) &&
     !isBusy &&
+    !hasNoChanges &&
     workflow.publishedVersionId !== workflowVersion.id;
 
   return (
@@ -155,11 +159,19 @@ function SingleEnvironmentPublishSection() {
           size="sm"
           variant="ghost"
           className="text-muted-foreground"
-          onClick={() => discardChange()}
+          onClick={() => setDiscardDialogOpen(true)}
         >
           {t('Discard changes')}
         </Button>
       )}
+      <DiscardChangesDialog
+        open={discardDialogOpen}
+        onCancel={() => setDiscardDialogOpen(false)}
+        onConfirm={() => {
+          setDiscardDialogOpen(false);
+          discardChange();
+        }}
+      />
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="tooltip-wrapper">
@@ -226,6 +238,8 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
   const guard = usePublishGuard({
     lockedByName: editLockHolder?.userDisplayName ?? null,
   });
+  const hasNoChangesToDeploy =
+    useDraftChanged({ baselineVersionId: workflow.testVersionId }) === false;
   const { checkAccess } = useAuthorization();
   const canDeploy = checkAccess(Permission.WRITE_WORKFLOW);
   const canPromote = checkAccess(Permission.WRITE_PROJECT_RELEASE);
@@ -298,6 +312,8 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
     ? guard.blockedReason
     : !isValid
     ? t('You have incomplete steps')
+    : hasNoChangesToDeploy
+    ? t('Nothing to deploy, test already runs this version')
     : null;
   const status = releaseUiUtils.environmentStatus({
     versionId: workflowVersion.id,
@@ -312,6 +328,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
         status={status}
         isSaving={isSaving}
         isDeploying={isPublishing}
+        hasNoChangesToDeploy={hasNoChangesToDeploy}
       />
       {canDeploy && isDraft && (
         <Tooltip>
@@ -369,10 +386,12 @@ function EnvironmentStatusText({
   status,
   isSaving,
   isDeploying,
+  hasNoChangesToDeploy,
 }: {
   status: EnvironmentStatus;
   isSaving: boolean;
   isDeploying: boolean;
+  hasNoChangesToDeploy: boolean;
 }) {
   if (isSaving || isDeploying) {
     return (
@@ -388,7 +407,9 @@ function EnvironmentStatusText({
   if (status === EnvironmentStatus.NOT_DEPLOYED) {
     return (
       <span className="flex shrink-0 items-center whitespace-nowrap text-xs text-muted-foreground">
-        {t('Changes not deployed to test')}
+        {hasNoChangesToDeploy
+          ? t('No changes to deploy to test')
+          : t('Changes not deployed to test')}
       </span>
     );
   }

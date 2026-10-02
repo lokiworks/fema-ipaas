@@ -9,7 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { solutionsHooks, solutionsUtils } from '@/features/solutions';
+import {
+  SolutionCheckLabel,
+  solutionsHooks,
+  solutionsUtils,
+} from '@/features/solutions';
 
 import { WizardFooter } from './wizard-parts';
 
@@ -106,7 +110,9 @@ function CheckResultRow({
         <StatusIcon status={result.status} />
         <div className="flex min-w-0 grow flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium">{result.label}</span>
+            <span className="text-sm font-medium">
+              <SolutionCheckLabel label={result.label} />
+            </span>
             <Badge variant={result.blocking ? 'destructive' : 'secondary'}>
               {result.blocking ? t('Required') : t('Recommended')}
             </Badge>

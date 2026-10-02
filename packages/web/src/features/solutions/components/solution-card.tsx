@@ -26,7 +26,7 @@ function SolutionCard({ solution, onClick }: SolutionCardProps) {
       <div className="flex items-center justify-between gap-2">
         <SolutionConnectorIcons connectorNames={solution.connectorNames} />
         {solution.installedProjectIds.length > 0 && (
-          <Badge variant="success">{t('Installed')}</Badge>
+          <Badge variant="success">{t('Already installed')}</Badge>
         )}
       </div>
       <div className="flex min-w-0 flex-col gap-1">

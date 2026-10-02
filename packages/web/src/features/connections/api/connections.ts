@@ -7,11 +7,13 @@ import {
   ConnectionScopeImpact,
   ConnectionScopeImpactRequestBody,
   ConnectionShare,
+  ConnectionShareUser,
   ConnectionWithoutSensitiveData,
   GetOAuth2AuthorizationUrlRequestBody,
   GetOAuth2AuthorizationUrlResponse,
   ListAccessibleConnectionsRequestQuery,
   ListConnectionOwnersRequestQuery,
+  ListConnectionShareCandidatesRequestQuery,
   ListConnectionsRequestQuery,
   RemindConnectionOwnerResponse,
   ReplaceConnectionsRequestBody,
@@ -78,6 +80,14 @@ export const connectionsApi = {
   ): Promise<SeekPage<AccessibleConnection>> {
     return api.get<SeekPage<AccessibleConnection>>(
       '/v1/connections/accessible',
+      request,
+    );
+  },
+  listShareCandidates(
+    request: ListConnectionShareCandidatesRequestQuery,
+  ): Promise<ConnectionShareUser[]> {
+    return api.get<ConnectionShareUser[]>(
+      '/v1/connections/share-candidates',
       request,
     );
   },

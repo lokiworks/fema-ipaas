@@ -22,10 +22,13 @@ import { timezoneUtils } from '@/lib/timezone-utils';
 
 export const issuesApi = {
   list(request: ListIssuesRequestQuery): Promise<SeekPage<IssueWithSeverity>> {
-    return api.get<SeekPage<IssueWithSeverity>>('/v1/issues', request);
+    return api.get<SeekPage<IssueWithSeverity>>('/v1/issues', {
+      ...request,
+      timezone: timezoneUtils.browser(),
+    });
   },
-  overview(): Promise<IssueOverview> {
-    return api.get<IssueOverview>('/v1/issues/overview');
+  overview(projectId?: string): Promise<IssueOverview> {
+    return api.get<IssueOverview>('/v1/issues/overview', { projectId });
   },
   summary(projectId: string): Promise<IssueSummary> {
     return api.get<IssueSummary>('/v1/issues/summary', {
@@ -61,7 +64,10 @@ export const issuesApi = {
     return api.get<string[]>(`/v1/issues/${id}/workflows`);
   },
   trend(id: string, granularity: IssueTrendGranularity): Promise<IssueTrend> {
-    return api.get<IssueTrend>(`/v1/issues/${id}/trend`, { granularity });
+    return api.get<IssueTrend>(`/v1/issues/${id}/trend`, {
+      granularity,
+      timezone: timezoneUtils.browser(),
+    });
   },
   insight(id: string): Promise<IssueInsight> {
     return api.get<IssueInsight>(`/v1/issues/${id}/insight`);

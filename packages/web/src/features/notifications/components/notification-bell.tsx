@@ -198,7 +198,7 @@ function NotificationRow({
           </span>
         )}
         <span className="text-[11px] text-muted-foreground">
-          {formatUtils.formatDateToAgo(new Date(notification.created))}
+          {formatUtils.formatDate(new Date(notification.created))}
         </span>
       </span>
       {!notification.read && (

@@ -21,6 +21,7 @@ function isStepAction(step: Step): step is WorkflowAction {
         || step.type === WorkflowActionType.CONNECTOR
         || step.type === WorkflowActionType.LOOP_ON_ITEMS
         || step.type === WorkflowActionType.ROUTER
+        || step.type === WorkflowActionType.PARALLEL
 }
 
 function isTrigger(type: WorkflowActionType | WorkflowTriggerType | undefined): type is WorkflowTriggerType {
@@ -92,7 +93,8 @@ function transferStep<T extends Step>(
             }
             break
         }
-        case WorkflowActionType.ROUTER: {
+        case WorkflowActionType.ROUTER:
+        case WorkflowActionType.PARALLEL: {
             const { children } = updatedStep
             if (children) {
                 updatedStep.children = children.map((child) =>

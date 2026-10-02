@@ -28,7 +28,6 @@ import { UseFormReturn } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { tenantUserApi } from '@/api/tenant-user-api';
 import {
   CURSOR_QUERY_PARAM,
   LIMIT_QUERY_PARAM,
@@ -206,7 +205,7 @@ export const connectionsMutations = {
             }
 
             default: {
-              setErrorMessage('Unexpected error, please contact support');
+              setErrorMessage(t('Unexpected error, please contact support'));
               internalErrorToast();
               console.error(err);
             }
@@ -543,7 +542,7 @@ export const connectionsQueries = {
   useShareCandidates: () => {
     return useQuery({
       queryKey: ['connection-share-candidates'],
-      queryFn: () => tenantUserApi.list({ limit: 2000 }),
+      queryFn: () => connectionsApi.listShareCandidates({}),
       staleTime: 60 * 1000,
     });
   },

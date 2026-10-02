@@ -94,6 +94,30 @@ function insightOf({ issue, connectionHealthy }: InsightOfParams): IssueInsight 
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING }), fix({ kind: IssueFixKind.REPLAY_FULL })],
         }
     }
+    if (isNil(httpStatus)) {
+        return {
+            cause: IssueInsightCause.STEP_ERROR,
+            confidence: 0.4,
+            httpStatus: null,
+            fixes: [fix({ kind: IssueFixKind.OPEN_STEP_INPUT }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
+        }
+    }
+    if (AUTHORIZATION_HTTP_STATUSES.includes(httpStatus)) {
+        return {
+            cause: IssueInsightCause.ACCESS_DENIED,
+            confidence: 0.8,
+            httpStatus,
+            fixes: [fix({ kind: IssueFixKind.OPEN_STEP_INPUT }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
+        }
+    }
+    if (httpStatus >= SERVER_ERROR_MIN_STATUS) {
+        return {
+            cause: IssueInsightCause.UPSTREAM_ERROR,
+            confidence: 0.7,
+            httpStatus,
+            fixes: [fix({ kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
+        }
+    }
     return {
         cause: IssueInsightCause.REJECTED_INPUT,
         confidence: 0.68,
@@ -141,6 +165,7 @@ const HIGH_SEVERITY_OCCURRENCES = 10
 const MEDIUM_SEVERITY_OCCURRENCES = 3
 const TRANSIENT_HTTP_STATUSES = [429, 502, 503, 504, 529]
 const AUTHORIZATION_HTTP_STATUSES = [401, 403]
+const SERVER_ERROR_MIN_STATUS = 500
 
 type IsRepeatAttemptParams = {
     execution: {

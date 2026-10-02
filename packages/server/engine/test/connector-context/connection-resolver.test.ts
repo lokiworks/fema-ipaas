@@ -115,6 +115,28 @@ describe('connection-resolver service', () => {
         await expect(resolver.obtain('my-connection')).rejects.toThrow(ConnectionExpiredError)
     })
 
+    it('throws ConnectionExpiredError when the token refresh failed and the status is EXPIRED', async () => {
+        const connection = makeConnection({ status: ConnectionStatus.EXPIRED })
+        vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
+            JSON.stringify(connection),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ))
+
+        const resolver = createConnectionResolver(RESOLVER_PARAMS)
+        await expect(resolver.obtain('my-connection')).rejects.toThrow(ConnectionExpiredError)
+    })
+
+    it('does not block a MISSING placeholder or an ACTIVE connection', async () => {
+        const connection = makeConnection({ status: ConnectionStatus.ACTIVE })
+        vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
+            JSON.stringify(connection),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ))
+
+        const resolver = createConnectionResolver(RESOLVER_PARAMS)
+        await expect(resolver.obtain('my-connection')).resolves.toEqual(connection.value)
+    })
+
     it('retries a transient network failure and resolves', async () => {
         const connection = makeConnection()
         const fetchSpy = vi.spyOn(global, 'fetch')

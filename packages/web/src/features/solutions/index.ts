@@ -3,6 +3,7 @@ export { solutionsHooks } from './hooks/solutions-hooks';
 export { solutionsUtils, WIZARD_STEPS } from './utils/solutions-utils';
 export type { CheckGate, WizardStep } from './utils/solutions-utils';
 export { GenerateSolutionDialog } from './components/generate-solution-dialog';
+export { SolutionCheckLabel } from './components/solution-check-label';
 export { SolutionConnectorIcons } from './components/solution-connector-icons';
 export { SolutionDetailView } from './components/solution-detail-view';
 export { SolutionInstallsList } from './components/solution-installs-list';

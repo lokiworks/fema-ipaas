@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode, generateId, isNil, Permission, ProjectId, TenantId, UserId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, Permission, ProjectId, TenantId, unique, UserId } from '@fema-ipaas/core-utils'
 import {
     ConnectionStatus,
     CreateSolutionFromProjectRequestBody,
@@ -73,7 +73,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
     },
 
     async createFromProject({ tenantId, userId, request }: CreateFromProjectParams): Promise<SolutionDetail> {
-        const built = await buildFromProject({ log, tenantId, projectId: request.projectId, workflowIds: request.workflowIds, manualChecks: request.manualChecks })
+        const built = await buildFromProject({ log, tenantId, projectId: request.projectId, workflowIds: unique(request.workflowIds), manualChecks: request.manualChecks })
         const id = generateId()
         await solutionRepo().insert({
             id,
@@ -153,6 +153,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
             config,
             connections: request.connections,
             workflowIds: created.workflows.map((workflow) => workflow.workflowId),
+            workflowKeys: created.workflows.map((workflow) => workflow.key),
             mappingTableIds: created.mappingTables.map((table) => table.tableId),
             skippedChecks: skipped,
             installedBy: userId,
@@ -186,30 +187,61 @@ export const solutionService = (log: FastifyBaseLogger) => ({
         }
         const previous = await packageOf({ solutionId: row.solutionId, version: row.version })
         const upgraded = await applyUpgrade({ log, row, previous, next: entry.package, tenantId, userId })
-        await solutionInstallRepo().update({ id: installId }, { version: entry.solution.currentVersion, workflowIds: upgraded.workflowIds, mappingTableIds: upgraded.mappingTableIds })
+        await solutionInstallRepo().update({ id: installId }, { version: entry.solution.currentVersion, workflowIds: upgraded.workflowIds, workflowKeys: upgraded.workflowKeys, mappingTableIds: upgraded.mappingTableIds })
         return installOrThrow({ id: installId, tenantId, latestVersion: entry.solution.currentVersion })
     },
 })
 
-async function applyUpgrade({ log, row, previous, next, tenantId, userId }: ApplyUpgradeParams): Promise<{ workflowIds: string[], mappingTableIds: string[] }> {
+async function applyUpgrade({ log, row, previous, next, tenantId, userId }: ApplyUpgradeParams): Promise<UpgradeOutcome> {
     const config = solutionUtils.resolveConfig({ items: next.config, provided: row.config }).values
+    const known = await knownWorkflows({ row, previous })
+    const reusable = new Map(known.filter((entry) => entry.exists).map((entry) => [entry.key, entry.workflowId]))
+    await assertUpgradeCapacity({ next, projectId: row.projectId, reusableKeys: [...reusable.keys()] })
     const tables = await ensureTables({ log, pkg: next, projectId: row.projectId, userId })
     const tableIdByKey = new Map(tables.map((table) => [table.key, table.tableId]))
-    const idByKey = new Map(previous.workflows.map((workflow, index) => [workflow.key, row.workflowIds[index]]))
     const transfer = workflowTransferService(log)
-    const outcomes = await next.workflows.reduce<Promise<string[]>>(async (accPromise, workflow) => {
+    const outcomes = await next.workflows.reduce<Promise<WorkflowRef[]>>(async (accPromise, workflow) => {
         const acc = await accPromise
         const trigger = solutionPackageUtils.instantiate({ workflow, items: next.config, config, connections: row.connections, tableIdByKey })
-        const existingId = idByKey.get(workflow.key)
+        const existingId = reusable.get(workflow.key)
         if (!isNil(existingId)) {
             await transfer.replaceDraft({ projectId: row.projectId, workflowId: existingId, userId, tenantId, displayName: workflow.name, trigger, schemaVersion: workflow.schemaVersion, notes: workflow.notes })
-            return [...acc, existingId]
+            return [...acc, { key: workflow.key, workflowId: existingId }]
         }
         const created = await transfer.createFromTrigger({ projectId: row.projectId, userId, tenantId, displayName: workflow.name, description: workflow.description, trigger, schemaVersion: workflow.schemaVersion, notes: workflow.notes })
-        return [...acc, created.workflowId]
+        return [...acc, { key: workflow.key, workflowId: created.workflowId }]
     }, Promise.resolve([]))
-    const keptOld = row.workflowIds.filter((workflowId, index) => !next.workflows.some((workflow) => workflow.key === previous.workflows[index]?.key) && !isNil(workflowId))
-    return { workflowIds: [...outcomes, ...keptOld], mappingTableIds: tables.map((table) => table.tableId) }
+    const kept = known.filter((entry) => entry.exists && !next.workflows.some((workflow) => workflow.key === entry.key))
+    const all = [...outcomes, ...kept.map(({ key, workflowId }) => ({ key, workflowId }))]
+    return {
+        workflowIds: all.map((entry) => entry.workflowId),
+        workflowKeys: all.map((entry) => entry.key),
+        mappingTableIds: tables.map((table) => table.tableId),
+    }
+}
+
+async function knownWorkflows({ row, previous }: { row: SolutionInstallSchema, previous: SolutionPackage }): Promise<KnownWorkflow[]> {
+    const keys = row.workflowKeys ?? previous.workflows.map((workflow) => workflow.key)
+    const present = row.workflowIds.length === 0 ? [] : await workflowRepo().find({ where: { id: In(row.workflowIds), projectId: row.projectId }, select: ['id'] })
+    const presentIds = new Set(present.map((workflow) => workflow.id))
+    return row.workflowIds.map((workflowId, index) => ({
+        key: keys[index] ?? `${LEGACY_KEY_PREFIX}${workflowId}`,
+        workflowId,
+        exists: presentIds.has(workflowId),
+    }))
+}
+
+async function assertUpgradeCapacity({ next, projectId, reusableKeys }: { next: SolutionPackage, projectId: ProjectId, reusableKeys: string[] }): Promise<void> {
+    const needed = next.workflows.filter((workflow) => !reusableKeys.includes(workflow.key)).length
+    if (needed === 0) {
+        return
+    }
+    const project = await projectRepo().findOneOrFail({ where: { id: projectId }, select: ['id', 'workflowsLimit'] })
+    const current = await workflowRepo().countBy({ projectId })
+    const error = solutionUtils.capacityError({ limit: project.workflowsLimit ?? instanceLimits.projectWorkflows(), current, needed })
+    if (!isNil(error)) {
+        throw validation(error)
+    }
 }
 
 async function buildFromProject({ log, tenantId, projectId, workflowIds, manualChecks }: BuildFromProjectParams): Promise<SolutionPackage> {
@@ -349,7 +381,7 @@ async function assertInstallable({ pkg, request, tenantId }: { pkg: SolutionPack
 async function skippedChecks({ pkg, request, tenantId }: { pkg: SolutionPackage, request: InstallSolutionRequestBody, tenantId: TenantId }): Promise<string[]> {
     const results = await Promise.all(pkg.checks.filter((check) => !check.blocking).map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
     return results
-        .filter((result) => result.status === SolutionCheckStatus.FAIL || !request.acknowledgedChecks.includes(result.key))
+        .filter((result) => result.status !== SolutionCheckStatus.PASS)
         .map((result) => result.label)
 }
 
@@ -515,11 +547,27 @@ const FIRST_VERSION = '1.0'
 const MAX_TABLE_NAME = 30
 const MAX_TABLE_DESCRIPTION = 100
 const MAX_NAME_ATTEMPTS = 20
+const LEGACY_KEY_PREFIX = 'legacy:'
 
 type CatalogEntry = {
     solution: Solution
     package: SolutionPackage
     versions: { version: string, notes: string, publishedAt: string }[]
+}
+
+type WorkflowRef = {
+    key: string
+    workflowId: string
+}
+
+type KnownWorkflow = WorkflowRef & {
+    exists: boolean
+}
+
+type UpgradeOutcome = {
+    workflowIds: string[]
+    workflowKeys: string[]
+    mappingTableIds: string[]
 }
 
 type CreatedResources = {

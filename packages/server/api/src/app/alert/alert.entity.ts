@@ -195,15 +195,15 @@ export const AlertRecordEntity = new EntitySchema<AlertRecordSchema>({
         },
     ],
     relations: {
-        policy: {
+        tenant: {
             type: 'many-to-one',
-            target: 'alert_policy',
+            target: 'tenant',
             cascade: true,
             onDelete: 'CASCADE',
             joinColumn: {
-                name: 'policyId',
+                name: 'tenantId',
                 referencedColumnName: 'id',
-                foreignKeyConstraintName: 'fk_alert_record_policy_id',
+                foreignKeyConstraintName: 'fk_alert_record_tenant_id',
             },
         },
     },
@@ -259,7 +259,7 @@ export type AlertRecordSchema = {
     sentAt: string | null
     error: string | null
     summary: string
-    policy?: AlertPolicySchema
+    tenant?: Tenant
 }
 
 export type NotificationChannelConfig = {

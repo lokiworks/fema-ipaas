@@ -54,6 +54,9 @@ export enum IssueInsightCause {
     NOT_FOUND = 'NOT_FOUND',
     UPSTREAM_TIMEOUT = 'UPSTREAM_TIMEOUT',
     REJECTED_INPUT = 'REJECTED_INPUT',
+    ACCESS_DENIED = 'ACCESS_DENIED',
+    UPSTREAM_ERROR = 'UPSTREAM_ERROR',
+    STEP_ERROR = 'STEP_ERROR',
 }
 
 export enum IssueFixKind {
@@ -77,6 +80,7 @@ export const ListIssuesRequestQuery = z.object({
     workflowId: z.string().optional(),
     search: z.string().optional(),
     sort: z.enum(IssueSort).optional(),
+    timezone: z.string().max(64).optional(),
 })
 export type ListIssuesRequestQuery = z.infer<typeof ListIssuesRequestQuery>
 
@@ -107,6 +111,7 @@ export type AddIssueNoteRequestBody = z.infer<typeof AddIssueNoteRequestBody>
 export const IssueTrendQuery = z.object({
     projectId: z.string(),
     granularity: z.enum(IssueTrendGranularity).optional(),
+    timezone: z.string().max(64).optional(),
 })
 export type IssueTrendQuery = z.infer<typeof IssueTrendQuery>
 

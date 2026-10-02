@@ -7,7 +7,9 @@ import {
     ConnectionScopeImpact,
     ConnectionScopeImpactRequestBody,
     ConnectionShare,
+    ConnectionShareUser,
     ListAccessibleConnectionsRequestQuery,
+    ListConnectionShareCandidatesRequestQuery,
     PrincipalType,
     RemindConnectionOwnerResponse,
     UpdateConnectionAccessRequestBody,
@@ -23,6 +25,14 @@ import { connectionShareService } from './connection-share.service'
 export const connectionShareController: FastifyPluginAsyncZod = async (app) => {
     app.get('/accessible', ListAccessibleRequest, async (request): Promise<SeekPage<AccessibleConnection>> => {
         return connectionShareService(request.log).listAccessible({
+            tenantId: request.principal.tenant.id,
+            userId: request.principal.id,
+            query: request.query,
+        })
+    })
+
+    app.get('/share-candidates', ShareCandidatesRequest, async (request): Promise<ConnectionShareUser[]> => {
+        return connectionShareService(request.log).listShareCandidates({
             tenantId: request.principal.tenant.id,
             userId: request.principal.id,
             query: request.query,
@@ -155,6 +165,16 @@ const ListAccessibleRequest = {
         description: 'List the connections the current user owns or that are shared with them, across their projects.',
         querystring: ListAccessibleConnectionsRequestQuery,
         response: { [StatusCodes.OK]: SeekPage(AccessibleConnection) },
+    },
+}
+
+const ShareCandidatesRequest = {
+    config: { security: userOnly },
+    schema: {
+        tags: ['connections'],
+        description: 'List the active members of the tenant a connection can be shared with.',
+        querystring: ListConnectionShareCandidatesRequestQuery,
+        response: { [StatusCodes.OK]: z.array(ConnectionShareUser) },
     },
 }
 

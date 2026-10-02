@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { INTERNAL_ERROR_MESSAGE } from '@/components/ui/sonner';
+import { internalErrorMessage } from '@/components/ui/sonner';
 import { projectCollectionUtils } from '@/features/projects';
 import { ProjectDisplay } from '@/features/projects/components/project-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
@@ -78,7 +78,13 @@ export function ProjectSettingsDialog({
     });
     const { error } = await tryCatch(() => transaction.isPersisted.promise);
     if (!isNil(error)) {
-      toast.error(api.extractServerErrorMessage(error, INTERNAL_ERROR_MESSAGE));
+      const message = api.extractServerErrorMessage(
+        error,
+        internalErrorMessage(),
+      );
+      toast.error(
+        message === PROJECT_NAME_TAKEN ? t('projectNameTaken') : message,
+      );
       return;
     }
     toast.success(t('Your changes have been saved.'), {
@@ -243,3 +249,5 @@ export function ProjectSettingsDialog({
     </Dialog>
   );
 }
+
+const PROJECT_NAME_TAKEN = 'projectNameTaken';

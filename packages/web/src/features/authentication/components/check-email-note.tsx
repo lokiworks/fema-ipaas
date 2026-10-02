@@ -24,9 +24,12 @@ const CheckEmailNote = ({ email, type }: CreateOtpRequestBody) => {
         <MailCheck className="w-16 h-16" />
         <span className="text-left w-fit">
           {type === OtpType.EMAIL_VERIFICATION
-            ? t('We sent you a link to complete your registration to')
-            : t('We sent you a link to reset your password to')}
-          <strong>&nbsp;{email}</strong>.
+            ? t('We sent a link to complete your registration to {email}.', {
+                email,
+              })
+            : t('We sent a link to reset your password to {email}.', {
+                email,
+              })}
         </span>
       </div>
       <div className="flex flex-row gap-1">

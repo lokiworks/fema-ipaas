@@ -24,6 +24,8 @@ import { AddAgentApprovals1790475172395 } from './migration/postgres/17904751723
 import { DesignDocRolloutSchema1790501279466 } from './migration/postgres/1790501279466-DesignDocRolloutSchema'
 import { AddExecutionBusinessKey1790851200000 } from './migration/postgres/1790851200000-AddExecutionBusinessKey'
 import { AddSolutions1790921911539 } from './migration/postgres/1790921911539-AddSolutions'
+import { AddSolutionInstallWorkflowKeys1790930000000 } from './migration/postgres/1790930000000-AddSolutionInstallWorkflowKeys'
+import { KeepAlertRecordsAfterPolicyDeletion1790940000000 } from './migration/postgres/1790940000000-KeepAlertRecordsAfterPolicyDeletion'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -55,6 +57,8 @@ export const getMigrations = (): (new () => Migration)[] => {
         DesignDocRolloutSchema1790501279466,
         AddExecutionBusinessKey1790851200000,
         AddSolutions1790921911539,
+        AddSolutionInstallWorkflowKeys1790930000000,
+        KeepAlertRecordsAfterPolicyDeletion1790940000000,
     ]
 }
 

@@ -40,6 +40,10 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
+import {
+  projectDirectoryHooks,
+  projectDirectoryUtils,
+} from '@/features/projects/api/project-directory-api';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { solutionsHooks } from '../hooks/solutions-hooks';
@@ -68,6 +72,7 @@ function GenerateSolutionDialog({
 
 function GenerateSolutionForm({ onCancel, onCreated }: GenerateFormProps) {
   const { data: projects } = projectCollectionUtils.useAll();
+  const { data: directory } = projectDirectoryHooks.useDirectory();
   const { data: existing } = solutionsHooks.useSolutions();
   const form = useForm<GenerateFormValues>({
     resolver: zodResolver(GenerateFormSchema),
@@ -78,7 +83,16 @@ function GenerateSolutionForm({ onCancel, onCreated }: GenerateFormProps) {
     control: form.control,
     name: 'manualChecks',
   });
-  const projectId = form.watch('projectId');
+  const watchedProjectId = form.watch('projectId');
+  const editableIds = new Set(
+    (directory ?? [])
+      .filter(projectDirectoryUtils.canEdit)
+      .map((project) => project.id),
+  );
+  const choices = projects.filter((project) => editableIds.has(project.id));
+  const projectId = choices.some((project) => project.id === watchedProjectId)
+    ? watchedProjectId
+    : '';
   const { mutate: create, isPending } = solutionsHooks.useCreateFromProject({
     onSuccess: onCreated,
   });
@@ -114,7 +128,7 @@ function GenerateSolutionForm({ onCancel, onCreated }: GenerateFormProps) {
             <FormItem>
               <FormLabel>{t('Source project')}</FormLabel>
               <Select
-                value={field.value}
+                value={projectId}
                 onValueChange={(value) => {
                   field.onChange(value);
                   form.setValue('workflowIds', [], { shouldValidate: true });
@@ -124,7 +138,7 @@ function GenerateSolutionForm({ onCancel, onCreated }: GenerateFormProps) {
                   <SelectValue placeholder={t('Select a project')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map((project) => (
+                  {choices.map((project) => (
                     <SelectItem key={project.id} value={project.id}>
                       {getProjectName(project)}
                     </SelectItem>

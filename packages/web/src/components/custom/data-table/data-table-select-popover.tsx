@@ -30,6 +30,7 @@ type DataTableSelectPopoverProps = {
     icon?: React.ComponentType<{ className?: string }> | string;
   }[];
   facets?: Map<any, number>;
+  single?: boolean;
   handleFilterChange: (filterValue: string[]) => void;
 };
 
@@ -39,6 +40,7 @@ const DataTableSelectPopover = ({
   options,
   handleFilterChange,
   facets,
+  single,
 }: DataTableSelectPopoverProps) => {
   return (
     <Popover>
@@ -98,6 +100,10 @@ const DataTableSelectPopover = ({
                     <CommandItem
                       key={option.value}
                       onSelect={() => {
+                        if (single) {
+                          handleFilterChange(isSelected ? [] : [option.value]);
+                          return;
+                        }
                         if (isSelected) {
                           selectedValues.delete(option.value);
                         } else {

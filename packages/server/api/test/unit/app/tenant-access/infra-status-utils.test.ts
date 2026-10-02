@@ -27,6 +27,10 @@ describe('infrastructure status utils', () => {
         expect(id).not.toContain('0123')
     })
 
+    it('stores the key observation under a flag id that fits the 21 character id column', () => {
+        expect(encryptionStatusUtils.observationFlagId.length).toBeLessThanOrEqual(21)
+    })
+
     it('grades the backup marker', () => {
         const now = '2026-01-10T00:00:00.000Z'
         expect(componentHealthUtils.backupLevel({ confirmedAt: null, now })).toBe(ComponentHealthLevel.NOT_CONFIGURED)

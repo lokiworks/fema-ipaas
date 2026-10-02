@@ -2,6 +2,8 @@ import { Nullable, OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, FailedStep, RunEnvironment, WorkflowRetryStrategy } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
+export const RUN_LOG_TEXT_MAX_LENGTH = 255
+
 export enum RunLogType {
     RUN = 'RUN',
     DEBUG = 'DEBUG',
@@ -98,8 +100,8 @@ export const ListRunLogsRequestQuery = z.object({
     workflowId: OptionalArrayFromQuery(z.string()),
     status: OptionalArrayFromQuery(z.enum(ExecutionStatus)),
     connector: OptionalArrayFromQuery(z.string()),
-    content: z.string().max(200).optional(),
-    businessKey: z.string().max(200).optional(),
+    content: z.string().max(RUN_LOG_TEXT_MAX_LENGTH).optional(),
+    businessKey: z.string().max(RUN_LOG_TEXT_MAX_LENGTH).optional(),
     durationOperator: z.enum(RunLogDurationOperator).optional(),
     durationSeconds: z.coerce.number().min(0).optional(),
     runIds: OptionalArrayFromQuery(z.string()),

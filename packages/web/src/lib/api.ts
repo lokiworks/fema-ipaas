@@ -54,7 +54,6 @@ function globalErrorHandler(error: AxiosError) {
       errorCode === ErrorCode.INVALID_BEARER_TOKEN
     ) {
       authenticationSession.logOut();
-      console.log(errorCode);
       window.location.href = '/sign-in';
     }
   }
@@ -174,8 +173,10 @@ export const api = {
     if (!isAxiosError(error)) {
       return false;
     }
-    const responseData = error.response?.data as ApplicationErrorParams;
-    return responseData.code === errorCode;
+    const responseData = error.response?.data as
+      | ApplicationErrorParams
+      | undefined;
+    return responseData?.code === errorCode;
   },
   isError(error: unknown): error is HttpError {
     return isAxiosError(error);
@@ -191,7 +192,11 @@ export const api = {
         return message;
       }
     }
-    if (error instanceof Error && error.message.length > 0) {
+    if (
+      !api.isError(error) &&
+      error instanceof Error &&
+      error.message.length > 0
+    ) {
       return error.message;
     }
     return fallback;

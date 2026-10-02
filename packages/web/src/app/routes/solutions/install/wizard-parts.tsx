@@ -49,7 +49,7 @@ function WizardFooter({
     <div className="flex items-center gap-3 border-t pt-4">
       {onBack && (
         <Button type="button" variant="outline" onClick={onBack}>
-          {t('Back')}
+          {t('Previous step')}
         </Button>
       )}
       <div className="grow" />
@@ -60,7 +60,7 @@ function WizardFooter({
         loading={nextLoading}
         onClick={onNext}
       >
-        {nextLabel ?? t('Next')}
+        {nextLabel ?? t('Next step')}
       </Button>
     </div>
   );

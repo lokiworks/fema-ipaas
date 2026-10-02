@@ -9,7 +9,7 @@ function strongestPermission(permissions: (ConnectionPermission | null | undefin
     return ranked[0] ?? null
 }
 
-function resolvePermission({ connection, userId, shares, memberProjectIds }: ResolvePermissionParams): ConnectionPermission | null {
+function resolvePermission({ connection, userId, shares, memberProjectIds, writableProjectIds }: ResolvePermissionParams): ConnectionPermission | null {
     if (connection.ownerId === userId) {
         return ConnectionPermission.OWNER
     }
@@ -17,8 +17,15 @@ function resolvePermission({ connection, userId, shares, memberProjectIds }: Res
     const availableToMember = isAvailableToAllProjects(connection)
         ? memberProjectIds.length > 0
         : connection.projectIds.some((projectId) => memberProjectIds.includes(projectId))
-    const memberPermission = availableToMember ? toPermission(connection.projectMembersPermission) : null
+    const canEditHere = writableProjectIds === undefined || (isAvailableToAllProjects(connection)
+        ? writableProjectIds.length > 0
+        : connection.projectIds.some((projectId) => writableProjectIds.includes(projectId)))
+    const memberPermission = availableToMember ? capForRole({ permission: toPermission(connection.projectMembersPermission), canEdit: canEditHere }) : null
     return strongestPermission([toPermission(share?.permission), memberPermission])
+}
+
+function capForRole({ permission, canEdit }: { permission: ConnectionPermission | null, canEdit: boolean }): ConnectionPermission | null {
+    return permission === ConnectionPermission.EDIT && !canEdit ? ConnectionPermission.USE : permission
 }
 
 function canUse(permission: ConnectionPermission | null): boolean {
@@ -216,4 +223,5 @@ type ResolvePermissionParams = {
     userId: string
     shares: Pick<ConnectionShare, 'connectionId' | 'userId' | 'permission'>[]
     memberProjectIds: string[]
+    writableProjectIds?: string[]
 }

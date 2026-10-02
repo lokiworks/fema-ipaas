@@ -84,14 +84,15 @@ export const connectionShareService = (log: FastifyBaseLogger) => ({
     },
 
     async enrich({ tenantId, userId, connections, memberProjectIds }: EnrichParams): Promise<AccessibleConnection[]> {
-        const [shares, shareCounts, references] = await Promise.all([
+        const [writableProjectIds, shares, shareCounts, references] = await Promise.all([
+            connectionAccessService(log).writableProjectIds({ userId, tenantId }),
             connectionAccessService(log).sharesForUser({ userId, connectionIds: connections.map((connection) => connection.id) }),
             connectionAccessService(log).countShares({ connectionIds: connections.map((connection) => connection.id) }),
             connectionReferenceService(log).workflowReferences({ tenantId, connections }),
         ])
         const projects = await connectionReferenceService(log).projectRefs({ tenantId, projectIds: unique(connections.flatMap((connection) => connection.projectIds)) })
         return connections.flatMap((connection) => {
-            const permission = connectionAccessUtils.resolvePermission({ connection, userId, shares, memberProjectIds })
+            const permission = connectionAccessUtils.resolvePermission({ connection, userId, shares, memberProjectIds, writableProjectIds })
             if (isNil(permission)) {
                 return []
             }

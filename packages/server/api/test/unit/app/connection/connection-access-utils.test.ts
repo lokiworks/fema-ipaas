@@ -27,6 +27,18 @@ describe('connectionAccessUtils.resolvePermission', () => {
         expect(connectionAccessUtils.resolvePermission({ connection, userId: 'u1', shares: [], memberProjectIds: ['p9'] })).toBeNull()
     })
 
+    it('caps the project-member EDIT permission to USE for members who cannot edit in the project', () => {
+        const connection = { ...base, projectMembersPermission: ConnectionSharePermission.EDIT }
+        expect(connectionAccessUtils.resolvePermission({ connection, userId: 'u1', shares: [], memberProjectIds: ['p2'], writableProjectIds: [] })).toBe(ConnectionPermission.USE)
+        expect(connectionAccessUtils.resolvePermission({ connection, userId: 'u1', shares: [], memberProjectIds: ['p2'], writableProjectIds: ['p2'] })).toBe(ConnectionPermission.EDIT)
+    })
+
+    it('does not cap an explicit share given to the person', () => {
+        const connection = { ...base, projectMembersPermission: ConnectionSharePermission.USE }
+        const shares = [{ connectionId: 'c1', userId: 'u1', permission: ConnectionSharePermission.EDIT }]
+        expect(connectionAccessUtils.resolvePermission({ connection, userId: 'u1', shares, memberProjectIds: ['p2'], writableProjectIds: [] })).toBe(ConnectionPermission.EDIT)
+    })
+
     it('keeps the strongest of share and member access', () => {
         const connection = { ...base, projectMembersPermission: ConnectionSharePermission.USE }
         const shares = [{ connectionId: 'c1', userId: 'u1', permission: ConnectionSharePermission.EDIT }]

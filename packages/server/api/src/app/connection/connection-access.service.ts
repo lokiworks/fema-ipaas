@@ -1,8 +1,9 @@
-import { ApplicationError, ErrorCode, isNil, unique } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, Permission, unique } from '@fema-ipaas/core-utils'
 import { connectionAccessUtils, ConnectionPermission, ConnectionScope, ConnectionShare, PrincipalType, TenantRole } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In, IsNull } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { projectAccess } from '../project/project-access'
 import { projectMemberRepo } from '../project/project-member.repo'
 import { projectRepo } from '../project/project-repo'
 import { userRepo } from '../user/user-service'
@@ -32,6 +33,11 @@ export const connectionAccessService = (log: FastifyBaseLogger) => ({
         return unique([...owned.map((project) => project.id), ...liveMemberProjects.map((project) => project.id)])
     },
 
+    async writableProjectIds({ userId, tenantId }: UserRef): Promise<string[]> {
+        const projects = await projectAccess(log).projectsWithPermission({ userId, tenantId, permission: Permission.WRITE_WORKFLOW })
+        return projects.map((project) => project.id)
+    },
+
     async isTenantAdmin({ userId, tenantId }: UserRef): Promise<boolean> {
         const user = await userRepo().findOneBy({ id: userId, tenantId })
         return !isNil(user) && user.tenantRole === TenantRole.ADMIN
@@ -45,8 +51,9 @@ export const connectionAccessService = (log: FastifyBaseLogger) => ({
     },
 
     async permissionsFor({ connections, userId, tenantId }: PermissionsForParams): Promise<Map<string, ConnectionPermission | null>> {
-        const [memberProjectIds, shares] = await Promise.all([
+        const [memberProjectIds, writableProjectIds, shares] = await Promise.all([
             this.memberProjectIds({ userId, tenantId }),
+            this.writableProjectIds({ userId, tenantId }),
             this.sharesForUser({ userId, connectionIds: connections.map((connection) => connection.id) }),
         ])
         return new Map(connections.map((connection) => [connection.id, connectionAccessUtils.resolvePermission({
@@ -54,6 +61,7 @@ export const connectionAccessService = (log: FastifyBaseLogger) => ({
             userId,
             shares,
             memberProjectIds,
+            writableProjectIds,
         })]))
     },
 

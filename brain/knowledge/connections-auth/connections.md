@@ -28,6 +28,8 @@ Encrypted credential records (OAuth2 tokens, API keys, basic/custom auth, OIDC p
 
 ### Gotchas
 
+- **「项目成员权限」设成可编辑，对没有编辑权的项目角色只算可使用。** `resolvePermission` 多收一个 `writableProjectIds`（项目里有 `WRITE_WORKFLOW` 的项目，来自 `projectAccess.projectsWithPermission`）：成员权限为 EDIT 但用户在可用项目里都不能写，就降成 USE。直接分享给个人的 EDIT 不受影响；不传 `writableProjectIds` 的调用保持旧行为。所以查看者永远不能通过连接的成员权限改名、分享、改可用项目。
+
 - **引擎拿到 `EXPIRED` 或 `ERROR` 的连接都抛 `ConnectionExpiredError`。** `connection-resolver` 以前只认 `ERROR`，`EXPIRED` 出现后带着过期令牌继续调第三方，失败原因变成各家的 401，也建不出 `conn:<externalId>` 问题，运行日志里没有「授权已过期」。改引擎代码后要重新构建 `dist/packages/engine` 并重启 worker 才会生效（沙箱缓存会重装）。
 - **分享对话框的候选人来自 `GET /v1/connections/share-candidates`。** `GET /v1/users` 实际只有租户管理员能调，普通所有者以前打开分享框看到「没有可以添加的成员」；新接口返回本租户的活跃成员（不含自己），支持 `search` 和 `limit`（最多 500）。
 - **`GET /v1/connections/:id` 看不到的连接返回 `404`；`POST /replace` 的源和目标都必须是调用者能用的连接**，否则操作员可以把工作流改指到别人的私有连接。引用面板里的 MCP 服务和环境替换也按成员项目过滤，不可见的只给 `hiddenMcpServiceCount`、`hiddenProjectConfigCount`；删除时仍然按全部引用拦。

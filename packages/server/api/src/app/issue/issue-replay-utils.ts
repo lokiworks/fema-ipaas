@@ -24,13 +24,14 @@ function chainVerdicts({ candidates, chain }: ChainVerdictsParams): Map<string, 
     return verdicts
 }
 
-function classify({ execution, verdict, workflowExists, connectionState, connectionExternalId, transient, authorization, rejectedByTarget, workflowChangedAfterFailure, mappingTableChangedAfterFailure }: ClassifyParams): ClassifiedReplay {
+function classify({ execution, verdict, workflowExists, connectionState, connectionExternalId, transient, authorization, rejectedByTarget, workflowChangedAfterFailure, mappingTableChangedAfterFailure, blockedUntil = null }: ClassifyParams): ClassifiedReplay {
     const item = (category: ReplayCategory, reason: ReplayReason): ClassifiedReplay => ({
         executionId: execution.id,
         category,
         reason,
         connectionExternalId,
         rawDataExpired: isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId),
+        blockedUntil: reason === ReplayReason.BLOCKED_UNTIL ? blockedUntil?.toISOString() ?? null : null,
     })
     if (!workflowExists) {
         return item(ReplayCategory.NOT_NEEDED, ReplayReason.WORKFLOW_DELETED)
@@ -50,6 +51,9 @@ function classify({ execution, verdict, workflowExists, connectionState, connect
             return item(ReplayCategory.REPLAYABLE, ReplayReason.CONNECTION_RECOVERED)
         case ReplayConnectionState.NOT_APPLICABLE:
             break
+    }
+    if (!isNil(blockedUntil)) {
+        return item(ReplayCategory.BLOCKED, ReplayReason.BLOCKED_UNTIL)
     }
     if (transient) {
         return item(ReplayCategory.REPLAYABLE, ReplayReason.TRANSIENT_ERROR)
@@ -117,6 +121,7 @@ type ClassifyParams = {
     transient: boolean
     authorization: boolean
     rejectedByTarget: boolean
+    blockedUntil?: Date | null
 }
 
 type ClassifiedReplay = {
@@ -125,4 +130,5 @@ type ClassifiedReplay = {
     reason: ReplayReason
     connectionExternalId: string | null
     rawDataExpired: boolean
+    blockedUntil: string | null
 }

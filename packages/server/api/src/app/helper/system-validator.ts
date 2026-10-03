@@ -178,6 +178,8 @@ const systemPropValidators: {
     [AppSystemProp.TELEMETRY_ENABLED]: booleanValidator,
     [AppSystemProp.TRIGGER_DEFAULT_POLL_INTERVAL]: numberValidator,
     [AppSystemProp.WEBHOOK_TIMEOUT_SECONDS]: numberValidator,
+    [AppSystemProp.WEBHOOK_RATE_LIMIT_MAX]: numberValidator,
+    [AppSystemProp.WEBHOOK_RATE_LIMIT_WINDOW_SECONDS]: numberValidator,
     [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS]: booleanValidator,
     [AppSystemProp.FILE_STORAGE_LOCATION]: enumValidator(Object.values(FileLocation)),
     [AppSystemProp.FIREBASE_HASH_PARAMETERS]: stringValidator,
@@ -195,13 +197,6 @@ const systemPropValidators: {
 
     [AppSystemProp.ENABLE_WORKFLOW_ON_PUBLISH]: booleanValidator,
     [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: booleanValidator,
-    [AppSystemProp.ISSUE_ARCHIVE_DAYS]: (value: string) => {
-        const days = parseInt(value)
-        if (isNaN(days) || days < 0) {
-            return 'Value must be a non-negative number'
-        }
-        return true
-    },
 
     // Webhook payload limits
     [AppSystemProp.MAX_WEBHOOK_PAYLOAD_SIZE_MB]: numberValidator,

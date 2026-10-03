@@ -12,13 +12,11 @@ const API_RATE_LIMIT_AUTHN_ENABLED = system.getBoolean(
 
 export const rateLimitModule: FastifyPluginAsyncZod = FastifyPlugin(
     async (app) => {
-        if (API_RATE_LIMIT_AUTHN_ENABLED) {
-            await app.register(RateLimitPlugin, {
-                global: false,
-                keyGenerator: (req) => networkUtils.extractClientRealIp(req, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
-                redis: await redisConnections.create(),
-            })
-        }
+        await app.register(RateLimitPlugin, {
+            global: false,
+            keyGenerator: (req) => networkUtils.extractClientRealIp(req, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
+            redis: await redisConnections.create(),
+        })
     },
 )
 
@@ -28,6 +26,7 @@ export const authnRateLimit: RateLimitOptions = {
         10,
     ),
     timeWindow: system.getOrThrow(AppSystemProp.API_RATE_LIMIT_AUTHN_WINDOW),
+    allowList: () => !API_RATE_LIMIT_AUTHN_ENABLED,
 }
 
 export const emailCodeRateLimit: RateLimitOptions = {
@@ -36,4 +35,5 @@ export const emailCodeRateLimit: RateLimitOptions = {
         10,
     ),
     timeWindow: system.getOrThrow(AppSystemProp.API_RATE_LIMIT_AUTHN_WINDOW),
+    allowList: () => !API_RATE_LIMIT_AUTHN_ENABLED,
 }

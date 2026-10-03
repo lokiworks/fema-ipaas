@@ -121,6 +121,10 @@ function countsOf(rows: StatusCountRow[]): GroupCounts {
     return rows.reduce((counts, row) => addToCounts({ counts, status: row.status, count: row.count }), emptyCounts())
 }
 
+function executedStepsOf(rows: StatusStepsRow[]): number {
+    return rows.reduce((sum, row) => sum + row.steps + (STOPPED_AT_STEP_STATUSES.includes(row.status) ? row.count : 0), 0)
+}
+
 function fillBuckets({ starts, to, rows }: { starts: number[], to: number, rows: BucketStatusRow[] }): RunMonitorBucket[] {
     return starts.map((start, index) => {
         const end = index === starts.length - 1 ? to : starts[index + 1]
@@ -169,6 +173,8 @@ const DEFAULT_TIMEZONE = 'UTC'
 
 const ACTIVE_STATUSES: ExecutionStatus[] = [ExecutionStatus.QUEUED, ExecutionStatus.RUNNING, ExecutionStatus.PAUSED]
 
+const STOPPED_AT_STEP_STATUSES: ExecutionStatus[] = [ExecutionStatus.FAILED, ExecutionStatus.TIMEOUT, ExecutionStatus.MEMORY_LIMIT_EXCEEDED]
+
 const GROUP_KEYS: Record<RunMonitorStatusGroup, keyof GroupCounts> = {
     [RunMonitorStatusGroup.SUCCEEDED]: 'succeeded',
     [RunMonitorStatusGroup.FAILED]: 'failed',
@@ -195,6 +201,7 @@ export const runMonitorUtils = {
     timeWindow,
     statusGroup,
     countsOf,
+    executedStepsOf,
     fillBuckets,
     trendOf,
     aiSource,
@@ -229,6 +236,10 @@ export type GroupCounts = {
     failed: number
     terminated: number
     running: number
+}
+
+export type StatusStepsRow = StatusCountRow & {
+    steps: number
 }
 
 export type StatusCountRow = {

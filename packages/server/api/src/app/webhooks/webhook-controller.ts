@@ -9,10 +9,13 @@ import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { triggerSourceService } from '../trigger/trigger-source/trigger-source-service'
+import { webhookRateLimiter } from './webhook-rate-limiter'
 import { convertRequest, extractHeaderFromRequest } from './webhook-request-converter'
 import { webhookService, WebhookWorkflowVersionToRun } from './webhook.service'
 
 export const webhookController: FastifyPluginAsyncZod = async (app) => {
+
+    webhookRateLimiter.register({ app })
 
     app.all(
         '/:workflowId/sync',

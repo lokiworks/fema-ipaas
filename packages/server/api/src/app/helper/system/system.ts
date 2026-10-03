@@ -62,7 +62,6 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.MAX_FIELDS_PER_TABLE]: '100',
     [AppSystemProp.ENABLE_WORKFLOW_ON_PUBLISH]: 'true',
     [AppSystemProp.ENFORCE_CONNECTION_CONNECTOR_BINDING]: 'false',
-    [AppSystemProp.ISSUE_ARCHIVE_DAYS]: '7',
     [AppSystemProp.POSTGRES_IDLE_TIMEOUT_MS]: '300000',
     [AppSystemProp.NETWORK_MODE]: NetworkMode.UNRESTRICTED,
     [AppSystemProp.LOG_SAMPLE_RATE_INFO]: '100',

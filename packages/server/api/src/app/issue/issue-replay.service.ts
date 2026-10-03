@@ -43,6 +43,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             select: ['id', 'status', 'rerunOfExecutionId'],
         })
         const verdicts = issueReplayUtils.chainVerdicts({ candidates: executions, chain })
+        const now = new Date()
         const items = executions.map((execution) => issueReplayUtils.classify({
             execution,
             verdict: verdicts.get(execution.id) ?? ChainVerdict.TARGET,
@@ -54,6 +55,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             transient: issueUtils.isTransientHttpStatus(issue.errorCode),
             authorization: issueUtils.isAuthorizationHttpStatus(issue.errorCode),
             rejectedByTarget: issueUtils.isRejectedByTargetHttpStatus(issue.errorCode),
+            blockedUntil: issueUtils.activeBlockedUntil({ message: execution.failedStep?.message, now }),
         }))
         return { items }
     },

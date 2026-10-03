@@ -76,7 +76,7 @@ export const runMonitorService = (log: FastifyBaseLogger) => ({
                 enabledWorkflows: workflowCounts.enabled,
                 workflowsInScope: workflowCounts.total,
                 activeWorkflows,
-                executedSteps: statusRows.reduce((sum, row) => sum + row.steps, 0),
+                executedSteps: runMonitorUtils.executedStepsOf(statusRows),
                 peakConcurrency: peak.count,
                 peakAt: peak.at,
             },

@@ -56,6 +56,21 @@ describe('issueReplayUtils.classify', () => {
         expect(issueReplayUtils.classify({ ...base, verdict: ChainVerdict.RETRIED }).reason).toBe(ReplayReason.ALREADY_RETRIED)
     })
 
+    it('holds a transient failure back while the connector says the target is blocked', () => {
+        const blockedUntil = new Date('2026-10-03T16:00:00.000Z')
+        const result = issueReplayUtils.classify({ ...base, transient: true, blockedUntil })
+        expect(result.category).toBe(ReplayCategory.BLOCKED)
+        expect(result.reason).toBe(ReplayReason.BLOCKED_UNTIL)
+        expect(result.blockedUntil).toBe(blockedUntil.toISOString())
+    })
+
+    it('replays a transient failure once there is no active block', () => {
+        const result = issueReplayUtils.classify({ ...base, transient: true, blockedUntil: null })
+        expect(result.category).toBe(ReplayCategory.REPLAYABLE)
+        expect(result.reason).toBe(ReplayReason.TRANSIENT_ERROR)
+        expect(result.blockedUntil).toBeNull()
+    })
+
     it('skips runs whose workflow is gone', () => {
         expect(issueReplayUtils.classify({ ...base, workflowExists: false }).reason).toBe(ReplayReason.WORKFLOW_DELETED)
     })

@@ -59,6 +59,29 @@ hidden unless you opt in.
 
 Only if you want the links back: set `FEMA_SHOW_COMMUNITY=true`.
 
+#### Webhook URLs are now rate limited per workflow
+
+Anyone who held or guessed a webhook URL could call it without limit. Public webhook
+URLs (`/api/v1/webhooks/:workflowId` and its `/sync`, `/draft` and `/test` variants)
+now accept at most **600 requests per workflow per 60 seconds**. The counter is shared
+by all variants and methods of one workflow and by all API instances (it lives in Redis).
+A request over the limit is rejected with **HTTP 429** and a `Retry-After` header
+(seconds until the window resets); it is not queued and starts no run. Rejections are
+recorded in the request log with `webhook.rateLimited=true`.
+
+- New variable `FEMA_WEBHOOK_RATE_LIMIT_MAX` (default `600`). Set it to `0` to turn the
+  limit off.
+- New variable `FEMA_WEBHOOK_RATE_LIMIT_WINDOW_SECONDS` (default `60`).
+- The authentication rate limit switch `FEMA_API_RATE_LIMIT_AUTHN_ENABLED` keeps working
+  as before and does not affect webhooks.
+
+**When is action necessary?**
+
+Only if a sender posts more than about 10 requests per second to a single workflow, for
+example a bulk import that calls one webhook once per row. Make the sender honour
+`Retry-After` and retry, raise `FEMA_WEBHOOK_RATE_LIMIT_MAX`, or set it to `0` to
+disable the limit.
+
 #### The last of the billing and plan vocabulary is gone
 
 This fork has no editions, plans or credits, but several leftovers from upstream
@@ -287,6 +310,8 @@ Only for scripts, integrations or habits that relied on the looser checks. Give 
 - **Deleting an alert policy keeps its alert history.** Migration `KeepAlertRecordsAfterPolicyDeletion1790940000000` drops the foreign key from `alert_record` to `alert_policy` and cascades from the tenant instead. History rows of a deleted policy show **Deleted policy** (已删除的策略). Rolling this migration back deletes the history rows whose policy no longer exists.
 - **"Last 7 days" and the other day ranges are calendar days, in the viewer's time zone.** Run logs (3/7/15/30 days), the Issue Center summary, project home statistics, alert statistics and the monitor page all count the 7 calendar days that end today, starting at local midnight, instead of a rolling 168 hours or a UTC midnight. The browser sends its zone as the `timezone` query parameter (an IANA name such as `Asia/Shanghai`); callers that omit it get UTC. Ranges from 15 minutes to 24 hours are still rolling windows.
 - **Alerts for capacity** (a project's runs this month reaching the threshold of its limit) are also delivered as an in-app notification to the project owner and the tenant admins, once per policy and project per month.
+- **A connector can mark a failure as blocked until a time.** When the Beisen API rate-limits a tenant, the error now ends with a machine-readable line `[blocked-until=<ISO time>]` (00:00 Beijing time the next day). Until that time the issue says not to retry, and the replay dialog holds those runs back as **Blocked** instead of offering them as transient errors; after it, they replay as before. The issue signature does not change. Custom connectors can use the same line (`blockedUntilMarker` from the connector SDK); API clients that parse run error messages will see the extra last line.
+- **The run monitor's "Executed steps" (and the per-run average) now include the step a failed run stopped at.** Before, only steps that completed were counted, so many failures pulled the average down. The stored per-run step count and the `FEMA_MAX_NODES_PER_RUN` cap are unchanged. Steps whose failure was ignored or sent to a branch are still not counted.
 
 **When is action necessary?**
 

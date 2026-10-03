@@ -178,6 +178,8 @@ run data is kept. The **Cloud** values and how these interact are covered in
 | `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` | Maximum incoming webhook payload size (MB). Larger payloads are rejected with HTTP 413. | `25` |
 | `FEMA_WEBHOOK_PAYLOAD_INLINE_THRESHOLD_KB` | Webhook payloads below this (KB) are stored inline in Redis; larger ones are offloaded to file storage to protect Redis memory. | `512` |
 | `FEMA_WEBHOOK_TIMEOUT_SECONDS` | Default timeout for synchronous webhooks. Maximum 15 minutes; note Cloudflare caps it at 30 seconds. | `30` |
+| `FEMA_WEBHOOK_RATE_LIMIT_MAX` | Maximum webhook requests accepted per workflow in one rate-limit window. All webhook URL variants of a workflow (async, `/sync`, draft, test) share one counter, kept in Redis so it is consistent across instances. Requests over the limit get HTTP 429 with a `Retry-After` header and start no run. Set to `0` to disable the limit. | `600` |
+| `FEMA_WEBHOOK_RATE_LIMIT_WINDOW_SECONDS` | Length of the webhook rate-limit window, in seconds. | `60` |
 | `FEMA_MAX_RECORDS_PER_TABLE` | Maximum number of records per table. | `10000` |
 | `FEMA_MAX_FIELDS_PER_TABLE` | Maximum number of fields per table. | `100` |
 

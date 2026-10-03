@@ -19,6 +19,7 @@ icon: 📈
 - 峰值并发只回看范围起点前 24 小时内创建的运行；跨天仍在跑的超长运行可能漏算。
 - 「用了 AI 的运行」靠 `ai_usage.executionId` 关联回范围内的生产运行，只有工作流里的 AI 节点会带运行 ID；编辑器里的 AI 功能不进这个比例，但计入 Token 总量。
 - 明细表最多返回 500 个工作流（按运行次数），超出时页面会提示；CSV 只导出已加载的这些行。
+- **「运行节点数」含失败运行停下的那个节点，但存储的 `execution.stepsCount` 仍只数成功节点。** `stepsCount` 由引擎在节点成功后累加，也是单次运行节点上限（`FEMA_MAX_NODES_PER_RUN`）的计数器，所以不能改口径；监控在展示聚合里（`runMonitorUtils.executedStepsOf`）把状态为 FAILED、TIMEOUT、MEMORY_LIMIT_EXCEEDED 的运行各加 1。失败后被忽略或走分支的节点没有数据可数，不计入；INTERNAL_ERROR 和 LOG_SIZE_EXCEEDED 不加。「平均每次」是这个数除以范围内的全部运行数。
 - 点图表柱子或明细行会带 `projectId`、`workflowId`、`status`、`createdAfter`、`createdBefore` 跳到 `/logs`。
 
 ## Key files

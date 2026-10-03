@@ -307,6 +307,12 @@ export const mcpServiceService = (log: FastifyBaseLogger) => ({
             if (isNil(user) || user.status !== UserStatus.ACTIVE || !mcpToolModel.isCallerAllowed({ availability: service.availability, userId: user.id, ownerId: service.ownerId })) {
                 return null
             }
+            const stillEntitled = service.ownerId === user.id
+                || !isNil(await projectAccess(log).resolveRole({ userId: user.id, projectId: service.projectId }))
+                || (service.listed && user.tenantId === (await projectRepo().findOneBy({ id: service.projectId }))?.tenantId)
+            if (!stillEntitled) {
+                return null
+            }
             await touch(service)
             return {
                 service,
@@ -468,12 +474,9 @@ async function findVisibleOrThrow({ log, tenantId, userId, id }: FindParams): Pr
     if (service.ownerId === userId) {
         return service
     }
-    const [role, member] = await Promise.all([
-        projectAccess(log).resolveRole({ userId, projectId: service.projectId }),
-        mcpServiceMemberRepo().existsBy({ serviceId: id, userId }),
-    ])
+    const role = await projectAccess(log).resolveRole({ userId, projectId: service.projectId })
     const inMarket = service.listed && mcpToolModel.isCallerAllowed({ availability: service.availability, userId, ownerId: service.ownerId })
-    if (isNil(role) && !member && !inMarket) {
+    if (isNil(role) && !inMarket) {
         throw notFound(id)
     }
     return service

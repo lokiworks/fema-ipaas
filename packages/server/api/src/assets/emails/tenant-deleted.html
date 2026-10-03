@@ -1,56 +1,63 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
   <meta name="format-detection" content="date=no" />
   <meta name="format-detection" content="address=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="x-apple-disable-message-reformatting" />
-  <title>{{platformName}} has been deleted</title>
+  <title>「{{tenantName}}」已被计划删除</title>
   <!--[if mso]>
   <style type="text/css">
-    body, table, td, p, a { font-family: Arial, sans-serif !important; }
+    body, table, td, p, a { font-family: Arial, 'Microsoft YaHei', sans-serif !important; }
   </style>
   <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background: {{primaryColorLight}}; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-text-size-adjust: none;">
+<body style="margin: 0; padding: 0; background: {{primaryColorLight}}; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-text-size-adjust: none;">
   <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background: {{primaryColorLight}};">
     <tbody>
       <tr>
         <td align="center" style="padding: 48px 20px;">
 
-          <table role="presentation" width="560" border="0" cellspacing="0" cellpadding="0" style="background: #ffffff; border-radius: 12px; overflow: hidden;">
+          <table role="presentation" width="560" border="0" cellspacing="0" cellpadding="0" style="width: 100%; max-width: 560px; background: #ffffff; border-radius: 12px; overflow: hidden;">
             <tbody>
 
               <tr>
                 <td align="left" style="padding: 40px 40px 0 40px;">
-                  <img src="{{fullLogoUrl}}" width="210" alt="{{platformName}}" style="display: block; max-width: 100%;" />
+                  {{#fullLogoUrl}}
+                  <img src="{{fullLogoUrl}}" width="210" alt="{{tenantName}}" style="display: block; max-width: 100%; height: auto;" />
+                  {{/fullLogoUrl}}
+                  {{^fullLogoUrl}}
+                  <span style="font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 20px; line-height: 28px; font-weight: 600; color: #0a0a0a;">{{tenantName}}</span>
+                  {{/fullLogoUrl}}
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 36px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 32px; line-height: 40px; font-weight: 500; color: #0a0a0a;">
-                  Your platform has been deleted
+                <td align="left" style="padding: 36px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 32px; line-height: 40px; font-weight: 500; color: #0a0a0a; word-break: break-word;">
+                  「{{tenantName}}」已被计划删除
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e;">
-                  <strong>{{platformName}}</strong> is closed. Everyone has been signed out, every workflow has stopped running, and no one can sign back in.
+                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e; word-break: break-word;">
+                  「{{tenantName}}」已关闭：所有人已退出登录，所有工作流已停止运行，也无法再登录。
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e;">
-                  Your workflows, connections, agents, tables and projects will be erased on {{purgeDate}}. This cannot be undone.
+                <td align="left" style="padding: 12px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e; word-break: break-word;">
+                  工作流、连接、数据表和项目会在 <strong>{{purgeDate}}</strong> 彻底清除，清除后无法恢复。
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 22px; color: #2f2e2e;">
-                  If you did not expect this, reply to this email straight away.
+                <td align="left" style="padding: 12px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 22px; color: #2f2e2e;">
+                  如果这不是你预期的操作，请立即回复这封邮件联系我们。
                 </td>
               </tr>
 

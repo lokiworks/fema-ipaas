@@ -98,20 +98,16 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             externalIds: undefined,
         })
 
-        const connectionsWithoutSensitiveData: SeekPage<ConnectionWithoutSensitiveData> = {
-            ...connections,
-            data: connections.data.map(connectionService(request.log).removeSensitiveData),
-        }
         wideEvent.audit(auditEvents.connectionListed({
             actor: auditEvents.actorFromPrincipal(request.principal),
             target: {
                 type: 'project',
                 id: request.projectId,
                 tenantId: request.principal.tenant.id,
-                connectionCount: connectionsWithoutSensitiveData.data.length,
+                connectionCount: connections.data.length,
             },
         }))
-        return connectionsWithoutSensitiveData
+        return connections
     },
     )
     app.get('/:id', GetConnectionRequest, async (request): Promise<ConnectionWithoutSensitiveData> => {

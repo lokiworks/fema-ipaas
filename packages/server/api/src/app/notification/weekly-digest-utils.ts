@@ -1,19 +1,15 @@
 function compose({ runs, failedRuns, openIssues, newIssues, projectCount }: DigestCounts): DigestMessage {
-    const title = `Weekly summary: ${runs} ${plural({ count: runs, word: 'run' })}, ${failedRuns} failed`
+    const title = `每周摘要：${runs} 次运行，${failedRuns} 次失败`
     const lines = [
-        `Across your ${projectCount} ${plural({ count: projectCount, word: 'project' })} in the last 7 days:`,
-        `• ${runs} production ${plural({ count: runs, word: 'run' })}, ${failedRuns} failed or timed out`,
-        `• ${newIssues} new ${plural({ count: newIssues, word: 'issue' })}, ${openIssues} still open`,
+        `过去 7 天，你参与的 ${projectCount} 个项目：`,
+        `• 生产环境运行 ${runs} 次，其中 ${failedRuns} 次失败或超时`,
+        `• 新增问题 ${newIssues} 个，仍未解决 ${openIssues} 个`,
     ]
     return { title, body: lines.join('\n') }
 }
 
 function isWorthSending(counts: DigestCounts): boolean {
     return counts.projectCount > 0
-}
-
-function plural({ count, word }: { count: number, word: string }): string {
-    return count === 1 ? word : `${word}s`
 }
 
 export const weeklyDigestUtils = {

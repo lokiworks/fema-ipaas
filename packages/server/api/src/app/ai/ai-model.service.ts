@@ -4,6 +4,7 @@ import {
     AiFeature,
     AiModelConnection,
     ApplicationError,
+    connectionAccessUtils,
     ConnectionStatus,
     ErrorCode,
     isNil,
@@ -18,12 +19,13 @@ import {
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { z } from 'zod'
+import { connectionAccessService } from '../connection/connection-access.service'
 import { connectionService } from '../connection/connection-service/connection-service'
 import { aiUsageService } from './ai-usage.service'
 
 export const aiModelService = (log: FastifyBaseLogger) => ({
-    async listModelConnections({ projectId, tenantId }: ProjectScope): Promise<AiModelConnection[]> {
-        const page = await connectionService(log).list({
+    async listModelConnections({ projectId, tenantId, userId }: ProjectScope & { userId: string }): Promise<AiModelConnection[]> {
+        const page = await connectionService(log).listWithValue({
             projectId,
             tenantId,
             connectorName: AI_CONNECTOR_NAME,
@@ -34,15 +36,19 @@ export const aiModelService = (log: FastifyBaseLogger) => ({
             displayName: undefined,
             externalIds: undefined,
         })
-        return page.data.flatMap((connection) => {
+        const permissions = await connectionAccessService(log).permissionsFor({ connections: page.data, userId, tenantId })
+        const usable = page.data.filter((connection) => connectionAccessUtils.canUse(permissions.get(connection.id) ?? null))
+        return usable.flatMap((connection) => {
             const config = configOf(connection.value)
             return isNil(config) ? [] : [{ externalId: connection.externalId, displayName: connection.displayName, provider: config.provider, model: config.model }]
         })
     },
 
-    async resolveConfig({ projectId, tenantId, externalId }: ProjectScope & { externalId: string }): Promise<LlmConfig> {
+    async resolveConfig({ projectId, tenantId, externalId, userId }: ProjectScope & { externalId: string, userId: string }): Promise<LlmConfig> {
         const connection = await connectionService(log).getOne({ projectId, tenantId, externalId })
-        const config = isNil(connection) || connection.connectorName !== AI_CONNECTOR_NAME ? null : configOf(connection.value)
+        const permission = isNil(connection) ? null : (await connectionAccessService(log).permissionsFor({ connections: [connection], userId, tenantId })).get(connection.id) ?? null
+        const usable = !isNil(connection) && connectionAccessUtils.canUse(permission)
+        const config = !usable || connection.connectorName !== AI_CONNECTOR_NAME ? null : configOf(connection.value)
         if (isNil(config)) {
             throw new ApplicationError({
                 code: ErrorCode.VALIDATION,

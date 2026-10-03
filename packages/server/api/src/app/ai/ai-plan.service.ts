@@ -35,7 +35,7 @@ import { aiReferences } from './ai-references'
 
 export const aiPlanService = (log: FastifyBaseLogger) => ({
     async generate({ request, tenantId, userId }: { request: GenerateWorkflowPlanRequestBody, tenantId: TenantId, userId: UserId }): Promise<WorkflowPlan> {
-        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, externalId: request.modelConnectionExternalId })
+        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, userId, externalId: request.modelConnectionExternalId })
         const [catalog, connections] = await Promise.all([
             loadCatalog({ log, projectId: request.projectId, tenantId }),
             loadConnections({ projectId: request.projectId }),

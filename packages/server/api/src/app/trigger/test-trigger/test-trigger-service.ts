@@ -61,6 +61,7 @@ export const testTriggerService = (log: FastifyBaseLogger) => {
         },
         async cancel(params: CancelParams): Promise<void> {
             const { workflowId, projectId } = params
+            await workflowService(log).getOneOrThrow({ id: workflowId, projectId })
             return distributedLock(log).runExclusive({
                 key: lockKey(workflowId),
                 timeoutInSeconds: 120,

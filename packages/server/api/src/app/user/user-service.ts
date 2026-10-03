@@ -79,6 +79,14 @@ export const userService = (log: FastifyBaseLogger) => ({
                 },
             })
         }
+        if (tenant.ownerId === user.id && !isNil(tenantRole) && tenantRole !== TenantRole.ADMIN) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: {
+                    message: 'Tenant owner must stay an admin',
+                },
+            })
+        }
 
         const applyUpdate = (entityManager?: EntityManager): Promise<unknown> => userRepo(entityManager).update({
             id,

@@ -1,75 +1,80 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
   <meta name="format-detection" content="date=no" />
   <meta name="format-detection" content="address=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="x-apple-disable-message-reformatting" />
-  <title>[{{projectName}}] Workflow has an issue "{{workflowName}}" ⚠️</title>
+  <title>工作流「{{workflowName}}」运行失败</title>
   <!--[if mso]>
   <style type="text/css">
-    body, table, td, p, a { font-family: Arial, sans-serif !important; }
+    body, table, td, p, a { font-family: Arial, 'Microsoft YaHei', sans-serif !important; }
   </style>
   <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background: {{primaryColorLight}}; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-text-size-adjust: none;">
+<body style="margin: 0; padding: 0; background: {{primaryColorLight}}; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-text-size-adjust: none;">
   <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background: {{primaryColorLight}};">
     <tbody>
       <tr>
         <td align="center" style="padding: 48px 20px;">
 
-          <table role="presentation" width="560" border="0" cellspacing="0" cellpadding="0" style="background: #ffffff; border-radius: 12px; overflow: hidden;">
+          <table role="presentation" width="560" border="0" cellspacing="0" cellpadding="0" style="width: 100%; max-width: 560px; background: #ffffff; border-radius: 12px; overflow: hidden;">
             <tbody>
 
               <tr>
                 <td align="left" style="padding: 40px 40px 0 40px;">
-                  <img src="{{fullLogoUrl}}" width="210" alt="{{tenantName}}" style="display: block; max-width: 100%;" />
+                  {{#fullLogoUrl}}
+                  <img src="{{fullLogoUrl}}" width="210" alt="{{tenantName}}" style="display: block; max-width: 100%; height: auto;" />
+                  {{/fullLogoUrl}}
+                  {{^fullLogoUrl}}
+                  <span style="font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 20px; line-height: 28px; font-weight: 600; color: #0a0a0a;">{{tenantName}}</span>
+                  {{/fullLogoUrl}}
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 36px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 32px; line-height: 40px; font-weight: 500; color: #0a0a0a;">
-                  Your workflow "{{workflowName}}" has an issue ⚠️
+                <td align="left" style="padding: 36px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 32px; line-height: 40px; font-weight: 500; color: #0a0a0a; word-break: break-word;">
+                  工作流「{{workflowName}}」运行失败
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e;">
-                  First seen at <strong>{{createdAt}}</strong>. To recover, retry this run from the runs table, or update the workflow, republish, and retry it again.
+                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e; word-break: break-word;">
+                  首次失败时间：{{createdAt}}。可以在运行记录里重跑这次运行，或修改工作流、重新发布后再重跑。
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e;">
-                  <strong>Project:</strong> {{projectName}}
+                <td align="left" style="padding: 12px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 22px; color: #2f2e2e;">
+                  项目：{{projectName}}
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e;">
-                  <strong>Failed at:</strong> {{#failedStepNumber}}{{failedStepNumber}}. {{/failedStepNumber}}{{failedStepDisplayName}}
+                <td align="left" style="padding: 4px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 22px; color: #2f2e2e;">
+                  失败步骤：{{#failedStepNumber}}{{failedStepNumber}}. {{/failedStepNumber}}{{failedStepDisplayName}}
                 </td>
               </tr>
-
-              {{#failedStepMessage}}
+{{#failedStepMessage}}
               <tr>
-                <td align="left" style="padding: 8px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 22px; color: #2f2e2e; word-break: break-word;">
-                  <strong>Reason:</strong> {{failedStepMessage}}
+                <td align="left" style="padding: 4px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 22px; color: #2f2e2e; word-break: break-word;">
+                  失败原因：{{failedStepMessage}}
                 </td>
               </tr>
-              {{/failedStepMessage}}
-
+{{/failedStepMessage}}
               <tr>
                 <td align="left" style="padding: 28px 40px 0 40px;">
                   <table role="presentation" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                       <tr>
                         <td align="left" style="background: {{primaryColor}}; border-radius: 8px;">
-                          <a href="{{runUrl}}" target="_blank" style="display: block; padding: 12px 18px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; font-weight: 500; color: #ffffff; text-decoration: none;">
-                            View Run
+                          <a href="{{runUrl}}" target="_blank" style="display: block; padding: 12px 18px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; font-weight: 500; color: {{onPrimaryColor}}; text-decoration: none;">
+                            查看运行
                           </a>
                         </td>
                       </tr>
@@ -79,8 +84,8 @@
               </tr>
 
               <tr>
-                <td align="left" style="padding: 12px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 11px; line-height: 16px; color: #a3a3a3;">
-                  If the button doesn't work, <a href="{{runUrl}}" style="color: {{primaryColor}}; text-decoration: underline;">click here</a>.
+                <td align="left" style="padding: 12px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 11px; line-height: 16px; color: #a3a3a3;">
+                  按钮无法点击时，<a href="{{runUrl}}" style="color: {{primaryColor}}; text-decoration: underline;">点击这里</a>打开链接。
                 </td>
               </tr>
 

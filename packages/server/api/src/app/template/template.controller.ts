@@ -158,7 +158,7 @@ const ListTemplatesParams = {
 
 const GenerateFromWorkflowParams = {
     config: {
-        security: securityAccess.project([PrincipalType.USER], Permission.READ_WORKFLOW, { type: ProjectResourceType.BODY }),
+        security: securityAccess.project([PrincipalType.USER], Permission.MANAGE_TEMPLATE, { type: ProjectResourceType.BODY }),
     },
     schema: {
         description: 'Create a template from the published version of a workflow.',

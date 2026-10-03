@@ -1,4 +1,4 @@
-import { isNil, TenantId, tryCatch } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, TenantId, tryCatch } from '@fema-ipaas/core-utils'
 import { PrincipalType } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { databaseConnection } from '../database/database-connection'
@@ -6,6 +6,17 @@ import { networkUtils } from '../helper/network-utils'
 import { tenantService } from './tenant.service'
 
 export const tenantUtils = {
+    async assertPrimaryTenant({ request }: { request: FastifyRequest }): Promise<void> {
+        const primary = await tenantService(request.log).getOldestTenant()
+        const tenantId = request.principal.type === PrincipalType.USER ? request.principal.tenant.id : null
+        if (isNil(primary) || primary.id !== tenantId) {
+            throw new ApplicationError({
+                code: ErrorCode.AUTHORIZATION,
+                params: { message: 'This setting is shared by the whole instance and can only be managed from the primary tenant' },
+            })
+        }
+    },
+
     async getTenantIdForRequest(req: FastifyRequest): Promise<TenantId | null> {
         if (
             req.principal

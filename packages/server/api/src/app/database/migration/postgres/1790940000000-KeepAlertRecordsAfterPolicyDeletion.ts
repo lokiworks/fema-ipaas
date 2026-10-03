@@ -3,7 +3,7 @@ import { Migration } from '../../migration'
 
 export class KeepAlertRecordsAfterPolicyDeletion1790940000000 implements Migration {
     name = 'KeepAlertRecordsAfterPolicyDeletion1790940000000'
-    breaking = false
+    breaking = true
     release = '0.89.0'
 
     public async up(queryRunner: QueryRunner): Promise<void> {

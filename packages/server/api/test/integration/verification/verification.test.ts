@@ -198,6 +198,24 @@ describe('Reading back what recent runs wrote', () => {
         expect(await issueRepo().find({ where: { projectId: ctx.project.id } })).toHaveLength(0)
     })
 
+    it.each([
+        ['provision_user', { departmentId: 'od-rd' }, { open_id: 'ou_1' }],
+        ['update_user', { openId: 'ou_1', departmentId: 'od-hr' }, {}],
+        ['suspend_user', { openId: 'ou_1' }, {}],
+    ])('opens a drift issue when the account written by %s was deleted in Feishu afterwards', async (actionName, stepInput, stepOutput) => {
+        const ctx = await createTestContext(app!)
+        const { workflowId, versionId } = await seedWorkflow({ ctx, name: 'Written', actionName })
+        await seedRun({ ctx, workflowId, versionId, businessKey: 'E1001', stepInput, stepOutput })
+        feishuReturns({ department_ids: ['od-rd', 'od-hr'], is_frozen: true, is_resigned: true })
+
+        const result = await verify(ctx)
+
+        expect(result).toMatchObject({ checked: 1, matched: 0, mismatched: 1, unreadable: 0 })
+        expect(result.problems[0].detail).toContain('no longer exists')
+        const [issue] = await issueRepo().find({ where: { projectId: ctx.project.id } })
+        expect(issue).toMatchObject({ kind: IssueKind.DRIFT, status: IssueStatus.OPEN })
+    })
+
     it('ignores test runs, runs without a business key and old runs', async () => {
         const ctx = await createTestContext(app!)
         const { workflowId, versionId } = await seedWorkflow({ ctx, name: 'Leave', actionName: 'suspend_user' })

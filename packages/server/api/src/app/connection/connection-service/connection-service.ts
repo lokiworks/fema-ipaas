@@ -14,6 +14,7 @@ import { jwtUtils } from '../../helper/jwt-utils'
 import { likePatternUtils } from '../../helper/like-pattern'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
+import { CursorResult } from '../../helper/pagination/paginator'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { projectRepo } from '../../project/project-service'
@@ -414,85 +415,28 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         log.info({ connection: { id: params.id }, tenant: { id: params.tenantId } }, 'App connection deleted')
     },
 
-    async list({
-        projectId,
-        projectIds,
-        visibleToUserId,
-        ownerIds,
-        connectorName,
-        cursorRequest,
-        displayName,
-        status,
-        limit,
-        scope,
-        tenantId,
-        externalIds,
-    }: ListParams): Promise<SeekPage<Connection>> {
-        const decodedCursor = paginationHelper.decodeCursor(cursorRequest)
-        const paginator = buildPaginator({
-            entity: ConnectionEntity,
-            query: {
-                limit,
-                order: 'ASC',
-                afterCursor: decodedCursor.nextCursor,
-                beforeCursor: decodedCursor.previousCursor,
-            },
-        })
-
-        const querySelector: Record<string, string | FindOperator<string>> = {
-            ...spreadIfDefined('scope', scope),
-            tenantId,
-        }
-        if (!isNil(connectorName)) {
-            querySelector.connectorName = Equal(connectorName)
-        }
-        if (!isNil(displayName)) {
-            querySelector.displayName = ILike(`%${likePatternUtils.escape(displayName)}%`)
-        }
-        if (!isNil(status)) {
-            querySelector.status = In(status)
-        }
-        if (!isNil(externalIds)) {
-            querySelector.externalId = In(externalIds)
-        }
-        if (!isNil(ownerIds) && ownerIds.length > 0) {
-            querySelector.ownerId = In(ownerIds)
-        }
-        const queryBuilder = connectionsRepo()
-            .createQueryBuilder('connection')
-            .leftJoinAndSelect('connection.owner', 'owner')
-            .leftJoinAndSelect('owner.identity', 'owner_identity')
-            .where(querySelector)
-        if (!isNil(projectId)) {
-            queryBuilder.andWhere(connectionAvailability.sqlAvailableIn({ alias: 'connection', param: 'availableProjectId' }), { availableProjectId: projectId })
-        }
-        if (!isNil(visibleToUserId)) {
-            queryBuilder.andWhere(connectionAvailability.sqlVisibleTo({ alias: 'connection', userParam: 'visibleToUserId' }), { visibleToUserId })
-        }
-        if (!isNil(projectIds) && projectIds.length > 0) {
-            queryBuilder.andWhere('connection."projectIds" && :projectIds::varchar[]', { projectIds })
-        }
-        const { data, cursor } = await paginator.paginate(queryBuilder)
-
+    async list(params: ListParams): Promise<SeekPage<ConnectionWithoutSensitiveData>> {
+        const { data, cursor } = await findEncryptedPage(params)
         const workflowIdsByExternalId = await fetchWorkflowIdsForConnections(log, data)
 
-        const promises = data.map(async (encryptedConnection) => {
-            const decryptedConnection: Connection = await connectionHandler(log).decryptConnection(encryptedConnection)
-            const owner = mapToUserWithMetaInformation(encryptedConnection.owner)
-            const workflowIds = workflowIdsByExternalId.get(decryptedConnection.externalId) ?? []
-
+        const items = data.map((row) => {
+            const { value: _value, ...withoutValue } = row
             return {
-                ...decryptedConnection,
-                owner,
-                workflowIds,
+                ...withoutValue,
+                owner: mapToUserWithMetaInformation(row.owner),
+                workflowIds: workflowIdsByExternalId.get(row.externalId) ?? [],
             }
         })
-        const refreshConnections = await Promise.all(promises)
+        return paginationHelper.createPage<ConnectionWithoutSensitiveData>(items, cursor)
+    },
 
-        return paginationHelper.createPage<Connection>(
-            refreshConnections,
-            cursor,
-        )
+    async listWithValue(params: ListParams): Promise<SeekPage<Connection>> {
+        const { data, cursor } = await findEncryptedPage(params)
+        const decrypted = await Promise.all(data.map(async (row) => {
+            const connection = await connectionHandler(log).decryptConnection(row)
+            return { ...connection, owner: mapToUserWithMetaInformation(row.owner) }
+        }))
+        return paginationHelper.createPage<Connection>(decrypted, cursor)
     },
     removeSensitiveData: (
         connection: Connection | ConnectionSchema,
@@ -560,11 +504,10 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         const projectsById = await fetchProjectsForTenant(projectIdsToLookUp, params.tenantId)
 
         const data: TenantConnectionsListItem[] = page.data.map((connection) => {
-            const sanitized = service.removeSensitiveData(connection)
             const projects: TenantConnectionProjectInfo[] = connection.projectIds
                 .map((id) => projectsById.get(id))
                 .filter((project): project is TenantConnectionProjectInfo => project !== undefined)
-            return { ...sanitized, projects }
+            return { ...connection, projects }
         })
 
         return { ...page, data }
@@ -591,6 +534,68 @@ export const connectionService = (log: FastifyBaseLogger) => ({
     },
 
 })
+
+const findEncryptedPage = async ({
+    projectId,
+    projectIds,
+    visibleToUserId,
+    ownerIds,
+    connectorName,
+    cursorRequest,
+    displayName,
+    status,
+    limit,
+    scope,
+    tenantId,
+    externalIds,
+}: ListParams): Promise<{ data: ConnectionSchema[], cursor: CursorResult }> => {
+    const decodedCursor = paginationHelper.decodeCursor(cursorRequest)
+    const paginator = buildPaginator({
+        entity: ConnectionEntity,
+        query: {
+            limit,
+            order: 'ASC',
+            afterCursor: decodedCursor.nextCursor,
+            beforeCursor: decodedCursor.previousCursor,
+        },
+    })
+
+    const querySelector: Record<string, string | FindOperator<string>> = {
+        ...spreadIfDefined('scope', scope),
+        tenantId,
+    }
+    if (!isNil(connectorName)) {
+        querySelector.connectorName = Equal(connectorName)
+    }
+    if (!isNil(displayName)) {
+        querySelector.displayName = ILike(`%${likePatternUtils.escape(displayName)}%`)
+    }
+    if (!isNil(status)) {
+        querySelector.status = In(status)
+    }
+    if (!isNil(externalIds)) {
+        querySelector.externalId = In(externalIds)
+    }
+    if (!isNil(ownerIds) && ownerIds.length > 0) {
+        querySelector.ownerId = In(ownerIds)
+    }
+    const queryBuilder = connectionsRepo()
+        .createQueryBuilder('connection')
+        .leftJoinAndSelect('connection.owner', 'owner')
+        .leftJoinAndSelect('owner.identity', 'owner_identity')
+        .where(querySelector)
+    if (!isNil(projectId)) {
+        queryBuilder.andWhere(connectionAvailability.sqlAvailableIn({ alias: 'connection', param: 'availableProjectId' }), { availableProjectId: projectId })
+    }
+    if (!isNil(visibleToUserId)) {
+        queryBuilder.andWhere(connectionAvailability.sqlVisibleTo({ alias: 'connection', userParam: 'visibleToUserId' }), { visibleToUserId })
+    }
+    if (!isNil(projectIds) && projectIds.length > 0) {
+        queryBuilder.andWhere('connection."projectIds" && :projectIds::varchar[]', { projectIds })
+    }
+    const { data, cursor } = await paginator.paginate(queryBuilder)
+    return { data, cursor }
+}
 
 const fetchProjectsForTenant = async (projectIds: string[], tenantId: string): Promise<Map<string, TenantConnectionProjectInfo>> => {
     if (projectIds.length === 0) {

@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode, generateId, isNil, ProjectId, UserId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, Permission, ProjectId, UserId } from '@fema-ipaas/core-utils'
 import {
     AgentApproval,
     AgentApprovalDecision,
@@ -16,6 +16,7 @@ import { ArrayContains, LessThan } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { notificationService } from '../notification/notification.service'
 import { privacyService } from '../privacy/privacy.service'
+import { projectAccess } from '../project/project-access'
 import { projectService } from '../project/project-service'
 import { findExecutionOrThrow } from '../workflows/execution/execution-service'
 import { resumeService } from '../workflows/execution/waitpoint/resume-service'
@@ -84,10 +85,12 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
         })
         const workflowIds = [...new Set(rows.map((row) => row.workflowId))]
         const versions = workflowIds.length === 0 ? new Map() : await workflowVersionService(log).getLatestVersionsByWorkflowIds(workflowIds, query.projectId)
+        const role = await projectAccess(log).resolveRole({ userId, projectId: query.projectId })
+        const canWrite = !isNil(role) && role.permissions.includes(Permission.WRITE_RUN)
         return rows.map((row) => ({
             ...toModel(row),
             workflowDisplayName: versions.get(row.workflowId)?.displayName ?? row.workflowId,
-            canDecide: row.status === AgentApprovalStatus.PENDING && row.approverIds.includes(userId),
+            canDecide: canWrite && row.status === AgentApprovalStatus.PENDING && row.approverIds.includes(userId),
         }))
     },
 

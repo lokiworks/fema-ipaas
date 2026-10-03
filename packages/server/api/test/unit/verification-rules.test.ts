@@ -58,3 +58,17 @@ describe('suspension rules', () => {
         expect(suspend?.judge({ input: {}, output: {}, actual: null })?.ok).toBe(false)
     })
 })
+
+describe('an account that was deleted after the run', () => {
+    it.each(['provision_user', 'update_user', 'suspend_user', 'resume_user'])('counts as a difference for %s', (actionName) => {
+        const rule = verificationRules.ruleFor({ connectorName: FEISHU, actionName })
+        const judgement = rule?.judge({ input: { departmentId: 'od-rd' }, output: {}, actual: { department_ids: ['od-rd'], is_frozen: actionName === 'suspend_user', is_resigned: true } })
+        expect(judgement?.ok).toBe(false)
+        expect(judgement?.detail).toContain('no longer exists')
+    })
+
+    it('does not mistake an account that is still employed for a deleted one', () => {
+        const rule = verificationRules.ruleFor({ connectorName: FEISHU, actionName: 'resume_user' })
+        expect(rule?.judge({ input: {}, output: {}, actual: { is_frozen: false, is_resigned: false } })?.ok).toBe(true)
+    })
+})

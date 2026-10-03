@@ -149,9 +149,6 @@ export class AddIssuesAlertsAndPrivacy1790465349745 implements Migration {
             ADD "issueId" character varying(21)
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_execution_issue_id" ON "execution" ("issueId")
-        `)
-        await queryRunner.query(`
             ALTER TABLE "issue"
             ADD CONSTRAINT "fk_issue_project_id" FOREIGN KEY ("projectId") REFERENCES "project"("id") ON DELETE CASCADE ON UPDATE NO ACTION
         `)
@@ -197,7 +194,7 @@ export class AddIssuesAlertsAndPrivacy1790465349745 implements Migration {
             ALTER TABLE "issue" DROP CONSTRAINT "fk_issue_project_id"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_execution_issue_id"
+            DROP INDEX IF EXISTS "public"."idx_execution_issue_id"
         `)
         await queryRunner.query(`
             ALTER TABLE "execution" DROP COLUMN "issueId"

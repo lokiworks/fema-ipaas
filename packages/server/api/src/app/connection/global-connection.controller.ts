@@ -23,10 +23,7 @@ export const globalConnectionController: FastifyPluginAsyncZod = async (app) => 
             cursorRequest: cursor ?? null,
             limit: limit ?? DEFAULT_PAGE_SIZE,
         })
-        return {
-            ...connections,
-            data: connections.data.map(connectionService(request.log).removeSensitiveData),
-        }
+        return connections
     })
 
     app.post('/', UpsertGlobalConnectionRequest, async (request, reply) => {

@@ -165,8 +165,11 @@ export const issueService = (log: FastifyBaseLogger) => ({
                     await recordActivity({ issue: created, type: IssueActivityType.NOTE, actorId: null, data: activityData })
                     return { issue: created, event: IssueRecordEvent.NEW, counted: true }
                 }
-                const notes = await issueActivityRepo().find({ where: { issueId: existing.id, type: IssueActivityType.NOTE }, order: { created: 'DESC' }, take: DRIFT_NOTES_SCANNED })
-                const alreadyNoted = notes.some((note) => readExecutionId(note.data) === executionId)
+                const alreadyNoted = await issueActivityRepo().createQueryBuilder('activity')
+                    .where('activity."issueId" = :issueId', { issueId: existing.id })
+                    .andWhere('activity.type = :type', { type: IssueActivityType.NOTE })
+                    .andWhere('activity.data ->> \'executionId\' = :executionId', { executionId })
+                    .getExists()
                 const reopening = existing.status === IssueStatus.RESOLVED
                 const counted = !alreadyNoted || reopening
                 await issueRepo().update({ id: existing.id, projectId }, {
@@ -728,15 +731,6 @@ type OverviewParams = {
 }
 
 const AUTO_RESOLVED_REASON = 'REPLAY_SUCCEEDED'
-
-const DRIFT_NOTES_SCANNED = 200
-
-function readExecutionId(data: unknown): string | null {
-    if (typeof data !== 'object' || data === null || !('executionId' in data)) {
-        return null
-    }
-    return typeof data.executionId === 'string' ? data.executionId : null
-}
 
 const UNRECOVERED_ROOTS_SQL = `SELECT COUNT(*)::int AS count
     FROM execution failed

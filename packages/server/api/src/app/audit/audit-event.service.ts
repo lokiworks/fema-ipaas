@@ -1,4 +1,4 @@
-import { generateId, isNil, SeekPage } from '@fema-ipaas/core-utils'
+import { generateId, isNil, sanitizeObjectForPostgresql, SeekPage } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ApplicationEventName, TENANT_ACCESS_LIMITS } from '@fema-ipaas/shared'
 
@@ -14,7 +14,7 @@ export const auditEventService = (log: FastifyBaseLogger) => ({
     async record(event: RecordableEvent): Promise<void> {
         try {
             const now = dayjsUtil().toISOString()
-            await auditEventRepo().insert({
+            await auditEventRepo().insert(sanitizeObjectForPostgresql({
                 id: generateId(),
                 created: now,
                 updated: now,
@@ -26,7 +26,7 @@ export const auditEventService = (log: FastifyBaseLogger) => ({
                 ip: event.ip ?? null,
                 action: event.action,
                 data: event.data,
-            })
+            }))
         }
         catch (error) {
             log.error({ error, action: event.action }, 'failed to record audit event')

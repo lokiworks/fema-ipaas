@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { ApplicationEventName, createRpcServer, PrincipalType, WebsocketServerEvent, WorkerFleet, WorkerMachineHealthcheckRequest, WorkerToApiContract } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { websocketService } from '../../core/websockets.service'
 import { applicationEvents } from '../../helper/application-events'
-import { tenantService } from '../../tenant/tenant.service'
+import { tenantUtils } from '../../tenant/tenant.utils'
 import { parseWorkerGroupValue, QueueName } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { jobQueue } from '../job-queue/job-queue'
@@ -49,21 +49,21 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/:id/drain', WorkerActionParams, async (request) => {
-        await assertPrimaryTenant(request)
+        await tenantUtils.assertPrimaryTenant({ request })
         await workerFleetService(request.log).drain({ workerId: request.params.id })
         auditWorkerChange({ request, workerId: request.params.id, detail: 'drained' })
         return workerFleetService(request.log).list()
     })
 
     app.post('/:id/resume', WorkerActionParams, async (request) => {
-        await assertPrimaryTenant(request)
+        await tenantUtils.assertPrimaryTenant({ request })
         await workerFleetService(request.log).resume({ workerId: request.params.id })
         auditWorkerChange({ request, workerId: request.params.id, detail: 'resumed' })
         return workerFleetService(request.log).list()
     })
 
     app.delete('/:id', WorkerActionParams, async (request, reply) => {
-        await assertPrimaryTenant(request)
+        await tenantUtils.assertPrimaryTenant({ request })
         await workerFleetService(request.log).remove({ workerId: request.params.id })
         auditWorkerChange({ request, workerId: request.params.id, detail: 'removed' })
         return reply.status(StatusCodes.NO_CONTENT).send()
@@ -95,17 +95,6 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
     }
 }
 
-
-async function assertPrimaryTenant(request: FastifyRequest): Promise<void> {
-    const primary = await tenantService(request.log).getOldestTenant()
-    const tenantId = request.principal.type === PrincipalType.USER ? request.principal.tenant.id : null
-    if (isNil(primary) || primary.id !== tenantId) {
-        throw new ApplicationError({
-            code: ErrorCode.AUTHORIZATION,
-            params: { message: 'Workers are shared by the whole instance and can only be managed from the primary tenant' },
-        })
-    }
-}
 
 function auditWorkerChange({ request, workerId, detail }: { request: FastifyRequest, workerId: string, detail: string }): void {
     applicationEvents(request.log).sendUserEvent(request, {

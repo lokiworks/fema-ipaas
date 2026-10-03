@@ -3,11 +3,14 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../../../core/security/authorization/fastify-security'
 import { domainHelper } from '../../../helper/domain-helper'
+import { executionOwnership } from '../execution-ownership'
 import { waitpointService } from './waitpoint-service'
 
 export const waitpointController: FastifyPluginAsyncZod = async (app) => {
     app.post('/', CreateWaitpointParams, async (request, reply) => {
-        const { executionId, projectId, stepName, type, version, resumeDateTime, responseToSend, workerHandlerId, httpRequestId } = request.body
+        const { executionId, stepName, type, version, resumeDateTime, responseToSend, workerHandlerId, httpRequestId } = request.body
+        const { projectId } = request.principal
+        await executionOwnership.assertNotOwnedByAnotherProject({ executionId, projectId })
         const { waitpoint } = await waitpointService(request.log).createForPause({
             executionId,
             projectId,

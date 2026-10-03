@@ -1,14 +1,19 @@
-import { PresenceRequest, PrincipalType, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
+import { Permission, PresenceRequest, PrincipalType, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { userService } from '../../../user/user-service'
 import { websocketService } from '../../websockets.service'
+import { collaborationGuard } from '../collaboration-guard'
 import { presenceService } from './presence.service'
 
 export const presenceModule: FastifyPluginAsyncZod = async (app) => {
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.JOIN_PRESENCE, (socket) => {
         return async (data: PresenceRequest, principal, projectId, callback) => {
             try {
+                if (!(await collaborationGuard.isWorkflowOfProject({ resourceId: data.resourceId, projectId }))) {
+                    callback?.({ users: [] })
+                    return
+                }
                 const user = await userService(app.log).getMetaInformation({ id: principal.id })
                 const displayName = `${user.firstName} ${user.lastName}`
 
@@ -36,7 +41,7 @@ export const presenceModule: FastifyPluginAsyncZod = async (app) => {
                 callback?.({ users: [] })
             }
         }
-    })
+    }, Permission.READ_WORKFLOW)
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.LEAVE_PRESENCE, (socket) => {
         return async (data: PresenceRequest, principal, projectId) => {
             try {

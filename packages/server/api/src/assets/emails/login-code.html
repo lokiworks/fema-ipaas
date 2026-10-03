@@ -1,53 +1,60 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
   <meta name="format-detection" content="date=no" />
   <meta name="format-detection" content="address=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="x-apple-disable-message-reformatting" />
-  <title>Your sign-in code 🔑</title>
+  <title>你的登录验证码</title>
   <!--[if mso]>
   <style type="text/css">
-    body, table, td, p, a { font-family: Arial, sans-serif !important; }
+    body, table, td, p, a { font-family: Arial, 'Microsoft YaHei', sans-serif !important; }
   </style>
   <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background: {{primaryColorLight}}; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-text-size-adjust: none;">
+<body style="margin: 0; padding: 0; background: {{primaryColorLight}}; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-text-size-adjust: none;">
   <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background: {{primaryColorLight}};">
     <tbody>
       <tr>
         <td align="center" style="padding: 48px 20px;">
 
-          <table role="presentation" width="560" border="0" cellspacing="0" cellpadding="0" style="background: #ffffff; border-radius: 12px; overflow: hidden;">
+          <table role="presentation" width="560" border="0" cellspacing="0" cellpadding="0" style="width: 100%; max-width: 560px; background: #ffffff; border-radius: 12px; overflow: hidden;">
             <tbody>
 
               <tr>
                 <td align="left" style="padding: 40px 40px 0 40px;">
-                  <img src="{{fullLogoUrl}}" width="210" alt="{{platformName}}" style="display: block; max-width: 100%;" />
+                  {{#fullLogoUrl}}
+                  <img src="{{fullLogoUrl}}" width="210" alt="{{tenantName}}" style="display: block; max-width: 100%; height: auto;" />
+                  {{/fullLogoUrl}}
+                  {{^fullLogoUrl}}
+                  <span style="font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 20px; line-height: 28px; font-weight: 600; color: #0a0a0a;">{{tenantName}}</span>
+                  {{/fullLogoUrl}}
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 36px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 32px; line-height: 40px; font-weight: 500; color: #0a0a0a;">
-                  Your sign-in code 🔑
+                <td align="left" style="padding: 36px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 32px; line-height: 40px; font-weight: 500; color: #0a0a0a; word-break: break-word;">
+                  你的登录验证码
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e;">
-                  Enter this code to finish signing in to {{platformName}}. It expires in 10 minutes.
+                <td align="left" style="padding: 16px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 24px; color: #2f2e2e; word-break: break-word;">
+                  输入下面的验证码完成「{{tenantName}}」的登录，10 分钟内有效。
                 </td>
               </tr>
 
               <tr>
-                <td align="left" style="padding: 28px 40px 0 40px;">
+                <td align="left" style="padding: 24px 40px 0 40px;">
                   <table role="presentation" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                       <tr>
-                        <td align="center" style="background: {{primaryColorLight}}; border-radius: 8px;">
+                        <td align="left" style="background: {{primaryColorLight}}; border-radius: 8px;">
                           <span style="display: block; padding: 16px 28px; font-family: 'Courier New', Courier, monospace; font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: 10px; color: #0a0a0a;">{{code}}</span>
                         </td>
                       </tr>
@@ -57,8 +64,8 @@
               </tr>
 
               <tr>
-                <td align="left" style="padding: 20px 40px 0 40px; font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 11px; line-height: 16px; color: #a3a3a3;">
-                  If you didn't try to sign in, you can ignore this email. Nobody can access your account without this code.
+                <td align="left" style="padding: 24px 40px 0 40px; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 22px; color: #2f2e2e;">
+                  如果这不是你本人在登录，请忽略这封邮件。没有这个验证码，任何人都无法进入你的账号。
                 </td>
               </tr>
 

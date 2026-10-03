@@ -220,7 +220,7 @@ describe('Solutions API', () => {
 
         const response = await editor.post(`/v1/solutions/${solution.id}/versions`, { notes: 'Mine now' })
 
-        expect(response.statusCode).toBe(StatusCodes.CONFLICT)
+        expect(response.statusCode).toBe(StatusCodes.FORBIDDEN)
     })
     it('packages a workflow once even when its id is sent twice', async () => {
         const ctx = await createTestContext(app!)

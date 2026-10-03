@@ -1,5 +1,5 @@
 import { generateId, isNil, sanitizeObjectForPostgresql, spreadIfDefined } from '@fema-ipaas/core-utils'
-import { Execution, ExecutionStatus, isExecutionStateTerminal, RunTimeline } from '@fema-ipaas/shared'
+import { Execution, ExecutionStatus, FailedStep, isExecutionStateTerminal, RunTimeline } from '@fema-ipaas/shared'
 import { Queue, Worker } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedLock, distributedStore, redisConnections } from '../../database/redis-connections'
@@ -68,7 +68,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                     ...spreadIfDefined('finishTime', runMetadata.finishTime),
                                     ...spreadIfDefined('status', runMetadata.status),
                                     ...spreadIfDefined('tags', runMetadata.tags),
-                                    ...spreadIfDefined('failedStep', runMetadata.failedStep),
+                                    ...failedStepUpdate({ status: runMetadata.status, failedStep: runMetadata.failedStep }),
                                     ...spreadIfDefined('stepNameToTest', runMetadata.stepNameToTest),
                                     ...spreadIfDefined('parentRunId', runMetadata.parentRunId),
                                     ...spreadIfDefined('failParentOnFailure', runMetadata.failParentOnFailure),
@@ -177,6 +177,10 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
 
 })
 
+function failedStepUpdate({ status, failedStep }: { status: ExecutionStatus | undefined, failedStep: FailedStep | undefined }): { failedStep?: FailedStep | (() => string) } {
+    return status === ExecutionStatus.SUCCEEDED ? { failedStep: () => 'NULL' } : spreadIfDefined('failedStep', failedStep)
+}
+
 function buildTimeline({ existingExecution, runMetadata }: BuildTimelineParams): RunTimeline | undefined {
     return buildRunTimeline({
         existingTimeline: existingExecution.timeline,
@@ -245,3 +249,5 @@ type MarkParentRunAsFailedParams = {
     projectId: string
     log: FastifyBaseLogger
 }
+
+export const executionsQueueUtils = { failedStepUpdate }

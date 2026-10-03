@@ -80,9 +80,9 @@ describe('notificationPreferenceUtils', () => {
 describe('weeklyDigestUtils', () => {
     it('summarises the week', () => {
         const message = weeklyDigestUtils.compose({ runs: 12, failedRuns: 1, openIssues: 2, newIssues: 1, projectCount: 1 })
-        expect(message.title).toBe('Weekly summary: 12 runs, 1 failed')
-        expect(message.body).toContain('1 project')
-        expect(message.body).toContain('1 new issue, 2 still open')
+        expect(message.title).toBe('每周摘要：12 次运行，1 次失败')
+        expect(message.body).toContain('你参与的 1 个项目')
+        expect(message.body).toContain('新增问题 1 个，仍未解决 2 个')
     })
 
     it('skips users without projects', () => {

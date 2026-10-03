@@ -173,6 +173,11 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             name: 'idx_execution_project_business_key',
             columns: ['projectId', 'businessKey'],
         },
+        {
+            name: 'idx_execution_verification_candidates',
+            columns: ['projectId', 'finishTime', 'id'],
+            where: '"environment" = \'PRODUCTION\' AND "status" = \'SUCCEEDED\' AND "businessKey" IS NOT NULL AND "archivedAt" IS NULL',
+        },
     ],
     relations: {
         triggeredByUser: {

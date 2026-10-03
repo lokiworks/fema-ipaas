@@ -9,6 +9,7 @@ import { lockService } from '../../core/collaborative/lock/lock.service'
 import { ProjectResourceType } from '../../core/security/authorization/common'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { networkUtils } from '../../helper/network-utils'
+import { projectAccess } from '../../project/project-access'
 import { workflowReleaseService } from '../../release/workflow-release.service'
 import { userService } from '../../user/user-service'
 import { migrateWorkflowVersionTemplate } from '../workflow-version/migrations'
@@ -70,6 +71,11 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             }
         },
     }, async (request) => {
+        await projectAccess(request.log).assertPrincipalCanAccessProject({
+            principal: request.principal,
+            projectId: request.projectId,
+            permission: permissionForOperation(request.body.type),
+        })
         const workflow = await workflowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
             projectId: request.projectId,
@@ -162,6 +168,17 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
         })
         return reply.status(StatusCodes.NO_CONTENT).send()
     })
+}
+
+function permissionForOperation(type: WorkflowOperationType): Permission {
+    switch (type) {
+        case WorkflowOperationType.CHANGE_STATUS:
+            return Permission.UPDATE_WORKFLOW_STATUS
+        case WorkflowOperationType.LOCK_AND_PUBLISH:
+            return Permission.PUBLISH_WORKFLOW
+        default:
+            return Permission.WRITE_WORKFLOW
+    }
 }
 
 function actorUserId(request: FastifyRequest): UserId | undefined {

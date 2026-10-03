@@ -19,6 +19,9 @@ function departmentRule({ openIdFrom }: { openIdFrom: 'input' | 'output' }): Ver
             if (isNil(expected)) {
                 return null
             }
+            if (isResigned(actual)) {
+                return { ok: false, detail: RESIGNED_DETAIL }
+            }
             return departments.includes(expected)
                 ? { ok: true, detail: `in department ${expected}` }
                 : { ok: false, detail: `the run put the account in department ${expected}, Feishu has ${departments.length === 0 ? 'none' : departments.join(', ')}` }
@@ -35,12 +38,19 @@ function suspensionRule({ expectSuspended }: { expectSuspended: boolean }): Veri
             return isNil(openId) ? null : { openId }
         },
         judge: ({ actual }) => {
+            if (isResigned(actual)) {
+                return { ok: false, detail: RESIGNED_DETAIL }
+            }
             const suspended = typeof actual === 'object' && actual !== null && 'is_frozen' in actual && actual.is_frozen === true
             return suspended === expectSuspended
                 ? { ok: true, detail: suspended ? 'account is suspended' : 'account is active' }
                 : { ok: false, detail: expectSuspended ? 'the run suspended the account, Feishu still shows it as active' : 'the run resumed the account, Feishu still shows it as suspended' }
         },
     }
+}
+
+function isResigned(actual: unknown): boolean {
+    return typeof actual === 'object' && actual !== null && 'is_resigned' in actual && actual.is_resigned === true
 }
 
 function readString(source: unknown, key: string): string | null {
@@ -61,6 +71,7 @@ function readStrings(source: unknown, key: string): string[] {
 
 const FEISHU = '@fema-ipaas/connector-feishu'
 const READ_ACTION = 'get_user'
+const RESIGNED_DETAIL = 'the account no longer exists in Feishu, it was deleted after the run'
 
 const RULES: Record<string, VerificationRule> = {
     [`${FEISHU}:provision_user`]: departmentRule({ openIdFrom: 'output' }),

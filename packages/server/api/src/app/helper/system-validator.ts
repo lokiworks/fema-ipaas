@@ -90,6 +90,8 @@ const systemPropValidators: {
     [AppSystemProp.SENTRY_DSN]: urlValidator,
     [AppSystemProp.FRONTEND_SENTRY_DSN]: urlValidator,
     [AppSystemProp.RUNS_METADATA_UPDATE_CONCURRENCY]: numberValidator,
+    [AppSystemProp.VERIFICATION_READS_PER_SECOND]: numberValidator,
+    [AppSystemProp.VERIFICATION_TIME_BUDGET_MINUTES]: numberValidator,
     [AppSystemProp.LOKI_PASSWORD]: stringValidator,
     [AppSystemProp.LOKI_URL]: urlValidator,
     [AppSystemProp.LOKI_USERNAME]: stringValidator,

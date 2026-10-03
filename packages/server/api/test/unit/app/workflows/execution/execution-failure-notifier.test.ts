@@ -105,6 +105,20 @@ describe('executionFailureNotifier.notifyOwner', () => {
         }))
     })
 
+    it('puts the readable message in the email instead of the serialized connector error', async () => {
+        const { project, params } = buildFixture(true)
+        getOneProject.mockResolvedValue(project)
+        const serialized = JSON.stringify({ __apErrorVersion: 1, message: 'department is not in the mapping table', raw: 'Error: x\n at /home/app/file.js:1' })
+
+        await executionFailureNotifier(log).notifyOwner({
+            ...params,
+            execution: { ...params.execution, failedStep: { name: 'step_1', displayName: 'Create record', message: serialized } },
+        })
+
+        expect(sendWorkflowFailure).toHaveBeenCalledWith(expect.objectContaining({ failedStepMessage: 'department is not in the mapping table' }))
+        expect(notify).toHaveBeenCalledWith(expect.objectContaining({ body: 'Create record: department is not in the mapping table' }))
+    })
+
     it('still notifies in the app but sends no email when SMTP is unconfigured', async () => {
         isConfigured.mockReturnValue(false)
         const { project, params } = buildFixture(true)

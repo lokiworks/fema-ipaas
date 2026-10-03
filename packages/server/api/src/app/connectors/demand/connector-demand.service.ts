@@ -1,4 +1,4 @@
-import { generateId, isNil, SeekPage, tryCatch } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, SeekPage, tryCatch } from '@fema-ipaas/core-utils'
 import { ConnectorDemand, ConnectorDemandStatus, CreateConnectorDemandRequestBody, ListConnectorDemandsRequestQuery, TenantRole, UserStatus } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -63,7 +63,10 @@ export const connectorDemandService = (log: FastifyBaseLogger) => ({
     },
 
     async getOrThrow({ tenantId, id }: { tenantId: string, id: string }): Promise<ConnectorDemand> {
-        const demand = await connectorDemandRepo().findOneOrFail({ where: { id, tenantId }, relations: { requester: { identity: true } } })
+        const demand = await connectorDemandRepo().findOne({ where: { id, tenantId }, relations: { requester: { identity: true } } })
+        if (isNil(demand)) {
+            throw new ApplicationError({ code: ErrorCode.ENTITY_NOT_FOUND, params: { entityType: 'connector_demand', entityId: id } })
+        }
         return toModel(demand)
     },
 })

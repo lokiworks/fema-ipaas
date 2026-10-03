@@ -17,6 +17,7 @@ import { systemJobsSchedule } from '../../helper/system-jobs/system-job'
 import { telemetry } from '../../helper/telemetry.utils'
 import { projectService } from '../../project/project-service'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
+import { userRepo } from '../../user/user-service'
 import { workflowFolderService } from '../folder/folder.service'
 import { workflowVersionMigrationService } from '../workflow-version/workflow-version-migration.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflow-version/workflow-version.service'
@@ -380,6 +381,9 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             }
 
             case WorkflowOperationType.CHANGE_FOLDER: {
+                if (!isNil(operation.request.folderId)) {
+                    await workflowFolderService(log).getOneOrThrow({ projectId, folderId: operation.request.folderId })
+                }
                 await workflowRepo().update(id, {
                     folderId: operation.request.folderId,
                 })
@@ -404,6 +408,14 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             }
 
             case WorkflowOperationType.UPDATE_OWNER: {
+                const projectTenantId = await projectService(log).getTenantId(projectId)
+                const newOwner = await userRepo().findOneBy({ id: operation.request.ownerId, tenantId: projectTenantId })
+                if (isNil(newOwner)) {
+                    throw new ApplicationError({
+                        code: ErrorCode.ENTITY_NOT_FOUND,
+                        params: { entityType: 'user', entityId: operation.request.ownerId },
+                    })
+                }
                 await workflowRepo().update(id, {
                     ownerId: operation.request.ownerId,
                 })
@@ -767,6 +779,7 @@ async function applyStatusChange(params: {
 
 export const getFolderIdFromRequest = async ({ projectId, folderId, folderName, log }: { projectId: string, folderId: string | undefined, folderName: string | undefined, log: FastifyBaseLogger }) => {
     if (folderId) {
+        await workflowFolderService(log).getOneOrThrow({ projectId, folderId })
         return folderId
     }
     if (folderName) {

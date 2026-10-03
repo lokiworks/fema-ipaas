@@ -1,9 +1,10 @@
-import { DefaultProjectRole, isNil, LockResourceRequest, PrincipalType, RequestResourceEditRequest, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
+import { DefaultProjectRole, isNil, LockResourceRequest, Permission, PrincipalType, RequestResourceEditRequest, WebsocketClientEvent, WebsocketServerEvent } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { projectAccess } from '../../../project/project-access'
 import { userService } from '../../../user/user-service'
 import { websocketService } from '../../websockets.service'
+import { collaborationGuard } from '../collaboration-guard'
 import { lockSideEffects } from './lock-side-effects'
 import { lockService } from './lock.service'
 
@@ -12,6 +13,10 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
         return async (data: LockResourceRequest, principal, projectId, callback) => {
             app.log.info({ resourceId: data.resourceId }, '[Lock] LOCK_RESOURCE event received')
             try {
+                if (!(await collaborationGuard.isWorkflowOfProject({ resourceId: data.resourceId, projectId }))) {
+                    callback?.({ acquired: false, lock: null, reason: 'NOT_ALLOWED' })
+                    return
+                }
                 const user = await userService(app.log).getMetaInformation({ id: principal.id })
                 const displayName = `${user.firstName} ${user.lastName}`
                 if (data.force === true && !(await canTakeOver({ app, projectId, userId: principal.id }))) {
@@ -57,7 +62,7 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
                 callback?.({ acquired: false, lock: null })
             }
         }
-    })
+    }, Permission.WRITE_WORKFLOW)
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.UNLOCK_RESOURCE, (socket) => {
         return async (data: { resourceId: string }, principal, projectId) => {
             try {
@@ -78,8 +83,12 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
         }
     })
     websocketService.addListener(PrincipalType.USER, WebsocketServerEvent.REQUEST_RESOURCE_EDIT, () => {
-        return async (data: RequestResourceEditRequest, principal, _projectId, callback) => {
+        return async (data: RequestResourceEditRequest, principal, projectId, callback) => {
             try {
+                if (!(await collaborationGuard.isWorkflowOfProject({ resourceId: data.resourceId, projectId }))) {
+                    callback?.({ sent: false })
+                    return
+                }
                 const lock = await lockService(app.log).getLock({ resourceId: data.resourceId })
                 if (isNil(lock) || lock.userId === principal.id) {
                     callback?.({ sent: false })
@@ -99,7 +108,7 @@ export const lockModule: FastifyPluginAsyncZod = async (app) => {
                 callback?.({ sent: false })
             }
         }
-    })
+    }, Permission.WRITE_WORKFLOW)
 }
 
 async function canTakeOver({ app, projectId, userId }: { app: FastifyInstance, projectId: string, userId: string }): Promise<boolean> {

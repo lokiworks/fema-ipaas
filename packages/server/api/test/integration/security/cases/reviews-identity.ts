@@ -1,0 +1,25 @@
+import { Review } from '../support/route-review'
+
+export const identityReviews: Record<string, Review> = {
+    'GET /v1/account/access-tokens': { verdict: 'ok', note: '只列自己的令牌（userId + tenantId），matrix identity 与 deep 验证' },
+    'POST /v1/account/access-tokens': { verdict: 'ok', note: '只能给自己建；每人上限 20；名称唯一' },
+    'DELETE /v1/account/access-tokens/:id': { verdict: 'ok', note: '按 id + userId + tenantId 取，别人的令牌 404 且不被删（matrix identity）' },
+    'GET /v1/account/notification-preferences': { verdict: 'ok', note: '只读自己的偏好' },
+    'POST /v1/account/notification-preferences': { verdict: 'ok', note: '只改自己的偏好' },
+    'POST /v1/account/profile': { verdict: 'ok', note: '只改自己的姓名' },
+    'GET /v1/holiday-calendar': { verdict: 'ok', note: '按租户读取节假日日历，成员需要它来配置定时触发' },
+    'GET /v1/privacy-settings': { verdict: 'ok', note: '按租户读取隐私设置，成员界面需要展示脱敏 / 保留期；写入只有租户管理员' },
+    'GET /v1/project-members/me': { verdict: 'ok', note: '项目路由（任何项目成员），只返回自己的角色与权限；非成员 403' },
+    'GET /v1/projects': { verdict: 'ok', note: '按成员关系与所有者过滤，nonMember / 别的项目管理员的响应不含不属于自己的项目 id（matrix identity）' },
+    'GET /v1/projects/directory': { verdict: 'needs-decision', note: '团队项目目录对全体租户成员可见（名称、描述、所有者、成员数、流程数），个人项目只对本人；按“可浏览、可申请加入”的设计，但项目名对非成员可见，是否收紧到成员需产品确认' },
+    'POST /v1/projects': { verdict: 'needs-decision', note: '任何租户成员都能建团队项目并成为其管理员，没有租户级开关或数量上限；是否只允许特定角色建项目需产品确认' },
+    'GET /v1/tenant-access/me': { verdict: 'ok', note: '只读自己的模块权限与待审批申请' },
+    'POST /v1/tenant-access/me/requests': { verdict: 'ok', note: '只能为自己提申请，租户关闭申请时拒绝，重复申请返回已有的' },
+    'GET /v1/tenants': { verdict: 'ok', note: '只列同一身份名下各租户里自己可访问的项目' },
+    'GET /v1/tenants/:id': { verdict: 'ok', note: '令牌租户与路径 id 不一致时 403（deep/identity-tenant-admin.test.ts）' },
+    'GET /v1/users': { verdict: 'ok', note: '实际只有租户管理员能用：assertNonEmbedOrAdmin 对非管理员无条件抛错，比名字宣称的更严；按 tenantId 过滤' },
+    'GET /v1/users/:id': { verdict: 'ok', note: '按 id + 令牌租户取，别的租户 404；返回姓名、邮箱、租户角色（租户成员目录，界面显示负责人需要）' },
+    'POST /v1/authentication/switch-tenant': { verdict: 'ok', note: '只能切到同一身份名下已有用户的租户，其它 403' },
+    'GET /v1/user-invitations': { verdict: 'ok', note: '类型必填：PROJECT 要对该项目有 READ_INVITATION，TENANT 要租户管理员；项目 id 必须属于令牌租户（deep/identity-members.test.ts）' },
+    'POST /v1/user-invitations': { verdict: 'ok', note: 'PROJECT 要 WRITE_INVITATION 且项目属于令牌租户，TENANT 要租户管理员；查看者自升管理员已堵（matrix + deep）' },
+}

@@ -9,7 +9,7 @@ import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { fileService, getDownloadName } from './file.service'
+import { fileRepo, fileService, getDownloadName } from './file.service'
 import { enforceByteLimit, ENGINE_WRITABLE_FILE_TYPES, filesService, fileTransportHeaders } from './files-service'
 import { signedFileTransport } from './signed-file-transport'
 
@@ -32,6 +32,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
             const fileId = (request.params as { fileId: string }).fileId
             const token = (request.query as { token: string }).token
             const principal = await verifyEnginePrincipal(token, request.log)
+            await assertFileWritableBy({ fileId, principal })
             const fileType = parseFileTypeHeader(request.headers[fileTransportHeaders.TYPE])
             const fileName = parseStringHeader(request.headers[fileTransportHeaders.NAME])
             const contentEncoding = parseStringHeader(request.headers['content-encoding'])
@@ -78,6 +79,7 @@ export const filesController: FastifyPluginAsyncZod = async (app) => {
     }, async (request, reply) => {
         const { fileId } = request.params
         const principal = await verifyEnginePrincipal(request.query.token, request.log)
+        await assertFileWritableBy({ fileId, principal })
         const fileType = parseFileTypeHeader(request.headers[fileTransportHeaders.TYPE])
         const fileName = parseStringHeader(request.headers[fileTransportHeaders.NAME])
         const contentEncoding = parseStringHeader(request.headers['content-encoding'])
@@ -183,6 +185,19 @@ async function authorizeRead({ token, fileId, log }: AuthorizeReadParams): Promi
     })
 }
 
+async function assertFileWritableBy({ fileId, principal }: AssertFileWritableParams): Promise<void> {
+    const existing = await fileRepo().findOne({ where: { id: fileId }, select: ['id', 'projectId'] })
+    if (isNil(existing)) {
+        return
+    }
+    if (existing.projectId !== principal.projectId) {
+        throw new ApplicationError({
+            code: ErrorCode.AUTHORIZATION,
+            params: { message: 'File belongs to another project' },
+        })
+    }
+}
+
 async function verifyEnginePrincipal(token: string, log: import('fastify').FastifyBaseLogger): Promise<EnginePrincipal> {
     const principal = await tryVerifyEnginePrincipal(token, log)
     if (!principal) {
@@ -239,6 +254,11 @@ function parseStringHeader(value: unknown): string | undefined {
         return value[0]
     }
     return undefined
+}
+
+type AssertFileWritableParams = {
+    fileId: string
+    principal: EnginePrincipal
 }
 
 type AuthorizeReadParams = {

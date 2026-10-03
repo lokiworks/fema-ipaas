@@ -7,6 +7,7 @@ import { fileService } from '../../file/file.service'
 import { pubsub } from '../../helper/pubsub'
 import { projectService } from '../../project/project-service'
 import { RunsMetadataUpsertData } from '../../workers/job'
+import { executionOwnership } from './execution-ownership'
 import { runsMetadataQueue } from './executions-queue'
 
 export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
@@ -26,6 +27,7 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
     },
 
     async uploadRunLog({ projectId, request }: UploadRunLogParams): Promise<void> {
+        await executionOwnership.assertNotOwnedByAnotherProject({ executionId: request.runId, projectId })
         const internalErrorEnabled = request.internalError?.source === RunInternalErrorSource.ENGINE || true
         const internalError = internalErrorEnabled ? request.internalError : undefined
         const isTerminal = !isNil(request.status) && isExecutionStateTerminal({ status: request.status, ignoreInternalError: false })

@@ -99,6 +99,10 @@ export const solutionService = (log: FastifyBaseLogger) => ({
         if (isNil(solution.sourceProjectId)) {
             throw validation('The solution has no source project to repackage')
         }
+        const writable = await projectAccess(log).projectsWithPermission({ userId, tenantId, permission: Permission.WRITE_WORKFLOW })
+        if (!writable.some((project) => project.id === solution.sourceProjectId)) {
+            throw new ApplicationError({ code: ErrorCode.AUTHORIZATION, params: { message: 'You can no longer edit the source project of this solution' } })
+        }
         const current = await latestPackage({ solutionId: id })
         const sourceIds = current.workflows.map((workflow) => workflow.sourceWorkflowId).filter((value): value is string => !isNil(value))
         const manualChecks = current.checks.filter((check) => check.kind === SolutionCheckKind.MANUAL).map(({ label, detail, who }) => ({ label, detail, who }))
@@ -424,7 +428,7 @@ async function ownedSolutionOrThrow({ id, tenantId, userId }: SolutionRef): Prom
         throw notFound({ id, entityType: 'Solution' })
     }
     if (row.createdBy !== userId) {
-        throw validation('Only the member who created the solution can publish a new version')
+        throw new ApplicationError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Only the member who created the solution can publish a new version' } })
     }
     return row
 }

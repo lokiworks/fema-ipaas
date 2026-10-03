@@ -58,8 +58,9 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
         return { items }
     },
 
-    async connectionHealthy({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<boolean> {
-        return (await readConnectionState({ externalId, projectId })) === ReplayConnectionState.HEALTHY
+    async connectionHealth({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<{ healthy: boolean, missing: boolean }> {
+        const state = await readConnectionState({ externalId, projectId })
+        return { healthy: state === ReplayConnectionState.HEALTHY, missing: state === ReplayConnectionState.MISSING }
     },
 
     async replay({ id, projectId, strategy, includeDataProblems, actorId }: ReplayParams): Promise<IssueReplayResult> {

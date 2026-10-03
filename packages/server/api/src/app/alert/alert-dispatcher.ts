@@ -360,7 +360,8 @@ function quietHoursEnd({ quietHours, now }: { quietHours: QuietHours, now: Date 
         return null
     }
     const minutesLeft = (to - current + MINUTES_PER_DAY) % MINUTES_PER_DAY
-    return new Date(now.getTime() + minutesLeft * 60_000)
+    const intoCurrentMinuteMs = now.getUTCSeconds() * 1000 + now.getUTCMilliseconds()
+    return new Date(now.getTime() + minutesLeft * 60_000 - intoCurrentMinuteMs)
 }
 
 function minutesOfDay({ date, timezone }: { date: Date, timezone: string }): number {
@@ -425,3 +426,5 @@ type NotifyCapacityParams = {
     percent: string
     log: FastifyBaseLogger
 }
+
+export const alertDispatcherUtils = { quietHoursEnd }

@@ -32,7 +32,7 @@ import { copilotProposal } from './copilot-proposal'
 
 export const aiCopilotService = (log: FastifyBaseLogger) => ({
     async ask({ request, tenantId, userId }: { request: CopilotRequestBody, tenantId: TenantId, userId: UserId }): Promise<CopilotResponse> {
-        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, externalId: request.modelConnectionExternalId })
+        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, userId, externalId: request.modelConnectionExternalId })
         const workflow = await workflowService(log).getOnePopulatedOrThrow({ id: request.workflowId, projectId: request.projectId })
         const version = workflow.version
         const isDiagnose = request.mode === CopilotMode.DIAGNOSE

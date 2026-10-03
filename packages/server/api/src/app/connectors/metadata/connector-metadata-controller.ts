@@ -1,5 +1,5 @@
 import { ConnectorMetadataModel, ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk'
-import { ApplicationError, ErrorCode, isNil, LocalesEnum } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, LocalesEnum, Permission } from '@fema-ipaas/core-utils'
 import { ALL_PRINCIPAL_TYPES, ConnectorAudienceFilter, ConnectorCategory, ConnectorOptionRequest, EngineResponse, GetConnectorRequestParams, GetConnectorRequestQuery, GetConnectorRequestWithScopeParams, ListConnectorsRequestQuery, Principal, PrincipalType, RegistryConnectorsRequestQuery, SampleDataFileType, WorkerJobType } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -236,7 +236,7 @@ const OptionsConnectorRequest = {
         body: ConnectorOptionRequest,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
+        security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, {
             type: ProjectResourceType.BODY,
         }),
     },
@@ -244,7 +244,7 @@ const OptionsConnectorRequest = {
 
 const SyncConnectorsRequest = {
     config: {
-        security: securityAccess.publicTenant([PrincipalType.USER]),
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
     },
 }
 

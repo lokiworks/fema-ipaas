@@ -26,6 +26,7 @@ import { AddExecutionBusinessKey1790851200000 } from './migration/postgres/17908
 import { AddSolutions1790921911539 } from './migration/postgres/1790921911539-AddSolutions'
 import { AddSolutionInstallWorkflowKeys1790930000000 } from './migration/postgres/1790930000000-AddSolutionInstallWorkflowKeys'
 import { KeepAlertRecordsAfterPolicyDeletion1790940000000 } from './migration/postgres/1790940000000-KeepAlertRecordsAfterPolicyDeletion'
+import { AddExecutionIndexesConcurrently1790950000000 } from './migration/postgres/1790950000000-AddExecutionIndexesConcurrently'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -59,6 +60,7 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddSolutions1790921911539,
         AddSolutionInstallWorkflowKeys1790930000000,
         KeepAlertRecordsAfterPolicyDeletion1790940000000,
+        AddExecutionIndexesConcurrently1790950000000,
     ]
 }
 

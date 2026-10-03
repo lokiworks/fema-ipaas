@@ -1,3 +1,4 @@
+import { Permission } from '@fema-ipaas/core-utils'
 import { CancelTestTriggerRequestBody, PrincipalType, TestTriggerRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { ProjectResourceType } from '../../core/security/authorization/common'
@@ -36,7 +37,7 @@ const TestTriggerRequest = {
         body: TestTriggerRequestBody,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
+        security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, {
             type: ProjectResourceType.BODY,
         }),
     },
@@ -47,7 +48,7 @@ const CancelTestTriggerRequest = {
         body: CancelTestTriggerRequestBody,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
+        security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, {
             type: ProjectResourceType.BODY,
         }),
     },

@@ -103,10 +103,10 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/:id/insight', GetIssueRequest, async (request): Promise<IssueInsight> => {
         const issue = await issueService(request.log).getOneOrThrow({ id: request.params.id, projectId: request.projectId })
-        const connectionHealthy = issue.kind === IssueKind.CONNECTION && !isNil(issue.connectionExternalId)
-            ? await issueReplayService(request.log).connectionHealthy({ externalId: issue.connectionExternalId, projectId: request.projectId })
-            : true
-        return issueUtils.insightOf({ issue, connectionHealthy })
+        const health = issue.kind === IssueKind.CONNECTION && !isNil(issue.connectionExternalId)
+            ? await issueReplayService(request.log).connectionHealth({ externalId: issue.connectionExternalId, projectId: request.projectId })
+            : { healthy: true, missing: false }
+        return issueUtils.insightOf({ issue, connectionHealthy: health.healthy, connectionMissing: health.missing })
     })
 
     app.get('/:id/alerts', GetIssueRequest, async (request): Promise<AlertRecord[]> => {

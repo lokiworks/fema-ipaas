@@ -13,7 +13,7 @@ import { aiModelService } from './ai-model.service'
 
 export const aiMappingService = (log: FastifyBaseLogger) => ({
     async suggest({ request, tenantId, userId }: { request: SuggestFieldMappingRequestBody, tenantId: TenantId, userId: UserId }): Promise<SuggestFieldMappingResponse> {
-        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, externalId: request.modelConnectionExternalId })
+        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, userId, externalId: request.modelConnectionExternalId })
         const response = await aiModelService(log).call({
             params: {
                 config,

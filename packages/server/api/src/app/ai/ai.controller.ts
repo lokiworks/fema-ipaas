@@ -27,7 +27,7 @@ import { aiUsageService } from './ai-usage.service'
 
 export const aiController: FastifyPluginAsyncZod = async (app) => {
     app.get('/model-connections', ModelConnectionsRequest, async (request): Promise<AiModelConnection[]> => {
-        return aiModelService(request.log).listModelConnections({ projectId: request.projectId, tenantId: request.principal.tenant.id })
+        return aiModelService(request.log).listModelConnections({ projectId: request.projectId, tenantId: request.principal.tenant.id, userId: request.principal.id })
     })
 
     app.post('/workflow-plans', GeneratePlanRequest, async (request): Promise<WorkflowPlan> => {

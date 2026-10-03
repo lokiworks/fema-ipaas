@@ -1,4 +1,4 @@
-import { isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { isNil, tryCatch, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
 import { Execution, NotificationType, workflowStructureUtil, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { distributedStore } from '../../database/redis-connections'
@@ -64,7 +64,7 @@ function findFailedStep({ execution, workflowVersion }: NotifyOwnerParams): Fail
     return {
         displayName: failedStep.displayName,
         number: isNil(stepNumber) ? '' : String(stepNumber),
-        message: failedStep.message ?? '',
+        message: tryParseFriendlyConnectorError(failedStep.message)?.message ?? failedStep.message ?? '',
     }
 }
 

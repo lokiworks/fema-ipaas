@@ -22,9 +22,7 @@ export class AddExecutionBusinessKey1790851200000 implements Migration {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(isPGlite
-            ? 'DROP INDEX IF EXISTS "idx_execution_project_business_key"'
-            : 'DROP INDEX CONCURRENTLY IF EXISTS "idx_execution_project_business_key"')
+        await queryRunner.query('DROP INDEX IF EXISTS "idx_execution_project_business_key"')
         await queryRunner.query('ALTER TABLE "execution" DROP COLUMN IF EXISTS "businessKey"')
     }
 }

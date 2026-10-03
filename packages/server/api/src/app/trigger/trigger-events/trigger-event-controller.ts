@@ -1,3 +1,4 @@
+import { Permission } from '@fema-ipaas/core-utils'
 
 import {
     ListTriggerEventsRequest,
@@ -45,7 +46,7 @@ const ListTriggerEventsRequestParams = {
         querystring: ListTriggerEventsRequest,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
+        security: securityAccess.project([PrincipalType.USER], Permission.READ_WORKFLOW, {
             type: ProjectResourceType.QUERY,
         }),
     },
@@ -56,7 +57,7 @@ const SaveTriggerEventRequestParams = {
         body: SaveTriggerEventRequest,
     },
     config: {
-        security: securityAccess.project([PrincipalType.USER], undefined, {
+        security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, {
             type: ProjectResourceType.BODY,
         }),
     },

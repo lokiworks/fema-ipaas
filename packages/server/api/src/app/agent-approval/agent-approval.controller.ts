@@ -69,7 +69,7 @@ const PendingCountRequest = {
 }
 
 const DecideRequest = {
-    config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_RUN, { type: ProjectResourceType.TABLE, tableName: AgentApprovalEntity }) },
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.WRITE_RUN, { type: ProjectResourceType.TABLE, tableName: AgentApprovalEntity }) },
     schema: { tags: ['agent-approvals'], params: z.object({ id: EntityId }), body: DecideAgentApprovalRequestBody, response: { [StatusCodes.OK]: AgentApproval } },
 }
 

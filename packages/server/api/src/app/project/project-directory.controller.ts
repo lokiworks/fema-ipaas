@@ -66,7 +66,7 @@ const DirectoryRequest = {
 }
 
 const SaveInfoRequest = {
-    config: { security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, { type: ProjectResourceType.PARAM, paramKey: 'id' }) },
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.WRITE_PROJECT, { type: ProjectResourceType.PARAM, paramKey: 'id' }) },
     schema: { tags: ['projects'], params: IdParams, body: SaveProjectInfoRequestBody },
 }
 

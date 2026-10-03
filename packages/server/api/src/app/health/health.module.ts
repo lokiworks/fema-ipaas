@@ -2,6 +2,7 @@ import { ComponentHealthCheck, ComponentHealthReport, DiagnosticsBundle, GetDiag
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { tenantUtils } from '../tenant/tenant.utils'
 import { componentHealthService } from './component-health.service'
 import { healthMetricsService } from './health-metrics.service'
 import { healthStatusService } from './health.service'
@@ -37,6 +38,7 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/backup-confirmation', ConfirmBackupRequest, async (request): Promise<ComponentHealthCheck> => {
+        await tenantUtils.assertPrimaryTenant({ request })
         return componentHealthService(request.log).confirmBackup()
     })
 

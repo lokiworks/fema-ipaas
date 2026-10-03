@@ -1,3 +1,4 @@
+import { Permission } from '@fema-ipaas/core-utils'
 import { CreateStepRunRequestBody, GetSampleDataRequest, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { ProjectResourceType } from '../../core/security/authorization/common'
@@ -37,7 +38,7 @@ const GetSampleDataRequestParams = {
     config: {
         security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
-            undefined, {
+            Permission.READ_WORKFLOW, {
                 type: ProjectResourceType.QUERY,
             }),
     },
@@ -52,7 +53,7 @@ const TestSampleDataRequestBody = {
     config: {
         security: securityAccess.project(
             [PrincipalType.USER, PrincipalType.SERVICE], 
-            undefined, {
+            Permission.WRITE_WORKFLOW, {
                 type: ProjectResourceType.BODY,
             }),
     },

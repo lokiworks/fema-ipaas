@@ -17,11 +17,11 @@ export const weeklyDigestService = (log: FastifyBaseLogger) => ({
             return 0
         }
         const subscribers = await userRepo()
-            .createQueryBuilder('user')
-            .leftJoinAndSelect('user.identity', 'identity')
-            .where('user.status = :status', { status: UserStatus.ACTIVE })
-            .andWhere('user."tenantId" IS NOT NULL')
-            .andWhere('user."notificationPreferences" -> \'weeklyDigest\' ->> \'email\' = \'true\'')
+            .createQueryBuilder('member')
+            .leftJoinAndSelect('member.identity', 'identity')
+            .where('member.status = :status', { status: UserStatus.ACTIVE })
+            .andWhere('member."tenantId" IS NOT NULL')
+            .andWhere('member."notificationPreferences" -> \'weeklyDigest\' ->> \'email\' = \'true\'')
             .getMany()
         const since = dayjs().subtract(DIGEST_WINDOW_DAYS, 'day').toDate()
         const link = await domainHelper.getPublicUrl({ path: '' })

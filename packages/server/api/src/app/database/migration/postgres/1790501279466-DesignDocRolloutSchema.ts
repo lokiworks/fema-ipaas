@@ -440,9 +440,6 @@ export class DesignDocRolloutSchema1790501279466 implements Migration {
             ADD "availability" jsonb NOT NULL DEFAULT '{"mode":"ALL","userIds":[]}'
         `)
         await queryRunner.query(`
-            CREATE INDEX "idx_execution_rerun_of_execution_id" ON "execution" ("rerunOfExecutionId")
-        `)
-        await queryRunner.query(`
             CREATE UNIQUE INDEX "idx_connector_blueprint_tenant_identifier" ON "connector_blueprint" ("tenantId", "identifier")
         `)
         await queryRunner.query(`
@@ -689,7 +686,7 @@ export class DesignDocRolloutSchema1790501279466 implements Migration {
             DROP INDEX "public"."idx_connector_blueprint_tenant_identifier"
         `)
         await queryRunner.query(`
-            DROP INDEX "public"."idx_execution_rerun_of_execution_id"
+            DROP INDEX IF EXISTS "public"."idx_execution_rerun_of_execution_id"
         `)
         await queryRunner.query(`
             ALTER TABLE "mcp_service" DROP COLUMN "availability"
@@ -924,7 +921,7 @@ export class DesignDocRolloutSchema1790501279466 implements Migration {
         `)
         await queryRunner.query(`
             ALTER TABLE "store-entry"
-            ADD CONSTRAINT "UQ_6f251cc141de0a8d84d7a4ac17d" UNIQUE ("key", "projectId")
+            ADD CONSTRAINT "UQ_6f251cc141de0a8d84d7a4ac17d" UNIQUE ("projectId", "key")
         `)
     }
 }

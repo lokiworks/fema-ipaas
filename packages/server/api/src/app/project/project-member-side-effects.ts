@@ -27,7 +27,7 @@ export const projectMemberSideEffects = (log: FastifyBaseLogger) => ({
             link: `/projects/${projectId}/automations`,
             actorId,
         })
-        const { error } = await tryCatch(() => emailIfAllowed({ log, userId, tenantId: project.tenantId, projectName: project.displayName, role }))
+        const { error } = await tryCatch(() => emailIfAllowed({ log, userId, tenantId: project.tenantId, projectId, projectName: project.displayName, role }))
         if (!isNil(error)) {
             log.error({ error, project: { id: projectId }, user: { id: userId } }, '[projectMemberSideEffects#onMemberAdded] Failed to send the member email')
         }
@@ -43,7 +43,7 @@ export const projectMemberSideEffects = (log: FastifyBaseLogger) => ({
     },
 })
 
-async function emailIfAllowed({ log, userId, tenantId, projectName, role }: EmailParams): Promise<void> {
+async function emailIfAllowed({ log, userId, tenantId, projectId, projectName, role }: EmailParams): Promise<void> {
     if (!emailService(log).isConfigured()) {
         return
     }
@@ -55,7 +55,7 @@ async function emailIfAllowed({ log, userId, tenantId, projectName, role }: Emai
     if (isNil(user?.identity)) {
         return
     }
-    await emailService(log).sendProjectAccessGranted({ tenantId, to: user.identity.email, projectName, role })
+    await emailService(log).sendProjectAccessGranted({ tenantId, to: user.identity.email, projectId, projectName, role })
 }
 
 type OnMemberAddedParams = {
@@ -69,6 +69,7 @@ type EmailParams = {
     log: FastifyBaseLogger
     userId: string
     tenantId: string
+    projectId: string
     projectName: string
     role: string
 }

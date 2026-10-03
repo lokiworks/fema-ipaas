@@ -17,7 +17,7 @@ export const beisenCommon = {
   callApi,
   callBusinessApi,
   filterByColumn,
-  columnsWith,
+  readPath,
 };
 
 class CredentialRejectedError extends Error {}
@@ -31,17 +31,20 @@ function filterByColumn({ records, column, values }: FilterByColumnParams): Reco
     return records;
   }
   return records.filter((record) => {
-    const value = record[name];
+    const value = readPath({ record, path: name });
     return value !== undefined && value !== null && wanted.includes(String(value).trim());
   });
 }
 
-function columnsWith({ columns, column }: { columns: string[]; column: string | undefined }): string[] {
-  const name = column?.trim() ?? '';
-  if (columns.length === 0 || name.length === 0 || columns.includes(name)) {
-    return columns;
+function readPath({ record, path }: { record: Record<string, unknown>; path: string }): unknown {
+  if (path in record) {
+    return record[path];
   }
-  return [...columns, name];
+  return path.split('.').reduce<unknown>((current, key) => {
+    return typeof current === 'object' && current !== null && key in current
+      ? Reflect.get(current, key)
+      : undefined;
+  }, record);
 }
 
 type FilterByColumnParams = {

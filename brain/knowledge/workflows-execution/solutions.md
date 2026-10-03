@@ -12,6 +12,8 @@ icon: 📦
 **安装向导** —— 5 步：选项目 → 选连接 → 配置 → 检查 → 确认，确认页先调预览，容量不够（`capacityError`）时禁用安装。
 
 ## Gotchas
+
+- **官方目录现在有一个方案：北森 → 飞书 人员同步（`official/beisen-feishu.ts`）。** 三条流（入职开通、调岗改部门、离职暂停）按北森 `GetByTimeWindow` 的字段写，部门用任职部门 OId 查映射表（文档里任职记录只有 OId 没有名称），映射表行留空由安装的人填，缺对照会明确失败而不是悄悄用错。群 ID 两项没有默认值。构建函数在模块加载时就用 `WorkflowTrigger.parse` 校验，结构写错会让 API 启动失败，所以改它要先跑 `test/unit/official-beisen-feishu.test.ts`。端到端验证脚本是 `tools/e2e/main-line/run-official-solution.mjs`，配合同目录的模拟服务。
 - 方案页是租户级页面（和问题中心同级，在 `guards/index.tsx` 注册），不属于某个项目；`/solutions` 开头的路径在 `ProjectDashboardLayout` 里隐藏项目头。
 - 官方方案目录为空时，方案库显示空状态并引导「基于项目生成方案」，不是错误。
 - 列表接口的 `mine` 只认字符串 `'true'` 和 `'false'`；查询参数不能用 `z.coerce.boolean()`，它会把 `'false'` 也当成 `true`。前端目前不传，在客户端按 `createdBy` 过滤。

@@ -10,13 +10,16 @@ const state = {
   createCalls: 0,
   messages: [],
   provisionFailure: null,
+  beisenMode: null,
+  timeWindowRequests: [],
 }
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://localhost:${port}`)
   const body = await readJson(req)
   const route = `${req.method} ${url.pathname}`
-  const handler = ROUTES[route]
+  const userMatch = url.pathname.match(/^\/feishu\/open-apis\/contact\/v3\/users\/([^/]+)$/)
+  const handler = req.method === 'PATCH' && userMatch ? (context) => updateUser({ ...context, openId: decodeURIComponent(userMatch[1]) }) : ROUTES[route]
   if (!handler) {
     return send(res, 404, { error: 'not_found', path: url.pathname })
   }
@@ -31,18 +34,36 @@ const ROUTES = {
     }
     return ok({ access_token: BEISEN_TOKEN, expires_in: 7200, token_type: 'bearer' })
   },
-  'POST /beisen/TenantBasePublicApiV2/v2/employee/timewindow/search': ({ body, headers }) => {
+  'POST /beisen/TenantBaseExternal/api/v5/Employee/GetByTimeWindow': ({ body, headers }) => {
+    if (state.beisenMode === 'RATE_LIMIT_429') {
+      return { status: 429, payload: 'API rate limit exceeded' }
+    }
+    if (state.beisenMode === 'RATE_LIMIT_BODY') {
+      return ok({ error: 'rate_limit', error_description: 'API rate limit exceeded', error_code: '42901' })
+    }
     if (headers.authorization !== `Bearer ${BEISEN_TOKEN}`) {
       return ok({ error: 'invalid_token', error_description: 'access_token is invalid', error_code: '40003' })
     }
-    const from = shanghaiToEpoch(body.startTime)
-    const to = shanghaiToEpoch(body.stopTime)
-    const inWindow = state.employees.filter((employee) => toSecond(employee.changedAt) > from && toSecond(employee.changedAt) <= to)
+    state.timeWindowRequests.push(body)
+    const from = beisenTimeToEpoch(body.startTime)
+    const to = beisenTimeToEpoch(body.stopTime)
+    if (to - from > 90 * DAY_MS) {
+      return ok({ code: 417, message: '只支持查询90天范围内的数据，请分段查询', total: 0, data: [] })
+    }
+    const matched = state.employees
+      .filter((employee) => toSecond(employee.changedAt) > from && toSecond(employee.changedAt) <= to)
+      .filter((employee) => statusAllowed({ employee, body }))
+      .filter((employee) => (body.approvalStatuses?.length ? body.approvalStatuses : [4]).includes(Number(employee.recordInfo.approvalStatus ?? 4)))
     const offset = body.scrollId ? Number(body.scrollId) : 0
-    const capacity = Math.min(Number(body.capacity ?? 100), 100)
-    const page = inWindow.slice(offset, offset + capacity)
-    const next = offset + capacity < inWindow.length ? String(offset + capacity) : undefined
-    return ok({ data: page.map(({ changedAt, ...record }) => record), ...(next ? { scrollId: next } : {}) })
+    const capacity = Math.min(Number(body.capacity ?? 100), 300)
+    const page = matched.slice(offset, offset + capacity)
+    return ok({
+      code: 200,
+      message: '',
+      total: matched.length,
+      ...(page.length > 0 ? { scrollId: String(offset + page.length) } : {}),
+      data: page.map(({ changedAt, ...record }) => ({ originalId: null, ...record })),
+    })
   },
   'POST /feishu/open-apis/auth/v3/tenant_access_token/internal': ({ body }) => {
     if (body.app_secret === 'wrong') {
@@ -97,16 +118,59 @@ const ROUTES = {
     state.employees.push(...records)
     return ok({ added: records.length })
   },
+  'POST /__admin/beisen-mode': ({ body }) => {
+    state.beisenMode = body.mode ?? null
+    return ok({ beisenMode: state.beisenMode })
+  },
   'POST /__admin/feishu-failure': ({ body }) => {
     state.provisionFailure = body.code ? { code: body.code, msg: body.msg ?? 'mock failure' } : null
     return ok({ provisionFailure: state.provisionFailure })
   },
   'GET /__admin/state': () => ok({
     feishuUsers: [...state.feishuUsers.values()],
+    timeWindowRequests: state.timeWindowRequests,
     createCalls: state.createCalls,
     messages: state.messages,
     provisionFailure: state.provisionFailure,
   }),
+}
+
+function updateUser({ openId, body }) {
+  const user = [...state.feishuUsers.values()].find((candidate) => candidate.open_id === openId)
+  if (!user) {
+    return { status: 400, payload: { code: 41050, msg: 'user not found' } }
+  }
+  if (body.department_ids) {
+    const unknown = body.department_ids.find((id) => !state.departments.has(id))
+    if (unknown) {
+      return { status: 400, payload: { code: 40013, msg: `department ${unknown} not found` } }
+    }
+    user.department_ids = body.department_ids
+  }
+  for (const key of ['name', 'job_title', 'leader_user_id']) {
+    if (body[key] !== undefined) {
+      user[key] = body[key]
+    }
+  }
+  if (body.status && body.status.is_frozen !== undefined) {
+    user.is_frozen = body.status.is_frozen
+  }
+  return ok({ code: 0, msg: 'success', data: { user } })
+}
+
+function statusAllowed({ employee, body }) {
+  const status = String(employee.recordInfo.employeeStatus)
+  if (Array.isArray(body.empStatus) && body.empStatus.length > 0) {
+    return body.empStatus.map(String).includes(status)
+  }
+  if (body.withDisabled) {
+    return true
+  }
+  return ['1', '2', '3', '7'].includes(status)
+}
+
+function beisenTimeToEpoch(text) {
+  return new Date(`${String(text).replace(' ', 'T')}+08:00`).getTime()
 }
 
 function userIdFor({ mobile, email }) {
@@ -116,10 +180,6 @@ function userIdFor({ mobile, email }) {
 
 function toSecond(epochMs) {
   return Math.floor(epochMs / 1000) * 1000
-}
-
-function shanghaiToEpoch(text) {
-  return new Date(`${String(text).replace(' ', 'T')}+08:00`).getTime()
 }
 
 function ok(payload) {
@@ -148,6 +208,7 @@ async function readJson(req) {
   }
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000
 const BEISEN_TOKEN = 'beisen-mock-token'
 const FEISHU_TOKEN = 't-mock-tenant-token'
 const HR_CHAT_ID = 'oc_hr_notice'

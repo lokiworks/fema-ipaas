@@ -148,14 +148,26 @@ describe('beisenCommon.filterByColumn', () => {
   });
 });
 
-describe('beisenCommon.columnsWith', () => {
-  it('adds the filter column to an explicit column list so it comes back', () => {
-    expect(beisenCommon.columnsWith({ columns: ['UserID'], column: 'Status' })).toEqual(['UserID', 'Status']);
-    expect(beisenCommon.columnsWith({ columns: ['UserID', 'Status'], column: 'Status' })).toEqual(['UserID', 'Status']);
+describe('beisenCommon.filterByColumn with nested records', () => {
+  const records = [
+    { employeeInfo: { userID: 1 }, recordInfo: { employeeStatus: '8', changeTypeOID: '13' } },
+    { employeeInfo: { userID: 2 }, recordInfo: { employeeStatus: '2', changeTypeOID: '1' } },
+    { employeeInfo: { userID: 3 }, recordInfo: { employeeStatus: '3', changeTypeOID: '2' } },
+  ];
+
+  it('follows a dotted path into the nested record', () => {
+    const kept = beisenCommon.filterByColumn({ records, column: 'recordInfo.changeTypeOID', values: ['1', '2'] });
+    expect(kept).toEqual([records[1], records[2]]);
   });
 
-  it('leaves an empty list empty so Beisen decides the columns', () => {
-    expect(beisenCommon.columnsWith({ columns: [], column: 'Status' })).toEqual([]);
+  it('matches numbers against their text form and ignores missing paths', () => {
+    expect(beisenCommon.filterByColumn({ records, column: 'employeeInfo.userID', values: ['1'] })).toHaveLength(1);
+    expect(beisenCommon.filterByColumn({ records, column: 'recordInfo.nothing', values: ['1'] })).toHaveLength(0);
+  });
+
+  it('prefers a literal key that contains a dot', () => {
+    const flat = [{ 'a.b': 'x', a: { b: 'y' } }];
+    expect(beisenCommon.filterByColumn({ records: flat, column: 'a.b', values: ['x'] })).toHaveLength(1);
   });
 });
 

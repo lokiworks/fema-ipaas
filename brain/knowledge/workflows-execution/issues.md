@@ -17,6 +17,8 @@ icon: 🩺
 
 ## Gotchas
 
+- **「结果对不上」（`IssueKind.DRIFT`）是写后读回核对开的问题，不是失败运行开的。** `verificationService.run`（问题页「核对最近的结果」按钮，每天 03:37 的 `verify-recent-results` 任务也会跑）取项目里最近 72 小时成功的生产运行，要求有业务标识；**每个业务标识只核对它最近一次写入**（先入职后调岗的人只按调岗核对，否则会把正常的部门变化当成差异）。规则在 `verification-rules.ts`：飞书的 `provision_user`、`update_user` 核对部门，`suspend_user`、`resume_user` 核对冻结状态，读回用飞书连接器的只读动作 `get_user`，经 `actionRunService.runConnectorAction` 用原来那个连接去读。不一致就按 `workflowId:步骤:RESULT_MISMATCH` 合并成一个问题，每个人只计一次，活动记录里 NOTE 写着工号和运行 id；之后核对一致会自动关闭（`reason: VERIFIED`）；读不到（权限、网络）只计「读取失败」，不开问题。严重度固定为高。这类问题没有失败运行可重放，修复入口是打开这个工作流的运行记录再手动重跑。
+
 - **重放成功会自动关闭问题，但要这个问题名下每一次失败都被救回来。** 生产环境里一次重跑（`rerunOfExecutionId`）或原地重试成功结束时，`executionHooks.onFinish` 调 `issueService.resolveIfRecovered`：数这个问题名下没有被成功重跑覆盖的失败根运行，为 0 才把 OPEN 或 INVESTIGATING 的问题标成已解决，系统操作，活动记录里 `reason` 是 `REPLAY_SUCCEEDED`。只救回一部分、重放自己又失败、普通的成功运行都不会关；已解决后同一失败再来仍按原逻辑重新打开。
 - 只有 `environment = PRODUCTION` 的失败会进问题中心；编辑器里的测试运行不会。
 - 问题记录走 `distributedLock`（按签名），多实例同时失败只会建一条。

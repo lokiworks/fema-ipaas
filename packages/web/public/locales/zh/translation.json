@@ -5093,5 +5093,11 @@
   "Project navigation": "项目导航",
   "The issue is not closed automatically. Once the runs succeed, mark it as resolved.": "问题不会自动关闭。重放的运行都成功后，请手动标记为已解决。",
   "Progress": "进度",
-  "Main navigation": "主导航"
+  "Main navigation": "主导航",
+  "Please edit on a computer": "请在电脑上编辑",
+  "The workflow editor needs a wider screen. Open this page on a computer to edit. On this device you can review the steps and check run logs.": "工作流编辑器需要更宽的屏幕。请在电脑上打开此页面进行编辑；在这台设备上可以查看步骤和运行日志。",
+  "Back to workflows": "返回工作流列表",
+  "View this workflow's run logs": "查看此工作流的运行日志",
+  "Steps ({count})": "步骤（{count}）",
+  "Branch: {name}": "分支：{name}"
 }

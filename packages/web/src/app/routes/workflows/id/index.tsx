@@ -12,13 +12,17 @@ import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { buttonVariants } from '@/components/ui/button';
 import { workflowsApi, sampleDataHooks } from '@/features/workflows';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { authenticationSession } from '@/lib/authentication-session';
 import { recentVisits } from '@/lib/recent-visits';
 import { cn } from '@/lib/utils';
 
+import { MobileBuilderNotice } from './mobile-builder-notice';
+
 const WorkflowBuilderPage = () => {
   const { workflowId, versionId } = useParams();
   const snapshotVersionId = versionId ?? null;
+  const isMobile = useIsMobile();
 
   const {
     data: workflow,
@@ -49,23 +53,8 @@ const WorkflowBuilderPage = () => {
     refetchOnWindowFocus: false,
   });
 
-  const { data: sampleData, isLoading: isSampleDataLoading } =
-    sampleDataHooks.useSampleDataForWorkflow(
-      workflow?.version,
-      workflow?.projectId,
-    );
-
-  const { data: sampleDataInput, isLoading: isSampleDataInputLoading } =
-    sampleDataHooks.useSampleDataInputForWorkflow(
-      workflow?.version,
-      workflow?.projectId,
-    );
-  if (isLoading || isSampleDataLoading || isSampleDataInputLoading) {
-    return (
-      <div className="bg-background flex h-full w-full items-center justify-center ">
-        <LoadingSpinner isLarge={true}></LoadingSpinner>
-      </div>
-    );
+  if (isLoading) {
+    return <WorkflowBuilderLoading />;
   }
 
   if (isNil(workflow) || isError) {
@@ -94,12 +83,44 @@ const WorkflowBuilderPage = () => {
     );
   }
 
+  if (isMobile) {
+    return <MobileBuilderNotice workflow={workflow} />;
+  }
+
+  return (
+    <WorkflowEditor workflow={workflow} snapshotVersionId={snapshotVersionId} />
+  );
+};
+
+const WorkflowEditor = ({
+  workflow,
+  snapshotVersionId,
+}: {
+  workflow: PopulatedWorkflow;
+  snapshotVersionId: string | null;
+}) => {
+  const { data: sampleData, isLoading: isSampleDataLoading } =
+    sampleDataHooks.useSampleDataForWorkflow(
+      workflow.version,
+      workflow.projectId,
+    );
+
+  const { data: sampleDataInput, isLoading: isSampleDataInputLoading } =
+    sampleDataHooks.useSampleDataInputForWorkflow(
+      workflow.version,
+      workflow.projectId,
+    );
+
+  if (isSampleDataLoading || isSampleDataInputLoading) {
+    return <WorkflowBuilderLoading />;
+  }
+
   return (
     <ReactFlowProvider key={snapshotVersionId ?? 'current'}>
       <BuilderSnapshotProvider versionId={snapshotVersionId}>
         <BuilderStateProvider
           workflow={workflow}
-          workflowVersion={workflow!.version}
+          workflowVersion={workflow.version}
           readonly={!!snapshotVersionId}
           hideTestWidget={false}
           run={null}
@@ -112,5 +133,11 @@ const WorkflowBuilderPage = () => {
     </ReactFlowProvider>
   );
 };
+
+const WorkflowBuilderLoading = () => (
+  <div className="bg-background flex h-full w-full items-center justify-center ">
+    <LoadingSpinner isLarge={true}></LoadingSpinner>
+  </div>
+);
 
 export { WorkflowBuilderPage };

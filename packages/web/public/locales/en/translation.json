@@ -5093,5 +5093,11 @@
   "Project navigation": "Project navigation",
   "The issue is not closed automatically. Once the runs succeed, mark it as resolved.": "The issue is not closed automatically. Once the runs succeed, mark it as resolved.",
   "Progress": "Progress",
-  "Main navigation": "Main navigation"
+  "Main navigation": "Main navigation",
+  "Please edit on a computer": "Please edit on a computer",
+  "The workflow editor needs a wider screen. Open this page on a computer to edit. On this device you can review the steps and check run logs.": "The workflow editor needs a wider screen. Open this page on a computer to edit. On this device you can review the steps and check run logs.",
+  "Back to workflows": "Back to workflows",
+  "View this workflow's run logs": "View this workflow's run logs",
+  "Steps ({count})": "Steps ({count})",
+  "Branch: {name}": "Branch: {name}"
 }

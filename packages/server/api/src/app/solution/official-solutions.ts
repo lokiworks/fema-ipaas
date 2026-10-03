@@ -1,6 +1,7 @@
 import { SolutionPackage } from '@fema-ipaas/shared'
+import { beisenFeishuSolution } from './official/beisen-feishu'
 
-export const OFFICIAL_SOLUTIONS: OfficialSolution[] = []
+export const OFFICIAL_SOLUTIONS: OfficialSolution[] = [beisenFeishuSolution()]
 
 export type OfficialSolution = {
     id: string

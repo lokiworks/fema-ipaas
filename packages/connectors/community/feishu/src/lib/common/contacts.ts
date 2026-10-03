@@ -8,6 +8,7 @@ export const feishuContacts = {
   provisionUser,
   updateUser,
   setUserSuspended,
+  getUser,
   updateUserBody,
   normalizeMobile,
 };
@@ -36,6 +37,28 @@ function updateUserBody(input: UpdateUserInput): Record<string, unknown> {
     ...(input.departmentId ? { department_ids: [input.departmentId] } : {}),
     ...(input.leaderOpenId ? { leader_user_id: input.leaderOpenId } : {}),
     ...(input.jobTitle ? { job_title: input.jobTitle } : {}),
+  };
+}
+
+async function getUser({ auth, input }: GetUserParams): Promise<GetUserResult> {
+  const data = await feishuCommon.callApi<GetUserResponse>({
+    auth,
+    method: HttpMethod.GET,
+    path: `/open-apis/contact/v3/users/${encodeURIComponent(input.openId)}`,
+    queryParams: {
+      user_id_type: 'open_id',
+      department_id_type: input.departmentId ? departmentIdType(input.departmentId) : 'open_department_id',
+    },
+  });
+  const user = data.user ?? {};
+  return {
+    open_id: user.open_id ?? input.openId,
+    name: user.name ?? null,
+    department_ids: user.department_ids ?? [],
+    leader_open_id: user.leader_user_id ?? null,
+    job_title: user.job_title ?? null,
+    is_frozen: user.status?.is_frozen === true,
+    is_resigned: user.status?.is_resigned === true,
   };
 }
 
@@ -138,6 +161,37 @@ export type UpdateUserResult = {
 export type SetUserSuspendedInput = {
   openId: string;
   suspended: boolean;
+};
+
+export type GetUserInput = {
+  openId: string;
+  departmentId?: string | undefined;
+};
+
+export type GetUserResult = {
+  open_id: string;
+  name: string | null;
+  department_ids: string[];
+  leader_open_id: string | null;
+  job_title: string | null;
+  is_frozen: boolean;
+  is_resigned: boolean;
+};
+
+type GetUserParams = {
+  auth: FeishuAuthValue;
+  input: GetUserInput;
+};
+
+type GetUserResponse = {
+  user?: {
+    open_id?: string;
+    name?: string;
+    department_ids?: string[];
+    leader_user_id?: string;
+    job_title?: string;
+    status?: { is_frozen?: boolean; is_resigned?: boolean };
+  };
 };
 
 export type SetUserSuspendedResult = {

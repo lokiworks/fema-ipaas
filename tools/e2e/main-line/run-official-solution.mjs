@@ -113,6 +113,29 @@ await check('向北森发出的请求符合文档：新路径、业务修改时�
   return [...scopes]
 })
 
+await check('核对：离职的账号被人手工解除了冻结 → 问题中心出现「结果对不上」，指出是哪个工号', async () => {
+  const state = await mock('GET', '/__admin/state')
+  const user = state.feishuUsers.find((item) => item.mobile === '+8613800000001')
+  assert(user, '张三的账号不见了')
+  await mock('POST', '/__admin/feishu-user', { mobile: '+8613800000001', set: { is_frozen: false } })
+  const summary = await api('POST', '/verification/run', { projectId: session.projectId })
+  assert(summary.mismatched >= 1, `没有发现差异：${JSON.stringify(summary)}`)
+  const overview = await api('GET', `/issues?projectId=${session.projectId}&view=OPEN&limit=50`)
+  const drift = overview.data.find((issue) => issue.kind === 'DRIFT')
+  assert(drift, '问题中心里没有对账差异')
+  assert(drift.message.includes('E1001'), `差异没有写明工号：${drift.message}`)
+  return { mismatched: summary.mismatched, title: drift.title, message: drift.message }
+})
+
+await check('核对：手工改回去之后再核对，差异问题自动关闭', async () => {
+  await mock('POST', '/__admin/feishu-user', { mobile: '+8613800000001', set: { is_frozen: true } })
+  const summary = await api('POST', '/verification/run', { projectId: session.projectId })
+  assert(summary.mismatched === 0, `仍有差异：${JSON.stringify(summary)}`)
+  const resolved = await api('GET', `/issues?projectId=${session.projectId}&view=RESOLVED&limit=50`)
+  assert(resolved.data.some((issue) => issue.kind === 'DRIFT'), '差异问题没有被关闭')
+  return summary
+})
+
 printSummary()
 
 function person({ id, jobNumber, name, mobile, department, status, changeType }) {

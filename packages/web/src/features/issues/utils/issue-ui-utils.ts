@@ -45,6 +45,9 @@ function issueTitle(
       name: issue.connectionExternalId ?? issue.title,
     });
   }
+  if (issue.kind === IssueKind.DRIFT) {
+    return t('The connected system does not match what the run did');
+  }
   return issue.title;
 }
 
@@ -91,6 +94,10 @@ function causeText({
         'The downstream system returned a server error (HTTP {status}). It is usually temporary; replay once it recovers.',
         { status: httpStatus ?? '' },
       );
+    case IssueInsightCause.RESULT_MISMATCH:
+      return t(
+        'The run reported success, but reading the result back from the connected system shows something different. Someone may have changed it by hand, or a later change overwrote it. The activity list names who is affected; open the run and rerun it if the data is still right.',
+      );
     case IssueInsightCause.STEP_ERROR:
       return t(
         'The step failed without an HTTP status, for example a network or script error. Check the error below and the step inputs before replaying.',
@@ -110,6 +117,8 @@ function fixLabel(kind: IssueFixKind): string {
       return t('Replay from the failed step');
     case IssueFixKind.REPLAY_FULL:
       return t('Replay the whole run');
+    case IssueFixKind.OPEN_RUN:
+      return t('Open the runs of this workflow');
     case IssueFixKind.IGNORE:
       return t('Confirm it is transient and ignore');
   }

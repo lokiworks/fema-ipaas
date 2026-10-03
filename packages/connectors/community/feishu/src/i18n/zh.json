@@ -89,5 +89,10 @@
   "Suspend a leaving employee so they can no longer sign in, keeping all their data": "暂停离职员工的账号，不能再登录，数据全部保留",
   "Resume Employee Account": "恢复员工账号",
   "Lift the suspension of an employee account so they can sign in again": "解除账号的暂停，员工可以重新登录",
-  "The open_id of the suspended member.": "被暂停成员的 open_id。"
+  "The open_id of the suspended member.": "被暂停成员的 open_id。",
+  "Get Employee": "读取员工",
+  "Read the department, manager, job title and suspension state of a Feishu account": "读取飞书账号的部门、直属上级、职务和暂停状态",
+  "The open_id of the member to read, from Find User or Provision Employee Account.": "要读取的成员的 open_id，来自「查找用户」或「开通员工账号」。",
+  "Department ID Format": "部门 ID 格式",
+  "Optional. Give a department ID of the format you work with, for example one starting with od-, and the departments come back in that format. Empty returns open_department_id values.": "可选。填一个你在用的格式的部门 ID，例如以 od- 开头的，返回的部门就用同样的格式；留空返回 open_department_id。"
 }

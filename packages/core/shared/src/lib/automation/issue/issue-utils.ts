@@ -5,6 +5,7 @@ import { IssueFix, IssueFixKind, IssueInsight, IssueInsightCause, ReplayReason }
 
 export const issueUtils = {
     classifyFailure,
+    classifyDrift,
     severityOf,
     insightOf,
     isTransientHttpStatus,
@@ -38,8 +39,19 @@ function classifyFailure({ workflowId, executionStatus, failedStep }: ClassifyFa
     }
 }
 
+function classifyDrift({ workflowId, stepName, message }: { workflowId: string, stepName: string, message: string }): FailureClassification {
+    return {
+        kind: IssueKind.DRIFT,
+        signature: `${workflowId}:${stepName}:${RESULT_MISMATCH_CODE}`,
+        errorCode: RESULT_MISMATCH_CODE,
+        connectionExternalId: null,
+        httpStatus: null,
+        message,
+    }
+}
+
 function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
-    if (issue.kind === IssueKind.CONNECTION || issue.occurrences >= HIGH_SEVERITY_OCCURRENCES) {
+    if (issue.kind === IssueKind.CONNECTION || issue.kind === IssueKind.DRIFT || issue.occurrences >= HIGH_SEVERITY_OCCURRENCES) {
         return IssueSeverity.HIGH
     }
     if (issue.occurrences >= MEDIUM_SEVERITY_OCCURRENCES) {
@@ -49,6 +61,14 @@ function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
 }
 
 function insightOf({ issue, connectionHealthy }: InsightOfParams): IssueInsight {
+    if (issue.kind === IssueKind.DRIFT) {
+        return {
+            cause: IssueInsightCause.RESULT_MISMATCH,
+            confidence: 0.9,
+            httpStatus: null,
+            fixes: [fix({ kind: IssueFixKind.OPEN_RUN }), fix({ kind: IssueFixKind.IGNORE })],
+        }
+    }
     if (issue.kind === IssueKind.CONNECTION) {
         const replayBlocked = connectionHealthy ? null : ReplayReason.CONNECTION_STILL_BROKEN
         return {
@@ -161,6 +181,7 @@ function fix({ kind, disabledReason }: { kind: IssueFixKind, disabledReason?: Re
 }
 
 const STEP_TIMEOUT_CODE = 'STEP_TIMEOUT'
+const RESULT_MISMATCH_CODE = 'RESULT_MISMATCH'
 const HIGH_SEVERITY_OCCURRENCES = 10
 const MEDIUM_SEVERITY_OCCURRENCES = 3
 const TRANSIENT_HTTP_STATUSES = [429, 502, 503, 504, 529]

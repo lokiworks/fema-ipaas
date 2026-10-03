@@ -58,7 +58,28 @@ export enum IssueInsightCause {
     ACCESS_DENIED = 'ACCESS_DENIED',
     UPSTREAM_ERROR = 'UPSTREAM_ERROR',
     STEP_ERROR = 'STEP_ERROR',
+    RESULT_MISMATCH = 'RESULT_MISMATCH',
 }
+
+export const VERIFICATION_DEFAULT_WINDOW_HOURS = 72
+export const VERIFICATION_MAX_WINDOW_HOURS = 24 * 14
+
+export const RunVerificationRequestBody = z.object({
+    projectId: z.string(),
+    sinceHours: z.number().int().min(1).max(VERIFICATION_MAX_WINDOW_HOURS).optional(),
+})
+export type RunVerificationRequestBody = z.infer<typeof RunVerificationRequestBody>
+
+export const RunVerificationResult = z.object({
+    checked: z.number(),
+    matched: z.number(),
+    mismatched: z.number(),
+    unreadable: z.number(),
+    skipped: z.number(),
+    truncated: z.boolean(),
+    issueIds: z.array(z.string()),
+})
+export type RunVerificationResult = z.infer<typeof RunVerificationResult>
 
 export enum IssueFixKind {
     REAUTHORIZE_CONNECTION = 'REAUTHORIZE_CONNECTION',
@@ -66,6 +87,7 @@ export enum IssueFixKind {
     OPEN_STEP_ERROR_HANDLING = 'OPEN_STEP_ERROR_HANDLING',
     REPLAY_FROM_FAILED_STEP = 'REPLAY_FROM_FAILED_STEP',
     REPLAY_FULL = 'REPLAY_FULL',
+    OPEN_RUN = 'OPEN_RUN',
     IGNORE = 'IGNORE',
 }
 

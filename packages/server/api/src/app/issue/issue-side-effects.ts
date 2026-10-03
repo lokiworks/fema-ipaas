@@ -53,6 +53,26 @@ export const issueSideEffects = (log: FastifyBaseLogger) => ({
         }
     },
 
+    async onDrift(params: OnDriftParams): Promise<void> {
+        const { data: outcome, error } = await tryCatch(() => issueService(log).recordDrift(params))
+        if (!isNil(error)) {
+            log.error({ error, workflow: { id: params.workflowVersion.workflowId } }, '[issueSideEffects#onDrift] Failed to record issue')
+            return
+        }
+        if (isNil(outcome) || !outcome.counted) {
+            return
+        }
+        const { error: alertError } = await tryCatch(async () => alertDispatcher(log).onIssueRecorded({
+            issue: outcome.issue,
+            event: outcome.event,
+            counted: outcome.counted,
+            tenantId: await projectService(log).getTenantId(params.projectId),
+        }))
+        if (!isNil(alertError)) {
+            log.error({ error: alertError, workflow: { id: params.workflowVersion.workflowId } }, '[issueSideEffects#onDrift] Failed to dispatch alerts')
+        }
+    },
+
     async onTriggerRecovered({ projectId, workflowVersion }: OnTriggerRecoveredParams): Promise<void> {
         const { error } = await tryCatch(() => issueService(log).resolveTriggerFailures({ projectId, workflowId: workflowVersion.workflowId, triggerName: workflowVersion.trigger.name }))
         if (!isNil(error)) {
@@ -60,6 +80,16 @@ export const issueSideEffects = (log: FastifyBaseLogger) => ({
         }
     },
 })
+
+type OnDriftParams = {
+    projectId: string
+    workflowVersion: WorkflowVersion
+    stepName: string
+    stepDisplayName: string
+    businessKey: string
+    executionId: string
+    detail: string
+}
 
 type OnTriggerFailureParams = {
     projectId: string

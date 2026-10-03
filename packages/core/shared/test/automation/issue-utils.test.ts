@@ -141,3 +141,15 @@ describe('issueUtils.isRepeatAttempt', () => {
         expect(issueUtils.isRepeatAttempt({ execution: { issueId: 'other' }, existingIssueId: 'i1' })).toBe(false)
     })
 })
+
+describe('issueUtils drift issues', () => {
+    it('gives a drift its own signature per workflow and step, and a fixed error code', () => {
+        const classification = issueUtils.classifyDrift({ workflowId: 'wf1', stepName: 'suspend', message: '飞书里的账号没有冻结' })
+        expect(classification).toMatchObject({ kind: 'DRIFT', signature: 'wf1:suspend:RESULT_MISMATCH', errorCode: 'RESULT_MISMATCH', httpStatus: null })
+    })
+
+    it('treats a drift as high severity from the first occurrence and explains it as a result mismatch', () => {
+        expect(issueUtils.severityOf({ kind: IssueKind.DRIFT, occurrences: 1 })).toBe(IssueSeverity.HIGH)
+        expect(issueUtils.insightOf({ issue: { kind: IssueKind.DRIFT, errorCode: 'RESULT_MISMATCH' }, connectionHealthy: true }).cause).toBe(IssueInsightCause.RESULT_MISMATCH)
+    })
+})

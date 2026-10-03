@@ -180,9 +180,41 @@ function useReplay(id: string) {
   });
 }
 
+function useVerify(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => issuesApi.verify({ projectId }),
+    onSuccess: (result) => {
+      void queryClient.invalidateQueries({ queryKey: [ISSUES_KEY] });
+      if (result.checked === 0) {
+        toast.info(
+          t('Nothing to check: no recent run wrote to a connected system'),
+        );
+        return;
+      }
+      toast.success(
+        t(
+          'Checked {checked}: {matched} match, {mismatched} differ, {unreadable} could not be read',
+          {
+            checked: result.checked,
+            matched: result.matched,
+            mismatched: result.mismatched,
+            unreadable: result.unreadable,
+          },
+        ),
+        result.truncated
+          ? { description: t('Only the most recent runs were checked') }
+          : undefined,
+      );
+    },
+    onError: () => internalErrorToast(),
+  });
+}
+
 const ISSUES_KEY = 'issues';
 
 export const issuesHooks = {
+  useVerify,
   useIssues,
   useOverview,
   useSummary,

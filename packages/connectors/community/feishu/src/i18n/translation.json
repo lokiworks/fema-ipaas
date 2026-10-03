@@ -89,5 +89,10 @@
   "Suspend a leaving employee so they can no longer sign in, keeping all their data": "Suspend a leaving employee so they can no longer sign in, keeping all their data",
   "Resume Employee Account": "Resume Employee Account",
   "Lift the suspension of an employee account so they can sign in again": "Lift the suspension of an employee account so they can sign in again",
-  "The open_id of the suspended member.": "The open_id of the suspended member."
+  "The open_id of the suspended member.": "The open_id of the suspended member.",
+  "Get Employee": "Get Employee",
+  "Read the department, manager, job title and suspension state of a Feishu account": "Read the department, manager, job title and suspension state of a Feishu account",
+  "The open_id of the member to read, from Find User or Provision Employee Account.": "The open_id of the member to read, from Find User or Provision Employee Account.",
+  "Department ID Format": "Department ID Format",
+  "Optional. Give a department ID of the format you work with, for example one starting with od-, and the departments come back in that format. Empty returns open_department_id values.": "Optional. Give a department ID of the format you work with, for example one starting with od-, and the departments come back in that format. Empty returns open_department_id values."
 }

@@ -74,6 +74,7 @@ import { triggerModule } from './trigger/trigger.module'
 import { tenantUserModule } from './user/tenant/tenant-user-module'
 import { invitationModule } from './user-invitations/user-invitation.module'
 import { variableModule } from './variable/variable.module'
+import { verificationModule } from './verification/verification.module'
 import { webhookModule } from './webhooks/webhook-module'
 import { engineResponseWatcher } from './workers/engine-response-watcher'
 import { workerCapacity } from './workers/machine/worker-capacity'
@@ -201,6 +202,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(releaseModule)
     await app.register(mappingTableModule)
     await app.register(solutionModule)
+    await app.register(verificationModule)
     await app.register(projectWorkspaceModule)
     await app.register(dataStoreModule)
     await app.register(aiModule)

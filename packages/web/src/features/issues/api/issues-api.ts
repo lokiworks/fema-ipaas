@@ -14,6 +14,8 @@ import {
   IssueWithSeverity,
   ListIssuesRequestQuery,
   ReplayCheckResult,
+  RunVerificationRequestBody,
+  RunVerificationResult,
   UpdateIssueRequestBody,
 } from '@fema-ipaas/shared';
 
@@ -21,6 +23,9 @@ import { api } from '@/lib/api';
 import { timezoneUtils } from '@/lib/timezone-utils';
 
 export const issuesApi = {
+  verify(request: RunVerificationRequestBody): Promise<RunVerificationResult> {
+    return api.post<RunVerificationResult>('/v1/verification/run', request);
+  },
   list(request: ListIssuesRequestQuery): Promise<SeekPage<IssueWithSeverity>> {
     return api.get<SeekPage<IssueWithSeverity>>('/v1/issues', {
       ...request,

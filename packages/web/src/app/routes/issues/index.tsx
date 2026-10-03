@@ -89,6 +89,7 @@ function IssuesPage() {
   };
   const { data: page, isLoading, isError } = issuesHooks.useIssues(request);
   const { data: summary } = issuesHooks.useSummary(projectId);
+  const verify = issuesHooks.useVerify(projectId);
   const { mutate: batchUpdate } = issuesHooks.useBatchUpdate();
 
   const setView = (next: IssueListView) => {
@@ -357,16 +358,27 @@ function IssuesPage() {
     <div className="flex flex-col gap-4 w-full">
       {summary && (
         <>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Last 7 days: {failures} failures → {issues} issues → {alerts} alerts',
-              {
-                failures: summary.failuresLast7Days,
-                issues: summary.issuesLast7Days,
-                alerts: summary.alertsLast7Days,
-              },
-            )}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">
+              {t(
+                'Last 7 days: {failures} failures → {issues} issues → {alerts} alerts',
+                {
+                  failures: summary.failuresLast7Days,
+                  issues: summary.issuesLast7Days,
+                  alerts: summary.alertsLast7Days,
+                },
+              )}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!canWrite}
+              loading={verify.isPending}
+              onClick={() => verify.mutate()}
+            >
+              {t('Check recent results')}
+            </Button>
+          </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <SummaryCard
               active={view === IssueListView.OPEN}

@@ -19,7 +19,8 @@ const server = createServer(async (req, res) => {
   const body = await readJson(req)
   const route = `${req.method} ${url.pathname}`
   const userMatch = url.pathname.match(/^\/feishu\/open-apis\/contact\/v3\/users\/([^/]+)$/)
-  const handler = req.method === 'PATCH' && userMatch ? (context) => updateUser({ ...context, openId: decodeURIComponent(userMatch[1]) }) : ROUTES[route]
+  const openId = userMatch ? decodeURIComponent(userMatch[1]) : null
+  const handler = userMatch && req.method === 'PATCH' ? (context) => updateUser({ ...context, openId }) : userMatch && req.method === 'GET' ? () => getUser({ openId }) : ROUTES[route]
   if (!handler) {
     return send(res, 404, { error: 'not_found', path: url.pathname })
   }
@@ -118,6 +119,14 @@ const ROUTES = {
     state.employees.push(...records)
     return ok({ added: records.length })
   },
+  'POST /__admin/feishu-user': ({ body }) => {
+    const user = [...state.feishuUsers.values()].find((candidate) => candidate.mobile === body.mobile)
+    if (!user) {
+      return { status: 404, payload: { error: 'no such user' } }
+    }
+    Object.assign(user, body.set ?? {})
+    return ok({ user })
+  },
   'POST /__admin/beisen-mode': ({ body }) => {
     state.beisenMode = body.mode ?? null
     return ok({ beisenMode: state.beisenMode })
@@ -133,6 +142,14 @@ const ROUTES = {
     messages: state.messages,
     provisionFailure: state.provisionFailure,
   }),
+}
+
+function getUser({ openId }) {
+  const user = [...state.feishuUsers.values()].find((candidate) => candidate.open_id === openId)
+  if (!user) {
+    return { status: 400, payload: { code: 41050, msg: 'user not found' } }
+  }
+  return ok({ code: 0, msg: 'success', data: { user: { open_id: user.open_id, name: user.name, department_ids: user.department_ids, leader_user_id: user.leader_user_id ?? null, job_title: user.job_title ?? null, status: { is_frozen: user.is_frozen === true, is_resigned: false } } } })
 }
 
 function updateUser({ openId, body }) {

@@ -269,3 +269,33 @@ describe('feishuContacts.normalizeMobile', () => {
     expect(feishuContacts.normalizeMobile(mobile)).toBe(expected);
   });
 });
+
+describe('feishuContacts.getUser', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('reads the departments and suspension state with the id format the caller works in', async () => {
+    sendRequest
+      .mockResolvedValueOnce(reply({ code: 0, tenant_access_token: 't-read', expire: 7200 }))
+      .mockResolvedValueOnce(reply({ code: 0, data: { user: { open_id: 'ou_1', name: '张三', department_ids: ['od-rd'], leader_user_id: 'ou_boss', status: { is_frozen: true } } } }));
+
+    const result = await feishuContacts.getUser({ auth: { ...auth, props: { ...auth.props, appId: 'cli_get_user' } }, input: { openId: 'ou_1', departmentId: 'od-rd' } });
+
+    expect(result).toMatchObject({ open_id: 'ou_1', department_ids: ['od-rd'], is_frozen: true, is_resigned: false, leader_open_id: 'ou_boss' });
+    const request = sendRequest.mock.calls[1][0];
+    expect(request.method).toBe('GET');
+    expect(request.url).toContain('/open-apis/contact/v3/users/ou_1');
+    expect(request.queryParams).toMatchObject({ user_id_type: 'open_id', department_id_type: 'open_department_id' });
+  });
+
+  it('treats a missing status block as an active account', async () => {
+    sendRequest
+      .mockResolvedValueOnce(reply({ code: 0, tenant_access_token: 't-read-2', expire: 7200 }))
+      .mockResolvedValueOnce(reply({ code: 0, data: { user: { open_id: 'ou_2' } } }));
+
+    const result = await feishuContacts.getUser({ auth: { ...auth, props: { ...auth.props, appId: 'cli_other' } }, input: { openId: 'ou_2' } });
+
+    expect(result).toMatchObject({ is_frozen: false, department_ids: [] });
+  });
+});

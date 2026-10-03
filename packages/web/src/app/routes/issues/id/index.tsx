@@ -99,6 +99,8 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             <Badge variant="outline">
               {issue.kind === IssueKind.CONNECTION
                 ? t('Connection issue')
+                : issue.kind === IssueKind.DRIFT
+                ? t('Result mismatch')
                 : t('Step issue')}
             </Badge>
             {issue.errorCode && (
@@ -350,6 +352,15 @@ function InsightCard({
         allowed: canReplay,
       },
       [IssueFixKind.REPLAY_FULL]: { run: onReplay, allowed: canReplay },
+      [IssueFixKind.OPEN_RUN]: {
+        run: () =>
+          navigate(
+            authenticationSession.appendProjectRoutePrefix(
+              `/runs?workflowId=${issue.workflowId ?? ''}&time=7d`,
+            ),
+          ),
+        allowed: !!issue.workflowId,
+      },
       [IssueFixKind.IGNORE]: { run: onIgnore, allowed: canWrite },
     };
   return (

@@ -148,6 +148,71 @@ export const issueService = (log: FastifyBaseLogger) => ({
         return true
     },
 
+    async recordDrift({ projectId, workflowVersion, stepName, stepDisplayName, businessKey, executionId, detail }: RecordDriftParams): Promise<RecordFailureResult> {
+        const message = `${businessKey}: ${detail}`
+        const failedStep: FailedStep = { name: stepName, displayName: stepDisplayName, message }
+        const classification = issueUtils.classifyDrift({ workflowId: workflowVersion.workflowId, stepName, message })
+        const now = dayjsUtil().toISOString()
+        return distributedLock(log).runExclusive({
+            key: `issue:${projectId}:${classification.signature}`,
+            timeoutInSeconds: 15,
+            fn: async (): Promise<RecordFailureResult> => {
+                const activityData = { text: message, executionId, businessKey }
+                const existing = await issueRepo().findOneBy({ projectId, signature: classification.signature })
+                if (isNil(existing)) {
+                    const created = await insertIssue({ projectId, workflowId: workflowVersion.workflowId, failedStep, workflowVersion, classification, now })
+                    await recordActivity({ issue: created, type: IssueActivityType.FIRST_SEEN, actorId: null, data: {} })
+                    await recordActivity({ issue: created, type: IssueActivityType.NOTE, actorId: null, data: activityData })
+                    return { issue: created, event: IssueRecordEvent.NEW, counted: true }
+                }
+                const notes = await issueActivityRepo().find({ where: { issueId: existing.id, type: IssueActivityType.NOTE }, order: { created: 'DESC' }, take: DRIFT_NOTES_SCANNED })
+                const alreadyNoted = notes.some((note) => readExecutionId(note.data) === executionId)
+                const reopening = existing.status === IssueStatus.RESOLVED
+                const counted = !alreadyNoted || reopening
+                await issueRepo().update({ id: existing.id, projectId }, {
+                    occurrences: counted ? existing.occurrences + 1 : existing.occurrences,
+                    lastSeenAt: now,
+                    message,
+                    ...(reopening ? { status: IssueStatus.OPEN, reopened: true, resolvedAt: null, resolvedById: null } : {}),
+                })
+                const updated = await getOneOrThrow({ id: existing.id, projectId })
+                if (reopening) {
+                    await recordActivity({ issue: updated, type: IssueActivityType.REOPENED, actorId: null, data: {} })
+                }
+                if (!alreadyNoted) {
+                    await recordActivity({ issue: updated, type: IssueActivityType.NOTE, actorId: null, data: activityData })
+                }
+                return { issue: updated, event: reopening ? IssueRecordEvent.REOPENED : IssueRecordEvent.OCCURRED, counted }
+            },
+        })
+    },
+
+    async resolveDrift({ projectId, workflowId, stepName }: ResolveDriftParams): Promise<string | null> {
+        const signature = issueUtils.classifyDrift({ workflowId, stepName, message: '' }).signature
+        const open = await issueRepo().findOne({
+            where: { projectId, signature, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
+            select: ['id', 'status'],
+        })
+        if (isNil(open)) {
+            return null
+        }
+        await issueRepo().update({ id: open.id, projectId }, {
+            status: IssueStatus.RESOLVED,
+            resolvedAt: dayjsUtil().toISOString(),
+            resolvedById: null,
+            reopened: false,
+        })
+        await issueActivityRepo().insert({
+            id: generateId(),
+            issueId: open.id,
+            projectId,
+            type: IssueActivityType.STATUS_CHANGED,
+            actorId: null,
+            data: { from: open.status, to: IssueStatus.RESOLVED, reason: 'VERIFIED' },
+        })
+        return open.id
+    },
+
     async resolveTriggerFailures({ projectId, workflowId, triggerName }: ResolveTriggerFailuresParams): Promise<void> {
         const stale = await issueRepo().find({
             where: { projectId, workflowId, stepName: triggerName, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
@@ -388,6 +453,9 @@ async function insertIssue({ projectId, workflowId, failedStep, workflowVersion,
 }
 
 function titleFor({ classification, workflowVersion, stepDisplayName }: TitleForParams): string {
+    if (classification.kind === IssueKind.DRIFT) {
+        return `${isNil(workflowVersion) ? '' : `${workflowVersion.displayName} · `}${stepDisplayName}: the connected system does not match the run`.slice(0, MAX_TITLE_LENGTH)
+    }
     if (classification.kind === IssueKind.CONNECTION) {
         return classification.connectionExternalId ?? classification.errorCode
     }
@@ -661,6 +729,15 @@ type OverviewParams = {
 
 const AUTO_RESOLVED_REASON = 'REPLAY_SUCCEEDED'
 
+const DRIFT_NOTES_SCANNED = 200
+
+function readExecutionId(data: unknown): string | null {
+    if (typeof data !== 'object' || data === null || !('executionId' in data)) {
+        return null
+    }
+    return typeof data.executionId === 'string' ? data.executionId : null
+}
+
 const UNRECOVERED_ROOTS_SQL = `SELECT COUNT(*)::int AS count
     FROM execution failed
     WHERE failed."issueId" = $1
@@ -671,6 +748,22 @@ const UNRECOVERED_ROOTS_SQL = `SELECT COUNT(*)::int AS count
           SELECT 1 FROM execution rerun
           WHERE rerun."rerunOfExecutionId" = failed.id AND rerun.status = 'SUCCEEDED'
       )`
+
+type RecordDriftParams = {
+    projectId: ProjectId
+    workflowVersion: WorkflowVersion
+    stepName: string
+    stepDisplayName: string
+    businessKey: string
+    executionId: string
+    detail: string
+}
+
+type ResolveDriftParams = {
+    projectId: ProjectId
+    workflowId: string
+    stepName: string
+}
 
 type SummaryParams = {
     projectId: ProjectId

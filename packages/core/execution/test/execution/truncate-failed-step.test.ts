@@ -1,3 +1,4 @@
+import { blockedUntilMarker } from '@fema-ipaas/core-utils'
 import { errorHandlingUtils, FAILED_STEP_MESSAGE_MAX_LENGTH, truncateFailedStepMessage } from '../../src'
 
 describe('truncateFailedStepMessage', () => {
@@ -25,6 +26,26 @@ describe('truncateFailedStepMessage', () => {
     it('still cuts a long plain message to the limit', () => {
         const result = truncateFailedStepMessage({ name: 'step_1', displayName: 'Step', message: 'y'.repeat(2000) })
         expect(result?.message.length).toBeLessThanOrEqual(FAILED_STEP_MESSAGE_MAX_LENGTH + 1)
+    })
+
+    it('keeps the blocked-until marker when a long friendly error is shortened', () => {
+        const until = new Date('2026-10-03T16:00:00.000Z')
+        const long = JSON.stringify({
+            __apErrorVersion: 1,
+            message: blockedUntilMarker.attach({ message: `HTTP 429: ${'z'.repeat(1500)}`, until }),
+            status: 429,
+        })
+        const result = truncateFailedStepMessage({ name: 'step_1', displayName: 'Step', message: long })
+        expect(result?.message.length).toBeLessThanOrEqual(FAILED_STEP_MESSAGE_MAX_LENGTH)
+        expect(blockedUntilMarker.parse(result?.message)?.toISOString()).toBe(until.toISOString())
+        expect(errorHandlingUtils.classifyErrorMessage({ message: result?.message }).errorCode).toBe('HTTP_429')
+    })
+
+    it('keeps the blocked-until marker when a long plain message is cut', () => {
+        const until = new Date('2026-10-03T16:00:00.000Z')
+        const message = blockedUntilMarker.attach({ message: `y${'y'.repeat(2000)}`, until })
+        const result = truncateFailedStepMessage({ name: 'step_1', displayName: 'Step', message })
+        expect(blockedUntilMarker.parse(result?.message)?.toISOString()).toBe(until.toISOString())
     })
 
     it('leaves short messages untouched', () => {

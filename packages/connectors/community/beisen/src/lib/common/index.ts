@@ -5,6 +5,7 @@ import {
   httpClient,
 } from '@fema-ipaas/connector-common';
 import {
+  blockedUntilMarker,
   tryCatch,
   type ConnectionValueForAuthProperty,
 } from '@fema-ipaas/connector-sdk';
@@ -18,6 +19,7 @@ export const beisenCommon = {
   callBusinessApi,
   filterByColumn,
   readPath,
+  nextBeijingMidnight,
 };
 
 class CredentialRejectedError extends Error {}
@@ -162,8 +164,17 @@ function tokenCacheKey({ appKey, appSecret }: TokenParams): string {
 
 function rateLimitError(): Error {
   return new Error(
-    `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day, so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)`,
+    blockedUntilMarker.attach({
+      message: `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day (Beijing time), so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)`,
+      until: nextBeijingMidnight({ now: new Date() }),
+    }),
   );
+}
+
+function nextBeijingMidnight({ now }: { now: Date }): Date {
+  const beijingMs = now.getTime() + BEIJING_UTC_OFFSET_MS;
+  const nextMidnightBeijingMs = (Math.floor(beijingMs / MS_PER_DAY) + 1) * MS_PER_DAY;
+  return new Date(nextMidnightBeijingMs - BEIJING_UTC_OFFSET_MS);
 }
 
 function assertNoGatewayError({ body, rejectsCredentials }: { body: Partial<GatewayError>; rejectsCredentials: boolean }): void {
@@ -182,6 +193,10 @@ function assertNoGatewayError({ body, rejectsCredentials }: { body: Partial<Gate
 const HTTP_TOO_MANY_REQUESTS = 429;
 
 const HTTP_UNAUTHORIZED = 401;
+
+const BEIJING_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function isRateLimitMessage(message: string): boolean {
   return message.toLowerCase().includes('rate limit exceeded');

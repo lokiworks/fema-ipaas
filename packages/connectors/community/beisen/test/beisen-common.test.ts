@@ -1,4 +1,5 @@
 import { HttpError, HttpMethod } from '@fema-ipaas/connector-common';
+import { blockedUntilMarker } from '@fema-ipaas/connector-sdk';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const sendRequest = vi.fn();
@@ -12,6 +13,13 @@ const { beisenCommon } = await import('../src/lib/common');
 
 function authFor(appKey: string) {
   return { props: { appKey, appSecret: 'secret-1' } };
+}
+
+async function failureMessage(call: Promise<unknown>): Promise<string> {
+  return call.then(
+    () => '',
+    (error: unknown) => (error instanceof Error ? error.message : String(error)),
+  );
 }
 
 function tokenResponse(body: unknown) {
@@ -193,6 +201,36 @@ describe('beisenCommon.callApi rate limiting', () => {
     ).rejects.toThrowError(/^HTTP 429: .*00:00 the next day/);
   });
 
+  it('marks the error as blocked until 00:00 Beijing time the next day', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-03T05:30:00.000Z'));
+    sendRequest.mockRejectedValueOnce(
+      new HttpError({}, { status: 429, responseBody: 'API rate limit exceeded' }),
+    );
+
+    const message = await failureMessage(
+      beisenCommon.callApi({ auth: authFor('limit-key-marker'), method: HttpMethod.POST, path: '/any' }),
+    );
+    vi.useRealTimers();
+
+    expect(blockedUntilMarker.parse(message)?.toISOString()).toBe('2026-10-03T16:00:00.000Z');
+    expect(message).toMatch(/^HTTP 429: /);
+  });
+
+  it('marks the limit reported inside a 200 body the same way', async () => {
+    sendRequest.mockResolvedValueOnce({
+      status: 200,
+      body: { error: 'limited', error_description: 'API rate limit exceeded' },
+      headers: {},
+    });
+
+    const message = await failureMessage(
+      beisenCommon.callApi({ auth: authFor('limit-key-marker-2'), method: HttpMethod.POST, path: '/any' }),
+    );
+
+    expect(blockedUntilMarker.parse(message)).not.toBeNull();
+  });
+
   it('recognises the limit when Beisen reports it inside a 200 body', async () => {
     sendRequest.mockResolvedValueOnce({
       status: 200,
@@ -220,6 +258,18 @@ describe('beisenCommon.callApi rate limiting', () => {
         path: '/any',
       }),
     ).rejects.toBe(failure);
+  });
+});
+
+describe('beisenCommon.nextBeijingMidnight', () => {
+  it('rolls over at 16:00 UTC, which is 00:00 in Beijing', () => {
+    const iso = (value: string) =>
+      beisenCommon.nextBeijingMidnight({ now: new Date(value) }).toISOString();
+
+    expect(iso('2026-10-03T15:59:59.999Z')).toBe('2026-10-03T16:00:00.000Z');
+    expect(iso('2026-10-03T16:00:00.000Z')).toBe('2026-10-04T16:00:00.000Z');
+    expect(iso('2026-10-03T00:00:00.000Z')).toBe('2026-10-03T16:00:00.000Z');
+    expect(iso('2026-12-31T20:00:00.000Z')).toBe('2027-01-01T16:00:00.000Z');
   });
 });
 

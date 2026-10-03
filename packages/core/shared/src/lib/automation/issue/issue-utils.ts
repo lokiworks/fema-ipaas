@@ -1,4 +1,4 @@
-import { isNil } from '@fema-ipaas/core-utils'
+import { blockedUntilMarker, isNil } from '@fema-ipaas/core-utils'
 import { errorHandlingUtils, ExecutionStatus, FailedStep } from '@fema-ipaas/workflow-core'
 import { Issue, IssueKind, IssueSeverity } from './issue'
 import { IssueFix, IssueFixKind, IssueInsight, IssueInsightCause, ReplayReason } from './issue-requests'
@@ -12,6 +12,7 @@ export const issueUtils = {
     isAuthorizationHttpStatus,
     isRejectedByTargetHttpStatus,
     isRepeatAttempt,
+    activeBlockedUntil,
 }
 
 function classifyFailure({ workflowId, executionStatus, failedStep }: ClassifyFailureParams): FailureClassification {
@@ -60,7 +61,7 @@ function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
     return IssueSeverity.LOW
 }
 
-function insightOf({ issue, connectionHealthy, connectionMissing = false }: InsightOfParams): IssueInsight {
+function insightOf({ issue, connectionHealthy, connectionMissing = false, now = new Date() }: InsightOfParams): IssueInsight {
     if (issue.kind === IssueKind.DRIFT) {
         return {
             cause: IssueInsightCause.RESULT_MISMATCH,
@@ -79,6 +80,16 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false }: Insi
                 ...(connectionHealthy || connectionMissing ? [] : [fix({ kind: IssueFixKind.REAUTHORIZE_CONNECTION })]),
                 fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: replayBlocked }),
             ],
+        }
+    }
+    const blockedUntil = activeBlockedUntil({ message: issue.message, now })
+    if (!isNil(blockedUntil)) {
+        return {
+            cause: IssueInsightCause.BLOCKED_UNTIL,
+            confidence: 0.95,
+            httpStatus: httpStatusOf(issue.errorCode),
+            blockedUntil: blockedUntil.toISOString(),
+            fixes: [fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: ReplayReason.BLOCKED_UNTIL }), fix({ kind: IssueFixKind.IGNORE })],
         }
     }
     if (issue.errorCode === STEP_TIMEOUT_CODE) {
@@ -146,6 +157,11 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false }: Insi
     }
 }
 
+function activeBlockedUntil({ message, now }: { message: string | null | undefined, now: Date }): Date | null {
+    const until = blockedUntilMarker.parse(message)
+    return !isNil(until) && until.getTime() > now.getTime() ? until : null
+}
+
 function isTransientHttpStatus(errorCode: string | null | undefined): boolean {
     const status = httpStatusOf(errorCode)
     return !isNil(status) && TRANSIENT_HTTP_STATUSES.includes(status)
@@ -204,9 +220,10 @@ type ClassifyFailureParams = {
 }
 
 type InsightOfParams = {
-    issue: Pick<Issue, 'kind' | 'errorCode'>
+    issue: Pick<Issue, 'kind' | 'errorCode'> & Partial<Pick<Issue, 'message'>>
     connectionHealthy: boolean
     connectionMissing?: boolean
+    now?: Date
 }
 
 export type FailureClassification = {

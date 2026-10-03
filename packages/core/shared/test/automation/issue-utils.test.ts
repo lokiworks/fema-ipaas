@@ -1,3 +1,4 @@
+import { blockedUntilMarker } from '@fema-ipaas/core-utils'
 import {
     ExecutionStatus,
     IssueFixKind,
@@ -156,5 +157,54 @@ describe('issueUtils drift issues', () => {
     it('treats a drift as high severity from the first occurrence and explains it as a result mismatch', () => {
         expect(issueUtils.severityOf({ kind: IssueKind.DRIFT, occurrences: 1 })).toBe(IssueSeverity.HIGH)
         expect(issueUtils.insightOf({ issue: { kind: IssueKind.DRIFT, errorCode: 'RESULT_MISMATCH' }, connectionHealthy: true }).cause).toBe(IssueInsightCause.RESULT_MISMATCH)
+    })
+})
+
+describe('issueUtils blocked-until marker', () => {
+    const until = new Date('2026-10-03T16:00:00.000Z')
+    const message = blockedUntilMarker.attach({ message: 'HTTP 429: Beisen API rate limit exceeded', until })
+    const issue = { kind: IssueKind.STEP, errorCode: 'HTTP_429', message }
+
+    it('keeps the issue signature on the error code, not on the marker', () => {
+        const failedStep = { name: 'step_1', displayName: '取数', message: JSON.stringify({ __apErrorVersion: 1, message, status: 429 }) }
+        const first = issueUtils.classifyFailure({ workflowId: 'wf1', executionStatus: ExecutionStatus.FAILED, failedStep })
+        const later = issueUtils.classifyFailure({
+            workflowId: 'wf1',
+            executionStatus: ExecutionStatus.FAILED,
+            failedStep: { ...failedStep, message: JSON.stringify({ __apErrorVersion: 1, message: blockedUntilMarker.attach({ message: 'HTTP 429: Beisen API rate limit exceeded', until: new Date('2026-10-04T16:00:00.000Z') }), status: 429 }) },
+        })
+        expect(first.signature).toBe('wf1:step_1:HTTP_429')
+        expect(later.signature).toBe(first.signature)
+        expect(first.message.split('\n')[0]).toBe('HTTP 429: Beisen API rate limit exceeded')
+        expect(blockedUntilMarker.parse(first.message)?.toISOString()).toBe(until.toISOString())
+    })
+
+    it('tells the reader not to retry before the marked time', () => {
+        const insight = issueUtils.insightOf({ issue, connectionHealthy: true, now: new Date('2026-10-03T05:30:00.000Z') })
+        expect(insight.cause).toBe(IssueInsightCause.BLOCKED_UNTIL)
+        expect(insight.blockedUntil).toBe(until.toISOString())
+        expect(insight.httpStatus).toBe(429)
+        const kinds = insight.fixes.map((fix) => fix.kind)
+        expect(kinds).not.toContain(IssueFixKind.OPEN_STEP_ERROR_HANDLING)
+        expect(insight.fixes.find((fix) => fix.kind === IssueFixKind.REPLAY_FROM_FAILED_STEP)?.disabledReason).toBe(ReplayReason.BLOCKED_UNTIL)
+    })
+
+    it('is still blocked one millisecond before the marked time and free at it', () => {
+        const justBefore = issueUtils.insightOf({ issue, connectionHealthy: true, now: new Date(until.getTime() - 1) })
+        const atTime = issueUtils.insightOf({ issue, connectionHealthy: true, now: until })
+        expect(justBefore.cause).toBe(IssueInsightCause.BLOCKED_UNTIL)
+        expect(atTime.cause).toBe(IssueInsightCause.RATE_LIMITED)
+        expect(atTime.blockedUntil ?? null).toBeNull()
+    })
+
+    it('falls back to the plain rate-limit advice when there is no marker', () => {
+        const insight = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_429', message: 'HTTP 429: slow down' }, connectionHealthy: true })
+        expect(insight.cause).toBe(IssueInsightCause.RATE_LIMITED)
+    })
+
+    it('exposes the active window and ignores a passed one', () => {
+        expect(issueUtils.activeBlockedUntil({ message, now: new Date('2026-10-03T00:00:00.000Z') })?.toISOString()).toBe(until.toISOString())
+        expect(issueUtils.activeBlockedUntil({ message, now: new Date('2026-10-04T00:00:00.000Z') })).toBeNull()
+        expect(issueUtils.activeBlockedUntil({ message: undefined, now: new Date() })).toBeNull()
     })
 })

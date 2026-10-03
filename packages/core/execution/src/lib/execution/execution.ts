@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ErrorCode } from '@fema-ipaas/core-utils'
 import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
-import { isNil, truncateString, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
+import { blockedUntilMarker, isNil, truncateString, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
 import { ExecutionState, RunInternalError } from './state/execution-output'
 import { ExecutionStatus } from './state/workflow-execution'
 
@@ -19,19 +19,28 @@ export function truncateFailedStepMessage(
 function shortenFailedStepMessage(message: string): string {
     const friendly = tryParseFriendlyConnectorError(message)
     if (isNil(friendly)) {
-        return truncateString({ value: message, maxLength: FAILED_STEP_MESSAGE_MAX_LENGTH })
+        return truncateKeepingBlockedUntil({ value: message, maxLength: FAILED_STEP_MESSAGE_MAX_LENGTH })
     }
     const { raw: _raw, responseBody: _responseBody, responseHeaders: _responseHeaders, requestBody: _requestBody, ...summary } = friendly
     const compact = JSON.stringify({
         ...summary,
-        message: truncateString({ value: summary.message, maxLength: FRIENDLY_SUMMARY_MESSAGE_MAX_LENGTH }),
+        message: truncateKeepingBlockedUntil({ value: summary.message, maxLength: FRIENDLY_SUMMARY_MESSAGE_MAX_LENGTH }),
     })
     return compact.length <= FAILED_STEP_MESSAGE_MAX_LENGTH
         ? compact
-        : truncateString({ value: summary.message, maxLength: FAILED_STEP_MESSAGE_MAX_LENGTH })
+        : truncateKeepingBlockedUntil({ value: summary.message, maxLength: FAILED_STEP_MESSAGE_MAX_LENGTH })
+}
+
+function truncateKeepingBlockedUntil({ value, maxLength }: { value: string, maxLength: number }): string {
+    const until = blockedUntilMarker.parse(value)
+    if (isNil(until)) {
+        return truncateString({ value, maxLength })
+    }
+    return blockedUntilMarker.attach({ message: truncateString({ value: blockedUntilMarker.strip(value), maxLength: maxLength - BLOCKED_UNTIL_MARKER_RESERVE }), until })
 }
 
 const FRIENDLY_SUMMARY_MESSAGE_MAX_LENGTH = 400
+const BLOCKED_UNTIL_MARKER_RESERVE = 50
 
 export const PARENT_RUN_ID_HEADER = 'ap-parent-run-id'
 export const FAIL_PARENT_ON_FAILURE_HEADER = 'ap-fail-parent-on-failure'

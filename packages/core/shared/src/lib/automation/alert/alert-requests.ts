@@ -32,11 +32,12 @@ export const UpsertAlertPolicyRequestBody = z.object({
     failureRate: FailureRateCondition.nullable(),
     capacityThresholdPercent: z.number().int().refine(isCapacityThreshold, 'invalidCapacityThreshold').nullable().optional(),
     groupWindowMinutes: z.number().int('alertGroupWindowOutOfRange').min(1, 'alertGroupWindowOutOfRange').max(1440, 'alertGroupWindowOutOfRange'),
-    quietHours: QuietHours,
+    quietHours: QuietHours.default({ enabled: false, from: '22:00', to: '08:00', timezone: 'UTC' }),
     escalation: AlertEscalation,
     channelIds: z.array(z.string()).min(1, 'alertPolicyChannelsRequired'),
 })
 export type UpsertAlertPolicyRequestBody = z.infer<typeof UpsertAlertPolicyRequestBody>
+export type UpsertAlertPolicyRequestInput = z.input<typeof UpsertAlertPolicyRequestBody>
 
 export const ListAlertRecordsRequestQuery = z.object({
     cursor: z.string().optional(),

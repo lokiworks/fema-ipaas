@@ -46,6 +46,7 @@ export enum ReplayReason {
     ALREADY_RETRIED = 'ALREADY_RETRIED',
     WORKFLOW_DELETED = 'WORKFLOW_DELETED',
     FAILED_STEP_MISSING = 'FAILED_STEP_MISSING',
+    BLOCKED_UNTIL = 'BLOCKED_UNTIL',
 }
 
 export enum IssueInsightCause {
@@ -58,6 +59,7 @@ export enum IssueInsightCause {
     ACCESS_DENIED = 'ACCESS_DENIED',
     UPSTREAM_ERROR = 'UPSTREAM_ERROR',
     STEP_ERROR = 'STEP_ERROR',
+    BLOCKED_UNTIL = 'BLOCKED_UNTIL',
     RESULT_MISMATCH = 'RESULT_MISMATCH',
 }
 
@@ -168,6 +170,7 @@ export const ReplayCheckItem = z.object({
     reason: z.enum(ReplayReason),
     connectionExternalId: z.string().nullable(),
     rawDataExpired: z.boolean(),
+    blockedUntil: z.string().nullable().optional(),
 })
 export type ReplayCheckItem = z.infer<typeof ReplayCheckItem>
 
@@ -192,6 +195,7 @@ export const IssueInsight = z.object({
     cause: z.enum(IssueInsightCause),
     confidence: z.number(),
     httpStatus: z.number().nullable(),
+    blockedUntil: z.string().nullable().optional(),
     fixes: z.array(IssueFix),
 })
 export type IssueInsight = z.infer<typeof IssueInsight>

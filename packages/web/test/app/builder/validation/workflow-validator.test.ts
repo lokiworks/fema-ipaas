@@ -534,3 +534,72 @@ describe('untested write steps', () => {
     expect(codes(ctx(writeStep(), feishuSpec))).toEqual([]);
   });
 });
+
+describe('workflowValidator.writeSteps', () => {
+  const specWith = (
+    classifications: Record<string, 'READ' | 'WRITE' | 'DESTRUCTIVE'>,
+  ): ConnectorSpec => ({
+    status: ConnectorSpecStatus.LOADED,
+    requiresAuth: true,
+    actions: Object.fromEntries(
+      Object.entries(classifications).map(([name, classification]) => [
+        name,
+        { requiresAuth: true, classification, props: [] },
+      ]),
+    ),
+    triggers: {},
+  });
+
+  it('lists the steps that write or destroy data and skips reads', () => {
+    const trigger = webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        actionName: 'find',
+        nextAction: connectorAction({
+          name: 'step_2',
+          actionName: 'send',
+          nextAction: connectorAction({ name: 'step_3', actionName: 'remove' }),
+        }),
+      }),
+    });
+    const steps = workflowValidator.writeSteps({
+      trigger,
+      connectors: {
+        '@fema-ipaas/connector-feishu': specWith({
+          find: 'READ',
+          send: 'WRITE',
+          remove: 'DESTRUCTIVE',
+        }),
+      },
+    });
+    expect(steps.map((step) => [step.stepName, step.destructive])).toEqual([
+      ['step_2', false],
+      ['step_3', true],
+    ]);
+  });
+
+  it('ignores skipped steps and connectors that are not loaded yet', () => {
+    const trigger = webhookTrigger({
+      nextAction: {
+        ...connectorAction({ name: 'step_1', actionName: 'send' }),
+        skip: true,
+      },
+    });
+    expect(
+      workflowValidator.writeSteps({
+        trigger,
+        connectors: {
+          '@fema-ipaas/connector-feishu': specWith({ send: 'WRITE' }),
+        },
+      }),
+    ).toEqual([]);
+    expect(
+      workflowValidator.writeSteps({
+        trigger: webhookTrigger({
+          nextAction: connectorAction({ name: 'step_1', actionName: 'send' }),
+        }),
+        connectors: {},
+      }),
+    ).toEqual([]);
+  });
+});

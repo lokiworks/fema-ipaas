@@ -29,5 +29,6 @@ const EMPTY_VALIDATION: WorkflowValidationState = {
   issues: [],
   errorCount: 0,
   warningCount: 0,
+  writeSteps: [],
   isLoading: false,
 };

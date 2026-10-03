@@ -18,6 +18,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -234,6 +235,11 @@ function DebugForm({
             )}
           />
         )}
+        <WriteStepsNotice
+          isTestEnvironment={
+            project.releasesEnabled && environment === RunEnvironment.TESTING
+          }
+        />
         {project.releasesEnabled &&
           (environment === RunEnvironment.PRODUCTION ? (
             <Alert variant="warning">
@@ -255,6 +261,49 @@ function DebugForm({
         </DialogFooter>
       </form>
     </Form>
+  );
+}
+
+function WriteStepsNotice({
+  isTestEnvironment,
+}: {
+  isTestEnvironment: boolean;
+}) {
+  const { writeSteps } = useBuilderValidation();
+  if (writeSteps.length === 0) {
+    return null;
+  }
+  const shown = writeSteps.slice(0, MAX_WRITE_STEPS_SHOWN);
+  const hasDestructive = writeSteps.some((step) => step.destructive);
+  return (
+    <Alert
+      variant={isTestEnvironment && !hasDestructive ? 'default' : 'warning'}
+    >
+      <TriangleAlert className="size-4" />
+      <AlertDescription className="flex flex-col gap-1">
+        <span className="font-medium">
+          {t(
+            'This run can write to the connected systems: up to {count, plural, =1 {1 write step} other {# write steps}}',
+            { count: writeSteps.length },
+          )}
+        </span>
+        <span className="text-xs">
+          {shown
+            .map((step) =>
+              step.destructive
+                ? t('{name} (may be irreversible)', { name: step.displayName })
+                : step.displayName,
+            )
+            .join(', ')}
+          {writeSteps.length > MAX_WRITE_STEPS_SHOWN ? '…' : ''}
+        </span>
+        <span className="text-xs">
+          {t(
+            'Branches decide which of them actually run. Debugging does not publish the workflow, but these steps are not simulated.',
+          )}
+        </span>
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -332,6 +381,8 @@ function isJson(value: string): boolean {
 }
 
 const CONNECTION_PATTERN = /connections\['([^']+)'\]/g;
+
+const MAX_WRITE_STEPS_SHOWN = 5;
 
 const DebugSchema = z.object({
   payload: z.string().refine(isJson, 'debugPayloadInvalidJson'),

@@ -43,6 +43,38 @@ function summarize(issues: ValidationIssue[]): ValidationResult {
   };
 }
 
+function writeSteps({
+  trigger,
+  connectors,
+}: {
+  trigger: WorkflowTrigger;
+  connectors: Record<string, ConnectorSpec | undefined>;
+}): WriteStep[] {
+  return collectSteps(trigger)
+    .filter(({ step }) => !isSkipped(step))
+    .flatMap(({ step }) => {
+      if (step.type !== WorkflowActionType.CONNECTOR) {
+        return [];
+      }
+      const connector = connectors[step.settings.connectorName];
+      if (connector?.status !== ConnectorSpecStatus.LOADED) {
+        return [];
+      }
+      const classification =
+        connector.actions[step.settings.actionName ?? '']?.classification;
+      return classification === WRITE_CLASSIFICATION ||
+        classification === DESTRUCTIVE_CLASSIFICATION
+        ? [
+            {
+              stepName: step.name,
+              displayName: step.displayName,
+              destructive: classification === DESTRUCTIVE_CLASSIFICATION,
+            },
+          ]
+        : [];
+    });
+}
+
 function issuesForStep({
   result,
   stepName,
@@ -815,6 +847,7 @@ function issue({
 
 export const workflowValidator = {
   validate,
+  writeSteps,
   issuesForStep,
   firstTabWithError,
   collectSteps,
@@ -937,6 +970,12 @@ export type ValidationIssue = {
   tab: ValidationTab;
   severity: ValidationSeverity;
   params: Record<string, string>;
+};
+
+export type WriteStep = {
+  stepName: string;
+  displayName: string;
+  destructive: boolean;
 };
 
 export type ValidationResult = {

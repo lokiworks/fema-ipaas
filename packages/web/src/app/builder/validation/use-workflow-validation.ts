@@ -29,6 +29,7 @@ import {
   ConnectorSpecStatus,
   OperationSpec,
   ValidationResult,
+  WriteStep,
   workflowValidator,
 } from './workflow-validator';
 
@@ -132,11 +133,16 @@ export function useValidationFor(
     [trigger, connectors, connections, mappingTableIds, variableNames],
   );
 
+  const writeSteps = useMemo(
+    () => workflowValidator.writeSteps({ trigger, connectors }),
+    [trigger, connectors],
+  );
+
   const isLoading =
     connectorQueries.some((query) => query.isLoading) ||
     connectionsQuery.isLoading;
 
-  return { ...result, isLoading };
+  return { ...result, writeSteps, isLoading };
 }
 
 function connectorRefsOf(trigger: WorkflowTrigger): ConnectorRef[] {
@@ -211,6 +217,7 @@ const IGNORED_PROP_TYPES: PropertyType[] = [
 ];
 
 export type WorkflowValidationState = ValidationResult & {
+  writeSteps: WriteStep[];
   isLoading: boolean;
 };
 

@@ -56,6 +56,7 @@ import {
 import { formUtils } from '@/features/connectors';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { cn } from '@/lib/utils';
 
 import { BasicAuthConnectionSettings } from './basic-secret-connection-settings';
 import { CustomAuthConnectionSettings } from './custom-auth-connection-settings';
@@ -267,6 +268,18 @@ function CreateOrEditConnectionSection({
             >
               {errorMessage}
             </FormError>
+          )}
+          {isPending && (
+            <p
+              role="status"
+              className={cn('text-xs text-muted-foreground', {
+                'px-5': !isInline,
+              })}
+            >
+              {t(
+                'Verifying the credentials with the app. This usually takes a few seconds, and the first time can take a minute or two.',
+              )}
+            </p>
           )}
           {isInline ? (
             <div className="mt-0 flex gap-2 w-full">

@@ -1,0 +1,124 @@
+---
+title: "Operations Reference"
+description: "Scheduled jobs, the settings that matter most, upgrade and migration notes, and where to look when something breaks"
+icon: "clipboard-list"
+---
+
+This page is for the person who runs the instance. It covers what the platform does on its own schedule, the settings that change behaviour for the people-sync and reliability features, what to expect from database migrations, and the operational problems that come up first.
+
+## Scheduled jobs
+
+The platform runs a fixed set of background jobs. They need no setup, they cannot be switched off from the interface, and they are registered under a fixed id in Redis, so running several app containers does not run a job twice. **All schedules below are in UTC.**
+
+| Job | Schedule (UTC) | What it does |
+|---|---|---|
+| `verify-recent-results` | Daily 03:37 | Reads Feishu back for production runs that succeeded in the last 72 hours and opens a **Result mismatch** issue where Feishu differs. Only reads. See [Reliability](/workflows/reliability#read-back-verification) |
+| `alert-sweep` | Every minute | Sends alerts that were held back by a grouping window or quiet hours, escalates issues nobody picked up, and checks the failure-rate and capacity thresholds of every enabled alert policy |
+| `agent-approval-expiry` | Every minute | Expires agent approval requests that passed their deadline |
+| `file-cleanup-trigger` | Hourly at :30 | Deletes run logs, step files, trigger and webhook payloads past their retention: `FEMA_EXECUTION_DATA_RETENTION_DAYS`, or a shorter period set for the project or in the tenant's privacy settings |
+| `raw-state-purge` | Hourly at :17 | Deletes the unmasked state of finished runs once it is older than the tenant's **Keep unmasked originals for** setting (1, 3 or 7 days, 3 by default). After that, runs can only be replayed as a whole |
+| `data-store-expiry-purge` | Hourly at :41 | Deletes data store records past their expiry |
+| `audit-event-retention` | Daily 03:41 | Deletes audit events past their retention |
+| `notification-retention` | Daily 04:17 | Deletes in-app notifications past their retention |
+| `weekly-digest` | Mondays 08:00 | Emails a weekly summary to members who turned it on. Does nothing without SMTP |
+| `run-telemetry` | Daily 23:50 | Reports anonymous per-day run counts. Does nothing unless `FEMA_TELEMETRY_ENABLED` is `true` |
+| `connectors-sync` | Hourly, at a random minute from 0 to 4 | Syncs connector metadata from the connector registry. Skipped, and deletes nothing, when `FEMA_CONNECTOR_REGISTRY_URL` is not set or `FEMA_CONNECTORS_SYNC_MODE` is `NONE` |
+
+Other jobs run on demand and are not scheduled: deleting a workflow, deleting a project or tenant, resuming a delayed run, and personal-data erasure requests.
+
+Polling triggers, such as the Beisen **Employee Changed** trigger, are not system jobs. Each enabled workflow with a polling trigger checks every `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` minutes.
+
+## Settings that matter
+
+Everything is listed in [Environment Variables](/install/reference/environment-variables). These are the ones that change what operators see in this release.
+
+| Variable | Why it matters | Default |
+|---|---|---|
+| `FEMA_FRONTEND_URL` | Builds invitation links, webhook URLs and the OAuth2 redirect `<FEMA_FRONTEND_URL>/redirect`. Open the platform at this exact address when you authorize a connection | none, required |
+| `FEMA_SMTP_HOST`, `FEMA_SMTP_PORT` | Without them, invitations are handed over as a copyable link, the **Email** alert channel is unavailable and the weekly digest is not sent | none |
+| `FEMA_SSRF_ALLOW_LIST` | An alert **Webhook** channel or any outbound call to a private address is blocked unless the address is listed here | none |
+| `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` | Minutes between checks for polling triggers such as the Beisen one | `5` |
+| `FEMA_TRIGGER_TIMEOUT_SECONDS` | Longest a single polling check may run | `60` |
+| `FEMA_WORKFLOW_TIMEOUT_SECONDS` | Longest a run may take. A run that exceeds it ends as a timeout and now creates an issue | `600` |
+| `FEMA_EXECUTION_DATA_RETENTION_DAYS` | How long run logs and step data are kept | `30` |
+| `FEMA_ENABLE_WORKFLOW_ON_PUBLISH` | Whether publishing a workflow also enables it. Installed solutions are drafts; with `false`, enable each one after publishing | `true` |
+| `FEMA_SHOW_COMMUNITY` | Shows the "Help translate" link and the support entries that point at an external community. Off by default. See [Breaking Changes](/install/reference/breaking-changes) | `false` |
+| `FEMA_DEFAULT_LANGUAGE` | Language of names the server generates, such as the first tenant and project. `zh` or `en` | `zh` |
+| `FEMA_BEISEN_BASE_URL`, `FEMA_FEISHU_BASE_URL` | Point the connectors at a private gateway or a test double instead of `https://openapi.italent.cn` and the region chosen in the connection. The Feishu variable wins over the region. The connectors run in a sandbox, so also list both names in `FEMA_SANDBOX_PROPAGATED_ENV_VARS` | Beisen: `https://openapi.italent.cn` |
+| `FEMA_CONNECTOR_REGISTRY_URL`, `FEMA_DEV_CONNECTORS` | The Beisen and Feishu connectors are built into the image. Do not set `FEMA_DEV_CONNECTORS` in production, or only the listed connectors load | none |
+| `FEMA_EXECUTION_MODE` | Built-in connectors, including Beisen and Feishu, run in `UNSANDBOXED` and `SANDBOX_CODE_ONLY`. The isolate modes do not carry them yet | `UNSANDBOXED` |
+
+<Note>
+There is no setting for the daily read-back verification, for the official solution in the solution library, or for the alert history kept after a policy is deleted. They are always on.
+</Note>
+
+## Upgrades and migrations
+
+Migrations run automatically when the app starts, one migration per transaction. The first start after an upgrade waits for them, so plan a window if you have a large database.
+
+Release 0.89.0 adds these migrations:
+
+| Migration | Flagged breaking | Notes |
+|---|---|---|
+| `AddIssuesAlertsAndPrivacy`, `AddReleasesAndEnvironments`, `AddMappingTables`, `AddAiUsageAndMcpServices`, `MaskLogsBeforeWrite`, `AddTestDeployments`, `AddDataErasureRequests`, `AddAgentApprovals` | no | Create tables and columns |
+| `DesignDocRolloutSchema` | **yes** | Creates many tables and changes existing data: removes every no-code connector (`connector_blueprint`), sets every connection's member permission to **Can Edit**, grants non-admin users the MCP services module, and replaces a few unique indexes |
+| `AddExecutionBusinessKey` | no | Adds `execution."businessKey"` and an index. Runs **outside a transaction** and builds the index with `CREATE INDEX CONCURRENTLY` |
+| `AddExecutionIndexesConcurrently` | no | Builds four indexes on `execution` (`idx_execution_issue_id`, `idx_run_raw_state_purge`, `idx_execution_rerun_of_execution_id`, `idx_execution_verification_candidates`). Runs **outside a transaction** with `CREATE INDEX CONCURRENTLY` so writes are not blocked |
+| `AddSolutions`, `AddSolutionInstallWorkflowKeys` | no | Create `solution`, `solution_version` and `solution_install`, and add `solution_install."workflowKeys"` |
+| `KeepAlertRecordsAfterPolicyDeletion` | **yes** | Removes the foreign key from `alert_record` to `alert_policy`, so deleting a policy keeps its alert history. Reverting it deletes the history rows of policies that no longer exist |
+
+### Indexes on a large `execution` table
+
+The `execution` table is the biggest table in most installations. `AddExecutionBusinessKey` adds a nullable column, which is instant, and then builds an index, and `AddExecutionIndexesConcurrently` builds four more. Because they build with `CREATE INDEX CONCURRENTLY`, runs keep being written while it works, but it takes longer than a normal index and the app does not finish starting until it ends. Expect minutes on tens of millions of rows.
+
+If the migration is interrupted (the container was stopped, the database restarted), PostgreSQL leaves an **invalid** index behind, and the next start sees the index name already exists and moves on. Find and drop it (the name of each index is in the table above), then start again:
+
+```sql
+SELECT indexrelid::regclass FROM pg_index WHERE NOT indisvalid;
+DROP INDEX CONCURRENTLY IF EXISTS "idx_execution_project_business_key";
+-- likewise for any invalid index created by AddExecutionIndexesConcurrently
+```
+
+Embedded PGLite builds the index without `CONCURRENTLY`.
+
+### Rolling back
+
+`npm run rollback -- --to 0.88.3` reverts every migration of 0.89.0. Two of them are flagged breaking, so the command asks you to repeat it with `--force`. Take a backup first, see [Rollback](/install/configure-operate/rollback). Reverting is a data-loss operation: it drops everything that 0.89.0 created, among others issues and alerts, mapping tables, the business keys of runs and the solution tables with every install record. Restoring the backup is usually the safer way back.
+
+## When something breaks
+
+### Beisen answers 403
+
+The server's outbound IP is not on Beisen's trusted IP list. Add the outbound IP, or the whole range if it changes, to the connector in Beisen Open Platform. If you changed cloud, node or NAT recently, the IP changed too.
+
+### Beisen answers 429
+
+Beisen allows a fixed number of calls per tenant per interface and cannot raise the limit. After it is exceeded it refuses everything until 00:00 the next day. The platform shows this as a trigger issue that tells you to wait. Nothing is lost: the first successful check afterwards covers the whole gap.
+
+### Feishu answers 403, or says the department is not in scope
+
+Feishu errors 99991672 (missing permission) arrive as HTTP 403, and 40004 and 41050 mean the department or member is outside the app's contact scope. The error names the permission or scope. A Feishu administrator adds it, publishes a new app version and approves it. Then replay the issue.
+
+### Read-back verification reports "could not be read"
+
+The Feishu app cannot read the member: usually a missing permission or a department outside the contact scope, sometimes the network. The reason is in the check result and in the server log (`[verificationService#runForAllProjects] Verification failed` when a whole project failed). Nothing was changed in Feishu.
+
+### Invitations do not arrive
+
+Without SMTP nothing is emailed; the **Invite member** dialog shows a link to copy, valid for 7 days. Configure `FEMA_SMTP_HOST` and `FEMA_SMTP_PORT` to send mail. An invitation link that no longer verifies returns `404`.
+
+### An alert channel does not deliver
+
+Email channels show **Unavailable (SMTP missing)** until SMTP is configured. A Webhook channel to an internal address is blocked by the outbound filter, so add the address to `FEMA_SSRF_ALLOW_LIST`. **Send test message** on the channel shows the error.
+
+### Authorizing a connection opens a popup that never completes
+
+The popup hands the authorization code back only to the page that opened it, and that page must be served from `FEMA_FRONTEND_URL`. If you opened the platform through another name or an IP address, open it through the configured address and try again.
+
+### Searching a business key is slow
+
+The search matches part of the value (`ILIKE '%…%'`). Managed PostgreSQL offers no trigram extension to speed that up, so the platform narrows the rows by project and time range first and then scans them. Keep the time range short; a long range with a very short search term is the slow case.
+
+### Numbers differ between the interface and an API script
+
+Day ranges such as **Last 7 days** count calendar days ending today in the viewer's time zone. API calls that omit the `timezone` query parameter count in UTC.

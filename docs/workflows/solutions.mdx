@@ -1,0 +1,92 @@
+---
+title: "Solutions"
+icon: "box-open"
+description: "Install a ready-made set of workflows and mapping tables into a project, and package your own for other projects"
+---
+
+A **solution** (方案) is a versioned package of workflows, mapping tables, settings to fill in and checks to pass. Someone who installs it picks their own connections and values, and gets a set of workflows in their project that are ready to test. It is how a setup that works in one project is repeated in another without copying things by hand.
+
+<Note>
+Menu names are shown in English, with the Simplified Chinese label in parentheses where the interface defaults to Chinese.
+</Note>
+
+## What is in a solution
+
+| Part | What it holds |
+|---|---|
+| **Workflows** | The published version of each workflow, without connections and without sample data |
+| **Mapping tables** | The structure of each table a workflow looks up (name, key column name, value column name, what to do when a key is missing). The **rows are not included**: whoever installs fills them in |
+| **Configuration** | Values chosen while installing (a dropdown, a choice or a text), each one written into a named step of a named workflow |
+| **Checks** | Things to confirm before installing. A check that the connection works is added automatically and must pass. You can add checks for what an administrator of the other system has to do |
+
+Credentials, variable values and run logs are never packaged.
+
+## Browse and install
+
+Open **Solutions** (方案) in the left sidebar. It is a page of its own, not part of one project. **Solution library** (方案库) lists what you can install, with a category filter, a search over names and connectors, and **Created by me** (我创建的). **Installed solutions** (已安装的方案) lists the installs of the projects you can read, grouped by project. Solutions from the platform carry the **Official** (官方) badge. A fresh installation includes the official [Beisen to Feishu people sync](/workflows/guides/beisen-to-feishu-people-sync); your own solutions appear next to it.
+
+Open a solution to read what it does, which resources it creates, which connections it needs, what to prepare, and its version history, then choose **Install**. The wizard has five steps and you can go back at any time:
+
+<Steps>
+  <Step title="Project (项目)">
+    Choose **Install into project**. Only projects where you can edit workflows are listed. The wizard shows what the project gets, for example 3 workflows and 1 mapping table. Switching to another project clears the connections and acknowledgements you already chose.
+  </Step>
+  <Step title="Connections (连接)">
+    Each system the solution uses needs a connection. Pick one that is available in the chosen project, or choose **Create connection** to make one here. A connection that is not working, no longer exists or is not available in the project is refused with the reason.
+  </Step>
+  <Step title="Configuration (配置)">
+    Fill in the values the solution asks for. Each shows which workflows it affects. A text value cannot be left empty.
+  </Step>
+  <Step title="Checks (安装检查)">
+    The wizard runs the checks. A check marked **Required** (必填) has to pass before you can continue. A **Recommended** (推荐) check can be skipped after you tick **I know about this and want to continue**, and skipped checks are recorded with the install. A check that is not yours to fix shows who handles it, with steps you can copy and send, and **Check again** (重新检查) runs it once more.
+  </Step>
+  <Step title="Confirm (确认)">
+    The preview lists the workflows that will be created and which mapping tables are reused or new. Installing is disabled when the project has no room left for the workflows under its workflow limit.
+  </Step>
+</Steps>
+
+### What the install creates
+
+- **Workflows** as drafts that are **not enabled**. Open each one, debug it, publish it, then it runs. The connections and configuration are already filled in. A workflow name that is already taken in the project gets `(2)`, `(3)`, … appended, so the names on the done page can differ from the preview.
+- **Mapping tables.** A table of the project is reused when its key column name and value column name are the same as the solution's (the table name is not compared). Otherwise a new, empty table is created, and a taken name gets `(2)`, `(3)`, … appended. The done page links to each table.
+- An **install record** (version, configuration, connections, skipped checks, who installed it) that the **Installed solutions** tab shows.
+
+Installing needs permission to edit workflows in the target project: the **Developer** or **Admin** role, the project owner, or a tenant admin.
+
+## Create a solution from a project
+
+Choose **Create solution from project** (基于项目生成方案) on the Solutions page. Only **published** workflows can be packaged.
+
+1. Pick the **Source project** (来源项目) and the **Published workflows to include**.
+2. Write a name (up to 60 characters) and a summary (up to 300): what problem it solves and what happens after installing. Choose a category, or type a new one.
+3. Choose **Who can see it** (可见范围): **Everyone in the organization** (本企业所有成员), or **Members of the source project** (来源项目的成员).
+4. Add checks if the installer has to prepare something first, for example "the app's contact scope covers the departments to sync", and who handles it (**Who handles it**). Connection checks are added for you.
+5. Choose **Create solution**. The first version is `1.0`.
+
+The mapping tables the workflows use are packaged without rows, and connections and sample data are stripped from the workflows.
+
+## Versions and upgrades
+
+Only the person who created a solution can publish a new version, and only a solution made from a project can be repackaged. Open it and choose **Publish new version** (发布新版本), describe **What changed in this version**, and the published workflows of the source project are packaged again as `1.1`, `1.2` and so on. The set of workflows stays the same as in the first version, and the checks and configuration are kept. Every version is kept and listed under **Version history** (版本记录).
+
+Projects that installed an older version see **Upgrade** (升级) on the Installed solutions tab and on the solution's page. An upgrade:
+
+- **Replaces the drafts** of the solution's workflows with the new version. Edits in those drafts that were never published are lost. What is running now is not touched until you publish.
+- Creates a new workflow for each workflow the new version adds, and leaves in place any workflow the new version dropped.
+- Keeps the connections, the configuration and the contents of the mapping tables. A mapping table the new version needs that the project does not have is created. The connections chosen at install are reused as they are: a step that needs a connection the earlier version did not use is left without one, so open it and choose a connection before publishing.
+- Is refused when the project would exceed its workflow limit, or when you cannot edit workflows in the project.
+
+Test the upgraded drafts, then publish them.
+
+<Warning>
+An upgrade overwrites drafts. If someone is editing one of the solution's workflows, let them publish or copy their work first.
+</Warning>
+
+## Permissions at a glance
+
+| Action | Needs |
+|---|---|
+| See the library and a solution | Any member of the tenant. A solution is visible if it is official, visible to everyone, made by you, or limited to a project you can read |
+| Install or upgrade | Permission to edit workflows in the target project |
+| Create a solution | Permission to edit workflows in the source project |
+| Publish a new version | Be the person who created the solution |

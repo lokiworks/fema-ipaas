@@ -1,0 +1,164 @@
+---
+title: "Reliability"
+icon: "shield-check"
+description: "How the platform shows what failed, helps you recover it, and checks that what a run wrote is still there"
+---
+
+A workflow that ran is not the same as a result that is correct. This page covers the tools that close that gap: the **Issue Center** for failures, **replay** to recover them, **business keys** to find everything that happened to one person or one document, **read-back verification** to catch results that changed afterwards, and **alerts** so someone is told.
+
+<Note>
+Menu names are shown in English, with the Simplified Chinese label in parentheses where the interface defaults to Chinese.
+</Note>
+
+## The Issue Center
+
+Failed **production** runs are grouped by cause into **issues** (问题). Ten runs that fail for the same reason are one issue and one alert, not ten. Test runs from the editor never create issues.
+
+Open it from **Issues** (问题) in the left sidebar. The page lists the 50 most recent unresolved issues across every project you can see, with the project, the impact and the status; open a project to see all of its issues. Open an issue to see the root cause, the affected runs, a trend and a history of notes and activity.
+
+An issue is one of three kinds:
+
+| Kind | Grouped by | Typical cause |
+|---|---|---|
+| **Step issue** (节点问题) | Workflow, step and error code (`HTTP_<status>`, `STEP_TIMEOUT`, `STEP_FAILED`) | The other system rejected data, timed out, or returned a server error |
+| **Connection issue** (连接问题) | The connection | The connection was refused or expired. Every workflow that uses it lands in the same issue |
+| **Result mismatch** (结果对不上) | Workflow and step | Read-back verification found the other system differs from what the run wrote |
+
+A few things also create issues that used to pass silently:
+
+- A polling trigger that cannot check for new events, for example because the tenant is rate-limited or the credentials were rejected.
+- A run that timed out or exceeded its memory limit. The failed step is the one still running when the run ended.
+
+### Statuses
+
+| Status | Meaning |
+|---|---|
+| **Open** (未处理) | Needs attention. |
+| **Investigating** (处理中) | Someone has taken it. |
+| **Resolved** (已解决) | Fixed. If the same failure comes back, the issue **reopens** (复发) and alerts again instead of creating a new one. |
+| **Ignored** (忽略) | New failures keep counting but never alert. |
+
+You can also **Assign** (分配) an issue, **Mute** (静默) its alerts for 1, 4 or 24 hours, and leave notes for whoever handles it next.
+
+### Who can do what
+
+Reading issues needs access to the project. Replaying, assigning, muting and resolving need the **Operator** role or higher. The **Alert settings** (告警设置) button is shown to tenant admins only.
+
+## Replay and rerun
+
+From an issue, **Replay failed runs** (批量重跑失败的运行) re-runs the affected runs. Before anything starts, the platform checks every run and sorts it:
+
+| Result | What it means |
+|---|---|
+| **Can be replayed** (可以重跑) | Likely to succeed now: the connection recovered, the workflow or a mapping table it uses changed after the failure, or it was a transient error. |
+| **Data or configuration problem** (数据或配置问题) | The other system rejected the data (HTTP 4xx other than 401, 403 and 429) or nothing changed since the failure. Fix the data there first, because editing the workflow will not change the result. |
+| **Blocked** (被拦下) | The connection the step uses is still broken, or was deleted. Replaying now would only fail again. |
+| **No replay needed** (不需要重跑) | The workflow was deleted, another attempt of the same trigger already succeeded or is running, or a later attempt of the same trigger exists. |
+
+Several attempts of the same trigger count as one, and only the latest is replayed. A 401 or 403 from the other system counts as replayable, because the fix is usually a permission or a credential on their side.
+
+You choose how to replay:
+
+- **Replay from the failed step** (从失败节点重跑): the same run continues from the step that failed. Steps that already succeeded keep their original results. It runs the workflow **version that failed**, so a fix you published since then does not apply.
+- **Replay the whole run on the latest version** (用最新版本整体重跑): a new run starts from the trigger on the newest published version. It may create duplicate data in systems that do not de-duplicate.
+
+Replaying from the failed step needs the run's unmasked saved state. That is kept only for the **Keep unmasked originals for** (原文保留) period under **Data and privacy** (数据与隐私) in the tenant settings: 1, 3 or 7 days, 3 by default. After that, a run can only be replayed as a whole.
+
+You can also rerun single runs from **Run logs** (运行日志): open a run and choose **Rerun from the failed step** or **Rerun the whole run**, or select several rows and use **Batch rerun** (批量重跑). Debug runs, runs that were skipped as duplicates, and subflow runs (they rerun with their parent) cannot be rerun. Every rerun is written to the audit log.
+
+## Issues that close themselves
+
+You do not have to resolve everything by hand. The platform resolves an issue, with no person recorded, when:
+
+| When | What closes |
+|---|---|
+| Every failed run in the issue has been recovered by a successful replay or in-place retry | The issue. One successful replay out of several is not enough, a replay that fails again changes nothing, and an ordinary success does not close it |
+| A polling trigger checks successfully again | Its trigger issues |
+| A read-back check later agrees with the other system | The **Result mismatch** issue |
+| The workflow is deleted | Its open issues. Connection issues are not affected |
+
+If the same failure returns after an issue was resolved, it reopens.
+
+## Business keys
+
+A **business key** is the value that identifies the thing a run is about: an employee number, an approval number, an order number. The platform reads it from the trigger when a run starts and stores it with the run.
+
+To turn it on, open the trigger of a workflow and go to **Run settings** (运行设置), switch on **Skip duplicate events** (跳过重复事件) and fill in the **Dedupe key** (去重键). The key is a path in the trigger output, for example `body.order_no`, or several fields combined:
+
+```text
+{{trigger.recordInfo.jobNumber}}
+{{trigger.recordInfo.jobNumber}}-{{trigger.recordInfo.oIdDepartment}}
+```
+
+The same setting does two jobs, so choose it with both in mind:
+
+- **Duplicate protection.** Events with the same key inside the **Window** (时间窗口: 1 hour, 24 hours, 7 days or 30 days) are processed once. A key that changes when the thing changes lets real changes through: an employee number alone blocks a second department change for the length of the window, while employee number plus department number lets each new department through.
+- **Finding a record.** In **Run logs** the **Business key** (业务标识) column shows the value, and the **Business key** filter finds runs by part of it. Open a run and choose **All logs of this record** (这条记录的全部日志) to see everything that happened to that person or document. The **Log content** (日志内容) search matches business keys too.
+
+Things to know:
+
+- Only triggers with a dedupe key have business keys. Manual runs, test runs and runs from before the upgrade show `-`.
+- Keys are cut to 255 characters. Reruns keep the key of the original run.
+- Searches match part of a value and are slower on long time ranges. Keep the time range short.
+
+## Read-back verification
+
+A run reports success when every step finished. That says the platform did what it was told, not that the other system still holds the result: someone may have changed it by hand, or a later change may have overwritten it. **Read-back verification** reads the result from the other system and compares.
+
+### What it checks
+
+For production runs that succeeded in the last 72 hours and have a business key, it looks at the Feishu steps and reads each account back with **Get Employee**:
+
+| Step | What it compares |
+|---|---|
+| **Provision Employee Account**, **Update Employee** | The department the run set is among the account's departments |
+| **Suspend Employee Account**, **Resume Employee Account** | The account is suspended, or active, as the run left it |
+
+Each account is checked against its **latest** write only, so a hire followed by a transfer is judged by the transfer. An account that no longer exists in Feishu is reported as a difference.
+
+### How it runs
+
+- **Every day at 03:37 UTC** (11:37 in China) for every project that had such runs. No setup is needed.
+- **On demand:** the **Check recent results** (核对最近的结果) button on a project's Issues page. People with the Operator role or higher can press it.
+- It only reads, and it reads with the connection the step used. Per pass it checks up to 200 runs per project.
+- It needs the saved state of each run to know what was written. A run older than the **Keep unmasked originals for** period is skipped, so with the default of 3 days the 72-hour window is covered, and with 1 day only the last day is.
+
+### What you see
+
+| Outcome | Result |
+|---|---|
+| Matches | Nothing. If a **Result mismatch** issue for that step is open and the check now agrees, it closes. |
+| Differs | One **Result mismatch** issue per workflow step, severity **High**. The activity names the employee number and the run. Nothing is rewritten. Open the workflow's runs and rerun if the data in the source is still right. |
+| Could not read | Counted as "could not be read" with the reason (for example a missing Feishu permission). No issue opens. |
+
+### What it can and cannot promise
+
+- It confirms that the other system **right now** holds the department or the suspended state the run last wrote. It does not look at people no run wrote, so it is not a full comparison of Beisen and Feishu.
+- It cannot see what it cannot read. If the Feishu app has no access to a department, an account there reads as unreadable, not as wrong.
+- It checks the fields above only. Names, phone numbers and notification messages are not read back.
+- Without a business key, a run is not checked. Setting the dedupe key on the trigger is what makes a workflow verifiable.
+- A later manual change that is then reverted before the next check leaves no trace.
+
+## Alerts
+
+Open **Issues** and choose **Alert settings** (告警设置) (tenant admins only). It has three tabs: **Alert policies** (告警策略), **Notification channels** (通知渠道) and **Alert history** (告警记录).
+
+1. **Add a channel** (**New channel**): Feishu group bot, WeCom group bot, DingTalk group bot, Slack, Webhook or Email. Save it, then **Send test message**. Email channels are unavailable until SMTP is configured, and a Webhook that points to an internal address must be in `FEMA_SSRF_ALLOW_LIST`.
+2. **Add a policy** (**New alert policy**). It decides when to notify whom:
+
+| Setting | Meaning |
+|---|---|
+| **Trigger when** (触发条件) | A new issue appears, an issue reopens, a connection stops working, the failure rate exceeds a threshold, or monthly runs reach a capacity threshold |
+| **Projects** (项目) | Leave all unchecked to cover every project |
+| **Grouping window** (聚合窗口) | The same issue notifies at most once in this window |
+| **Quiet hours** (静默时段) | Alerts in the window are sent together when it ends. Escalations are not delayed |
+| **Escalate unhandled issues** (未处理时升级) | Notify another channel when an issue stays open and unassigned after the given minutes |
+
+Capacity alerts also send an in-app notification to the project owner and the tenant admins, once per project per month.
+
+How the numbers add up:
+
+- **Merged** (合并次数) on an alert counts only the failures the issue counted, so replays that fail again and duplicate records of one run do not inflate it.
+- Time ranges such as **Last 7 days** are 7 calendar days ending today in your browser's time zone.
+- Deleting a policy stops its alerts at once and **keeps its history**; the rows show **Deleted policy** (已删除的策略).
+- Without any policy, issues still collect in every project but nobody is notified.

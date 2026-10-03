@@ -19,6 +19,7 @@ icon: 🩺
 
 - **「结果对不上」（`IssueKind.DRIFT`）是写后读回核对开的问题，不是失败运行开的。** `verificationService.run`（问题页「核对最近的结果」按钮，每天 03:37 的 `verify-recent-results` 任务也会跑）取项目里最近 72 小时成功的生产运行，要求有业务标识；**每个业务标识只核对它最近一次写入**（先入职后调岗的人只按调岗核对，否则会把正常的部门变化当成差异）。规则在 `verification-rules.ts`：飞书的 `provision_user`、`update_user` 核对部门，`suspend_user`、`resume_user` 核对冻结状态，读回用飞书连接器的只读动作 `get_user`，经 `actionRunService.runConnectorAction` 用原来那个连接去读。不一致就按 `workflowId:步骤:RESULT_MISMATCH` 合并成一个问题，每个人只计一次，活动记录里 NOTE 写着工号和运行 id；之后核对一致会自动关闭（`reason: VERIFIED`）；读不到（权限、网络）只计「读取失败」，不开问题。严重度固定为高。这类问题没有失败运行可重放，修复入口是打开这个工作流的运行记录再手动重跑。
 
+- **核对按页翻完整个窗口，读回有限速，不再只看最近 200 个人。** `verificationService.run` 每页 200 条按 `finishTime`、`id` 倒序用键集游标翻（游标取 `finishTime::text`，保留微秒，用毫秒的 Date 会漏行），一个人（`连接器:openId:方面`）只读最新一次写入，跨页靠 `seen` 集合延续；读飞书严格串行，每秒最多 `FEMA_VERIFICATION_READS_PER_SECOND`（默认 10）次，单个项目最长 `FEMA_VERIFICATION_TIME_BUDGET_MINUTES`（默认 60）分钟，超了返回 `truncated: true`，一万人全量约 17 到 35 分钟（取决于飞书单次读的延迟，实际速率是 min(限速, 1/延迟)）。读步骤日志并发 10。两个实例同时跑同一个项目不会重复开问题（按签名的分布式锁加「这个运行 id 已记过 NOTE」），但会各自读一遍飞书。
 - **重放成功会自动关闭问题，但要这个问题名下每一次失败都被救回来。** 生产环境里一次重跑（`rerunOfExecutionId`）或原地重试成功结束时，`executionHooks.onFinish` 调 `issueService.resolveIfRecovered`：数这个问题名下没有被成功重跑覆盖的失败根运行，为 0 才把 OPEN 或 INVESTIGATING 的问题标成已解决，系统操作，活动记录里 `reason` 是 `REPLAY_SUCCEEDED`。只救回一部分、重放自己又失败、普通的成功运行都不会关；已解决后同一失败再来仍按原逻辑重新打开。
 - 只有 `environment = PRODUCTION` 的失败会进问题中心；编辑器里的测试运行不会。
 - 问题记录走 `distributedLock`（按签名），多实例同时失败只会建一条。

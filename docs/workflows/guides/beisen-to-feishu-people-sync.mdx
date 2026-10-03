@@ -1,0 +1,160 @@
+---
+title: "Sync People from Beisen to Feishu"
+icon: "people-arrows"
+description: "Open Feishu accounts for new hires, move them when they transfer and suspend them when they leave, driven by Beisen"
+---
+
+The official solution **Beisen → Feishu people sync** (北森 → 飞书 人员同步) watches Beisen iTalent and keeps Feishu in step with it. This guide takes you from nothing to a verified setup. Plan on about an hour, most of it waiting for people on the Beisen and Feishu side.
+
+<Note>
+Menu names are shown in English, with the Simplified Chinese label in parentheses where the interface defaults to Chinese. The solution itself, its checks and its workflow names are written in Chinese.
+</Note>
+
+## What you get
+
+Installing the solution creates three workflows, all disabled until you publish them, and one mapping table.
+
+| Workflow | Starts when | What it does |
+|---|---|---|
+| **员工入职开通飞书账号** (new hire) | Beisen reports a new hire or a rehire who is pending onboarding or already active | Looks the department up in the mapping table, opens a Feishu account in that department (or finds the one that already exists), and posts to the HR group **only when the account was newly created** |
+| **员工调岗同步部门** (transfer) | Beisen reports a transfer within or into an organization | Finds the Feishu account by mobile number, looks up the new department and moves the account |
+| **员工离职暂停飞书账号** (leaving) | A departure in Beisen is in effect | Finds the Feishu account by mobile number, **suspends** it and posts to the IT group so the equipment can be collected |
+
+Each workflow checks Beisen every few minutes (5 by default, `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL`). A suspended Feishu account cannot sign in, but keeps its documents, chats and calendars, and it can be resumed. **Nothing is ever deleted.** A suspended account still takes a seat in Feishu until a Feishu administrator offboards the member.
+
+The mapping table **北森部门到飞书部门** (Beisen department to Feishu department) translates the department number Beisen gives into the Feishu department. You fill it in after installing.
+
+## Before you start
+
+### Beisen
+
+1. **Create a connector in Beisen Open Platform.** In the Beisen admin console open **My Connectors** (我的连接器) and create one. Copy its **Key** and **Secret**. If **My Connectors** is missing, ask your Beisen project manager to enable Open Platform access. Beisen's documentation says the person who creates it needs the *Open application connection* administrator role, granted under Enterprise Settings → Authorization Management.
+2. **Tick both objects.** In the connector's permissions, tick **Employee information** (员工信息, `EmployeeInformation`) **and** **Employment record** (任职记录, `EmploymentRecord`). With only one, Beisen answers with a permission error.
+3. **Do not mask the mobile number.** In the connector's field permissions, let it read the mobile number, job number, department and employee status in clear text. Beisen shows masked numbers like `129****1283` when the field permission hides them, and a masked number cannot open a Feishu account.
+4. **Trust the platform's IP.** If your tenant restricts API callers, add the **outbound IP address** of the server that runs this platform to Beisen's *OpenAPI call trusted IP* list. Behind a changing address, trust the whole outbound range. When the IP is not trusted, Beisen answers with `403`.
+5. **Check how mobile numbers are stored.** The workflows add `+86` themselves, so Beisen must hold plain 11-digit mainland numbers without a country code.
+
+<Info>
+The Beisen steps are taken from Beisen's own help documentation, which needs a Beisen community login. Menu names can differ between Beisen versions, so ask your Beisen implementation consultant if a name does not match.
+</Info>
+
+### Feishu
+
+1. **Create a custom app** (企业自建应用) at [open.feishu.cn](https://open.feishu.cn/app). On **Credentials & Basic Info** (凭证与基础信息), copy the **App ID** and **App Secret**.
+2. **Add the permissions.** On **Permissions & Scopes** (权限管理) add:
+   - `im:message:send_as_bot`, to post to the HR and IT groups
+   - `contact:user.id:readonly`, to find accounts by mobile number or email
+   - `contact:contact`, to open, change and suspend accounts
+3. **Set the contact scope** (通讯录权限范围). Add every department that appears in your mapping table. The scope covers a department's sub-departments too. Opening accounts directly under the root department needs the scope **All members**. A department outside the scope fails with error 40004 (department not in scope) or 41050 (member not in scope).
+4. **Publish the app.** On **Version Management & Release** (版本管理与发布), create a version and publish it. A Feishu administrator has to approve it before the permissions take effect, and again every time you change the contact scope.
+5. **Add the app's bot to the HR group and the IT group.** A bot can only post into groups it belongs to.
+
+<Warning>
+Opening a Feishu account sends the person an invitation by SMS or email straight away, and the account stays *inactive* until they accept. There is no way to switch the invitation off. Test with a real person who expects it.
+</Warning>
+
+### On the platform
+
+You need the **Developer** or **Admin** role in the project you install into, or be its owner or a tenant admin. No other setting is needed. An SMTP server is not required.
+
+## Install
+
+1. Open **Solutions** (方案) in the sidebar. In the **Solution library** (方案库), open **北森 → 飞书 人员同步** and choose **Install**.
+2. **Project.** Choose the project to install into.
+3. **Connections.** The solution needs a Beisen connection and a Feishu connection. Choose existing ones or **Create connection**:
+   - **Beisen**: **App Key** and **App Secret**.
+   - **Feishu**: **Region** (**Feishu (mainland China)** or **Lark (international)**), **App ID** and **App Secret**.
+
+   Saving a connection checks the credentials against the other system. It usually takes a few seconds, and the first time for an app it can take a minute or two.
+4. **Configuration.** Enter the two group chat IDs, which cannot be empty:
+   - **HR 通知群的群 ID**: the group that hears about new accounts
+   - **IT 通知群的群 ID**: the group that hears about suspended accounts
+
+   See [Find a group chat ID](#find-a-group-chat-id) below.
+5. **Checks.** The two connection checks are **Required** and must pass. The other six are **Recommended** reminders for people and systems the wizard cannot check; tick **I know about this and want to continue** after you have done each one, or to skip it knowingly. Skipped ones are recorded with the install. They are:
+
+   | Check (shown in Chinese) | Who |
+   |---|---|
+   | Beisen connector has both **Employee information** and **Employment record** ticked, and field permissions allow reading mobile number, job number, department and employee status | Beisen administrator |
+   | Beisen returns mobile numbers unmasked | Beisen administrator |
+   | Beisen's trusted IP list contains this instance's outbound IP | Beisen administrator |
+   | The Feishu app has its permissions, and its contact scope covers the departments to sync | Feishu administrator |
+   | The mapping table holds a Feishu department ID for every Beisen department OId | The person installing |
+   | A test employee's hire and departure were both read from Beisen | HR or implementation consultant |
+
+6. **Confirm.** Check the preview (3 workflows, 1 mapping table) and choose **Install**.
+
+## Fill in the department mapping table
+
+Beisen identifies a department only by a number, the **OId**, in `recordInfo.oIdDepartment`. It does not send the department name. Feishu needs its own department ID. The mapping table holds one row per department: the **key** is the Beisen OId, the **value** is the Feishu department ID.
+
+Until a department has a row, the step that needs it fails with a clear message. It does not guess. Add the row, then replay.
+
+### Find the Beisen OId
+
+- **From real employees.** In the new-hire workflow, open the trigger and run its test. The output lists employees whose records changed in the last 24 hours, each with `recordInfo.oIdDepartment`. Match that number with the employee's department in Beisen. Repeat with employees of the departments you need.
+- **From Beisen.** Ask your Beisen administrator or implementation consultant for the list of departments with their OIds.
+- **From the connector.** **Get Sub Organizations** (获取下级组织) lists the organization units under an organization ID. The platform's checks have not exercised it against a real tenant, so confirm what it returns in a test run before relying on it.
+
+### Find the Feishu department ID
+
+Ask your Feishu administrator for each department's **Department ID**; the screen that shows it differs between Feishu versions. Two forms work: a custom `department_id`, or an `open_department_id`, which starts with `od-`. Use one form for the whole table.
+
+### Enter the rows
+
+Open **Mapping tables** (映射表) in the project, open **北森部门到飞书部门**, and add rows, or choose **Import CSV** (导入 CSV): paste two columns (key, value) or pick a UTF-8 `.csv` file up to 2 MB, choose **Merge with existing rows** or **Replace all rows**, and import. A table holds up to 5,000 rows, keys are case sensitive and up to 100 characters. Changes apply to the next run at once, no republish needed.
+
+The table is set to **Fail the step** (报错) when a key is missing. Leave it that way, so a missing department is a visible problem and never a silently wrong one.
+
+## Find a group chat ID
+
+A chat ID starts with `oc_`. The bot of your Feishu app must already be in the group.
+
+1. In any workflow, add the Feishu action **Send Group Message** (发送群消息). The **Group Chat** list shows the groups the bot has joined, by name. If it says *The bot has not joined any group chat yet*, add the app to the group first.
+2. Choose the group, write a short message such as "test" and test the step. The step's output contains `chat_id`. Copy that value into the installer, or into the workflow's group notification step later.
+
+The list comes from Feishu's API `GET /open-apis/im/v1/chats`, which returns every group the bot is in with its `chat_id`; you can call it yourself instead.
+
+## Check it with a test employee
+
+Do this before enabling the workflows for everyone. Use a test employee in Beisen with a mobile number you control and the department you want to test.
+
+1. **Look at what Beisen returns.** Open each workflow and its trigger. The solution has set **Employee Status** (员工状态) and **What Counts As A Change** (什么算变动): *Upcoming and active* for new hires, *Active employees* for transfers, *Departed employees* for leavers, and *Business changes only* for all three. Run the trigger test. A test looks back 24 hours and shows the real record. Check that the mobile number is not masked, the job number is present and `oIdDepartment` is a number you have a row for.
+2. **Debug before publishing.** Run **Debug** (调试). The dialog lists the steps that really write to the connected systems and says so: *This run can write to the connected systems*. Debugging does not simulate those steps.
+3. **Publish the workflows.** Open each one and publish it. A published workflow only sees changes made **after** it was published, not the last 24 hours.
+4. **New hire.** Make the test employee a new hire in Beisen. Within a few minutes a run appears in **Run logs** (运行日志), with the employee's job number in **Business key** (业务标识). The Feishu account exists in the mapped department, and the HR group has a message.
+5. **Transfer.** Change the test employee's department to one with a mapping row. The transfer workflow moves the account.
+6. **Departure.** Process the departure with a last working day that has already passed. Beisen only reports a departure once it is in effect, which is after the last working day. The account is suspended and the IT group is told.
+7. **Verify.** On the project's **Issues** page, choose **Check recent results** (核对最近的结果). It reads the accounts back from Feishu and compares department and suspension. A summary such as *Checked 2: 2 match* means Feishu holds what the workflows wrote.
+
+Then add an [alert policy](/workflows/reliability#alerts), which the solution does not create for you, so someone is told when a run fails. See [Reliability](/workflows/reliability) for how to work with issues, replay and the daily read-back check.
+
+## When something goes wrong
+
+### A new hire has no Feishu account
+
+Open **Issues** (问题). The cause is on the issue:
+
+- **No mapping row for the department.** Add the row to the mapping table, then **Replay failed runs**. The table changed after the failure, so the platform treats it as replayable.
+- **Feishu says the app has no permission** (HTTP 403, error 99991672), or the department is outside the contact scope (40004, 41050). A Feishu administrator fixes the permission or the scope and approves the new app version; then replay.
+- **The mobile number is masked or empty.** Replay cannot fix it, because a replay reuses the data the run received. Fix the field permission in Beisen, and create the accounts of employees who already failed by hand in Feishu, then mark the issue resolved.
+
+### A leaver was not suspended
+
+Beisen reports a departure only after the last working day. An employee who has handed in notice but is still working is not returned yet. If someone is still not picked up the day after their last working day, check the Beisen field permissions, and the trigger's **Employee Status**: only **Departed employees** or **Every status** return leavers. How Beisen refreshes a record on the day a departure takes effect has not been confirmed against a real tenant, which is why the test employee step above matters.
+
+### The trigger itself fails with 429
+
+Beisen allows a limited number of calls per tenant per interface. Once exceeded, it refuses every call until **00:00 the next day**, and the limit cannot be raised. The trigger raises an issue that says to wait, because replaying right away fails again. The next successful check after midnight covers everything that changed in between, so nothing is lost. Other integrations that use the same Beisen tenant share the limit.
+
+### Feishu is slow for a big batch
+
+Feishu allows one call per second for changing a department or suspending an account, and rejects overlapping calls with error 44025. The steps retry on their own, and the leaving workflow runs one at a time. Moving 300 people takes at least five minutes. Opening accounts is not subject to this limit.
+
+### A transfer or departure does nothing
+
+Both workflows find the Feishu account by mobile number. When there is no account with that number, for example because the number differs between Beisen and Feishu, the run ends without changing anything. Check the number in both systems.
+
+### A rehire stays suspended
+
+The new-hire workflow finds the existing account by mobile number and leaves it as it is, with no message to the HR group. It does not resume a suspended account. Resume it in Feishu, or add the **Resume Employee Account** (恢复员工账号) action to the workflow.

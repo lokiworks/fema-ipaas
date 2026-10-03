@@ -73,3 +73,7 @@ icon: 🗜️
   ```
 
   修在实体侧（缩短名字），不要修在迁移里，否则下次生成又会漂回去。
+
+- **`transaction = false` 的迁移，`down()` 里不能写 `DROP INDEX CONCURRENTLY`。** TypeORM 的 `undoLastMigration` 不看迁移上的 `transaction` 标记，回滚总是包在事务里，真实 Postgres 上会报 `cannot run inside a transaction block`（PGlite 上看不出来）。`up()` 可以并发建索引，`down()` 用普通 `DROP INDEX IF EXISTS`。
+- **执行表（`execution`）加索引要放进 `transaction = false` 的迁移里并发建。** 普通 `CREATE INDEX` 在 100 万行上卡写 1 秒多，按行数线性涨，5000 万行约一分钟；且同事务里还拿着别的表的排他锁，并发写入进来会死锁。三个索引在 `AddExecutionIndexesConcurrently`，之前的迁移只加列、`down()` 用 `DROP INDEX IF EXISTS`。
+- **真实 Postgres 上验证迁移的做法：** 单独起实例，`FEMA_DB_TYPE=POSTGRES` 加 `FEMA_POSTGRES_*`，用 `typeorm migration:run` 再 `migration:generate --dryrun --check` 查漂移（`npm run check-migrations` 被 `.env.tests` 钉在 PGlite 上）；回滚用 `src/rollback.ts --to <版本> --force`，再对 `pg_dump -s` 比对基线。

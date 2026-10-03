@@ -114,7 +114,15 @@
                      "workflows/project-variables",
                      "workflows/publishing-workflows",
                      "workflows/debugging-runs",
-                     "workflows/versioning"
+                     "workflows/versioning",
+                     "workflows/reliability",
+                     "workflows/solutions"
+                  ]
+               },
+               {
+                  "group": "Guides",
+                  "pages": [
+                     "workflows/guides/beisen-to-feishu-people-sync"
                   ]
                },
                {
@@ -225,6 +233,7 @@
                            "install/configure-operate/setup-app-webhooks",
                            "install/configure-operate/setup-opentelemetry",
                            "install/configure-operate/telemetry",
+                           "install/configure-operate/operations-reference",
                            "install/configure-operate/rollback"
                         ]
                      }

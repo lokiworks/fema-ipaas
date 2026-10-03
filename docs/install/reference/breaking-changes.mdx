@@ -223,6 +223,169 @@ Nothing, and no new configuration: the key is derived from a secret your instanc
 
 Rolling back costs at most the codes issued after the deploy: the older build cannot read those, so whoever holds one asks for a fresh code. Nothing is rewritten and nothing is deleted, so no cleanup is needed either way.
 
+#### Expired connections are a status of their own, and reconnecting must use the same account
+
+A connection whose token can no longer be refreshed used to be marked **Connection error**. It is now marked **Expired** (已过期), so a lapsed authorization is no longer confused with credentials that failed validation.
+
+- A failed OAuth2 refresh, or a failed custom-auth refresh, records `EXPIRED`. `ERROR` stays for connections whose credentials failed the connection test.
+- Neither status is refreshed again automatically. Both count as "not usable" before a run starts, in the builder's validation and in the engine: a step that uses one fails with an expired-connection error, and all such failures group into one issue per connection in the Issue Center.
+- Connections that were already in `ERROR` are **not** converted to `EXPIRED`. They stay as they are until someone reconnects or retests them.
+- Reconnecting an existing connection now has to use the **same account**. The platform compares the account the stored credentials belong to with the account of the new ones (ignoring case and surrounding spaces) and refuses the save with a `409` when they differ: `This connection was authorized as A, but the new credentials belong to B. Reauthorize with the same account, or create a new connection for the other account`. Placeholder connections (status **Missing**) are never checked.
+- The check only runs when both sides expose an account identifier: an email in the OAuth2 token response, or an identifier the connector provides. Connections made of an App ID and Secret, such as the Feishu and Beisen connectors, expose none and are not checked.
+- A member who only has **Can Use** on a broken connection can press **Remind the owner to reconnect** (提醒所有者重新授权). The owner gets an in-app notification; the same person can remind about the same connection once every 6 hours. API: `POST /v1/connections/:id/remind-reauth`.
+
+**When is action necessary?**
+
+Yes, for every connection that now shows **Expired**. Open **Connections**, open the connection and choose **Reconnect** (重新连接), signing in with the account that created it. If that account is gone, create a new connection for the new account and use **Replace connection** (替换连接) to repoint the workflows that used the old one.
+
+Connections still showing **Connection error** from before the upgrade are worth one pass: reconnect them, or run the connection test again, so their status reflects the cause.
+
+#### "Can Edit" for project members no longer applies to the Viewer role
+
+A connection can give every member of its projects **Can Use** (可使用) or **Can Edit** (可编辑). Setting **Can Edit** used to let Viewers rename the connection, share it and change which projects it is available in. Now a member's permission is capped by their project role: where the role cannot write workflows (Viewer), **Can Edit** counts as **Can Use**. Operator, Developer and Admin are unaffected, and so is a **Can Edit** that was granted to a person directly.
+
+**When is action necessary?**
+
+Only if you relied on Viewers editing connections. Give them a Developer or Admin role in the project, or share the connection with them directly.
+
+#### Project invitations are permission-checked
+
+`POST /v1/user-invitations` for a project only checked that the caller could reach the project, not that the caller could manage invitations. A Viewer could invite their own email address as **Admin** and so promote themselves. The calls are now checked against the caller's project role:
+
+- Sending and deleting a project invitation needs the invitation-management permission. Only the project **Admin** role has it, plus the project owner and tenant admins. Operator, Developer and Viewer get `403`.
+- Listing project invitations needs access to that project and a project id; listing tenant invitations (`type=TENANT`) needs a tenant admin.
+- An invitation token that does not verify (malformed, expired, or signed with another key) now returns `404`.
+- Without SMTP configured, the **Invite member** (邀请成员) dialog now shows the invitation link to copy, with the note that links expire after 7 days. Before, the link existed in the API response and the dialog did not show it.
+
+**When is action necessary?**
+
+Only for scripts and integrations that create project invitations as a non-admin member: send them as a project Admin, the owner or a tenant admin. Instances without SMTP need nothing, the dialog now hands over the link.
+
+#### Several project endpoints now check the caller's project role
+
+A security audit of every route found endpoints that checked only project membership, so a role with fewer rights than the screen suggested could still call them. These are now checked against the caller's project role (`403` otherwise):
+
+- `POST /v1/workflows/:id`: changing the status needs the permission to run workflows, publishing (`LOCK_AND_PUBLISH`) needs the publish permission, and everything else (importing a definition, moving to a folder, changing metadata or the owner) needs the permission to edit workflows. **Operators can no longer edit, import or publish a workflow through this endpoint.**
+- `POST /v1/projects/:id/info`: renaming a project or changing its description or icon needs the permission to manage the project. **Developers can no longer do it.**
+- `POST /v1/sample-data/test-step`, `POST` and `DELETE /v1/test-trigger`, `POST /v1/trigger-events`, `POST /v1/connectors/options` and the editor's test-run socket message need the permission to edit workflows. **Viewers and Operators can no longer test steps and triggers.**
+- `POST /v1/templates/from-workflow` needs the permission to manage templates. **Viewers can no longer publish a workflow as a tenant template.**
+- MCP services: membership of a service no longer grants access on its own. The caller must be the owner, a member of the project, or the service must be published and available to them. A personal key stops working as soon as its holder leaves the project or the service is unpublished.
+- Viewers can no longer take the edit lock of a workflow in the editor, and approving an agent action needs the permission to run workflows (Operator and above).
+
+Also: a tenant owner can no longer be demoted to a regular member, a workflow cannot point at a folder or an owner from another project or tenant, a private AI model connection is only usable by its owner, and engine tokens can no longer write runs, waitpoints or files of another project.
+
+**When is action necessary?**
+
+Only for scripts, integrations or habits that relied on the looser checks. Give the person the role that has the permission (Developer to edit workflows and manage templates, Admin to manage the project), or call the endpoint with a token of such a user.
+
+#### More failures reach the Issue Center, and its numbers are counted differently
+
+- **Trigger failures create issues.** A polling trigger that cannot check for new events, for example because Beisen rate-limited the tenant or the credentials were rejected, used to leave no trace. It now opens an issue on the trigger step, and the issue resolves itself when the trigger next checks successfully.
+- **Timeouts and out-of-memory runs create issues.** The engine cannot tell which step was running when a worker kills a run. The API now takes the step that was still `RUNNING` when the run ended (or the last step, or the trigger) as the failed step. Runs that timed out before this release have no issue.
+- **Issues close themselves** when the cause is gone: when every failed run of an issue has been replayed successfully, and when a workflow is deleted (its open issues are resolved by the system; issues grouped by connection are unaffected). Both are recorded in the issue's activity.
+- **"Merged N" on alerts and the issue's total impact count triggers**, not attempts. A rerun that fails again, an in-place retry, or the same run recorded twice no longer adds to the count or to the alert's merged total. A rerun that fails again still reopens a resolved issue.
+- **Deleting an alert policy keeps its alert history.** Migration `KeepAlertRecordsAfterPolicyDeletion1790940000000` drops the foreign key from `alert_record` to `alert_policy` and cascades from the tenant instead. History rows of a deleted policy show **Deleted policy** (已删除的策略). Rolling this migration back deletes the history rows whose policy no longer exists.
+- **"Last 7 days" and the other day ranges are calendar days, in the viewer's time zone.** Run logs (3/7/15/30 days), the Issue Center summary, project home statistics, alert statistics and the monitor page all count the 7 calendar days that end today, starting at local midnight, instead of a rolling 168 hours or a UTC midnight. The browser sends its zone as the `timezone` query parameter (an IANA name such as `Asia/Shanghai`); callers that omit it get UTC. Ranges from 15 minutes to 24 hours are still rolling windows.
+- **Alerts for capacity** (a project's runs this month reaching the threshold of its limit) are also delivered as an in-app notification to the project owner and the tenant admins, once per policy and project per month.
+
+**When is action necessary?**
+
+No configuration. Expect issues you have not seen before after the upgrade, especially on trigger steps, and expect totals on dashboards to differ from the old numbers. API clients that compute their own windows should pass `timezone`.
+
+#### Workflows and connections that are still in use can no longer be deleted
+
+- A workflow cannot be deleted while another workflow of the same project calls it with a **Call workflow** (subflows) step, or while an MCP service uses it as a tool. The delete returns `409` and names the callers: `This workflow is called by workflows X and used as a tool by MCP services Y. Remove those references before deleting it`. Deleting a whole project or tenant is not blocked.
+- A connection cannot be deleted while workflows (including ones in projects you cannot see), an MCP service's pinned connection or an environment connection replacement still uses it. The delete returns `409` with the number of each. This applies to the project route and to the tenant-wide global connections route. **Replace connection** with "delete the old connection" still works, because it swaps references first.
+- Deleting a connection used to leave its workflows to fail at run time.
+
+**When is action necessary?**
+
+Only for scripts that delete workflows or connections in bulk. Remove the references first, or replace the connection in its workflows before deleting it.
+
+#### Run logs carry a business key (migration)
+
+Migration `AddExecutionBusinessKey1790851200000` adds a nullable `businessKey` column to the `execution` table and an index on `("projectId", "businessKey")`.
+
+- The index is created with `CREATE INDEX CONCURRENTLY`, so the migration runs outside a transaction and does not block runs from being written. On a large `execution` table it can take a while, and the instance keeps starting up until it finishes. Adding the column itself is instant.
+- Runs started before the upgrade have no business key. It is not back-filled.
+- A run's business key is the value of its trigger's dedupe key, read from the trigger payload (for example `{{trigger.recordInfo.jobNumber}}`), cut to 255 characters. Triggers without a dedupe key, manual runs and test runs have none. Reruns keep the key of the original run.
+- Run logs gain a **Business key** (业务标识) column and filter, and each run links to **All logs of this record** (这条记录的全部日志). The filter matches a part of the value (`ILIKE '%…%'`) and the **Log content** search also matches it. API: the `businessKey` query parameter of the run log list.
+
+Migration `AddExecutionIndexesConcurrently1790950000000` builds four more indexes on `execution` the same way (outside a transaction, `CONCURRENTLY`), so writes are not blocked either.
+
+**When is action necessary?**
+
+Plan the upgrade window for a very large `execution` table; nothing else is needed. If the migration is interrupted, see [Operations Reference](/install/configure-operate/operations-reference#upgrades-and-migrations) before starting it again.
+
+#### Workflow export files carry mapping tables
+
+The workflow export file has an optional `mappingTables` list holding every mapping table the workflow looks up, **including their rows**. Older files without it still import.
+
+- **Import** and **copy to another project** reuse a mapping table of the target project when its name, key column name and value column name are all the same, and create it otherwise (a taken name gets `(2)`, `(3)`, …). Existing tables are never overwritten. The lookup steps in the imported workflow are repointed to the target project's table. Copying inside the same project changes nothing.
+- **Save as template** removes the table id from lookup steps and keeps the transform, because a template is shared and cannot point into one project. Whoever creates a workflow from the template picks a table in the mapping editor.
+- Before this change, an exported or copied workflow kept pointing at the source project's table.
+
+**When is action necessary?**
+
+No. Treat export files as holding mapping data if the tables contain anything sensitive, and check the tables an import created or reused before enabling the workflow.
+
+#### Solutions: new tables, and one official solution in the library (migration)
+
+Migrations `AddSolutions1790921911539` and `AddSolutionInstallWorkflowKeys1790930000000` add the tables `solution`, `solution_version` and `solution_install`, and a nullable `workflowKeys` column on `solution_install`. The official solution **Beisen → Feishu people sync** (北森 → 飞书 人员同步, version 1.0) is built into the application and appears in every tenant's solution library. See [Solutions](/workflows/solutions).
+
+**When is action necessary?**
+
+No. Nothing is installed until a person runs the install wizard, and the library entry cannot be hidden. The tables are created empty by the migration.
+
+#### Beisen 0.3 and Feishu 0.4 connectors
+
+The Beisen and Feishu connectors first appeared after 0.88.3, so only instances that already built workflows with them on a main-branch build are affected. The image carries one version of each connector, and a workflow pinned to an older version of the same major runs on the bundled one as soon as the image is upgraded.
+
+**Beisen 0.3**
+
+- Employee Changed (员工信息变动) and Search Changed Employees (查询变动员工) now call Beisen's official `/TenantBaseExternal/api/v5/Employee/GetByTimeWindow`. The old `/TenantBasePublicApiV2/v2/employee/timewindow/search` path is not used any more.
+- **The output changed shape.** Records used to be flat (`UserID`, `Name`, `EmployeeNumber`); they are now nested as `employeeInfo` (name, mobile, email, `userID`) and `recordInfo` (job number, department OId, employee status, change type, last work date). Steps that read the old fields must read the new ones, for example `{{trigger['output']['employeeInfo']['name']}}`.
+- The trigger has two new required settings. **Employee Status** (员工状态) chooses who to watch: active employees (default), departed employees, upcoming and active, or every status. Departed employees are only returned when you choose **Departed** or **Every status**, and a leaving counts only once it is in effect, after the last work day. **What Counts As A Change** (什么算变动) chooses business changes only (default) or any modification; the second also fires for the nightly job that recalculates tenure, so unchanged employees show up every day.
+- The **Columns** setting is gone from the trigger. **Only When This Column** is now **Only When This Field** (仅当这个字段) and takes a path into the nested record, for example `recordInfo.changeTypeOID`.
+- Windows longer than 90 days are fetched in 89-day segments, times use the `T` separator, and a poll that cannot read all pages fails instead of dropping rows.
+- On the Search Changed Employees action, **Batch Size** and **Include Deleted** are gone and the page size is 300.
+
+**Feishu 0.4**
+
+- New actions: **Update Employee** (调整员工信息, department, manager, job title, name), **Suspend Employee Account** (暂停员工账号) and **Resume Employee Account** (恢复员工账号), both through the account's `is_frozen` field, and **Get Employee** (读取员工), which only reads.
+- There is no delete or offboard action, and none is planned for the first release: a suspended account keeps its data and can be resumed. The solution has no delete option either.
+- Feishu limits changing a department and suspending an account to one call per second, and rejects overlapping calls with error 44025. Let the step's retry run it again instead of firing such steps in parallel.
+
+**When is action necessary?**
+
+Yes, for existing Beisen workflows. Open each workflow with an Employee Changed trigger or a Search Changed Employees step, choose **Employee Status** and **What Counts As A Change** (a workflow that must also catch leavers needs **Departed** or **Every status**), update every reference to the old flat fields and the old filter column, test the trigger, and publish again. New Feishu actions need nothing on existing workflows.
+
+#### Read-back verification runs every day
+
+A scheduled job, `verify-recent-results`, reads Feishu back for production runs that succeeded in the last 72 hours and opens an issue in the Issue Center where Feishu does not hold what the run wrote. It runs every day at **03:37 UTC** (11:37 in China), and a person with the issue-management permission can run it on demand with **Check recent results** (核对最近的结果) on a project's Issues page (`POST /v1/verification/run`).
+
+- It only reads. For each account written by a Feishu step (**Provision Employee Account**, **Update Employee**, **Suspend Employee Account**, **Resume Employee Account**) it calls **Get Employee** once, using the connection that step used, and compares the department or the suspended state. Each account is checked against its most recent write only. At most 200 runs per project are checked per pass.
+- Only runs that have a business key are checked, so the trigger needs a dedupe key.
+- A mismatch becomes one **Result mismatch** (结果对不上) issue per workflow step with severity High, and closes by itself when a later check agrees. A read that fails (permission, network) is counted as "could not be read" and opens no issue.
+- There is no setting to switch it off. Instances without Feishu steps do nothing.
+
+**When is action necessary?**
+
+If you use the Feishu steps above, the job now reads your Feishu contacts on your behalf. The Feishu app already needs `contact:contact` and a contact scope that covers the target departments to provision accounts, and reading a member needs the same contact scope. Feishu does not count contact calls against the monthly call allowance of its free edition, but they still count against rate limits. When a check reports "could not be read" with a permission error, add the permission the error names to the app, create a new app version, and have a Feishu administrator approve it. See [Reliability](/workflows/reliability#read-back-verification) and the [Beisen to Feishu guide](/workflows/guides/beisen-to-feishu-people-sync).
+
+#### Two migrations are flagged as breaking for rollback
+
+Migration `DesignDocRolloutSchema1790501279466` (release 0.89.0) creates many tables at once, and `KeepAlertRecordsAfterPolicyDeletion1790940000000` changes how alert history is kept. Both carry `breaking = true`, so `npm run rollback -- --to 0.88.3` asks for `--force`. `DesignDocRolloutSchema` also changes existing data:
+
+- `DELETE FROM "connector_blueprint"`: every connector created in the no-code connector builder before this release is removed, because the table changed shape.
+- Every existing connection gets `projectMembersPermission = 'EDIT'` (**Can Edit**), so members keep the access they had before connection sharing existed. New connections start with no member access.
+- Existing non-admin users are given the MCP services module. Connector development and platform administration are not granted to anyone but tenant admins.
+- The unique constraint on `store-entry` and the unique index on folder names are replaced by partial indexes.
+
+**When is action necessary?**
+
+Take a database backup before upgrading, see [Rollback](/install/configure-operate/rollback) and the migration list in the [Operations Reference](/install/configure-operate/operations-reference#upgrades-and-migrations). If you built connectors in the no-code connector builder, write down their definitions first, because they are not carried over.
+
 
 ## 0.87.0
 

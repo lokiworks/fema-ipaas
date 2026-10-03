@@ -150,6 +150,8 @@ run timeouts, and the network egress posture for user code. Read
 | `FEMA_SANDBOX_PROPAGATED_ENV_VARS` | Comma-separated environment variables propagated into sandboxed code. For connectors, keep everything in the authentication object so it works across instances. | `None` |
 | `FEMA_WORKFLOW_TIMEOUT_SECONDS` | Maximum runtime for a single workflow run, in seconds. | `600` |
 | `FEMA_TRIGGER_TIMEOUT_SECONDS` | Maximum runtime for a trigger's polling, in seconds. | `60` |
+| `FEMA_VERIFICATION_READS_PER_SECOND` | Maximum read-backs per second the nightly result check sends to a connected system. | `10` |
+| `FEMA_VERIFICATION_TIME_BUDGET_MINUTES` | How long one project's result check may run before it stops and reports `truncated`. | `60` |
 | `FEMA_DEFAULT_CONCURRENT_JOBS_LIMIT` | Default maximum concurrent runs per project. Can be overridden per project in settings. | `5` |
 | `FEMA_PROJECT_RATE_LIMITER_ENABLED` | Enforce per-project rate limits to prevent excessive usage. | `false` |
 | `FEMA_SHOW_COMMUNITY` | Show the "Help translate" link and the support entries that point at an external community. | `false` |
@@ -168,7 +170,6 @@ run data is kept. The **Cloud** values and how these interact are covered in
 |---|---|---|
 | `FEMA_EXECUTION_DATA_RETENTION_DAYS` | Days to retain execution data, logs, and events. | `30` |
 | `FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS` | Maximum pause duration for a paused workflow, in days. Cannot exceed `FEMA_EXECUTION_DATA_RETENTION_DAYS`. | `30` |
-| `FEMA_ISSUE_ARCHIVE_DAYS` | Issues not updated for this many days are automatically archived. | `7` |
 | `FEMA_MAX_FILE_SIZE_MB` | Maximum size (MB) for files uploaded in steps or triggers. Larger files are rejected. | `25` |
 | `FEMA_MAX_STORE_ENTRY_VALUE_SIZE_KB` | Maximum size (KB) of a single value written by the Store connector or `context.store`. Larger writes are rejected with HTTP 413. | `512` |
 | `FEMA_MAX_EXECUTION_LOG_SIZE_MB` | Maximum combined size (MB) of all step inputs and outputs in a single run. Exceeding it ends the run with `LOG_SIZE_EXCEEDED`. | `50` |
@@ -266,4 +267,6 @@ workflow-authoring defaults.
 | `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` | Minutes between checks for new data on connectors with scheduled triggers (e.g. new Google Contacts). | `5` |
 | `FEMA_ENABLE_WORKFLOW_ON_PUBLISH` | Automatically enable a workflow when a new version is published. | `true` |
 | `FEMA_ENFORCE_CONNECTION_CONNECTOR_BINDING` | Reject a step's connection at runtime unless the connection was created for the same connector as the step. | `false` |
+| `FEMA_BEISEN_BASE_URL` | Base URL the Beisen connector calls, for a private gateway or a test double. The connector runs in a sandbox, so also list the name in `FEMA_SANDBOX_PROPAGATED_ENV_VARS`. | `https://openapi.italent.cn` |
+| `FEMA_FEISHU_BASE_URL` | Base URL the Feishu connector calls. Takes precedence over the region chosen in the connection. Also list the name in `FEMA_SANDBOX_PROPAGATED_ENV_VARS`. | the region's domain |
 | `FEMA_LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS` | Load translations for dev connectors (configured via `FEMA_DEV_CONNECTORS`). Affects development mode only. | `false` |

@@ -107,17 +107,15 @@ export class AddMyIndex1234567890 implements Migration {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        if (isPGlite) {
-            await queryRunner.query(`DROP INDEX "idx_name"`)
-        } else {
-            await queryRunner.query(`DROP INDEX CONCURRENTLY "idx_name"`)
-        }
+        await queryRunner.query(`DROP INDEX IF EXISTS "idx_name"`)
     }
 }
 ```
 
 <Warning>
 `CREATE INDEX CONCURRENTLY` and `DROP INDEX CONCURRENTLY` are not supported in PGlite because PGLite is a single user/connection database. Always add a check for PGlite when using these operations.
+
+TypeORM always wraps `down()` in a transaction, even when the migration sets `transaction = false`, so `DROP INDEX CONCURRENTLY` fails on PostgreSQL with `cannot run inside a transaction block`. Use a plain `DROP INDEX IF EXISTS` in `down()`. Build indexes on large tables (`execution`) with `CONCURRENTLY` in their own `transaction = false` migration; a plain `CREATE INDEX` blocks writes for the whole build.
 </Warning>
 
 <Tip>

@@ -32,6 +32,10 @@ icon: 🔔
 - 通知写库后按接收人 id 的 socket 房间推送 `NOTIFICATION_CREATED`；推送失败只记日志，不影响写库，角标下次拉取时仍会更新。
 - 告警策略里配置的邮件渠道是管理员定的群发路由，**不看**个人通知偏好；个人偏好只管“发给我本人”的邮件（运行失败给所有者、连接失效给所有者、被加入项目、每周摘要）。
 - 邮件偏好默认开（每周摘要默认关），这样老项目“失败通知所有者”的行为不变。
+- 邮件模板（`packages/server/api/src/assets/emails/`）全部中文，品牌来自租户外观：`tenantName`/`platformName`、`primaryColor`、`primaryColorLight`（主色按 12% 混入白色，不是主色本身）、`onPrimaryColor`（按钮文字色，随主色深浅自动选）。logo 必须是绝对地址且不是 SVG（邮件客户端不渲染 SVG），否则模板退回显示租户名文字；换算都在 `email-branding-utils.ts`。
+- 忘记密码、验证邮箱的链接必须带 `otpcode` 和 `identityId`（`/reset-password?otpcode=..&identityId=..`），缺了前端页面没有可提交的凭据；模板有缓存，改了 `.html` 要重启 API 才生效。
+- 工作流失败邮件里的失败原因要先用 `tryParseFriendlyConnectorError` 取出可读文案，`failedStep.message` 在库里是序列化的连接器错误（含 raw 堆栈和本机路径）。
+- 每周摘要查询别用 `user` 当别名：Postgres 里 `user` 是保留字，`user.status` 会报语法错误，整个任务静默失败。
 - PAT 不能用于 websocket 连接，websocket 仍然只认登录 JWT。
 - 通知保留 90 天，由 `notification-retention` 系统任务每天清理。
 - 帮助文档的正文是 i18n 字符串，ICU 语法下不能出现 `{}`、`{{` 或 `<tag>` 这类字符，写文案时要避开。

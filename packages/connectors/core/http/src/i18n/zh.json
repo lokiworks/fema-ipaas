@@ -37,5 +37,10 @@
   "Continue workflow on all errors": "遇到任何错误都继续执行",
   "Continue workflow on 4xx errors": "遇到 4xx 错误时继续执行",
   "Do not continue (stop the workflow)": "不继续（停止工作流）",
-  "HTTP": "HTTP"
+  "HTTP": "HTTP",
+  "Parse URL": "解析网址",
+  "Extract the domain, path, and query parameters from a URL.": "从网址中提取域名、路径和查询参数。",
+  "Return Values as Arrays": "参数值以数组返回",
+  "The full URL you want to parse (e.g., https://example.com/page?utm_source=twitter)": "要解析的完整网址，例如 https://example.com/page?utm_source=twitter",
+  "If checked (recommended), all query parameters are returned as JSON arrays to safely group duplicate keys (e.g., {\"tags\": [\"shoes\", \"hats\"]}). If unchecked, standard web behavior applies, returning only the first value as text.": "勾选（推荐）时，所有查询参数都以 JSON 数组返回，重复的参数名会安全地归在一起，例如 {\"tags\": [\"shoes\", \"hats\"]}。不勾选则按通常的网页行为，只以文本返回第一个值。"
 }

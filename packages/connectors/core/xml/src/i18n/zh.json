@@ -6,5 +6,9 @@
   "Header": "表头",
   "Field to add your tag's attributes": "用于添加标签属性的字段",
   "Add XML header": "添加 XML 头",
-  "XML": "XML"
+  "XML": "XML",
+  "Convert XML to JSON": "XML 转 JSON",
+  "Ignore Attributes": "忽略属性",
+  "The XML string to convert": "要转换的 XML 字符串",
+  "Ignore XML tag attributes during parsing. When unchecked, attributes are included in the output with a \"@_\" prefix (e.g. id=\"42\" becomes {\"@_id\": \"42\"}).": "解析时忽略 XML 标签的属性。不勾选时，属性会带「@_」前缀出现在输出中，例如 id=\"42\" 会变成 {\"@_id\": \"42\"}。"
 }

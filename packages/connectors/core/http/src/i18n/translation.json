@@ -37,5 +37,10 @@
   "Continue workflow on all errors": "Continue workflow on all errors",
   "Continue workflow on 4xx errors": "Continue workflow on 4xx errors",
   "Do not continue (stop the workflow)": "Do not continue (stop the workflow)",
-  "HTTP": "HTTP"
+  "HTTP": "HTTP",
+  "Parse URL": "Parse URL",
+  "Extract the domain, path, and query parameters from a URL.": "Extract the domain, path, and query parameters from a URL.",
+  "Return Values as Arrays": "Return Values as Arrays",
+  "The full URL you want to parse (e.g., https://example.com/page?utm_source=twitter)": "The full URL you want to parse (e.g., https://example.com/page?utm_source=twitter)",
+  "If checked (recommended), all query parameters are returned as JSON arrays to safely group duplicate keys (e.g., {\"tags\": [\"shoes\", \"hats\"]}). If unchecked, standard web behavior applies, returning only the first value as text.": "If checked (recommended), all query parameters are returned as JSON arrays to safely group duplicate keys (e.g., {\"tags\": [\"shoes\", \"hats\"]}). If unchecked, standard web behavior applies, returning only the first value as text."
 }

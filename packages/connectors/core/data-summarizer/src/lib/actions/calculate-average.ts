@@ -3,6 +3,7 @@ import { common } from '../common';
 
 export const calculateAverage = createAction({
   audience: 'both',
+  classification: 'READ',
   name: 'calculateAverage',
   displayName: 'Calculate Average',
   description: 'Calculates the average of a list of values.',

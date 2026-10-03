@@ -38,5 +38,14 @@
   "Allowed tools": "允许的工具",
   "When set, only these tool names are offered to the model": "填写后，只把这些工具提供给模型",
   "Max steps": "最大步数",
-  "How many rounds of tool calls the agent may make before it stops (1 to 20)": "智能体停止前最多可以进行几轮工具调用（1 到 20）"
+  "How many rounds of tool calls the agent may make before it stops (1 to 20)": "智能体停止前最多可以进行几轮工具调用（1 到 20）",
+  "Ask before write actions": "写入类操作前先询问",
+  "Always ask before these tools": "这些工具调用前一律询问",
+  "Approval timeout": "审批超时",
+  "Pause the run and ask a person before calling tools whose names look like writes (create, send, update, delete…). Turning this off lets the agent change other systems on its own.": "调用名称像写入操作（创建、发送、更新、删除等）的工具前，暂停运行并等人确认。关闭后，智能体会自行修改其他系统。",
+  "Tool names that always need a person to approve the call": "调用前必须有人批准的工具名称",
+  "Calls nobody approves in time are rejected automatically": "超时无人批准的调用会被自动拒绝",
+  "1 hour": "1 小时",
+  "4 hours": "4 小时",
+  "24 hours": "24 小时"
 }

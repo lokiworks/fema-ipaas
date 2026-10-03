@@ -87,6 +87,9 @@ export const connectorTranslation = {
  */
 function translateProperty(connectorModelOrProperty: Record<string, unknown>, path: string, i18n: Record<string, string>) {
   const parsedKeys = path.split('.');
+  if (Array.isArray(connectorModelOrProperty) && parsedKeys[0] !== '*') {
+    return connectorModelOrProperty.forEach(item => translateProperty(item, path, i18n))
+  }
   if (parsedKeys[0] === '*') {
     return Object.values(connectorModelOrProperty).forEach(item => translateProperty(item as Record<string, unknown>, parsedKeys.slice(1).join('.'), i18n))
   }

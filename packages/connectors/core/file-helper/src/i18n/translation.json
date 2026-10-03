@@ -120,5 +120,7 @@
   "Opus Audio in Ogg Container": "Opus Audio in Ogg Container",
   "Get File Name": "Get File Name",
   "Get the name of a file": "Get the name of a file",
-  "Files Helper": "Files Helper"
+  "Files Helper": "Files Helper",
+  "File Path in zip": "File Path in zip",
+  "\n- You can put files in specific folders eg. foo/test.txt\n- If not specified, the file would be at the top level of the zip file.\n- If the same File Path is specified for different files, the later file would take precedence.\n": "\n- You can put files in specific folders eg. foo/test.txt\n- If not specified, the file would be at the top level of the zip file.\n- If the same File Path is specified for different files, the later file would take precedence.\n"
 }

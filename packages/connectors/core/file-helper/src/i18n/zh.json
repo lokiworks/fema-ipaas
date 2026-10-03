@@ -120,5 +120,7 @@
   "Opus Audio in Ogg Container": "Ogg 封装的 Opus 音频",
   "Get File Name": "获取文件名",
   "Get the name of a file": "获取文件的名称",
-  "Files Helper": "文件助手"
+  "Files Helper": "文件助手",
+  "File Path in zip": "压缩包内的文件路径",
+  "\n- You can put files in specific folders eg. foo/test.txt\n- If not specified, the file would be at the top level of the zip file.\n- If the same File Path is specified for different files, the later file would take precedence.\n": "\n- 可以把文件放进指定文件夹，例如 foo/test.txt\n- 不填则放在压缩包最外层。\n- 不同文件填了相同的文件路径时，后面的文件会覆盖前面的。\n"
 }

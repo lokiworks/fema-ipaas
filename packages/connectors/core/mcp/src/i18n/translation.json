@@ -30,5 +30,6 @@
   "Authorization URL": "Authorization URL",
   "Token URL": "Token URL",
   "Test server connection": "Test server connection",
-  "Check that the worker can reach the MCP server and read its tool list": "Check that the worker can reach the MCP server and read its tool list"
+  "Check that the worker can reach the MCP server and read its tool list": "Check that the worker can reach the MCP server and read its tool list",
+  "Streamable HTTP": "Streamable HTTP"
 }

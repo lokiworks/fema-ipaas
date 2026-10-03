@@ -3,6 +3,7 @@ import { common } from '../common';
 
 export const getMinMax = createAction({
   audience: 'both',
+  classification: 'READ',
   name: 'getMinMax',
   displayName: 'Find Min and Max',
   description: 'Get the smallest and greatest values from a list of numeric values.',

@@ -1,7 +1,7 @@
 import { MappingMissingBehavior, Nullable } from '@fema-ipaas/core-utils'
-import { MappingTableRow } from '../mapping-table/mapping-table'
 import { ExecutionStatus, Folder, Note, WorkflowStatus, WorkflowTrigger } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
+import { MappingTableRow } from '../mapping-table/mapping-table'
 
 export const WORKFLOW_NAME_MAX_LENGTH = 100
 export const WORKFLOW_DESCRIPTION_MAX_LENGTH = 300

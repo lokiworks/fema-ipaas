@@ -9,7 +9,6 @@
   "Mode": "Mode",
   "Wait for Response": "Wait for Response",
   "Response": "Response",
-  "The workflow to execute. Only published workflows with a \"Callable Workflow\" trigger appear here — unpublished or disabled subflows are hidden.": "The workflow to execute. Only published workflows with a \"Callable Workflow\" trigger appear here — unpublished or disabled subflows are hidden.",
   "Choose Simple for key-value or Advanced for JSON.": "Choose Simple for key-value or Advanced for JSON.",
   "Simple": "Simple",
   "Advanced": "Advanced",
@@ -29,5 +28,6 @@
   "Tab": "Tab",
   "Extra Data": "Extra Data",
   "Optional data sent to every subflow call alongside the batch rows. Reference the output of a previous step.": "Optional data sent to every subflow call alongside the batch rows. Reference the output of a previous step.",
-  "Sub Workflows": "Sub Workflows"
+  "Sub Workflows": "Sub Workflows",
+  "The workflow to execute. Published workflows with a \"Callable Workflow\" trigger appear here; disabled workflows are marked \"(inactive)\" and cannot be executed until they are enabled.": "The workflow to execute. Published workflows with a \"Callable Workflow\" trigger appear here; disabled workflows are marked \"(inactive)\" and cannot be executed until they are enabled."
 }

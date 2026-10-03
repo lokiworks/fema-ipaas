@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user'
 
 export const VARIABLE_NAME_REGEX = /^[a-zA-Z0-9_]+$/
+export const VARIABLE_NAME_MAX_LENGTH = 64
 
 export type VariableId = string
 

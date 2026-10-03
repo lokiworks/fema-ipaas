@@ -30,5 +30,6 @@
   "Authorization URL": "授权地址",
   "Token URL": "Token 地址",
   "Test server connection": "测试服务器连接",
-  "Check that the worker can reach the MCP server and read its tool list": "检查工作节点能否访问 MCP 服务器并读取工具列表"
+  "Check that the worker can reach the MCP server and read its tool list": "检查工作节点能否访问 MCP 服务器并读取工具列表",
+  "Streamable HTTP": "Streamable HTTP"
 }

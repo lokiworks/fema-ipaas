@@ -24,5 +24,6 @@
   "Basic Auth": "Basic Auth",
   "Header Auth": "Header Auth",
   "Webhook": "Webhook",
-  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL.\nIf it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.\n\nTo return data, add a Webhook step to your workflow with the Return Response action.\n": "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL.\nIf it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.\n\nTo return data, add a Webhook step to your workflow with the Return Response action.\n"
+  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL.\nIf it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.\n\nTo return data, add a Webhook step to your workflow with the Return Response action.\n": "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL.\nIf it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.\n\nTo return data, add a Webhook step to your workflow with the Return Response action.\n",
+  "HMAC Signature": "HMAC Signature"
 }

@@ -9,6 +9,7 @@ This action add a tag to the current execution, this tag can be used to filter t
 
 export const addTag = createAction({
   audience: 'both',
+  classification: 'WRITE',
   name: 'add_tag',
   displayName: 'Add Tag',
   description: 'Add a tag to the current execution',

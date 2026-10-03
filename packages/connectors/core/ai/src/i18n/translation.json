@@ -38,5 +38,14 @@
   "Allowed tools": "Allowed tools",
   "When set, only these tool names are offered to the model": "When set, only these tool names are offered to the model",
   "Max steps": "Max steps",
-  "How many rounds of tool calls the agent may make before it stops (1 to 20)": "How many rounds of tool calls the agent may make before it stops (1 to 20)"
+  "How many rounds of tool calls the agent may make before it stops (1 to 20)": "How many rounds of tool calls the agent may make before it stops (1 to 20)",
+  "Ask before write actions": "Ask before write actions",
+  "Always ask before these tools": "Always ask before these tools",
+  "Approval timeout": "Approval timeout",
+  "Pause the run and ask a person before calling tools whose names look like writes (create, send, update, delete…). Turning this off lets the agent change other systems on its own.": "Pause the run and ask a person before calling tools whose names look like writes (create, send, update, delete…). Turning this off lets the agent change other systems on its own.",
+  "Tool names that always need a person to approve the call": "Tool names that always need a person to approve the call",
+  "Calls nobody approves in time are rejected automatically": "Calls nobody approves in time are rejected automatically",
+  "1 hour": "1 hour",
+  "4 hours": "4 hours",
+  "24 hours": "24 hours"
 }

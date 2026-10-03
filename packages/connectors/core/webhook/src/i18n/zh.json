@@ -24,5 +24,6 @@
   "Basic Auth": "基本认证",
   "Header Auth": "头部认证",
   "Webhook": "Webhook",
-  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL.\nIf it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.\n\nTo return data, add a Webhook step to your workflow with the Return Response action.\n": "**同步请求：**\n\n如果你希望这个 webhook 返回响应，请在 URL 末尾加上 `/sync`。\n若处理超过 {{webhookTimeoutSeconds}} 秒，会返回 408 请求超时。\n\n要返回数据，请在工作流中添加一个 Webhook 步骤，并使用「返回响应」动作。\n"
+  "**Synchronous Requests:**\n\nIf you expect a response from this webhook, add `/sync` to the end of the URL.\nIf it takes more than {{webhookTimeoutSeconds}} seconds, it will return a 408 Request Timeout response.\n\nTo return data, add a Webhook step to your workflow with the Return Response action.\n": "**同步请求：**\n\n如果你希望这个 webhook 返回响应，请在 URL 末尾加上 `/sync`。\n若处理超过 {{webhookTimeoutSeconds}} 秒，会返回 408 请求超时。\n\n要返回数据，请在工作流中添加一个 Webhook 步骤，并使用「返回响应」动作。\n",
+  "HMAC Signature": "HMAC 签名"
 }

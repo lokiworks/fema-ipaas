@@ -70,6 +70,11 @@ describe('issueUtils.insightOf', () => {
         expect(insight.fixes[1].disabledReason).toBe(ReplayReason.CONNECTION_STILL_BROKEN)
     })
 
+    it('does not offer re-authorization for a connection that was deleted', () => {
+        const insight = issueUtils.insightOf({ issue: { kind: IssueKind.CONNECTION, errorCode: 'CONNECTION_EXPIRED' }, connectionHealthy: false, connectionMissing: true })
+        expect(insight.fixes).toEqual([{ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: ReplayReason.CONNECTION_DELETED }])
+    })
+
     it('allows replay once the connection is healthy again', () => {
         const insight = issueUtils.insightOf({ issue: { kind: IssueKind.CONNECTION, errorCode: 'CONNECTION_EXPIRED' }, connectionHealthy: true })
         expect(insight.fixes).toEqual([{ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: null }])

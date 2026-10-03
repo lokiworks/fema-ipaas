@@ -15,5 +15,15 @@
   "Select the delimiter type for the CSV file.": "Select the delimiter type for the CSV file.",
   "Comma": "Comma",
   "Tab": "Tab",
-  "CSV": "CSV"
+  "CSV": "CSV",
+  "Convert Excel to CSV": "Convert Excel to CSV",
+  "Converts an Excel file (.xlsx or .xls) into CSV text.": "Converts an Excel file (.xlsx or .xls) into CSV text.",
+  "Excel File": "Excel File",
+  "Sheet Name": "Sheet Name",
+  "Delimiter": "Delimiter",
+  "The Excel file (.xlsx or .xls) to convert to CSV.": "The Excel file (.xlsx or .xls) to convert to CSV.",
+  "Name of the sheet to convert. Leave blank to use the first sheet.": "Name of the sheet to convert. Leave blank to use the first sheet.",
+  "Character used to separate values in the output CSV.": "Character used to separate values in the output CSV.",
+  "Comma (,)": "Comma (,)",
+  "Semicolon (;)": "Semicolon (;)"
 }

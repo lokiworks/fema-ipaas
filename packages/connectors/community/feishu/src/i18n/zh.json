@@ -94,5 +94,9 @@
   "Read the department, manager, job title and suspension state of a Feishu account": "读取飞书账号的部门、直属上级、职务和暂停状态",
   "The open_id of the member to read, from Find User or Provision Employee Account.": "要读取的成员的 open_id，来自「查找用户」或「开通员工账号」。",
   "Department ID Format": "部门 ID 格式",
-  "Optional. Give a department ID of the format you work with, for example one starting with od-, and the departments come back in that format. Empty returns open_department_id values.": "可选。填一个你在用的格式的部门 ID，例如以 od- 开头的，返回的部门就用同样的格式；留空返回 open_department_id。"
+  "Optional. Give a department ID of the format you work with, for example one starting with od-, and the departments come back in that format. Empty returns open_department_id values.": "可选。填一个你在用的格式的部门 ID，例如以 od- 开头的，返回的部门就用同样的格式；留空返回 open_department_id。",
+  "App ID": "App ID",
+  "App Secret": "App Secret",
+  "open_id": "open_id",
+  "Markdown": "Markdown"
 }

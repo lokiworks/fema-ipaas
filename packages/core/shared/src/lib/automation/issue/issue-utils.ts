@@ -60,7 +60,7 @@ function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
     return IssueSeverity.LOW
 }
 
-function insightOf({ issue, connectionHealthy }: InsightOfParams): IssueInsight {
+function insightOf({ issue, connectionHealthy, connectionMissing = false }: InsightOfParams): IssueInsight {
     if (issue.kind === IssueKind.DRIFT) {
         return {
             cause: IssueInsightCause.RESULT_MISMATCH,
@@ -70,13 +70,13 @@ function insightOf({ issue, connectionHealthy }: InsightOfParams): IssueInsight 
         }
     }
     if (issue.kind === IssueKind.CONNECTION) {
-        const replayBlocked = connectionHealthy ? null : ReplayReason.CONNECTION_STILL_BROKEN
+        const replayBlocked = connectionMissing ? ReplayReason.CONNECTION_DELETED : connectionHealthy ? null : ReplayReason.CONNECTION_STILL_BROKEN
         return {
             cause: IssueInsightCause.CONNECTION_AUTH,
             confidence: 0.96,
             httpStatus: null,
             fixes: [
-                ...(connectionHealthy ? [] : [fix({ kind: IssueFixKind.REAUTHORIZE_CONNECTION })]),
+                ...(connectionHealthy || connectionMissing ? [] : [fix({ kind: IssueFixKind.REAUTHORIZE_CONNECTION })]),
                 fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: replayBlocked }),
             ],
         }
@@ -206,6 +206,7 @@ type ClassifyFailureParams = {
 type InsightOfParams = {
     issue: Pick<Issue, 'kind' | 'errorCode'>
     connectionHealthy: boolean
+    connectionMissing?: boolean
 }
 
 export type FailureClassification = {

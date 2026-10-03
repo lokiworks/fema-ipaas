@@ -3,6 +3,7 @@ import { common } from '../common';
 
 export const calculateSum = createAction({
   audience: 'both',
+  classification: 'READ',
   name: 'calculateSum',
   displayName: 'Calculate Sum',
   description: 'Calculates the sum of a list of values.',

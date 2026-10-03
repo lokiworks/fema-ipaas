@@ -6,5 +6,9 @@
   "Header": "Header",
   "Field to add your tag's attributes": "Field to add your tag's attributes",
   "Add XML header": "Add XML header",
-  "XML": "XML"
+  "XML": "XML",
+  "Convert XML to JSON": "Convert XML to JSON",
+  "Ignore Attributes": "Ignore Attributes",
+  "The XML string to convert": "The XML string to convert",
+  "Ignore XML tag attributes during parsing. When unchecked, attributes are included in the output with a \"@_\" prefix (e.g. id=\"42\" becomes {\"@_id\": \"42\"}).": "Ignore XML tag attributes during parsing. When unchecked, attributes are included in the output with a \"@_\" prefix (e.g. id=\"42\" becomes {\"@_id\": \"42\"})."
 }

@@ -4,6 +4,7 @@ import { isNil } from '@fema-ipaas/connector-sdk';
 
 export const countUniques = createAction({
   audience: 'both',
+  classification: 'READ',
   name: 'countUniques',
   displayName: 'Count Uniques',
   description: 'Counts the number of unique values for multiple fields',

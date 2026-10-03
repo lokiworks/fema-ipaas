@@ -8,7 +8,6 @@
   "Mode": "模式",
   "Wait for Response": "等待响应",
   "Response": "答复",
-  "The workflow to execute. Only published workflows with a \"Callable Workflow\" trigger appear here — unpublished or disabled subflows are hidden.": "要执行的工作流。这里只列出已发布且带有「可被调用的工作流」触发器的工作流——未发布或已禁用的子工作流不会显示。",
   "Choose Simple for key-value or Advanced for JSON.": "键值对选「简单」，JSON 选「高级」。",
   "Simple": "简单",
   "Advanced": "高级",
@@ -29,5 +28,6 @@
   "Tab": "制表符",
   "Extra Data": "附加数据",
   "Optional data sent to every subflow call alongside the batch rows. Reference the output of a previous step.": "可选数据，随每一批行一并传给子工作流。可以引用上一步骤的输出。",
-  "Sub Workflows": "子工作流"
+  "Sub Workflows": "子工作流",
+  "The workflow to execute. Published workflows with a \"Callable Workflow\" trigger appear here; disabled workflows are marked \"(inactive)\" and cannot be executed until they are enabled.": "要执行的工作流。带有「可被调用的工作流」触发器的已发布工作流会出现在这里；已停用的工作流标有「(inactive)」，启用后才能执行。"
 }

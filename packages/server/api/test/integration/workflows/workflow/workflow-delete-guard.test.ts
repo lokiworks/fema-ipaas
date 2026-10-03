@@ -1,4 +1,4 @@
-import { ConnectionType, ConnectorType, PackageType, WorkflowActionType, WorkflowStatus, WorkflowTriggerType, WorkflowVersionState } from '@fema-ipaas/shared'
+import { ConnectionType, ConnectorType, PackageType, WorkflowActionType, WorkflowOperationStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger, FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
@@ -116,6 +116,57 @@ describe('Deleting something that is still in use', () => {
         })
         const allowed = await ctx.delete(`/v1/connections/${unusedCreated.json().id}`)
         expect(allowed.statusCode).toBe(StatusCodes.NO_CONTENT)
+    })
+})
+
+describe('Deleting workflows in a batch honours the same guard', () => {
+    async function batchDelete({ ctx, workflowIds }: { ctx: TestContext, workflowIds: string[] }) {
+        return ctx.inject({
+            method: 'DELETE',
+            url: '/api/v1/project-workspace/batch',
+            body: { projectId: ctx.project.id, workflowIds },
+        })
+    }
+
+    async function deletingCount({ ids }: { ids: string[] }): Promise<number> {
+        const rows = await Promise.all(ids.map((id) => db.findOneBy<{ operationStatus: WorkflowOperationStatus }>('workflow', { id })))
+        return rows.filter((row) => row?.operationStatus === WorkflowOperationStatus.DELETING).length
+    }
+
+    it('blocks the whole batch when one workflow is called by a workflow outside it', async () => {
+        const ctx = await createTestContext(app!)
+        const target = await saveWorkflow({ ctx, name: 'Batch target' })
+        const free = await saveWorkflow({ ctx, name: 'Batch free' })
+        await saveWorkflow({ ctx, name: 'Outside caller', nextAction: callWorkflowStep(target.externalId) })
+
+        const response = await batchDelete({ ctx, workflowIds: [free.id, target.id] })
+
+        expect(response.statusCode).toBe(StatusCodes.CONFLICT)
+        expect(JSON.stringify(response.json())).toContain('Outside caller')
+        expect(await deletingCount({ ids: [free.id, target.id] })).toBe(0)
+    })
+
+    it('allows deleting a workflow together with the only workflows that call it', async () => {
+        const ctx = await createTestContext(app!)
+        const target = await saveWorkflow({ ctx, name: 'Pair target' })
+        const caller = await saveWorkflow({ ctx, name: 'Pair caller', nextAction: callWorkflowStep(target.externalId) })
+
+        const response = await batchDelete({ ctx, workflowIds: [caller.id, target.id] })
+
+        expect(response.statusCode).toBe(StatusCodes.OK)
+        expect(response.json().deleted).toBe(2)
+        expect(await deletingCount({ ids: [caller.id, target.id] })).toBe(2)
+    })
+
+    it('deletes unreferenced workflows as before', async () => {
+        const ctx = await createTestContext(app!)
+        const first = await saveWorkflow({ ctx, name: 'Plain one' })
+        const second = await saveWorkflow({ ctx, name: 'Plain two' })
+
+        const response = await batchDelete({ ctx, workflowIds: [first.id, second.id] })
+
+        expect(response.statusCode).toBe(StatusCodes.OK)
+        expect(response.json().deleted).toBe(2)
     })
 })
 

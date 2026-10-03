@@ -8,9 +8,9 @@ import { workflowService } from './workflow.service'
 const mcpServiceRepo = repoFactory(McpServiceEntity)
 
 export const workflowReferenceService = (log: FastifyBaseLogger) => ({
-    async assertNotReferenced({ workflow }: AssertNotReferencedParams): Promise<void> {
+    async assertNotReferenced({ workflow, ignoredCallerIds = [] }: AssertNotReferencedParams): Promise<void> {
         const [callers, mcpServices] = await Promise.all([
-            this.callerWorkflows({ workflow }),
+            this.callerWorkflows({ workflow, ignoredCallerIds }),
             this.mcpServiceNames({ workflow }),
         ])
         const message = workflowReferenceUtils.blockingMessage({
@@ -22,9 +22,9 @@ export const workflowReferenceService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async callerWorkflows({ workflow }: AssertNotReferencedParams): Promise<PopulatedWorkflow[]> {
+    async callerWorkflows({ workflow, ignoredCallerIds = [] }: AssertNotReferencedParams): Promise<PopulatedWorkflow[]> {
         const page = await workflowService(log).list({ projectIds: [workflow.projectId], cursorRequest: null, includeTriggerSource: false })
-        return page.data.filter((candidate) => candidate.id !== workflow.id && workflowReferenceUtils.callsSubflow({ candidate, target: workflow }))
+        return page.data.filter((candidate) => candidate.id !== workflow.id && !ignoredCallerIds.includes(candidate.id) && workflowReferenceUtils.callsSubflow({ candidate, target: workflow }))
     },
 
     async mcpServiceNames({ workflow }: AssertNotReferencedParams): Promise<string[]> {
@@ -67,6 +67,7 @@ const SUBFLOWS_CONNECTOR = '@fema-ipaas/connector-subflows'
 
 type AssertNotReferencedParams = {
     workflow: PopulatedWorkflow
+    ignoredCallerIds?: string[]
 }
 
 type BlockingParams = {

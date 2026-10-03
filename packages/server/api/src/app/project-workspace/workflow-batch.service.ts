@@ -21,6 +21,7 @@ import { lockService } from '../core/collaborative/lock/lock.service'
 import { projectService } from '../project/project-service'
 import { workflowReleaseRepo, workflowReleaseService } from '../release/workflow-release.service'
 import { folderRepo } from '../workflows/folder/folder.service'
+import { workflowReferenceService } from '../workflows/workflow/workflow-reference.service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionRepo } from '../workflows/workflow-version/workflow-version.service'
@@ -72,6 +73,11 @@ export const workflowBatchService = (log: FastifyBaseLogger) => ({
     },
 
     async delete({ projectId, workflowIds, userId }: DeleteParams): Promise<BatchDeleteResponse> {
+        const workflows = await loadWorkflows({ log, projectId, workflowIds })
+        const batchIds = workflows.map((workflow) => workflow.id)
+        for (const workflow of workflows) {
+            await workflowReferenceService(log).assertNotReferenced({ workflow, ignoredCallerIds: batchIds })
+        }
         const pending = await workflowReleaseRepo().findBy({ projectId, workflowId: In(workflowIds), status: WorkflowReleaseStatus.PENDING })
         await Promise.all(pending.map((release) => workflowReleaseRepo().update({ id: release.id, projectId }, {
             status: WorkflowReleaseStatus.WITHDRAWN,
@@ -79,7 +85,6 @@ export const workflowBatchService = (log: FastifyBaseLogger) => ({
             decidedAt: dayjsUtil().toISOString(),
             comment: WORKFLOW_DELETED_WITHDRAW_COMMENT,
         })))
-        const workflows = await loadWorkflows({ log, projectId, workflowIds })
         for (const workflow of workflows) {
             await workflowService(log).delete({ id: workflow.id, projectId, previousWorkflow: workflow, userId })
         }

@@ -24,8 +24,10 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
             tenantId: request.principal.tenant.id,
             externalId: request.body.externalId,
         })
-        if (!isNil(existingConnection) && request.body.type !== PLACEHOLDER_CONNECTION_TYPE) {
-            await connectionAccessService(request.log).assertCanManage({ connection: existingConnection, principal: principalOf(request.principal) })
+        if (!isNil(existingConnection)) {
+            await (request.body.type === PLACEHOLDER_CONNECTION_TYPE
+                ? connectionAccessService(request.log).assertVisible({ connection: existingConnection, principal: principalOf(request.principal) })
+                : connectionAccessService(request.log).assertCanManage({ connection: existingConnection, principal: principalOf(request.principal) }))
         }
         const baseUpsert = {
             tenantId: request.principal.tenant.id,

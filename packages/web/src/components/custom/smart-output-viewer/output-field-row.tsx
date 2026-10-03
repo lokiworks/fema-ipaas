@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/tooltip';
 import { VirtualizedList } from '@/components/ui/virtualized-list';
 import { isStepFileUrl } from '@/lib/dom-utils';
+import { cn } from '@/lib/utils';
 
 import { FieldTypeIcon } from './field-type-icon';
 import { FormatValue, getValueByDotPath } from './format-value';
@@ -265,19 +266,26 @@ function SchemaFieldRow({ field, json, depth }: SchemaFieldRowProps) {
   return (
     <div className={isTop ? 'border-b border-dividers last:border-b-0' : ''}>
       <div
-        className={`flex items-start gap-3 ${
-          isTop ? 'py-2.5' : 'py-1.5'
-        } pr-3 hover:bg-accent/50`}
+        className={cn(
+          'flex items-start gap-3 pr-3 hover:bg-accent/50',
+          isTop ? 'py-2.5' : 'py-1.5',
+        )}
         style={{ paddingLeft: rowPaddingLeft }}
       >
         <div
-          className={`flex items-center gap-1.5 ${labelWidth} shrink-0 pt-0.5`}
+          className={cn(
+            'flex items-center gap-1.5 shrink-0 pt-0.5',
+            labelWidth,
+          )}
         >
           {isExpandable ? (
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className={`flex items-center gap-1 text-sm ${labelWeight} text-muted-foreground min-w-0`}
+              className={cn(
+                'flex items-center gap-1 text-sm text-muted-foreground min-w-0',
+                labelWeight,
+              )}
             >
               {expanded ? (
                 <ChevronDown className="h-3.5 w-3.5 shrink-0" />
@@ -289,7 +297,10 @@ function SchemaFieldRow({ field, json, depth }: SchemaFieldRowProps) {
             </button>
           ) : (
             <span
-              className={`flex items-center gap-1 text-sm ${labelWeight} text-muted-foreground truncate`}
+              className={cn(
+                'flex items-center gap-1 text-sm text-muted-foreground truncate',
+                labelWeight,
+              )}
             >
               <FieldTypeIcon value={value} format={field.format} />
               {label}

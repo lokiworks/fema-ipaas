@@ -175,6 +175,11 @@ function useReplay(id: string) {
       void queryClient.invalidateQueries({ queryKey: [ISSUES_KEY] });
       toast.success(
         t('{count} runs queued for replay', { count: result.queued }),
+        {
+          description: t(
+            'The issue is not closed automatically. Once the runs succeed, mark it as resolved.',
+          ),
+        },
       );
     },
     onError: () => internalErrorToast(),

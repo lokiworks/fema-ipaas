@@ -13,6 +13,7 @@ import { executionsApi } from '@/features/executions/api/executions-api';
 import { api } from '@/lib/api';
 
 import { runLogsApi } from '../api/run-logs-api';
+import { followUpRefresh } from '../utils/follow-up-refresh';
 
 function useRunLogs({ query }: { query: ListRunLogsRequestQuery }) {
   return useQuery({
@@ -87,8 +88,12 @@ function useRerun({
       if (skipped > 0) {
         toast.warning(t('runLogsRerunSkipped', { count: skipped }));
       }
-      void queryClient.invalidateQueries({ queryKey: [RUN_LOGS_KEY] });
-      void queryClient.invalidateQueries({ queryKey: [RUN_LOG_DETAIL_KEY] });
+      const refresh = () => {
+        void queryClient.invalidateQueries({ queryKey: [RUN_LOGS_KEY] });
+        void queryClient.invalidateQueries({ queryKey: [RUN_LOG_DETAIL_KEY] });
+      };
+      refresh();
+      followUpRefresh.scheduleFollowUps({ refresh });
       onDone(response);
     },
     onError: (error) => {
@@ -111,8 +116,12 @@ function useTerminate({ onDone }: { onDone: () => void }) {
     }) => runLogsApi.terminate({ id, request }),
     onSuccess: () => {
       toast.success(t('Run terminated'));
-      void queryClient.invalidateQueries({ queryKey: [RUN_LOGS_KEY] });
-      void queryClient.invalidateQueries({ queryKey: [RUN_LOG_DETAIL_KEY] });
+      const refresh = () => {
+        void queryClient.invalidateQueries({ queryKey: [RUN_LOGS_KEY] });
+        void queryClient.invalidateQueries({ queryKey: [RUN_LOG_DETAIL_KEY] });
+      };
+      refresh();
+      followUpRefresh.scheduleFollowUps({ refresh });
       onDone();
     },
     onError: (error) => {

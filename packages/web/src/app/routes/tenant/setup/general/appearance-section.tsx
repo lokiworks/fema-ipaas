@@ -28,6 +28,7 @@ import { Switch } from '@/components/ui/switch';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { colorContrast, MIN_UI_CONTRAST } from '@/lib/color-contrast';
+import { primaryColorUtils } from '@/lib/primary-color-utils';
 import { cn } from '@/lib/utils';
 
 const hexColor = z.string().regex(HEX_COLOR_PATTERN, 'invalidHexColor');
@@ -437,7 +438,16 @@ function LoginPreview({
             <div className="h-6 rounded border" />
             <div
               className="flex h-6 items-center justify-center rounded bg-primary text-primary-foreground"
-              style={buttonColor ? { backgroundColor: buttonColor } : undefined}
+              style={
+                buttonColor
+                  ? {
+                      backgroundColor: buttonColor,
+                      color: primaryColorUtils.readableForeground({
+                        hex: buttonColor,
+                      }),
+                    }
+                  : undefined
+              }
             >
               {t('Sign in')}
             </div>

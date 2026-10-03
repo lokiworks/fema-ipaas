@@ -21,6 +21,8 @@ import {
 } from '@/features/connections/hooks/connections-hooks';
 import { connectionAccessUiUtils } from '@/features/connections/utils/connection-access-utils';
 
+import { DialogLoadingBody } from './dialog-loading-body';
+
 export function DeleteConnectionDialog({
   connectionId,
   open,
@@ -66,7 +68,7 @@ function DeleteConnectionContent({
     connectionsMutations.useDeleteAccessibleConnection();
 
   if (isNil(detail)) {
-    return null;
+    return <DialogLoadingBody />;
   }
 
   const consequences = connectionAccessUiUtils.buildDeleteConsequences({

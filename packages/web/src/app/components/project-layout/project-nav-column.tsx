@@ -51,15 +51,15 @@ import { pathOf, useProjectNavTabs } from './use-project-nav-tabs';
 
 import { ProjectDashboardLayoutHeaderTab } from '.';
 
-export function ProjectNavColumn() {
+export function ProjectNavColumn({ className }: { className?: string }) {
   const { project } = projectCollectionUtils.useCurrentProject();
   if (!project) {
     return null;
   }
-  return <ProjectSidebar />;
+  return <ProjectSidebar className={className} />;
 }
 
-function ProjectSidebar() {
+function ProjectSidebar({ className }: { className?: string }) {
   const { project } = projectCollectionUtils.useCurrentProject();
   const { primaryTabs, secondaryTabs } = useProjectNavTabs();
   const context = useWorkspaceContext(project);
@@ -183,7 +183,13 @@ function ProjectSidebar() {
   ];
 
   return (
-    <nav className="flex h-full w-[260px] shrink-0 flex-col gap-3 overflow-y-auto border-r bg-background px-2 py-3">
+    <nav
+      aria-label={t('Project navigation')}
+      className={cn(
+        'flex h-full w-[260px] shrink-0 flex-col gap-3 overflow-y-auto border-r bg-background px-2 py-3',
+        className,
+      )}
+    >
       <div className="flex flex-col gap-1">
         <div className="flex items-center px-2 text-xs text-muted-foreground">
           <span className="flex-1">{t('Current project')}</span>

@@ -57,7 +57,6 @@ export const LanguageToggle = () => {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            role="combobox"
             className={cn(
               'w-full justify-between font-normal',
               !selectedLanguage && 'text-muted-foreground',

@@ -65,6 +65,7 @@ import {
   projectDirectoryHooks,
   projectDirectoryUtils,
 } from '@/features/projects/api/project-directory-api';
+import { useSubmitLock } from '@/hooks/use-submit-lock';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
@@ -72,6 +73,7 @@ import { cn } from '@/lib/utils';
 import { workflowsApi } from '../api/workflows-api';
 import {
   APP_EVENT_TRIGGER,
+  DEFAULT_NEW_WORKFLOW_TRIGGER,
   NEW_WORKFLOW_TRIGGER_CHOICES,
   newWorkflowTriggerUtils,
 } from '../utils/new-workflow-triggers';
@@ -138,6 +140,7 @@ function NewWorkflowForm({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
+  const submitLock = useSubmitLock();
   const form = useForm<NewWorkflowValues>({
     resolver: zodResolver(NewWorkflowSchema),
     mode: 'onChange',
@@ -177,6 +180,9 @@ function NewWorkflowForm({
       });
       return;
     }
+    if (!submitLock.acquire()) {
+      return;
+    }
     setIsCreating(true);
     try {
       const description = values.description.trim();
@@ -196,6 +202,7 @@ function NewWorkflowForm({
       navigate(`/projects/${values.projectId}/workflows/${workflow.id}`);
     } catch (error) {
       setIsCreating(false);
+      submitLock.release();
       form.setError('root.serverError', {
         type: 'manual',
         message: api.extractServerErrorMessage(
@@ -465,7 +472,7 @@ function defaultValues({
     projectId: projectId ?? '',
     displayName: '',
     description: '',
-    trigger: NEW_WORKFLOW_TRIGGER_CHOICES[0].value,
+    trigger: DEFAULT_NEW_WORKFLOW_TRIGGER,
   };
 }
 

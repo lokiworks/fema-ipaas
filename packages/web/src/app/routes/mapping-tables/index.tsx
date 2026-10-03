@@ -42,6 +42,7 @@ import {
   mappingTablesHooks,
 } from '@/features/mapping-tables';
 import { useAuthorization } from '@/hooks/authorization-hooks';
+import { useSubmitLock } from '@/hooks/use-submit-lock';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
 
@@ -373,6 +374,7 @@ function MappingTableEditor({
                 className="grid grid-cols-[1fr_1fr_auto] gap-2"
               >
                 <Input
+                  aria-label={draft.keyLabel || t('Key')}
                   value={row.k}
                   disabled={!canWrite}
                   onChange={(event) =>
@@ -386,6 +388,7 @@ function MappingTableEditor({
                   }
                 />
                 <Input
+                  aria-label={draft.valueLabel || t('Value')}
                   value={row.v}
                   disabled={!canWrite}
                   onChange={(event) =>
@@ -617,15 +620,17 @@ function NewTableDialog({
     defaultValue: null,
     rows: [],
   };
+  const submitLock = useSubmitLock();
   const canSubmit = name.trim().length > 0 && !isPending;
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canSubmit) {
+    if (!canSubmit || !submitLock.acquire()) {
       return;
     }
     save(
       { id: null, request },
       {
+        onSettled: submitLock.release,
         onSuccess: (table) => {
           onCreated(table.id);
           setName('');

@@ -1,6 +1,7 @@
 import {
   formErrors,
   DefaultProjectRole,
+  FlagId,
   UserInvitationWithLink,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,9 +34,13 @@ import {
 import { internalErrorToast } from '@/components/ui/sonner';
 import { userInvitationMutations } from '@/features/invitations';
 import { invitationUtils } from '@/features/invitations/utils/invitation-utils';
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false);
+  const { data: smtpConfigured } = flagsHooks.useFlag<boolean>(
+    FlagId.SMTP_CONFIGURED,
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -46,9 +51,13 @@ export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
         <DialogHeader>
           <DialogTitle>{t('Invite member')}</DialogTitle>
           <DialogDescription>
-            {t(
-              'They receive an email with a link. The role decides what they can do once they join.',
-            )}
+            {smtpConfigured === false
+              ? t(
+                  'Email is not configured, so no email is sent. You get a link to send them yourself. The role decides what they can do once they join.',
+                )
+              : t(
+                  'They receive an email with a link. The role decides what they can do once they join.',
+                )}
           </DialogDescription>
         </DialogHeader>
         <InviteMemberForm

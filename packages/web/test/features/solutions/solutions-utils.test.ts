@@ -436,3 +436,62 @@ describe('solutionsUtils.versionNotesLabel', () => {
     );
   });
 });
+
+describe('solutionsUtils.mergeCheckResults', () => {
+  it('replaces only the rechecked item and keeps the order of the rest', () => {
+    const current = [
+      result({ key: 'conn', blocking: true, status: SolutionCheckStatus.PASS }),
+      result({
+        key: 'scope',
+        blocking: true,
+        status: SolutionCheckStatus.FAIL,
+      }),
+      result({
+        key: 'ip',
+        blocking: false,
+        status: SolutionCheckStatus.NEEDS_CONFIRM,
+      }),
+    ];
+    const merged = solutionsUtils.mergeCheckResults({
+      current,
+      updated: [
+        result({
+          key: 'scope',
+          blocking: true,
+          status: SolutionCheckStatus.PASS,
+        }),
+      ],
+    });
+    expect(merged.results.map((item) => item.key)).toEqual([
+      'conn',
+      'scope',
+      'ip',
+    ]);
+    expect(merged.results.map((item) => item.status)).toEqual([
+      SolutionCheckStatus.PASS,
+      SolutionCheckStatus.PASS,
+      SolutionCheckStatus.NEEDS_CONFIRM,
+    ]);
+    expect(current[1].status).toBe(SolutionCheckStatus.FAIL);
+  });
+
+  it('ignores results that are not in the current list', () => {
+    const merged = solutionsUtils.mergeCheckResults({
+      current: [
+        result({
+          key: 'conn',
+          blocking: true,
+          status: SolutionCheckStatus.PASS,
+        }),
+      ],
+      updated: [
+        result({
+          key: 'other',
+          blocking: true,
+          status: SolutionCheckStatus.PASS,
+        }),
+      ],
+    });
+    expect(merged.results.map((item) => item.key)).toEqual(['conn']);
+  });
+});

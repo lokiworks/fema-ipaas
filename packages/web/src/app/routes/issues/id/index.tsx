@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { ResourceNotFound } from '@/components/custom/resource-not-found';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -51,11 +52,15 @@ import {
 } from '@/features/issues';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { notFoundError } from '@/lib/not-found-error';
 import { cn } from '@/lib/utils';
 
 function IssueDetailPage() {
   const { issueId } = useParams<{ issueId: string }>();
-  const { data: issue, isLoading } = issuesHooks.useIssue(issueId!);
+  const { data: issue, isLoading, error } = issuesHooks.useIssue(issueId!);
+  if (notFoundError.isNotFound(error)) {
+    return <ResourceNotFound kind="issue" />;
+  }
   if (isLoading || !issue) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -617,7 +622,9 @@ function ActivityCard({
             <li key={activity.id} className="flex flex-col gap-0.5 text-sm">
               <span className="text-xs text-muted-foreground">
                 <FormattedDate date={new Date(activity.created)} />
-                {activity.actorId ? ` · ${nameOf(activity.actorId)}` : ''}
+                {activity.actorId && issueUiUtils.showsActorInHeader(activity)
+                  ? ` · ${nameOf(activity.actorId)}`
+                  : ''}
               </span>
               <span className="whitespace-pre-line break-words">
                 {issueUiUtils.activityText({ activity, nameOf })}

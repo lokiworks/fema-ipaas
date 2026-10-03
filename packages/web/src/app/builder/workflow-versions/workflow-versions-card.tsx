@@ -92,7 +92,7 @@ const WorkflowVersionDetailsCard = React.memo(
           <FormattedDate
             date={new Date(workflowVersion.created)}
             includeTime={true}
-            className="truncate whitespace-nowrap text-sm font-medium leading-none select-none cursor-default"
+            className="break-words text-sm font-medium leading-tight select-none cursor-default"
           ></FormattedDate>
           <p className="flex gap-1 text-xs text-muted-foreground">
             {workflowVersion.state === WorkflowVersionState.DRAFT

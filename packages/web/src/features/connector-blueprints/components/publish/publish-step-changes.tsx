@@ -215,9 +215,10 @@ function DiffPane({
               key={index}
               className={cn(
                 'whitespace-pre',
-                line.kind === 'added' && 'bg-success-100/50 text-success-700',
+                line.kind === 'added' &&
+                  'bg-success-100/50 text-success-700 dark:bg-success-950/50',
                 line.kind === 'removed' &&
-                  'bg-destructive-100/50 text-destructive-700',
+                  'bg-destructive-100/50 text-destructive-700 dark:bg-destructive-950/50',
               )}
             >
               {line.text || ' '}

@@ -264,7 +264,7 @@ function ConnectionsPage() {
   >[] = [
     {
       accessorKey: 'displayName',
-      size: 280,
+      size: 220,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -298,7 +298,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'status',
-      size: 140,
+      size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -333,7 +333,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'allProjects',
-      size: 160,
+      size: 150,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -350,7 +350,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'workflowIds',
-      size: 130,
+      size: 110,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -362,7 +362,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'ownerId',
-      size: 140,
+      size: 130,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Owner')} icon={User} />
       ),
@@ -372,7 +372,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'myPermission',
-      size: 96,
+      size: 90,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('My Permission')} />
       ),
@@ -382,7 +382,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'updated',
-      size: 150,
+      size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -396,7 +396,7 @@ function ConnectionsPage() {
     },
     {
       id: 'actions',
-      size: 200,
+      size: 180,
       cell: ({ row }) => {
         const connection = row.original;
         const manage = connectionAccessUtils.canManage(connection.myPermission);

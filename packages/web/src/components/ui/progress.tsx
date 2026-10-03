@@ -1,5 +1,6 @@
 'use client';
 
+import { t } from 'i18next';
 import { Progress as ProgressPrimitive } from 'radix-ui';
 import * as React from 'react';
 
@@ -17,6 +18,7 @@ function Progress({
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
+      aria-label={t('Progress')}
       className={cn(
         'relative h-2 w-full overflow-hidden rounded-full bg-primary/20',
         className,

@@ -2,11 +2,14 @@ import { LlmProvider } from '@fema-ipaas/core-utils';
 import {
   AiFeature,
   PlanAnswer,
+  ProjectDirectoryItem,
   WorkflowPlan,
   WorkflowPlanStep,
 } from '@fema-ipaas/shared';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
+
+import { projectDirectoryUtils } from '@/features/projects/api/project-directory-api';
 
 function featureLabel(feature: AiFeature): string {
   switch (feature) {
@@ -93,6 +96,20 @@ function needsConnection(step: WorkflowPlanStep): boolean {
   return step.requiresConnection && step.connectionExternalId === null;
 }
 
+function targetProjectOptions({
+  directory,
+  currentId,
+}: {
+  directory: ProjectDirectoryItem[];
+  currentId: string;
+}): ProjectDirectoryItem[] {
+  return directory.filter(
+    (project) =>
+      project.id === currentId ||
+      projectDirectoryUtils.canCreateWorkflow(project),
+  );
+}
+
 function planAnswers({
   questions,
   answers,
@@ -119,6 +136,7 @@ export const aiUtils = {
   needsConnection,
   stepsNeedingConnection,
   planAnswers,
+  targetProjectOptions,
 };
 
 export type MonthOption = { value: string; label: string };

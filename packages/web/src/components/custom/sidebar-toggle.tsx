@@ -11,8 +11,11 @@ import {
 } from '@/components/ui/tooltip';
 
 export const SidebarToggle = () => {
-  const { open, isHoverExpanded, setOpen } = useSidebar();
+  const { open, isHoverExpanded, setOpen, isMobile } = useSidebar();
   const pinnedOpen = open && !isHoverExpanded;
+  if (isMobile) {
+    return null;
+  }
   return (
     <Tooltip>
       <TooltipTrigger asChild>

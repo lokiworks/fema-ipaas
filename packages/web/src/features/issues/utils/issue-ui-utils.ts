@@ -13,6 +13,8 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
+import { failureText } from './failure-text';
+
 function statusLabel(status: IssueStatus): string {
   switch (status) {
     case IssueStatus.OPEN:
@@ -48,7 +50,7 @@ function issueTitle(
   if (issue.kind === IssueKind.DRIFT) {
     return t('The connected system does not match what the run did');
   }
-  return issue.title;
+  return failureText.localize(issue.title);
 }
 
 function causeText({
@@ -238,6 +240,10 @@ function activityText({
   }
 }
 
+function showsActorInHeader(activity: Pick<IssueActivity, 'type'>): boolean {
+  return activity.type === IssueActivityType.NOTE;
+}
+
 function isIssueStatus(value: unknown): value is IssueStatus {
   return (
     typeof value === 'string' &&
@@ -255,4 +261,5 @@ export const issueUiUtils = {
   replayCategoryLabel,
   alertKindLabel,
   activityText,
+  showsActorInHeader,
 };

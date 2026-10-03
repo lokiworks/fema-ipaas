@@ -1,6 +1,8 @@
 import { t } from 'i18next';
 import React from 'react';
 
+import { cn } from '@/lib/utils';
+
 type DataListProps = {
   data?: Record<string, any>;
   className?: string;
@@ -23,7 +25,7 @@ export const DataList: React.FC<DataListProps> = ({
 
   if (entries.length === 0) {
     return (
-      <div className={`text-sm text-muted-foreground italic ${className}`}>
+      <div className={cn('text-sm text-muted-foreground italic', className)}>
         {t('No data available')}
       </div>
     );
@@ -31,7 +33,7 @@ export const DataList: React.FC<DataListProps> = ({
 
   return (
     <dl
-      className={`grid gap-y-2 text-sm leading-relaxed ${className}`}
+      className={cn('grid gap-y-2 text-sm leading-relaxed', className)}
       style={{ wordBreak: 'break-word' }}
     >
       {entries.map(([key, value]) => (

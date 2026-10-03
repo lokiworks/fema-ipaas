@@ -153,7 +153,7 @@ function SidebarProvider({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar]);
 
-  const state = open ? 'expanded' : 'collapsed';
+  const state = open || isMobile ? 'expanded' : 'collapsed';
 
   const contextValue = React.useMemo<SidebarContextProps>(
     () => ({
@@ -277,6 +277,8 @@ function Sidebar({
 
   return (
     <div
+      role="navigation"
+      aria-label={t('Main navigation')}
       className="group peer hidden text-sidebar-foreground md:block"
       data-state={state}
       data-collapsible={state === 'collapsed' ? collapsible : ''}

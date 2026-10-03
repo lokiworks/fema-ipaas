@@ -1,5 +1,12 @@
 import { LlmProvider } from '@fema-ipaas/core-utils';
-import { AiFeature, WorkflowPlan, WorkflowPlanStep } from '@fema-ipaas/shared';
+import {
+  AiFeature,
+  ColorName,
+  DefaultProjectRole,
+  ProjectDirectoryItem,
+  WorkflowPlan,
+  WorkflowPlanStep,
+} from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { aiUtils } from '@/features/ai/utils/ai-utils';
@@ -117,5 +124,61 @@ describe('aiUtils plan helpers', () => {
       { question: 'Which department?', answer: 'R&D' },
       { question: 'Notify whom?', answer: 'HR' },
     ]);
+  });
+});
+
+describe('aiUtils.targetProjectOptions', () => {
+  const project = ({
+    id,
+    myRole,
+    workflowCount = 0,
+    workflowsLimit = null,
+  }: {
+    id: string;
+    myRole: DefaultProjectRole | null;
+    workflowCount?: number;
+    workflowsLimit?: number | null;
+  }): ProjectDirectoryItem => ({
+    id,
+    displayName: id,
+    description: null,
+    icon: { color: ColorName.RED },
+    ownerId: 'o',
+    ownerName: null,
+    created: '',
+    updated: '',
+    myRole,
+    workflowCount,
+    runningCount: 0,
+    memberCount: 1,
+    workflowsLimit,
+    monthlyRunsLimit: null,
+    releasesEnabled: false,
+  });
+
+  it('offers projects the user can edit and that still have room', () => {
+    const options = aiUtils.targetProjectOptions({
+      directory: [
+        project({ id: 'a', myRole: DefaultProjectRole.ADMIN }),
+        project({ id: 'b', myRole: DefaultProjectRole.DEVELOPER }),
+        project({ id: 'viewer', myRole: DefaultProjectRole.VIEWER }),
+        project({
+          id: 'full',
+          myRole: DefaultProjectRole.ADMIN,
+          workflowCount: 3,
+          workflowsLimit: 3,
+        }),
+      ],
+      currentId: 'a',
+    });
+    expect(options.map((item) => item.id)).toEqual(['a', 'b']);
+  });
+
+  it('always keeps the project the dialog was opened for, so its name is shown', () => {
+    const options = aiUtils.targetProjectOptions({
+      directory: [project({ id: 'viewer', myRole: DefaultProjectRole.VIEWER })],
+      currentId: 'viewer',
+    });
+    expect(options.map((item) => item.id)).toEqual(['viewer']);
   });
 });

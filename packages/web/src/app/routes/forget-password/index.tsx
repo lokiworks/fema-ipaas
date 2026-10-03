@@ -3,10 +3,10 @@ import { ResetPasswordForm } from '@/features/authentication';
 
 const ResetPasswordPage = () => {
   return (
-    <div className="mx-auto flex h-screen flex-col items-center justify-center gap-2">
+    <main className="mx-auto flex min-h-screen flex-col items-center justify-center gap-2 p-4">
       <FullLogo />
       <ResetPasswordForm />
-    </div>
+    </main>
   );
 };
 

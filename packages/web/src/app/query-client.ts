@@ -3,6 +3,7 @@ import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 import { openQueryErrorDialog } from '@/components/custom/error-dialog/error-dialog-store';
 import { internalErrorToast } from '@/components/ui/sonner';
+import { notFoundError } from '@/lib/not-found-error';
 import { queryRetry } from '@/lib/query-retry';
 
 export const queryClient = new QueryClient({
@@ -14,7 +15,7 @@ export const queryClient = new QueryClient({
   },
   queryCache: new QueryCache({
     onError: (error, query) => {
-      if (query.meta?.showErrorDialog) {
+      if (query.meta?.showErrorDialog && !notFoundError.isNotFound(error)) {
         openQueryErrorDialog(error, query.queryKey);
       }
     },

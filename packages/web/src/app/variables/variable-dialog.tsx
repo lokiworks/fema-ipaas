@@ -1,6 +1,7 @@
 import { ErrorCode } from '@fema-ipaas/core-utils';
 import {
   formErrors,
+  VARIABLE_NAME_MAX_LENGTH,
   VARIABLE_NAME_REGEX,
   VariableWithoutSensitiveData,
 } from '@fema-ipaas/shared';
@@ -34,6 +35,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { variablesApi } from '@/features/variables/api/variables';
+import { useSubmitLock } from '@/hooks/use-submit-lock';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
@@ -42,6 +44,7 @@ const FormSchema = z.object({
   name: z
     .string()
     .min(1, formErrors.required)
+    .max(VARIABLE_NAME_MAX_LENGTH, 'variableNameTooLong')
     .regex(VARIABLE_NAME_REGEX, 'invalidVariableName'),
   value: z.string().optional(),
   testValue: z.string().optional(),
@@ -84,6 +87,7 @@ function VariableForm(props: VariableFormProps) {
   const projectId = authenticationSession.getProjectId();
   const [valueVisible, setValueVisible] = useState(false);
   const [showValueField, setShowValueField] = useState(!isEdit);
+  const submitLock = useSubmitLock();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -119,6 +123,9 @@ function VariableForm(props: VariableFormProps) {
       onSaved?.(variable);
       onOpenChange(false);
     },
+    onSettled: () => {
+      submitLock.release();
+    },
     onError: (error) => {
       if (api.isApError(error, ErrorCode.VALIDATION)) {
         form.setError('name', {
@@ -135,6 +142,9 @@ function VariableForm(props: VariableFormProps) {
     const onlyTestValue = isEdit && !values.value && !!values.testValue;
     if (!values.value && !onlyTestValue) {
       form.setError('value', { type: 'manual', message: formErrors.required });
+      return;
+    }
+    if (!submitLock.acquire()) {
       return;
     }
     save(values);
@@ -163,7 +173,12 @@ function VariableForm(props: VariableFormProps) {
             <FormItem>
               <FormLabel>{t('Name')}</FormLabel>
               <FormControl>
-                <Input {...field} disabled={isEdit} placeholder="STRIPE_PROD" />
+                <Input
+                  {...field}
+                  disabled={isEdit}
+                  maxLength={VARIABLE_NAME_MAX_LENGTH}
+                  placeholder="STRIPE_PROD"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -95,9 +95,12 @@ const LoopIterationInput = ({ stepName }: { stepName: string }) => {
           <TooltipTrigger asChild>
             <Input
               ref={inputRef}
-              className={`py-2 w-[35px] px-0 h-[35px] animate-in fade-in bg-background border-solid rounded-md text-center !text-xs transition-all duration-300 ease-in-out ${
-                isAnimating ? 'border-2 border-primary' : 'border border-border'
-              }`}
+              className={cn(
+                'py-2 w-[35px] px-0 h-[35px] animate-in fade-in bg-background border-solid rounded-md text-center !text-xs transition-all duration-300 ease-in-out',
+                isAnimating
+                  ? 'border-2 border-primary'
+                  : 'border border-border',
+              )}
               type="number"
               value={currentIndex + 1}
               min={1}

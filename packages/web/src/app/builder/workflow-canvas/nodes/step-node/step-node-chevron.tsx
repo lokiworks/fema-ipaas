@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ const StepNodeChevron = ({
       }}
       variant="ghost"
       size="sm"
+      aria-label={t('More actions')}
       className="p-1 size-7 "
       onClick={(e) => {
         e.stopPropagation();

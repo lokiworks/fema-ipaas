@@ -237,6 +237,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
   ]);
   const guard = usePublishGuard({
     lockedByName: editLockHolder?.userDisplayName ?? null,
+    target: 'test',
   });
   const hasNoChangesToDeploy =
     useDraftChanged({ baselineVersionId: workflow.testVersionId }) === false;

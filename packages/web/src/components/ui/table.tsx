@@ -1,10 +1,15 @@
+import { t } from 'i18next';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-auto">
+    <div
+      data-slot="table-container"
+      tabIndex={0}
+      className="relative w-full overflow-auto focus-visible:outline-2 focus-visible:outline-ring"
+    >
       <table
         data-slot="table"
         className={cn('w-full caption-bottom text-sm', className)}
@@ -54,16 +59,22 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
   );
 }
 
-function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
+function TableHead({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<'th'>) {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        'py-2.5 px-2 text-left align-middle text-xs font-medium text-foreground first:pl-8 last:pr-8 [&:has([role=checkbox])]:pl-4 [&:has([role=checkbox])]:pr-2',
+        'whitespace-nowrap py-2.5 px-2 text-left align-middle text-xs font-medium text-foreground first:pl-8 last:pr-8 [&:has([role=checkbox])]:pl-4 [&:has([role=checkbox])]:pr-2',
         className,
       )}
       {...props}
-    />
+    >
+      {children ?? <span className="sr-only">{t('Actions')}</span>}
+    </th>
   );
 }
 

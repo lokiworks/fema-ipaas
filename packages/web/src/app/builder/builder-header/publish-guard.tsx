@@ -24,10 +24,14 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+import { PublishTarget, publishGuardLabels } from './publish-guard-labels';
+
 export function usePublishGuard({
   lockedByName,
+  target = 'production',
 }: {
   lockedByName: string | null;
+  target?: PublishTarget;
 }): PublishGuard {
   const validation = useBuilderValidation();
   const setLeftSidebar = useBuilderStateContext(
@@ -61,6 +65,7 @@ export function usePublishGuard({
   const dialog = (
     <PublishWarningsDialog
       open={!isNil(pending)}
+      target={target}
       warnings={warnings}
       onCancel={() => setPending(null)}
       onConfirm={() => {
@@ -102,11 +107,13 @@ function pickBlockedReason({
 
 function PublishWarningsDialog({
   open,
+  target,
   warnings,
   onCancel,
   onConfirm,
 }: {
   open: boolean;
+  target: PublishTarget;
   warnings: ValidationIssue[];
   onCancel: () => void;
   onConfirm: () => void;
@@ -117,22 +124,13 @@ function PublishWarningsDialog({
   const hasAiPending = warnings.some(
     (issue) => issue.code === ValidationCode.AI_PENDING_REVIEW,
   );
+  const labels = publishGuardLabels.dialogLabels({ target, hasAiPending });
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {hasAiPending ? t('Publish reminder') : t('Publish with warnings?')}
-          </DialogTitle>
-          <DialogDescription>
-            {hasAiPending
-              ? t(
-                  'Some AI-generated steps have not been confirmed. Check them before publishing, or publish anyway.',
-                )
-              : t(
-                  'These warnings do not block publishing, but the workflow may not behave as expected.',
-                )}
-          </DialogDescription>
+          <DialogTitle>{labels.title}</DialogTitle>
+          <DialogDescription>{labels.description}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-72">
           <div className="flex flex-col gap-2">
@@ -155,7 +153,7 @@ function PublishWarningsDialog({
             {t('Cancel')}
           </Button>
           <Button type="button" onClick={onConfirm}>
-            {t('Publish anyway')}
+            {labels.confirm}
           </Button>
         </DialogFooter>
       </DialogContent>

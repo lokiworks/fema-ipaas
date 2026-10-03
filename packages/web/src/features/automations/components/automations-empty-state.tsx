@@ -24,6 +24,7 @@ import { workflowHooks } from '@/features/workflows/hooks/workflow-hooks';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
+import { cn } from '@/lib/utils';
 
 type ActionRowProps = {
   icon: React.ReactNode;
@@ -85,7 +86,10 @@ const GetStartedCard = ({
       <CardContent className="p-0">
         <div className="flex items-center gap-3 px-4 py-4">
           <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconBgClass}`}
+            className={cn(
+              'w-10 h-10 rounded-lg flex items-center justify-center',
+              iconBgClass,
+            )}
           >
             {icon}
           </div>

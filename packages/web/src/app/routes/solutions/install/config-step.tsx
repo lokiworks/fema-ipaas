@@ -86,7 +86,7 @@ function ConfigInput({ item, value, onChange }: ConfigInputProps) {
     case SolutionConfigType.TEXT:
       return (
         <Input
-          className="w-80"
+          className="w-full max-w-80"
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
@@ -94,7 +94,7 @@ function ConfigInput({ item, value, onChange }: ConfigInputProps) {
     case SolutionConfigType.SELECT:
       return (
         <Select value={value} onValueChange={onChange}>
-          <SelectTrigger className="w-80">
+          <SelectTrigger className="w-full max-w-80">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

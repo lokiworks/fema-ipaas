@@ -2,11 +2,19 @@ import { describe, expect, it } from 'vitest';
 
 import {
   APP_EVENT_TRIGGER,
+  DEFAULT_NEW_WORKFLOW_TRIGGER,
   NEW_WORKFLOW_TRIGGER_CHOICES,
   newWorkflowTriggerUtils,
 } from '@/features/workflows/utils/new-workflow-triggers';
 
 describe('newWorkflowTriggerUtils', () => {
+  it('preselects the app event, which is listed first, not the webhook', () => {
+    expect(DEFAULT_NEW_WORKFLOW_TRIGGER).toBe(APP_EVENT_TRIGGER);
+    expect(DEFAULT_NEW_WORKFLOW_TRIGGER).not.toBe(
+      NEW_WORKFLOW_TRIGGER_CHOICES[0].value,
+    );
+  });
+
   it('offers the five trigger choices in the documented order', () => {
     expect(NEW_WORKFLOW_TRIGGER_CHOICES.map((choice) => choice.value)).toEqual([
       'webhook',

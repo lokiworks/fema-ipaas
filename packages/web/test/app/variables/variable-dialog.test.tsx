@@ -1,11 +1,12 @@
 /**
  * @vitest-environment jsdom
  */
+/* eslint-disable testing-library/no-unnecessary-act */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('i18next', () => ({ t: (key: string) => key }));
 
@@ -19,7 +20,13 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn() } }));
 
 vi.mock('@/components/ui/sonner', () => ({ internalErrorToast: vi.fn() }));
 
-vi.mock('@/features/variables/api/variables', () => ({ variablesApi: {} }));
+const { createVariable } = vi.hoisted(() => ({
+  createVariable: vi.fn(() => new Promise(() => undefined)),
+}));
+
+vi.mock('@/features/variables/api/variables', () => ({
+  variablesApi: { create: createVariable },
+}));
 
 vi.mock('@/lib/api', () => ({ api: { isApError: () => false } }));
 
@@ -132,5 +139,59 @@ describe('VariableDialog value field', () => {
     expect(valueInput().className).not.toContain(MASK_CLASS);
     clickEyeToggle();
     expect(valueInput().className).toContain(MASK_CLASS);
+  });
+});
+
+function typeInto({
+  input,
+  value,
+}: {
+  input: HTMLInputElement;
+  value: string;
+}) {
+  const setter = Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
+    'value',
+  )?.set;
+  act(() => {
+    setter?.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+
+function nameInput(): HTMLInputElement {
+  const input =
+    container?.querySelector<HTMLInputElement>('input[name="name"]');
+  if (!input) {
+    throw new Error('name input not found');
+  }
+  return input;
+}
+
+describe('VariableDialog name field', () => {
+  beforeEach(() => {
+    createVariable.mockClear();
+  });
+
+  it('caps the name length in the input', () => {
+    setup();
+    expect(nameInput().maxLength).toBe(64);
+  });
+
+  it('sends one create request when the form is submitted twice in the same tick', async () => {
+    setup();
+    typeInto({ input: nameInput(), value: 'STRIPE_PROD' });
+    typeInto({ input: valueInput(), value: 'secret' });
+    const form = container?.querySelector('form');
+    await act(async () => {
+      form?.dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      );
+      form?.dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    expect(createVariable).toHaveBeenCalledTimes(1);
   });
 });

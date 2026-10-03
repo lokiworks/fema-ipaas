@@ -28,6 +28,11 @@ function ChecksStep({
   const [acknowledgedKeys, setAcknowledgedKeys] = useState(acknowledged);
   const { data, isLoading, isFetching, isError, refetch } =
     solutionsHooks.useInstallChecks({ id: solutionId, projectId, connections });
+  const {
+    mutate: recheckOne,
+    variables: recheckingKey,
+    isPending: isRechecking,
+  } = solutionsHooks.useRecheckOne({ id: solutionId, projectId, connections });
   const results = data?.results ?? [];
   const gate = solutionsUtils.checkGate({
     results,
@@ -50,7 +55,7 @@ function ChecksStep({
           onClick={() => void refetch()}
         >
           <RefreshCw className="size-4" />
-          {t('Check again')}
+          {t('Check all again')}
         </Button>
       </div>
 
@@ -66,6 +71,9 @@ function ChecksStep({
         <CheckResultRow
           key={result.key}
           result={result}
+          rechecking={isRechecking && recheckingKey === result.key}
+          recheckDisabled={isFetching || isRechecking}
+          onRecheck={() => recheckOne(result.key)}
           acknowledged={acknowledgedKeys.includes(result.key)}
           onAcknowledge={(checked) =>
             setAcknowledgedKeys(
@@ -99,6 +107,9 @@ function ChecksStep({
 
 function CheckResultRow({
   result,
+  rechecking,
+  recheckDisabled,
+  onRecheck,
   acknowledged,
   onAcknowledge,
 }: CheckResultRowProps) {
@@ -131,6 +142,19 @@ function CheckResultRow({
             <span className="text-xs text-destructive">{message}</span>
           )}
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          loading={rechecking}
+          disabled={recheckDisabled}
+          aria-label={`${t('Check again')}: ${result.label}`}
+          onClick={onRecheck}
+        >
+          <RefreshCw className="size-4" />
+          {t('Check again')}
+        </Button>
       </div>
       {!passed && result.fixSteps.length > 0 && (
         <div className="flex flex-col gap-2 rounded-md bg-muted p-3">
@@ -189,6 +213,9 @@ type ChecksStepProps = {
 
 type CheckResultRowProps = {
   result: SolutionCheckResult;
+  rechecking: boolean;
+  recheckDisabled: boolean;
+  onRecheck: () => void;
   acknowledged: boolean;
   onAcknowledge: (checked: boolean) => void;
 };

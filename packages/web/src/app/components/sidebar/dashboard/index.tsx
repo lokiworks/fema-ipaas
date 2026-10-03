@@ -299,6 +299,7 @@ export function ProjectDashboardSidebar({
                         ? 'flex flex-col items-center scrollbar-none'
                         : '',
                     )}
+                    asList
                     items={displayProjects}
                     estimateSize={() => 35}
                     getItemKey={(index) => displayProjects[index]?.id ?? index}

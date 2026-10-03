@@ -249,9 +249,9 @@ function HealthRowItem({ row, loading }: { row: HealthRow; loading: boolean }) {
         className={cn(
           'flex size-8 shrink-0 items-center justify-center rounded-md',
           status === 'failed'
-            ? 'bg-destructive-50 text-destructive-700'
+            ? 'bg-destructive-50 text-destructive-700 dark:bg-destructive-950'
             : status === 'passed'
-            ? 'bg-success-50 text-success-700'
+            ? 'bg-success-50 text-success-700 dark:bg-success-950'
             : 'bg-muted text-muted-foreground',
         )}
       >

@@ -21,6 +21,8 @@ export const newWorkflowTriggerUtils = {
 
 export const APP_EVENT_TRIGGER = 'appEvent';
 
+export const DEFAULT_NEW_WORKFLOW_TRIGGER = APP_EVENT_TRIGGER;
+
 export const NEW_WORKFLOW_TRIGGER_CHOICES: NewWorkflowTriggerChoice[] = [
   {
     value: 'webhook',

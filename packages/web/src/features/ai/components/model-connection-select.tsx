@@ -22,6 +22,7 @@ import { NEW_CONNECTION_QUERY_PARAM } from '@/lib/route-utils';
 import { aiUtils } from '../utils/ai-utils';
 
 export function ModelConnectionSelect({
+  projectId,
   connections,
   isLoading,
   value,
@@ -32,7 +33,7 @@ export function ModelConnectionSelect({
     return <Skeleton className="h-9 w-full" />;
   }
   if (connections.length === 0) {
-    return <NoModelConnectionAlert />;
+    return <NoModelConnectionAlert projectId={projectId} />;
   }
   return (
     <div className="flex flex-col gap-2">
@@ -61,7 +62,7 @@ export function ModelConnectionSelect({
   );
 }
 
-export function NoModelConnectionAlert() {
+export function NoModelConnectionAlert({ projectId }: { projectId?: string }) {
   const { checkAccess } = useAuthorization();
   const openNewWindow = useNewWindow();
   const canCreate = checkAccess(Permission.WRITE_CONNECTION);
@@ -81,7 +82,11 @@ export function NoModelConnectionAlert() {
             size="sm"
             onClick={() =>
               openNewWindow(
-                authenticationSession.appendProjectRoutePrefix('/connections'),
+                projectId
+                  ? `/projects/${projectId}/connections`
+                  : authenticationSession.appendProjectRoutePrefix(
+                      '/connections',
+                    ),
                 new URLSearchParams({
                   [NEW_CONNECTION_QUERY_PARAM]: AI_CONNECTOR_NAME,
                 }).toString(),
@@ -102,6 +107,7 @@ export function NoModelConnectionAlert() {
 }
 
 type ModelConnectionSelectProps = {
+  projectId?: string;
   connections: AiModelConnection[];
   isLoading: boolean;
   value: string | null;

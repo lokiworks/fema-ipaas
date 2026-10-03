@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
+import { ResourceNotFound } from '@/components/custom/resource-not-found';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -19,15 +20,22 @@ import {
   mcpServicesHooks,
 } from '@/features/mcp-services';
 import { authenticationSession } from '@/lib/authentication-session';
+import { notFoundError } from '@/lib/not-found-error';
 import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 type TabValue = 'tools' | 'connections' | 'usage' | 'availability' | 'releases';
 
 function McpServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
-  const { data: service, isLoading } = mcpServicesHooks.useService(
-    serviceId ?? '',
-  );
+  const {
+    data: service,
+    isLoading,
+    error,
+  } = mcpServicesHooks.useService(serviceId ?? '');
+
+  if (notFoundError.isNotFound(error)) {
+    return <ResourceNotFound kind="mcpService" />;
+  }
 
   if (isLoading || !service) {
     return (

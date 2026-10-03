@@ -64,6 +64,7 @@ function TabsTrigger({
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
+      aria-controls={undefined}
       className={cn(tabsTriggerVariants({ variant, className }))}
       {...props}
     />

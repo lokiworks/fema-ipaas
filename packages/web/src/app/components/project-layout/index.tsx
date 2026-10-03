@@ -9,6 +9,7 @@ import { CompassIcon } from '@/components/icons/compass';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
 import { projectHooks } from '@/features/projects';
+import { useIsCompact, useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 import { authenticationSession } from '../../../lib/authentication-session';
@@ -18,6 +19,7 @@ import {
 } from '../global-search/global-search-context';
 import { ProjectDashboardSidebar } from '../sidebar/dashboard';
 
+import { MobileNavBar } from './mobile-nav-bar';
 import { ProjectDashboardLayoutHeader } from './project-dashboard-layout-header';
 import { ProjectNavColumn } from './project-nav-column';
 
@@ -120,6 +122,8 @@ function ProjectDashboardLayoutInner({
   children: React.ReactNode;
 }) {
   const { open: searchOpen } = useGlobalSearch();
+  const isMobile = useIsMobile();
+  const isCompact = useIsCompact();
 
   return (
     <SidebarProvider defaultOpen={false} hoverMode={!searchOpen}>
@@ -128,7 +132,7 @@ function ProjectDashboardLayoutInner({
         <div
           className={cn(
             'flex-1 flex flex-col overflow-hidden',
-            !isEmbedded && 'pr-2 pt-3 pb-3',
+            !isEmbedded && 'md:pr-2 md:pt-3 md:pb-3',
           )}
         >
           <div
@@ -136,14 +140,17 @@ function ProjectDashboardLayoutInner({
             className={cn(
               'relative flex flex-col h-full bg-background overflow-clip',
               !isEmbedded &&
-                'rounded-xl shadow-[2px_0px_4px_-2px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.05)] border',
+                'md:rounded-xl md:shadow-[2px_0px_4px_-2px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.05)] md:border',
             )}
           >
+            {isCompact && !isEmbedded && (
+              <MobileNavBar showProjectNav={!hideHeader} showMenu={isMobile} />
+            )}
             {!hideHeader && (
               <ProjectDashboardLayoutHeader key={currentProjectId} />
             )}
             <div className="flex min-h-0 flex-1 flex-row">
-              {!hideHeader && !isEmbedded && <ProjectNavColumn />}
+              {!hideHeader && !isEmbedded && !isCompact && <ProjectNavColumn />}
               <div className="min-w-0 flex-1 overflow-auto">{children}</div>
             </div>
           </div>

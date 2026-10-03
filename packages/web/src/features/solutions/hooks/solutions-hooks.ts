@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { SolutionInstallInput } from '@fema-ipaas/shared';
+import { SolutionCheckResults, SolutionInstallInput } from '@fema-ipaas/shared';
 import {
   useMutation,
   useQueries,
@@ -14,6 +14,7 @@ import { workflowsApi } from '@/features/workflows/api/workflows-api';
 import { api } from '@/lib/api';
 
 import { solutionsApi } from '../api/solutions-api';
+import { solutionsUtils } from '../utils/solutions-utils';
 
 function useSolutions() {
   return useQuery({
@@ -118,6 +119,41 @@ function useInstallChecks({
   });
 }
 
+function useRecheckOne({
+  id,
+  projectId,
+  connections,
+}: {
+  id: string;
+  projectId: string;
+  connections: Record<string, string>;
+}) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (checkKey: string) =>
+      solutionsApi.runChecks({
+        id,
+        request: { projectId, connections, checkKey },
+      }),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<SolutionCheckResults>(
+        [SOLUTIONS_KEY, 'checks', id, projectId, connections],
+        (current) =>
+          current
+            ? solutionsUtils.mergeCheckResults({
+                current: current.results,
+                updated: updated.results,
+              })
+            : updated,
+      );
+    },
+    onError: (error) =>
+      toast.error(
+        api.extractServerErrorMessage(error, t('Something went wrong')),
+      ),
+  });
+}
+
 function useCreateFromProject({
   onSuccess,
 }: {
@@ -201,6 +237,7 @@ export const solutionsHooks = {
   usePublishedWorkflows,
   useInstallPreview,
   useInstallChecks,
+  useRecheckOne,
   useCreateFromProject,
   usePublishVersion,
   useUpgradeInstall,

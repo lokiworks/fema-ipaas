@@ -51,6 +51,7 @@ import { ComponentSettings } from './component-settings';
 import { ConnectorSettings } from './connector-settings';
 import EditableStepName from './editable-step-name';
 import { JoinEdgesSection } from './join-edges-section';
+import { joinEdgesVisibility } from './join-edges-visibility';
 import { LoopsSettings } from './loops-settings';
 import { ParallelSettings } from './parallel-settings';
 import { PendingReviewNotice } from './pending-review-notice';
@@ -258,6 +259,15 @@ const StepSettingsContainer = () => {
               readonly={readonly}
             />
           )}
+          {joinEdgesVisibility.shouldShow({
+            section,
+            stepType: modifiedStep.type,
+          }) && (
+            <JoinEdgesSection
+              stepName={modifiedStep.name}
+              readonly={readonly}
+            />
+          )}
         </>
       );
     }
@@ -275,7 +285,10 @@ const StepSettingsContainer = () => {
                 hideChangeAction={true}
               />
             )}
-            {workflowStructureUtil.isAction(modifiedStep.type) && (
+            {joinEdgesVisibility.shouldShow({
+              section,
+              stepType: modifiedStep.type,
+            }) && (
               <JoinEdgesSection
                 stepName={modifiedStep.name}
                 readonly={readonly}

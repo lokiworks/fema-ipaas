@@ -35,15 +35,19 @@ export function TemplatePreview({ template }: { template: Template }) {
     () => templateCenterUtils.connectorNamesOf(template),
     [template],
   );
-  const { summaries } = connectorsHooks.useConnectorSummariesByNames({
-    names: connectorNames,
-  });
+  const { summaries, isLoading } = connectorsHooks.useConnectorSummariesByNames(
+    {
+      names: connectorNames,
+    },
+  );
   const summaryByName = useMemo(
     () => new Map(summaries.map((summary) => [summary.name, summary])),
     [summaries],
   );
   const workflows = templateCenterUtils.workflowStepsOf(template);
   const needsConnection = summaries.filter(requiresConnection);
+  const connectionsKnown =
+    !isLoading && summaries.length === connectorNames.length;
   const official =
     templateCenterUtils.tabOf({
       template,
@@ -96,7 +100,9 @@ export function TemplatePreview({ template }: { template: Template }) {
                   .map((summary) => summary.displayName)
                   .join(t('listSeparator')),
               })
-            : t('This template needs no connection.')}{' '}
+            : connectionsKnown
+            ? t('This template needs no connection.')
+            : ''}{' '}
           {t(
             'After you use the template, the validation panel in the editor lists the settings to complete.',
           )}

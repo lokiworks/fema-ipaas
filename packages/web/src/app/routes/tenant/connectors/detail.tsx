@@ -39,6 +39,7 @@ import { ConnectorIcon, connectorsHooks } from '@/features/connectors';
 import { connectorMarketUtils } from '@/features/connectors/utils/connector-market-utils';
 import { templatesApi } from '@/features/templates';
 import { authenticationSession } from '@/lib/authentication-session';
+import { cn } from '@/lib/utils';
 
 export default function ConnectorDetailPage() {
   const params = useParams<{ connectorName: string }>();
@@ -464,9 +465,10 @@ function OpBlock({ op }: { op: ActionBase | TriggerBase }) {
         onClick={() => setOpen((value) => !value)}
       >
         <ChevronRightIcon
-          className={`size-4 shrink-0 transition-transform ${
-            open ? 'rotate-90' : ''
-          }`}
+          className={cn(
+            'size-4 shrink-0 transition-transform',
+            open && 'rotate-90',
+          )}
         />
         <span className="font-medium">{op.displayName}</span>
         <span className="font-mono text-xs text-muted-foreground">

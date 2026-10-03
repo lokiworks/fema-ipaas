@@ -127,7 +127,7 @@ function SlotRow({
       </div>
       <div className="flex items-center gap-2">
         <Select value={externalId ?? ''} onValueChange={onSelect}>
-          <SelectTrigger className="w-80">
+          <SelectTrigger className="w-full max-w-80">
             <SelectValue
               placeholder={
                 available.length > 0
@@ -150,7 +150,7 @@ function SlotRow({
         <Button
           type="button"
           variant="outline"
-          disabled={isNil(connectorModel)}
+          disabled={isNil(connectorModel) || isNil(connectorModel.auth)}
           onClick={() => setCreating(true)}
         >
           <Plus className="size-4" />

@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { ResourceNotFound } from '@/components/custom/resource-not-found';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,11 +38,19 @@ import {
 } from '@/features/releases';
 import { workflowsApi } from '@/features/workflows';
 import { authenticationSession } from '@/lib/authentication-session';
+import { notFoundError } from '@/lib/not-found-error';
 import { cn } from '@/lib/utils';
 
 function ReleaseDetailPage() {
   const { releaseId } = useParams<{ releaseId: string }>();
-  const { data: release, isLoading } = releasesHooks.useRelease(releaseId!);
+  const {
+    data: release,
+    isLoading,
+    error,
+  } = releasesHooks.useRelease(releaseId!);
+  if (notFoundError.isNotFound(error)) {
+    return <ResourceNotFound kind="release" />;
+  }
   if (isLoading || !release) {
     return <Skeleton className="h-96 w-full" />;
   }

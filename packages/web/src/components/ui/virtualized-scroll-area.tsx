@@ -15,6 +15,7 @@ interface VirtualizedScrollAreaProps<T> {
   estimateSize: (index: number) => number;
   getItemKey?: (index: number) => string | number;
   className?: string;
+  asList?: boolean;
   initialScroll?: {
     index: number;
     clickAfterScroll: boolean;
@@ -39,6 +40,7 @@ const VirtualizedScrollArea = <T,>({
   getItemKey,
   initialScroll,
   className,
+  asList = false,
   ...props
 }: VirtualizedScrollAreaProps<T>) => {
   const scrollAreaViewportRef = React.useRef<HTMLDivElement>(null);
@@ -82,6 +84,7 @@ const VirtualizedScrollArea = <T,>({
       className={cn('h-full', className)}
     >
       <div
+        role={asList ? 'list' : undefined}
         style={{
           height: `${rowVirtualizer.getTotalSize()}px`,
           width: '100%',
@@ -92,6 +95,7 @@ const VirtualizedScrollArea = <T,>({
           <div
             key={virtualItem.key}
             data-virtual-index={virtualItem.index}
+            role={asList ? 'presentation' : undefined}
             style={{
               position: 'absolute',
               top: 0,

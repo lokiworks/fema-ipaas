@@ -81,7 +81,7 @@ export const ProjectDisplay = ({
     : title;
 
   const content = (
-    <div className={`flex items-center gap-2 ${containerClassName}`}>
+    <div className={cn('flex items-center gap-2', containerClassName)}>
       {projectAvatar}
       {((inSidebar && sidebarState === 'expanded') || !inSidebar) && (
         <span className={cn(titleClassName, 'truncate')}>{displayText}</span>

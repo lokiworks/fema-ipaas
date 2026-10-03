@@ -3,6 +3,7 @@ import * as RippleHook from 'use-ripple-hook';
 
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { colorsUtils } from '@/lib/color-utils';
+import { primaryColorUtils } from '@/lib/primary-color-utils';
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -60,9 +61,21 @@ export function ThemeProvider({
       ? 'light'
       : theme;
     root.classList.remove('light', 'dark');
+    const primaryHex =
+      resolvedTheme === 'dark'
+        ? primaryColorUtils.onDarkSurface({
+            hex: branding.colors.primary.default,
+          })
+        : branding.colors.primary.default;
     document.documentElement.style.setProperty(
       '--primary',
-      colorsUtils.hexToHslString(branding.colors.primary.default),
+      colorsUtils.hexToHslString(primaryHex),
+    );
+    document.documentElement.style.setProperty(
+      '--primary-foreground',
+      colorsUtils.hexToHslString(
+        primaryColorUtils.readableForeground({ hex: primaryHex }),
+      ),
     );
 
     setFavicon(branding.logos.favIconUrl);

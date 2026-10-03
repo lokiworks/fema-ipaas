@@ -122,9 +122,11 @@ function GlobalSearchDialogContent({
   const firstItemId =
     groups.find((g) => !g.isLoading && g.items.length > 0)?.items[0]?.id ?? '';
 
-  useEffect(() => {
+  const [previousFirstItemId, setPreviousFirstItemId] = useState(firstItemId);
+  if (previousFirstItemId !== firstItemId) {
+    setPreviousFirstItemId(firstItemId);
     setCommandValue(firstItemId);
-  }, [firstItemId]);
+  }
 
   return (
     <CommandDialog

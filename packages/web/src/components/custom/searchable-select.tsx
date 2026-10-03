@@ -1,7 +1,7 @@
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';
 import { Check, ChevronsUpDown, RefreshCcw, Trash2, X } from 'lucide-react';
-import React, { useState, useRef } from 'react';
+import React, { useId, useState, useRef } from 'react';
 
 import { SelectUtilButton } from '@/components/custom/select-util-button';
 import {
@@ -86,6 +86,7 @@ export const SearchableSelect = <T,>({
   onOptionDelete,
 }: SearchableSelectProps<T>) => {
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const labelId = useId();
   const [searchTerm, setSearchTerm] = useState('');
   const { open, setOpen } = useOpenState(openStateInitializer);
   const triggerWidth = `${triggerRef.current?.clientWidth ?? 0}px`;
@@ -140,6 +141,9 @@ export const SearchableSelect = <T,>({
     <Popover modal={true} open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger
         asChild
+        aria-haspopup={undefined}
+        aria-expanded={undefined}
+        aria-controls={undefined}
         className={cn({
           'cursor-not-allowed opacity-80 ': disabled,
         })}
@@ -157,6 +161,8 @@ export const SearchableSelect = <T,>({
             disabled={disabled}
             role="combobox"
             loading={loading}
+            aria-haspopup="listbox"
+            aria-labelledby={labelId}
             aria-expanded={open}
             className={cn('w-full justify-between', triggerClassName)}
             onClick={(e) => {
@@ -164,7 +170,7 @@ export const SearchableSelect = <T,>({
               e.preventDefault();
             }}
           >
-            <span className="flex w-full truncate select-none">
+            <span id={labelId} className="flex w-full truncate select-none">
               {selectedOption
                 ? valuesRendering
                   ? valuesRendering(selectedOption.value)

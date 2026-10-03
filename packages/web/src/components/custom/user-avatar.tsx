@@ -45,6 +45,7 @@ export function UserAvatar({
       colors={['#0a0310', '#49007e', '#ff005b', '#ff7d10', '#ffb238']}
       variant="beam"
       square
+      aria-hidden="true"
       className={cn('rounded-full', className)}
     />
   );

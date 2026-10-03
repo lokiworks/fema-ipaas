@@ -2,6 +2,7 @@ import {
   AI_PROMPT_MAX_LENGTH,
   GenerateWorkflowPlanRequestBody,
   PlanAnswer,
+  ProjectDirectoryItem,
   WorkflowPlan,
   WorkflowPlanStep,
 } from '@fema-ipaas/shared';
@@ -34,7 +35,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { aiHooks } from '../hooks/ai-hooks';
@@ -94,9 +103,14 @@ function GenerateWorkflowForm({
   initialPrompt?: string;
   targetProjectId?: string;
 }) {
+  const [chosenProjectId, setChosenProjectId] = useState<string | null>(null);
   const projectId =
-    targetProjectId ?? authenticationSession.getProjectId() ?? '';
+    chosenProjectId ??
+    targetProjectId ??
+    authenticationSession.getProjectId() ??
+    '';
   const navigate = useNavigate();
+  const { data: directory } = projectDirectoryHooks.useDirectory();
   const models = aiHooks.useModelSelection(projectId);
   const [plan, setPlan] = useState<WorkflowPlan | null>(null);
   const [planCount, setPlanCount] = useState(0);
@@ -160,7 +174,20 @@ function GenerateWorkflowForm({
           )}
         </DialogDescription>
       </DialogHeader>
+      <TargetProjectField
+        projects={aiUtils.targetProjectOptions({
+          directory: directory ?? [],
+          currentId: projectId,
+        })}
+        value={projectId}
+        disabled={isPlanning || isCreating}
+        onChange={(next) => {
+          setChosenProjectId(next);
+          setPlan(null);
+        }}
+      />
       <ModelConnectionSelect
+        projectId={projectId}
         connections={models.connections}
         isLoading={models.isLoading}
         value={models.selectedId}
@@ -274,6 +301,51 @@ function GenerateWorkflowForm({
           </Button>
         )}
       </DialogFooter>
+    </div>
+  );
+}
+
+function TargetProjectField({
+  projects,
+  value,
+  disabled,
+  onChange,
+}: {
+  projects: ProjectDirectoryItem[];
+  value: string;
+  disabled: boolean;
+  onChange: (projectId: string) => void;
+}) {
+  const current = projects.find((project) => project.id === value);
+  if (!current) {
+    return null;
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="ai-target-project">{t('Create in project')}</Label>
+      {projects.length > 1 ? (
+        <Select value={value} onValueChange={onChange} disabled={disabled}>
+          <SelectTrigger id="ai-target-project">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.id}>
+                {project.displayName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <span id="ai-target-project" className="text-sm font-medium">
+          {current.displayName}
+        </span>
+      )}
+      <span className="text-xs text-muted-foreground">
+        {t(
+          'The draft and the model connection are both taken from this project.',
+        )}
+      </span>
     </div>
   );
 }

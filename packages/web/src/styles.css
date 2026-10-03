@@ -460,7 +460,7 @@
     --secondary-foreground: theme('colors.white');
 
     --muted: theme('colors.neutral.100');
-    --muted-foreground: theme('colors.neutral.500');
+    --muted-foreground: theme('colors.neutral.600');
 
     --accent: theme('colors.neutral.50');
     --accent-foreground: theme('colors.neutral.900');
@@ -502,7 +502,7 @@
     --destructive-800: 343 80% 35%;
     --destructive-900: 342 75% 30%;
     --destructive-950: 341 84% 17%;
-    --destructive: var(--destructive-500);
+    --destructive: var(--destructive-600);
 
     /* Warning — Amber */
     --warning-50: 48 100% 96%;
@@ -566,6 +566,13 @@
     --destructive: var(--destructive-400);
 
     --warning: var(--warning-400);
+
+    --success-600: var(--success-400);
+    --success-700: var(--success-300);
+    --destructive-600: var(--destructive-400);
+    --destructive-700: var(--destructive-300);
+    --warning-600: var(--warning-400);
+    --warning-700: var(--warning-300);
 
     --border: hsla(0, 0%, 100%, 0.08);
     --input: hsla(0, 0%, 100%, 0.08);

@@ -223,7 +223,6 @@ const MultiSelectTrigger = React.forwardRef<
           variant="outline"
           aria-disabled={disabled}
           disabled={disabled}
-          role="combobox"
           type="button"
           loading={loading}
           className={cn(

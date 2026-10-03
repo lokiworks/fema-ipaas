@@ -49,9 +49,11 @@ export function FunctionSearchPopover({
       )
     : [];
 
-  useEffect(() => {
+  const [previousQuery, setPreviousQuery] = useState(query);
+  if (previousQuery !== query) {
+    setPreviousQuery(query);
     setActiveIdx(0);
-  }, [query]);
+  }
 
   useEffect(() => {
     const el = listRef.current?.querySelector(`[data-idx="${activeIdx}"]`);

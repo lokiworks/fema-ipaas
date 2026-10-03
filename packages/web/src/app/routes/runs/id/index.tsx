@@ -5,13 +5,15 @@ import { useParams } from 'react-router-dom';
 
 import { BuilderPage } from '@/app/builder';
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
+import { ResourceNotFound } from '@/components/custom/resource-not-found';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { executionsApi } from '@/features/executions';
 import { workflowsApi, sampleDataHooks } from '@/features/workflows';
+import { notFoundError } from '@/lib/not-found-error';
 
 const ExecutionPage = () => {
   const { runId, projectId } = useParams();
-  const { data, isLoading } = useQuery<
+  const { data, isLoading, error } = useQuery<
     {
       run: Execution;
       workflow: PopulatedWorkflow;
@@ -44,6 +46,10 @@ const ExecutionPage = () => {
       data?.workflow?.version,
       projectId,
     );
+
+  if (notFoundError.isNotFound(error)) {
+    return <ResourceNotFound kind="run" />;
+  }
 
   if (isLoading || isSampleDataLoading || isSampleDataInputLoading) {
     return (

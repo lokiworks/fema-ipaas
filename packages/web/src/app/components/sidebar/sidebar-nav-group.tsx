@@ -13,6 +13,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar-shadcn';
+import { cn } from '@/lib/utils';
 
 import { SidebarNavItem, SidebarItemType } from './sidebar-nav-item';
 
@@ -58,7 +59,7 @@ export function SidebarNavGroup(item: SidebarGroupType) {
             {item.icon && renderIcon(item.icon, iconRef)}
             <span>{item.label}</span>
             <ChevronRightIcon
-              className={`${item.open && 'rotate-90'} ml-auto duration-150`}
+              className={cn('ml-auto duration-150', item.open && 'rotate-90')}
             />
           </SidebarMenuButton>
         </CollapsibleTrigger>

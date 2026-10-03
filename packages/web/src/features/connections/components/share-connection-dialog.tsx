@@ -47,6 +47,8 @@ import {
   connectionsQueries,
 } from '@/features/connections/hooks/connections-hooks';
 
+import { DialogLoadingBody } from './dialog-loading-body';
+
 function getSharePermissionOptions(): {
   value: ConnectionSharePermission;
   label: string;
@@ -107,7 +109,7 @@ function ShareConnectionContent({
   });
 
   if (isNil(detail)) {
-    return null;
+    return <DialogLoadingBody />;
   }
 
   const manage = connectionAccessUtils.canManage(detail.myPermission);

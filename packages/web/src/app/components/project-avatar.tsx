@@ -5,6 +5,7 @@ import {
 } from '@fema-ipaas/shared';
 
 import { Avatar } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 interface ProjectAvatarProps {
   displayName: string;
@@ -48,21 +49,22 @@ export const ProjectAvatar = ({
   if (projectType === ProjectType.PERSONAL) {
     return (
       <div
-        className={`flex ${
-          showDetails ? 'flex-col items-center' : 'items-center'
-        } justify-center w-full ${currentSize.container} ${
-          showBackground ? 'rounded-tr-md' : ''
-        } ${showDetails ? 'py-6' : ''}`}
+        className={cn(
+          'flex justify-center w-full',
+          showDetails ? 'flex-col items-center py-6' : 'items-center',
+          currentSize.container,
+          showBackground && 'rounded-tr-md',
+        )}
         style={{
           backgroundColor: showBackground ? '#f3f4f6' : 'transparent',
         }}
       >
         <Avatar
-          className={`${
-            currentSize.avatar
-          } flex items-center justify-center rounded-full ${
-            showDetails ? 'mb-3' : ''
-          }`}
+          className={cn(
+            currentSize.avatar,
+            'flex items-center justify-center rounded-full',
+            showDetails && 'mb-3',
+          )}
           style={{
             backgroundColor: '#9ca3af',
             color: '#ffffff',
@@ -95,11 +97,12 @@ export const ProjectAvatar = ({
 
   return (
     <div
-      className={`flex ${
-        showDetails ? 'flex-col items-center' : 'items-center'
-      } justify-center w-full ${currentSize.container} ${
-        showBackground ? 'rounded-tr-md' : ''
-      } ${showDetails ? 'py-6' : ''}`}
+      className={cn(
+        'flex justify-center w-full',
+        showDetails ? 'flex-col items-center py-6' : 'items-center',
+        currentSize.container,
+        showBackground && 'rounded-tr-md',
+      )}
       style={{
         backgroundColor: showBackground
           ? PROJECT_COLOR_PALETTE[iconColor].color + '26'
@@ -107,11 +110,11 @@ export const ProjectAvatar = ({
       }}
     >
       <Avatar
-        className={`${
-          currentSize.avatar
-        } flex items-center justify-center rounded-sm ${
-          showDetails ? 'mb-3' : ''
-        }`}
+        className={cn(
+          currentSize.avatar,
+          'flex items-center justify-center rounded-sm',
+          showDetails && 'mb-3',
+        )}
         style={{
           backgroundColor: PROJECT_COLOR_PALETTE[iconColor].color,
           color: PROJECT_COLOR_PALETTE[iconColor].textColor,

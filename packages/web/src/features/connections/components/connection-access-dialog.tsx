@@ -42,6 +42,8 @@ import {
 import { projectCollectionUtils } from '@/features/projects';
 import { userHooks } from '@/hooks/user-hooks';
 
+import { DialogLoadingBody } from './dialog-loading-body';
+
 export function ConnectionAccessDialog({
   connectionId,
   open,
@@ -76,7 +78,7 @@ function ConnectionAccessForm({
   });
 
   if (isNil(detail)) {
-    return null;
+    return <DialogLoadingBody />;
   }
 
   return (

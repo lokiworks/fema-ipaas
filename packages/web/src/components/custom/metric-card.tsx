@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 export type MetricCardProps = {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -42,9 +43,12 @@ export const MetricCard = ({
             <TooltipContent className="max-w-xs">{description}</TooltipContent>
           </Tooltip>
           <div
-            className={`size-8 rounded-full ${iconBgColor} flex items-center justify-center shrink-0 ml-auto`}
+            className={cn(
+              'size-8 rounded-full flex items-center justify-center shrink-0 ml-auto',
+              iconBgColor,
+            )}
           >
-            <Icon className={`size-4 ${iconColor}`} />
+            <Icon className={cn('size-4', iconColor)} />
           </div>
         </div>
         <div className="flex flex-col gap-1">

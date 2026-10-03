@@ -3,6 +3,7 @@ import {
   ConnectionWithoutSensitiveData,
   Solution,
   SolutionCheckResult,
+  SolutionCheckResults,
   SolutionCheckStatus,
   SolutionConnectionSlot,
   SolutionInstall,
@@ -124,6 +125,19 @@ function checkGate({
   };
 }
 
+function mergeCheckResults({
+  current,
+  updated,
+}: {
+  current: SolutionCheckResult[];
+  updated: SolutionCheckResult[];
+}): SolutionCheckResults {
+  const byKey = new Map(updated.map((result) => [result.key, result]));
+  return {
+    results: current.map((result) => byKey.get(result.key) ?? result),
+  };
+}
+
 function toggleAcknowledged({
   acknowledged,
   key,
@@ -224,6 +238,7 @@ export const solutionsUtils = {
   missingSlots,
   checkGate,
   toggleAcknowledged,
+  mergeCheckResults,
   checkMessage,
   capacityMessage,
   workflowNamesOf,

@@ -1,7 +1,7 @@
 import { Permission, isNil } from '@fema-ipaas/core-utils';
 import { WorkflowStatus, PopulatedWorkflow } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { useAuthorization } from '@/hooks/authorization-hooks';
@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from '../../../components/ui/tooltip';
 import { workflowHooks } from '../hooks/workflow-hooks';
+import { ToggledStatus, toggledStatusUtils } from '../utils/toggled-status';
 import { workflowsUtils } from '../utils/workflows-utils';
 
 type WorkflowStatusToggleProps = {
@@ -20,13 +21,10 @@ type WorkflowStatusToggleProps = {
 };
 
 const WorkflowStatusToggle = ({ workflow }: WorkflowStatusToggleProps) => {
-  const [isWorkflowPublished, setIsWorkflowPublished] = useState(
-    workflow.status === WorkflowStatus.ENABLED,
-  );
-
-  useEffect(() => {
-    setIsWorkflowPublished(workflow.status === WorkflowStatus.ENABLED);
-  }, [workflow]);
+  const [toggled, setToggled] = useState<ToggledStatus | null>(null);
+  const isWorkflowPublished =
+    toggledStatusUtils.effectiveStatus({ workflow, toggled }) ===
+    WorkflowStatus.ENABLED;
 
   const { checkAccess } = useAuthorization();
   const userHasPermissionToToggleWorkflowStatus = checkAccess(
@@ -40,8 +38,8 @@ const WorkflowStatusToggle = ({ workflow }: WorkflowStatusToggleProps) => {
         ? WorkflowStatus.DISABLED
         : WorkflowStatus.ENABLED,
       onSuccess: (updatedWorkflow: PopulatedWorkflow) => {
-        setIsWorkflowPublished(
-          updatedWorkflow.status === WorkflowStatus.ENABLED,
+        setToggled(
+          toggledStatusUtils.fromUpdate({ workflow, updated: updatedWorkflow }),
         );
       },
     });

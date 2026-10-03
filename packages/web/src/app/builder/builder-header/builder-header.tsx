@@ -10,7 +10,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { ChevronDown, CircleHelp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   createSearchParams,
   useNavigate,
@@ -93,12 +93,9 @@ export const BuilderHeader = () => {
   const isLatestVersion =
     workflowVersion.state === WorkflowVersionState.DRAFT ||
     workflowVersion.id === workflow.publishedVersionId;
-  const [isEditingWorkflowName, setIsEditingWorkflowName] = useState(false);
-  useEffect(() => {
-    setIsEditingWorkflowName(
-      queryParams.get(NEW_WORKFLOW_QUERY_PARAM) === 'true',
-    );
-  }, []);
+  const [isEditingWorkflowName, setIsEditingWorkflowName] = useState(
+    () => queryParams.get(NEW_WORKFLOW_QUERY_PARAM) === 'true',
+  );
 
   const goToWorkflowsPage = () => {
     navigate({

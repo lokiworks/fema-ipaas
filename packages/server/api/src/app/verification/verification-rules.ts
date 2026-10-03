@@ -6,6 +6,7 @@ function ruleFor({ connectorName, actionName }: { connectorName: string, actionN
 
 function departmentRule({ openIdFrom }: { openIdFrom: 'input' | 'output' }): VerificationRule {
     return {
+        aspect: 'department',
         readAction: READ_ACTION,
         readInput: ({ input, output }) => {
             const openId = readString(openIdFrom === 'input' ? input : output, openIdFrom === 'input' ? 'openId' : 'open_id')
@@ -27,6 +28,7 @@ function departmentRule({ openIdFrom }: { openIdFrom: 'input' | 'output' }): Ver
 
 function suspensionRule({ expectSuspended }: { expectSuspended: boolean }): VerificationRule {
     return {
+        aspect: 'suspension',
         readAction: READ_ACTION,
         readInput: ({ input }) => {
             const openId = readString(input, 'openId')
@@ -75,6 +77,7 @@ export type VerificationJudgement = {
 }
 
 export type VerificationRule = {
+    aspect: 'department' | 'suspension'
     readAction: string
     readInput: (params: { input: unknown, output: unknown }) => Record<string, unknown> | null
     judge: (params: { input: unknown, output: unknown, actual: unknown }) => VerificationJudgement | null

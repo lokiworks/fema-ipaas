@@ -1,6 +1,7 @@
 import {
   BatchUpdateIssuesRequestBody,
   IssueReplayRequestBody,
+  RunVerificationResult,
   IssueTrendGranularity,
   ListIssuesRequestQuery,
   UpdateIssueRequestBody,
@@ -180,6 +181,21 @@ function useReplay(id: string) {
   });
 }
 
+function verifyDescription(result: RunVerificationResult): string | undefined {
+  const unreadable = result.problems.find(
+    (problem) => problem.outcome === 'UNREADABLE',
+  );
+  if (unreadable) {
+    return t('{key} could not be read: {reason}', {
+      key: unreadable.businessKey,
+      reason: unreadable.detail,
+    });
+  }
+  return result.truncated
+    ? t('Only the most recent runs were checked')
+    : undefined;
+}
+
 function useVerify(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -202,9 +218,7 @@ function useVerify(projectId: string) {
             unreadable: result.unreadable,
           },
         ),
-        result.truncated
-          ? { description: t('Only the most recent runs were checked') }
-          : undefined,
+        { description: verifyDescription(result) },
       );
     },
     onError: () => internalErrorToast(),

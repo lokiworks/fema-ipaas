@@ -78,6 +78,12 @@ export const RunVerificationResult = z.object({
     skipped: z.number(),
     truncated: z.boolean(),
     issueIds: z.array(z.string()),
+    problems: z.array(z.object({
+        businessKey: z.string(),
+        stepName: z.string(),
+        outcome: z.enum(['MISMATCHED', 'UNREADABLE']),
+        detail: z.string(),
+    })),
 })
 export type RunVerificationResult = z.infer<typeof RunVerificationResult>
 

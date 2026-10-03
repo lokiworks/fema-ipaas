@@ -3154,6 +3154,8 @@
   "{ref} uses a loop variable outside the loop": "{ref} uses a loop variable outside the loop",
   "Project config {name} does not exist": "Project config {name} does not exist",
   "AI-generated step not confirmed": "AI-generated step not confirmed",
+  "Records affected": "Records affected",
+  "{key} could not be read: {reason}": "{key} could not be read: {reason}",
   "Nothing to check: no recent run wrote to a connected system": "Nothing to check: no recent run wrote to a connected system",
   "Checked {checked}: {matched} match, {mismatched} differ, {unreadable} could not be read": "Checked {checked}: {matched} match, {mismatched} differ, {unreadable} could not be read",
   "Only the most recent runs were checked": "Only the most recent runs were checked",

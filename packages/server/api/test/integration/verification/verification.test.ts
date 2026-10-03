@@ -141,6 +141,7 @@ describe('Reading back what recent runs wrote', () => {
         const issues = await issueRepo().find({ where: { projectId: ctx.project.id } })
         expect(issues).toHaveLength(1)
         expect(issues[0].occurrences).toBe(2)
+        expect(result.problems.map((problem) => problem.businessKey).sort()).toEqual(['E1001', 'E1002'])
     })
 
     it('only checks the latest write for each person so a later transfer is not reported as drift', async () => {
@@ -156,6 +157,33 @@ describe('Reading back what recent runs wrote', () => {
         expect(result).toMatchObject({ checked: 1, matched: 1, mismatched: 0 })
         expect(readBack).toHaveBeenCalledTimes(1)
         expect(await issueRepo().find({ where: { projectId: ctx.project.id } })).toHaveLength(0)
+    })
+
+    it('still supersedes the older write when the later workflow uses a different business key format', async () => {
+        const ctx = await createTestContext(app!)
+        const onboard = await seedWorkflow({ ctx, name: 'Onboard', actionName: 'provision_user' })
+        const transfer = await seedWorkflow({ ctx, name: 'Transfer', actionName: 'update_user' })
+        await seedRun({ ctx, workflowId: onboard.workflowId, versionId: onboard.versionId, businessKey: 'E1001', minutesAgo: 60, stepInput: { departmentId: 'od-rd' }, stepOutput: { open_id: 'ou_1' } })
+        await seedRun({ ctx, workflowId: transfer.workflowId, versionId: transfer.versionId, businessKey: 'E1001-20302', minutesAgo: 5, stepInput: { openId: 'ou_1', departmentId: 'od-hr' }, stepOutput: {} })
+        feishuReturns({ department_ids: ['od-hr'] })
+
+        const result = await verify(ctx)
+
+        expect(result).toMatchObject({ checked: 1, matched: 1, mismatched: 0 })
+        expect(await issueRepo().find({ where: { projectId: ctx.project.id } })).toHaveLength(0)
+    })
+
+    it('checks the department of an old onboarding even after the person was suspended, because suspension does not touch it', async () => {
+        const ctx = await createTestContext(app!)
+        const onboard = await seedWorkflow({ ctx, name: 'Onboard', actionName: 'provision_user' })
+        const leave = await seedWorkflow({ ctx, name: 'Leave', actionName: 'suspend_user' })
+        await seedRun({ ctx, workflowId: onboard.workflowId, versionId: onboard.versionId, businessKey: 'E1001', minutesAgo: 60, stepInput: { departmentId: 'od-rd' }, stepOutput: { open_id: 'ou_1' } })
+        await seedRun({ ctx, workflowId: leave.workflowId, versionId: leave.versionId, businessKey: 'E1001', minutesAgo: 5, stepInput: { openId: 'ou_1' }, stepOutput: {} })
+        feishuReturns({ department_ids: ['od-rd'], is_frozen: true })
+
+        const result = await verify(ctx)
+
+        expect(result).toMatchObject({ checked: 2, matched: 2, mismatched: 0 })
     })
 
     it('reports a failed read-back as unreadable and opens no issue', async () => {

@@ -213,12 +213,16 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             onReplay={() => setReplayOpen(true)}
             onIgnore={() => update({ status: IssueStatus.IGNORED })}
           />
-          <TrendCard issueId={issue.id} />
-          <AffectedRunsCard
-            issueId={issue.id}
-            canReplay={canReplay}
-            onReplay={() => setReplayOpen(true)}
-          />
+          {issue.kind !== IssueKind.DRIFT && (
+            <>
+              <TrendCard issueId={issue.id} />
+              <AffectedRunsCard
+                issueId={issue.id}
+                canReplay={canReplay}
+                onReplay={() => setReplayOpen(true)}
+              />
+            </>
+          )}
           <ActivityCard
             issueId={issue.id}
             canWrite={canWrite}
@@ -634,7 +638,10 @@ function OverviewCard({
   nameOf: (userId: string | null) => string;
 }) {
   const rows: [string, string][] = [
-    [t('Failures'), String(issue.occurrences)],
+    [
+      issue.kind === IssueKind.DRIFT ? t('Records affected') : t('Failures'),
+      String(issue.occurrences),
+    ],
     [t('Affected workflows'), String(issue.affectedWorkflows)],
     [t('Workflow'), issue.workflowDisplayName ?? '—'],
     [t('Step'), issue.stepDisplayName ?? '—'],

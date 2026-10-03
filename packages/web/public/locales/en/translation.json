@@ -3539,7 +3539,6 @@
   "Showing the {count} workflows with the most runs": "Showing the {count} workflows with the most runs",
   "Success rate = succeeded ÷ finished runs; running ones are not counted": "Success rate = succeeded ÷ finished runs; running ones are not counted",
   "Success rate {rate}": "Success rate {rate}",
-  "Sum of the steps each run actually executed in the selected range": "Sum of the steps each run actually executed in the selected range",
   "Switch": "Switch",
   "Table view": "Table view",
   "Terminated": "Terminated",
@@ -5099,5 +5098,10 @@
   "Back to workflows": "Back to workflows",
   "View this workflow's run logs": "View this workflow's run logs",
   "Steps ({count})": "Steps ({count})",
-  "Branch: {name}": "Branch: {name}"
+  "Branch: {name}": "Branch: {name}",
+  "The other system refuses calls until {time}. Retrying or replaying before then will fail again, so do not retry now; wait until then and lower how often or how much the workflow calls it.": "The other system refuses calls until {time}. Retrying or replaying before then will fail again, so do not retry now; wait until then and lower how often or how much the workflow calls it.",
+  "The other system refuses calls until {time}; replay after that": "The other system refuses calls until {time}; replay after that",
+  "the block ends": "the block ends",
+  "Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.": "Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.",
+  "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.": "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted."
 }

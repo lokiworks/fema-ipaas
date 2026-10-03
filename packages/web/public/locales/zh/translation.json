@@ -3539,7 +3539,6 @@
   "Showing the {count} workflows with the most runs": "只显示运行次数最多的 {count} 个工作流",
   "Success rate = succeeded ÷ finished runs; running ones are not counted": "成功率 = 成功次数 ÷ 已结束的运行次数，运行中的不计入",
   "Success rate {rate}": "成功率 {rate}",
-  "Sum of the steps each run actually executed in the selected range": "所选范围内各次运行实际执行的节点数之和",
   "Switch": "切换",
   "Table view": "表格",
   "Terminated": "终止",
@@ -5099,5 +5098,10 @@
   "Back to workflows": "返回工作流列表",
   "View this workflow's run logs": "查看此工作流的运行日志",
   "Steps ({count})": "步骤（{count}）",
-  "Branch: {name}": "分支：{name}"
+  "Branch: {name}": "分支：{name}",
+  "The other system refuses calls until {time}. Retrying or replaying before then will fail again, so do not retry now; wait until then and lower how often or how much the workflow calls it.": "对方系统在 {time} 之前拒绝调用。在此之前重试或重放都会再次失败，现在不要重试；等到那时再处理，并降低工作流调用它的频率或数据量。",
+  "The other system refuses calls until {time}; replay after that": "对方系统在 {time} 之前拒绝调用；之后再重放",
+  "the block ends": "限制解除",
+  "Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.": "在对方系统恢复接受调用之前不能重放，否则这些运行会再次失败。",
+  "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.": "所选范围内各次运行执行的节点数之和，失败的运行停在的那个节点也计入；失败后被忽略或转入分支的节点不计入。"
 }

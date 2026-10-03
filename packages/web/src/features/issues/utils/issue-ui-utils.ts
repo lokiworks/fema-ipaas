@@ -1,3 +1,4 @@
+import { blockedUntilMarker } from '@fema-ipaas/core-utils';
 import {
   AlertRecordKind,
   IssueActivity,
@@ -11,7 +12,7 @@ import {
   ReplayCategory,
   ReplayReason,
 } from '@fema-ipaas/shared';
-import { t } from 'i18next';
+import i18next, { t } from 'i18next';
 
 import { failureText } from './failure-text';
 
@@ -56,11 +57,18 @@ function issueTitle(
 function causeText({
   cause,
   httpStatus,
+  blockedUntil,
 }: {
   cause: IssueInsightCause;
   httpStatus: number | null;
+  blockedUntil?: string | null;
 }): string {
   switch (cause) {
+    case IssueInsightCause.BLOCKED_UNTIL:
+      return t(
+        'The other system refuses calls until {time}. Retrying or replaying before then will fail again, so do not retry now; wait until then and lower how often or how much the workflow calls it.',
+        { time: blockedUntilText(blockedUntil) },
+      );
     case IssueInsightCause.CONNECTION_AUTH:
       return t(
         'The connection failed to authenticate. Every step that uses it fails at the authentication stage, regardless of the workflow configuration.',
@@ -126,8 +134,16 @@ function fixLabel(kind: IssueFixKind): string {
   }
 }
 
-function replayReasonLabel(reason: ReplayReason): string {
+function replayReasonLabel(
+  reason: ReplayReason,
+  blockedUntil?: string | null,
+): string {
   switch (reason) {
+    case ReplayReason.BLOCKED_UNTIL:
+      return t(
+        'The other system refuses calls until {time}; replay after that',
+        { time: blockedUntilText(blockedUntil) },
+      );
     case ReplayReason.CONNECTION_RECOVERED:
       return t('The connection has recovered');
     case ReplayReason.TRANSIENT_ERROR:
@@ -244,12 +260,37 @@ function showsActorInHeader(activity: Pick<IssueActivity, 'type'>): boolean {
   return activity.type === IssueActivityType.NOTE;
 }
 
+function messageText(message: string): string {
+  return blockedUntilMarker.strip(message);
+}
+
+function blockedUntilText(blockedUntil: string | null | undefined): string {
+  if (!blockedUntil) {
+    return t('the block ends');
+  }
+  const until = new Date(blockedUntil);
+  return Number.isNaN(until.getTime())
+    ? t('the block ends')
+    : new Intl.DateTimeFormat(i18next.language, BLOCKED_UNTIL_FORMAT).format(
+        until,
+      );
+}
+
 function isIssueStatus(value: unknown): value is IssueStatus {
   return (
     typeof value === 'string' &&
     Object.values<string>(IssueStatus).includes(value)
   );
 }
+
+const BLOCKED_UNTIL_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+};
 
 export const issueUiUtils = {
   statusLabel,
@@ -262,4 +303,5 @@ export const issueUiUtils = {
   alertKindLabel,
   activityText,
   showsActorInHeader,
+  messageText,
 };

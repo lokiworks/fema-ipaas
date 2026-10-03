@@ -6,6 +6,7 @@ import {
   NotificationChannel,
   NotificationChannelStatus,
   UpsertAlertPolicyRequestBody,
+  UpsertAlertPolicyRequestInput,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
@@ -79,10 +80,14 @@ function PolicyForm({
 }) {
   const { data: projects } = projectCollectionUtils.useAll();
   const { mutate: save, isPending } = alertsHooks.useSavePolicy();
-  const form = useForm<UpsertAlertPolicyRequestBody>({
+  const form = useForm<
+    UpsertAlertPolicyRequestInput,
+    unknown,
+    UpsertAlertPolicyRequestBody
+  >({
     resolver: zodResolver(UpsertAlertPolicyRequestBody),
     mode: 'onChange',
-    defaultValues: defaultValuesFor(existing),
+    defaultValues: alertUiUtils.policyFormDefaults({ existing }),
   });
   const events = form.watch('events');
   const quietEnabled = form.watch('quietHours.enabled');
@@ -252,7 +257,9 @@ function PolicyForm({
                   <FormItem>
                     <FormLabel>{t('Capacity threshold')}</FormLabel>
                     <Select
-                      value={String(field.value ?? DEFAULT_CAPACITY_THRESHOLD)}
+                      value={String(
+                        field.value ?? alertUiUtils.defaultCapacityThreshold,
+                      )}
                       onValueChange={(value) => field.onChange(Number(value))}
                     >
                       <FormControl>
@@ -505,45 +512,6 @@ function PolicyForm({
   );
 }
 
-function defaultValuesFor(
-  existing: AlertPolicy | null,
-): UpsertAlertPolicyRequestBody {
-  if (existing !== null) {
-    return {
-      name: existing.name,
-      enabled: existing.enabled,
-      projectIds: existing.projectIds,
-      workflowIds: existing.workflowIds,
-      events: existing.events,
-      failureRate: existing.failureRate ?? DEFAULT_FAILURE_RATE,
-      capacityThresholdPercent:
-        existing.capacityThresholdPercent ?? DEFAULT_CAPACITY_THRESHOLD,
-      groupWindowMinutes: existing.groupWindowMinutes,
-      quietHours: existing.quietHours,
-      escalation: existing.escalation,
-      channelIds: existing.channelIds,
-    };
-  }
-  return {
-    name: '',
-    enabled: true,
-    projectIds: [],
-    workflowIds: [],
-    events: [AlertTriggerEvent.ISSUE_NEW, AlertTriggerEvent.ISSUE_REOPENED],
-    failureRate: DEFAULT_FAILURE_RATE,
-    capacityThresholdPercent: DEFAULT_CAPACITY_THRESHOLD,
-    groupWindowMinutes: 30,
-    quietHours: {
-      enabled: true,
-      from: '22:00',
-      to: '08:00',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    },
-    escalation: { enabled: false, afterMinutes: 60, channelId: null },
-    channelIds: [],
-  };
-}
-
 function toggle<T>({
   values,
   value,
@@ -557,6 +525,3 @@ function toggle<T>({
     ? [...values.filter((item) => item !== value), value]
     : values.filter((item) => item !== value);
 }
-
-const DEFAULT_FAILURE_RATE = { thresholdPercent: 20, windowMinutes: 60 };
-const DEFAULT_CAPACITY_THRESHOLD = 80;

@@ -104,7 +104,7 @@ export function MonitorStatCards({
             : t('No runs in the selected range')
         }
         help={t(
-          'Sum of the steps each run actually executed in the selected range',
+          'Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.',
         )}
       />
       <MonitorStatCard

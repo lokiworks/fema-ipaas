@@ -2,6 +2,7 @@ import { Permission } from '@fema-ipaas/core-utils';
 import {
   AlertRecordKind,
   IssueFixKind,
+  IssueInsightCause,
   IssueKind,
   IssueStatus,
   IssueTrendGranularity,
@@ -400,7 +401,7 @@ function InsightCard({
               })}
             </p>
             <div className="rounded-md bg-muted/50 p-3 font-mono text-xs break-words">
-              {issue.message}
+              {issueUiUtils.messageText(issue.message)}
             </div>
             <div className="flex flex-wrap gap-2">
               {insight.fixes.map((fix) => (
@@ -413,7 +414,10 @@ function InsightCard({
                   disabled={!!fix.disabledReason || !handlers[fix.kind].allowed}
                   title={
                     fix.disabledReason
-                      ? issueUiUtils.replayReasonLabel(fix.disabledReason)
+                      ? issueUiUtils.replayReasonLabel(
+                          fix.disabledReason,
+                          insight.blockedUntil,
+                        )
                       : undefined
                   }
                   onClick={handlers[fix.kind].run}
@@ -424,9 +428,13 @@ function InsightCard({
             </div>
             {insight.fixes.some((fix) => fix.disabledReason) && (
               <p className="text-xs text-muted-foreground">
-                {t(
-                  'Replaying is blocked until the connection is fixed, otherwise the runs would fail again.',
-                )}
+                {insight.cause === IssueInsightCause.BLOCKED_UNTIL
+                  ? t(
+                      'Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.',
+                    )
+                  : t(
+                      'Replaying is blocked until the connection is fixed, otherwise the runs would fail again.',
+                    )}
               </p>
             )}
           </>

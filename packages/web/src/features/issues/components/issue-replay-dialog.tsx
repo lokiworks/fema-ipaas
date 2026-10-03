@@ -127,10 +127,13 @@ export function IssueReplayDialog({
                     </div>
                     <ul className="px-3 py-2 text-sm text-muted-foreground flex flex-col gap-1">
                       {summarizeReasons(groups[category]).map(
-                        ([reason, count]) => (
+                        ({ reason, count, blockedUntil }) => (
                           <li key={reason} className="flex justify-between">
                             <span>
-                              {issueUiUtils.replayReasonLabel(reason)}
+                              {issueUiUtils.replayReasonLabel(
+                                reason,
+                                blockedUntil,
+                              )}
                             </span>
                             <span>{count}</span>
                           </li>
@@ -202,15 +205,44 @@ function groupByCategory(
   };
 }
 
-function summarizeReasons(
-  items: ReplayCheckItem[],
-): [ReplayCheckItem['reason'], number][] {
-  const counts = items.reduce<Map<ReplayCheckItem['reason'], number>>(
-    (acc, item) =>
-      new Map(acc).set(item.reason, (acc.get(item.reason) ?? 0) + 1),
-    new Map(),
-  );
-  return [...counts.entries()];
+function summarizeReasons(items: ReplayCheckItem[]): ReasonSummary[] {
+  return items.reduce<ReasonSummary[]>((acc, item) => {
+    const existing = acc.find((summary) => summary.reason === item.reason);
+    if (!existing) {
+      return [
+        ...acc,
+        {
+          reason: item.reason,
+          count: 1,
+          blockedUntil: item.blockedUntil ?? null,
+        },
+      ];
+    }
+    return acc.map((summary) =>
+      summary.reason === item.reason
+        ? {
+            ...summary,
+            count: summary.count + 1,
+            blockedUntil: laterOf(summary.blockedUntil, item.blockedUntil),
+          }
+        : summary,
+    );
+  }, []);
+}
+
+function laterOf(
+  first: string | null,
+  second: string | null | undefined,
+): string | null {
+  if (!second) {
+    return first;
+  }
+  if (!first) {
+    return second;
+  }
+  return new Date(second).getTime() > new Date(first).getTime()
+    ? second
+    : first;
 }
 
 const CATEGORY_ORDER = [
@@ -219,3 +251,9 @@ const CATEGORY_ORDER = [
   ReplayCategory.BLOCKED,
   ReplayCategory.NOT_NEEDED,
 ];
+
+type ReasonSummary = {
+  reason: ReplayCheckItem['reason'];
+  count: number;
+  blockedUntil: string | null;
+};

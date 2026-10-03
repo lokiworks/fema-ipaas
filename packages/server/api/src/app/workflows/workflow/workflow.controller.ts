@@ -1,5 +1,5 @@
-import { EntityId, isNil, Permission, SeekPage, UserId } from '@fema-ipaas/core-utils'
-import { CountWorkflowsRequest, CreateWorkflowRequest, GetWorkflowQueryParamsRequest, GetWorkflowTemplateRequestQuery, ListWorkflowsRequest, PopulatedWorkflow, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, SharedTemplate, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
+import { ApplicationError, EntityId, ErrorCode, isNil, Permission, SeekPage, UserId } from '@fema-ipaas/core-utils'
+import { CountWorkflowsRequest, CreateWorkflowRequest, GetWorkflowQueryParamsRequest, GetWorkflowTemplateRequestQuery, ListWorkflowsRequest, PopulatedWorkflow, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, SharedTemplate, workflowCompiler, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -74,6 +74,15 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             id: request.params.id,
             projectId: request.projectId,
         })
+        if (request.body.type === WorkflowOperationType.SET_JOIN_EDGES) {
+            const cyclic = workflowCompiler.cyclicJoinEdges({ ...workflow.version, graph: { joinEdges: request.body.request.joinEdges } })
+            if (cyclic.length > 0) {
+                throw new ApplicationError({
+                    code: ErrorCode.VALIDATION,
+                    params: { message: `These waits would make steps wait for each other forever: ${cyclic.map((edge) => `${edge.to} waits for ${edge.from}`).join(', ')}` },
+                })
+            }
+        }
         if (request.body.type === WorkflowOperationType.LOCK_AND_PUBLISH) {
             await workflowReleaseService(request.log).assertCanPublishDirectly({
                 projectId: request.projectId,

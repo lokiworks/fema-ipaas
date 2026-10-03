@@ -1,5 +1,6 @@
 import {
   WorkflowOperationType,
+  workflowCompiler,
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -7,6 +8,7 @@ import React, { useMemo } from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../builder-hooks';
 
@@ -44,6 +46,23 @@ const JoinEdgesSection = React.memo(
       [workflowVersion.trigger, stepName],
     );
 
+    const blocked = useMemo(
+      () =>
+        new Set(
+          candidates
+            .filter(
+              (step) =>
+                !waitingFor.has(step.name) &&
+                workflowCompiler.wouldCreateCycle({
+                  workflowVersion,
+                  edge: { from: step.name, to: stepName },
+                }),
+            )
+            .map((step) => step.name),
+        ),
+      [candidates, waitingFor, workflowVersion, stepName],
+    );
+
     if (candidates.length === 0) {
       return null;
     }
@@ -74,11 +93,23 @@ const JoinEdgesSection = React.memo(
           {candidates.map((step) => (
             <label
               key={step.name}
-              className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-muted"
+              title={
+                blocked.has(step.name)
+                  ? t(
+                      'This step runs after the current one, so waiting for it would never finish',
+                    )
+                  : undefined
+              }
+              className={cn(
+                'flex items-center gap-2 rounded px-1 py-1 text-sm',
+                blocked.has(step.name)
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'cursor-pointer hover:bg-muted',
+              )}
             >
               <Checkbox
                 checked={waitingFor.has(step.name)}
-                disabled={readonly}
+                disabled={readonly || blocked.has(step.name)}
                 onCheckedChange={() => toggle(step.name)}
               />
               <span className="truncate">{step.displayName}</span>

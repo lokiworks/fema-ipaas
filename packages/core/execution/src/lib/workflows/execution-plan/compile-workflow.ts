@@ -5,6 +5,20 @@ import { ExecutionNode, ExecutionPlan } from './execution-plan'
 import { WorkflowJoinEdge } from './workflow-graph'
 
 export const workflowCompiler = {
+    cyclicJoinEdges(workflowVersion: WorkflowVersion): WorkflowJoinEdge[] {
+        const plan = workflowCompiler.compile(workflowVersion)
+        return (workflowVersion.graph?.joinEdges ?? []).filter((edge) =>
+            edge.from === edge.to
+            || (plan.nodes[edge.from] !== undefined && plan.nodes[edge.to] !== undefined && ancestorsOf({ dependencies: plan.dependencies, id: edge.from }).has(edge.to)),
+        )
+    },
+
+    wouldCreateCycle({ workflowVersion, edge }: { workflowVersion: WorkflowVersion, edge: WorkflowJoinEdge }): boolean {
+        const existing = workflowVersion.graph?.joinEdges ?? []
+        const candidate: WorkflowVersion = { ...workflowVersion, graph: { ...workflowVersion.graph, joinEdges: [...existing, edge] } }
+        return workflowCompiler.cyclicJoinEdges(candidate).length > 0
+    },
+
     compile(workflowVersion: WorkflowVersion): ExecutionPlan {
         const nodes: Record<string, ExecutionNode> = {}
         visitTrigger(workflowVersion.trigger, nodes)
@@ -17,6 +31,20 @@ export const workflowCompiler = {
             dependencies: withJoinEdges(buildDependencies(nodes), joinEdges),
         }
     },
+}
+
+function ancestorsOf({ dependencies, id }: { dependencies: Record<string, string[]>, id: string }): Set<string> {
+    const seen = new Set<string>()
+    const pending = [...(dependencies[id] ?? [])]
+    while (pending.length > 0) {
+        const next = pending.pop()
+        if (next === undefined || seen.has(next)) {
+            continue
+        }
+        seen.add(next)
+        pending.push(...(dependencies[next] ?? []))
+    }
+    return seen
 }
 
 function withJoinEdges(dependencies: Record<string, string[]>, joinEdges: WorkflowJoinEdge[]): Record<string, string[]> {

@@ -1413,6 +1413,7 @@
   "Remove branch": "Remove branch",
   "Every branch runs at the same time. The workflow continues once all of them finish.": "Every branch runs at the same time. The workflow continues once all of them finish.",
   "Wait for": "Wait for",
+  "This step runs after the current one, so waiting for it would never finish": "This step runs after the current one, so waiting for it would never finish",
   "This step will not run until every step you pick here has finished.": "This step will not run until every step you pick here has finished.",
   "waits for": "waits for",
   "Never": "Never",

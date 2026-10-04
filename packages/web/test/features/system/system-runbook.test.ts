@@ -1,4 +1,8 @@
-import { EncryptionKeySource, FileLocation } from '@fema-ipaas/shared';
+import {
+  BackupEngine,
+  EncryptionKeySource,
+  FileLocation,
+} from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -137,5 +141,72 @@ describe('systemRunbook.containerTypeLabel', () => {
     expect(systemRunbook.containerTypeLabel({ containerType: 'SIDECAR' })).toBe(
       'SIDECAR',
     );
+  });
+});
+
+describe('systemRunbook.restoreFromBackupSteps', () => {
+  const context = {
+    directory: '/root/.fema/backups',
+    dataDirectory: '/root/.fema',
+    fileName: 'fema-20261004-020000-abc123.dump',
+    keyDiffers: false,
+  };
+
+  it('copies the dump out of the container, stops the services and runs pg_restore on Compose', () => {
+    const steps = systemRunbook.restoreFromBackupSteps({
+      ...context,
+      kind: DeploymentKind.COMPOSE,
+      engine: BackupEngine.PG_DUMP,
+    });
+    expect(steps.map((step) => step.id)).toEqual([
+      'copy',
+      'stop',
+      'restore',
+      'start',
+    ]);
+    expect(steps[0].command).toBe(
+      'docker compose cp app:/root/.fema/backups/fema-20261004-020000-abc123.dump ./fema-20261004-020000-abc123.dump',
+    );
+    expect(steps[2].command).toContain('pg_restore');
+    expect(steps[2].command).toContain('--clean --if-exists --no-owner');
+  });
+
+  it('uses the database url on Helm', () => {
+    const steps = systemRunbook.restoreFromBackupSteps({
+      ...context,
+      kind: DeploymentKind.HELM,
+      engine: BackupEngine.PG_DUMP,
+    });
+    expect(steps.find((step) => step.id === 'restore')?.command).toContain(
+      '$FEMA_POSTGRES_URL',
+    );
+  });
+
+  it('replaces the PGlite directory in a one-off container and keeps the old data aside', () => {
+    const steps = systemRunbook.restoreFromBackupSteps({
+      ...context,
+      fileName: 'fema-20261004-020000-abc123.pglite.tar.gz',
+      kind: DeploymentKind.COMPOSE,
+      engine: BackupEngine.PGLITE,
+    });
+    expect(steps[0].command).toBe('docker compose stop app');
+    const replace = steps.find((step) => step.id === 'replace');
+    expect(replace?.command).toContain('docker compose run --rm --no-deps');
+    expect(replace?.command).toContain(
+      'mv /root/.fema/pglite /root/.fema/pglite.before-restore-$(date +%Y%m%d-%H%M%S)',
+    );
+    expect(replace?.command).toContain(
+      'tar -xzf /root/.fema/backups/fema-20261004-020000-abc123.pglite.tar.gz -C /root/.fema/pglite',
+    );
+  });
+
+  it('adds the key step only when the key differs', () => {
+    const withKey = systemRunbook.restoreFromBackupSteps({
+      ...context,
+      keyDiffers: true,
+      kind: DeploymentKind.COMPOSE,
+      engine: BackupEngine.PG_DUMP,
+    });
+    expect(withKey.some((step) => step.id === 'key')).toBe(true);
   });
 });

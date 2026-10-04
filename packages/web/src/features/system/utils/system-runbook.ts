@@ -1,4 +1,8 @@
-import { EncryptionKeySource, FileLocation } from '@fema-ipaas/shared';
+import {
+  BackupEngine,
+  EncryptionKeySource,
+  FileLocation,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 export const systemRunbook = {
@@ -6,6 +10,7 @@ export const systemRunbook = {
   rollbackSteps,
   backupSteps,
   restoreSteps,
+  restoreFromBackupSteps,
   scheduleCommand,
   keyBackupCommand,
   isVersionSkewed,
@@ -236,6 +241,101 @@ function restoreSteps({
   ];
 }
 
+function restoreFromBackupSteps({
+  kind,
+  engine,
+  directory,
+  dataDirectory,
+  fileName,
+  keyDiffers,
+}: RestoreFromBackupContext): RunbookStep[] {
+  const file = `${directory}/${fileName}`;
+  const helm = kind === DeploymentKind.HELM;
+  const stop = {
+    id: 'stop',
+    title: t('Stop the app and workers'),
+    description: t(
+      'Nothing may write to the database while it is being restored.',
+    ),
+    command: helm
+      ? 'kubectl -n fema scale deployment/fema --replicas=0'
+      : 'docker compose stop app worker',
+  };
+  const start = {
+    id: 'start',
+    title: t('Start the services'),
+    description: t(
+      'Backups made after this one are no longer listed, because the list is part of the database. Their files stay in the backup directory.',
+    ),
+    command: helm
+      ? 'kubectl -n fema scale deployment/fema --replicas=1'
+      : 'docker compose up -d',
+  };
+  const key: RunbookStep = {
+    id: 'key',
+    title: t('Put back the encryption key that made the backup'),
+    description: t(
+      'Set FEMA_ENCRYPTION_KEY to the saved value, or list it in FEMA_RETIRED_ENCRYPTION_KEYS.',
+    ),
+  };
+  if (engine === BackupEngine.PGLITE) {
+    const replaceCommands = [
+      `mv ${dataDirectory}/pglite ${dataDirectory}/pglite.before-restore-$(date +%Y%m%d-%H%M%S)`,
+      `mkdir ${dataDirectory}/pglite`,
+      `tar -xzf ${file} -C ${dataDirectory}/pglite`,
+    ];
+    return [
+      helm ? stop : { ...stop, command: 'docker compose stop app' },
+      {
+        id: 'replace',
+        title: t('Replace the PGlite data directory with the backup'),
+        description: helm
+          ? t(
+              'Run these where the app data volume is mounted. The old data is kept next to it as pglite.before-restore-<time> until you delete it.',
+            )
+          : t(
+              'This runs in a one-off container that mounts the same data volume. The old data is kept next to it as pglite.before-restore-<time> until you delete it.',
+            ),
+        command: helm
+          ? replaceCommands.join('\n')
+          : `docker compose run --rm --no-deps --entrypoint sh app -c '${replaceCommands.join(
+              ' && ',
+            )}'`,
+      },
+      ...(keyDiffers ? [key] : []),
+      start,
+    ];
+  }
+  return [
+    {
+      id: 'copy',
+      title: t('Copy the backup file to where you run the restore'),
+      description: t(
+        'Skip this when {directory} is a mounted volume you can reach.',
+        {
+          directory,
+        },
+      ),
+      command: helm
+        ? `kubectl -n fema exec deployment/fema -- cat ${file} > ${fileName}`
+        : `docker compose cp app:${file} ./${fileName}`,
+    },
+    stop,
+    {
+      id: 'restore',
+      title: t('Restore the database'),
+      description: t(
+        'Use a pg_restore that is the same major version as the database or newer.',
+      ),
+      command: helm
+        ? `pg_restore -d "$FEMA_POSTGRES_URL" --clean --if-exists --no-owner ${fileName}`
+        : `docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner' \\\n  < ./${fileName}`,
+    },
+    ...(keyDiffers ? [key] : []),
+    start,
+  ];
+}
+
 function scheduleCommand({ keepDays }: { keepDays: number }): string {
   return `0 2 * * * cd ${COMPOSE_DIR} && mkdir -p backups && docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc' > backups/fema-$(date +\\%Y\\%m\\%d).dump && find backups -name 'fema-*.dump' -mtime +${keepDays} -delete`;
 }
@@ -294,6 +394,15 @@ export type RunbookStep = {
   title: string;
   description?: string;
   command?: string;
+};
+
+export type RestoreFromBackupContext = {
+  kind: DeploymentKind;
+  engine: BackupEngine;
+  directory: string;
+  dataDirectory: string;
+  fileName: string;
+  keyDiffers: boolean;
 };
 
 type BackupContext = {

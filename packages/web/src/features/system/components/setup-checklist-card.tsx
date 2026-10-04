@@ -1,5 +1,4 @@
 import { t } from 'i18next';
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { BrowserStorage } from '@/lib/browser-storage';
 
 import { systemHooks } from '../hooks/system-hooks';
 
@@ -18,7 +16,6 @@ import { CheckRow } from './check-row';
 
 export function SetupChecklistCard() {
   const { data } = systemHooks.useSetupChecklist();
-  const [backupDone, setBackupDone] = useState(readBackupDone);
   if (!data) {
     return null;
   }
@@ -37,7 +34,7 @@ export function SetupChecklistCard() {
     },
     {
       id: 'backup',
-      done: backupDone,
+      done: data.backupsWorking,
       title: t('Schedule backups'),
       to: '/tenant/infra/backup',
     },
@@ -78,15 +75,6 @@ export function SetupChecklistCard() {
             action={
               item.done ? undefined : (
                 <div className="flex gap-2">
-                  {item.id === 'backup' && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setBackupDone(markBackupDone())}
-                    >
-                      {t('Mark as done')}
-                    </Button>
-                  )}
                   <Button size="sm" variant="outline" asChild>
                     <Link to={item.to}>{t('Open')}</Link>
                   </Button>
@@ -94,11 +82,7 @@ export function SetupChecklistCard() {
               )
             }
           >
-            {item.id === 'smtp' && !item.done
-              ? t(
-                  'Without email, invitations and email alerts are off; admins reset passwords.',
-                )
-              : undefined}
+            {checklistNote({ id: item.id, done: item.done })}
           </CheckRow>
         ))}
       </CardContent>
@@ -106,21 +90,26 @@ export function SetupChecklistCard() {
   );
 }
 
-function readBackupDone(): boolean {
-  try {
-    return BrowserStorage.getInstance().getItem(BACKUP_DONE_KEY) === 'true';
-  } catch {
-    return false;
+function checklistNote({
+  id,
+  done,
+}: {
+  id: string;
+  done: boolean;
+}): string | undefined {
+  if (done) {
+    return undefined;
+  }
+  switch (id) {
+    case 'smtp':
+      return t(
+        'Without email, invitations and email alerts are off; admins reset passwords.',
+      );
+    case 'backup':
+      return t(
+        'Done once the schedule is on and a backup has succeeded. Open Backup and restore to run one now.',
+      );
+    default:
+      return undefined;
   }
 }
-
-function markBackupDone(): boolean {
-  try {
-    BrowserStorage.getInstance().setItem(BACKUP_DONE_KEY, 'true');
-  } catch {
-    return true;
-  }
-  return true;
-}
-
-const BACKUP_DONE_KEY = 'fema.setup.backupScheduled';

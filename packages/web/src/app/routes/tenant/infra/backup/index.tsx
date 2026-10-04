@@ -1,14 +1,16 @@
 import {
+  BackupEngine,
   EncryptionKeySource,
   FileLocation,
   SystemOverview,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
+import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { CenteredPage } from '@/app/components/centered-page';
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -16,6 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
   Select,
   SelectContent,
@@ -26,6 +33,14 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  BackupListCard,
+  BackupNotices,
+  BackupNowButton,
+  BackupPlanCard,
+  BackupStats,
+  backupHooks,
+} from '@/features/backup';
+import {
   CheckRow,
   DeploymentKind,
   RunbookSteps,
@@ -34,104 +49,62 @@ import {
 } from '@/features/system';
 
 export default function BackupPage() {
+  const { data: backupOverview, isLoading: backupLoading } =
+    backupHooks.useOverview();
   const { data: overview, isLoading } = systemHooks.useOverview();
-  const [kind, setKind] = useState(DeploymentKind.COMPOSE);
   return (
     <CenteredPage
-      widthClassName="max-w-[48rem]"
+      widthClassName="max-w-[56rem]"
       title={t('Backup and restore')}
       description={t(
-        'A backup is the database plus the encryption key. The platform does not run backups itself; run these commands on the server or schedule them.',
+        'Backups cover the database and the files stored in it. The encryption key and the JWT secret are never written into a backup; keep them apart.',
       )}
       actions={
-        <Tabs
-          value={kind}
-          onValueChange={(value) =>
-            setKind(
-              value === DeploymentKind.HELM
-                ? DeploymentKind.HELM
-                : DeploymentKind.COMPOSE,
-            )
-          }
-        >
-          <TabsList>
-            <TabsTrigger value={DeploymentKind.COMPOSE}>
-              Docker Compose
-            </TabsTrigger>
-            <TabsTrigger value={DeploymentKind.HELM}>Helm</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        backupOverview ? <BackupNowButton overview={backupOverview} /> : null
       }
     >
-      {isLoading || !overview ? (
+      {isLoading || backupLoading || !overview || !backupOverview ? (
         <Skeleton className="h-96 w-full" />
       ) : (
         <div className="flex flex-col gap-4">
-          <WhatToBackUpCard overview={overview} />
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('Back up')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RunbookSteps
-                steps={systemRunbook.backupSteps({
-                  kind,
-                  keySource: overview.encryptionKey.source,
-                  keyPath: overview.encryptionKey.path,
-                  fileLocation: overview.fileStorage.location,
-                })}
-              />
-            </CardContent>
-          </Card>
-          {kind === DeploymentKind.COMPOSE && <ScheduleCard />}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('Restore')}</CardTitle>
-              <CardDescription>
-                {t(
-                  'Restoring replaces everything in the database with the backup. Runs and changes made after the backup are lost.',
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RunbookSteps
-                steps={systemRunbook.restoreSteps({
-                  kind,
-                  keySource: overview.encryptionKey.source,
-                  keyPath: overview.encryptionKey.path,
-                })}
-              />
-            </CardContent>
-          </Card>
-          <Alert variant="primary">
-            <AlertTitle>{t('Test your backups')}</AlertTitle>
-            <AlertDescription>
-              {t(
-                'Restore a backup into a scratch environment now and then. A backup that was never restored is a guess.',
-              )}
-            </AlertDescription>
-          </Alert>
+          <BackupNotices overview={backupOverview} />
+          <BackupStats overview={backupOverview} />
+          <BackupPlanCard overview={backupOverview} />
+          <BackupListCard overview={backupOverview} />
+          <WhatToBackUpCard
+            overview={overview}
+            fingerprint={backupOverview.keyFingerprint ?? null}
+          />
+          {backupOverview.engine.kind === BackupEngine.PG_DUMP && (
+            <CommandLineBackups overview={overview} />
+          )}
         </div>
       )}
     </CenteredPage>
   );
 }
 
-function WhatToBackUpCard({ overview }: { overview: SystemOverview }) {
+function WhatToBackUpCard({
+  overview,
+  fingerprint,
+}: {
+  overview: SystemOverview;
+  fingerprint: string | null;
+}) {
   const { encryptionKey, fileStorage } = overview;
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('What to back up')}</CardTitle>
+        <CardTitle>{t('What a backup contains')}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col divide-y">
-        <CheckRow level="info" title={t('Database')}>
+        <CheckRow level="ok" title={t('Database')}>
           {t(
             'Workflows, versions, runs, connections, variables, mapping tables and settings.',
           )}
         </CheckRow>
         <CheckRow
-          level={fileStorage.location === FileLocation.S3 ? 'warning' : 'info'}
+          level={fileStorage.location === FileLocation.S3 ? 'warning' : 'ok'}
           title={t('Files')}
         >
           {fileStorage.location === FileLocation.S3
@@ -148,9 +121,14 @@ function WhatToBackUpCard({ overview }: { overview: SystemOverview }) {
               ? 'error'
               : 'warning'
           }
-          title={t('Encryption key')}
+          title={t('Encryption key and JWT secret')}
         >
           {keyText(overview)}
+          {fingerprint &&
+            ` ${t(
+              'Each backup records only the fingerprint of the key ({fingerprint}), so a restore check can tell whether you still have the right one.',
+              { fingerprint },
+            )}`}
           {encryptionKey.retiredKeys > 0 &&
             ` ${t(
               'Also keep the {count} retired keys in FEMA_RETIRED_ENCRYPTION_KEYS.',
@@ -169,42 +147,85 @@ function WhatToBackUpCard({ overview }: { overview: SystemOverview }) {
   );
 }
 
-function ScheduleCard() {
+function CommandLineBackups({ overview }: { overview: SystemOverview }) {
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState(DeploymentKind.COMPOSE);
   const [keepDays, setKeepDays] = useState('7');
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('Back up every night')}</CardTitle>
-        <CardDescription>
-          {t(
-            'Add this line to the crontab of the server user that runs Docker. It backs up at 02:00 and deletes old backups.',
-          )}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-sm">
-          <span>{t('Keep backups for')}</span>
-          <Select value={keepDays} onValueChange={setKeepDays}>
-            <SelectTrigger className="w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {KEEP_DAYS_OPTIONS.map((days) => (
-                <SelectItem key={days} value={String(days)}>
-                  {t('{count} days', { count: days })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <CopyToClipboardInput
-          useInput={false}
-          textToCopy={systemRunbook.scheduleCommand({
-            keepDays: Number(keepDays),
-          })}
-        />
-      </CardContent>
-    </Card>
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <CardTitle>{t('Back up from the command line')}</CardTitle>
+            <CardDescription>
+              {t(
+                'For databases the platform cannot dump itself, or to keep a copy outside this server.',
+              )}
+            </CardDescription>
+          </div>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm">
+              <ChevronDown className="size-4" />
+              {open ? t('Hide') : t('Show')}
+            </Button>
+          </CollapsibleTrigger>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="flex flex-col gap-6">
+            <Tabs
+              value={kind}
+              onValueChange={(value) =>
+                setKind(
+                  value === DeploymentKind.HELM
+                    ? DeploymentKind.HELM
+                    : DeploymentKind.COMPOSE,
+                )
+              }
+            >
+              <TabsList>
+                <TabsTrigger value={DeploymentKind.COMPOSE}>
+                  Docker Compose
+                </TabsTrigger>
+                <TabsTrigger value={DeploymentKind.HELM}>Helm</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <RunbookSteps
+              steps={systemRunbook.backupSteps({
+                kind,
+                keySource: overview.encryptionKey.source,
+                keyPath: overview.encryptionKey.path,
+                fileLocation: overview.fileStorage.location,
+              })}
+            />
+            {kind === DeploymentKind.COMPOSE && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span>{t('Keep backups for')}</span>
+                  <Select value={keepDays} onValueChange={setKeepDays}>
+                    <SelectTrigger className="w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {KEEP_DAYS_OPTIONS.map((days) => (
+                        <SelectItem key={days} value={String(days)}>
+                          {t('{count} days', { count: days })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <CopyToClipboardInput
+                  useInput={false}
+                  textToCopy={systemRunbook.scheduleCommand({
+                    keepDays: Number(keepDays),
+                  })}
+                />
+              </div>
+            )}
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }
 

@@ -68,14 +68,19 @@ export function ComponentHealthTab() {
           </ItemContent>
           <ItemActions>
             {check.component === HealthComponent.BACKUP ? (
-              <Button
-                size="sm"
-                variant="outline"
-                loading={isPending}
-                onClick={() => confirmBackup()}
-              >
-                {t('I just made a backup')}
-              </Button>
+              <div className="flex gap-2">
+                <Button size="sm" variant="ghost" asChild>
+                  <Link to="/tenant/infra/backup">{t('View')}</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  loading={isPending}
+                  onClick={() => confirmBackup()}
+                >
+                  {t('I just made a backup')}
+                </Button>
+              </div>
             ) : (
               linkFor(check.component) && (
                 <Button size="sm" variant="ghost" asChild>
@@ -184,16 +189,7 @@ function describe(check: ComponentHealthCheck): string {
           )
         : t('Sending through {host}', { host: text('host') });
     case HealthComponent.BACKUP:
-      return check.level === ComponentHealthLevel.NOT_CONFIGURED
-        ? t(
-            'The platform does not run backups itself and no backup has been recorded yet.',
-          )
-        : t(
-            'Last backup recorded on {date}. The platform does not run backups itself.',
-            {
-              date: new Date(text('confirmedAt')).toLocaleDateString(),
-            },
-          );
+      return backupText({ check, facts });
     case HealthComponent.VERSION:
       return facts.updateCheckFailed === true
         ? t('Running {current}. Could not reach the update server.', {
@@ -218,6 +214,34 @@ function describe(check: ComponentHealthCheck): string {
         },
       );
   }
+}
+
+function backupText({
+  check,
+  facts,
+}: {
+  check: ComponentHealthCheck;
+  facts: ComponentHealthCheck['facts'];
+}): string {
+  if (check.level === ComponentHealthLevel.NOT_CONFIGURED) {
+    return t(
+      'No backup yet. Back up on the Backup and restore page, or confirm one you made from the command line.',
+    );
+  }
+  const platformAt =
+    typeof facts.platformBackupAt === 'string' ? facts.platformBackupAt : null;
+  const confirmedAt =
+    typeof facts.confirmedAt === 'string' ? facts.confirmedAt : null;
+  const platformIsNewest =
+    platformAt !== null &&
+    (confirmedAt === null || new Date(platformAt) >= new Date(confirmedAt));
+  return platformIsNewest
+    ? t('Last backup made by the platform on {date}.', {
+        date: new Date(platformAt).toLocaleDateString(),
+      })
+    : t('Last backup you confirmed on {date}.', {
+        date: new Date(confirmedAt ?? '').toLocaleDateString(),
+      });
 }
 
 function linkFor(component: HealthComponent): string | null {

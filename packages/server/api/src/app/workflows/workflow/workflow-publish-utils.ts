@@ -1,5 +1,5 @@
 import { ApplicationError, dataMapping, ErrorCode, MappingIssueCode, MappingIssueSeverity, MappingSpec, ProjectId } from '@fema-ipaas/core-utils'
-import { WorkflowActionType, WorkflowTriggerType, workflowStructureUtil, WorkflowVersion } from '@fema-ipaas/shared'
+import { WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import deepEqual from 'deep-equal'
 import { FastifyBaseLogger } from 'fastify'
 import { mappingTableService } from '../../mapping-table/mapping-table.service'

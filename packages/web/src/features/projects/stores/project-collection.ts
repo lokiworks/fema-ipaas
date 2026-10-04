@@ -92,6 +92,13 @@ export const projectCollection = createCollection<ProjectWithLimits, string>(
         if (modified.workerGroupId !== original.workerGroupId) {
           request.workerGroupId = modified.workerGroupId;
         }
+        if (
+          modified.executionDataRetentionDays !==
+          original.executionDataRetentionDays
+        ) {
+          request.executionDataRetentionDays =
+            modified.executionDataRetentionDays;
+        }
         if (Object.keys(request).length === 0) {
           continue;
         }

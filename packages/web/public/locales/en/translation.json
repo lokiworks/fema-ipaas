@@ -5127,5 +5127,10 @@
   "auditReleaseWithdrawn": "Promotion of \"{workflow}\" withdrawn",
   "auditReleaseRolledBack": "Workflow \"{workflow}\" rolled back in production",
   "auditEnvironmentsOn": "Test and production environments turned on or updated",
-  "auditEnvironmentsOff": "Test and production environments turned off"
+  "auditEnvironmentsOff": "Test and production environments turned off",
+  "View original access records": "View original access records",
+  "Retention by project": "Retention by project",
+  "A project can only keep run logs for a shorter time than the platform default of {days} days. Changes here are saved right away.": "A project can only keep run logs for a shorter time than the platform default of {days} days. Changes here are saved right away.",
+  "Follow platform ({days} days)": "Follow platform ({days} days)",
+  "Retention saved": "Retention saved"
 }

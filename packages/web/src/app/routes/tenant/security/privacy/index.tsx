@@ -1,4 +1,6 @@
 import {
+  ApplicationEventName,
+  BuiltinMaskDetector,
   LOG_RETENTION_DAYS_OPTIONS,
   MaskRuleType,
   PayloadLevel,
@@ -13,6 +15,7 @@ import { t } from 'i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 
 import { CenteredPage } from '@/app/components/centered-page';
 import { Button } from '@/components/ui/button';
@@ -45,7 +48,11 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { DataErasureSection, privacyHooks } from '@/features/privacy';
+import {
+  DataErasureSection,
+  privacyHooks,
+  ProjectRetentionSection,
+} from '@/features/privacy';
 
 export function PrivacyPage() {
   const { data: settings, isLoading } = privacyHooks.useSettings({
@@ -63,6 +70,7 @@ export function PrivacyPage() {
       ) : (
         <div className="flex flex-col gap-6">
           <PrivacyForm key={settings.updated.toString()} settings={settings} />
+          <ProjectRetentionSection settings={settings} />
           <DataErasureSection />
         </div>
       )}
@@ -157,7 +165,7 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
                   </Select>
                   <FormDescription>
                     {t(
-                      'Logs are masked before they are saved. The unmasked run state is kept only this long after a run ends, for viewing originals and replaying from the failed step; after that only a full rerun is possible.',
+                      'Logs are masked before they are saved. The unmasked run state and the original request bodies are kept only this long after a run ends, for viewing originals and replaying from the failed step; after that the run can no longer be replayed or viewed in original form.',
                     )}
                   </FormDescription>
                   <FormMessage />
@@ -239,6 +247,7 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
                     <span className="text-sm font-medium">{rule.name}</span>
                     <span className="text-xs text-muted-foreground">
                       {t('Built-in detector')}
+                      {builtinExample(rule.detector)}
                     </span>
                   </div>
                 ) : (
@@ -323,7 +332,13 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
             <CardDescription>
               {t(
                 'Every time someone views an unmasked value it is written to the audit log.',
-              )}
+              )}{' '}
+              <Link
+                className="text-primary underline"
+                to={`/tenant/audit?action=${ApplicationEventName.EXECUTION_PAYLOAD_REVEALED}`}
+              >
+                {t('View original access records')}
+              </Link>
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -438,6 +453,27 @@ function MaskPreview({
   );
 }
 
+function builtinExample(detector: BuiltinMaskDetector | null): string {
+  const example = detector === null ? undefined : BUILTIN_EXAMPLES[detector];
+  if (example === undefined) {
+    return '';
+  }
+  const masked = privacyMasking.maskText({
+    text: example,
+    rules: [
+      {
+        id: 'example',
+        name: 'example',
+        type: MaskRuleType.BUILTIN,
+        detector,
+        pattern: null,
+        enabled: true,
+      },
+    ],
+  });
+  return ` · ${example} → ${masked.value}`;
+}
+
 function payloadLevelLabel(level: PayloadLevel): string {
   switch (level) {
     case PayloadLevel.FULL:
@@ -480,6 +516,14 @@ function rawViewRoleLabel(role: RawViewRole): string {
 function toPayloadLevel(value: string): PayloadLevel {
   return PAYLOAD_LEVELS.find((level) => level === value) ?? PayloadLevel.FULL;
 }
+
+const BUILTIN_EXAMPLES: Record<BuiltinMaskDetector, string> = {
+  [BuiltinMaskDetector.PHONE]: '13812345678',
+  [BuiltinMaskDetector.ID_CARD]: '110101199001011234',
+  [BuiltinMaskDetector.BANK_CARD]: '6222021234567890123',
+  [BuiltinMaskDetector.EMAIL]: 'wanglei@example.com',
+  [BuiltinMaskDetector.SECRET]: 'token=sk-live-123456',
+};
 
 const PAYLOAD_LEVELS = [
   PayloadLevel.FULL,

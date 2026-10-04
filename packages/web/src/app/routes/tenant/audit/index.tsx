@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { CenteredPage } from '@/app/components/centered-page';
@@ -46,7 +47,10 @@ import { downloadFile } from '@/lib/dom-utils';
 export default function AuditLogPage() {
   const [range, setRange] = useState<RangeKey>('30d');
   const [userId, setUserId] = useState<string | null>(null);
-  const [action, setAction] = useState<ApplicationEventName | 'any'>('any');
+  const [searchParams] = useSearchParams();
+  const [action, setAction] = useState<ApplicationEventName | 'any'>(
+    () => actionFromParam(searchParams.get('action')),
+  );
   const [projectId, setProjectId] = useState<string>('any');
   const [cursors, setCursors] = useState<string[]>([]);
   const [exporting, setExporting] = useState(false);
@@ -317,5 +321,11 @@ const RANGES: Record<RangeKey, [number, 'hour' | 'day']> = {
 
 const EXPORT_PAGE_SIZE = 500;
 const EXPORT_MAX_PAGES = 40;
+
+function actionFromParam(value: string | null): ApplicationEventName | 'any' {
+  return (
+    Object.values(ApplicationEventName).find((name) => name === value) ?? 'any'
+  );
+}
 
 type RangeKey = '1h' | '24h' | '7d' | '30d' | '90d';

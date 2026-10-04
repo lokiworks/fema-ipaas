@@ -14,11 +14,8 @@ function stripBrackets(value: string): string {
 }
 
 function unwrapMapped(addr: ipaddr.IPv4 | ipaddr.IPv6): ipaddr.IPv4 | ipaddr.IPv6 {
-    if (addr.kind() === 'ipv6') {
-        const v6 = addr as ipaddr.IPv6
-        if (v6.isIPv4MappedAddress()) {
-            return v6.toIPv4Address()
-        }
+    if (addr instanceof ipaddr.IPv6 && addr.isIPv4MappedAddress()) {
+        return addr.toIPv4Address()
     }
     return addr
 }

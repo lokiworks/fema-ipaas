@@ -22,11 +22,15 @@ export function MaskedPayloadNotice({
   stepName,
   maskedFields,
   redacted,
+  canReveal,
+  rawExpired,
 }: {
   executionId: string;
   stepName: string;
   maskedFields: number;
   redacted: boolean;
+  canReveal: boolean;
+  rawExpired: boolean;
 }) {
   const [open, setOpen] = useState(false);
   if (!redacted && maskedFields === 0) {
@@ -42,7 +46,7 @@ export function MaskedPayloadNotice({
               count: maskedFields,
             })}
       </span>
-      {!redacted && (
+      {!redacted && canReveal && (
         <Button
           variant="link"
           size="sm"
@@ -51,6 +55,13 @@ export function MaskedPayloadNotice({
         >
           {t('View original')}
         </Button>
+      )}
+      {!redacted && !canReveal && (
+        <span className="shrink-0">
+          {rawExpired
+            ? t('Original expired')
+            : t('You cannot view originals. Ask an admin.')}
+        </span>
       )}
       <RevealDialog
         executionId={executionId}

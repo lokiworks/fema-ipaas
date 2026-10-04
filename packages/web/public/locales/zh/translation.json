@@ -5125,5 +5125,7 @@
   "auditEnvironmentsOff": "关闭了测试与生产环境",
   "Output contains sensitive information": "出参包含敏感信息",
   "Every field of this output is masked in run logs, and the same values (4 characters or longer) are masked wherever later steps show them. Viewing the original needs permission and is audited.": "运行日志里这个节点的全部出参都会脱敏显示，后续节点日志里出现的相同的值（不少于 4 个字符）也会被遮住。查看原文需要权限，并记录审计。",
-  "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.": "手机号、身份证号、银行卡号、邮箱和密钥已按平台规则自动脱敏。整个出参都敏感时，打开这个开关。"
+  "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.": "手机号、身份证号、银行卡号、邮箱和密钥已按平台规则自动脱敏。整个出参都敏感时，打开这个开关。",
+  "Original expired": "原文已过保留期",
+  "You cannot view originals. Ask an admin.": "你没有查看原文的权限，请联系管理员"
 }

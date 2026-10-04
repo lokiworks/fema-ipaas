@@ -5125,5 +5125,7 @@
   "auditEnvironmentsOff": "Test and production environments turned off",
   "Output contains sensitive information": "Output contains sensitive information",
   "Every field of this output is masked in run logs, and the same values (4 characters or longer) are masked wherever later steps show them. Viewing the original needs permission and is audited.": "Every field of this output is masked in run logs, and the same values (4 characters or longer) are masked wherever later steps show them. Viewing the original needs permission and is audited.",
-  "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.": "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive."
+  "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.": "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.",
+  "Original expired": "The original has passed its retention period",
+  "You cannot view originals. Ask an admin.": "You cannot view originals. Ask an admin."
 }

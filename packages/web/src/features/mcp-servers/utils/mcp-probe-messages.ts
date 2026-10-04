@@ -15,6 +15,12 @@ function failureMessage(error: McpServerProbeError): string {
         { host },
       );
     case McpServerProbeFailure.PRIVATE_UNREACHABLE:
+      if (/ssrf|blocked/i.test(detail)) {
+        return t(
+          'Blocked by the outbound security policy: {host} is a private or internal address. The platform only calls such addresses after an operator adds them to FEMA_SSRF_ALLOW_LIST.',
+          { host },
+        );
+      }
       return t(
         "Connection timed out: {host} did not respond. This is a private address that the worker's network cannot reach, or an outbound security policy is blocking it. Check network connectivity, and ask an operator to add this range to FEMA_SSRF_ALLOW_LIST.",
         { host },

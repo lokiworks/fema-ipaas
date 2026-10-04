@@ -3113,6 +3113,8 @@
   "This is a legacy service served at its own endpoint without a publish step.": "这是一个历史遗留服务，使用独立的地址提供服务，不需要发布",
   "This key identifies you as the caller. Resetting it breaks the old key immediately.": "这个 Key 用来标识你的调用身份；重置后旧 Key 会立即失效",
   "Reset your API key?": "重置你的 API Key？",
+  "Blocked by the outbound security policy: {host} is a private or internal address. The platform only calls such addresses after an operator adds them to FEMA_SSRF_ALLOW_LIST.": "已被出站安全策略拦截：{host} 是内网或内部地址。只有运维把它加入 FEMA_SSRF_ALLOW_LIST 后，平台才会调用这类地址。",
+  "Could not connect to {host}: the connection was refused or the network is unreachable. Check that the server is running, the port is correct and nothing blocks it. {detail}": "无法连接 {host}：连接被拒绝或网络不通。请确认服务已启动、端口正确、中间没有被拦截。{detail}",
   "The call failed": "调用失败",
   "Took {duration} ms": "耗时 {duration} 毫秒",
   "Every client using the current key will stop working immediately and must be given the new key.": "正在使用当前 Key 的客户端会立即失效，需要换成新 Key",

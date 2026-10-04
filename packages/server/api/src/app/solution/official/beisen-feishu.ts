@@ -1,7 +1,8 @@
 import { MappingMissingBehavior } from '@fema-ipaas/core-utils'
-import { SolutionConfigType, SolutionPackage, SolutionWorkflow, WorkflowTrigger } from '@fema-ipaas/shared'
+import { SolutionConfigType, SolutionPackage, SolutionWorkflow } from '@fema-ipaas/shared'
 import type { OfficialSolution } from '../official-solutions'
 import { solutionPackageUtils } from '../solution-package-utils'
+import { BEISEN, BEISEN_AUTH, BEISEN_VERSION, beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep } from './official-solution-builders'
 
 function buildBeisenFeishuSolution(): OfficialSolution {
     const workflows = [onboardWorkflow(), transferWorkflow(), leaveWorkflow()]
@@ -205,83 +206,6 @@ function leaveWorkflow(): SolutionWorkflow {
     return { key: 'leave', name: '员工离职暂停飞书账号', description: '北森离职生效后暂停飞书账号（数据保留、可恢复），并通知 IT 回收设备。', trigger, schemaVersion: null }
 }
 
-function beisenTrigger({ displayName, statusScope, changeTypes, dedupeKey, dedupeDays, serial, nextAction }: BeisenTriggerParams): WorkflowTrigger {
-    return WorkflowTrigger.parse({
-        name: 'trigger',
-        type: 'CONNECTOR_TRIGGER',
-        valid: true,
-        displayName,
-        lastUpdatedDate: STAMP,
-        settings: {
-            connectorName: BEISEN,
-            connectorVersion: BEISEN_VERSION,
-            triggerName: 'employee_changed',
-            input: {
-                auth: BEISEN_AUTH,
-                statusScope,
-                queryType: 2,
-                timezone: 'Asia/Shanghai',
-                ...(changeTypes.length > 0 ? { filterColumn: 'recordInfo.changeTypeOID', filterValues: changeTypes } : {}),
-            },
-            propertySettings: {},
-            dedupe: { enabled: true, keyPath: dedupeKey, windowSeconds: dedupeDays * 24 * 60 * 60 },
-            ...(serial ? { concurrency: { maxConcurrentRuns: 1 } } : {}),
-        },
-        nextAction,
-    })
-}
-
-function connectorStep({ name, displayName, connectorName, connectorVersion, actionName, input, retry, nextAction }: ConnectorStepParams): Record<string, unknown> {
-    return {
-        type: 'CONNECTOR',
-        name,
-        displayName,
-        valid: true,
-        lastUpdatedDate: STAMP,
-        settings: {
-            connectorName,
-            connectorVersion,
-            actionName,
-            input,
-            propertySettings: {},
-            errorHandlingOptions: retry ? { retryOnFailure: { value: true }, continueOnFailure: { value: false } } : {},
-        },
-        ...(nextAction ? { nextAction } : {}),
-    }
-}
-
-function routerStep({ name, displayName, condition, branchName, fallbackName, child }: RouterStepParams): Record<string, unknown> {
-    return {
-        type: 'ROUTER',
-        name,
-        displayName,
-        valid: true,
-        lastUpdatedDate: STAMP,
-        settings: {
-            executionType: 'EXECUTE_FIRST_MATCH',
-            branches: [
-                { branchType: 'CONDITION', branchName, conditions: [[condition]] },
-                { branchType: 'FALLBACK', branchName: fallbackName },
-            ],
-        },
-        children: [child, null],
-    }
-}
-
-function ref(section: 'employeeInfo' | 'recordInfo', field: string): string {
-    return `{{trigger['output']['${section}']['${field}']}}`
-}
-
-const BEISEN = '@fema-ipaas/connector-beisen'
-const FEISHU = '@fema-ipaas/connector-feishu'
-const DATA_MAPPER = '@fema-ipaas/connector-data-mapper'
-const BEISEN_VERSION = '~0.3.0'
-const FEISHU_VERSION = '~0.4.0'
-const BEISEN_AUTH = '{{connections[\'beisen-connection\']}}'
-const FEISHU_AUTH = '{{connections[\'feishu-connection\']}}'
-const STAMP = '2026-10-03T00:00:00.000Z'
-const DEPARTMENT_OID = '{{trigger[\'output\'][\'recordInfo\'][\'oIdDepartment\']}}'
-
 const DEPARTMENT_TABLE = {
     id: 'mt_beisen_department',
     key: 'department',
@@ -302,35 +226,5 @@ const MANUAL_CHECKS = [
     { label: '映射表里已填好北森部门 OId 对应的飞书部门 ID', detail: '映射表缺少对应关系时，开通和调岗会明确失败，在问题中心修好映射表后可以重放', who: '安装的人' },
     { label: '用一名测试员工验证入职和离职都能从北森读到', detail: '北森只返回审批生效的记录，离职要过了最后工作日才算生效；先在北森造一个测试员工，确认触发器测试能读到', who: 'HR 或实施顾问' },
 ]
-
-type BeisenTriggerParams = {
-    displayName: string
-    statusScope: 'ACTIVE' | 'LEFT' | 'ONBOARDING' | 'ALL'
-    changeTypes: string[]
-    dedupeKey: string
-    dedupeDays: number
-    serial?: boolean
-    nextAction: Record<string, unknown>
-}
-
-type ConnectorStepParams = {
-    name: string
-    displayName: string
-    connectorName: string
-    connectorVersion: string
-    actionName: string
-    input: Record<string, unknown>
-    retry?: boolean
-    nextAction?: Record<string, unknown>
-}
-
-type RouterStepParams = {
-    name: string
-    displayName: string
-    condition: Record<string, unknown>
-    branchName: string
-    fallbackName: string
-    child: Record<string, unknown>
-}
 
 export const beisenFeishuSolution = buildBeisenFeishuSolution

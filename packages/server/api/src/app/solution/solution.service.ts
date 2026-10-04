@@ -39,6 +39,7 @@ import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { OFFICIAL_SOLUTIONS, OfficialSolution } from './official-solutions'
+import { solutionMappingCheck } from './solution-mapping-check'
 import { solutionPackageUtils } from './solution-package-utils'
 import {
     SolutionEntity,
@@ -376,6 +377,10 @@ async function assertInstallable({ pkg, request, tenantId }: { pkg: SolutionPack
     const error = solutionUtils.capacityError({ limit: project.workflowsLimit ?? instanceLimits.projectWorkflows(), current, needed: pkg.workflows.length })
     if (!isNil(error)) {
         throw validation(error)
+    }
+    const mappingProblems = solutionMappingCheck.problems({ pkg })
+    if (mappingProblems.length > 0) {
+        throw validation(`The package has field mapping problems: ${mappingProblems.join('; ')}`)
     }
     const results = await Promise.all(pkg.checks.map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
     const blocking = results.filter((result) => result.blocking && result.status !== SolutionCheckStatus.PASS)

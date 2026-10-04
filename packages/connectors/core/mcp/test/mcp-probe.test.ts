@@ -106,6 +106,7 @@ describe('mcpProbe.classifyError', () => {
   test('maps an SSRF guard block to the allow-list hint', () => {
     const error = new Error('fetch failed', { cause: Object.assign(new Error('Blocked by SSRF protection'), { name: 'SSRFBlockedError' }) });
     expect(classify({ error }).failure).toBe(McpProbeFailure.PRIVATE_UNREACHABLE);
+    expect(classify({ error }).detail).toBe('Blocked by SSRF protection');
   });
 
   test('maps refused connections', () => {

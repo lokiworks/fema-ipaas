@@ -75,7 +75,7 @@ function classifyError({ error, target, host, privateAddress }: ClassifyParams):
   const code = errorCode(error);
   const message = error instanceof Error ? error.message : String(error);
   if (isSsrfBlock(error)) {
-    return { failure: McpProbeFailure.PRIVATE_UNREACHABLE, detail: message, host };
+    return { failure: McpProbeFailure.PRIVATE_UNREACHABLE, detail: ssrfDetailOf(error) ?? message, host };
   }
   if (DNS_CODES.includes(code)) {
     return { failure: McpProbeFailure.DNS, detail: message, host };
@@ -131,6 +131,13 @@ function isSsrfBlock(error: unknown): boolean {
     .map((candidate) => (candidate instanceof Error ? `${candidate.name} ${candidate.message}` : ''))
     .join(' ');
   return /ssrf/i.test(names);
+}
+
+function ssrfDetailOf(error: unknown): string | null {
+  const blocked = [error, error instanceof Error ? error.cause : undefined].find(
+    (candidate) => candidate instanceof Error && /ssrf/i.test(`${candidate.name} ${candidate.message}`),
+  );
+  return blocked instanceof Error ? blocked.message : null;
 }
 
 function parseUrl(value: string): URL | null {

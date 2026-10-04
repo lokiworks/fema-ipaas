@@ -234,8 +234,6 @@ export const WorkflowStepInputOutput = () => {
             stepName={selectedStep.name}
             maskedFields={run.privacyMaskedFields ?? 0}
             redacted={run.payloadRedacted ?? false}
-            canReveal={run.canRevealPayload ?? false}
-            rawExpired={run.rawPayloadExpired ?? false}
           />
           <RunApprovalsNotice
             executionId={run.id}

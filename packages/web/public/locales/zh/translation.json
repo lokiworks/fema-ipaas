@@ -2231,7 +2231,7 @@
   "aiPromptTooLong": "内容太长，请控制在 4000 字以内。",
   "mcpToolNameInvalid": "只能使用字母、数字、_ 和 -，以字母开头，不超过 64 个字符。",
   "mcpToolNameDuplicate": "这个服务中已有工具使用了这个名称。",
-  "Logs are masked before they are saved. The unmasked run state and the original request bodies are kept only this long after a run ends, for viewing originals and replaying from the failed step; after that the run can no longer be replayed or viewed in original form.": "日志在保存前就会打码。未打码的运行状态和收到的原始请求体只在运行结束后保留这么久，用于查看原文和从失败节点重跑；过期后不能再查看原文，也不能再重跑这条运行。",
+  "Logs are masked before they are saved. The unmasked run state is kept only this long after a run ends, for viewing originals and replaying from the failed step; after that only a full rerun is possible.": "日志在保存前就会打码。未打码的运行状态只在运行结束后保留这么久，用于查看原文和从失败节点重跑；过期后只能整体重跑。",
   "{count, plural, =1 {1 run has} other {# runs have}} passed the retention period for original data and can only be rerun as a whole. They are skipped here.": "{count} 次运行的原始数据已超过保存期，只能整体重跑，这里会跳过它们。",
   "A project admin can turn on test and production.": "项目管理员可以开启测试与生产环境。",
   "A promotion of this workflow is waiting for approval": "这个工作流有一个推广正在等待审批",
@@ -2318,7 +2318,7 @@
   "erasureEmailInvalid": "邮箱格式不正确",
   "erasurePhoneInvalid": "请输入 11 位手机号",
   "Delete personal data": "删除个人数据",
-  "Find a person in run inputs, outputs, error messages, business keys and received request bodies across all projects and clear it. Run status, duration and error codes are kept. Sample data saved in the editor is not covered.": "在全部项目的运行入参、出参、错误信息、业务标识和收到的原始请求体里查找某个人的数据并清除。运行状态、耗时和错误码会保留。编辑器里保存的样例数据不在范围内。",
+  "Find a person in run inputs, outputs and error messages across all projects and clear it. Run status, duration and error codes are kept. Trigger payload files and sample data are not covered.": "在全部项目运行日志的入参、出参和错误信息里查找某个人的数据并清除。运行状态、耗时和错误码会保留。触发器收到的原始请求文件和样例数据不在范围内。",
   "New deletion request": "新建删除请求",
   "No deletion requests yet.": "还没有删除请求。",
   "{workflow}: {count} runs": "{workflow}：{count} 条",
@@ -3432,7 +3432,7 @@
   "The connection used by this step is no longer authorized. Reconnect it on the Connections page, then rerun from the failed step.": "节点使用的连接授权已失效。到「连接」页面重新授权后，再从失败节点重跑。",
   "The connection used by this step was deleted. Pick another connection in the workflow, publish, then rerun.": "节点使用的连接已被删除。打开工作流为该节点重新选择连接并发布，再重跑。",
   "The connection was deleted. Pick another connection in the workflow.": "该连接已被删除，需要在工作流中重新选择连接。",
-  "The original run data has expired, so this run can no longer be rerun": "原始运行数据已过保留期，这条运行不能再重跑",
+  "The original run data has expired. Rerun the whole run instead": "原始运行数据已过保留期，只能整体重跑",
   "The run stops waiting and will not continue. Steps that already ran are not rolled back, and pending agent approvals for this run expire.": "运行不会再继续，已执行的节点不会回滚，等待中的人工确认会一起失效。",
   "The same cause has failed {count} times and was merged into one issue": "同一原因累计失败 {count} 次，已合并为一个问题",
   "The step failed without an error message.": "节点失败，但没有记录错误信息。",
@@ -5126,10 +5126,5 @@
   "auditReleaseWithdrawn": "撤回了「{workflow}」的推广申请",
   "auditReleaseRolledBack": "「{workflow}」已在生产回滚",
   "auditEnvironmentsOn": "开启或调整了测试与生产环境",
-  "auditEnvironmentsOff": "关闭了测试与生产环境",
-  "Output contains sensitive information": "出参包含敏感信息",
-  "Every field of this output is masked in run logs, and the same values (4 characters or longer) are masked wherever later steps show them. Viewing the original needs permission and is audited.": "运行日志里这个节点的全部出参都会脱敏显示，后续节点日志里出现的相同的值（不少于 4 个字符）也会被遮住。查看原文需要权限，并记录审计。",
-  "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.": "手机号、身份证号、银行卡号、邮箱和密钥已按平台规则自动脱敏。整个出参都敏感时，打开这个开关。",
-  "Original expired": "原文已过保留期",
-  "You cannot view originals. Ask an admin.": "你没有查看原文的权限，请联系管理员"
+  "auditEnvironmentsOff": "关闭了测试与生产环境"
 }

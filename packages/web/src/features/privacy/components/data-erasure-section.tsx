@@ -59,7 +59,7 @@ export function DataErasureSection() {
           <CardTitle>{t('Delete personal data')}</CardTitle>
           <CardDescription>
             {t(
-              'Find a person in run inputs, outputs, error messages, business keys and received request bodies across all projects and clear it. Run status, duration and error codes are kept. Sample data saved in the editor is not covered.',
+              'Find a person in run inputs, outputs and error messages across all projects and clear it. Run status, duration and error codes are kept. Trigger payload files and sample data are not covered.',
             )}
           </CardDescription>
         </div>

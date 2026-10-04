@@ -283,17 +283,16 @@ function assertRetentionDaysWithinInstanceBounds(executionDataRetentionDays: num
         return
     }
     const instanceRetentionDays = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
-    if (executionDataRetentionDays < MIN_RETENTION_DAYS || executionDataRetentionDays > instanceRetentionDays) {
+    const pausedWorkflowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS)
+    if (executionDataRetentionDays < pausedWorkflowTimeoutDays || executionDataRetentionDays > instanceRetentionDays) {
         throw new ApplicationError({
             code: ErrorCode.VALIDATION,
             params: {
-                message: `executionDataRetentionDays must be between ${MIN_RETENTION_DAYS} and FEMA_EXECUTION_DATA_RETENTION_DAYS (${instanceRetentionDays})`,
+                message: `executionDataRetentionDays must be between FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS (${pausedWorkflowTimeoutDays}) and FEMA_EXECUTION_DATA_RETENTION_DAYS (${instanceRetentionDays})`,
             },
         })
     }
 }
-
-const MIN_RETENTION_DAYS = 1
 
 type GetAllForUserParams = {
     tenantId: string

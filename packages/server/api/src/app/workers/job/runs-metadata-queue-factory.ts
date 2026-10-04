@@ -8,10 +8,6 @@ import { QueueName } from './index'
 
 export const redisMetadataKey = (runId: EntityId): string => `runs_metadata:${runId}`
 
-export const runsMetadataQueueUtils = {
-    stripToRunsMetadataUpsertData,
-}
-
 export const runsMetadataQueueFactory = ({
     createRedisConnection,
     distributedStore,
@@ -74,7 +70,7 @@ const RUNS_METADATA_UPSERT_KEYS: (keyof RunsMetadataUpsertData)[] = [
     'id', 'projectId', 'created', 'workflowId', 'workflowVersionId', 'environment',
     'triggeredBy', 'startTime', 'finishTime', 'status', 'tags',
     'failedStep', 'stepNameToTest', 'parentRunId', 'failParentOnFailure',
-    'logsFileId', 'displayLogsFileId', 'updated', 'stepsCount', 'requestId',
+    'logsFileId', 'updated', 'stepsCount', 'requestId',
     'provisionMs', 'bootMs', 'runMs', 'rerunOfExecutionId', 'businessKey',
 ]
 

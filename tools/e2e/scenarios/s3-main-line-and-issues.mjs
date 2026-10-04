@@ -1,5 +1,6 @@
 import { chromium } from '@playwright/test'
 import { readFileSync, mkdirSync } from 'node:fs'
+import { createServer } from 'node:http'
 
 const SLOT = process.env.SLOT ?? '3'
 const STATE_DIR = `${process.env.E2E_STATE_ROOT ?? '/tmp/fema-e2e'}/slot-${SLOT}`
@@ -14,17 +15,19 @@ const SHOTS = process.env.E2E_SHOTS ?? `${STATE_DIR}/shots`
 const HR_CHAT_ID = 'oc_hr_notice'
 const IT_CHAT_ID = 'oc_it_desk'
 const FROM_STAGE = process.env.E2E_FROM ?? ''
+const RECEIVER_PORT = Number(process.env.E2E_RECEIVER_PORT ?? 19000 + Number(SLOT))
 
 mkdirSync(SHOTS, { recursive: true })
 
 const results = []
 const gaps = []
-const ctx = { session: null, browser: null, page: null, installed: null }
+const ctx = { session: null, browser: null, page: null, installed: null, receiver: null, webhooks: [] }
 
 await main()
 
 async function main() {
   ctx.session = await authenticate()
+  ctx.receiver = await startReceiver()
   ctx.browser = await chromium.launch()
   const context = await ctx.browser.newContext({ viewport: { width: 1440, height: 900 } })
   ctx.page = await context.newPage()
@@ -39,6 +42,7 @@ async function main() {
     ['publish', stagePublish],
     ['events', stageEvents],
     ['search', stageSearch],
+    ['alerts', stageAlerts],
   ]
   let started = FROM_STAGE === ''
   for (const [name, run] of stages) {
@@ -48,6 +52,7 @@ async function main() {
     }
   }
   await ctx.browser.close()
+  ctx.receiver.close()
   printSummary()
 }
 
@@ -226,6 +231,44 @@ async function stageSearch() {
   })
 }
 
+async function stageAlerts() {
+  const { page } = ctx
+  await check('告警设置：新建 Webhook 渠道，发送测试消息，模拟接收端真的收到', async () => {
+    await page.goto(`${WEB}/issue-center?tab=alerts`)
+    await page.getByText('通知渠道', { exact: true }).first().click()
+    await page.getByRole('button', { name: /新建通知渠道/ }).first().waitFor({ timeout: 120000 })
+    const existing = await page.getByRole('row').filter({ hasText: '值班 Webhook' }).count()
+    if (existing === 0) {
+      await page.getByRole('button', { name: /新建通知渠道/ }).first().click()
+      const dialog = page.getByRole('dialog')
+      await dialog.locator('input[name=name]').fill('值班 Webhook')
+      await dialog.getByRole('combobox').click()
+      await page.getByRole('option', { name: 'Webhook' }).click()
+      await dialog.locator('input[name=url]').fill(`http://127.0.0.1:${RECEIVER_PORT}/alerts`)
+      await dialog.getByRole('button', { name: '保存' }).click()
+      await page.getByRole('row').filter({ hasText: '值班 Webhook' }).first().waitFor({ timeout: 90000 })
+    }
+    await page.getByRole('button', { name: /测试/ }).first().click()
+    await waitFor({ probe: async () => ctx.webhooks.some((hook) => hook.title === '告警渠道测试'), timeoutMs: 30000 })
+    await shot('alert-channel')
+    return 'ok'
+  })
+  await check('告警设置：新建告警策略（出现新问题 + 问题复发），静默时段默认关闭', async () => {
+    await page.getByText('告警策略', { exact: true }).first().click()
+    await page.getByRole('button', { name: '新建告警策略' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.locator('input[name=name]').fill('主线失败告警')
+    const quiet = dialog.getByRole('switch').first()
+    assert((await quiet.getAttribute('aria-checked')) === 'false', '静默时段默认应当关闭')
+    await dialog.getByText('值班 Webhook').click()
+    await shot('alert-policy-dialog')
+    await dialog.getByRole('button', { name: '保存' }).click()
+    await page.getByText('主线失败告警').first().waitFor()
+    await shot('alert-policy-saved')
+    return 'ok'
+  })
+}
+
 async function openRunLogs() {
   await ctx.page.goto(`${WEB}/projects/${ctx.session.projectId}/runs`)
   await ctx.page.getByRole('button', { name: /筛选/ }).waitFor({ timeout: 120000 })
@@ -240,6 +283,21 @@ async function addRunLogFilter({ field, value }) {
   const inputs = page.locator('[data-radix-popper-content-wrapper] input')
   await inputs.last().fill(value)
   await page.getByRole('button', { name: '查询' }).click()
+}
+
+function startReceiver() {
+  return new Promise((resolve) => {
+    const server = createServer((request, response) => {
+      const chunks = []
+      request.on('data', (chunk) => chunks.push(chunk))
+      request.on('end', () => {
+        ctx.webhooks.push(parseJson({ text: Buffer.concat(chunks).toString('utf8') }) ?? {})
+        response.writeHead(200, { 'content-type': 'application/json' })
+        response.end('{}')
+      })
+    })
+    server.listen(RECEIVER_PORT, () => resolve(server))
+  })
 }
 
 async function mockState() {

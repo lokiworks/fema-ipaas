@@ -7,7 +7,6 @@ import { domainHelper } from '../../helper/domain-helper'
 import { exceptionHandler } from '../../helper/exception-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
-import { privacyService } from '../../privacy/privacy.service'
 import { projectService } from '../../project/project-service'
 import { QueueName, redisMetadataKey, RunsMetadataJobData, RunsMetadataQueueConfig, runsMetadataQueueFactory, RunsMetadataUpsertData } from '../../workers/job'
 import { workflowService } from '../workflow/workflow.service'
@@ -53,7 +52,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                 }, '[runsMetadataQueue#worker] Runs metadata not found, skipping job')
                                 return
                             }
-                            const runMetadata = await withMaskedFailedStep({ log, metadata: sanitizeObjectForPostgresql(rawRunMetadata) })
+                            const runMetadata = sanitizeObjectForPostgresql(rawRunMetadata)
 
                             const existingExecution = await executionRepo().findOneBy({ id: job.data.runId })
                             let savedExecution: Execution
@@ -177,15 +176,6 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
     },
 
 })
-
-async function withMaskedFailedStep({ log, metadata }: { log: FastifyBaseLogger, metadata: RunsMetadataUpsertData }): Promise<RunsMetadataUpsertData> {
-    if (isNil(metadata.failedStep) || isNil(metadata.failedStep.message) || metadata.failedStep.message.length === 0) {
-        return metadata
-    }
-    const tenantId = await projectService(log).getTenantId(metadata.projectId)
-    const message = await privacyService(log).maskText({ tenantId, text: metadata.failedStep.message })
-    return { ...metadata, failedStep: { ...metadata.failedStep, message } }
-}
 
 function failedStepUpdate({ status, failedStep }: { status: ExecutionStatus | undefined, failedStep: FailedStep | undefined }): { failedStep?: FailedStep | (() => string) } {
     return status === ExecutionStatus.SUCCEEDED ? { failedStep: () => 'NULL' } : spreadIfDefined('failedStep', failedStep)

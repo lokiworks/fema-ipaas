@@ -2,7 +2,6 @@ import { ApplicationError, ErrorCode, generateId, isNil, TenantId, UserId } from
 import {
     Execution,
     LogPrivacy,
-    logRedaction,
     PayloadLevel,
     privacyMasking,
     PrivacySettings,
@@ -10,7 +9,6 @@ import {
     RevealExecutionPayloadResponse,
     TenantRole,
     UpdatePrivacySettingsRequestBody,
-    workflowStructureUtil,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../core/db/repo-factory'
@@ -18,7 +16,6 @@ import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { tenantService } from '../tenant/tenant.service'
 import { userService } from '../user/user-service'
-import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { PrivacySettingsEntity } from './privacy-settings.entity'
 
 export const privacySettingsRepo = repoFactory(PrivacySettingsEntity)
@@ -49,30 +46,20 @@ export const privacyService = (log: FastifyBaseLogger) => ({
         return this.get({ tenantId })
     },
 
-    async maskExecution({ execution, tenantId, userId }: MaskExecutionParams): Promise<MaskedExecution> {
+    async maskExecution({ execution, tenantId }: MaskExecutionParams): Promise<MaskedExecution> {
         const settings = await this.get({ tenantId })
         if (isNil(execution.steps)) {
             return execution
         }
         const redactPayload = settings.payloadLevel !== PayloadLevel.FULL
-        const version = await workflowVersionService(log).getOne(execution.workflowVersionId)
-        const sensitiveStepNames = isNil(version) ? [] : workflowStructureUtil.getSensitiveStepNames(version.trigger)
-        const { steps, maskedCount } = logRedaction.redactSteps({
-            steps: execution.steps,
-            privacy: { payloadLevel: settings.payloadLevel, maskRules: settings.maskRules, displayLogsFileId: '', sensitiveStepNames },
-        })
-        const rawPayloadExpired = isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId)
-        const role = isNil(userId) ? null : await rawViewRoleOf({ tenantId, userId, log })
-        const canRevealPayload = !redactPayload && !rawPayloadExpired && !isNil(role) && settings.rawViewRoles.includes(role)
-        return { ...execution, steps, privacyMaskedFields: maskedCount, payloadRedacted: redactPayload, canRevealPayload, rawPayloadExpired }
+        const { steps, maskedCount } = Object.entries(execution.steps).reduce<MaskedSteps>((acc, [stepName, stepOutput]) => {
+            const masked = maskStep({ stepOutput, settings, redactPayload })
+            return { steps: { ...acc.steps, [stepName]: masked.value }, maskedCount: acc.maskedCount + masked.maskedCount }
+        }, { steps: {}, maskedCount: 0 })
+        return { ...execution, steps, privacyMaskedFields: maskedCount, payloadRedacted: redactPayload }
     },
 
-    async maskText({ tenantId, text }: TenantScope & { text: string }): Promise<string> {
-        const settings = await this.get({ tenantId })
-        return privacyMasking.maskText({ text, rules: settings.maskRules }).value
-    },
-
-    async logPrivacyFor({ tenantId, displayLogsFileId, sensitiveStepNames }: TenantScope & { displayLogsFileId: string, sensitiveStepNames: string[] }): Promise<LogPrivacy> {
+    async logPrivacyFor({ tenantId, displayLogsFileId }: TenantScope & { displayLogsFileId: string }): Promise<LogPrivacy> {
         const cached = logPrivacyCache.get(tenantId)
         const settings = !isNil(cached) && cached.expiresAt > Date.now()
             ? cached.settings
@@ -80,7 +67,7 @@ export const privacyService = (log: FastifyBaseLogger) => ({
         if (isNil(cached) || cached.expiresAt <= Date.now()) {
             logPrivacyCache.set(tenantId, { settings, expiresAt: Date.now() + LOG_PRIVACY_CACHE_MS })
         }
-        return { payloadLevel: settings.payloadLevel, maskRules: settings.maskRules, displayLogsFileId, sensitiveStepNames }
+        return { payloadLevel: settings.payloadLevel, maskRules: settings.maskRules, displayLogsFileId }
     },
 
     async assertCanReveal({ tenantId, userId, reason }: AssertCanRevealParams): Promise<void> {
@@ -111,6 +98,21 @@ export const privacyService = (log: FastifyBaseLogger) => ({
         return { stepName, input: step.input, output: step.output }
     },
 })
+
+function maskStep({ stepOutput, settings, redactPayload }: MaskStepParams): { value: unknown, maskedCount: number } {
+    if (!isRecord(stepOutput)) {
+        return { value: stepOutput, maskedCount: 0 }
+    }
+    if (redactPayload) {
+        return { value: { ...stepOutput, input: null, output: null }, maskedCount: 0 }
+    }
+    const input = privacyMasking.maskDeep({ value: stepOutput.input, rules: settings.maskRules, maskAll: false })
+    const output = privacyMasking.maskDeep({ value: stepOutput.output, rules: settings.maskRules, maskAll: false })
+    return {
+        value: { ...stepOutput, input: input.value, output: output.value },
+        maskedCount: input.maskedCount + output.maskedCount,
+    }
+}
 
 async function rawViewRoleOf({ tenantId, userId, log }: { tenantId: TenantId, userId: UserId, log: FastifyBaseLogger }): Promise<RawViewRole> {
     const tenant = await tenantService(log).getOneOrThrow(tenantId)
@@ -150,6 +152,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 const logPrivacyCache = new Map<TenantId, { settings: PrivacySettings, expiresAt: number }>()
 const LOG_PRIVACY_CACHE_MS = 60_000
+const DEFAULT_LOG_RETENTION_DAYS = 30
 const MIN_REASON_LENGTH = 4
 
 type TenantScope = {
@@ -163,7 +166,6 @@ type UpdateParams = TenantScope & {
 type MaskExecutionParams = {
     execution: Execution
     tenantId: TenantId
-    userId: UserId | null
 }
 
 type AssertCanRevealParams = TenantScope & {
@@ -171,9 +173,19 @@ type AssertCanRevealParams = TenantScope & {
     reason: string | undefined
 }
 
+type MaskStepParams = {
+    stepOutput: unknown
+    settings: PrivacySettings
+    redactPayload: boolean
+}
+
 export type MaskedExecution = Omit<Execution, 'steps'> & {
     steps: Record<string, unknown> | null
 }
 
+type MaskedSteps = {
+    steps: Record<string, unknown>
+    maskedCount: number
+}
+
 export const DEFAULT_RAW_RETENTION_DAYS = 3
-export const DEFAULT_LOG_RETENTION_DAYS = 30

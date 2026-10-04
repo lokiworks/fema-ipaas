@@ -6,24 +6,21 @@ import {
     ErasureStatus,
     FileCompression,
     FileType,
-    MASKED_PLACEHOLDER,
     NotificationType,
 } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
-import { ILike, In, IsNull, Not } from 'typeorm'
+import { In, IsNull, Not } from 'typeorm'
 import { z } from 'zod'
 import { repoFactory } from '../core/db/repo-factory'
 import { fileCompressor } from '../file/file-compressor'
 import { fileRepo, fileService } from '../file/file.service'
-import { likePatternUtils } from '../helper/like-pattern'
 import { encryptUtils } from '../helper/encryption'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
 import { notificationService } from '../notification/notification.service'
 import { projectRepo } from '../project/project-repo'
-import { dedupedEventRepo } from '../trigger/deduped-event/deduped-event.service'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { DataErasureRequestEntity, DataErasureRequestSchema } from './data-erasure.entity'
@@ -91,13 +88,12 @@ export const dataErasureService = (log: FastifyBaseLogger) => ({
             return
         }
         const value = await encryptUtils.decryptString(request.valueEncrypted)
-        const needle = personalDataEraser.needleOf({ kind: request.kind, value })
         const { error } = await tryCatch(async () => {
             if (request.status === ErasureStatus.SCANNING) {
-                await scan({ log, request, value, needle })
+                await scan({ log, request, value })
             }
             else if (request.status === ErasureStatus.ERASING) {
-                await erase({ log, request, value, needle })
+                await erase({ log, request, value })
             }
         })
         if (error) {
@@ -123,7 +119,7 @@ async function notifyIfFinished({ log, before }: { log: FastifyBaseLogger, befor
     })
 }
 
-async function scan({ log, request, value, needle }: JobParams): Promise<void> {
+async function scan({ log, request, value }: JobParams): Promise<void> {
     const projects = await projectRepo().find({ where: { tenantId: request.tenantId }, select: ['id'] })
     const projectIds = projects.map((project) => project.id)
     const limit = pLimit(READ_CONCURRENCY)
@@ -143,16 +139,14 @@ async function scan({ log, request, value, needle }: JobParams): Promise<void> {
                 .filter((fileId): fileId is string => !isNil(fileId))
                 .map((fileId) => readText({ log, fileId, projectId: execution.projectId })))
             const sliceTexts = await readSliceTexts({ log, execution, texts })
-            const hit = [...texts, ...sliceTexts].some((text) => personalDataEraser.contains({ text, needle }))
+            const hit = [...texts, ...sliceTexts].some((text) => personalDataEraser.contains({ text, value }))
             return hit ? [{ id: execution.id, workflowId: execution.workflowId, projectId: execution.projectId, created: String(execution.created) }] : []
         })))
         const nextFound = [...found, ...hits.flat()]
         await dataErasureRepo().update({ id: request.id }, { scannedRuns: offset + page.length })
         return page.length < SCAN_PAGE_SIZE ? { scanned: offset + page.length, found: nextFound } : scanPage({ offset: offset + page.length, found: nextFound })
     }
-    const { scanned, found: scannedHits } = await scanPage({ offset: 0, found: [] })
-    const identified = await findByRunIdentifier({ projectIds, value, known: new Set(scannedHits.map((hit) => hit.id)) })
-    const found = [...scannedHits, ...identified]
+    const { scanned, found } = await scanPage({ offset: 0, found: [] })
     const matchedWorkflows = await summarizeWorkflows({ log, hits: found })
     const sortedDates = found.map((hit) => hit.created).sort()
     const done = found.length === 0
@@ -168,23 +162,19 @@ async function scan({ log, request, value, needle }: JobParams): Promise<void> {
     })
 }
 
-async function erase({ log, request, value, needle }: JobParams): Promise<void> {
+async function erase({ log, request, value }: JobParams): Promise<void> {
     const executions = request.matchedExecutionIds.length === 0 ? [] : await executionRepo().find({
         where: { id: In(request.matchedExecutionIds) },
         select: ['id', 'projectId', 'logsFileId', 'displayLogsFileId'],
     })
     const limit = pLimit(READ_CONCURRENCY)
     const results = await Promise.all(executions.map((execution) => limit(async () => {
-        const hitSliceFileIds = await deleteMatchingSlices({ log, execution, needle })
+        const hitSliceFileIds = await deleteMatchingSlices({ log, execution, value })
         const erased = await Promise.all([execution.displayLogsFileId, execution.logsFileId]
             .filter((fileId): fileId is string => !isNil(fileId))
-            .map((fileId) => eraseFile({ log, fileId, projectId: execution.projectId, needle, hitSliceFileIds })))
-        const scrubbed = await scrubRunIdentifiers({ executionId: execution.id, projectId: execution.projectId, needle })
-        return erased.some(Boolean) || scrubbed ? 1 : 0
+            .map((fileId) => eraseFile({ log, fileId, projectId: execution.projectId, value, hitSliceFileIds })))
+        return erased.some(Boolean) ? 1 : 0
     })))
-    const projectIds = await tenantProjectIds({ tenantId: request.tenantId })
-    await deleteMatchingWebhookPayloads({ log, projectIds, needle })
-    await maskDedupeKeys({ projectIds, value })
     await dataErasureRepo().update({ id: request.id }, {
         status: ErasureStatus.DONE,
         erasedRuns: results.reduce<number>((sum, count) => sum + count, 0),
@@ -195,12 +185,12 @@ async function erase({ log, request, value, needle }: JobParams): Promise<void> 
     log.info({ dataErasure: { id: request.id }, counts: executions.length }, '[dataErasureService#erase] Personal data erased')
 }
 
-async function eraseFile({ log, fileId, projectId, needle, hitSliceFileIds }: EraseFileParams): Promise<boolean> {
+async function eraseFile({ log, fileId, projectId, value, hitSliceFileIds }: EraseFileParams): Promise<boolean> {
     const file = await readLog({ log, fileId, projectId })
     if (isNil(file)) {
         return false
     }
-    const { steps, erased } = personalDataEraser.eraseSteps({ steps: file.executionState.steps, needle, hitSliceFileIds })
+    const { steps, erased } = personalDataEraser.eraseSteps({ steps: file.executionState.steps, value, hitSliceFileIds })
     if (erased === 0) {
         return false
     }
@@ -223,7 +213,7 @@ async function eraseFile({ log, fileId, projectId, needle, hitSliceFileIds }: Er
     return true
 }
 
-async function deleteMatchingSlices({ log, execution, needle }: { log: FastifyBaseLogger, execution: ExecutionFiles, needle: RegExp }): Promise<Set<string>> {
+async function deleteMatchingSlices({ log, execution, value }: { log: FastifyBaseLogger, execution: ExecutionFiles, value: string }): Promise<Set<string>> {
     if (isNil(execution.logsFileId)) {
         return new Set()
     }
@@ -231,70 +221,11 @@ async function deleteMatchingSlices({ log, execution, needle }: { log: FastifyBa
     const refs = isNil(raw) ? [] : personalDataEraser.sliceRefs(raw.executionState.steps)
     const hits = await Promise.all(refs.map(async (ref) => {
         const text = await readText({ log, fileId: ref.fileId, projectId: execution.projectId, type: FileType.EXECUTION_LOG_SLICE })
-        return personalDataEraser.contains({ text, needle }) ? [ref.fileId] : []
+        return personalDataEraser.contains({ text, value }) ? [ref.fileId] : []
     }))
     const hitIds = hits.flat()
     await Promise.all(hitIds.map((fileId) => fileService(log).delete({ fileId, projectId: execution.projectId })))
     return new Set(hitIds)
-}
-
-async function findByRunIdentifier({ projectIds, value, known }: { projectIds: string[], value: string, known: ReadonlySet<string> }): Promise<ScanHit[]> {
-    if (projectIds.length === 0) {
-        return []
-    }
-    const rows = await executionRepo().find({
-        where: { projectId: In(projectIds), businessKey: ILike(`%${likePatternUtils.escape(value)}%`) },
-        select: ['id', 'projectId', 'workflowId', 'created'],
-        take: MAX_IDENTIFIER_MATCHES,
-    })
-    return rows
-        .filter((row) => !known.has(row.id))
-        .map((row) => ({ id: row.id, workflowId: row.workflowId, projectId: row.projectId, created: String(row.created) }))
-}
-
-async function scrubRunIdentifiers({ executionId, projectId, needle }: { executionId: string, projectId: string, needle: RegExp }): Promise<boolean> {
-    const execution = await executionRepo().findOne({ where: { id: executionId, projectId }, select: ['id', 'businessKey', 'failedStep'] })
-    if (isNil(execution)) {
-        return false
-    }
-    const businessKeyHit = !isNil(execution.businessKey) && personalDataEraser.contains({ text: execution.businessKey, needle })
-    const message = execution.failedStep?.message
-    const messageHit = !isNil(message) && personalDataEraser.contains({ text: message, needle })
-    if (businessKeyHit || messageHit) {
-        await executionRepo().update({ id: executionId, projectId }, {
-            ...(businessKeyHit ? { businessKey: null } : {}),
-            ...(messageHit && !isNil(execution.failedStep) ? { failedStep: { ...execution.failedStep, message: personalDataEraser.replaceAll({ text: message, needle }) } } : {}),
-        })
-    }
-    return businessKeyHit || messageHit
-}
-
-async function maskDedupeKeys({ projectIds, value }: { projectIds: string[], value: string }): Promise<void> {
-    if (projectIds.length === 0) {
-        return
-    }
-    await dedupedEventRepo().update({ projectId: In(projectIds), keyPreview: ILike(`%${likePatternUtils.escape(value)}%`) }, { keyPreview: MASKED_PLACEHOLDER })
-}
-
-async function tenantProjectIds({ tenantId }: { tenantId: TenantId }): Promise<string[]> {
-    const projects = await projectRepo().find({ where: { tenantId }, select: ['id'] })
-    return projects.map((project) => project.id)
-}
-
-async function deleteMatchingWebhookPayloads({ log, projectIds, needle }: { log: FastifyBaseLogger, projectIds: string[], needle: RegExp }): Promise<void> {
-    if (projectIds.length === 0) {
-        return
-    }
-    const files = await fileRepo().find({ select: ['id', 'projectId'], where: { projectId: In(projectIds), type: FileType.WEBHOOK_PAYLOAD }, take: MAX_PAYLOAD_FILES })
-    await Promise.all(files.map(async (file) => {
-        if (isNil(file.projectId)) {
-            return
-        }
-        const text = await readText({ log, fileId: file.id, projectId: file.projectId, type: FileType.WEBHOOK_PAYLOAD })
-        if (personalDataEraser.contains({ text, needle })) {
-            await fileService(log).delete({ fileId: file.id, projectId: file.projectId })
-        }
-    }))
 }
 
 async function readSliceTexts({ log, execution, texts }: { log: FastifyBaseLogger, execution: ExecutionFiles, texts: string[] }): Promise<string[]> {
@@ -384,8 +315,6 @@ const LIST_LIMIT = 50
 const SCAN_PAGE_SIZE = 200
 const MAX_SCANNED_RUNS = 200_000
 const READ_CONCURRENCY = 8
-const MAX_IDENTIFIER_MATCHES = 5000
-const MAX_PAYLOAD_FILES = 5000
 
 const ExecutionLogShape = z.looseObject({
     executionState: z.looseObject({
@@ -405,7 +334,6 @@ type JobParams = {
     log: FastifyBaseLogger
     request: DataErasureRequestSchema
     value: string
-    needle: RegExp
 }
 
 type ExecutionFiles = {
@@ -426,6 +354,6 @@ type EraseFileParams = {
     log: FastifyBaseLogger
     fileId: string
     projectId: string
-    needle: RegExp
+    value: string
     hitSliceFileIds: ReadonlySet<string>
 }

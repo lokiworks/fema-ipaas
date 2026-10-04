@@ -35,7 +35,7 @@ const saveLogFile = async ({ projectId, tenantId, created }: { projectId: string
 }
 
 describe('fileService.deleteStaleBulk', () => {
-    it('applies shorter per-project retention down to one day and treats the instance value as a ceiling', async () => {
+    it('applies shorter per-project retention and treats the instance value as a ceiling', async () => {
         const { mockOwner, mockTenant, mockProject: defaultProject } = await mockAndSaveBasicSetup()
 
         const shortRetentionProject = createMockProject({
@@ -62,8 +62,7 @@ describe('fileService.deleteStaleBulk', () => {
         const aboveCeilingStale = await saveLogFile({ projectId: aboveCeilingProject.id, tenantId: mockTenant.id, created: daysAgo(40) })
         const aboveCeilingFresh = await saveLogFile({ projectId: aboveCeilingProject.id, tenantId: mockTenant.id, created: daysAgo(10) })
         const belowFloorStale = await saveLogFile({ projectId: belowFloorProject.id, tenantId: mockTenant.id, created: daysAgo(10) })
-        const belowFloorFresh = await saveLogFile({ projectId: belowFloorProject.id, tenantId: mockTenant.id, created: daysAgo(2) })
-        const belowFloorExpired = await saveLogFile({ projectId: belowFloorProject.id, tenantId: mockTenant.id, created: daysAgo(4) })
+        const belowFloorClamped = await saveLogFile({ projectId: belowFloorProject.id, tenantId: mockTenant.id, created: daysAgo(4) })
         const orphanStale = await saveLogFile({ projectId: null, tenantId: mockTenant.id, created: daysAgo(40) })
         const orphanFresh = await saveLogFile({ projectId: null, tenantId: mockTenant.id, created: daysAgo(10) })
 
@@ -77,8 +76,7 @@ describe('fileService.deleteStaleBulk', () => {
             aboveCeilingStale,
             aboveCeilingFresh,
             belowFloorStale,
-            belowFloorFresh,
-            belowFloorExpired,
+            belowFloorClamped,
             orphanStale,
             orphanFresh,
         ]
@@ -89,7 +87,7 @@ describe('fileService.deleteStaleBulk', () => {
             defaultProjectFresh,
             shortProjectFresh,
             aboveCeilingFresh,
-            belowFloorFresh,
+            belowFloorClamped,
             orphanFresh,
         ].sort())
     })

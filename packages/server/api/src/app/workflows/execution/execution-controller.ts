@@ -1,4 +1,4 @@
-import { ApplicationError, EntityId, ErrorCode, isNil, omit, Permission, SeekPage, tryCatch } from '@fema-ipaas/core-utils'
+import { ApplicationError, EntityId, ErrorCode, isNil, omit, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ApplicationEventName, BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, ProjectOverviewRequest, ProjectOverviewResponse, RetryWorkflowRequestBody, RevealExecutionPayloadRequestBody, RevealExecutionPayloadResponse, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
@@ -67,38 +67,17 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
             })
             const internalErrorEnabled = execution.internalError?.source === RunInternalErrorSource.ENGINE || true
             const canViewInternalError = internalErrorEnabled && await isRequesterTenantAdmin(request)
-            const masked = await privacyService(request.log).maskExecution({
-                execution,
-                tenantId: request.principal.tenant.id,
-                userId: request.principal.type === PrincipalType.USER ? request.principal.id : null,
-            })
+            const masked = await privacyService(request.log).maskExecution({ execution, tenantId: request.principal.tenant.id })
             await reply.send(canViewInternalError ? masked : omit(masked, ['internalError']))
         },
     )
 
     app.post('/:id/reveal', RevealPayloadRequest, async (request) => {
-        const target = await executionService(request.log).getOneOrThrow({
-            projectId: request.projectId,
-            id: request.params.id,
-        })
-        const { error: denial } = await tryCatch(() => privacyService(request.log).assertCanReveal({
+        await privacyService(request.log).assertCanReveal({
             tenantId: request.principal.tenant.id,
             userId: request.principal.id,
             reason: request.body.reason,
-        }))
-        if (!isNil(denial)) {
-            if (denial instanceof ApplicationError && denial.error.code === ErrorCode.AUTHORIZATION) {
-                applicationEvents(request.log).sendUserEvent(request, {
-                    action: ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED,
-                    data: {
-                        execution: { id: target.id, workflowId: target.workflowId },
-                        stepName: request.body.stepName,
-                        reason: request.body.reason,
-                    },
-                })
-            }
-            throw denial
-        }
+        })
         const execution = await executionService(request.log).getOnePopulatedOrThrow({
             projectId: request.projectId,
             id: request.params.id,

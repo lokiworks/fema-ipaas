@@ -38,6 +38,7 @@ export function SetupWizard() {
   const install = setupWizardHooks.useInstall();
   const [draft, setDraft] = useState<WizardDraft>(setupWizardUtils.loadDraft);
   const restoredFromStorage = useRef(draft.email.length > 0);
+  const submitting = useRef(false);
   const [touched, setTouched] = useState<Touched>({});
   const [attempted, setAttempted] = useState<Attempted>({});
   const [accountCreated, setAccountCreated] = useState(false);
@@ -137,6 +138,10 @@ export function SetupWizard() {
   }
 
   function finish() {
+    if (submitting.current) {
+      return;
+    }
+    submitting.current = true;
     setFailure(null);
     install.mutate(
       { draft, accountCreated },
@@ -147,6 +152,7 @@ export function SetupWizard() {
           redirectAfterLogin();
         },
         onError: (error: InstallError) => {
+          submitting.current = false;
           setAccountCreated(
             accountCreated || error.stage === InstallStage.ORGANIZATION,
           );

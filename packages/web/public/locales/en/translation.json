@@ -5329,5 +5329,10 @@
   "Pick an upstream step to reference": "Pick an upstream step to reference",
   "Same as dragging the dot next to the input onto a step on the canvas. Pick the step first, then one of its output fields.": "Same as dragging the dot next to the input onto a step on the canvas. Pick the step first, then one of its output fields.",
   "Drag to an upstream step to reference its output. From the keyboard, press Alt+Shift+R inside the input.": "Drag to an upstream step to reference its output. From the keyboard, press Alt+Shift+R inside the input.",
-  "More canvas tools": "More canvas tools"
+  "More canvas tools": "More canvas tools",
+  "Invalidated": "Invalidated",
+  "The workflow was deleted, so this call was cancelled and nothing was run.": "The workflow was deleted, so this call was cancelled and nothing was run.",
+  "The run no longer exists, so this call was cancelled and nothing was run.": "The run no longer exists, so this call was cancelled and nothing was run.",
+  "This request is no longer valid because its workflow was deleted. Nothing was run.": "This request is no longer valid because its workflow was deleted. Nothing was run.",
+  "This request is no longer valid because its run no longer exists. Nothing was run.": "This request is no longer valid because its run no longer exists. Nothing was run."
 }

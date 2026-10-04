@@ -1,4 +1,5 @@
 import {
+  AgentApprovalInvalidReason,
   AgentApprovalStatus,
   AgentApprovalWithWorkflow,
 } from '@fema-ipaas/shared';
@@ -25,6 +26,7 @@ export function ApprovalCard({
   const [rejecting, setRejecting] = useState(false);
   const [comment, setComment] = useState('');
   const pending = approval.status === AgentApprovalStatus.PENDING;
+  const invalidated = approval.status === AgentApprovalStatus.INVALIDATED;
   return (
     <div className="flex flex-col gap-2 rounded-md border p-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -33,9 +35,13 @@ export function ApprovalCard({
           {statusLabel(approval.status)}
         </Badge>
         <span className="text-xs text-muted-foreground">
-          {approval.workflowDisplayName} · {approval.stepName}
+          {approval.workflowDisplayName.length > 0
+            ? approval.workflowDisplayName
+            : t('Deleted workflow')}
+          {' · '}
+          {approval.stepName}
         </span>
-        {showRunLink && (
+        {showRunLink && !invalidated && (
           <Link
             className="ml-auto text-xs underline"
             to={authenticationSession.appendProjectRoutePrefix(
@@ -139,6 +145,15 @@ function decisionText(approval: AgentApprovalWithWorkflow): string {
       return t('Nobody decided in time; the call was rejected at {time}', {
         time,
       });
+    case AgentApprovalStatus.INVALIDATED:
+      return approval.invalidReason ===
+        AgentApprovalInvalidReason.WORKFLOW_DELETED
+        ? t(
+            'The workflow was deleted, so this call was cancelled and nothing was run.',
+          )
+        : t(
+            'The run no longer exists, so this call was cancelled and nothing was run.',
+          );
     case AgentApprovalStatus.PENDING:
       return '';
   }
@@ -154,6 +169,8 @@ function statusLabel(status: AgentApprovalStatus): string {
       return t('Rejected');
     case AgentApprovalStatus.EXPIRED:
       return t('Expired');
+    case AgentApprovalStatus.INVALIDATED:
+      return t('Invalidated');
   }
 }
 
@@ -168,6 +185,7 @@ function statusVariant(
     case AgentApprovalStatus.REJECTED:
       return 'destructive';
     case AgentApprovalStatus.EXPIRED:
+    case AgentApprovalStatus.INVALIDATED:
       return 'outline';
   }
 }

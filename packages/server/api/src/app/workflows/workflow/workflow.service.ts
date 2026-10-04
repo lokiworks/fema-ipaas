@@ -4,6 +4,7 @@ import { CreateWorkflowRequest, PopulatedWorkflow, SharedTemplate, TelemetryEven
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, In, IsNull, Not } from 'typeorm'
+import { agentApprovalInvalidation } from '../../agent-approval/agent-approval-invalidation'
 import { transaction } from '../../core/db/transaction'
 import { distributedLock } from '../../database/redis-connections'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
@@ -553,6 +554,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         await workflowRepo().update(id, {
             operationStatus: WorkflowOperationStatus.DELETING,
         })
+        await agentApprovalInvalidation.invalidateForWorkflow({ workflowId: id, projectId })
         log.info({ workflow: { id }, project: { id: projectId } }, 'Workflow deletion requested')
         if (!isNil(deletedWorkflow)) {
             workflowSideEffects(log).onDeleted({

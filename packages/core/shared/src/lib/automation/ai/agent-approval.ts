@@ -8,12 +8,19 @@ export enum AgentApprovalStatus {
     APPROVED = 'APPROVED',
     REJECTED = 'REJECTED',
     EXPIRED = 'EXPIRED',
+    INVALIDATED = 'INVALIDATED',
+}
+
+export enum AgentApprovalInvalidReason {
+    WORKFLOW_DELETED = 'WORKFLOW_DELETED',
+    RUN_DELETED = 'RUN_DELETED',
 }
 
 export const AgentApproval = z.object({
     ...BaseModelSchema,
     projectId: z.string(),
     workflowId: z.string(),
+    workflowDisplayName: z.string(),
     executionId: z.string(),
     stepName: z.string(),
     tool: z.string(),
@@ -24,12 +31,12 @@ export const AgentApproval = z.object({
     decidedById: Nullable(z.string()),
     decidedAt: Nullable(z.string()),
     comment: Nullable(z.string()),
+    invalidReason: Nullable(z.enum(AgentApprovalInvalidReason)),
     expiresAt: z.string(),
 })
 export type AgentApproval = z.infer<typeof AgentApproval>
 
 export const AgentApprovalWithWorkflow = AgentApproval.extend({
-    workflowDisplayName: z.string(),
     canDecide: z.boolean(),
 })
 export type AgentApprovalWithWorkflow = z.infer<typeof AgentApprovalWithWorkflow>

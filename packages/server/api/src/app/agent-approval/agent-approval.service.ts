@@ -2,6 +2,7 @@ import { ApplicationError, ErrorCode, generateId, isNil, Permission, ProjectId, 
 import {
     AgentApproval,
     AgentApprovalDecision,
+    AgentApprovalInvalidReason,
     AgentApprovalStatus,
     AgentApprovalWithWorkflow,
     CreateAgentApprovalRequestBody,
@@ -18,10 +19,11 @@ import { notificationService } from '../notification/notification.service'
 import { privacyService } from '../privacy/privacy.service'
 import { projectAccess } from '../project/project-access'
 import { projectService } from '../project/project-service'
-import { findExecutionOrThrow } from '../workflows/execution/execution-service'
+import { executionRepo, findExecutionOrThrow } from '../workflows/execution/execution-service'
 import { resumeService } from '../workflows/execution/waitpoint/resume-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
+import { agentApprovalInvalidation } from './agent-approval-invalidation'
 import { AgentApprovalEntity, AgentApprovalSchema } from './agent-approval.entity'
 
 export const agentApprovalRepo = repoFactory(AgentApprovalEntity)
@@ -32,9 +34,10 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
         if (execution.projectId !== projectId) {
             throw new ApplicationError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Run belongs to another project' } })
         }
-        const [project, workflow] = await Promise.all([
+        const [project, workflow, versions] = await Promise.all([
             projectService(log).getOneOrThrow(projectId),
             workflowRepo().findOneBy({ id: execution.workflowId, projectId }),
+            workflowVersionService(log).getLatestVersionsByWorkflowIds([execution.workflowId], projectId),
         ])
         const settings = await privacyService(log).get({ tenantId: project.tenantId })
         const masked = privacyMasking.maskDeep({ value: request.arguments, rules: settings.maskRules, maskAll: false })
@@ -47,6 +50,7 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
             updated: dayjs().toISOString(),
             projectId,
             workflowId: execution.workflowId,
+            workflowDisplayName: versions.get(execution.workflowId)?.displayName ?? '',
             executionId: execution.id,
             stepName: request.stepName,
             waitpointId: request.waitpointId,
@@ -58,6 +62,7 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
             decidedById: null,
             decidedAt: null,
             comment: null,
+            invalidReason: null,
             expiresAt: dayjs().add(request.timeoutHours, 'hour').toISOString(),
         })
         log.info({ project: { id: projectId }, execution: { id: execution.id }, tool: { name: request.tool } }, '[agentApprovalService#create] Agent call waiting for approval')
@@ -89,7 +94,7 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
         const canWrite = !isNil(role) && role.permissions.includes(Permission.WRITE_RUN)
         return rows.map((row) => ({
             ...toModel(row),
-            workflowDisplayName: versions.get(row.workflowId)?.displayName ?? row.workflowId,
+            workflowDisplayName: versions.get(row.workflowId)?.displayName ?? row.workflowDisplayName,
             canDecide: canWrite && row.status === AgentApprovalStatus.PENDING && row.approverIds.includes(userId),
         }))
     },
@@ -100,12 +105,16 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
 
     async decide({ id, projectId, userId, request }: DecideParams): Promise<AgentApproval> {
         const approval = await findOrThrow({ id, projectId })
+        if (approval.status === AgentApprovalStatus.INVALIDATED) {
+            invalid(invalidatedMessage({ reason: approval.invalidReason ?? null }))
+        }
         if (approval.status !== AgentApprovalStatus.PENDING) {
             invalid('This request has already been handled')
         }
         if (!approval.approverIds.includes(userId)) {
             throw new ApplicationError({ code: ErrorCode.AUTHORIZATION, params: { message: 'You are not an approver of this request' } })
         }
+        await closeIfRunIsGone({ approval })
         const status = request.approved ? AgentApprovalStatus.APPROVED : AgentApprovalStatus.REJECTED
         const decided = await settle({ approval, status, decidedById: userId, comment: request.comment ?? null })
         await resumeRun({ log, approval, decision: { approvalId: approval.id, approved: request.approved, expired: false, comment: request.comment ?? null } })
@@ -119,6 +128,11 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
         })
         await overdue.reduce<Promise<void>>(async (previous, approval) => {
             await previous
+            const runExists = await executionRepo().existsBy({ id: approval.executionId, projectId: approval.projectId })
+            if (!runExists) {
+                await agentApprovalInvalidation.invalidateForRun({ approvalId: approval.id, projectId: approval.projectId })
+                return
+            }
             await settle({ approval, status: AgentApprovalStatus.EXPIRED, decidedById: null, comment: null })
             await resumeRun({ log, approval, decision: { approvalId: approval.id, approved: false, expired: true, comment: null } })
         }, Promise.resolve())
@@ -138,6 +152,21 @@ async function settle({ approval, status, decidedById, comment }: SettleParams):
         invalid('This request has already been handled')
     }
     return agentApprovalRepo().findOneByOrFail({ id: approval.id })
+}
+
+async function closeIfRunIsGone({ approval }: { approval: AgentApprovalSchema }): Promise<void> {
+    const runExists = await executionRepo().existsBy({ id: approval.executionId, projectId: approval.projectId })
+    if (runExists) {
+        return
+    }
+    await agentApprovalInvalidation.invalidateForRun({ approvalId: approval.id, projectId: approval.projectId })
+    invalid(invalidatedMessage({ reason: AgentApprovalInvalidReason.RUN_DELETED }))
+}
+
+function invalidatedMessage({ reason }: { reason: AgentApprovalInvalidReason | null }): string {
+    return reason === AgentApprovalInvalidReason.WORKFLOW_DELETED
+        ? 'This request is no longer valid because its workflow was deleted. Nothing was run.'
+        : 'This request is no longer valid because its run no longer exists. Nothing was run.'
 }
 
 async function resumeRun({ log, approval, decision }: { log: FastifyBaseLogger, approval: AgentApprovalSchema, decision: AgentApprovalDecision }): Promise<void> {
@@ -163,6 +192,7 @@ function toModel(approval: AgentApprovalSchema): AgentApproval {
         updated: approval.updated,
         projectId: approval.projectId,
         workflowId: approval.workflowId,
+        workflowDisplayName: approval.workflowDisplayName,
         executionId: approval.executionId,
         stepName: approval.stepName,
         tool: approval.tool,
@@ -173,6 +203,7 @@ function toModel(approval: AgentApprovalSchema): AgentApproval {
         decidedById: approval.decidedById,
         decidedAt: approval.decidedAt,
         comment: approval.comment,
+        invalidReason: approval.invalidReason ?? null,
         expiresAt: approval.expiresAt,
     }
 }

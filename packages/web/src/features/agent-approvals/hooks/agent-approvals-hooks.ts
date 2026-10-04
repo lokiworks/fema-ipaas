@@ -48,10 +48,14 @@ function useDecide() {
           : t('Rejected. The agent continues without this call.'),
       );
     },
-    onError: (error) =>
-      toast.error(
-        api.extractServerErrorMessage(error, t('Something went wrong')),
-      ),
+    onError: (error) => {
+      queryClient.invalidateQueries({ queryKey: [APPROVALS_KEY] });
+      const message = api.extractServerErrorMessage(
+        error,
+        t('Something went wrong'),
+      );
+      toast.error(t(message, { defaultValue: message }));
+    },
   });
 }
 

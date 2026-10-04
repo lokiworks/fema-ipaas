@@ -13,6 +13,7 @@ export async function agentPhase({ session }) {
 
   if (process.env.S7_AGENT_ONLY === 'approval') {
     await approvalChecks({ session, server })
+    await cleanupChecks({ session, server })
     return
   }
   const flow = (spec) => createAgentFlow({ session, server, ...spec })
@@ -60,6 +61,7 @@ export async function agentPhase({ session }) {
   check({ name: '没有选模型连接：步骤失败并说明要先选择模型，而不是卡住', ok: noModelOut.run?.status === 'FAILED' && (noModelOut.failure ?? '').length > 0, detail: `${noModelOut.run?.status} ${noModelOut.failure}` })
 
   await approvalChecks({ session, server })
+  await cleanupChecks({ session, server })
 
   const slow = await flow({ name: 's7-智能体-慢工具', caseName: 'slow' })
   const slowOut = await runAgent({ session, flowId: slow, timeoutMs: 240000 })
@@ -113,6 +115,74 @@ async function approvalChecks({ session, server }) {
   if (thirdApproval) {
     await api({ method: 'POST', url: `/v1/agent-approvals/${thirdApproval.id}/decide?projectId=${projectId}`, token, body: { approved: false, comment: '测试驳回' } })
   }
+}
+
+async function pausedApproval({ session, server, name }) {
+  const { token, projectId } = session
+  const flowId = await createAgentFlow({ session, server, name, caseName: 'ticket' })
+  const run = await runAgent({ session, flowId, stopOn: ['PAUSED'] })
+  const approval = await waitFor({ fn: async () => ((await api({ url: `/v1/agent-approvals?projectId=${projectId}&status=PENDING`, token })).json ?? []).find((item) => item.executionId === run.run?.id), timeoutMs: 60000, what: 'pending approval' }).catch(() => null)
+  return { flowId, approval, run: run.run }
+}
+
+async function approvalsOf({ session, executionId }) {
+  const list = await api({ url: `/v1/agent-approvals?projectId=${session.projectId}&executionId=${executionId}`, token: session.token })
+  return list.json ?? []
+}
+
+async function cleanupChecks({ session, server }) {
+  const { token, projectId } = session
+  const single = await pausedApproval({ session, server, name: 's7-智能体-删除清理-单个' })
+  check({ name: '删除前：待批项在待批列表里，带着工作流名称', ok: single.approval?.workflowDisplayName === 's7-智能体-删除清理-单个', detail: JSON.stringify(single.approval?.workflowDisplayName) })
+
+  const deleted = await api({ method: 'DELETE', url: `/v1/workflows/${single.flowId}?projectId=${projectId}`, token })
+  const afterDelete = await waitFor({
+    fn: async () => {
+      const rows = await approvalsOf({ session, executionId: single.run.id })
+      return rows.length > 0 && rows[0].status !== 'PENDING' ? rows[0] : null
+    },
+    timeoutMs: 30000,
+    what: 'approval invalidated',
+  }).catch(() => null)
+  const pendingAfter = ((await api({ url: `/v1/agent-approvals?projectId=${projectId}&status=PENDING`, token })).json ?? []).filter((item) => item.executionId === single.run.id)
+  check({ name: '删除工作流：待批项被标为已失效并从待批列表移出', ok: deleted.status < 300 && afterDelete?.status === 'INVALIDATED' && afterDelete?.invalidReason === 'WORKFLOW_DELETED' && pendingAfter.length === 0, detail: `${deleted.status} ${afterDelete?.status} ${afterDelete?.invalidReason} pending=${pendingAfter.length}` })
+  check({ name: '历史里显示工作流名称快照，而不是原始 ID', ok: afterDelete?.workflowDisplayName === 's7-智能体-删除清理-单个' && afterDelete?.workflowDisplayName !== single.flowId, detail: String(afterDelete?.workflowDisplayName) })
+  const decideAfter = await api({ method: 'POST', url: `/v1/agent-approvals/${single.approval.id}/decide?projectId=${projectId}`, token, body: { approved: true } })
+  check({ name: '对已失效的待批项批准：返回可读错误，不是服务器错误', ok: decideAfter.status >= 400 && decideAfter.status < 500 && /no longer valid because its workflow was deleted/.test(decideAfter.text), detail: `${decideAfter.status} ${decideAfter.text.slice(0, 160)}` })
+  const rejectAfter = await api({ method: 'POST', url: `/v1/agent-approvals/${single.approval.id}/decide?projectId=${projectId}`, token, body: { approved: false, comment: '不要了' } })
+  check({ name: '对已失效的待批项驳回：同样返回可读错误', ok: rejectAfter.status >= 400 && rejectAfter.status < 500 && /no longer valid/.test(rejectAfter.text), detail: `${rejectAfter.status} ${rejectAfter.text.slice(0, 160)}` })
+
+  const batchA = await pausedApproval({ session, server, name: 's7-智能体-删除清理-批量A' })
+  const batchB = await pausedApproval({ session, server, name: 's7-智能体-删除清理-批量B' })
+  const batchDeleted = await api({ method: 'DELETE', url: '/v1/project-workspace/batch', token, body: { projectId, workflowIds: [batchA.flowId, batchB.flowId] } })
+  const batchRows = await waitFor({
+    fn: async () => {
+      const rows = [...(await approvalsOf({ session, executionId: batchA.run.id })), ...(await approvalsOf({ session, executionId: batchB.run.id }))]
+      return rows.length === 2 && rows.every((row) => row.status === 'INVALIDATED') ? rows : null
+    },
+    timeoutMs: 30000,
+    what: 'batch approvals invalidated',
+  }).catch(() => null)
+  check({ name: '批量删除工作流：名下的待批项全部失效，名称快照保留', ok: batchDeleted.status < 300 && batchRows?.length === 2 && batchRows.map((row) => row.workflowDisplayName).sort().join() === 's7-智能体-删除清理-批量A,s7-智能体-删除清理-批量B', detail: `${batchDeleted.status} ${JSON.stringify((batchRows ?? []).map((row) => row.workflowDisplayName))}` })
+
+  const live = await pausedApproval({ session, server, name: 's7-智能体-删除清理-界面' })
+  const { browser, page } = await openBrowser()
+  await uiLogin({ page })
+  await go({ page, url: `${env.web}/projects/${projectId}/agent-approvals` })
+  await page.getByText('s7-智能体-删除清理-界面').first().waitFor({ timeout: 120000 })
+  await api({ method: 'DELETE', url: `/v1/workflows/${live.flowId}?projectId=${projectId}`, token })
+  await waitFor({ fn: async () => (await approvalsOf({ session, executionId: live.run.id }))[0]?.status === 'INVALIDATED', timeoutMs: 30000, what: 'ui approval invalidated' })
+  await page.getByRole('button', { name: '批准并继续' }).first().click()
+  await page.getByText(/已失效/).first().waitFor({ timeout: 20000 })
+  const toastText = await page.locator('[data-sonner-toast]').first().innerText().catch(() => '')
+  check({ name: '页面上对已删除工作流的待批项点批准：提示中文说明已失效，卡片退出待批列表', ok: /已失效|不再有效/.test(toastText) && !/This request is no longer valid/.test(toastText), detail: toastText.replace(/\s+/g, ' ') })
+  await shot({ page, name: 'ag-05-approval-invalidated-toast' })
+  await page.getByRole('tab', { name: '全部' }).click()
+  await page.getByText(/工作流已被删除，这次调用已取消/).first().waitFor({ timeout: 20000 })
+  const allText = await page.locator('body').innerText()
+  check({ name: '「全部」里已失效项显示工作流名称、已失效徽标和原因，没有原始 ID，也没有批准按钮', ok: /s7-智能体-删除清理-界面/.test(allText) && /已失效/.test(allText) && /工作流已被删除/.test(allText) && !new RegExp(live.flowId).test(allText), detail: allText.replace(/\s+/g, ' ').slice(0, 300) })
+  await shot({ page, name: 'ag-06-approval-invalidated-history' })
+  await browser.close()
 }
 
 async function createAgentFlow({ session, server, name, caseName, maxSteps = 6, tokenBudget, allowedTools, confirmTools, confirmWrites = true, auth = `{{connections['${LLM_EXTERNAL_ID}']}}` }) {

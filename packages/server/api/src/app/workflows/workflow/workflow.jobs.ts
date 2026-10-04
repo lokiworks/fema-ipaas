@@ -1,5 +1,6 @@
 import { assertNotNullOrUndefined } from '@fema-ipaas/core-utils'
 import { FastifyBaseLogger } from 'fastify'
+import { agentApprovalInvalidation } from '../../agent-approval/agent-approval-invalidation'
 import { repoFactory } from '../../core/db/repo-factory'
 import { SystemJobData, SystemJobName } from '../../helper/system-jobs/common'
 import { systemJobsSchedule } from '../../helper/system-jobs/system-job'
@@ -66,6 +67,7 @@ export const workflowBackgroundJobs = (log: FastifyBaseLogger) => ({
                 preDeleteDone: true,
             })
         }
+        await agentApprovalInvalidation.invalidateForWorkflow({ workflowId: workflow.id, projectId: workflow.projectId })
         await batchDeleteByWorkflowId(workflow.id)
         await issueService(log).onWorkflowDeleted({ workflowId: workflow.id, projectId: workflow.projectId })
         await workflowRepo().delete({ id: workflow.id })

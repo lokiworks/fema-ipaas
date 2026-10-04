@@ -13,6 +13,11 @@ export const AgentApprovalEntity = new EntitySchema<AgentApprovalSchema>({
         ...BaseColumnSchemaPart,
         projectId: EntityIdSchema,
         workflowId: EntityIdSchema,
+        workflowDisplayName: {
+            type: String,
+            nullable: false,
+            default: '',
+        },
         executionId: EntityIdSchema,
         stepName: {
             type: String,
@@ -44,6 +49,10 @@ export const AgentApprovalEntity = new EntitySchema<AgentApprovalSchema>({
             nullable: true,
         },
         comment: {
+            type: String,
+            nullable: true,
+        },
+        invalidReason: {
             type: String,
             nullable: true,
         },

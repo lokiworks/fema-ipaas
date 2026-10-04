@@ -5329,5 +5329,10 @@
   "Pick an upstream step to reference": "选择要引用的上游节点",
   "Same as dragging the dot next to the input onto a step on the canvas. Pick the step first, then one of its output fields.": "和把输入框旁的圆点拖到画布节点上一样：先选节点，再选它的一个出参字段。",
   "Drag to an upstream step to reference its output. From the keyboard, press Alt+Shift+R inside the input.": "拖到上游节点上以引用它的出参。用键盘时，在输入框里按 Alt+Shift+R。",
-  "More canvas tools": "更多画布工具"
+  "More canvas tools": "更多画布工具",
+  "Invalidated": "已失效",
+  "The workflow was deleted, so this call was cancelled and nothing was run.": "工作流已被删除，这次调用已取消，没有执行任何操作。",
+  "The run no longer exists, so this call was cancelled and nothing was run.": "这次运行已不存在，调用已取消，没有执行任何操作。",
+  "This request is no longer valid because its workflow was deleted. Nothing was run.": "这条请求已失效：它所属的工作流已被删除，没有执行任何操作。",
+  "This request is no longer valid because its run no longer exists. Nothing was run.": "这条请求已失效：对应的运行已不存在，没有执行任何操作。"
 }

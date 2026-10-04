@@ -4,18 +4,15 @@ import {
   PlanAnswer,
   ProjectDirectoryItem,
   WorkflowPlan,
-  WorkflowPlanStep,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
-import { Info, TriangleAlert, WandSparkles } from 'lucide-react';
+import { ListChecks, Plug, Sparkles, WandSparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,7 +30,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -49,7 +45,8 @@ import { authenticationSession } from '@/lib/authentication-session';
 import { aiHooks } from '../hooks/ai-hooks';
 import { aiUtils } from '../utils/ai-utils';
 
-import { ModelConnectionSelect } from './model-connection-select';
+import { PlanModelField } from './plan-model-field';
+import { PlanReview } from './plan-review';
 
 export function GenerateWorkflowButton() {
   const [open, setOpen] = useState(false);
@@ -82,7 +79,7 @@ export function GenerateWorkflowDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="flex max-h-[88vh] flex-col overflow-hidden sm:max-w-5xl">
         <GenerateWorkflowForm
           key={open ? 'open' : 'closed'}
           onOpenChange={onOpenChange}
@@ -111,9 +108,12 @@ function GenerateWorkflowForm({
     '';
   const navigate = useNavigate();
   const { data: directory } = projectDirectoryHooks.useDirectory();
-  const models = aiHooks.useModelSelection(projectId);
+  const models = aiHooks.usePlanModelSelection(projectId);
   const [plan, setPlan] = useState<WorkflowPlan | null>(null);
+  const [plannedPrompt, setPlannedPrompt] = useState('');
+  const [plannedWithModel, setPlannedWithModel] = useState(false);
   const [planCount, setPlanCount] = useState(0);
+  const [answerLog, setAnswerLog] = useState<PlanAnswer[]>([]);
   const form = useForm<PromptValues>({
     resolver: zodResolver(PromptSchema),
     mode: 'onChange',
@@ -125,33 +125,56 @@ function GenerateWorkflowForm({
   });
   const { mutate: apply, isPending: isCreating } = aiHooks.useApplyPlan();
   const prompt = form.watch('prompt');
+  const isStale = plan !== null && prompt.trim() !== plannedPrompt;
+  const openCount = plan
+    ? aiUtils.openQuestions({ plan, answered: answerLog }).length
+    : 0;
+  const modelFailed =
+    form.formState.errors.root?.serverError !== undefined &&
+    !models.usesRules &&
+    !isPlanning;
 
   const requestPlan = ({
     values,
     answers,
+    withModel,
   }: {
     values: PromptValues;
-    answers?: PlanAnswer[];
+    answers: PlanAnswer[];
+    withModel: boolean;
   }) => {
     form.clearErrors('root.serverError');
-    if (!models.selectedId) {
+    if (models.isLoading) {
       return;
     }
+    const nextLog = aiUtils.mergeAnswers({
+      previous: answerLog,
+      next: answers,
+    });
+    const modelId = withModel ? models.selectedId : null;
     generate(
       {
         projectId,
-        modelConnectionExternalId: models.selectedId,
+        ...(modelId === null ? {} : { modelConnectionExternalId: modelId }),
         prompt: values.prompt,
-        answers,
+        answers: nextLog,
       },
       {
         onSuccess: (next) => {
           setPlan(next);
+          setAnswerLog(nextLog);
+          setPlannedPrompt(values.prompt.trim());
+          setPlannedWithModel(modelId !== null);
           setPlanCount((count) => count + 1);
         },
       },
     );
   };
+
+  const submitPlan = () =>
+    form.handleSubmit((values) =>
+      requestPlan({ values, answers: [], withModel: true }),
+    )();
 
   const createDraft = (current: WorkflowPlan) =>
     apply(
@@ -165,7 +188,7 @@ function GenerateWorkflowForm({
     );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <DialogHeader>
         <DialogTitle>{t('Create with AI')}</DialogTitle>
         <DialogDescription>
@@ -174,115 +197,194 @@ function GenerateWorkflowForm({
           )}
         </DialogDescription>
       </DialogHeader>
-      <TargetProjectField
-        projects={aiUtils.targetProjectOptions({
-          directory: directory ?? [],
-          currentId: projectId,
-        })}
-        value={projectId}
-        disabled={isPlanning || isCreating}
-        onChange={(next) => {
-          setChosenProjectId(next);
-          setPlan(null);
-        }}
-      />
-      <ModelConnectionSelect
-        projectId={projectId}
-        connections={models.connections}
-        isLoading={models.isLoading}
-        value={models.selectedId}
-        onChange={models.select}
-        disabled={isPlanning}
-      />
-      <Form {...form}>
-        <form
-          className="flex flex-col gap-3"
-          onSubmit={form.handleSubmit((values) => requestPlan({ values }))}
-        >
-          <FormField
-            control={form.control}
-            name="prompt"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('What should the workflow do?')}</FormLabel>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    rows={4}
-                    maxLength={AI_PROMPT_MAX_LENGTH}
-                    placeholder={t(
-                      'For example: when an approval is approved, create a purchase order and notify the requester.',
-                    )}
-                  />
-                </FormControl>
-                <div className="flex justify-between gap-2 text-xs text-muted-foreground">
-                  <FormMessage />
-                  <span className="ml-auto">
-                    {t('{count} / {max}', {
-                      count: prompt.length,
-                      max: AI_PROMPT_MAX_LENGTH,
-                    })}
-                  </span>
-                </div>
-              </FormItem>
-            )}
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-y-auto lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] lg:overflow-visible">
+        <div className="flex flex-col gap-4 lg:overflow-y-auto lg:pr-2">
+          <TargetProjectField
+            projects={aiUtils.targetProjectOptions({
+              directory: directory ?? [],
+              currentId: projectId,
+            })}
+            value={projectId}
+            disabled={isPlanning || isCreating}
+            onChange={(next) => {
+              setChosenProjectId(next);
+              setPlan(null);
+              setAnswerLog([]);
+            }}
           />
-          <div className="flex flex-col gap-2">
-            <span className="text-xs text-muted-foreground">
-              {t('Try an example')}
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {examplePrompts().map((example) => (
+          <PlanModelField
+            projectId={projectId}
+            models={models}
+            disabled={isPlanning}
+          />
+          <Form {...form}>
+            <form
+              className="flex flex-col gap-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitPlan();
+              }}
+            >
+              <FormField
+                control={form.control}
+                name="prompt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('What should the workflow do?')}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        rows={5}
+                        autoFocus
+                        maxLength={AI_PROMPT_MAX_LENGTH}
+                        placeholder={t(
+                          'For example: when an employee is onboarded in Beisen, create their Feishu account by department and tell the HR group',
+                        )}
+                        onKeyDown={(event) => {
+                          if (
+                            event.key === 'Enter' &&
+                            (event.metaKey || event.ctrlKey) &&
+                            !event.nativeEvent.isComposing
+                          ) {
+                            event.preventDefault();
+                            submitPlan();
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <div className="flex justify-between gap-2 text-xs text-muted-foreground">
+                      <FormMessage />
+                      <span className="ml-auto">
+                        {t('{count} / {max}', {
+                          count: prompt.length,
+                          max: AI_PROMPT_MAX_LENGTH,
+                        })}
+                      </span>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <div className="flex flex-col gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {t('Try an example')}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {examplePrompts().map((example) => (
+                    <Button
+                      key={example}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-auto max-w-full justify-start whitespace-normal py-1.5 text-left font-normal"
+                      onClick={() =>
+                        form.setValue('prompt', example, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        })
+                      }
+                    >
+                      {example}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              {form.formState.errors.root?.serverError && (
+                <div
+                  role="alert"
+                  className="flex flex-col items-start gap-2 text-sm text-destructive"
+                  data-testid="plan-error"
+                >
+                  <p>{form.formState.errors.root.serverError.message}</p>
+                  {modelFailed && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        form.handleSubmit((values) =>
+                          requestPlan({
+                            values,
+                            answers: [],
+                            withModel: false,
+                          }),
+                        )()
+                      }
+                    >
+                      {t('Plan with built-in rules instead')}
+                    </Button>
+                  )}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-3">
                 <Button
-                  key={example}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-auto whitespace-normal text-left font-normal"
-                  onClick={() =>
-                    form.setValue('prompt', example, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    })
+                  type="submit"
+                  loading={isPlanning}
+                  disabled={
+                    models.isLoading ||
+                    isPlanning ||
+                    isCreating ||
+                    prompt.trim().length === 0
                   }
                 >
-                  {example}
+                  {plan ? t('Plan again') : t('Plan')}
                 </Button>
-              ))}
-            </div>
-          </div>
-          {form.formState.errors.root?.serverError && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.root.serverError.message}
-            </p>
+                {isPlanning && !models.usesRules && (
+                  <span className="text-xs text-muted-foreground">
+                    {t('Planning usually takes 10 to 30 seconds.')}
+                  </span>
+                )}
+                {isStale && !isPlanning && (
+                  <span
+                    className="text-xs text-muted-foreground"
+                    data-testid="plan-stale"
+                  >
+                    {t(
+                      'The description changed. Plan again to update the steps.',
+                    )}
+                  </span>
+                )}
+              </div>
+            </form>
+          </Form>
+        </div>
+        <section
+          aria-live="polite"
+          className="min-w-0 rounded-md border p-4 lg:overflow-y-auto"
+        >
+          {isPlanning ? (
+            <PlanningState usesRules={models.usesRules} />
+          ) : plan ? (
+            <PlanReview
+              key={planCount}
+              plan={plan}
+              projectId={projectId}
+              answered={answerLog}
+              isBusy={isPlanning || isCreating}
+              onReplan={(answers) =>
+                form.handleSubmit((values) =>
+                  requestPlan({ values, answers, withModel: plannedWithModel }),
+                )()
+              }
+            />
+          ) : (
+            <PlanIntro />
           )}
-          <div className="flex items-center gap-3">
-            <Button
-              type="submit"
-              loading={isPlanning}
-              disabled={!models.selectedId || isPlanning || isCreating}
-            >
-              {plan ? t('Plan again') : t('Plan')}
-            </Button>
-            {isPlanning && (
-              <span className="text-xs text-muted-foreground">
-                {t('Planning usually takes 10 to 30 seconds.')}
-              </span>
+        </section>
+      </div>
+      <DialogFooter className="items-center">
+        {plan && (
+          <span
+            className="mr-auto text-xs text-muted-foreground"
+            data-testid="plan-footer-info"
+          >
+            {t(
+              '{count, plural, =1 {1 step} other {# steps}} will be created as a draft, all marked "to confirm"',
+              { count: plan.steps.length + 1 },
             )}
-          </div>
-        </form>
-      </Form>
-      {plan && (
-        <PlanReview
-          key={planCount}
-          plan={plan}
-          isBusy={isPlanning || isCreating}
-          onReplan={(answers) =>
-            form.handleSubmit((values) => requestPlan({ values, answers }))()
-          }
-        />
-      )}
-      <DialogFooter>
+            {openCount > 0 &&
+              ` · ${t('{count} questions unanswered', { count: openCount })}`}
+          </span>
+        )}
         <Button
           type="button"
           variant="outline"
@@ -301,6 +403,49 @@ function GenerateWorkflowForm({
           </Button>
         )}
       </DialogFooter>
+    </div>
+  );
+}
+
+function PlanIntro() {
+  return (
+    <div className="flex flex-col gap-4" data-testid="plan-intro">
+      <div className="flex flex-col gap-1">
+        <h3 className="text-base font-semibold">
+          {t('What do you want to automate?')}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {t(
+            'Write it on the left, or pick an example. Every step in the draft is marked "to confirm"; you check them one by one, then debug and publish.',
+          )}
+        </p>
+      </div>
+      <ul className="flex flex-col gap-3">
+        {INTRO_ITEMS.map((item) => (
+          <li key={item.title} className="flex items-start gap-3">
+            <item.icon className="mt-0.5 size-4 shrink-0 text-primary" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{t(item.title)}</span>
+              <span className="text-xs text-muted-foreground">
+                {t(item.description)}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PlanningState({ usesRules }: { usesRules: boolean }) {
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-2 text-sm text-muted-foreground"
+      data-testid="plan-loading"
+    >
+      <Sparkles className="size-4 animate-pulse text-primary" />
+      {usesRules ? t('Planning with built-in rules...') : t('Planning...')}
     </div>
   );
 }
@@ -350,127 +495,6 @@ function TargetProjectField({
   );
 }
 
-function PlanReview({
-  plan,
-  isBusy,
-  onReplan,
-}: {
-  plan: WorkflowPlan;
-  isBusy: boolean;
-  onReplan: (answers: PlanAnswer[]) => void;
-}) {
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const filledAnswers = aiUtils.planAnswers({
-    questions: plan.questions,
-    answers,
-  });
-  return (
-    <div className="flex flex-col gap-4 rounded-md border p-4">
-      <div className="flex flex-col gap-1">
-        <h3 className="text-base font-semibold">{plan.displayName}</h3>
-        <p className="text-sm text-muted-foreground">{plan.summary}</p>
-      </div>
-      <Alert variant="primary">
-        <Info className="size-4" />
-        <AlertDescription>
-          {t(
-            'Every generated step needs review before publishing. Check the inputs and connections of each step in the editor.',
-          )}
-        </AlertDescription>
-      </Alert>
-      {(plan.omittedSteps > 0 || plan.warnings.length > 0) && (
-        <Alert variant="warning">
-          <TriangleAlert className="size-4" />
-          <AlertDescription>
-            <ul className="flex flex-col gap-1">
-              {plan.omittedSteps > 0 && (
-                <li>{t('omittedPlanSteps', { count: plan.omittedSteps })}</li>
-              )}
-              {plan.warnings.map((warning, index) => (
-                <li key={index}>{warning}</li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
-      )}
-      <ol className="flex flex-col gap-2">
-        <PlanStepRow step={plan.trigger} label={t('Trigger')} />
-        {plan.steps.map((step, index) => (
-          <PlanStepRow
-            key={`${index}-${step.connectorName}-${step.operationName}`}
-            step={step}
-            label={t('Step {number}', { number: index + 1 })}
-          />
-        ))}
-      </ol>
-      {plan.questions.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">
-              {t('Questions from the AI')}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {t(
-                'Answer what you can, then plan again. Unanswered questions can be settled in the editor.',
-              )}
-            </span>
-          </div>
-          {plan.questions.map((question, index) => (
-            <div key={index} className="flex flex-col gap-1">
-              <Label htmlFor={`plan-question-${index}`}>{question}</Label>
-              <Input
-                id={`plan-question-${index}`}
-                value={answers[question] ?? ''}
-                maxLength={MAX_ANSWER_LENGTH}
-                disabled={isBusy}
-                onChange={(event) =>
-                  setAnswers({ ...answers, [question]: event.target.value })
-                }
-              />
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            className="self-start"
-            disabled={isBusy || filledAnswers.length === 0}
-            onClick={() => onReplan(filledAnswers)}
-          >
-            {t('Re-plan with answers')}
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function PlanStepRow({
-  step,
-  label,
-}: {
-  step: WorkflowPlanStep;
-  label: string;
-}) {
-  return (
-    <li className="flex flex-col gap-1 rounded-md bg-muted/50 px-3 py-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="text-sm font-medium">{step.displayName}</span>
-        {aiUtils.needsConnection(step) && (
-          <Badge variant="outline">
-            {t('Needs a {connector} connection', {
-              connector: step.connectorDisplayName,
-            })}
-          </Badge>
-        )}
-      </div>
-      <span className="text-xs text-muted-foreground">
-        {step.connectorDisplayName} · {step.operationDisplayName}
-      </span>
-    </li>
-  );
-}
-
 function defaultPromptValues(initialPrompt?: string): PromptValues {
   return { prompt: (initialPrompt ?? '').slice(0, AI_PROMPT_MAX_LENGTH) };
 }
@@ -478,18 +502,37 @@ function defaultPromptValues(initialPrompt?: string): PromptValues {
 function examplePrompts(): string[] {
   return [
     t(
-      'When a new hire is onboarded in Beisen, create their Feishu account and add them to the right department.',
+      'When an employee is onboarded in Beisen, create their Feishu account by department and post a welcome message to the HR group',
     ),
     t(
-      'Every weekday at 9:00, send the list of orders that failed to sync yesterday to a Feishu group.',
+      'When an employee leaves in Beisen, suspend their Feishu account and notify IT to collect equipment',
     ),
     t(
-      'When a DingTalk approval is approved, create a purchase order in Kingdee and notify the requester.',
+      'When an employee transfers in Beisen, update their department and manager in Feishu',
     ),
   ];
 }
 
 const PromptSchema = GenerateWorkflowPlanRequestBody.pick({ prompt: true });
-const MAX_ANSWER_LENGTH = 1000;
+
+const INTRO_ITEMS = [
+  {
+    icon: ListChecks,
+    title: 'Steps',
+    description: 'The trigger and each step, in order.',
+  },
+  {
+    icon: Plug,
+    title: 'Connections needed',
+    description:
+      'Which systems the steps talk to, and whether this project already has a connection for each.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Questions to confirm',
+    description:
+      'What cannot be guessed, such as the group to notify. Unanswered ones stay empty in the draft.',
+  },
+];
 
 type PromptValues = z.infer<typeof PromptSchema>;

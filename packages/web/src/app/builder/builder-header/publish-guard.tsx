@@ -9,7 +9,6 @@ import { LeftSideBarType } from '@/app/builder/types';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
 import {
-  ValidationCode,
   ValidationIssue,
   ValidationSeverity,
 } from '@/app/builder/validation/workflow-validator';
@@ -121,10 +120,7 @@ function PublishWarningsDialog({
   const trigger = useBuilderStateContext(
     (state) => state.workflowVersion.trigger,
   );
-  const hasAiPending = warnings.some(
-    (issue) => issue.code === ValidationCode.AI_PENDING_REVIEW,
-  );
-  const labels = publishGuardLabels.dialogLabels({ target, hasAiPending });
+  const labels = publishGuardLabels.dialogLabels({ target });
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <DialogContent className="sm:max-w-lg">

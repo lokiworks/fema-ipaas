@@ -1,5 +1,10 @@
 import { ActionClassification } from '@fema-ipaas/connector-sdk';
-import { isNil } from '@fema-ipaas/core-utils';
+import {
+  dataMapping,
+  isNil,
+  MappingIssueCode,
+  MappingSpec,
+} from '@fema-ipaas/core-utils';
 import {
   BranchExecutionType,
   ConnectionStatus,
@@ -201,7 +206,6 @@ function validateStep({
           step,
           code: ValidationCode.AI_PENDING_REVIEW,
           tab: ValidationTab.ACTION,
-          severity: ValidationSeverity.WARNING,
         }),
       ]
     : [];
@@ -593,7 +597,43 @@ function mappingIssues({
           params: { table },
         }),
       );
-  return [...duplicates, ...missingTables];
+  return [
+    ...duplicates,
+    ...missingTables,
+    ...mappingSpecIssues({ step, fields: step.settings.input }),
+  ];
+}
+
+function mappingSpecIssues({
+  step,
+  fields,
+}: {
+  step: WorkflowAction;
+  fields: unknown;
+}): ValidationIssue[] {
+  const parsed = MappingSpec.safeParse(readRecord(fields)['mapping']);
+  if (!parsed.success) {
+    return [];
+  }
+  return dataMapping
+    .validateSpec(parsed.data)
+    .filter(
+      (found) =>
+        found.code !== MappingIssueCode.DUPLICATE_TARGET &&
+        found.code !== MappingIssueCode.LOOKUP_TABLE_NOT_FOUND,
+    )
+    .map((found) =>
+      issue({
+        step,
+        code: ValidationCode.MAPPING_PROBLEM,
+        tab: ValidationTab.INPUT,
+        params: {
+          ...found.params,
+          mappingCode: found.code,
+          target: found.target,
+        },
+      }),
+    );
 }
 
 function routerIssues({ step }: { step: WorkflowAction }): ValidationIssue[] {
@@ -903,6 +943,7 @@ export enum ValidationCode {
   STEP_INCOMPLETE = 'STEP_INCOMPLETE',
   MAPPING_TABLE_MISSING = 'MAPPING_TABLE_MISSING',
   MAPPING_DUPLICATE_TARGET = 'MAPPING_DUPLICATE_TARGET',
+  MAPPING_PROBLEM = 'MAPPING_PROBLEM',
   CRON_INVALID = 'CRON_INVALID',
   SCHEDULE_INTERVAL_INVALID = 'SCHEDULE_INTERVAL_INVALID',
   FORM_NO_FIELDS = 'FORM_NO_FIELDS',

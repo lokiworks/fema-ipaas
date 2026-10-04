@@ -96,6 +96,46 @@ function needsConnection(step: WorkflowPlanStep): boolean {
   return step.requiresConnection && step.connectionExternalId === null;
 }
 
+function connectionRows(plan: WorkflowPlan): ConnectionRow[] {
+  const rows = [plan.trigger, ...plan.steps]
+    .filter((step) => step.requiresConnection)
+    .map((step) => ({
+      connectorName: step.connectorName,
+      connectorDisplayName: step.connectorDisplayName,
+      connectionDisplayName: step.connectionDisplayName,
+    }));
+  return rows.filter(
+    (row, index) =>
+      rows.findIndex((other) => other.connectorName === row.connectorName) ===
+      index,
+  );
+}
+
+function mergeAnswers({
+  previous,
+  next,
+}: {
+  previous: PlanAnswer[];
+  next: PlanAnswer[];
+}): PlanAnswer[] {
+  const merged = new Map(
+    [...previous, ...next].map((answer) => [answer.question, answer]),
+  );
+  return [...merged.values()];
+}
+
+function openQuestions({
+  plan,
+  answered,
+}: {
+  plan: WorkflowPlan;
+  answered: PlanAnswer[];
+}): string[] {
+  return plan.questions.filter(
+    (question) => !answered.some((answer) => answer.question === question),
+  );
+}
+
 function targetProjectOptions({
   directory,
   currentId,
@@ -135,10 +175,19 @@ export const aiUtils = {
   monthRange,
   needsConnection,
   stepsNeedingConnection,
+  connectionRows,
+  mergeAnswers,
+  openQuestions,
   planAnswers,
   targetProjectOptions,
 };
 
 export type MonthOption = { value: string; label: string };
+
+export type ConnectionRow = {
+  connectorName: string;
+  connectorDisplayName: string;
+  connectionDisplayName: string | null;
+};
 
 type TokenCounts = { inputTokens: number; outputTokens: number };

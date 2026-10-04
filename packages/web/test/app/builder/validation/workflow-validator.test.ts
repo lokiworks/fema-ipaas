@@ -400,7 +400,7 @@ describe('workflowValidator', () => {
     ).toEqual([]);
   });
 
-  it('warns about unconfirmed AI steps and unknown project variables', () => {
+  it('blocks on unconfirmed AI steps and only warns about unknown project variables', () => {
     const trigger = webhookTrigger({
       nextAction: connectorAction({
         name: 'step_1',
@@ -411,16 +411,25 @@ describe('workflowValidator', () => {
     const result = workflowValidator.validate(
       context(trigger, { variableNames: ['known'] }),
     );
-    expect(result.errorCount).toBe(0);
-    expect(result.issues.map((issue) => issue.code)).toEqual([
-      ValidationCode.VARIABLE_MISSING,
-      ValidationCode.AI_PENDING_REVIEW,
+    expect(result.errorCount).toBe(1);
+    expect(result.issues.map((issue) => [issue.code, issue.severity])).toEqual([
+      [ValidationCode.AI_PENDING_REVIEW, ValidationSeverity.ERROR],
+      [ValidationCode.VARIABLE_MISSING, ValidationSeverity.WARNING],
     ]);
-    expect(
-      result.issues.every(
-        (issue) => issue.severity === ValidationSeverity.WARNING,
-      ),
-    ).toBe(true);
+  });
+
+  it('lets the workflow through once the AI step is confirmed', () => {
+    const trigger = webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        input: { text: 'hello' },
+      }),
+    });
+    const result = workflowValidator.validate(context(trigger));
+    expect(result.issues.map((issue) => issue.code)).not.toContain(
+      ValidationCode.AI_PENDING_REVIEW,
+    );
+    expect(result.errorCount).toBe(0);
   });
 
   it('checks mapping tables and duplicate targets', () => {
@@ -447,6 +456,52 @@ describe('workflowValidator', () => {
       ValidationCode.MAPPING_DUPLICATE_TARGET,
       ValidationCode.MAPPING_TABLE_MISSING,
     ]);
+  });
+
+  it('checks the mapping against the fields of the step it writes to', () => {
+    const target = {
+      connectorName: '@fema-ipaas/connector-feishu',
+      actionName: 'provision_user',
+      fields: [
+        { name: 'name', label: '姓名', type: 'STRING', required: true },
+        { name: 'mobile', label: '手机号', type: 'STRING', required: true },
+      ],
+    };
+    const trigger = webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        connector: '@fema-ipaas/connector-data-mapper',
+        actionName: 'map_fields',
+        input: {
+          mapping: {
+            target,
+            fields: [
+              { id: 'a', target: 'name', source: 'x', transforms: [] },
+              { id: 'b', target: 'nickname', source: 'x', transforms: [] },
+              {
+                id: 'c',
+                target: 'birthday',
+                source: 'x',
+                transforms: [{ type: 'DATE', arg: 'yyyy-MM-dd' }],
+              },
+            ],
+          },
+        },
+      }),
+    });
+    const issues = workflowValidator
+      .validate(context(trigger, { mappingTableIds: [] }))
+      .issues.filter((found) => found.code === ValidationCode.MAPPING_PROBLEM);
+    expect(issues.map((found) => found.params['mappingCode']).sort()).toEqual([
+      'DATE_PATTERN_INVALID',
+      'REQUIRED_UNMAPPED',
+      'UNKNOWN_TARGET',
+      'UNKNOWN_TARGET',
+    ]);
+    expect(
+      issues.find((found) => found.params['mappingCode'] === 'REQUIRED_UNMAPPED')
+        ?.params['target'],
+    ).toBe('mobile');
   });
 
   it('falls back to the saved valid flag and ignores skipped steps', () => {

@@ -38,6 +38,26 @@ function useModelSelection(projectId: string) {
   };
 }
 
+function usePlanModelSelection(projectId: string) {
+  const { data, isLoading } = useModelConnections(projectId);
+  const [chosenId, setChosenId] = useState<string | null>(null);
+  const connections = data ?? [];
+  const chosen = connections.find(
+    (connection) => connection.externalId === chosenId,
+  );
+  const selectedId =
+    chosenId === RULES_MODEL_ID
+      ? null
+      : chosen?.externalId ?? connections[0]?.externalId ?? null;
+  return {
+    connections,
+    isLoading,
+    selectedId,
+    usesRules: selectedId === null,
+    select: setChosenId,
+  };
+}
+
 function useGeneratePlan({ onError }: ErrorHandler) {
   return useMutation({
     mutationFn: (request: GenerateWorkflowPlanRequestBody) =>
@@ -86,11 +106,16 @@ const AI_KEY = 'ai';
 export const aiHooks = {
   useModelConnections,
   useModelSelection,
+  usePlanModelSelection,
   useGeneratePlan,
   useApplyPlan,
   useCopilot,
   useUsage,
   useSuggestFieldMapping,
 };
+
+export const RULES_MODEL_ID = '__rules__';
+
+export type PlanModelSelection = ReturnType<typeof usePlanModelSelection>;
 
 type ErrorHandler = { onError: (message: string) => void };

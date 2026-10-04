@@ -1,5 +1,5 @@
 export { aiApi } from './api/ai-api';
-export { aiHooks } from './hooks/ai-hooks';
+export { aiHooks, RULES_MODEL_ID } from './hooks/ai-hooks';
 export { aiUtils } from './utils/ai-utils';
 export type { MonthOption } from './utils/ai-utils';
 export {

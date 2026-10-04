@@ -1,9 +1,31 @@
+import {
+  MappingIssue,
+  MappingIssueCode,
+  MappingIssueSeverity,
+} from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
+
+import { mappingIssueText } from '@/features/mapping-tables/utils/mapping-issue-text';
 
 import { ValidationCode, ValidationIssue } from './workflow-validator';
 
 function messageOf(issue: ValidationIssue): string {
   return MESSAGES[issue.code](issue.params);
+}
+
+function toMappingIssue(params: Record<string, string>): MappingIssue {
+  const { mappingCode, target, ...rest } = params;
+  const code =
+    Object.values(MappingIssueCode).find(
+      (candidate) => candidate === mappingCode,
+    ) ?? MappingIssueCode.TARGET_EMPTY;
+  return {
+    code,
+    rowId: null,
+    target: target ?? '',
+    severity: MappingIssueSeverity.ERROR,
+    params: rest,
+  };
 }
 
 export const validationMessages = {
@@ -39,6 +61,8 @@ const MESSAGES: Record<
     t('Mapping table {table} does not exist', params),
   [ValidationCode.MAPPING_DUPLICATE_TARGET]: (params) =>
     t('Target field {field} is mapped more than once', params),
+  [ValidationCode.MAPPING_PROBLEM]: (params) =>
+    mappingIssueText.describe(toMappingIssue(params)),
   [ValidationCode.CRON_INVALID]: () => t('The Cron expression is invalid'),
   [ValidationCode.SCHEDULE_INTERVAL_INVALID]: () =>
     t('The interval must be greater than 0'),
@@ -68,7 +92,7 @@ const MESSAGES: Record<
   [ValidationCode.VARIABLE_MISSING]: (params) =>
     t('Project config {name} does not exist', params),
   [ValidationCode.AI_PENDING_REVIEW]: () =>
-    t('AI-generated step not confirmed'),
+    t('AI-generated step not confirmed. Open it, check it, then confirm it.'),
   [ValidationCode.WRITE_NOT_TESTED]: (params) =>
     t(
       '{step} writes data and has not been tested since it was last edited',

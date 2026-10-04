@@ -102,7 +102,9 @@ function buildSchema(props: ConnectorPropertyMap, auth: ConnectorAuthProperty | 
           break;
       }
 
-      //optional array is checked against its children
+      if (!property.required && property.type === PropertyType.ARRAY) {
+        propsSchema[name] = z.optional(propsSchema[name]);
+      }
       if (!property.required && property.type !== PropertyType.ARRAY) {
         propsSchema[name] = z.optional(z.union(
           isEmpty(propsSchema[name])

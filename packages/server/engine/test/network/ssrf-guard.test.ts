@@ -1,5 +1,5 @@
 import dns from 'node:dns'
-import { createServer, Server, Socket } from 'node:net'
+import { connect as netConnect, createServer, Server, Socket } from 'node:net'
 import { SSRFBlockedError } from '@fema-ipaas/shared'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ssrfGuard } from '../../src/lib/network/ssrf-guard'
@@ -208,6 +208,25 @@ describe('ssrf-guard', () => {
             const result = await connectOnce({ host: '10.0.0.5', port: 443 })
             expect(result.connected).toBe(false)
             expect(result.error).toBeInstanceOf(SSRFBlockedError)
+        })
+
+        it('blocks a raw IP reached through net.connect, which hands connect() a normalized argument array', async () => {
+            ssrfGuard.install({ enabled: true, allowList: [] })
+            const result = await new Promise<{ connected: boolean, error?: Error }>((resolve) => {
+                const socket = netConnect({ host: '10.0.0.5', port: 443 })
+                socket.once('connect', () => {
+                    socket.destroy()
+                    resolve({ connected: true })
+                })
+                socket.once('error', (error) => resolve({ connected: false, error }))
+            })
+            expect(result.connected).toBe(false)
+            expect(result.error).toBeInstanceOf(SSRFBlockedError)
+        })
+
+        it('blocks the global fetch to a raw private IP', async () => {
+            ssrfGuard.install({ enabled: true, allowList: [] })
+            await expect(fetch(`http://127.0.0.1:${publicPort}/`)).rejects.toThrow()
         })
 
         it('allows loopback target on a whitelisted port (engine↔worker RPC)', async () => {

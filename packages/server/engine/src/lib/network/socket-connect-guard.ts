@@ -21,13 +21,14 @@ export function installSocketConnectGuard(policy: GuardPolicy): UninstallFn {
 }
 
 function readConnectTarget(args: unknown[]): ConnectTarget | undefined {
-    const first = args[0]
+    const first = Array.isArray(args[0]) ? args[0][0] : args[0]
+    const rest = Array.isArray(args[0]) ? args[0].slice(1) : args.slice(1)
     if (typeof first === 'object' && first !== null && !Array.isArray(first)) {
         const opts = first as { host?: string, port?: number }
         return { host: opts.host, port: opts.port }
     }
     if (typeof first === 'number') {
-        const host = typeof args[1] === 'string' ? args[1] : '127.0.0.1'
+        const host = typeof rest[0] === 'string' ? rest[0] : '127.0.0.1'
         return { host, port: first }
     }
     return undefined

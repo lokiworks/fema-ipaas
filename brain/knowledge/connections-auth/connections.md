@@ -28,6 +28,8 @@ Encrypted credential records (OAuth2 tokens, API keys, basic/custom auth, OIDC p
 
 ### Gotchas
 
+- **连接失败提示在英文原文后面补一行中文处理办法，办法来自一张可挂接的表。** `packages/web/src/features/connectors/utils/connector-error-guides.ts` 里的 `CONNECTOR_ERROR_GUIDES` 按连接器（短名，如 `beisen`）登记若干「报错特征 → 指引」和一条兜底指引：北森是检查 app_key、app_secret 和租户开通了哪些接口，飞书是检查应用凭证、权限范围、可用范围（凭证、缺权限、不在可用范围三种报错各有更具体的一句）。别的连接器要提示只需在表里加一项；`connectionUtils.failureMessage` 把原文本地化后接上「处理办法：…」。原文留着，方便按报错码查对方文档。
+- **连接表单的输入框都和 label 关联。** 属性表单里文本和密码输入框外面包了 `FormControl`，`id`、`aria-describedby`、`aria-invalid` 由它按字段生成，必填的另带 `aria-required`，所以 Playwright 的 `getByLabel('App Key')` 能直接定位。
 - **「项目成员权限」设成可编辑，对没有编辑权的项目角色只算可使用。** `resolvePermission` 多收一个 `writableProjectIds`（项目里有 `WRITE_WORKFLOW` 的项目，来自 `projectAccess.projectsWithPermission`）：成员权限为 EDIT 但用户在可用项目里都不能写，就降成 USE。直接分享给个人的 EDIT 不受影响；不传 `writableProjectIds` 的调用保持旧行为。所以查看者永远不能通过连接的成员权限改名、分享、改可用项目。
 
 - **引擎拿到 `EXPIRED` 或 `ERROR` 的连接都抛 `ConnectionExpiredError`。** `connection-resolver` 以前只认 `ERROR`，`EXPIRED` 出现后带着过期令牌继续调第三方，失败原因变成各家的 401，也建不出 `conn:<externalId>` 问题，运行日志里没有「授权已过期」。改引擎代码后要重新构建 `dist/packages/engine` 并重启 worker 才会生效（沙箱缓存会重装）。

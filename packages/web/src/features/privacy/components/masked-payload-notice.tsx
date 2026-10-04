@@ -3,7 +3,7 @@ import { t } from 'i18next';
 import { EyeOff } from 'lucide-react';
 import { useState } from 'react';
 
-import { SmartOutputViewer } from '@/components/custom/smart-output-viewer';
+import { JsonViewer } from '@/components/custom/json-viewer';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,11 +22,15 @@ export function MaskedPayloadNotice({
   stepName,
   maskedFields,
   redacted,
+  canReveal,
+  rawExpired,
 }: {
   executionId: string;
   stepName: string;
   maskedFields: number;
   redacted: boolean;
+  canReveal: boolean;
+  rawExpired: boolean;
 }) {
   const [open, setOpen] = useState(false);
   if (!redacted && maskedFields === 0) {
@@ -42,7 +46,7 @@ export function MaskedPayloadNotice({
               count: maskedFields,
             })}
       </span>
-      {!redacted && (
+      {!redacted && canReveal && (
         <Button
           variant="link"
           size="sm"
@@ -51,6 +55,13 @@ export function MaskedPayloadNotice({
         >
           {t('View original')}
         </Button>
+      )}
+      {!redacted && !canReveal && (
+        <span className="shrink-0">
+          {rawExpired
+            ? t('Original expired')
+            : t('You cannot view originals. Ask an admin.')}
+        </span>
       )}
       <RevealDialog
         executionId={executionId}
@@ -103,8 +114,16 @@ function RevealDialog({
         </DialogHeader>
         {revealed ? (
           <div className="flex flex-col gap-3 max-h-[60vh] overflow-auto">
-            <SmartOutputViewer json={revealed.input} title={t('Input')} />
-            <SmartOutputViewer json={revealed.output} title={t('Output')} />
+            <JsonViewer
+              json={revealed.input ?? {}}
+              title={t('Input')}
+              hideDownload
+            />
+            <JsonViewer
+              json={revealed.output ?? null}
+              title={t('Output')}
+              hideDownload
+            />
           </div>
         ) : (
           <Textarea

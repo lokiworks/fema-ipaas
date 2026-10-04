@@ -185,14 +185,20 @@ function summarize(event: ApplicationEvent): string {
     case ApplicationEventName.VARIABLE_VALUE_REVEALED:
       return t('auditVariableRevealed', { variable: event.data.variable.name });
     case ApplicationEventName.EXECUTION_PAYLOAD_REVEALED:
-      return t('auditRunPayloadRevealed', {
-        step: event.data.stepName,
-        run: event.data.execution.id,
+      return withReason({
+        text: t('auditRunPayloadRevealed', {
+          step: event.data.stepName,
+          run: event.data.execution.id,
+        }),
+        reason: event.data.reason,
       });
     case ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED:
-      return t('auditRunPayloadRevealDenied', {
-        step: event.data.stepName,
-        run: event.data.execution.id,
+      return withReason({
+        text: t('auditRunPayloadRevealDenied', {
+          step: event.data.stepName,
+          run: event.data.execution.id,
+        }),
+        reason: event.data.reason,
       });
     case ApplicationEventName.ISSUE_REPLAYED:
       return t('auditIssueReplayed', {
@@ -338,6 +344,16 @@ function actionLabel(action: ApplicationEventName): string {
 }
 
 export const auditEventUtils = { summarize, actionLabel, actionsForSources };
+
+function withReason({
+  text,
+  reason,
+}: {
+  text: string;
+  reason: string | undefined;
+}): string {
+  return reason ? `${text}（${t('Stated reason')}：${reason}）` : text;
+}
 
 const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.WORKFLOW_CREATED]: () => t('Workflow created'),

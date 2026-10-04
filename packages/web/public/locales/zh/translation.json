@@ -5162,5 +5162,6 @@
   "The owner of the workflow": "工作流负责人",
   "Nobody for now: wait for the other system to recover": "暂时不需要人处理，等对方系统恢复",
   "Who can fix it": "谁能修",
-  "Open the mapping tables": "打开映射表"
+  "Open the mapping tables": "打开映射表",
+  "Stated reason": "原因"
 }

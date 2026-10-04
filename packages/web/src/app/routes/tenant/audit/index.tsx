@@ -6,7 +6,7 @@ import {
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { Download } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -56,11 +56,12 @@ export default function AuditLogPage() {
   const [exporting, setExporting] = useState(false);
   const { data: membersData } = tenantAccessHooks.useMembers();
   const { data: projects } = projectCollectionUtils.useAllTenantProjects();
+  const createdAfter = useMemo(() => rangeStart(range), [range]);
   const filters = {
     action: action === 'any' ? undefined : [action],
     userId: userId ?? undefined,
     projectId: projectId === 'any' ? undefined : [projectId],
-    createdAfter: rangeStart(range),
+    createdAfter,
   };
   const cursor = cursors[cursors.length - 1];
   const { data, isLoading } = auditEventsHooks.useAuditEvents({

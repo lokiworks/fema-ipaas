@@ -36,14 +36,14 @@ function smtpHost(): string | null {
     return isNil(host) || host.trim().length === 0 ? null : host.trim()
 }
 
-function buildTransport() {
-    const host = smtpHost()
-    const port = smtpPort()
+function buildTransport({ candidate }: { candidate?: SmtpCandidate } = {}) {
+    const host = isNil(candidate) ? smtpHost() : candidate.host
+    const port = isNil(candidate) ? smtpPort() : candidate.port
     if (isNil(host) || isNil(port)) {
         return null
     }
-    const user = system.get(AppSystemProp.SMTP_USERNAME)
-    const pass = system.get(AppSystemProp.SMTP_PASSWORD)
+    const user = isNil(candidate) ? system.get(AppSystemProp.SMTP_USERNAME) : candidate.username
+    const pass = isNil(candidate) ? system.get(AppSystemProp.SMTP_PASSWORD) : candidate.password
     const rejectUnauthorized = system.getBoolean(AppSystemProp.SMTP_TLS_REJECT_UNAUTHORIZED) ?? true
     return nodemailer.createTransport({
         host,
@@ -57,9 +57,9 @@ function buildTransport() {
     })
 }
 
-function senderAddress({ tenantName }: { tenantName: string }): string {
-    const senderEmail = system.get(AppSystemProp.SMTP_SENDER_EMAIL) ?? 'no-reply@localhost'
-    const senderName = system.get(AppSystemProp.SMTP_SENDER_NAME) ?? tenantName
+function senderAddress({ tenantName, candidate }: { tenantName: string, candidate?: SmtpCandidate }): string {
+    const senderEmail = (isNil(candidate) ? system.get(AppSystemProp.SMTP_SENDER_EMAIL) : candidate.senderEmail) ?? 'no-reply@localhost'
+    const senderName = (isNil(candidate) ? system.get(AppSystemProp.SMTP_SENDER_NAME) : candidate.senderName) ?? tenantName
     return `${senderName} <${senderEmail}>`
 }
 
@@ -73,9 +73,9 @@ function recordDelivery({ ok, error }: { ok: boolean, error: unknown }): void {
     }
 }
 
-function smtpSecrets(): string[] {
-    const password = system.get(AppSystemProp.SMTP_PASSWORD)
-    return isNil(password) ? [] : [password]
+function smtpSecrets({ candidate }: { candidate?: SmtpCandidate } = {}): string[] {
+    const password = isNil(candidate) ? system.get(AppSystemProp.SMTP_PASSWORD) : candidate.password
+    return isNil(password) || password.length === 0 ? [] : [password]
 }
 
 export const mailSender = (log: FastifyBaseLogger) => ({
@@ -106,34 +106,36 @@ export const mailSender = (log: FastifyBaseLogger) => ({
         return lastDelivery
     },
 
-    async verify(): Promise<MailVerification> {
-        const transport = buildTransport()
+    async verify({ candidate }: { candidate?: SmtpCandidate } = {}): Promise<MailVerification> {
+        const transport = buildTransport({ candidate })
         if (isNil(transport)) {
             return { ok: false, failure: ServiceCheckFailure.NOT_CONFIGURED, reason: null }
         }
         const { error } = await tryCatch(() => transport.verify())
         if (!isNil(error)) {
             log.warn({ error }, '[mailSender#verify] SMTP connection check failed')
-            return { ok: false, ...serviceFailure.classify({ error, secrets: smtpSecrets() }) }
+            return { ok: false, ...serviceFailure.classify({ error, secrets: smtpSecrets({ candidate }) }) }
         }
         return { ok: true, failure: null, reason: null }
     },
 
-    async sendTest({ to, tenantName }: { to: string, tenantName: string }): Promise<MailVerification> {
-        const transport = buildTransport()
+    async sendTest({ to, tenantName, candidate }: { to: string, tenantName: string, candidate?: SmtpCandidate }): Promise<MailVerification> {
+        const transport = buildTransport({ candidate })
         if (isNil(transport)) {
             return { ok: false, failure: ServiceCheckFailure.NOT_CONFIGURED, reason: null }
         }
         const { error } = await tryCatch(() => transport.sendMail({
-            from: senderAddress({ tenantName }),
+            from: senderAddress({ tenantName, candidate }),
             to,
             subject: TEST_MAIL_SUBJECT,
             text: TEST_MAIL_TEXT,
         }))
-        recordDelivery({ ok: isNil(error), error })
+        if (isNil(candidate)) {
+            recordDelivery({ ok: isNil(error), error })
+        }
         if (!isNil(error)) {
             log.warn({ error, to }, '[mailSender#sendTest] Test email was not delivered')
-            return { ok: false, ...serviceFailure.classify({ error, secrets: smtpSecrets() }) }
+            return { ok: false, ...serviceFailure.classify({ error, secrets: smtpSecrets({ candidate }) }) }
         }
         return { ok: true, failure: null, reason: null }
     },
@@ -161,6 +163,15 @@ export const mailSender = (log: FastifyBaseLogger) => ({
         log.info({ template, to }, '[mailSender#send] Email sent')
     },
 })
+
+export type SmtpCandidate = {
+    host: string
+    port: number
+    username: string | undefined
+    password: string | undefined
+    senderEmail: string | undefined
+    senderName: string | undefined
+}
 
 export type MailDelivery = {
     ok: boolean

@@ -160,9 +160,17 @@ export const s3Helper = (log: FastifyBaseLogger) => ({
             throw error
         }
     },
-    async validateS3Configuration(): Promise<void> {
-        const client = getS3Client()
-        const bucketName = getS3BucketName()
+    async validateS3Configuration(candidate?: S3Candidate): Promise<void> {
+        const client = isNil(candidate)
+            ? getS3Client()
+            : buildS3Client({
+                settings: {
+                    region: candidate.region,
+                    endpoint: candidate.endpoint,
+                    credentials: { accessKeyId: candidate.accessKeyId, secretAccessKey: candidate.secretAccessKey },
+                },
+            })
+        const bucketName = isNil(candidate) ? getS3BucketName() : candidate.bucket
         const testKey = `fema-${generateId()}-validation-test-key`
 
         await client.putObject({
@@ -187,15 +195,35 @@ export const s3Helper = (log: FastifyBaseLogger) => ({
 
 const chunkArray = (array: string[], chunkSize: number) => Array.from({ length: Math.ceil(array.length / chunkSize) }, (_, i) => array.slice(i * chunkSize, (i + 1) * chunkSize))
 
-let cachedS3Client: S3 | null = null
+let cachedS3Client: { signature: string, client: S3 } | null = null
 
 const getS3Client = (): S3 => {
-    if (cachedS3Client) {
-        return cachedS3Client
+    const settings = currentS3Settings()
+    const signature = JSON.stringify(settings)
+    if (cachedS3Client?.signature === signature) {
+        return cachedS3Client.client
     }
-    const useIRSA = system.getBoolean(AppSystemProp.S3_USE_IRSA)
-    const region = system.get<string>(AppSystemProp.S3_REGION)
-    const endpoint = system.get<string>(AppSystemProp.S3_ENDPOINT)
+    const client = buildS3Client({ settings })
+    cachedS3Client = { signature, client }
+    return client
+}
+
+function currentS3Settings(): S3ClientSettings {
+    const useIRSA = system.getBoolean(AppSystemProp.S3_USE_IRSA) ?? false
+    return {
+        region: system.get<string>(AppSystemProp.S3_REGION),
+        endpoint: system.get<string>(AppSystemProp.S3_ENDPOINT),
+        credentials: useIRSA
+            ? null
+            : {
+                accessKeyId: system.getOrThrow<string>(AppSystemProp.S3_ACCESS_KEY_ID),
+                secretAccessKey: system.getOrThrow<string>(AppSystemProp.S3_SECRET_ACCESS_KEY),
+            },
+    }
+}
+
+function buildS3Client({ settings }: { settings: S3ClientSettings }): S3 {
+    const { region, endpoint, credentials } = settings
     const options: S3ClientConfig = {
         region,
         forcePathStyle: endpoint ? true : undefined,
@@ -210,16 +238,10 @@ const getS3Client = (): S3 => {
         options.requestChecksumCalculation = 'WHEN_REQUIRED'
         options.responseChecksumValidation = 'WHEN_REQUIRED'
     }
-    if (!useIRSA) {
-        const accessKeyId = system.getOrThrow<string>(AppSystemProp.S3_ACCESS_KEY_ID)
-        const secretAccessKey = system.getOrThrow<string>(AppSystemProp.S3_SECRET_ACCESS_KEY)
-        options.credentials = {
-            accessKeyId,
-            secretAccessKey,
-        }
+    if (!isNil(credentials)) {
+        options.credentials = credentials
     }
-    cachedS3Client = new S3(options)
-    return cachedS3Client
+    return new S3(options)
 }
 
 const getS3BucketName = () => {
@@ -230,4 +252,18 @@ type PutS3SignedUrlParams = {
     s3Key: string
     contentLength?: number
     contentEncoding?: string
+}
+
+type S3ClientSettings = {
+    region: string | undefined
+    endpoint: string | undefined
+    credentials: { accessKeyId: string, secretAccessKey: string } | null
+}
+
+export type S3Candidate = {
+    region: string | undefined
+    endpoint: string | undefined
+    bucket: string
+    accessKeyId: string
+    secretAccessKey: string
 }

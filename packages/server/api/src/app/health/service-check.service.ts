@@ -1,6 +1,6 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { safeHttp, versionUtil } from '@fema-ipaas/server-utils'
-import { FileLocation, OptionalServiceKind, ServiceCheckFailure, ServiceCheckRequest, ServiceCheckResult } from '@fema-ipaas/shared'
+import { FileLocation, ObjectStorageServiceConfig, OptionalServiceKind, ServiceCheckFailure, ServiceCheckRequest, ServiceCheckResult, SmtpServiceConfig } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { s3Helper } from '../file/s3-helper'
 import { mailSender } from '../helper/email/mail-sender'
@@ -14,16 +14,62 @@ const OBJECT_STORAGE_TIMEOUT_MS = 20000
 export const serviceCheckService = (log: FastifyBaseLogger) => ({
     async check({ request, tenantName }: CheckParams): Promise<ServiceCheckResult> {
         const outcome = await run({ log, request, tenantName })
-        return {
-            kind: request.kind,
-            ok: outcome.ok,
-            failure: outcome.failure,
-            reason: outcome.reason,
-            sentTo: outcome.sentTo,
-            checkedAt: new Date().toISOString(),
-        }
+        return resultOf({ kind: request.kind, outcome })
+    },
+
+    async checkCandidate({ candidate, recipient, tenantName }: CheckCandidateParams): Promise<ServiceCheckResult> {
+        const outcome = await runCandidate({ log, candidate, recipient, tenantName })
+        return resultOf({ kind: candidate.kind, outcome })
     },
 })
+
+async function runCandidate({ log, candidate, recipient, tenantName }: RunCandidateParams): Promise<Outcome> {
+    switch (candidate.kind) {
+        case OptionalServiceKind.SMTP: {
+            const smtp = candidate.config
+            const mailCandidate = { host: smtp.host, port: smtp.port, username: nonEmpty({ value: smtp.username }), password: nonEmpty({ value: smtp.password }), senderEmail: nonEmpty({ value: smtp.senderEmail }), senderName: nonEmpty({ value: smtp.senderName }) }
+            const sender = mailSender(log)
+            const verification = isNil(recipient) ? await sender.verify({ candidate: mailCandidate }) : await sender.sendTest({ to: recipient, tenantName, candidate: mailCandidate })
+            return { ...verification, sentTo: verification.ok ? recipient ?? null : null }
+        }
+        case OptionalServiceKind.OBJECT_STORAGE: {
+            const storage = candidate.config
+            const { error } = await tryCatch(() => withTimeout({
+                promise: s3Helper(log).validateS3Configuration({
+                    region: nonEmpty({ value: storage.region }),
+                    endpoint: nonEmpty({ value: storage.endpoint }),
+                    bucket: storage.bucket,
+                    accessKeyId: storage.accessKeyId,
+                    secretAccessKey: storage.secretAccessKey,
+                }),
+                milliseconds: OBJECT_STORAGE_TIMEOUT_MS,
+            }))
+            if (!isNil(error)) {
+                return failed({ error, secrets: [storage.secretAccessKey, storage.accessKeyId] })
+            }
+            return succeeded()
+        }
+        case OptionalServiceKind.CONNECTOR_REGISTRY:
+            return checkRegistry({ url: candidate.config.url, path: `/registry?release=${encodeURIComponent(versionUtil.getCurrentRelease())}` })
+        case OptionalServiceKind.TEMPLATE_REGISTRY:
+            return checkRegistry({ url: candidate.config.url, path: '/categories' })
+    }
+}
+
+function resultOf({ kind, outcome }: { kind: OptionalServiceKind, outcome: Outcome }): ServiceCheckResult {
+    return {
+        kind,
+        ok: outcome.ok,
+        failure: outcome.failure,
+        reason: outcome.reason,
+        sentTo: outcome.sentTo,
+        checkedAt: new Date().toISOString(),
+    }
+}
+
+function nonEmpty({ value }: { value: string | undefined }): string | undefined {
+    return isNil(value) || value.trim().length === 0 ? undefined : value
+}
 
 async function run({ log, request, tenantName }: RunParams): Promise<Outcome> {
     switch (request.kind) {
@@ -112,6 +158,21 @@ type CheckParams = {
 }
 
 type RunParams = CheckParams & {
+    log: FastifyBaseLogger
+}
+
+export type ServiceCandidate =
+    | { kind: OptionalServiceKind.SMTP, config: SmtpServiceConfig }
+    | { kind: OptionalServiceKind.OBJECT_STORAGE, config: ObjectStorageServiceConfig & { secretAccessKey: string } }
+    | { kind: OptionalServiceKind.CONNECTOR_REGISTRY | OptionalServiceKind.TEMPLATE_REGISTRY, config: { url: string } }
+
+type CheckCandidateParams = {
+    candidate: ServiceCandidate
+    recipient: string | undefined
+    tenantName: string
+}
+
+type RunCandidateParams = CheckCandidateParams & {
     log: FastifyBaseLogger
 }
 

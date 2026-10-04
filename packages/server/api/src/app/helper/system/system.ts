@@ -7,6 +7,7 @@ import { DatabaseType } from '../../database/database-type'
 import { RedisType } from '../../database/redis/types'
 import { limitValueParsers } from '../../limits/limit-value-parsers'
 import { pinoLogging } from '../logger'
+import { savedOverrides } from './saved-overrides'
 import { AppSystemProp, ContainerType, ENV_PREFIX, environmentVariables, SystemProp } from './system-props'
 
 
@@ -78,6 +79,10 @@ export const system = {
     },
     get<T extends string>(prop: SystemProp): T | undefined {
         return getEnvVarOrReturnDefaultValue(prop) as T | undefined
+    },
+
+    isFromEnvironment(prop: SystemProp): boolean {
+        return (environmentVariables.getEnvironment(prop) ?? '').length > 0
     },
 
     getNumberOrThrow(prop: SystemProp): number {
@@ -175,7 +180,10 @@ export const system = {
 }
 
 const getEnvVarOrReturnDefaultValue = (prop: SystemProp): string | undefined => {
-    return environmentVariables.getEnvironment(prop) ?? aliasValue(prop) ?? systemPropDefaultValues[prop] ?? derivedDefaultValue(prop)
+    const environment = environmentVariables.getEnvironment(prop)
+    const saved = savedOverrides.get({ prop })
+    const environmentWins = isNil(saved) || (environment ?? '').length > 0
+    return (environmentWins ? environment : undefined) ?? saved ?? aliasValue(prop) ?? systemPropDefaultValues[prop] ?? derivedDefaultValue(prop)
 }
 
 function derivedDefaultValue(prop: SystemProp): string | undefined {

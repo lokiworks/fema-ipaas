@@ -15,6 +15,7 @@ import { alertModule } from './alert/alert.module'
 import { registerAuditEventListener } from './audit/audit-event-listener'
 import { auditEventModule } from './audit/audit-event.module'
 import { backupModule } from './backup/backup.module'
+import { serviceSettingsModule } from './service-settings/service-settings.module'
 import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
@@ -182,6 +183,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(componentModule)
     await app.register(auditEventModule)
     await app.register(backupModule)
+    await app.register(serviceSettingsModule)
     await app.register(encryptionModule)
     await app.register(openApiImportModule)
     await app.register(connectorBlueprintModule)

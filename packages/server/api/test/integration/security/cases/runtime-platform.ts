@@ -69,6 +69,90 @@ const healthCases: MatrixCase[] = [
     },
 ]
 
+const backupCases: MatrixCase[] = [
+    {
+        id: 'GET /v1/backups/overview',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        prepare: async () => ({ request: { method: 'GET', url: '/v1/backups/overview' } }),
+    },
+    {
+        id: 'GET /v1/backups',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        prepare: async () => ({ request: { method: 'GET', url: '/v1/backups' } }),
+    },
+    {
+        id: 'GET /v1/backups/settings',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        prepare: async () => ({ request: { method: 'GET', url: '/v1/backups/settings' } }),
+    },
+    {
+        id: 'GET /v1/backups/:id/restore-precheck',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        expectOk: [200, 404],
+        prepare: async ({ world }) => ({ request: { method: 'GET', url: `/v1/backups/${world.newId()}/restore-precheck` } }),
+    },
+    {
+        id: 'DELETE /v1/backups/:id',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        expectOk: [204, 404],
+        prepare: async ({ world }) => ({ request: { method: 'DELETE', url: `/v1/backups/${world.newId()}` } }),
+    },
+    {
+        id: 'GET /v1/service-settings',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        prepare: async () => ({ request: { method: 'GET', url: '/v1/service-settings' } }),
+    },
+    {
+        id: 'DELETE /v1/service-settings/:kind',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        expectOk: [200, 400],
+        prepare: async () => ({ request: { method: 'DELETE', url: '/v1/service-settings/CONNECTOR_REGISTRY' } }),
+    },
+    {
+        id: 'POST /v1/backups',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        expectOk: [201, 400],
+        prepare: async () => ({ request: { method: 'POST', url: '/v1/backups', body: {} } }),
+    },
+    {
+        id: 'POST /v1/backups/settings',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        prepare: async () => ({
+            request: {
+                method: 'POST',
+                url: '/v1/backups/settings',
+                body: { enabled: true, frequency: 'DAILY', weekday: 1, hour: 2, keep: 7, uploadToObjectStorage: false },
+            },
+        }),
+    },
+    {
+        id: 'POST /v1/service-settings',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        expectOk: [200, 400],
+        prepare: async () => ({
+            request: { method: 'POST', url: '/v1/service-settings', body: { kind: 'CONNECTOR_REGISTRY', config: { url: 'http://127.0.0.1:1/registry' } } },
+        }),
+    },
+    {
+        id: 'POST /v1/service-settings/test',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        prepare: async () => ({
+            request: { method: 'POST', url: '/v1/service-settings/test', body: { draft: { kind: 'CONNECTOR_REGISTRY', config: { url: 'http://127.0.0.1:1/registry' } } } },
+        }),
+    },
+]
+
 const encryptionCases: MatrixCase[] = [
     {
         id: 'GET /v1/encryption/status',
@@ -132,4 +216,4 @@ const workerCases: MatrixCase[] = [
     },
 ]
 
-export const runtimePlatformCases: MatrixCase[] = [...healthCases, ...encryptionCases, ...workerCases]
+export const runtimePlatformCases: MatrixCase[] = [...healthCases, ...backupCases, ...encryptionCases, ...workerCases]

@@ -33,6 +33,7 @@ import { ProjectEntity } from '../project/project-entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
 import { ConnectionReplacementEntity, ReleaseChangeEntity, WorkflowReleaseEntity } from '../release/release.entity'
 import { RunMonitorViewEntity } from '../run-monitor/run-monitor-view.entity'
+import { ServiceSettingEntity } from '../service-settings/service-setting.entity'
 import { SolutionEntity, SolutionInstallEntity, SolutionVersionEntity } from '../solution/solution.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
@@ -115,6 +116,7 @@ function getEntities(): EntitySchema<unknown>[] {
         SolutionInstallEntity,
         BackupRecordEntity,
         BackupSettingsEntity,
+        ServiceSettingEntity,
     ]
 }
 

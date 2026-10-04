@@ -114,6 +114,7 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             type: String,
             array: true,
             nullable: false,
+            select: false,
             default: () => '\'{}\'',
         },
         // @deprecated — kept for backwards compatibility, use waitpoint table instead

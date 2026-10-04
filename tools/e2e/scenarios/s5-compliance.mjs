@@ -119,6 +119,10 @@ async function apiLayerChecks({ mainRun, failRun }) {
     const leaks = leakedIn({ text: JSON.stringify(adminMain.body.steps), secrets, only: ALL_PII })
     assert(leaks.length === 0, `泄露：${leaks.join(', ')}`)
   })
+  await check('API：运行详情和运行列表接口不暴露检索哈希', async () => {
+    const list = await http({ method: 'GET', path: `/executions?projectId=${admin.projectId}&limit=5`, token: admin.token })
+    assert(!adminMain.text.includes('searchHashes') && !list.text.includes('searchHashes'), '接口响应里带了 searchHashes')
+  })
   await check('API：逐类脱敏——手机号、身份证、银行卡、邮箱、密钥', async () => {
     const text = JSON.stringify(adminMain.body.steps)
     const missing = [['手机号', '139****'], ['身份证', '110***'], ['银行卡', '***************'], ['邮箱', 'e***@corp-example.com'], ['密钥', '******']].filter(([, mark]) => !text.includes(mark))

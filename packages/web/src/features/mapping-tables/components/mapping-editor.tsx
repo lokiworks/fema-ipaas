@@ -152,7 +152,7 @@ export function MappingEditor({
       ],
     });
   const autoTargets: AutoMappingTarget[] =
-    spec.target === undefined
+    spec.destination === undefined
       ? spec.fields
           .filter((row) => row.target.trim().length > 0 && !hasSource(row))
           .map((row) => ({
@@ -175,10 +175,10 @@ export function MappingEditor({
   return (
     <div className="@container flex flex-col gap-3">
       <TargetPicker
-        value={spec.target}
+        value={spec.destination}
         options={targetOptions}
         disabled={disabled}
-        onChange={(target) => patchSpec({ target })}
+        onChange={(destination) => patchSpec({ destination })}
       />
       <div
         className={cn(
@@ -187,7 +187,7 @@ export function MappingEditor({
         )}
         data-testid="mapping-summary"
       >
-        {spec.target
+        {spec.destination
           ? t('{mapped} of {total} fields mapped · {problems} problems', {
               mapped: mappedCount,
               total: entries.filter((entry) => entry.field !== null).length,
@@ -237,7 +237,7 @@ export function MappingEditor({
           {t('Show {count} optional fields', { count: hiddenCount })}
         </Button>
       )}
-      {showAll && hiddenCount === 0 && spec.target !== undefined && (
+      {showAll && hiddenCount === 0 && spec.destination !== undefined && (
         <Button
           type="button"
           variant="ghost"
@@ -248,7 +248,7 @@ export function MappingEditor({
           {t('Hide unmapped optional fields')}
         </Button>
       )}
-      {spec.target === undefined && spec.fields.length === 0 && (
+      {spec.destination === undefined && spec.fields.length === 0 && (
         <p className="text-xs text-muted-foreground">
           {t(
             'Pick the step this data is written to, or add fields by hand. Each field takes its value from an earlier step or a fixed value.',
@@ -256,7 +256,7 @@ export function MappingEditor({
         </p>
       )}
       <div className="flex flex-wrap gap-2">
-        {spec.target === undefined && (
+        {spec.destination === undefined && (
           <Button
             type="button"
             variant="outline"
@@ -327,10 +327,10 @@ function TargetPicker({
   disabled,
   onChange,
 }: {
-  value: MappingSpec['target'];
+  value: MappingSpec['destination'];
   options: TargetOption[];
   disabled: boolean;
-  onChange: (target: MappingSpec['target']) => void;
+  onChange: (destination: MappingSpec['destination']) => void;
 }) {
   const current = value
     ? `${value.connectorName}/${value.actionName}`
@@ -620,7 +620,7 @@ function missingLabel(behavior: MappingMissingBehavior | undefined): string {
 }
 
 function buildEntries(spec: MappingSpec): Entry[] {
-  const schemaFields = spec.target?.fields ?? [];
+  const schemaFields = spec.destination?.fields ?? [];
   const named = schemaFields.map<Entry>((field) => ({
     key: `field-${field.name}`,
     field,
@@ -629,7 +629,7 @@ function buildEntries(spec: MappingSpec): Entry[] {
   const extras = spec.fields
     .filter(
       (row) =>
-        spec.target === undefined ||
+        spec.destination === undefined ||
         !schemaFields.some((field) => field.name === row.target.trim()),
     )
     .map<Entry>((row) => ({ key: `row-${row.id}`, field: null, row }));

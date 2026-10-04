@@ -105,7 +105,7 @@ export type MappingTarget = z.infer<typeof MappingTarget>
 
 export const MappingSpec = z.object({
     fields: z.array(MappingRow),
-    target: z.optional(MappingTarget),
+    destination: z.optional(MappingTarget),
 })
 export type MappingSpec = z.infer<typeof MappingSpec>
 
@@ -147,10 +147,10 @@ function validateSpec(spec: MappingSpec): MappingIssue[] {
     const targets = spec.fields.map((row) => row.target.trim()).filter((target) => target.length > 0)
     const duplicates = [...new Set(targets.filter((target, index) => targets.indexOf(target) !== index))]
     const unnamed = spec.fields.filter((row) => row.target.trim().length === 0 && !isRowEmpty(row))
-    const unknown = spec.target === undefined
+    const unknown = spec.destination === undefined
         ? []
         : spec.fields.filter((row) => row.target.trim().length > 0 && findField({ spec, name: row.target }) === undefined)
-    const unmapped = (spec.target?.fields ?? [])
+    const unmapped = (spec.destination?.fields ?? [])
         .filter((field) => field.required && !spec.fields.some((row) => row.target.trim() === field.name && hasValueSource(row)))
     return [
         ...unnamed.map((row) => issue({ code: MappingIssueCode.TARGET_EMPTY, rowId: row.id, target: '' })),
@@ -521,7 +521,7 @@ function preview(value: unknown): string {
 }
 
 function findField({ spec, name }: { spec: MappingSpec, name: string }): MappingTargetField | undefined {
-    return spec.target?.fields.find((field) => field.name === name.trim())
+    return spec.destination?.fields.find((field) => field.name === name.trim())
 }
 
 function hasValueSource(row: MappingRow): boolean {

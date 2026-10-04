@@ -80,7 +80,7 @@ describe('mapFields', () => {
           fields: [
             { id: '1', target: 'name', source: '张三', transforms: [] },
           ],
-          target: {
+          destination: {
             connectorName: '@fema-ipaas/connector-feishu',
             actionName: 'provision_user',
             fields: [
@@ -107,7 +107,7 @@ describe('mapFields', () => {
       propsValue: {
         mapping: {
           fields: [{ id: '1', target: 'employeeType', source: '1', transforms: [] }],
-          target: {
+          destination: {
             connectorName: '@fema-ipaas/connector-feishu',
             actionName: 'provision_user',
             fields: [{ name: 'employeeType', type: 'NUMBER', required: true }],

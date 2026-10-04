@@ -117,19 +117,19 @@ describe('dataMapping target schema', () => {
     ]
 
     it('passes when every required field is mapped with the right type', () => {
-        const result = dataMapping.evaluate({ spec: { fields: complete, target: provisionTarget }, tables: [departments] })
+        const result = dataMapping.evaluate({ spec: { fields: complete, destination: provisionTarget }, tables: [departments] })
         expect(result.issues).toEqual([])
         expect(result.value).toEqual({ name: '张三', mobile: '13800000001', departmentId: 'od-rd', employeeType: 1 })
     })
 
     it('flags required fields that have no source before any run', () => {
-        const issues = dataMapping.validateSpec({ fields: complete.slice(0, 2), target: provisionTarget })
+        const issues = dataMapping.validateSpec({ fields: complete.slice(0, 2), destination: provisionTarget })
         expect(issues.filter((candidate) => candidate.code === MappingIssueCode.REQUIRED_UNMAPPED).map((candidate) => candidate.target)).toEqual(['departmentId', 'employeeType'])
     })
 
     it('flags a text value given to a number field and says how to fix it', () => {
         const fields = [...complete.slice(0, 3), row('4', 'employeeType', '1')]
-        const result = dataMapping.evaluate({ spec: { fields, target: provisionTarget }, tables: [departments] })
+        const result = dataMapping.evaluate({ spec: { fields, destination: provisionTarget }, tables: [departments] })
         const mismatch = result.issues.find((candidate) => candidate.code === MappingIssueCode.TYPE_MISMATCH)
         expect(mismatch?.target).toBe('employeeType')
         expect(dataMapping.describeIssue(mismatch ?? result.issues[0])).toContain('转数字')
@@ -138,25 +138,25 @@ describe('dataMapping target schema', () => {
 
     it('flags numbers given to text fields and values outside the options', () => {
         const fields = [...complete.slice(0, 1), row('2', 'mobile', 13800000001), complete[2], row('4', 'employeeType', 9)]
-        const result = dataMapping.evaluate({ spec: { fields, target: provisionTarget }, tables: [departments] })
+        const result = dataMapping.evaluate({ spec: { fields, destination: provisionTarget }, tables: [departments] })
         expect(codes(result.issues)).toEqual(expect.arrayContaining([MappingIssueCode.TYPE_MISMATCH, MappingIssueCode.OPTION_NOT_ALLOWED]))
     })
 
     it('flags a required field whose value turns out empty', () => {
         const fields = [row('1', 'name', ''), ...complete.slice(1)]
-        const result = dataMapping.evaluate({ spec: { fields, target: provisionTarget }, tables: [departments] })
+        const result = dataMapping.evaluate({ spec: { fields, destination: provisionTarget }, tables: [departments] })
         expect(codes(result.issues)).toContain(MappingIssueCode.REQUIRED_EMPTY)
     })
 
     it('flags targets the action does not have and rows without a target name', () => {
         const fields = [...complete, row('5', 'nickname', 'x'), row('6', ' ', 'y')]
-        const issues = dataMapping.validateSpec({ fields, target: provisionTarget })
+        const issues = dataMapping.validateSpec({ fields, destination: provisionTarget })
         expect(codes(issues)).toEqual(expect.arrayContaining([MappingIssueCode.UNKNOWN_TARGET, MappingIssueCode.TARGET_EMPTY]))
     })
 
     it('flags a lookup value the mapping table does not know and names the table', () => {
         const fields = [complete[0], complete[1], row('3', 'departmentId', 20399, [{ type: MappingTransformType.STRING }, { type: MappingTransformType.LOOKUP, arg: 'mt_dept' }]), complete[3]]
-        const result = dataMapping.evaluate({ spec: { fields, target: provisionTarget }, tables: [departments] })
+        const result = dataMapping.evaluate({ spec: { fields, destination: provisionTarget }, tables: [departments] })
         const miss = result.rows.find((candidate) => candidate.id === '3')
         expect(miss?.error).toContain('20399')
         expect(miss?.error).toContain('北森部门到飞书部门')
@@ -174,7 +174,7 @@ describe('dataMapping target schema', () => {
                 { id: 'b', target: 'level', itemPath: 'level', transforms: [{ type: MappingTransformType.NUMBER }] },
             ],
         }
-        const result = dataMapping.evaluate({ spec: { fields: [...complete, positions], target: provisionTarget }, tables: [departments] })
+        const result = dataMapping.evaluate({ spec: { fields: [...complete, positions], destination: provisionTarget }, tables: [departments] })
         const missing = result.issues.find((candidate) => candidate.code === MappingIssueCode.ITEM_FIELD_MISSING)
         expect(missing?.target).toBe('positions[2].title')
         expect(missing?.severity).toBe(MappingIssueSeverity.ERROR)
@@ -192,7 +192,7 @@ describe('dataMapping target schema', () => {
                 { id: 'b', target: 'level', itemPath: 'level', transforms: [] },
             ],
         }
-        const result = dataMapping.evaluate({ spec: { fields: [positions], target: { ...provisionTarget, fields: [provisionTarget.fields[5]] } }, tables: [] })
+        const result = dataMapping.evaluate({ spec: { fields: [positions], destination: { ...provisionTarget, fields: [provisionTarget.fields[5]] } }, tables: [] })
         expect(result.issues.map((candidate) => candidate.severity)).toEqual([MappingIssueSeverity.WARNING])
     })
 
@@ -207,7 +207,7 @@ describe('dataMapping target schema', () => {
                 { id: 'b', target: 'level', itemPath: 'level', transforms: [{ type: MappingTransformType.NUMBER }] },
             ],
         }
-        const result = dataMapping.evaluate({ spec: { fields: [positions], target: { ...provisionTarget, fields: [provisionTarget.fields[5]] } }, tables: [] })
+        const result = dataMapping.evaluate({ spec: { fields: [positions], destination: { ...provisionTarget, fields: [provisionTarget.fields[5]] } }, tables: [] })
         expect(dataMapping.describeIssue(result.issues[0])).toContain('第 1 项')
         expect(result.rows[0].error).toContain('senior')
     })

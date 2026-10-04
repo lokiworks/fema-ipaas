@@ -51,7 +51,7 @@ async function refusal(mapping: unknown): Promise<string> {
 describe('workflowPublishUtils.assertMappingsValid', () => {
     it('lets a complete mapping through', async () => {
         await expect(check({
-            target,
+            destination: target,
             fields: [
                 { id: 'a', target: 'name', source: 'x', transforms: [] },
                 { id: 'b', target: 'mobile', source: 'y', transforms: [{ type: 'LOOKUP', arg: 'mt_ok' }] },
@@ -60,7 +60,7 @@ describe('workflowPublishUtils.assertMappingsValid', () => {
     })
 
     it('refuses to publish when a required target field has no source', async () => {
-        expect(await refusal({ target, fields: [{ id: 'a', target: 'name', source: 'x', transforms: [] }] })).toContain('手机号')
+        expect(await refusal({ destination: target, fields: [{ id: 'a', target: 'name', source: 'x', transforms: [] }] })).toContain('手机号')
     })
 
     it('refuses a date format that would produce garbage and a deleted mapping table', async () => {

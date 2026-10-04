@@ -474,7 +474,7 @@ describe('workflowValidator', () => {
         actionName: 'map_fields',
         input: {
           mapping: {
-            target,
+            destination: target,
             fields: [
               { id: 'a', target: 'name', source: 'x', transforms: [] },
               { id: 'b', target: 'nickname', source: 'x', transforms: [] },

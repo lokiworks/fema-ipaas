@@ -347,7 +347,7 @@ async function removedServerChecks({ session }) {
   check({ name: '允许的工具在服务器上已不存在：服务端发布拒绝并点名工具', ok: refusedTool.status >= 400 && refusedTool.text.includes('drop_table'), detail: `${refusedTool.status} ${refusedTool.text.slice(0, 200)}` })
   await browser.close()
 
-  for (const variant of [{ suffix: 'dark', width: 1440, colorScheme: 'dark' }, { suffix: 'narrow', width: 440, colorScheme: 'light' }]) {
+  for (const variant of [{ suffix: 'dark', width: 1440, colorScheme: 'dark' }, { suffix: 'narrow', width: 820, colorScheme: 'light' }]) {
     const view = await openBrowser({ ...variant, height: 1000 })
     await uiLogin({ page: view.page })
     await go({ page: view.page, url: `${env.web}/projects/${projectId}/workflows/${brokenFlow}` })

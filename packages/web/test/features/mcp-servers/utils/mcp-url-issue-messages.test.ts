@@ -11,9 +11,9 @@ describe('mcpUrlIssueUtils', () => {
   });
 
   it('mentions the scheme requirement', () => {
-    expect(mcpUrlIssueUtils.urlIssueMessage(McpServerUrlIssue.SCHEME)).toContain(
-      'http',
-    );
+    expect(
+      mcpUrlIssueUtils.urlIssueMessage(McpServerUrlIssue.SCHEME),
+    ).toContain('http');
   });
 
   it('mentions credentials should go in authentication', () => {

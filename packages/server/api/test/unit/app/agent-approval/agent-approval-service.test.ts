@@ -1,5 +1,7 @@
 import { AgentApprovalInvalidReason, AgentApprovalStatus } from '@fema-ipaas/shared'
+import { FastifyBaseLogger } from 'fastify'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { agentApprovalService } from '../../../../src/app/agent-approval/agent-approval.service'
 
 const mocks = vi.hoisted(() => ({
     approvalRows: new Map<string, Record<string, unknown>>(),
@@ -37,8 +39,6 @@ vi.mock('../../../../src/app/privacy/privacy.service', () => ({ privacyService: 
 vi.mock('../../../../src/app/project/project-service', () => ({ projectService: () => ({}) }))
 vi.mock('../../../../src/app/workflows/workflow/workflow.repo', () => ({ workflowRepo: () => ({}) }))
 
-import { FastifyBaseLogger } from 'fastify'
-import { agentApprovalService } from '../../../../src/app/agent-approval/agent-approval.service'
 
 const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() } as unknown as FastifyBaseLogger
 

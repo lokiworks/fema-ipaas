@@ -31,9 +31,9 @@ import { AddIssueWorkflows1791030000000 } from './migration/postgres/17910300000
 import { AddRunReliabilityEvents1791040000000 } from './migration/postgres/1791040000000-AddRunReliabilityEvents'
 import { AddBackups1790961100000 } from './migration/postgres/1790961100000-AddBackups'
 import { AddServiceSettings1790961200000 } from './migration/postgres/1790961200000-AddServiceSettings'
-import { SnapshotAgentApprovalWorkflowName1791010000000 } from './migration/postgres/1791010000000-SnapshotAgentApprovalWorkflowName'
 
 import { AddReleaseChanges1791000000000 } from './migration/postgres/1791000000000-AddReleaseChanges'
+import { SnapshotAgentApprovalWorkflowName1791010000000 } from './migration/postgres/1791010000000-SnapshotAgentApprovalWorkflowName'
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
     if (useSsl === 'true') {

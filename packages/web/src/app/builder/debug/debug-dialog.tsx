@@ -381,10 +381,10 @@ function defaultValues(sample: unknown): DebugValues {
 }
 
 function hasContent(value: unknown): boolean {
-  if (isNil(value)) {
-    return false;
+  if (typeof value !== 'object') {
+    return !isNil(value);
   }
-  return typeof value !== 'object' || Object.keys(value).length > 0;
+  return value !== null && Object.keys(value).length > 0;
 }
 
 function stringify(value: unknown): string {

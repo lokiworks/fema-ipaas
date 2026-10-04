@@ -8,6 +8,25 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Shorter run-log retention now takes effect
+
+The retention period chosen in Data and privacy (7 or 14 days) and a project's
+`executionDataRetentionDays` were raised to `FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS`
+(30 days by default), so a shorter setting did nothing. They are now applied as
+chosen, down to 1 day, and run data past the window is deleted by the hourly
+cleanup. A project that still has a queued, running or paused run older than its
+window is skipped until that run ends.
+
+Expired runs also lose their business key and failure message, and the original
+request bodies of asynchronous webhooks are deleted when the original-data
+retention (3 days by default) ends. After that the run can no longer be rerun or
+viewed in original form.
+
+**When is action necessary?**
+
+If you saved a retention shorter than 30 days and relied on it being ignored,
+raise it again before upgrading.
+
 #### First-party connectors ship inside the image
 
 A fresh install used to have no connectors at all: every connector, including

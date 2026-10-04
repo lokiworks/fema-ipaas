@@ -54,12 +54,12 @@ needs to resume.
 Tenant admins can shorten the execution-data retention window for a single
 project by setting `executionDataRetentionDays` on the
 [update project endpoint](/endpoints/projects/update); `null` reverts the
-project to the instance-wide value. The value must be between
-`FEMA_PAUSED_WORKFLOW_TIMEOUT_DAYS` (a shorter window would delete the data a
-still-paused run needs to resume) and `FEMA_EXECUTION_DATA_RETENTION_DAYS` (the
-instance value is the ceiling). Raise the instance value if you need a wider
-range to place projects in. If either variable changes after an override was
-saved, the override is clamped back into the new bounds at cleanup time.
+project to the instance-wide value. The value must be between 1 and
+`FEMA_EXECUTION_DATA_RETENTION_DAYS` (the instance value is the ceiling). A
+project that still has a queued, running or paused run older than its window is
+skipped by the cleanup until that run ends, so a run waiting to resume keeps the
+data it needs. The same window can be set for all projects under Data and
+privacy; a project can only be shorter than the platform value.
 
 <Tip>
 At the recommended concurrency of 1, the worker container's memory cap (1 GB) is

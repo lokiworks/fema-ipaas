@@ -1,10 +1,8 @@
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, EndpointScope, PasswordType, PrincipalType, Project, ProjectType, RuntimeEnvironment, TelemetryEventName, Tenant, TENANT_ACCESS_LIMITS, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
+import { AuthenticationResponse, EndpointScope, PasswordType, PrincipalType, Project, ProjectType, TelemetryEventName, Tenant, TENANT_ACCESS_LIMITS, TenantRole, User, UserIdentity, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
-import { system } from '../helper/system/system'
-import { AppSystemProp } from '../helper/system/system-props'
 import { telemetry } from '../helper/telemetry.utils'
 import { projectService } from '../project/project-service'
 import { TenantEntity } from '../tenant/tenant.entity'
@@ -203,28 +201,6 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async saveNewsLetterSubscriber(identity: UserIdentity): Promise<void> {
-        const environment = system.get(AppSystemProp.ENVIRONMENT)
-        if (environment !== RuntimeEnvironment.PRODUCTION) {
-            return
-        }
-        try {
-            const response = await fetch(
-                'https://us-central1-fema-b3803.cloudfunctions.net/addContact',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: identity.email }),
-                },
-            )
-            await response.json()
-        }
-        catch (error) {
-            log.warn({ error }, '[authenticationUtils#saveNewsLetterSubscriber] Failed to save newsletter subscriber')
-        }
-    },
     async extractUserIdFromRequest(request: FastifyRequest): Promise<string> {
         if (request.principal.type === PrincipalType.USER) {
             return request.principal.id

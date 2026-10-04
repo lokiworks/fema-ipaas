@@ -248,7 +248,7 @@ function summarize({ run, output, failure }) {
   return `${run?.status} ${failure ?? ''} ${JSON.stringify({ answer: (output?.answer ?? '').slice(0, 60), steps: output?.steps?.length, stopReason: output?.stopReason, step0: (output?.steps?.[0]?.result ?? '').slice(0, 100) })}`
 }
 
-async function ensureServer({ token, projectId }) {
+export async function ensureServer({ token, projectId }) {
   const existing = ((await api({ url: '/v1/mcp-servers', token })).json ?? []).find((item) => item.displayName === SERVER_NAME)
   if (existing) {
     return existing
@@ -272,7 +272,7 @@ async function ensureServer({ token, projectId }) {
   return created.json.server
 }
 
-async function ensureModelConnection({ token, projectId }) {
+export async function ensureModelConnection({ token, projectId }) {
   const list = await api({ url: `/v1/connections?projectId=${projectId}&limit=100`, token })
   if ((list.json?.data ?? []).some((item) => item.externalId === LLM_EXTERNAL_ID)) {
     return
@@ -299,7 +299,7 @@ async function cleanupFlows({ token, projectId }) {
   }
 }
 
-async function extState({ path, method = 'GET' }) {
+export async function extState({ path, method = 'GET' }) {
   const response = await fetch(`http://127.0.0.1:${env.externalPort}${path}`, { method })
   const text = await response.text()
   try {

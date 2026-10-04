@@ -1,5 +1,8 @@
 import { ActionClassification } from '@fema-ipaas/connector-sdk';
 import {
+  agentMcpServers,
+  AgentMcpServerInfo,
+  AgentMcpServerProblemCode,
   dataMapping,
   isNil,
   MappingIssueCode,
@@ -290,7 +293,7 @@ function structureIssues({
           operationName: step.settings.actionName,
           isTrigger: false,
         }),
-        ...agentIssues({ step }),
+        ...agentIssues({ step, context }),
         ...mappingIssues({ step, context }),
       ];
     case WorkflowActionType.ROUTER:
@@ -512,7 +515,13 @@ function triggerIssues({ step }: { step: WorkflowTrigger }): ValidationIssue[] {
   return [...cron, ...interval, ...form, ...dedupeIssues];
 }
 
-function agentIssues({ step }: { step: WorkflowAction }): ValidationIssue[] {
+function agentIssues({
+  step,
+  context,
+}: {
+  step: WorkflowAction;
+  context: ValidationContext;
+}): ValidationIssue[] {
   if (
     step.type !== WorkflowActionType.CONNECTOR ||
     step.settings.connectorName !== AI_CONNECTOR ||
@@ -524,6 +533,7 @@ function agentIssues({ step }: { step: WorkflowAction }): ValidationIssue[] {
   const servers = input['mcpServers'];
   const noTools = !Array.isArray(servers) || servers.length === 0;
   const maxSteps = input['maxSteps'];
+  const serverIssues = agentServerIssues({ step, input, context });
   const stepsOutOfRange =
     !isBlank(maxSteps) &&
     typeof maxSteps !== 'string' &&
@@ -538,6 +548,7 @@ function agentIssues({ step }: { step: WorkflowAction }): ValidationIssue[] {
           }),
         ]
       : []),
+    ...serverIssues,
     ...(stepsOutOfRange
       ? [
           issue({
@@ -548,6 +559,37 @@ function agentIssues({ step }: { step: WorkflowAction }): ValidationIssue[] {
         ]
       : []),
   ];
+}
+
+function agentServerIssues({
+  step,
+  input,
+  context,
+}: {
+  step: WorkflowAction;
+  input: Record<string, unknown>;
+  context: ValidationContext;
+}): ValidationIssue[] {
+  if (isNil(context.mcpServers)) {
+    return [];
+  }
+  return agentMcpServers
+    .inspect({
+      entries: agentMcpServers.read(input['mcpServers']),
+      servers: context.mcpServers,
+      allowedTools: agentMcpServers.readNames(input['allowedTools']),
+    })
+    .map((problem) =>
+      issue({
+        step,
+        code: AGENT_PROBLEM_CODES[problem.code],
+        tab: ValidationTab.INPUT,
+        params:
+          problem.code === AgentMcpServerProblemCode.TOOL_MISSING
+            ? { tool: problem.tool ?? '' }
+            : { server: problem.server },
+      }),
+    );
 }
 
 function mappingIssues({
@@ -957,6 +999,9 @@ export enum ValidationCode {
   CODE_INPUT_NAME_EMPTY = 'CODE_INPUT_NAME_EMPTY',
   AGENT_NO_TOOLS = 'AGENT_NO_TOOLS',
   AGENT_STEPS_OUT_OF_RANGE = 'AGENT_STEPS_OUT_OF_RANGE',
+  AGENT_SERVER_MISSING = 'AGENT_SERVER_MISSING',
+  AGENT_SERVER_BROKEN = 'AGENT_SERVER_BROKEN',
+  AGENT_TOOL_MISSING = 'AGENT_TOOL_MISSING',
   REFERENCE_NOT_UPSTREAM = 'REFERENCE_NOT_UPSTREAM',
   REFERENCE_DELETED = 'REFERENCE_DELETED',
   LOOP_VARIABLE_OUTSIDE_LOOP = 'LOOP_VARIABLE_OUTSIDE_LOOP',
@@ -964,6 +1009,13 @@ export enum ValidationCode {
   AI_PENDING_REVIEW = 'AI_PENDING_REVIEW',
   WRITE_NOT_TESTED = 'WRITE_NOT_TESTED',
 }
+
+const AGENT_PROBLEM_CODES: Record<AgentMcpServerProblemCode, ValidationCode> = {
+  [AgentMcpServerProblemCode.SERVER_MISSING]:
+    ValidationCode.AGENT_SERVER_MISSING,
+  [AgentMcpServerProblemCode.SERVER_BROKEN]: ValidationCode.AGENT_SERVER_BROKEN,
+  [AgentMcpServerProblemCode.TOOL_MISSING]: ValidationCode.AGENT_TOOL_MISSING,
+};
 
 export enum ConnectorSpecStatus {
   LOADED = 'LOADED',
@@ -998,6 +1050,7 @@ export type ConnectionSpec = {
 
 export type ValidationContext = {
   trigger: WorkflowTrigger;
+  mcpServers?: AgentMcpServerInfo[] | null;
   connectors: Record<string, ConnectorSpec | undefined>;
   connections: Record<string, ConnectionSpec | undefined> | null;
   mappingTableIds: string[] | null;

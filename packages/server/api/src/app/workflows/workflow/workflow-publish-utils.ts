@@ -1,9 +1,8 @@
 import { ConnectorMetadataModel, PropertyType } from '@fema-ipaas/connector-sdk'
-import { ApplicationError, dataMapping, ErrorCode, isNil, MappingIssueCode, MappingIssueSeverity, MappingSpec, ProjectId, TenantId } from '@fema-ipaas/core-utils'
-import { WorkflowActionType, workflowConnectorUtil, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
+import { AgentMcpServerInfo, ApplicationError, dataMapping, ErrorCode, isNil, MappingIssueCode, MappingIssueSeverity, MappingSpec, ProjectId, TenantId } from '@fema-ipaas/core-utils'
+import { connectionAccessUtils, WorkflowActionType, workflowConnectorUtil, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import deepEqual from 'deep-equal'
 import { FastifyBaseLogger } from 'fastify'
-import { ArrayContains } from 'typeorm'
 import { connectionsRepo } from '../../connection/connection-service/connection-service'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { mappingTableService } from '../../mapping-table/mapping-table.service'
@@ -62,13 +61,24 @@ async function loadValidationContext({ version, projectId, tenantId, log, checkC
         const model = await connectorMetadataService(log).get({ name: ref.name, version: ref.version, projectId, tenantId })
         return [ref.name, isNil(model) ? MISSING_CONNECTOR : specOf(model)] satisfies [string, ConnectorSpec]
     }))
-    const connectionIds = checkConnections ? await loadConnectionIds({ projectId }) : null
-    return { connectors: Object.fromEntries(loaded), connectionIds }
+    const connectionIds = checkConnections ? await loadConnectionIds({ projectId, tenantId }) : null
+    const mcpServers = checkConnections && hasAgentStep(version) ? await loadMcpServers({ projectId, tenantId, log }) : null
+    return { connectors: Object.fromEntries(loaded), connectionIds, mcpServers }
 }
 
-async function loadConnectionIds({ projectId }: { projectId: ProjectId }): Promise<Set<string>> {
-    const connections = await connectionsRepo().find({ where: { projectIds: ArrayContains([projectId]) }, select: ['externalId'] })
-    return new Set(connections.map((connection) => connection.externalId))
+async function loadMcpServers({ projectId, tenantId, log }: { projectId: ProjectId, tenantId: TenantId, log: FastifyBaseLogger }): Promise<AgentMcpServerInfo[]> {
+    const { mcpServerService } = await import('../../mcp-server/mcp-server.service')
+    return mcpServerService(log).infoForProject({ tenantId, projectId })
+}
+
+function hasAgentStep(version: WorkflowVersion): boolean {
+    return workflowStructureUtil.getAllSteps(version.trigger).some((step) =>
+        step.type === WorkflowActionType.CONNECTOR && step.settings.connectorName === AI_CONNECTOR && step.settings.actionName === AGENT_ACTION)
+}
+
+async function loadConnectionIds({ projectId, tenantId }: { projectId: ProjectId, tenantId: TenantId }): Promise<Set<string>> {
+    const connections = await connectionsRepo().find({ where: { tenantId }, select: ['externalId', 'scope', 'projectIds', 'preSelectForNewProjects'] })
+    return new Set(connections.filter((connection) => connectionAccessUtils.isAvailableInProject({ connection, projectId })).map((connection) => connection.externalId))
 }
 
 function connectorRefsOf(version: WorkflowVersion): { name: string, version: string }[] {
@@ -124,6 +134,8 @@ function readMapping(input: unknown): unknown {
     return typeof input === 'object' && input !== null ? Reflect.get(input, 'mapping') : undefined
 }
 
+const AI_CONNECTOR = '@fema-ipaas/connector-ai'
+const AGENT_ACTION = 'run_agent'
 const DATA_MAPPER_CONNECTOR = '@fema-ipaas/connector-data-mapper'
 const MAP_FIELDS_ACTION = 'map_fields'
 const MAPPING_ERROR = MappingIssueSeverity.ERROR

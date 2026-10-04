@@ -16,6 +16,7 @@ import {
 import { forwardPhase } from './s7/phase-forward.mjs'
 import { agentPhase } from './s7/phase-agent.mjs'
 import { reversePhase } from './s7/phase-reverse.mjs'
+import { toolsPhase } from './s7/phase-tools.mjs'
 import { uiPhase } from './s7/phase-ui.mjs'
 
 const only = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
@@ -23,6 +24,7 @@ const phases = [
   { name: 'forward', run: forwardPhase },
   { name: 'reverse', run: reversePhase },
   { name: 'agent', run: agentPhase },
+  { name: 'tools', run: toolsPhase },
   { name: 'ui', run: uiPhase },
 ]
 

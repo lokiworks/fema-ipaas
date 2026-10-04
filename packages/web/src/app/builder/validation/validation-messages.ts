@@ -85,6 +85,15 @@ const MESSAGES: Record<
   [ValidationCode.AGENT_NO_TOOLS]: () => t('The agent has no tools'),
   [ValidationCode.AGENT_STEPS_OUT_OF_RANGE]: () =>
     t('Max steps must be between 1 and 20'),
+  [ValidationCode.AGENT_SERVER_MISSING]: (params) =>
+    t(
+      'MCP server {server} was deleted or is not available in this project',
+      params,
+    ),
+  [ValidationCode.AGENT_SERVER_BROKEN]: (params) =>
+    t('MCP server {server} cannot be reached', params),
+  [ValidationCode.AGENT_TOOL_MISSING]: (params) =>
+    t('Allowed tool {tool} no longer exists on the selected servers', params),
   [ValidationCode.REFERENCE_NOT_UPSTREAM]: (params) =>
     t('{ref} references a step that is not upstream', params),
   [ValidationCode.REFERENCE_DELETED]: (params) =>

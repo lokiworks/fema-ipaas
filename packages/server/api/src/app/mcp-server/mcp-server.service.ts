@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode, generateId, isNil, Permission, unique } from '@fema-ipaas/core-utils'
+import { AgentMcpServerInfo, ApplicationError, ErrorCode, generateId, isNil, Permission, ProjectId, TenantId, unique } from '@fema-ipaas/core-utils'
 import {
     AccessibleConnection,
     AI_CONNECTOR_NAME,
@@ -64,6 +64,22 @@ export const mcpServerService = (log: FastifyBaseLogger) => ({
         }
         return servers.filter((server) => [server.displayName, server.description, server.url, ...server.tools.flatMap((tool) => [tool.name, tool.title ?? '', tool.description])]
             .join(' ').toLowerCase().includes(needle))
+    },
+
+    async infoForProject({ tenantId, projectId }: { tenantId: TenantId, projectId: ProjectId }): Promise<AgentMcpServerInfo[]> {
+        const all = await connectionsRepo().find({ where: { tenantId, connectorName: MCP_CONNECTOR_NAME } })
+        const connections = all.filter((connection) => connectionAccessUtils.isAvailableInProject({ connection, projectId }))
+        return Promise.all(connections.map(async (connection) => {
+            const row = await mcpServerRepo().findOneBy({ connectionId: connection.id, tenantId: connection.tenantId }) ?? await ensureRow({ connection })
+            return {
+                externalId: connection.externalId,
+                displayName: connection.displayName,
+                url: row.url,
+                authType: row.authType,
+                ok: connection.status === ConnectionStatus.ACTIVE && isNil(row.lastError),
+                toolNames: row.tools.map((tool) => tool.name),
+            }
+        }))
     },
 
     async get({ tenantId, userId, id }: ServerRef): Promise<McpServer> {

@@ -1,4 +1,4 @@
-import { isNil } from '@fema-ipaas/core-utils'
+import { AgentMcpServerInfo, AgentMcpServerProblemCode, agentMcpServers, isNil } from '@fema-ipaas/core-utils'
 import {
     BranchExecutionType,
     scheduleUtils,
@@ -47,7 +47,10 @@ function structureReasons({ step, context }: { step: WorkflowAction | WorkflowTr
                 ...triggerReasons({ step }),
             ]
         case WorkflowActionType.CONNECTOR:
-            return connectorReasons({ step, context, operationName: step.settings.actionName, isTrigger: false })
+            return [
+                ...connectorReasons({ step, context, operationName: step.settings.actionName, isTrigger: false }),
+                ...agentReasons({ step, context }),
+            ]
         case WorkflowActionType.ROUTER:
             return routerReasons({ step })
         case WorkflowActionType.PARALLEL:
@@ -87,6 +90,27 @@ function connectorReasons({ step, context, operationName, isTrigger }: { step: W
         ...connectionReasons({ step, context, requiresAuth: connector.requiresAuth && operation.requiresAuth }),
         ...missing,
     ]
+}
+
+function agentReasons({ step, context }: { step: WorkflowAction, context: PublishValidationContext }): string[] {
+    if (step.type !== WorkflowActionType.CONNECTOR || step.settings.connectorName !== AI_CONNECTOR || step.settings.actionName !== AGENT_ACTION || isNil(context.mcpServers)) {
+        return []
+    }
+    const input = readRecord(step.settings.input)
+    return agentMcpServers.inspect({
+        entries: agentMcpServers.read(input['mcpServers']),
+        servers: context.mcpServers,
+        allowedTools: agentMcpServers.readNames(input['allowedTools']),
+    }).map((problem) => {
+        switch (problem.code) {
+            case AgentMcpServerProblemCode.SERVER_MISSING:
+                return `选的 MCP 服务器「${problem.server}」已被删除，或在当前项目里不可用`
+            case AgentMcpServerProblemCode.SERVER_BROKEN:
+                return `MCP 服务器「${problem.server}」现在连不上，恢复连接后才能发布`
+            case AgentMcpServerProblemCode.TOOL_MISSING:
+                return `允许的工具「${problem.tool ?? ''}」在选的服务器上已经不存在`
+        }
+    })
 }
 
 function connectionReasons({ step, context, requiresAuth }: { step: WorkflowAction | WorkflowTrigger, context: PublishValidationContext, requiresAuth: boolean }): string[] {
@@ -245,6 +269,8 @@ export enum ConnectorSpecStatus {
 }
 
 const AUTH_PROPERTY = 'auth'
+const AI_CONNECTOR = '@fema-ipaas/connector-ai'
+const AGENT_ACTION = 'run_agent'
 const CRON_TRIGGER = 'cron_expression'
 const INTERVAL_TRIGGER = 'every_x_minutes'
 const VARIABLES_ROOT = 'variables'
@@ -266,6 +292,7 @@ export type ConnectorSpec =
 export type PublishValidationContext = {
     connectors: Record<string, ConnectorSpec | undefined>
     connectionIds: Set<string> | null
+    mcpServers?: AgentMcpServerInfo[] | null
 }
 
 export type PublishProblem = {

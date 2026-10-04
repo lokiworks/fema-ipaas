@@ -13,7 +13,7 @@ export async function uiPhase({ session }) {
     { name: 'services-list', url: `${env.web}/projects/${projectId}/mcp-services`, ready: /MCP 服务/ },
     services ? { name: 'service-detail', url: `${env.web}/projects/${projectId}/mcp-services/${services.id}`, ready: /工具/ } : null,
     { name: 'approvals', url: `${env.web}/projects/${projectId}/agent-approvals`, ready: /智能体确认/ },
-    agentFlow ? { name: 'agent-builder', url: `${env.web}/projects/${projectId}/workflows/${agentFlow.id}`, ready: /AI 智能体/, click: 'AI 智能体' } : null,
+    agentFlow ? { name: 'agent-builder', url: `${env.web}/projects/${projectId}/workflows/${agentFlow.id}`, ready: /AI 智能体/, click: '2. AI 智能体' } : null,
   ].filter((item) => item !== null)
 
   const variants = [
@@ -29,7 +29,8 @@ export async function uiPhase({ session }) {
       await page.getByText(target.ready).first().waitFor({ timeout: 180000 }).catch(() => undefined)
       await page.waitForTimeout(2500)
       if (target.click) {
-        await page.getByText(target.click, { exact: true }).first().click().catch(() => undefined)
+        await page.getByText(target.click).first().click().catch(() => undefined)
+        await page.getByText('入参', { exact: true }).first().click().catch(() => undefined)
         await page.waitForTimeout(2500)
       }
       await shot({ page, name: `ui-${target.name}-${variant.suffix}` })

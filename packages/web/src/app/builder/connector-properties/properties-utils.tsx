@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { RequiredFieldAsterisk } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
+import { AGENT_TOOLS_TARGET, AgentToolsProperty } from './agent-tools-property';
 import { ArrayConnectorProperty } from './array-property';
 import { AutoFormFieldWrapper } from './auto-form-field-wrapper';
 import { BuilderJsonEditorWrapper } from './builder-json-wrapper';
@@ -76,6 +77,26 @@ export const selectGenericFormComponentForProperty = ({
           onChange={field.onChange}
           disabled={disabled}
         />
+      </AutoFormFieldWrapper>
+    );
+  }
+  if (
+    dynamicPropsInfo?.connectorName === AGENT_TOOLS_TARGET.connectorName &&
+    dynamicPropsInfo.actionOrTriggerName === AGENT_TOOLS_TARGET.actionName &&
+    propertyName === AGENT_TOOLS_TARGET.propertyName
+  ) {
+    return (
+      <AutoFormFieldWrapper
+        propertyName={propertyName}
+        inputName={inputName}
+        property={property}
+        field={field}
+        hideLabel={hideLabel}
+        disabled={disabled}
+        allowDynamicValues={false}
+        dynamicInputModeToggled={false}
+      >
+        <AgentToolsProperty inputName={inputName} disabled={disabled} />
       </AutoFormFieldWrapper>
     );
   }

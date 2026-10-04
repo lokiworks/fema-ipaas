@@ -16,6 +16,9 @@ icon: 🛰️
 - **保存会再测一次。** 前端先调 `/v1/mcp-servers/test`，保存时服务端重新测试并落工具列表；失败且没带 `saveWithoutPassingTest` 就拒绝保存（「先保存，稍后重试」才带）。
 - **OAuth 2.0 用平台现有的 OAuth2 连接机制。** 连接器的 OAuth2 认证把授权地址、Token 地址做成 `{authUrl}` / `{tokenUrl}` 占位符，PKCE S256，scope 为空（需要 scope 的服务器目前接不了）。
 - 新建的服务器 `projectMembersPermission = USE`：可用项目的成员不用单独建连接就能用，只有所有者和租户管理员能改；被工作流步骤或智能体（按连接引用或服务器地址匹配）使用时不能删除。
+- **探测遵循 `FEMA_SSRF_ALLOW_LIST`。** 连接测试的预检读工作节点环境里的放行名单（沙箱模式由 `create-sandbox-for-job` 注入）：放行的 127.0.0.1 等地址能通过，没放行的 LOOPBACK、LINK_LOCAL 仍被拒绝。放行名单按规范化后的地址匹配，放行 `127.0.0.1` 同时放行它的 IPv4 映射写法和十进制、十六进制写法（URL 解析会先归一），但不放行 `127.0.0.2` 或元数据地址。真正的拦截在引擎的 DNS 和 socket 守卫（严格网络模式），DNS 重绑定靠每次连接前重新解析并逐条检查来挡；非严格模式下探测对环回的拒绝只是诊断，不是安全边界。
+- **试用抽屉按工具的 `inputSchema` 生成表单**（`mcp-tool-form-schema.ts`）：字符串、数字、整数、布尔、枚举、数组、嵌套对象，必填在前；自由格式对象、联合类型和超过三层的嵌套退回 JSON。表单和 JSON 两种模式共用一套检查，按字段路径点名（`requester.id`、`attachments[1].url`）；JSON 切回表单时结构里没有的字段原样保留。
+- **市场左侧分类名走 `connectorCategoryLabels`**（`features/connectors/utils/connector-category-labels.ts`）：市场分类、`ConnectorCategory` 全部枚举值、动作分类（读取、搜索、写入、破坏性）各一张带类型约束的表，加枚举值时漏了翻译会编译不过。
 - 改连接器行为没有提升 `connector-mcp` 的版本号（本轮统一不升版本）；缓存了旧元数据的环境需要重新同步连接器。
 - **前端市场分类没有和后端 `ConnectorCategory` 一一对应。** 设计稿要 13 个分类加「MCP 服务器」，但后端枚举是另一套值（如 `PRODUCTIVITY`、`UNIVERSAL_AI`），`connectorMarketUtils.groupsOf` 里手工做的映射，「自定义」分类等价于 `ConnectorSource.PRIVATE`。改分类枚举时要同步改这张映射表。
 - **市场的「最新」排序没有真实的时间字段。** `ConnectorMetadataModelSummary` 不带 `created`/`updated`，前端只能拿 `version` 做 semver 排序当替代；要做到真按接入时间排序需要后端补一个字段。

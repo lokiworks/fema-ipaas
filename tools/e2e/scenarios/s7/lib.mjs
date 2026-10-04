@@ -16,6 +16,7 @@ export const env = {
   llmPort: 18978,
   externalToken: 'e2e-secret-token',
   lanHost: process.env.S7_LAN_HOST ?? '192.168.68.100',
+  defaultAllowList: '203.0.113.9',
   email: 'dev@ap.com',
   password: '12345678',
   root,

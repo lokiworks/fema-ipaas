@@ -41,6 +41,12 @@ export const runAgent = createAction({
       description: 'Servers whose tools the agent may call',
       required: false,
       properties: {
+        server: Property.ShortText({
+          displayName: 'Connected server',
+          description:
+            'Set by the server picker: the id of the connected MCP server this entry was taken from, so the platform can warn when that server is removed or broken',
+          required: false,
+        }),
         url: Property.ShortText({
           displayName: 'Server URL',
           description: 'The Streamable HTTP endpoint of the MCP server',
@@ -270,6 +276,7 @@ const DEFAULT_INPUT = 'Start the task.';
 
 const ServerList = z.array(
   z.object({
+    server: z.string().nullish(),
     url: z.string(),
     authorization: z.string().nullish(),
   }),

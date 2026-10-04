@@ -16,13 +16,16 @@ export const mcpServersHooks = {
   useMcpServers: ({
     search,
     primary = false,
+    enabled = true,
   }: {
     search?: string;
     primary?: boolean;
+    enabled?: boolean;
   } = {}) => {
     return useQuery({
       queryKey: [MCP_SERVERS_QUERY_KEY, search],
       queryFn: () => mcpServersApi.list({ search }),
+      enabled,
       meta: primary
         ? { showErrorDialog: true, loadSubsetOptions: {} }
         : undefined,

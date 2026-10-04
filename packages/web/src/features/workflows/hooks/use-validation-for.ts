@@ -17,6 +17,11 @@ import { useTranslation } from 'react-i18next';
 
 import { connectionsQueries } from '@/features/connections';
 import { connectorsApi } from '@/features/connectors';
+import {
+  agentToolsUtils,
+  mcpServerAccessUtils,
+  mcpServersHooks,
+} from '@/features/mcp-servers';
 import { mappingTablesHooks } from '@/features/mapping-tables';
 import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
 import {
@@ -56,6 +61,10 @@ export function useValidationFor(
     extraKeys: ['builder-validation', projectId],
     enabled: projectId.length > 0,
     staleTime: 30_000,
+  });
+  const hasAgentStep = useMemo(() => hasAgentStepIn(trigger), [trigger]);
+  const mcpServersQuery = mcpServersHooks.useMcpServers({
+    enabled: hasAgentStep,
   });
   const mappingTablesQuery = mappingTablesHooks.useMappingTables(
     projectId.length > 0 ? projectId : null,
@@ -103,6 +112,17 @@ export function useValidationFor(
     );
   }, [connectionsQuery.data]);
 
+  const mcpServers = useMemo(() => {
+    if (!hasAgentStep || isNil(mcpServersQuery.data)) {
+      return null;
+    }
+    return mcpServersQuery.data
+      .filter((server) =>
+        mcpServerAccessUtils.isAvailableInProject({ server, projectId }),
+      )
+      .map(agentToolsUtils.infoOf);
+  }, [hasAgentStep, mcpServersQuery.data, projectId]);
+
   const mappingTableIds = useMemo(
     () => mappingTablesQuery.data?.map((table) => table.id) ?? null,
     [mappingTablesQuery.data],
@@ -118,10 +138,18 @@ export function useValidationFor(
         trigger,
         connectors,
         connections,
+        mcpServers,
         mappingTableIds,
         variableNames,
       }),
-    [trigger, connectors, connections, mappingTableIds, variableNames],
+    [
+      trigger,
+      connectors,
+      connections,
+      mcpServers,
+      mappingTableIds,
+      variableNames,
+    ],
   );
 
   const writeSteps = useMemo(
@@ -134,6 +162,17 @@ export function useValidationFor(
     connectionsQuery.isLoading;
 
   return { ...result, writeSteps, isLoading };
+}
+
+function hasAgentStepIn(trigger: WorkflowTrigger): boolean {
+  return workflowStructureUtil
+    .getAllSteps(trigger)
+    .some(
+      (step) =>
+        step.type === WorkflowActionType.CONNECTOR &&
+        step.settings.connectorName === AGENT_TARGET.connectorName &&
+        step.settings.actionName === AGENT_TARGET.actionName,
+    );
 }
 
 function connectorRefsOf(trigger: WorkflowTrigger): ConnectorRef[] {
@@ -215,4 +254,9 @@ export type WorkflowValidationState = ValidationResult & {
 type ConnectorRef = {
   name: string;
   version: string;
+};
+
+const AGENT_TARGET = {
+  connectorName: '@fema-ipaas/connector-ai',
+  actionName: 'run_agent',
 };

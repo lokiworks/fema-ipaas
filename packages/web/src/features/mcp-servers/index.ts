@@ -17,3 +17,6 @@ export type {
   ToolFieldIssue,
   ToolFieldNode,
 } from './utils/mcp-tool-form-schema';
+export { AgentToolsEditor } from './components/agent-tools-editor';
+export { agentToolsUtils } from './utils/agent-tools-utils';
+export type { AgentToolsState } from './utils/agent-tools-utils';

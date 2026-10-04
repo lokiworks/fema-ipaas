@@ -18,6 +18,7 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { ActionErrorHandlingForm } from '../../connector-properties/action-error-handling';
 import { AdvancedSection } from '../../connector-properties/advanced-section';
+import { AGENT_TOOLS_TARGET } from '../../connector-properties/agent-tools-property';
 import { filterPropertyUtils } from '../../connector-properties/filter-property-utils';
 import { GenericPropertiesForm } from '../../connector-properties/generic-properties-form';
 import { ConnectorNotAvailableAlert } from '../connector-not-available-alert';
@@ -46,9 +47,11 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
     ? connectorModel?.triggers[triggerName]
     : undefined;
 
-  const actionPropsWithoutAuth = removeAuthFromProps(
-    selectedAction?.props ?? {},
-  );
+  const actionPropsWithoutAuth = removeHiddenProps({
+    props: removeAuthFromProps(selectedAction?.props ?? {}),
+    connectorName: connectorModel?.name,
+    actionName: selectedAction?.name,
+  });
   const triggerPropsWithoutAuth = removeAuthFromProps(
     selectedTrigger?.props ?? {},
   );
@@ -272,6 +275,28 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
 
 ConnectorSettings.displayName = 'ConnectorSettings';
 export { ConnectorSettings };
+
+function removeHiddenProps({
+  props,
+  connectorName,
+  actionName,
+}: {
+  props: Record<string, ConnectorProperty>;
+  connectorName: string | undefined;
+  actionName: string | undefined;
+}): Record<string, ConnectorProperty> {
+  if (
+    connectorName !== AGENT_TOOLS_TARGET.connectorName ||
+    actionName !== AGENT_TOOLS_TARGET.actionName
+  ) {
+    return props;
+  }
+  return Object.fromEntries(
+    Object.entries(props).filter(
+      ([name]) => !AGENT_TOOLS_TARGET.hiddenPropertyNames.includes(name),
+    ),
+  );
+}
 
 function removeAuthFromProps(
   props: Record<string, ConnectorProperty>,

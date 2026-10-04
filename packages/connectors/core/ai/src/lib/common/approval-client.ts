@@ -1,3 +1,4 @@
+import { agentToolPolicy } from '@fema-ipaas/connector-sdk';
 import {
   AuthenticationType,
   httpClient,
@@ -47,18 +48,10 @@ function needsApproval({
   confirmWrites: boolean;
   confirmTools: string[];
 }): boolean {
-  const words = toolName
-    .split(/[_\-.\s]|(?=[A-Z])/)
-    .map((word) => word.toLowerCase())
-    .filter((word) => word.length > 0);
-  return (
-    confirmTools.includes(toolName) ||
-    (confirmWrites && words.some((word) => WRITE_VERBS.includes(word)))
-  );
+  return agentToolPolicy.needsApproval({ toolName, confirmWrites, confirmTools });
 }
 
 const REQUEST_TIMEOUT_MS = 10_000;
-const WRITE_VERBS = ['create', 'add', 'send', 'update', 'delete', 'remove', 'post', 'put', 'patch', 'write', 'set', 'insert', 'upsert', 'cancel', 'approve', 'submit', 'transfer', 'pay', 'publish', 'reply', 'invite', 'assign'];
 
 const CreatedApproval = z.object({ id: z.string() });
 

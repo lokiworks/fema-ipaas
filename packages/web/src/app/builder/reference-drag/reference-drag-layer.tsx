@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { pathHelpers } from '@/app/builder/data-selector/path-helpers';
-import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
 import { workflowCanvasConsts } from '@/app/builder/workflow-canvas/utils/consts';
 import { Button } from '@/components/ui/button';
 import {
@@ -137,14 +136,15 @@ function StepChoice({
   candidateStepNames: string[];
   onChoose: (stepName: string) => void;
 }) {
-  const trigger = useBuilderStateContext(
-    (state) => state.workflowVersion.trigger,
-  );
-  const numbers = useStepDisplayNumbers();
-  const steps = candidateStepNames.flatMap((name) => {
-    const step = workflowStructureUtil.getStep(name, trigger);
-    return isNil(step) ? [] : [step];
-  });
+  const [trigger, selectedStep] = useBuilderStateContext((state) => [
+    state.workflowVersion.trigger,
+    state.selectedStep,
+  ]);
+  const steps = (
+    isNil(selectedStep)
+      ? []
+      : workflowStructureUtil.findPathToStep(trigger, selectedStep)
+  ).filter((step) => candidateStepNames.includes(step.name));
   return (
     <>
       <DialogHeader>
@@ -165,8 +165,7 @@ function StepChoice({
               className="justify-start"
               onClick={() => onChoose(step.name)}
             >
-              {numbers[step.name] ? `${numbers[step.name]}. ` : ''}
-              {step.displayName}
+              {step.dfsIndex + 1}. {step.displayName}
             </Button>
           ))}
         </div>

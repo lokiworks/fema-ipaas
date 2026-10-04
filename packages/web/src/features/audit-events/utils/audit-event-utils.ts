@@ -189,6 +189,11 @@ function summarize(event: ApplicationEvent): string {
         step: event.data.stepName,
         run: event.data.execution.id,
       });
+    case ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED:
+      return t('auditRunPayloadRevealDenied', {
+        step: event.data.stepName,
+        run: event.data.execution.id,
+      });
     case ApplicationEventName.ISSUE_REPLAYED:
       return t('auditIssueReplayed', {
         count: event.data.count,
@@ -356,6 +361,8 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.DATA_STORE_RECORD_DELETED]: () =>
     t('Data store key deleted'),
   [ApplicationEventName.PERSONAL_ACCESS_TOKEN_CREATED]: () =>
+  [ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED]: () =>
+    t('Run payload reveal denied'),
     t('Access token created'),
   [ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED]: () =>
     t('Access token revoked'),

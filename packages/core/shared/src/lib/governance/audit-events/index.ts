@@ -43,6 +43,7 @@ export enum ApplicationEventName {
     MEMBER_ADDED = 'member.added',
     MEMBER_REMOVED = 'member.removed',
     EXECUTION_PAYLOAD_REVEALED = 'workflow.run.payload.revealed',
+    EXECUTION_PAYLOAD_REVEAL_DENIED = 'workflow.run.payload.reveal.denied',
     ISSUE_REPLAYED = 'issue.replayed',
     RUNS_RERUN = 'workflow.runs.rerun',
     PRIVACY_SETTINGS_UPDATED = 'privacy.settings.updated',
@@ -478,6 +479,20 @@ export const IssueReplayedEvent = z.object({
         issue: z.object({
             id: z.string(),
             title: z.string(),
+export const ExecutionPayloadRevealDeniedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED),
+    data: z.object({
+        execution: z.object({
+            id: z.string(),
+            workflowId: z.string(),
+        }),
+        stepName: z.string(),
+        reason: z.string().optional(),
+    }),
+})
+export type ExecutionPayloadRevealDeniedEvent = z.infer<typeof ExecutionPayloadRevealDeniedEvent>
+
         }),
         strategy: z.string(),
         count: z.number(),
@@ -703,6 +718,7 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         }
         case ApplicationEventName.WORKFLOW_CREATED:
             return `Workflow ${event.data.workflow.id} is created`
+    ExecutionPayloadRevealDeniedEvent,
         case ApplicationEventName.WORKFLOW_DELETED:
             return `Workflow ${event.data.workflow.id} (${event.data.workflowVersion.displayName}) is deleted`
         case ApplicationEventName.WORKFLOW_PUBLISHED:
@@ -764,6 +780,8 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.TENANT_USERS_INVITED:
         case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
         case ApplicationEventName.TENANT_USER_REMOVED:
+        case ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED:
+            return `Viewing the raw payload of step ${event.data.stepName} in run ${event.data.execution.id} was denied`
         case ApplicationEventName.TENANT_USER_PASSWORD_RESET:
         case ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED:
         case ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED:

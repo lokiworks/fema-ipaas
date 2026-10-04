@@ -1,6 +1,6 @@
 import { ApplicationError, Cursor, ErrorCode, ExecutionId, generateId, isNil, ProjectId, SeekPage, TenantId, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { dayjsUtil, wideEvent } from '@fema-ipaas/server-utils'
-import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileType, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunConcurrencyTicket, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy } from '@fema-ipaas/shared'
+import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileType, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunConcurrencyTicket, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, workflowStructureUtil } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { ArrayContains, In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm'
@@ -121,10 +121,10 @@ export const executionService = (log: FastifyBaseLogger) => ({
             projectId,
         })
         log.info({ execution: { id: executionId }, workflow: { id: oldExecution.workflowId }, strategy }, 'Workflow run retry initiated')
-        if (strategy === WorkflowRetryStrategy.FROM_FAILED_STEP && isNil(oldExecution.logsFileId) && !isNil(oldExecution.displayLogsFileId)) {
+        if (isNil(oldExecution.logsFileId) && !isNil(oldExecution.displayLogsFileId)) {
             throw new ApplicationError({
                 code: ErrorCode.VALIDATION,
-                params: { message: 'The original run data has passed its retention period. Rerun the whole workflow instead.' },
+                params: { message: 'The original run data has passed its retention period, so this run cannot be rerun.' },
             })
         }
 
@@ -724,9 +724,11 @@ async function filterExecutionsAndApplyFilters(
 
 export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogger): Promise<Execution> {
     const logsFileId = params.execution.logsFileId ?? generateId()
+    const sensitiveStepNames = await sensitiveStepNamesOf({ log, workflowVersionId: params.execution.workflowVersionId })
     const logPrivacy = await privacyService(log).logPrivacyFor({
         tenantId: params.tenantId,
         displayLogsFileId: params.execution.displayLogsFileId ?? generateId(),
+        sensitiveStepNames,
     })
 
     let jobPayload: JobPayload = { type: 'inline', value: null }
@@ -775,6 +777,11 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
         data,
     })
     return params.execution
+}
+
+async function sensitiveStepNamesOf({ log, workflowVersionId }: { log: FastifyBaseLogger, workflowVersionId: WorkflowVersionId }): Promise<string[]> {
+    const version = await workflowVersionService(log).getOne(workflowVersionId)
+    return isNil(version) ? [] : workflowStructureUtil.getSensitiveStepNames(version.trigger)
 }
 
 export async function findExecutionOrThrow(executionId: ExecutionId): Promise<Execution> {

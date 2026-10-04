@@ -17,7 +17,7 @@ import { RunLogAccessProject } from './run-log-access'
 
 export const runLogQuery = {
     sinceOf,
-    build({ query, projects, now }: BuildParams): SelectQueryBuilder<Execution> | null {
+    build({ query, projects, now, exactMatches }: BuildParams): SelectQueryBuilder<Execution> | null {
         if (projects.length === 0) {
             return null
         }
@@ -42,7 +42,7 @@ export const runLogQuery = {
         const withIds = isNil(query.runIds) || query.runIds.length === 0
             ? withType
             : withType.andWhere('execution.id IN (:...runIds)', { runIds: query.runIds })
-        const predicates = conditionPredicates({ query, scopedIds })
+        const predicates = conditionPredicates({ query, scopedIds, exactMatches: exactMatches ?? EMPTY_EXACT_MATCHES })
         if (predicates.length === 0) {
             return withIds
         }
@@ -75,6 +75,10 @@ function applyType({ builder, type }: { builder: SelectQueryBuilder<Execution>, 
     }
 }
 
+function searchHashSql(parameter: string): string {
+    return `execution."searchHashes" && ARRAY[:...${parameter}]::character varying[]`
+}
+
 function groupByRetention({ projects, now }: { projects: RunLogAccessProject[], now: Date }): RetentionGroup[] {
     const byDays = projects.reduce((acc, project) => {
         const existing = acc.get(project.retentionDays) ?? []
@@ -86,7 +90,7 @@ function groupByRetention({ projects, now }: { projects: RunLogAccessProject[], 
     }))
 }
 
-function conditionPredicates({ query, scopedIds }: { query: ListRunLogsRequestQuery, scopedIds: string[] }): Predicate[] {
+function conditionPredicates({ query, scopedIds, exactMatches }: { query: ListRunLogsRequestQuery, scopedIds: string[], exactMatches: ExactMatches }): Predicate[] {
     const projectFilter = isNil(query.projectId) || query.projectId.length === 0
         ? []
         : [projectPredicate({ requested: query.projectId, scopedIds })]
@@ -102,15 +106,24 @@ function conditionPredicates({ query, scopedIds }: { query: ListRunLogsRequestQu
     const content = query.content?.trim() ?? ''
     const contentFilter = content.length === 0
         ? []
-        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where(CONTENT_SQL, { conditionContent: `%${likePatternUtils.escape(content)}%` })]
+        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where(exactMatches.content.length === 0 ? CONTENT_SQL : `(${CONTENT_SQL} OR ${searchHashSql('conditionContentHashes')})`, {
+            conditionContent: `%${likePatternUtils.escape(content)}%`,
+            ...(exactMatches.content.length === 0 ? {} : { conditionContentHashes: exactMatches.content }),
+        })]
     const businessKey = query.businessKey?.trim() ?? ''
     const businessKeyFilter = businessKey.length === 0
         ? []
-        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where('execution."businessKey" ILIKE :conditionBusinessKey', { conditionBusinessKey: `%${likePatternUtils.escape(businessKey)}%` })]
+        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where(exactMatches.businessKey.length === 0 ? BUSINESS_KEY_SQL : `(${BUSINESS_KEY_SQL} OR ${searchHashSql('conditionBusinessKeyHashes')})`, {
+            conditionBusinessKey: `%${likePatternUtils.escape(businessKey)}%`,
+            ...(exactMatches.businessKey.length === 0 ? {} : { conditionBusinessKeyHashes: exactMatches.businessKey }),
+        })]
+    const handledFilter = isNil(query.handled) || query.handled.length === 0
+        ? []
+        : [(qb: WhereExpressionBuilder): WhereExpressionBuilder => qb.where(HANDLED_SQL, { conditionHandled: query.handled })]
     const durationFilter = isNil(query.durationSeconds)
         ? []
         : [durationPredicate({ operator: query.durationOperator ?? RunLogDurationOperator.GTE, seconds: query.durationSeconds })]
-    return [...projectFilter, ...workflowFilter, ...statusFilter, ...connectorFilter, ...contentFilter, ...businessKeyFilter, ...durationFilter]
+    return [...projectFilter, ...workflowFilter, ...statusFilter, ...connectorFilter, ...contentFilter, ...businessKeyFilter, ...handledFilter, ...durationFilter]
 }
 
 function projectPredicate({ requested, scopedIds }: { requested: string[], scopedIds: string[] }): Predicate {
@@ -136,6 +149,15 @@ const CONNECTOR_SQL = `EXISTS (
     CROSS JOIN LATERAL jsonb_path_query(run_version."trigger", 'lax $.**.connectorName') AS connector_name
     WHERE run_version.id = execution."workflowVersionId" AND connector_name #>> '{}' IN (:...conditionConnectors)
 )`
+
+const HANDLED_SQL = `EXISTS (
+    SELECT 1 FROM run_reliability_event run_event
+    WHERE run_event."executionId" = execution.id AND run_event.kind IN (:...conditionHandled)
+)`
+
+const BUSINESS_KEY_SQL = 'execution."businessKey" ILIKE :conditionBusinessKey'
+
+const EMPTY_EXACT_MATCHES: ExactMatches = { content: [], businessKey: [] }
 
 const CONTENT_SQL = `(
     execution.id ILIKE :conditionContent
@@ -176,8 +198,14 @@ const CALENDAR_DAYS: Partial<Record<RunLogTimeRange, number>> = {
     [RunLogTimeRange.DAYS_30]: 30,
 }
 
+type ExactMatches = {
+    content: string[]
+    businessKey: string[]
+}
+
 type BuildParams = {
     query: ListRunLogsRequestQuery
     projects: RunLogAccessProject[]
     now: Date
+    exactMatches?: ExactMatches
 }

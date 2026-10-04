@@ -4,6 +4,7 @@ import {
     errorHandlingUtils,
     Execution,
     ExecutionStatus,
+    issueUtils,
     ListRunLogsRequestQuery,
     RerunRunLogResult,
     RerunRunLogsResponse,
@@ -28,6 +29,7 @@ import { applicationEvents, MetaInformation } from '../helper/application-events
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { Order } from '../helper/pagination/paginator'
+import { IdentifierKind, searchableHash } from '../helper/searchable-hash'
 import { issueRepo } from '../issue/issue.service'
 import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 import { dedupedEventRepo } from '../trigger/deduped-event/deduped-event.service'
@@ -40,7 +42,8 @@ import { runLogQuery } from './run-log-query'
 export const runLogService = (log: FastifyBaseLogger) => ({
     async list({ userId, tenantId, query }: ListParams): Promise<SeekPage<RunLogRow>> {
         const access = await runLogAccess(log).resolve({ userId, tenantId })
-        const builder = runLogQuery.build({ query, projects: access.projects, now: new Date() })
+        const exactMatches = await exactMatchesOf({ query })
+        const builder = runLogQuery.build({ query, projects: access.projects, now: new Date(), exactMatches })
         if (isNil(builder)) {
             return paginationHelper.createPage<RunLogRow>([], null)
         }
@@ -169,6 +172,16 @@ export const runLogService = (log: FastifyBaseLogger) => ({
     },
 })
 
+async function exactMatchesOf({ query }: { query: ListRunLogsRequestQuery }): Promise<{ content: string[], businessKey: string[] }> {
+    const content = query.content?.trim() ?? ''
+    const businessKey = query.businessKey?.trim() ?? ''
+    const [contentHashes, businessKeyHashes] = await Promise.all([
+        content.length === 0 ? [] : searchableHash.lookupHashes({ text: content }),
+        businessKey.length === 0 ? [] : searchableHash.forLookup({ kind: IdentifierKind.KEY, value: businessKey }),
+    ])
+    return { content: contentHashes, businessKey: businessKeyHashes }
+}
+
 async function enrich({ executions, access }: { executions: Execution[], access: RunLogAccess }): Promise<RunLogRow[]> {
     if (executions.length === 0) {
         return []
@@ -213,6 +226,7 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime())
     const inPlaceRetryCount = execution.inPlaceRetryCount ?? 0
     const rawDataExpired = isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId)
+    const blockedUntil = issueUtils.activeBlockedUntil({ message: execution.failedStep?.message, now: new Date() })
     const eligibilityBlockReason = runRerunUtils.blockReason({
         environment: execution.environment,
         deduped: false,
@@ -224,6 +238,7 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         canWrite: project?.canRerun ?? false,
         workflowPublished: !isNil(workflow?.publishedVersionId),
         workflowEnabled: workflow?.status === WorkflowStatus.ENABLED,
+        blockedUntil,
     })
     const runBlockReason = eligibilityBlockReason ?? (rawDataExpired ? RunRerunBlockReason.RAW_DATA_EXPIRED : null)
     const debug = execution.environment === RunEnvironment.TESTING
@@ -254,6 +269,7 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         rerunCount: (isRoot ? rerunsOfRoot.length : 0) + inPlaceRetryCount,
         latestRerunId: isRoot ? rerunsOfRoot[0]?.id ?? null : null,
         rerunBlockReason: runBlockReason,
+        blockedUntil: blockedUntil?.toISOString() ?? null,
         fromFailedStepBlockReason: runRerunUtils.fromFailedStepBlockReason({
             runBlockReason,
             hasFailedStep: !isNil(execution.failedStep),

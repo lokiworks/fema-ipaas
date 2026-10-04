@@ -8,6 +8,7 @@ import { fileRepo, fileService, getEffectiveExecutionDataRetentionDays } from '.
 import { projectRepo } from '../project/project-repo'
 import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { DEFAULT_LOG_RETENTION_DAYS, DEFAULT_RAW_RETENTION_DAYS, privacySettingsRepo } from './privacy.service'
+import { runSearchIndexService } from './run-search-index.service'
 
 export const rawStatePurgeService = (log: FastifyBaseLogger) => ({
     async run(): Promise<number> {
@@ -37,6 +38,7 @@ async function scrubExpiredRunMetadata(): Promise<number> {
     const counts = await Promise.all([...projectIdsByDays.entries()].map(async ([days, projectIds]) => {
         const boundary = dayjs().subtract(days, 'day').toISOString()
         const cleared = await executionRepo().update({ projectId: In(projectIds), created: LessThan(boundary), businessKey: Not(IsNull()) }, { businessKey: null })
+        await executionRepo().query(EXPIRED_SEARCH_HASHES_SQL, [projectIds, boundary])
         const messages = await executionRepo().query(EXPIRED_FAILED_STEP_SQL, [projectIds, boundary])
         return (cleared.affected ?? 0) + messageCount(messages)
     }))
@@ -82,6 +84,9 @@ async function purgePass({ log, retentionDays, tenantIds, exclude }: PurgePass &
             .createQueryBuilder('execution')
             .innerJoin('project', 'project', 'project.id = execution."projectId"')
             .select('execution."logsFileId"', 'logsFileId')
+            .addSelect('execution.id', 'executionId')
+            .addSelect('execution."businessKey"', 'businessKey')
+            .addSelect('cardinality(execution."searchHashes")', 'hashCount')
             .addSelect('execution."projectId"', 'projectId')
             .where('execution."displayLogsFileId" IS NOT NULL')
             .andWhere('execution."logsFileId" IS NOT NULL')
@@ -89,16 +94,21 @@ async function purgePass({ log, retentionDays, tenantIds, exclude }: PurgePass &
         const scoped = tenantIds.length === 0
             ? query
             : query.andWhere(exclude ? 'project."tenantId" NOT IN (:...tenantIds)' : 'project."tenantId" IN (:...tenantIds)', { tenantIds })
-        const rows = await scoped.orderBy('execution."finishTime"', 'ASC').limit(BATCH_SIZE).getRawMany<{ logsFileId: string | null, projectId: string }>()
-        const files = rows.flatMap((row) => (isNil(row.logsFileId) ? [] : [{ fileId: row.logsFileId, projectId: row.projectId }]))
+        const rows = await scoped.orderBy('execution."finishTime"', 'ASC').limit(BATCH_SIZE).getRawMany<PurgeRow>()
+        const files = rows.flatMap((row) => (isNil(row.logsFileId)
+            ? []
+            : [{ fileId: row.logsFileId, projectId: row.projectId, run: { id: row.executionId, businessKey: row.businessKey, needsIndex: Number(row.hashCount) === 0 } }]))
         await Promise.all(files.map((file) => purgeRawState({ log, ...file })))
         return files.length < BATCH_SIZE ? done + files.length : purgeBatch(done + files.length)
     }
     return purgeBatch(0)
 }
 
-async function purgeRawState({ log, fileId, projectId }: { log: FastifyBaseLogger, fileId: string, projectId: string }): Promise<void> {
+async function purgeRawState({ log, fileId, projectId, run }: { log: FastifyBaseLogger, fileId: string, projectId: string, run: PurgedRun }): Promise<void> {
     const { data: steps } = await tryCatch(() => executionService(log).readStateSteps({ logsFileId: fileId, projectId }))
+    if (!isNil(steps) && run.needsIndex) {
+        await tryCatch(() => runSearchIndexService(log).store({ executionId: run.id, projectId, steps, businessKey: run.businessKey }))
+    }
     const sliceIds = isNil(steps) ? [] : sliceFileIds(steps)
     await Promise.all(sliceIds.map((sliceId) => fileService(log).delete({ fileId: sliceId, projectId })))
     await fileService(log).delete({ fileId, projectId })
@@ -133,8 +143,26 @@ SET "failedStep" = jsonb_set("failedStep", '{message}', '""')
 WHERE "projectId" = ANY($1) AND created < $2 AND "failedStep" IS NOT NULL AND COALESCE("failedStep"->>'message', '') <> ''
 RETURNING id`
 
+const EXPIRED_SEARCH_HASHES_SQL = `UPDATE execution
+SET "searchHashes" = '{}'
+WHERE "projectId" = ANY($1) AND created < $2 AND cardinality("searchHashes") > 0`
+
 const BATCH_SIZE = 200
 const MAX_PER_PASS = 20_000
+
+type PurgeRow = {
+    logsFileId: string | null
+    projectId: string
+    executionId: string
+    businessKey: string | null
+    hashCount: string | number
+}
+
+type PurgedRun = {
+    id: string
+    businessKey: string | null
+    needsIndex: boolean
+}
 
 type PurgePass = {
     retentionDays: number

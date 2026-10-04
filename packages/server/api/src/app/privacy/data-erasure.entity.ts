@@ -5,6 +5,7 @@ import { EncryptedObject } from '../helper/encryption'
 
 export type DataErasureRequestSchema = DataErasureRequest & {
     valueEncrypted: EncryptedObject | null
+    valueHash: string | null
     matchedExecutionIds: string[]
     tenant?: Tenant
 }
@@ -65,6 +66,22 @@ export const DataErasureRequestEntity = new EntitySchema<DataErasureRequestSchem
             nullable: true,
         },
         valueEncrypted: {
+            type: 'jsonb',
+            nullable: true,
+        },
+        valueHash: {
+            type: String,
+            nullable: true,
+        },
+        confirmedById: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        confirmedAt: {
+            type: 'timestamp with time zone',
+            nullable: true,
+        },
+        counts: {
             type: 'jsonb',
             nullable: true,
         },

@@ -72,6 +72,8 @@ export const getMigrations = (): (new () => Migration)[] => {
 
 export const createPostgresDataSource = (): DataSource => {
         AddReleaseChanges1791000000000,
+        AddPersonalDataHashes1791204000000,
+        AddExecutionSearchHashesIndex1791204000001,
     const migrationConfig: MigrationConfig = {
         migrationsRun: true,
         migrationsTransactionMode: 'each',

@@ -85,6 +85,18 @@ export const ErasureMatchedWorkflow = z.object({
 })
 export type ErasureMatchedWorkflow = z.infer<typeof ErasureMatchedWorkflow>
 
+export const ErasureCounts = z.object({
+    displayLogFiles: z.number().int(),
+    rawStateFiles: z.number().int(),
+    logSlices: z.number().int(),
+    webhookPayloads: z.number().int(),
+    runIdentifiers: z.number().int(),
+    failureMessages: z.number().int(),
+    dedupeKeys: z.number().int(),
+    searchHashes: z.number().int(),
+})
+export type ErasureCounts = z.infer<typeof ErasureCounts>
+
 export const DataErasureRequest = z.object({
     ...BaseModelSchema,
     tenantId: z.string(),
@@ -102,8 +114,38 @@ export const DataErasureRequest = z.object({
     lastMatchAt: z.string().nullable(),
     finishedAt: z.string().nullable(),
     error: z.string().nullable(),
+    confirmedById: z.string().nullable(),
+    confirmedAt: z.string().nullable(),
+    counts: ErasureCounts.nullable(),
 })
 export type DataErasureRequest = z.infer<typeof DataErasureRequest>
+
+export const DataErasureReceiptPerson = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string(),
+})
+export type DataErasureReceiptPerson = z.infer<typeof DataErasureReceiptPerson>
+
+export const DataErasureReceipt = z.object({
+    kind: z.literal('personal-data-erasure-receipt'),
+    requestId: z.string(),
+    lookup: z.enum(ErasureSubjectKind),
+    valueHint: z.string(),
+    valueHash: z.string().nullable(),
+    valueHashAlgorithm: z.literal('HMAC-SHA256'),
+    reason: z.string(),
+    requestedBy: DataErasureReceiptPerson.nullable(),
+    requestedAt: z.string(),
+    confirmedBy: DataErasureReceiptPerson.nullable(),
+    confirmedAt: z.string().nullable(),
+    finishedAt: z.string().nullable(),
+    status: z.enum(ErasureStatus),
+    matchedRuns: z.number().int(),
+    counts: ErasureCounts.nullable(),
+    action: z.string(),
+})
+export type DataErasureReceipt = z.infer<typeof DataErasureReceipt>
 
 export const CreateDataErasureRequestBody = z.object({
     kind: z.enum(ErasureSubjectKind),
@@ -116,6 +158,55 @@ export const CreateDataErasureRequestBody = z.object({
     }
 })
 export type CreateDataErasureRequestBody = z.infer<typeof CreateDataErasureRequestBody>
+
+export const PrivacySensitiveStep = z.object({
+    name: z.string(),
+    displayName: z.string(),
+})
+export type PrivacySensitiveStep = z.infer<typeof PrivacySensitiveStep>
+
+export const PrivacySensitiveWorkflow = z.object({
+    workflowId: z.string(),
+    displayName: z.string(),
+    projectId: z.string(),
+    projectDisplayName: z.string(),
+    steps: z.array(PrivacySensitiveStep),
+})
+export type PrivacySensitiveWorkflow = z.infer<typeof PrivacySensitiveWorkflow>
+
+export const PrivacyRawViewer = z.object({
+    userId: z.string(),
+    name: z.string(),
+    email: z.string(),
+    role: z.enum(RawViewRole),
+})
+export type PrivacyRawViewer = z.infer<typeof PrivacyRawViewer>
+
+export const PrivacyPurgeEstimate = z.object({
+    nextRunAt: z.string(),
+    rawStateCutoff: z.string(),
+    logCutoff: z.string(),
+    rawStates: z.number().int(),
+    webhookPayloads: z.number().int(),
+    runIdentifiers: z.number().int(),
+    logFiles: z.number().int(),
+})
+export type PrivacyPurgeEstimate = z.infer<typeof PrivacyPurgeEstimate>
+
+export const PrivacyOverview = z.object({
+    sensitiveWorkflows: z.array(PrivacySensitiveWorkflow),
+    rawViewersRecorded: z.boolean(),
+    rawViewers: z.array(PrivacyRawViewer),
+    purge: PrivacyPurgeEstimate,
+})
+export type PrivacyOverview = z.infer<typeof PrivacyOverview>
+
+export const ERASURE_CONFIRM_WORDS = ['DELETE', '删除'] as const
+
+export const ConfirmDataErasureRequestBody = z.object({
+    confirmation: z.string().trim().min(1, 'erasureConfirmationRequired').max(100, 'erasureValueTooLong'),
+})
+export type ConfirmDataErasureRequestBody = z.infer<typeof ConfirmDataErasureRequestBody>
 
 export const UpdateProjectRetentionRequestBody = z.object({
     logRetentionDays: z.number().int().min(1).nullable(),

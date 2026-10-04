@@ -1,9 +1,15 @@
 import { ApplicationError, ErrorCode, generateId, isNil, TenantId, tryCatch, UserId } from '@fema-ipaas/core-utils'
 import {
+    ConfirmDataErasureRequestBody,
     CreateDataErasureRequestBody,
+    DataErasureReceipt,
+    DataErasureReceiptPerson,
     DataErasureRequest,
+    ERASURE_CONFIRM_WORDS,
+    ErasureCounts,
     ErasureMatchedWorkflow,
     ErasureStatus,
+    ErasureSubjectKind,
     FileCompression,
     FileType,
     MASKED_PLACEHOLDER,
@@ -19,11 +25,13 @@ import { fileCompressor } from '../file/file-compressor'
 import { fileRepo, fileService } from '../file/file.service'
 import { encryptUtils } from '../helper/encryption'
 import { likePatternUtils } from '../helper/like-pattern'
+import { IdentifierKind, searchableHash } from '../helper/searchable-hash'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
 import { notificationService } from '../notification/notification.service'
 import { projectRepo } from '../project/project-repo'
 import { dedupedEventRepo } from '../trigger/deduped-event/deduped-event.service'
+import { userService } from '../user/user-service'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { DataErasureRequestEntity, DataErasureRequestSchema } from './data-erasure.entity'
@@ -61,17 +69,24 @@ export const dataErasureService = (log: FastifyBaseLogger) => ({
             finishedAt: null,
             error: null,
             valueEncrypted: await encryptUtils.encryptString(value),
+            valueHash: await searchableHash.forStorage({ kind: identifierKindOf(request.kind), value }),
+            confirmedById: null,
+            confirmedAt: null,
+            counts: null,
         })
         await enqueue({ log, requestId: id, phase: ErasureStatus.SCANNING })
         return toModel(await findOrThrow({ id, tenantId }))
     },
 
-    async confirm({ id, tenantId }: RequestRef): Promise<DataErasureRequest> {
+    async confirm({ id, tenantId, userId, request: body }: ConfirmParams): Promise<DataErasureRequest> {
         const request = await findOrThrow({ id, tenantId })
         if (request.status !== ErasureStatus.AWAITING_CONFIRMATION) {
             invalid('Only a scanned request can be confirmed')
         }
-        await dataErasureRepo().update({ id, tenantId }, { status: ErasureStatus.ERASING })
+        if (isNil(request.valueEncrypted) || !personalDataEraser.confirmationMatches({ kind: request.kind, confirmation: body.confirmation, value: await encryptUtils.decryptString(request.valueEncrypted), words: ERASURE_CONFIRM_WORDS })) {
+            invalid('The confirmation does not match the person to delete')
+        }
+        await dataErasureRepo().update({ id, tenantId }, { status: ErasureStatus.ERASING, confirmedById: userId, confirmedAt: dayjs().toISOString() })
         await enqueue({ log, requestId: id, phase: ErasureStatus.ERASING })
         return toModel(await findOrThrow({ id, tenantId }))
     },
@@ -83,6 +98,35 @@ export const dataErasureService = (log: FastifyBaseLogger) => ({
         }
         await dataErasureRepo().update({ id, tenantId }, { status: ErasureStatus.CANCELED, valueEncrypted: null, matchedExecutionIds: [], finishedAt: dayjs().toISOString() })
         return toModel(await findOrThrow({ id, tenantId }))
+    },
+
+    async receipt({ id, tenantId }: RequestRef): Promise<DataErasureReceipt> {
+        const request = await findOrThrow({ id, tenantId })
+        if (request.status !== ErasureStatus.DONE) {
+            invalid('A receipt is only available once the request is done')
+        }
+        const [requestedBy, confirmedBy] = await Promise.all([
+            personOf({ log, userId: request.requestedById }),
+            isNil(request.confirmedById) ? null : personOf({ log, userId: request.confirmedById }),
+        ])
+        return {
+            kind: 'personal-data-erasure-receipt',
+            requestId: request.id,
+            lookup: request.kind,
+            valueHint: request.valueHint,
+            valueHash: request.valueHash,
+            valueHashAlgorithm: 'HMAC-SHA256',
+            reason: request.reason,
+            requestedBy,
+            requestedAt: dayjs(request.created).toISOString(),
+            confirmedBy,
+            confirmedAt: isNil(request.confirmedAt) ? null : dayjs(request.confirmedAt).toISOString(),
+            finishedAt: isNil(request.finishedAt) ? null : dayjs(request.finishedAt).toISOString(),
+            status: request.status,
+            matchedRuns: request.matchedRuns,
+            counts: request.counts,
+            action: RECEIPT_ACTION,
+        }
     },
 
     async process({ requestId }: { requestId: string }): Promise<void> {
@@ -152,7 +196,8 @@ async function scan({ log, request, value, needle }: JobParams): Promise<void> {
     }
     const { scanned, found: scannedHits } = await scanPage({ offset: 0, found: [] })
     const identified = await findByRunIdentifier({ projectIds, value, known: new Set(scannedHits.map((hit) => hit.id)) })
-    const found = [...scannedHits, ...identified]
+    const hashed = await findBySearchHash({ projectIds, kind: request.kind, value, known: new Set([...scannedHits, ...identified].map((hit) => hit.id)) })
+    const found = [...scannedHits, ...identified, ...hashed]
     const matchedWorkflows = await summarizeWorkflows({ log, hits: found })
     const sortedDates = found.map((hit) => hit.created).sort()
     const done = found.length === 0
@@ -164,7 +209,7 @@ async function scan({ log, request, value, needle }: JobParams): Promise<void> {
         matchedExecutionIds: found.map((hit) => hit.id),
         firstMatchAt: sortedDates[0] ?? null,
         lastMatchAt: sortedDates[sortedDates.length - 1] ?? null,
-        ...(done ? { valueEncrypted: null, finishedAt: dayjs().toISOString() } : {}),
+        ...(done ? { valueEncrypted: null, finishedAt: dayjs().toISOString(), counts: EMPTY_COUNTS } : {}),
     })
 }
 
@@ -174,20 +219,31 @@ async function erase({ log, request, value, needle }: JobParams): Promise<void> 
         select: ['id', 'projectId', 'logsFileId', 'displayLogsFileId'],
     })
     const limit = pLimit(READ_CONCURRENCY)
-    const results = await Promise.all(executions.map((execution) => limit(async () => {
+    const results = await Promise.all(executions.map((execution) => limit(async (): Promise<RunErasure> => {
         const hitSliceFileIds = await deleteMatchingSlices({ log, execution, needle })
-        const erased = await Promise.all([execution.displayLogsFileId, execution.logsFileId]
-            .filter((fileId): fileId is string => !isNil(fileId))
-            .map((fileId) => eraseFile({ log, fileId, projectId: execution.projectId, needle, hitSliceFileIds })))
+        const eraseOne = async (fileId: string | null | undefined): Promise<boolean> => isNil(fileId) ? false : eraseFile({ log, fileId, projectId: execution.projectId, needle, hitSliceFileIds })
+        const [display, raw] = await Promise.all([eraseOne(execution.displayLogsFileId), eraseOne(execution.logsFileId)])
         const scrubbed = await scrubRunIdentifiers({ executionId: execution.id, projectId: execution.projectId, needle })
-        return erased.some(Boolean) || scrubbed ? 1 : 0
+        return { display, raw, slices: hitSliceFileIds.size, businessKey: scrubbed.businessKey, message: scrubbed.message }
     })))
     const projectIds = await tenantProjectIds({ tenantId: request.tenantId })
-    await deleteMatchingWebhookPayloads({ log, projectIds, needle })
-    await maskDedupeKeys({ projectIds, value })
+    const webhookPayloads = await deleteMatchingWebhookPayloads({ log, projectIds, needle })
+    const dedupeKeys = await maskDedupeKeys({ projectIds, value })
+    const searchHashes = await clearSearchHashes({ projectIds, kind: request.kind, value })
+    const counts: ErasureCounts = {
+        displayLogFiles: results.filter((result) => result.display).length,
+        rawStateFiles: results.filter((result) => result.raw).length,
+        logSlices: results.reduce((sum, result) => sum + result.slices, 0),
+        webhookPayloads,
+        runIdentifiers: results.filter((result) => result.businessKey).length,
+        failureMessages: results.filter((result) => result.message).length,
+        dedupeKeys,
+        searchHashes,
+    }
     await dataErasureRepo().update({ id: request.id }, {
         status: ErasureStatus.DONE,
-        erasedRuns: results.reduce<number>((sum, count) => sum + count, 0),
+        erasedRuns: results.filter((result) => result.display || result.raw || result.businessKey || result.message).length,
+        counts,
         valueEncrypted: null,
         matchedExecutionIds: [],
         finishedAt: dayjs().toISOString(),
@@ -252,10 +308,10 @@ async function findByRunIdentifier({ projectIds, value, known }: { projectIds: s
         .map((row) => ({ id: row.id, workflowId: row.workflowId, projectId: row.projectId, created: String(row.created) }))
 }
 
-async function scrubRunIdentifiers({ executionId, projectId, needle }: { executionId: string, projectId: string, needle: RegExp }): Promise<boolean> {
+async function scrubRunIdentifiers({ executionId, projectId, needle }: { executionId: string, projectId: string, needle: RegExp }): Promise<{ businessKey: boolean, message: boolean }> {
     const execution = await executionRepo().findOne({ where: { id: executionId, projectId }, select: ['id', 'businessKey', 'failedStep'] })
     if (isNil(execution)) {
-        return false
+        return { businessKey: false, message: false }
     }
     const businessKeyHit = !isNil(execution.businessKey) && personalDataEraser.contains({ text: execution.businessKey, needle })
     const message = execution.failedStep?.message
@@ -266,14 +322,41 @@ async function scrubRunIdentifiers({ executionId, projectId, needle }: { executi
             ...(messageHit && !isNil(execution.failedStep) ? { failedStep: { ...execution.failedStep, message: personalDataEraser.replaceAll({ text: message, needle }) } } : {}),
         })
     }
-    return businessKeyHit || messageHit
+    return { businessKey: businessKeyHit, message: messageHit }
 }
 
-async function maskDedupeKeys({ projectIds, value }: { projectIds: string[], value: string }): Promise<void> {
+async function maskDedupeKeys({ projectIds, value }: { projectIds: string[], value: string }): Promise<number> {
     if (projectIds.length === 0) {
-        return
+        return 0
     }
-    await dedupedEventRepo().update({ projectId: In(projectIds), keyPreview: ILike(`%${likePatternUtils.escape(value)}%`) }, { keyPreview: MASKED_PLACEHOLDER })
+    const result = await dedupedEventRepo().update({ projectId: In(projectIds), keyPreview: ILike(`%${likePatternUtils.escape(value)}%`) }, { keyPreview: MASKED_PLACEHOLDER })
+    return result.affected ?? 0
+}
+
+async function clearSearchHashes({ projectIds, kind, value }: { projectIds: string[], kind: ErasureSubjectKind, value: string }): Promise<number> {
+    const hashes = await searchableHash.forLookup({ kind: identifierKindOf(kind), value })
+    if (projectIds.length === 0 || hashes.length === 0) {
+        return 0
+    }
+    const rows: unknown = await executionRepo().query(CLEAR_SEARCH_HASHES_SQL, [projectIds, hashes])
+    return Array.isArray(rows) ? rows.length : 0
+}
+
+async function findBySearchHash({ projectIds, kind, value, known }: { projectIds: string[], kind: ErasureSubjectKind, value: string, known: ReadonlySet<string> }): Promise<ScanHit[]> {
+    const hashes = await searchableHash.forLookup({ kind: identifierKindOf(kind), value })
+    if (projectIds.length === 0 || hashes.length === 0) {
+        return []
+    }
+    const rows = await executionRepo()
+        .createQueryBuilder('execution')
+        .select(['execution.id', 'execution.projectId', 'execution.workflowId', 'execution.created'])
+        .where('execution."projectId" IN (:...projectIds)', { projectIds })
+        .andWhere('execution."searchHashes" && ARRAY[:...hashes]::character varying[]', { hashes })
+        .take(MAX_IDENTIFIER_MATCHES)
+        .getMany()
+    return rows
+        .filter((row) => !known.has(row.id))
+        .map((row) => ({ id: row.id, workflowId: row.workflowId, projectId: row.projectId, created: String(row.created) }))
 }
 
 async function tenantProjectIds({ tenantId }: { tenantId: TenantId }): Promise<string[]> {
@@ -281,20 +364,23 @@ async function tenantProjectIds({ tenantId }: { tenantId: TenantId }): Promise<s
     return projects.map((project) => project.id)
 }
 
-async function deleteMatchingWebhookPayloads({ log, projectIds, needle }: { log: FastifyBaseLogger, projectIds: string[], needle: RegExp }): Promise<void> {
+async function deleteMatchingWebhookPayloads({ log, projectIds, needle }: { log: FastifyBaseLogger, projectIds: string[], needle: RegExp }): Promise<number> {
     if (projectIds.length === 0) {
-        return
+        return 0
     }
     const files = await fileRepo().find({ select: ['id', 'projectId'], where: { projectId: In(projectIds), type: FileType.WEBHOOK_PAYLOAD }, take: MAX_PAYLOAD_FILES })
-    await Promise.all(files.map(async (file) => {
+    const deleted = await Promise.all(files.map(async (file) => {
         if (isNil(file.projectId)) {
-            return
+            return 0
         }
         const text = await readText({ log, fileId: file.id, projectId: file.projectId, type: FileType.WEBHOOK_PAYLOAD })
-        if (personalDataEraser.contains({ text, needle })) {
-            await fileService(log).delete({ fileId: file.id, projectId: file.projectId })
+        if (!personalDataEraser.contains({ text, needle })) {
+            return 0
         }
+        await fileService(log).delete({ fileId: file.id, projectId: file.projectId })
+        return 1
     }))
+    return deleted.reduce<number>((sum, count) => sum + count, 0)
 }
 
 async function readSliceTexts({ log, execution, texts }: { log: FastifyBaseLogger, execution: ExecutionFiles, texts: string[] }): Promise<string[]> {
@@ -373,11 +459,47 @@ function toModel(request: DataErasureRequestSchema): DataErasureRequest {
         lastMatchAt: request.lastMatchAt,
         finishedAt: request.finishedAt,
         error: request.error,
+        confirmedById: request.confirmedById,
+        confirmedAt: request.confirmedAt,
+        counts: request.counts,
+    }
+}
+
+async function personOf({ log, userId }: { log: FastifyBaseLogger, userId: string }): Promise<DataErasureReceiptPerson | null> {
+    const { data } = await tryCatch(() => userService(log).getMetaInformation({ id: userId }))
+    return isNil(data) ? null : { id: data.id, name: `${data.firstName} ${data.lastName}`.trim(), email: data.email }
+}
+
+function identifierKindOf(kind: ErasureSubjectKind): IdentifierKind {
+    switch (kind) {
+        case ErasureSubjectKind.PHONE:
+            return IdentifierKind.PHONE
+        case ErasureSubjectKind.EMAIL:
+            return IdentifierKind.EMAIL
+        case ErasureSubjectKind.EMPLOYEE_ID:
+            return IdentifierKind.KEY
     }
 }
 
 function invalid(message: string): never {
     throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message } })
+}
+
+const RECEIPT_ACTION = 'Cleared inputs, outputs and error text that contain the value; run status, duration and error codes were kept'
+const CLEAR_SEARCH_HASHES_SQL = `UPDATE execution
+SET "searchHashes" = ARRAY(SELECT hash FROM unnest("searchHashes") AS hash WHERE hash <> ALL($2))
+WHERE "projectId" = ANY($1) AND "searchHashes" && $2::character varying[]
+RETURNING id`
+
+const EMPTY_COUNTS: ErasureCounts = {
+    displayLogFiles: 0,
+    rawStateFiles: 0,
+    logSlices: 0,
+    webhookPayloads: 0,
+    runIdentifiers: 0,
+    failureMessages: 0,
+    dedupeKeys: 0,
+    searchHashes: 0,
 }
 
 const LIST_LIMIT = 50
@@ -395,6 +517,19 @@ const ExecutionLogShape = z.looseObject({
 })
 
 type ExecutionLog = z.infer<typeof ExecutionLogShape>
+
+type ConfirmParams = RequestRef & {
+    userId: UserId
+    request: ConfirmDataErasureRequestBody
+}
+
+type RunErasure = {
+    display: boolean
+    raw: boolean
+    slices: number
+    businessKey: boolean
+    message: boolean
+}
 
 type RequestRef = {
     id: string

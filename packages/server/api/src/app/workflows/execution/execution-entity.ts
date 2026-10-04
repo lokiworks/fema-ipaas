@@ -18,6 +18,7 @@ type ExecutionSchema = Execution & {
     workflowVersion: WorkflowVersion
     logsFile: File
     triggeredByUser?: User
+    searchHashes: string[]
     /** @deprecated kept for backwards compatibility, use waitpoint table instead, remove in 0.83.0 */
     pauseMetadata?: unknown
 }
@@ -109,6 +110,12 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
             type: String,
             nullable: true,
         },
+        searchHashes: {
+            type: String,
+            array: true,
+            nullable: false,
+            default: () => '\'{}\'',
+        },
         // @deprecated — kept for backwards compatibility, use waitpoint table instead
         pauseMetadata: {
             type: 'jsonb',
@@ -172,6 +179,11 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
         {
             name: 'idx_execution_project_business_key',
             columns: ['projectId', 'businessKey'],
+        },
+        {
+            name: 'idx_execution_search_hashes',
+            columns: ['searchHashes'],
+            synchronize: false,
         },
         {
             name: 'idx_execution_verification_candidates',

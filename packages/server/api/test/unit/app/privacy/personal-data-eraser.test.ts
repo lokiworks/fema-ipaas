@@ -1,4 +1,4 @@
-import { ErasureSubjectKind, StepOutputType } from '@fema-ipaas/shared'
+import { ERASURE_CONFIRM_WORDS, ErasureSubjectKind, StepOutputType } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { personalDataEraser } from '../../../../src/app/privacy/personal-data-eraser'
 
@@ -61,5 +61,29 @@ describe('personalDataEraser', () => {
         expect(personalDataEraser.contains({ text: '{"jobNumber":"e1001"}', needle })).toBe(true)
         expect(personalDataEraser.contains({ text: '{"jobNumber":"E10010"}', needle })).toBe(false)
         expect(personalDataEraser.contains({ text: 'XE1001', needle })).toBe(false)
+    })
+
+    describe('confirmationMatches', () => {
+        const matches = ({ kind, confirmation, value }: { kind: ErasureSubjectKind, confirmation: string, value: string }): boolean => personalDataEraser.confirmationMatches({ kind, confirmation, value, words: ERASURE_CONFIRM_WORDS })
+
+        it('accepts the fixed confirmation words in either language, in any case', () => {
+            expect(matches({ kind: ErasureSubjectKind.PHONE, confirmation: 'delete', value: '13812345678' })).toBe(true)
+            expect(matches({ kind: ErasureSubjectKind.EMAIL, confirmation: ' DELETE ', value: 'a@b.cn' })).toBe(true)
+            expect(matches({ kind: ErasureSubjectKind.EMPLOYEE_ID, confirmation: '删除', value: 'e1001' })).toBe(true)
+        })
+
+        it('accepts the full identifier of the request however it is written', () => {
+            expect(matches({ kind: ErasureSubjectKind.EMPLOYEE_ID, confirmation: 'E1001', value: 'e1001' })).toBe(true)
+            expect(matches({ kind: ErasureSubjectKind.EMAIL, confirmation: 'Wang.Lei@Example.com', value: 'wang.lei@example.com' })).toBe(true)
+            expect(matches({ kind: ErasureSubjectKind.PHONE, confirmation: '138 1234 5678', value: '13812345678' })).toBe(true)
+            expect(matches({ kind: ErasureSubjectKind.PHONE, confirmation: '+86 138-1234-5678', value: '13812345678' })).toBe(true)
+        })
+
+        it('rejects another person, a partial value and text that is neither', () => {
+            expect(matches({ kind: ErasureSubjectKind.PHONE, confirmation: '13800000000', value: '13812345678' })).toBe(false)
+            expect(matches({ kind: ErasureSubjectKind.PHONE, confirmation: '5678', value: '13812345678' })).toBe(false)
+            expect(matches({ kind: ErasureSubjectKind.EMPLOYEE_ID, confirmation: 'E100', value: 'e1001' })).toBe(false)
+            expect(matches({ kind: ErasureSubjectKind.EMAIL, confirmation: '确认', value: 'a@b.cn' })).toBe(false)
+        })
     })
 })

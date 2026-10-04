@@ -10,6 +10,7 @@ export const personalDataEraser = {
     eraseSteps,
     replaceAll,
     sliceRefs,
+    confirmationMatches,
 }
 
 function normalize({ kind, value }: { kind: ErasureSubjectKind, value: string }): string {
@@ -28,6 +29,16 @@ function hintOf({ kind, value }: { kind: ErasureSubjectKind, value: string }): s
         case ErasureSubjectKind.EMPLOYEE_ID:
             return value.length <= 4 ? `${value.slice(0, 1)}***` : `${value.slice(0, 2)}${'*'.repeat(value.length - 4)}${value.slice(-2)}`
     }
+}
+
+function confirmationMatches({ kind, confirmation, value, words }: { kind: ErasureSubjectKind, confirmation: string, value: string, words: readonly string[] }): boolean {
+    const typed = confirmation.trim()
+    if (words.some((word) => word.toLowerCase() === typed.toLowerCase())) {
+        return true
+    }
+    return kind === ErasureSubjectKind.PHONE
+        ? typed.replace(/\D/g, '').replace(/^(?:00)?86(?=1\d{10}$)/, '') === value.replace(/\D/g, '')
+        : typed.toLowerCase() === value.toLowerCase()
 }
 
 function maskName(name: string | undefined): string | null {

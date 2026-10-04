@@ -155,6 +155,8 @@ GET /v1/notifications | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/notifications/unread-count | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/privacy-settings | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/privacy-settings/erasures | TENANT_ADMIN | USER | - | -
+GET /v1/privacy-settings/erasures/:id/receipt | TENANT_ADMIN | USER | - | -
+GET /v1/privacy-settings/overview | TENANT_ADMIN | USER | - | -
 GET /v1/project-members | PROJECT | USER,SERVICE | MEMBER:READ | QUERY:projectId
 GET /v1/project-members/me | PROJECT | USER | - | QUERY:projectId
 GET /v1/project-workspace/stats | PROJECT | USER | WORKFLOW:READ | QUERY:projectId

@@ -229,6 +229,17 @@ export const identityTenantCases: MatrixCase[] = [
         prepare: async () => ({ request: { method: 'GET', url: '/v1/privacy-settings' } }),
     },
     tenantAdminRead('GET /v1/privacy-settings/erasures', '/v1/privacy-settings/erasures'),
+    tenantAdminRead('GET /v1/privacy-settings/overview', '/v1/privacy-settings/overview'),
+    {
+        id: 'GET /v1/privacy-settings/erasures/:id/receipt',
+        access: { type: 'tenantAdmin' },
+        expectOk: [200, 400, 409],
+        prepare: async ({ world, scope }) => {
+            const created = await world.send({ identity: identitySeed.tenantAdminIdentityOf({ scope }), request: { method: 'POST', url: '/v1/privacy-settings/erasures', body: { kind: ErasureSubjectKind.EMAIL, value: `${generateId()}@example.com`, reason: 'sec test' } } })
+            const id = (created.json() as { id: string }).id
+            return { request: { method: 'GET', url: `/v1/privacy-settings/erasures/${id}/receipt` } }
+        },
+    },
     {
         id: 'POST /v1/privacy-settings',
         access: { type: 'tenantAdminSelf' },
@@ -252,7 +263,7 @@ export const identityTenantCases: MatrixCase[] = [
         prepare: async ({ world, scope }) => {
             const created = await world.send({ identity: identitySeed.tenantAdminIdentityOf({ scope }), request: { method: 'POST', url: '/v1/privacy-settings/erasures', body: { kind: ErasureSubjectKind.EMAIL, value: `${generateId()}@example.com`, reason: 'sec test' } } })
             const id = (created.json() as { id: string }).id
-            return { request: { method: 'POST', url: `/v1/privacy-settings/erasures/${id}/confirm` } }
+            return { request: { method: 'POST', url: `/v1/privacy-settings/erasures/${id}/confirm`, body: { confirmation: 'DELETE' } } }
         },
     },
     {

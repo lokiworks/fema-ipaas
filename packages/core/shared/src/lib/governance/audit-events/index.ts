@@ -538,7 +538,7 @@ export const PersonalDataErasureEvent = z.object({
             valueHint: z.string(),
             reason: z.string(),
         }),
-        phase: z.enum(['REQUESTED', 'CONFIRMED', 'CANCELED']),
+        phase: z.enum(['REQUESTED', 'CONFIRMED', 'CANCELED', 'RECEIPT_DOWNLOADED']),
         matchedRuns: z.number(),
     }),
 })

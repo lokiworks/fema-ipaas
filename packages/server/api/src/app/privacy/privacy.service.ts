@@ -141,6 +141,8 @@ function roleOf({ ownerId, user }: { ownerId: UserId, user: Pick<User, 'id' | 't
     return user.tenantRole === TenantRole.ADMIN ? RawViewRole.ADMIN : RawViewRole.MEMBER
 }
 
+export const rawViewRoleUtils = { roleOf }
+
 function defaults({ tenantId }: TenantScope): PrivacySettings {
     const now = new Date(0).toISOString()
     return {

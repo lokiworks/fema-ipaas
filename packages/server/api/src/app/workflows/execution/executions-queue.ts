@@ -1,4 +1,4 @@
-import { generateId, isNil, sanitizeObjectForPostgresql, spreadIfDefined } from '@fema-ipaas/core-utils'
+import { generateId, isNil, sanitizeObjectForPostgresql, spreadIfDefined, tryCatch } from '@fema-ipaas/core-utils'
 import { Execution, ExecutionStatus, FailedStep, isExecutionStateTerminal, RunTimeline } from '@fema-ipaas/shared'
 import { Queue, Worker } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
@@ -8,6 +8,7 @@ import { exceptionHandler } from '../../helper/exception-handler'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { privacyService } from '../../privacy/privacy.service'
+import { runSearchIndexService } from '../../privacy/run-search-index.service'
 import { projectService } from '../../project/project-service'
 import { QueueName, redisMetadataKey, RunsMetadataJobData, RunsMetadataQueueConfig, runsMetadataQueueFactory, RunsMetadataUpsertData } from '../../workers/job'
 import { workflowService } from '../workflow/workflow.service'
@@ -118,6 +119,10 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                             if (!isNil(runMetadata.finishTime)) {
                                 const tenantId = await projectService(log).getTenantId(savedExecution.projectId)
                                 await executionSideEffects(log).onFinish({ execution: savedExecution, tenantId })
+                                const { error: indexError } = await tryCatch(() => runSearchIndexService(log).indexFromRawState({ execution: savedExecution }))
+                                if (indexError) {
+                                    log.warn({ error: indexError, execution: { id: savedExecution.id } }, '[runsMetadataQueue#worker] Could not index the run for exact search')
+                                }
                             }
 
                             if (savedExecution.status === ExecutionStatus.PAUSED) {

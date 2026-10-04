@@ -371,13 +371,16 @@ export const selectGenericFormComponentForProperty = ({
               enableMarkdown={enableMarkdownForInputWithMention}
             ></TextInputWithMentions>
           ) : (
-            <SecretInput
-              ref={field.ref}
-              value={field.value}
-              onChange={field.onChange}
-              disabled={disabled}
-              type="text"
-            ></SecretInput>
+            <FormControl>
+              <SecretInput
+                ref={field.ref}
+                value={field.value}
+                onChange={field.onChange}
+                disabled={disabled}
+                aria-required={property.required}
+                type="text"
+              ></SecretInput>
+            </FormControl>
           )}
         </AutoFormFieldWrapper>
       );
@@ -430,18 +433,23 @@ export const selectGenericFormComponentForProperty = ({
               enableMarkdown={enableMarkdownForInputWithMention}
             ></TextInputWithMentions>
           ) : (
-            <SecretInput
-              ref={field.ref}
-              value={field.value}
-              onChange={field.onChange}
-              disabled={disabled}
-              placeholder={
-                'placeholder' in property ? property.placeholder : undefined
-              }
-              type={
-                property.type === PropertyType.SECRET_TEXT ? 'password' : 'text'
-              }
-            ></SecretInput>
+            <FormControl>
+              <SecretInput
+                ref={field.ref}
+                value={field.value}
+                onChange={field.onChange}
+                disabled={disabled}
+                aria-required={property.required}
+                placeholder={
+                  'placeholder' in property ? property.placeholder : undefined
+                }
+                type={
+                  property.type === PropertyType.SECRET_TEXT
+                    ? 'password'
+                    : 'text'
+                }
+              ></SecretInput>
+            </FormControl>
           )}
         </AutoFormFieldWrapper>
       );

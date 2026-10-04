@@ -245,7 +245,9 @@ function CreateOrEditConnectionSection({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>{t('External ID')}</FormLabel>
-                          <Input {...field} />
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}

@@ -437,6 +437,13 @@ export const executionService = (log: FastifyBaseLogger) => ({
         const stateFile = await readLogsFile(log, execution.logsFileId, execution.projectId)
         return stateFile?.executionState.steps ?? null
     },
+    async getDisplayStepsOrNull({ execution }: { execution: Execution }): Promise<Record<string, StepOutput> | null> {
+        if (isNil(execution.displayLogsFileId)) {
+            return null
+        }
+        const displayFile = await readLogsFile(log, execution.displayLogsFileId, execution.projectId)
+        return displayFile?.executionState.steps ?? null
+    },
     async countByStatus(params: CountByStatusParams): Promise<ExecutionCountByStatus[]> {
         let query = executionRepo().createQueryBuilder('execution')
             .select('execution.status', 'status')

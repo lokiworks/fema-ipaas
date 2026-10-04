@@ -1,8 +1,10 @@
 import { ApplicationError, ErrorCode, generateId, isNil, MappingTableData, ProjectId, UserId } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import {
+    MAPPING_TABLE_MAX_ROWS,
     MappingTable,
     MappingTableReference,
+    MappingTableRow,
     MappingTableSummary,
     UpsertMappingTableRequestBody,
     workflowStructureUtil,
@@ -44,6 +46,17 @@ export const mappingTableService = (log: FastifyBaseLogger) => ({
         await assertNameAvailable({ projectId: request.projectId, name: request.name, excludeId: id })
         await mappingTableRepo().update({ id, projectId: request.projectId }, { ...fieldsOf(request), updatedById: actorId })
         return this.getOneOrThrow({ id, projectId: request.projectId })
+    },
+
+    async addRows({ id, projectId, rows, actorId }: { id: string, projectId: ProjectId, rows: MappingTableRow[], actorId: UserId }): Promise<MappingTable> {
+        const table = await this.getOneOrThrow({ id, projectId })
+        const known = new Set(table.rows.map((row) => row.k))
+        const fresh = rows.map((row) => ({ k: row.k.trim(), v: row.v })).filter((row, index, all) => !known.has(row.k) && all.findIndex((other) => other.k === row.k) === index)
+        if (table.rows.length + fresh.length > MAPPING_TABLE_MAX_ROWS) {
+            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: `Mapping table can hold at most ${MAPPING_TABLE_MAX_ROWS} rows` } })
+        }
+        await mappingTableRepo().update({ id, projectId }, { rows: [...table.rows, ...fresh], updatedById: actorId })
+        return this.getOneOrThrow({ id, projectId })
     },
 
     async delete({ id, projectId }: TableRef): Promise<void> {

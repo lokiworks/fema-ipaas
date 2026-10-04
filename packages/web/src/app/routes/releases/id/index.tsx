@@ -1,9 +1,18 @@
 import {
+  ReleaseCheckLevel,
   WorkflowReleaseDetail,
   WorkflowReleaseStatus,
+  workflowStructureUtil,
 } from '@fema-ipaas/shared';
+import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
-import { ArrowLeft } from 'lucide-react';
+import {
+  ArrowLeft,
+  CircleAlert,
+  CircleCheck,
+  CircleX,
+  Info,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -23,13 +32,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { executionUtils } from '@/features/executions';
 import { issueMembersHooks } from '@/features/issues';
 import {
-  ReleaseChecks,
   releasesHooks,
   releaseUiUtils,
-  StepDiff,
+  StepChangeKind,
+  versionDiff,
 } from '@/features/releases';
+import { workflowsApi } from '@/features/workflows';
 import { authenticationSession } from '@/lib/authentication-session';
 import { notFoundError } from '@/lib/not-found-error';
+import { cn } from '@/lib/utils';
 
 function ReleaseDetailPage() {
   const { releaseId } = useParams<{ releaseId: string }>();
@@ -110,11 +121,7 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <p className="text-sm whitespace-pre-line">{release.note}</p>
-              <StepDiff
-                workflowId={release.workflowId}
-                versionId={release.workflowVersionId}
-                previousVersionId={release.previousVersionId}
-              />
+              <StepDiff release={release} />
             </CardContent>
           </Card>
           <Card>
@@ -122,7 +129,17 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
               <CardTitle>{t('Pre-release checks')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ReleaseChecks checks={release.checks} />
+              <ul className="flex flex-col gap-2">
+                {release.checks.map((check, index) => (
+                  <li
+                    key={`${check.code}-${index}`}
+                    className="flex items-start gap-2 text-sm"
+                  >
+                    <CheckIcon level={check.level} />
+                    <span>{releaseUiUtils.checkText(check)}</span>
+                  </li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
           <Card>
@@ -172,7 +189,7 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
             <CardContent className="flex flex-col gap-3">
               {release.comment && (
                 <p className="text-sm rounded-md bg-muted/50 p-3 whitespace-pre-line">
-                  {releaseUiUtils.commentText(release.comment)}
+                  {release.comment}
                 </p>
               )}
               {pending && isApprover && (
@@ -234,5 +251,130 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
     </div>
   );
 }
+
+function StepDiff({ release }: { release: WorkflowReleaseDetail }) {
+  const { data: target } = useQuery({
+    queryKey: [
+      'release-version',
+      release.workflowId,
+      release.workflowVersionId,
+    ],
+    queryFn: () =>
+      workflowsApi.get(release.workflowId, {
+        versionId: release.workflowVersionId,
+      }),
+  });
+  const previousVersionId = release.previousVersionId;
+  const { data: previous, isLoading: loadingPrevious } = useQuery({
+    queryKey: ['release-version', release.workflowId, previousVersionId],
+    queryFn: () =>
+      workflowsApi.get(release.workflowId, {
+        versionId: previousVersionId ?? undefined,
+      }),
+    enabled: !!previousVersionId,
+  });
+  if (!target || (previousVersionId && loadingPrevious)) {
+    return <Skeleton className="h-16 w-full" />;
+  }
+  const changes = versionDiff.diffSteps({
+    before: previous?.version.trigger ?? null,
+    after: target.version.trigger,
+  });
+  if (changes.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t('No step changes compared with the published version.')}
+      </p>
+    );
+  }
+  const beforeSteps = new Map(
+    (previous
+      ? workflowStructureUtil.getAllSteps(previous.version.trigger)
+      : []
+    ).map((step) => [step.name, step]),
+  );
+  const afterSteps = new Map(
+    workflowStructureUtil
+      .getAllSteps(target.version.trigger)
+      .map((step) => [step.name, step]),
+  );
+  return (
+    <ul className="flex flex-col gap-2 text-sm">
+      {changes.map((change) => {
+        const fields =
+          change.kind === StepChangeKind.MODIFIED
+            ? versionDiff.fieldChanges({
+                before: beforeSteps.get(change.name) ?? null,
+                after: afterSteps.get(change.name) ?? null,
+              })
+            : [];
+        return (
+          <li
+            key={`${change.kind}-${change.name}`}
+            className="flex flex-col gap-1"
+          >
+            <div className="flex items-center gap-2">
+              <Badge
+                variant={
+                  change.kind === StepChangeKind.ADDED
+                    ? 'success'
+                    : change.kind === StepChangeKind.REMOVED
+                    ? 'destructive'
+                    : 'info'
+                }
+              >
+                {CHANGE_LABELS[change.kind]()}
+              </Badge>
+              <span>{change.displayName}</span>
+              <span className="text-xs text-muted-foreground font-mono">
+                {change.name}
+              </span>
+            </div>
+            {fields.length > 0 && (
+              <ul className="ml-2 flex flex-col gap-1 rounded-md border bg-muted/30 p-2 text-xs font-mono">
+                {fields.map((field) => (
+                  <li key={field.path} className="flex flex-col">
+                    <span className="text-muted-foreground">{field.path}</span>
+                    <span className="text-destructive break-all">
+                      − {field.before ?? t('(empty)')}
+                    </span>
+                    <span className="text-success break-all">
+                      + {field.after ?? t('(empty)')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function CheckIcon({ level }: { level: ReleaseCheckLevel }) {
+  const className = cn('size-4 shrink-0 mt-0.5', {
+    'text-success': level === ReleaseCheckLevel.OK,
+    'text-warning': level === ReleaseCheckLevel.WARNING,
+    'text-destructive': level === ReleaseCheckLevel.ERROR,
+    'text-muted-foreground': level === ReleaseCheckLevel.INFO,
+  });
+  switch (level) {
+    case ReleaseCheckLevel.OK:
+      return <CircleCheck className={className} />;
+    case ReleaseCheckLevel.WARNING:
+      return <CircleAlert className={className} />;
+    case ReleaseCheckLevel.ERROR:
+      return <CircleX className={className} />;
+    case ReleaseCheckLevel.INFO:
+      return <Info className={className} />;
+  }
+}
+
+const CHANGE_LABELS: Record<StepChangeKind, () => string> = {
+  [StepChangeKind.ADDED]: () => t('Added'),
+  [StepChangeKind.MODIFIED]: () => t('Modified'),
+  [StepChangeKind.REMOVED]: () => t('Removed'),
+};
 
 export { ReleaseDetailPage };

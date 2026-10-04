@@ -145,7 +145,9 @@ GET /v1/mcp-servers/:id | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-servers/:id/usage | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/:id | TENANT_ANY_MEMBER | USER | - | -
+GET /v1/mapping-tables/:id/coverage | PROJECT | USER | WORKFLOW:READ | TABLE:mapping_table.id@PARAM/id
 GET /v1/mcp-services/:id/issues | TENANT_ANY_MEMBER | USER | - | -
+GET /v1/mapping-tables/coverage | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/mcp-services/:id/membership | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/:id/my-key | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/candidates | PROJECT | USER | MCP_SERVICE:READ | QUERY:projectId
@@ -359,6 +361,7 @@ POST /v1/mcp-services | PROJECT | USER | MCP_SERVICE:MANAGE | BODY:projectId
 POST /v1/mcp-services/:id/availability | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/connections | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/debug | TENANT_ANY_MEMBER | USER | - | -
+POST /v1/mapping-tables/:id/rows | PROJECT | USER | WORKFLOW:UPDATE | TABLE:mapping_table.id@PARAM/id
 POST /v1/mcp-services/:id/info | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/listed | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/my-connections | TENANT_ANY_MEMBER | USER | - | -

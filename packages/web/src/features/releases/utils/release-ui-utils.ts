@@ -2,9 +2,7 @@ import {
   DefaultProjectRole,
   ProjectMemberWithUser,
   ReleaseCheck,
-  ReleaseChangeAction,
   ReleaseCheckCode,
-  ReleaseSystemComment,
   WorkflowReleaseStatus,
   WorkflowTrigger,
   WorkflowTriggerType,
@@ -21,38 +19,6 @@ function statusLabel(status: WorkflowReleaseStatus): string {
       return t('Rejected');
     case WorkflowReleaseStatus.WITHDRAWN:
       return t('Withdrawn');
-  }
-}
-
-function commentText(comment: string): string {
-  switch (comment) {
-    case ReleaseSystemComment.WITHDRAWN_BY_ROLLBACK:
-      return t('Withdrawn automatically by a rollback');
-    case ReleaseSystemComment.WITHDRAWN_BY_WORKFLOW_DELETION:
-      return t('Withdrawn automatically because the workflow was deleted');
-    default:
-      return comment;
-  }
-}
-
-function changeActionLabel(action: ReleaseChangeAction): string {
-  switch (action) {
-    case ReleaseChangeAction.DEPLOYED_TO_TEST:
-      return t('Deployed to test');
-    case ReleaseChangeAction.REQUESTED:
-      return t('Promotion requested');
-    case ReleaseChangeAction.APPROVED:
-      return t('Promotion approved');
-    case ReleaseChangeAction.REJECTED:
-      return t('Promotion rejected');
-    case ReleaseChangeAction.WITHDRAWN:
-      return t('Promotion withdrawn');
-    case ReleaseChangeAction.ROLLED_BACK:
-      return t('Rolled back in production');
-    case ReleaseChangeAction.PUBLISHED_DIRECTLY:
-      return t('Published directly');
-    case ReleaseChangeAction.ENVIRONMENTS_UPDATED:
-      return t('Environments updated');
   }
 }
 
@@ -241,8 +207,6 @@ export enum EnvironmentStatus {
 
 export const releaseUiUtils = {
   statusLabel,
-  commentText,
-  changeActionLabel,
   checkText,
   approvalRequired,
   approverCandidates,

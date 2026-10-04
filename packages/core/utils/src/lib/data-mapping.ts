@@ -125,6 +125,7 @@ export const dataMapping = {
     blockingIssues,
     applyTransform,
     lookupTableIds,
+    lookupKeys,
     readPath,
     isValidDatePattern,
 }
@@ -403,6 +404,35 @@ function lookupTableIds(spec: MappingSpec): string[] {
     return [...new Set(ids)]
 }
 
+function lookupKeys({ row, tables }: { row: MappingRow, tables: MappingTableData[] }): MappingLookupKey[] {
+    const target = row.target.trim()
+    const initial = isBlank(row.source) ? row.constant : row.source
+    if (row.each !== undefined) {
+        const entries = row.each
+        return Array.isArray(initial)
+            ? initial.flatMap((item: unknown) => entries.flatMap((entry) => {
+                const hasPath = entry.itemPath !== undefined && entry.itemPath.length > 0
+                const raw = hasPath ? readPath({ root: item, path: entry.itemPath ?? '' }) : entry.constant
+                return keysAlong({ rowId: row.id, target, value: raw, transforms: entry.transforms, tables })
+            }))
+            : []
+    }
+    return keysAlong({ rowId: row.id, target, value: initial, transforms: row.transforms, tables })
+}
+
+function keysAlong({ rowId, target, value, transforms, tables }: { rowId: string, target: string, value: unknown, transforms: MappingTransform[], tables: MappingTableData[] }): MappingLookupKey[] {
+    return transforms.reduce<{ value: unknown, stopped: boolean, keys: MappingLookupKey[] }>((acc, transform) => {
+        if (acc.stopped) {
+            return acc
+        }
+        const isLookup = transform.type === MappingTransformType.LOOKUP && transform.arg !== undefined && transform.arg.length > 0
+        const key = acc.value === undefined || acc.value === null ? '' : String(acc.value)
+        const keys = isLookup && key.trim().length > 0 ? [...acc.keys, { rowId, target, tableId: transform.arg ?? '', key }] : acc.keys
+        const result = applyTransform({ value: acc.value, transform, tables })
+        return { value: result.value, stopped: result.issue !== null, keys }
+    }, { value, stopped: false, keys: [] }).keys
+}
+
 function blockingIssues(issues: MappingIssue[]): MappingIssue[] {
     return issues.filter((candidate) => candidate.severity === MappingIssueSeverity.ERROR)
 }
@@ -632,6 +662,13 @@ type ItemIssuesParams = {
     result: TransformResult
     index: number
     label: string
+}
+
+export type MappingLookupKey = {
+    rowId: string
+    target: string
+    tableId: string
+    key: string
 }
 
 export type MappingIssue = {

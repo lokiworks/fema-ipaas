@@ -1,8 +1,10 @@
-import { assertNotNullOrUndefined, EntityId, MappingTableData, Permission } from '@fema-ipaas/core-utils'
+import { assertNotNullOrUndefined, EntityId, MappingCoverageSource, MappingTableData, Permission } from '@fema-ipaas/core-utils'
 import {
     EnginePrincipal,
     ListMappingTablesRequestQuery,
+    MAPPING_TABLE_MAX_ROWS,
     MappingTable,
+    MappingTableRow,
     MappingTableReference,
     MappingTableSummary,
     PrincipalType,
@@ -13,6 +15,7 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { mappingTableCoverageService } from './mapping-table-coverage.service'
 import { MappingTableEntity } from './mapping-table.entity'
 import { mappingTableService } from './mapping-table.service'
 
@@ -26,12 +29,24 @@ export const mappingTableController: FastifyPluginAsyncZod = async (app) => {
         await reply.status(StatusCodes.CREATED).send(table)
     })
 
+    app.get('/coverage', WorkflowCoverageRequest, async (request): Promise<MappingCoverageSource[]> => {
+        return mappingTableCoverageService(request.log).forWorkflow({ workflowId: request.query.workflowId, projectId: request.projectId })
+    })
+
     app.get('/:id', GetRequest, async (request): Promise<MappingTable> => {
         return mappingTableService(request.log).getOneOrThrow({ id: request.params.id, projectId: request.projectId })
     })
 
     app.post('/:id', UpdateRequest, async (request): Promise<MappingTable> => {
         return mappingTableService(request.log).update({ id: request.params.id, request: request.body, actorId: request.principal.id })
+    })
+
+    app.get('/:id/coverage', GetRequest, async (request): Promise<MappingCoverageSource[]> => {
+        return mappingTableCoverageService(request.log).forTable({ tableId: request.params.id, projectId: request.projectId })
+    })
+
+    app.post('/:id/rows', AddRowsRequest, async (request): Promise<MappingTable> => {
+        return mappingTableService(request.log).addRows({ id: request.params.id, projectId: request.projectId, rows: request.body.rows, actorId: request.principal.id })
     })
 
     app.delete('/:id', DeleteRequest, async (request, reply) => {
@@ -77,6 +92,25 @@ const UpdateRequest = {
 const DeleteRequest = {
     config: { security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, { type: ProjectResourceType.TABLE, tableName: MappingTableEntity }) },
     schema: { tags: ['mapping-tables'], params: IdParams },
+}
+
+const WorkflowCoverageQuery = z.object({
+    projectId: z.string(),
+    workflowId: z.string(),
+})
+
+const AddRowsBody = z.object({
+    rows: z.array(MappingTableRow).min(1).max(MAPPING_TABLE_MAX_ROWS),
+})
+
+const WorkflowCoverageRequest = {
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_WORKFLOW, { type: ProjectResourceType.QUERY }) },
+    schema: { tags: ['mapping-tables'], querystring: WorkflowCoverageQuery },
+}
+
+const AddRowsRequest = {
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, { type: ProjectResourceType.TABLE, tableName: MappingTableEntity }) },
+    schema: { tags: ['mapping-tables'], params: IdParams, body: AddRowsBody },
 }
 
 const WorkerGetRequest = {

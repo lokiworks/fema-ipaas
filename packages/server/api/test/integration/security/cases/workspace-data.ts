@@ -224,6 +224,36 @@ export const workspaceMappingTableCases: MatrixCase[] = [
         },
     },
     {
+        id: 'GET /v1/mapping-tables/:id/coverage',
+        access: { type: 'project', permission: Permission.READ_WORKFLOW },
+        prepare: async ({ world, scope }) => {
+            const table = await workspaceSeed.mappingTable({ world, scope })
+            return { request: { method: 'GET', url: `/v1/mapping-tables/${table.id}/coverage` } }
+        },
+    },
+    {
+        id: 'GET /v1/mapping-tables/coverage',
+        access: { type: 'project', permission: Permission.READ_WORKFLOW },
+        prepare: async ({ world, scope }) => ({
+            request: { method: 'GET', url: '/v1/mapping-tables/coverage', query: { projectId: world.scopes[scope].project.id, workflowId: 'no-such-workflow' } },
+        }),
+    },
+    {
+        id: 'POST /v1/mapping-tables/:id/rows',
+        access: { type: 'project', permission: Permission.WRITE_WORKFLOW },
+        prepare: async ({ world, scope }) => {
+            const table = await workspaceSeed.mappingTable({ world, scope })
+            return {
+                request: { method: 'POST', url: `/v1/mapping-tables/${table.id}/rows`, body: { rows: [{ k: 'added-by-matrix', v: 'v' }] } },
+                state: { tableId: table.id },
+            }
+        },
+        afterDenied: async ({ prepared }) => {
+            const row = await db.findOneBy<{ rows: { k: string }[] }>('mapping_table', { id: String(prepared.state?.tableId) })
+            expect(row?.rows.some((entry) => entry.k === 'added-by-matrix')).toBe(false)
+        },
+    },
+    {
         id: 'POST /v1/mapping-tables',
         access: { type: 'project', permission: Permission.WRITE_WORKFLOW },
         expectOk: [201],

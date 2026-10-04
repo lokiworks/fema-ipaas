@@ -5313,5 +5313,8 @@
   "Select one project to open its blocked events": "选择一个项目后可以查看它被拦下的事件",
   "Failures merged into problems": "合并进问题的失败",
   "{failures, plural, =1 {1 failed run was} other {# failed runs were}} grouped into {issues, plural, =1 {1 problem} other {# problems}}, so one alert covers each cause.": "{failures} 次失败被归并成 {issues} 个问题，每个原因只告警一次。",
-  "See the problems": "查看问题"
+  "See the problems": "查看问题",
+  "failureHintBeisenRateLimited": "北森接口调用超出限额。",
+  "failureHintBeisenRateLimitDay": "北森当天不再响应这个租户，次日北京时间 00:00 恢复，现在重试没有用。请降低工作流轮询的频率或一次回放的历史数据量（北森限流）",
+  "failureHintBeisenCredentials": "请到北森管理后台确认连接器的 Key 和 Secret 仍然有效，并且连接里填的是它们（北森凭据）"
 }

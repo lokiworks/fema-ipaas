@@ -12,6 +12,10 @@ import { IssueReplayDialog } from '@/features/issues/components/issue-replay-dia
 const items = [
   {
     executionId: 'run-1',
+    workflowId: 'wf-1',
+    workflowVersionId: 'v-1',
+    versionNumber: 1,
+    failedStepName: 'trigger',
     category: ReplayCategory.BLOCKED,
     reason: ReplayReason.BLOCKED_UNTIL,
     connectionExternalId: null,
@@ -20,6 +24,10 @@ const items = [
   },
   {
     executionId: 'run-2',
+    workflowId: 'wf-1',
+    workflowVersionId: 'v-1',
+    versionNumber: 1,
+    failedStepName: 'trigger',
     category: ReplayCategory.BLOCKED,
     reason: ReplayReason.BLOCKED_UNTIL,
     connectionExternalId: null,
@@ -43,7 +51,12 @@ describe('IssueReplayDialog with runs blocked until a later time', () => {
     const root = createRoot(container);
     await act(async () => {
       root.render(
-        <IssueReplayDialog issueId="issue-1" open onOpenChange={vi.fn()} />,
+        <IssueReplayDialog
+          issueId="issue-1"
+          workflowName={null}
+          open
+          onOpenChange={vi.fn()}
+        />,
       );
     });
     const dialog = document.querySelector('[role=dialog]');

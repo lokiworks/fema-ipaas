@@ -5313,5 +5313,8 @@
   "Select one project to open its blocked events": "Select one project to open its blocked events",
   "Failures merged into problems": "Failures merged into problems",
   "{failures, plural, =1 {1 failed run was} other {# failed runs were}} grouped into {issues, plural, =1 {1 problem} other {# problems}}, so one alert covers each cause.": "{failures, plural, =1 {1 failed run was} other {# failed runs were}} grouped into {issues, plural, =1 {1 problem} other {# problems}}, so one alert covers each cause.",
-  "See the problems": "See the problems"
+  "See the problems": "See the problems",
+  "failureHintBeisenRateLimited": "Beisen API rate limit exceeded.",
+  "failureHintBeisenRateLimitDay": "Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day (Beijing time), so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)",
+  "failureHintBeisenCredentials": "Check that the connector Key and Secret are still valid in the Beisen admin console and that the connection uses them (Beisen credentials)"
 }

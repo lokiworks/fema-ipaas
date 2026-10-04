@@ -57,6 +57,20 @@ const TAIL_KEYS = [
 
 const HINT_KEYS = [
   {
+    english: 'Beisen API rate limit exceeded.',
+    key: 'failureHintBeisenRateLimited',
+  },
+  {
+    english:
+      'Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day (Beijing time), so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)',
+    key: 'failureHintBeisenRateLimitDay',
+  },
+  {
+    english:
+      'Check that the connector Key and Secret are still valid in the Beisen admin console and that the connection uses them (Beisen credentials)',
+    key: 'failureHintBeisenCredentials',
+  },
+  {
     english:
       'the app credentials are not valid, check the App ID and App Secret',
     key: 'failureHintCredentials',

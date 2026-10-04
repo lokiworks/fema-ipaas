@@ -53,6 +53,16 @@ describe('failureText.localize', () => {
     );
   });
 
+  it('translates the Beisen rate limit message and keeps its status code and cause', () => {
+    const text = failureText.localize(
+      'A · B: HTTP 429: Beisen API rate limit exceeded. Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day (Beijing time), so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)',
+    );
+    expect(text).toContain('HTTP 429');
+    expect(text).toContain('北森接口调用超出限额');
+    expect(text).toContain('次日北京时间 00:00 恢复');
+    expect(text).not.toContain('Beisen stops answering');
+  });
+
   it('keeps messages it does not know untouched', () => {
     expect(failureText.localize('A · B: Something custom failed')).toBe(
       'A · B: Something custom failed',

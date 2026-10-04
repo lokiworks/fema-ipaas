@@ -157,7 +157,7 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
                   </Select>
                   <FormDescription>
                     {t(
-                      'Logs are masked before they are saved. The unmasked run state is kept only this long after a run ends, for viewing originals and replaying from the failed step; after that only a full rerun is possible.',
+                      'Logs are masked before they are saved. The unmasked run state and the original request bodies are kept only this long after a run ends, for viewing originals and replaying from the failed step; after that the run can no longer be replayed or viewed in original form.',
                     )}
                   </FormDescription>
                   <FormMessage />

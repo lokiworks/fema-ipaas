@@ -100,7 +100,7 @@ function blockReasonLabel(reason: RunRerunBlockReason): string {
       );
     case RunRerunBlockReason.RAW_DATA_EXPIRED:
       return t(
-        'The original run data has expired. Rerun the whole run instead',
+        'The original run data has expired, so this run can no longer be rerun',
       );
   }
 }

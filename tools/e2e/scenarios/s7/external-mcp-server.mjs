@@ -19,6 +19,7 @@ const state = {
   down: false,
   tickets: [],
   calls: [],
+  rawCalls: [],
   authFailures: 0,
 }
 
@@ -33,8 +34,11 @@ function textResult(text, extra = {}) {
   return { content: [{ type: 'text', text }], ...extra }
 }
 
-function buildServer(req) {
+function buildServer(req, { rich = false } = {}) {
   const server = new McpServer({ name: 'corp-hr-tools', version: '1.0.0' })
+  if (rich) {
+    registerRichTools(server)
+  }
   server.registerTool(
     'query_employee',
     {
@@ -119,6 +123,47 @@ function buildServer(req) {
   return server
 }
 
+function registerRichTools(server) {
+  server.registerTool(
+    'file_ticket',
+    {
+      title: '提交报修单',
+      description: '提交一张带多种参数类型的报修单，返回服务端收到的参数原样内容，用来核对表单生成的参数类型',
+      inputSchema: {
+        title: z.string().min(3).describe('报修标题，至少 3 个字'),
+        priority: z.enum(['low', 'normal', 'high']).describe('优先级'),
+        estimateHours: z.number().int().min(1).max(40).optional().describe('预计工时（小时）'),
+        urgent: z.boolean().optional().describe('是否加急'),
+        labels: z.array(z.string()).max(3).optional().describe('标签，最多 3 个'),
+        requester: z
+          .object({ id: z.string().describe('员工编号'), department: z.string().optional().describe('部门') })
+          .describe('报修人'),
+        items: z
+          .array(z.object({ sku: z.string().describe('物料编号'), qty: z.number().int().min(1).describe('数量') }))
+          .optional()
+          .describe('领用物料'),
+        meta: z.record(z.string(), z.unknown()).optional().describe('自由格式的附加信息'),
+      },
+    },
+    async (args) => {
+      state.calls.push({ tool: 'file_ticket', args })
+      return textResult(JSON.stringify({ received: args }), { structuredContent: { received: args } })
+    },
+  )
+  server.registerTool(
+    'archive_ticket',
+    {
+      title: '归档工单',
+      description: '把工单标记为已归档（带有副作用，用来演示需要人工确认的开关）',
+      inputSchema: { id: z.string().describe('工单号') },
+    },
+    async ({ id }) => {
+      state.calls.push({ tool: 'archive_ticket', id })
+      return textResult(JSON.stringify({ id, archived: true }), { structuredContent: { id, archived: true } })
+    },
+  )
+}
+
 function unauthorized(req) {
   const header = req.headers.authorization ?? ''
   return header !== `Bearer ${TOKEN}`
@@ -153,6 +198,7 @@ const http = createServer(async (req, res) => {
   if (url.pathname === '/admin/reset' && req.method === 'POST') {
     state.tickets = []
     state.calls = []
+    state.rawCalls = []
     state.authFailures = 0
     res.writeHead(200).end('ok')
     return
@@ -168,14 +214,17 @@ const http = createServer(async (req, res) => {
     res.end(JSON.stringify({ error: 'invalid_token', message: '令牌无效或已过期' }))
     return
   }
-  if (url.pathname === '/mcp' || url.pathname === '/open') {
+  if (url.pathname === '/mcp' || url.pathname === '/open' || url.pathname === '/rich') {
     if (req.method !== 'POST') {
       res.writeHead(405, { 'content-type': 'application/json', allow: 'POST' })
       res.end(JSON.stringify({ error: 'method_not_allowed' }))
       return
     }
     const body = await readBody(req)
-    const server = buildServer(req)
+    if (body?.method === 'tools/call') {
+      state.rawCalls.push({ tool: body.params?.name, arguments: body.params?.arguments })
+    }
+    const server = buildServer(req, { rich: url.pathname === '/rich' })
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true })
     res.on('close', () => {
       transport.close()

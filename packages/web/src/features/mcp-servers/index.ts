@@ -11,7 +11,9 @@ export { mcpServerAccessUtils } from './utils/mcp-server-access-utils';
 export { mcpProbeMessageUtils } from './utils/mcp-probe-messages';
 export { mcpUrlIssueUtils } from './utils/mcp-url-issue-messages';
 export { mcpToolFormUtils } from './utils/mcp-tool-form-schema';
+export { ToolArgumentsForm } from './components/tool-arguments-form';
 export type {
-  McpToolFormField,
-  McpToolFormFieldKind,
+  ToolArgumentsState,
+  ToolFieldIssue,
+  ToolFieldNode,
 } from './utils/mcp-tool-form-schema';

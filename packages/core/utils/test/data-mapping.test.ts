@@ -146,6 +146,7 @@ describe('dataMapping target schema', () => {
         const fields = [row('1', 'name', ''), ...complete.slice(1)]
         const result = dataMapping.evaluate({ spec: { fields, destination: provisionTarget }, tables: [departments] })
         expect(codes(result.issues)).toContain(MappingIssueCode.REQUIRED_EMPTY)
+        expect(codes(result.issues)).not.toContain(MappingIssueCode.REQUIRED_UNMAPPED)
     })
 
     it('flags targets the action does not have and rows without a target name', () => {

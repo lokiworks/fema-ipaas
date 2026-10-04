@@ -13,7 +13,7 @@ const session = await signIn()
 const browser = await chromium.launch()
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
 const page = await context.newPage()
-page.setDefaultTimeout(150000)
+page.setDefaultTimeout(90000)
 page.on('pageerror', (error) => log(`pageerror ${error.message.slice(0, 160)}`))
 
 await uiLogin()
@@ -63,7 +63,8 @@ async function finish() {
 async function createMappingTable() {
   await goto('/mapping-tables')
   await page.getByRole('button', { name: '新建映射表' }).click()
-  await page.getByRole('dialog').getByLabel('名称').fill(tableName)
+  await page.waitForTimeout(1500)
+  await page.getByRole('dialog').getByLabel('名称').pressSequentially(tableName)
   await page.getByRole('dialog').getByRole('button', { name: '创建', exact: true }).click()
   await page.getByText(tableName).first().waitFor()
   const rows = [['20301', 'od-rd'], ['20302', 'od-hr']]
@@ -88,7 +89,7 @@ async function createFlowWithSample() {
   await page.getByText('Webhook 触发器').waitFor()
   await page.waitForTimeout(3000)
   await page.getByText('Webhook 触发器').click()
-  await page.getByLabel('工作流名称').fill(flowName)
+  await page.getByLabel('工作流名称').pressSequentially(flowName)
   await page.getByRole('button', { name: '创建', exact: true }).click()
   await page.waitForURL(/workflows\/[^/]+$/)
   const workflowId = page.url().split('/').pop()
@@ -150,6 +151,8 @@ async function typeSource(name, text) {
 }
 
 async function addTransform(name, label) {
+  await card(name).click({ position: { x: 4, y: 4 } })
+  await page.waitForTimeout(400)
   await card(name).getByRole('button', { name: '转换', exact: true }).click()
   await page.getByRole('menuitem', { name: label, exact: true }).click()
 }
@@ -195,6 +198,7 @@ async function freeFormArray() {
   await card('positions').getByRole('button', { name: '逐项映射列表' }).click()
   await card('positions').getByRole('button', { name: '删除' }).first().click()
   await card('positions').waitFor({ state: 'detached' })
+  await waitSaved()
   return 'ok'
 }
 
@@ -217,6 +221,7 @@ async function addFeishuStep() {
     },
   })
   assert(wf.id === state.workflowId, '工作流不对')
+  await waitSaved()
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.getByText('2. 字段映射').first().click()
   await page.getByText('入参', { exact: true }).first().click()
@@ -242,14 +247,13 @@ async function pickTarget() {
 
 async function insertViaSelector(name, path) {
   await card(name).locator('.tiptap').first().click()
-  await page.getByText('数据选择器').first().waitFor()
-  const selector = page.locator('div').filter({ has: page.getByText('数据选择器', { exact: true }) }).last()
+  await page.getByText('上游节点').first().waitFor()
   for (const segment of path.slice(0, -1)) {
-    await selector.getByText(segment, { exact: true }).first().click()
+    await page.getByText(segment, { exact: true }).first().click()
   }
-  const leaf = selector.getByText(path[path.length - 1], { exact: true }).first()
+  const leaf = page.getByText(path[path.length - 1], { exact: true }).first()
   await leaf.hover()
-  await leaf.locator('xpath=ancestor::div[.//text()[normalize-space()="插入"]][1]').getByText('插入').first().click()
+  await leaf.locator('xpath=ancestor::div[contains(@class,"cursor") or contains(@class,"group")][1]').getByText('插入').click()
   await page.waitForTimeout(900)
 }
 
@@ -301,13 +305,15 @@ async function manualFill() {
   assert(/已映射 6\/7 个字段 · 0 个问题/.test(summary), `补全后摘要不对：${summary}`)
   await page.getByText('预览结果', { exact: true }).click()
   const json = JSON.parse(await page.getByTestId('mapping-result-json').innerText())
-  assert(JSON.stringify(json) === JSON.stringify({ name: '张三', mobile: '13800000001', departmentId: 'od-rd', employeeType: 1, email: 'zhangsan@example.com', employeeNo: 'E1001' }), `预览结果不对：${JSON.stringify(json)}`)
+  const expected = { name: '张三', mobile: '13800000001', departmentId: 'od-rd', employeeType: 1, email: 'zhangsan@example.com', employeeNo: 'E1001' }
+  assert(JSON.stringify(Object.entries(json).sort()) === JSON.stringify(Object.entries(expected).sort()), `预览结果不对：${JSON.stringify(json)}`)
   return json
 }
 
 async function lookupMissAtDesign() {
   const table = await api('GET', `/mapping-tables/${state.tableId}?projectId=${session.projectId}`)
   const body = { projectId: session.projectId, name: table.name, description: table.description, keyLabel: table.keyLabel, valueLabel: table.valueLabel, missingBehavior: table.missingBehavior, defaultValue: table.defaultValue }
+  await waitSaved()
   await api('POST', `/mapping-tables/${state.tableId}`, { ...body, rows: table.rows.filter((row) => row.k !== '20301') })
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.getByText('2. 字段映射').first().click()
@@ -323,6 +329,12 @@ async function lookupMissAtDesign() {
   return 'ok'
 }
 
+async function waitSaved() {
+  await page.getByText('已自动保存').waitFor()
+  await page.waitForFunction(() => !document.body.innerText.includes('保存中'))
+  await page.waitForTimeout(2500)
+}
+
 async function openMapper() {
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.getByText('2. 字段映射').first().click()
@@ -331,6 +343,7 @@ async function openMapper() {
 }
 
 async function debugStep() {
+  await waitSaved()
   await page.getByText('出参', { exact: true }).first().click()
   await page.getByRole('button', { name: /测试步骤/ }).first().click()
   await page.getByText('测试成功').waitFor({ timeout: 300000 })
@@ -528,7 +541,7 @@ async function check(label, fn) {
   }
   catch (error) {
     results.push({ label, ok: false })
-    log(`FAIL ${label} ${error.message.split('\n')[0]}`)
+    log(`FAIL ${label} ${error.message.split('\n').slice(0, 4).join(' | ')}`)
     await page.screenshot({ path: `${SHOTS}/s2-fail-${results.length}.png` }).catch(() => {})
     return null
   }

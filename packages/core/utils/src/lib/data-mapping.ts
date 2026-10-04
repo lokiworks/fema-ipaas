@@ -132,8 +132,9 @@ export const dataMapping = {
 function evaluate({ spec, tables }: EvaluateParams): MappingResult {
     const named = spec.fields.filter((row) => row.target.trim().length > 0)
     const rows = named.map((row) => evaluateRow({ row, field: findField({ spec, name: row.target }), tables }))
+    const emptied = new Set(rows.flatMap((row) => row.issues).filter((found) => found.code === MappingIssueCode.REQUIRED_EMPTY).map((found) => found.target))
     const issues = uniqueIssues([
-        ...validateSpec(spec),
+        ...validateSpec(spec).filter((found) => !(found.code === MappingIssueCode.REQUIRED_UNMAPPED && emptied.has(found.target))),
         ...rows.flatMap((row) => row.issues),
     ])
     return {

@@ -25,7 +25,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -106,7 +106,10 @@ export function MappingEditor({
   );
   const hiddenCount = entries.length - visible.length;
   const mappedCount = entries.filter(
-    (entry) => entry.row !== null && hasSource(entry.row),
+    (entry) =>
+      (spec.destination === undefined || entry.field !== null) &&
+      entry.row !== null &&
+      hasSource(entry.row),
   ).length;
   const problems = preview.issues.length;
   const tableOptions = tableSummaries ?? [];
@@ -415,6 +418,13 @@ function MappingRowCard({
   const status =
     errors.length > 0 ? 'error' : warnings.length > 0 ? 'warning' : 'ok';
   const trail = trailOf({ row, sampleData, tableData });
+  const source = typeof row?.source === 'string' ? row.source : '';
+  const lastEmitted = useRef(source);
+  const revision = useRef(0);
+  if (source !== lastEmitted.current) {
+    revision.current += 1;
+    lastEmitted.current = source;
+  }
   return (
     <div
       className={cn(
@@ -481,11 +491,14 @@ function MappingRowCard({
           </Button>
         )}
       </div>
-      <div>
+      <div key={revision.current}>
         {renderSourceInput({
-          value: typeof row?.source === 'string' ? row.source : '',
+          value: source,
           disabled,
-          onChange: (source) => onPatch({ source }),
+          onChange: (next) => {
+            lastEmitted.current = next;
+            onPatch({ source: next });
+          },
         })}
       </div>
       <div>

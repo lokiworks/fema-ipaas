@@ -8,9 +8,9 @@ import { AgentApprovalEntity } from '../agent-approval/agent-approval.entity'
 import { AiUsageEntity } from '../ai/ai-usage.entity'
 import { AlertPolicyEntity, AlertRecordEntity, NotificationChannelEntity } from '../alert/alert.entity'
 import { AuditEventEntity } from '../audit/audit-event.entity'
-import { BackupRecordEntity, BackupSettingsEntity } from '../backup/backup.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
+import { BackupRecordEntity, BackupSettingsEntity } from '../backup/backup.entity'
 import { ConnectionShareEntity } from '../connection/connection-share.entity'
 import { ConnectionEntity } from '../connection/connection.entity'
 import { ConnectorBlueprintVersionEntity } from '../connectors/blueprint/connector-blueprint-version.entity'
@@ -30,9 +30,9 @@ import { NotificationEntity } from '../notification/notification.entity'
 import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectEntity } from '../project/project-entity'
-import { ReliabilityEventEntity } from '../reliability/reliability-event.entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
 import { ConnectionReplacementEntity, ReleaseChangeEntity, WorkflowReleaseEntity } from '../release/release.entity'
+import { ReliabilityEventEntity } from '../reliability/reliability-event.entity'
 import { RunMonitorViewEntity } from '../run-monitor/run-monitor-view.entity'
 import { ServiceSettingEntity } from '../service-settings/service-setting.entity'
 import { SolutionEntity, SolutionInstallEntity, SolutionVersionEntity } from '../solution/solution.entity'
@@ -88,18 +88,18 @@ function getEntities(): EntitySchema<unknown>[] {
         TemplateEntity,
         IssueEntity,
         IssueActivityEntity,
-        NotificationChannelEntity,
         IssueWorkflowEntity,
+        NotificationChannelEntity,
         AlertPolicyEntity,
         AlertRecordEntity,
         PrivacySettingsEntity,
         WorkflowReleaseEntity,
         ConnectionReplacementEntity,
+        ReleaseChangeEntity,
         MappingTableEntity,
         DataStoreEntity,
         AiUsageEntity,
         RunMonitorViewEntity,
-        ReleaseChangeEntity,
         AgentApprovalEntity,
         DataErasureRequestEntity,
         McpServiceEntity,

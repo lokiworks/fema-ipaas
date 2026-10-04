@@ -27,13 +27,15 @@ import { AddSolutions1790921911539 } from './migration/postgres/1790921911539-Ad
 import { AddSolutionInstallWorkflowKeys1790930000000 } from './migration/postgres/1790930000000-AddSolutionInstallWorkflowKeys'
 import { KeepAlertRecordsAfterPolicyDeletion1790940000000 } from './migration/postgres/1790940000000-KeepAlertRecordsAfterPolicyDeletion'
 import { AddExecutionIndexesConcurrently1790950000000 } from './migration/postgres/1790950000000-AddExecutionIndexesConcurrently'
-import { AddIssueWorkflows1791030000000 } from './migration/postgres/1791030000000-AddIssueWorkflows'
-import { AddRunReliabilityEvents1791040000000 } from './migration/postgres/1791040000000-AddRunReliabilityEvents'
 import { AddBackups1790961100000 } from './migration/postgres/1790961100000-AddBackups'
 import { AddServiceSettings1790961200000 } from './migration/postgres/1790961200000-AddServiceSettings'
-
 import { AddReleaseChanges1791000000000 } from './migration/postgres/1791000000000-AddReleaseChanges'
 import { SnapshotAgentApprovalWorkflowName1791010000000 } from './migration/postgres/1791010000000-SnapshotAgentApprovalWorkflowName'
+import { AddIssueWorkflows1791030000000 } from './migration/postgres/1791030000000-AddIssueWorkflows'
+import { AddRunReliabilityEvents1791040000000 } from './migration/postgres/1791040000000-AddRunReliabilityEvents'
+import { AddPersonalDataHashes1791204000000 } from './migration/postgres/1791204000000-AddPersonalDataHashes'
+import { AddExecutionSearchHashesIndex1791204000001 } from './migration/postgres/1791204000001-AddExecutionSearchHashesIndex'
+
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
     if (useSsl === 'true') {
@@ -67,19 +69,19 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddSolutionInstallWorkflowKeys1790930000000,
         KeepAlertRecordsAfterPolicyDeletion1790940000000,
         AddExecutionIndexesConcurrently1790950000000,
-        AddIssueWorkflows1791030000000,
-        AddRunReliabilityEvents1791040000000,
+        SnapshotAgentApprovalWorkflowName1791010000000,
         AddBackups1790961100000,
         AddServiceSettings1790961200000,
-        SnapshotAgentApprovalWorkflowName1791010000000,
+        AddReleaseChanges1791000000000,
+        AddIssueWorkflows1791030000000,
+        AddRunReliabilityEvents1791040000000,
+        AddPersonalDataHashes1791204000000,
+        AddExecutionSearchHashesIndex1791204000001,
     ]
 }
 
 
 export const createPostgresDataSource = (): DataSource => {
-        AddReleaseChanges1791000000000,
-        AddPersonalDataHashes1791204000000,
-        AddExecutionSearchHashesIndex1791204000001,
     const migrationConfig: MigrationConfig = {
         migrationsRun: true,
         migrationsTransactionMode: 'each',

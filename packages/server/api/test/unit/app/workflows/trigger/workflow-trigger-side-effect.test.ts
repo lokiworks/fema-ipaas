@@ -37,6 +37,13 @@ vi.mock('../../../../../src/app/workers/job-queue/job-queue', () => ({
     JobType: { ONE_TIME: 'ONE_TIME', REPEATING: 'REPEATING' },
 }))
 
+vi.mock('../../../../../src/app/trigger/trigger-poll-marker', () => ({
+    triggerPollMarker: {
+        clear: vi.fn().mockResolvedValue(undefined),
+        touch: vi.fn().mockResolvedValue(undefined),
+    },
+}))
+
 vi.mock('../../../../../src/app/trigger/app-event-routing/app-event-routing.service', () => ({
     appEventRoutingService: {
         deleteListeners: (...args: unknown[]) => mockDeleteListeners(...args),

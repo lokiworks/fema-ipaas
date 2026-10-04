@@ -23,8 +23,8 @@ import {
     RollbackWorkflowRequestBody,
     RollbackWorkflowResponse,
     RunEnvironment,
-    UpdateEnvironmentSettingsRequestBody,
     UnreplacedConnection,
+    UpdateEnvironmentSettingsRequestBody,
     Workflow,
     WorkflowOperationType,
     WorkflowRelease,
@@ -52,8 +52,8 @@ import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { connectionReplacementRepo } from './connection-replacement.service'
 import { releaseChangeService } from './release-change.service'
-import { releaseVersionNumbers } from './release-version-numbers'
 import { releaseSideEffects } from './release-side-effects'
+import { releaseVersionNumbers } from './release-version-numbers'
 import { WorkflowReleaseEntity } from './release.entity'
 
 export const workflowReleaseRepo = repoFactory(WorkflowReleaseEntity)

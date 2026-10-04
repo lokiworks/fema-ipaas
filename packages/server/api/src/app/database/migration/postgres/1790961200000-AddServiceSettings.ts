@@ -30,6 +30,6 @@ export class AddServiceSettings1790961200000 implements Migration {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE "service_setting"`)
+        await queryRunner.query('DROP TABLE "service_setting"')
     }
 }

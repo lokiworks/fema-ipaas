@@ -1,4 +1,4 @@
-import { Permission } from '@fema-ipaas/core-utils';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
   PlanAnswer,
   PlanRecommendation,
@@ -488,14 +488,14 @@ function PlanRecommendationHint({
       data-testid="plan-recommendation"
     >
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        {value !== null && (
+        {!isNil(value) && (
           <span className="break-all font-medium">
             {t('Recommended: {value}', { value })}
           </span>
         )}
         <span className="text-muted-foreground">{recommendation.basis}</span>
       </div>
-      {value !== null && (
+      {!isNil(value) && (
         <Button
           type="button"
           variant="outline"

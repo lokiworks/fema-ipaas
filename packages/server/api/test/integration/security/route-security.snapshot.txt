@@ -58,9 +58,9 @@ GET /v1/account/notification-preferences | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/agent-approvals | PROJECT | USER | EXECUTION:READ | QUERY:projectId
 GET /v1/agent-approvals/pending-count | PROJECT | USER | EXECUTION:READ | QUERY:projectId
 GET /v1/ai/model-connections | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
+GET /v1/ai/plan-templates | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/ai/usage | PROJECT | USER | PROJECT:READ | QUERY:projectId
 GET /v1/alerts/capabilities | TENANT_ADMIN | USER | - | -
-GET /v1/ai/plan-templates | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/alerts/channels | TENANT_ADMIN | USER | - | -
 GET /v1/alerts/policies | TENANT_ADMIN | USER | - | -
 GET /v1/alerts/records | TENANT_ADMIN | USER | - | -
@@ -145,15 +145,15 @@ GET /v1/limits/project-usage | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/limits/projects | TENANT_ADMIN | USER | - | -
 GET /v1/mapping-tables | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/mapping-tables/:id | PROJECT | USER | WORKFLOW:READ | TABLE:mapping_table.id@PARAM/id
+GET /v1/mapping-tables/:id/coverage | PROJECT | USER | WORKFLOW:READ | TABLE:mapping_table.id@PARAM/id
 GET /v1/mapping-tables/:id/references | PROJECT | USER | WORKFLOW:READ | TABLE:mapping_table.id@PARAM/id
+GET /v1/mapping-tables/coverage | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/mcp-servers | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-servers/:id | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-servers/:id/usage | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/:id | TENANT_ANY_MEMBER | USER | - | -
-GET /v1/mapping-tables/:id/coverage | PROJECT | USER | WORKFLOW:READ | TABLE:mapping_table.id@PARAM/id
 GET /v1/mcp-services/:id/issues | TENANT_ANY_MEMBER | USER | - | -
-GET /v1/mapping-tables/coverage | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/mcp-services/:id/membership | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/:id/my-key | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/candidates | PROJECT | USER | MCP_SERVICE:READ | QUERY:projectId
@@ -293,9 +293,9 @@ POST /v1/authentication/sign-up | PUBLIC | - | - | -
 POST /v1/authentication/switch-tenant | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/authn/local/reset-password | PUBLIC | - | - | -
 POST /v1/authn/local/verify-email | PUBLIC | - | - | -
-POST /v1/connection-replacements | PROJECT | USER | PROJECT:UPDATE | BODY:projectId
 POST /v1/backups | TENANT_ADMIN | USER | - | -
 POST /v1/backups/settings | TENANT_ADMIN | USER | - | -
+POST /v1/connection-replacements | PROJECT | USER | PROJECT:UPDATE | BODY:projectId
 POST /v1/connections | PROJECT | USER,SERVICE | CONNECTION:MANAGE | BODY:projectId
 POST /v1/connections/:id | TENANT_ANY_MEMBER | USER,SERVICE | - | -
 POST /v1/connections/:id/access | TENANT_ANY_MEMBER | USER | - | -
@@ -361,6 +361,7 @@ POST /v1/issues/batch | PROJECT | USER | ISSUE:MANAGE | BODY:projectId
 POST /v1/limits/projects/:projectId | TENANT_ADMIN | USER | - | -
 POST /v1/mapping-tables | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId
 POST /v1/mapping-tables/:id | PROJECT | USER | WORKFLOW:UPDATE | TABLE:mapping_table.id@PARAM/id
+POST /v1/mapping-tables/:id/rows | PROJECT | USER | WORKFLOW:UPDATE | TABLE:mapping_table.id@PARAM/id
 POST /v1/mcp-callbacks/:serverId/:requestId | PUBLIC | - | - | -
 POST /v1/mcp-servers | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-servers/:id | TENANT_ANY_MEMBER | USER | - | -
@@ -371,7 +372,6 @@ POST /v1/mcp-services | PROJECT | USER | MCP_SERVICE:MANAGE | BODY:projectId
 POST /v1/mcp-services/:id/availability | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/connections | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/debug | TENANT_ANY_MEMBER | USER | - | -
-POST /v1/mapping-tables/:id/rows | PROJECT | USER | WORKFLOW:UPDATE | TABLE:mapping_table.id@PARAM/id
 POST /v1/mcp-services/:id/info | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/listed | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/mcp-services/:id/my-connections | TENANT_ANY_MEMBER | USER | - | -
@@ -404,9 +404,9 @@ POST /v1/run-logs/rerun | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/run-monitor/views | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/run-monitor/views/:id | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/sample-data/test-step | PROJECT | USER,SERVICE | WORKFLOW:UPDATE | BODY:projectId
-POST /v1/solutions | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId
 POST /v1/service-settings | TENANT_ADMIN | USER | - | -
 POST /v1/service-settings/test | TENANT_ADMIN | USER | - | -
+POST /v1/solutions | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId
 POST /v1/solutions/:id/checks | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId
 POST /v1/solutions/:id/install | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId
 POST /v1/solutions/:id/preview | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId

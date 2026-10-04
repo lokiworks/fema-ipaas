@@ -17,20 +17,19 @@ import { useTranslation } from 'react-i18next';
 
 import { connectionsQueries } from '@/features/connections';
 import { connectorsApi } from '@/features/connectors';
+import { mappingTablesHooks } from '@/features/mapping-tables';
 import {
   agentToolsUtils,
   mcpServerAccessUtils,
   mcpServersHooks,
 } from '@/features/mcp-servers';
-import { mappingTablesHooks } from '@/features/mapping-tables';
 import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
 import {
   ConnectionSpec,
   ConnectorSpec,
-  ConnectorSpecStatus,
+  DebugRunEvidence,
   ConnectorSpecStatus,
   MappingCoverageFinding,
-  DebugRunEvidence,
   OperationSpec,
   ValidationResult,
   WriteStep,
@@ -41,8 +40,8 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 export function useValidationFor(
   trigger: WorkflowTrigger,
-  mappingCoverage: Record<string, MappingCoverageFinding[]> | null = null,
   debugVerification: DebugRunEvidence | null = null,
+  mappingCoverage: Record<string, MappingCoverageFinding[]> | null = null,
 ): WorkflowValidationState {
   const { i18n } = useTranslation();
   const projectId = authenticationSession.getProjectId() ?? '';
@@ -146,8 +145,8 @@ export function useValidationFor(
         mcpServers,
         mappingTableIds,
         variableNames,
-        mappingCoverage,
         debugVerification,
+        mappingCoverage,
       }),
     [
       trigger,
@@ -156,8 +155,8 @@ export function useValidationFor(
       mcpServers,
       mappingTableIds,
       variableNames,
-      mappingCoverage,
       debugVerification,
+      mappingCoverage,
     ],
   );
 

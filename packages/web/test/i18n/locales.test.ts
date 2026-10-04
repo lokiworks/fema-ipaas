@@ -12,6 +12,9 @@ const HALF_WIDTH_PUNCTUATION_IN_CHINESE =
   /[\u4e00-\u9fff][,;!?]|[\u4e00-\u9fff]\(|\)[\u4e00-\u9fff]/;
 const PRODUCT_NAME_PATTERN = /FEMA Integration|Activepieces/i;
 const KEPT_IN_ENGLISH = new Set([
+  'PGlite',
+  'PostgreSQL',
+  'PostgreSQL pg_dump',
   'HTTP {status}',
   'JSON',
   'CPU',

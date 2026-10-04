@@ -262,7 +262,7 @@ async function overlayOf({ row, log }: { row: ServiceSettingSchema, log: Fastify
                 return [[AppSystemProp.TEMPLATES_SOURCE_URL, text('url')]]
         }
     })()
-    return pairs.flatMap(([prop, value]) => isNil(value) ? [] : [[prop, value] as [SystemProp, string]])
+    return pairs.flatMap(([prop, value]): Array<[SystemProp, string]> => isNil(value) ? [] : [[prop, value]])
 }
 
 async function decryptSecrets({ row }: { row: ServiceSettingSchema }): Promise<Record<string, string> | null> {

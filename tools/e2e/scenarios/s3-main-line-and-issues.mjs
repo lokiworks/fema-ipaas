@@ -1,5 +1,6 @@
 import { chromium } from '@playwright/test'
 import { readFileSync, mkdirSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
 
 const SLOT = process.env.SLOT ?? '3'
@@ -50,9 +51,14 @@ async function main() {
     ['events', stageEvents],
     ['search', stageSearch],
     ['alerts', stageAlerts],
+    ['reliability', stageReliability],
     ['failA', stageMissingMapping],
     ['failB', stagePermission],
+    ['blocked', stageRateLimitBlocked],
+    ['downtime', stageDowntime],
     ['monitor', stageMonitor],
+    ['merge', stageTriggerMerge],
+    ['narrow', stageNarrowRunLog],
   ]
   let started = FROM_STAGE === ''
   for (const [name, run] of stages) {
@@ -67,34 +73,59 @@ async function main() {
 }
 
 async function stageConnections() {
-  await check('连接向导：错误的北森凭据被拦住并说明原因', async () => {
+  await check('连接表单：每个输入框都能按 label 定位（可访问性），必填项带 aria-required', async () => {
     await openConnectionWizard({ app: '北森' })
-    await fillConnectionForm({ values: ['wrong', 'x'] })
+    const dialog = ctx.page.getByRole('dialog')
+    const key = dialog.getByLabel(/App Key/)
+    const secret = dialog.getByLabel(/App Secret/)
+    const name = dialog.getByLabel(/连接名称|Connection Name/)
+    assert((await key.count()) === 1, `按 label 找 App Key 得到 ${await key.count()} 个输入框`)
+    assert((await secret.count()) === 1, `按 label 找 App Secret 得到 ${await secret.count()} 个输入框`)
+    assert((await name.count()) === 1, '按 label 找不到连接名称输入框')
+    assert((await key.getAttribute('aria-required')) === 'true', 'App Key 缺少 aria-required')
+    assert((await secret.getAttribute('type')) === 'password', 'App Secret 应当是密码框')
+    await key.fill('probe')
+    assert((await key.inputValue()) === 'probe', '通过 label 填写没有写进输入框')
+    await shot('conn-form-labels')
+    await closeDialog()
+    await openConnectionWizard({ app: '飞书' })
+    const feishu = ctx.page.getByRole('dialog')
+    assert((await feishu.getByLabel(/App ID/).count()) === 1, '飞书的 App ID 不能按 label 定位')
+    assert((await feishu.getByLabel(/App Secret/).count()) === 1, '飞书的 App Secret 不能按 label 定位')
+    await closeDialog()
+    return 'ok'
+  })
+  await check('连接向导：错误的北森凭据被拦住，写明原因，并给出中文处理办法', async () => {
+    await openConnectionWizard({ app: '北森' })
+    await fillConnectionForm({ values: { 'App Key': 'wrong', 'App Secret': 'x' } })
     const message = await submitConnectionForm({ expect: 'error' })
     await shot('conn-beisen-wrong')
     assert(message.includes('app_key or app_secret is wrong'), `提示里没有写明原因：${message}`)
+    assert(message.includes('检查 app_key 和 app_secret'), `提示里没有「检查 app_key 和 app_secret」的中文指引：${message}`)
+    assert(message.includes('开通了哪些接口'), `提示里没有写租户开通了哪些接口：${message}`)
     await closeDialog()
     return message
   })
   await check('连接向导：正确的北森凭据保存成功', async () => {
     await openConnectionWizard({ app: '北森' })
-    await fillConnectionForm({ values: ['mock-key', 'mock-secret'] })
+    await fillConnectionForm({ values: { 'App Key': 'mock-key', 'App Secret': 'mock-secret' } })
     await submitConnectionForm({ expect: 'saved' })
     await shot('conn-beisen-saved')
     return 'ok'
   })
-  await check('连接向导：错误的飞书凭据被拦住并说明原因', async () => {
+  await check('连接向导：错误的飞书凭据被拦住，写明原因，并给出应用凭证、权限范围、可用范围的中文指引', async () => {
     await openConnectionWizard({ app: '飞书' })
-    await fillConnectionForm({ values: ['cli_mock', 'wrong'] })
+    await fillConnectionForm({ values: { 'App ID': 'cli_mock', 'App Secret': 'wrong' } })
     const message = await submitConnectionForm({ expect: 'error' })
     await shot('conn-feishu-wrong')
     assert(/invalid|app secret|99991663/i.test(message), `提示里没有写明原因：${message}`)
-    await closeDialog()
+    assert(message.includes('检查应用凭证'), `凭证错误应当指引检查应用凭证：${message}`)
     return message
   })
   await check('连接向导：正确的飞书凭据保存成功，列表里能看到两个连接', async () => {
+    await closeDialog().catch(() => undefined)
     await openConnectionWizard({ app: '飞书' })
-    await fillConnectionForm({ values: ['cli_mock', 'mock-secret'] })
+    await fillConnectionForm({ values: { 'App ID': 'cli_mock', 'App Secret': 'mock-secret' } })
     await submitConnectionForm({ expect: 'saved' })
     const body = await ctx.page.locator('body').innerText()
     assert(body.includes('北森') && body.includes('飞书'), '连接列表里缺少连接')
@@ -491,6 +522,361 @@ async function stageMonitor() {
     assert(rows === Math.min(shown, 10), `下钻后列表行数 ${rows}`)
     return { duplicates: shown, mergedFailures: merged, drilldownRows: rows }
   })
+  await check('运行监控：限流排队、自动重试、宕机后补上的事件三项都有计数，和运行记录一致，单位按对方声明写明，并能下钻到对应运行', async () => {
+    await page.goto(`${WEB}/monitor`)
+    await page.getByTestId('handled-rate-limit').waitFor({ timeout: 180000 })
+    const api7d = await handledSummary()
+    const shown = async (testId) => Number((await page.getByTestId(testId).innerText()).replace(/,/g, ''))
+    assert((await shown('handled-rate-limit')) === api7d.rateLimitWaits, `限流排队显示 ${await shown('handled-rate-limit')}，记录里 ${api7d.rateLimitWaits}`)
+    assert((await shown('handled-retries')) === api7d.autoRetries, `自动重试显示 ${await shown('handled-retries')}，记录里 ${api7d.autoRetries}`)
+    assert((await shown('handled-catch-up')) === api7d.caughtUpEvents, `补上的事件显示 ${await shown('handled-catch-up')}，记录里 ${api7d.caughtUpEvents}`)
+    assert(api7d.rateLimitWaits >= 2 && api7d.autoRetries >= 2 && api7d.caughtUpEvents >= 1, `三项都应当有数：${JSON.stringify(api7d)}`)
+    const detail = await page.getByTestId('handled-rate-limit-detail').innerText()
+    assert(detail.includes('飞书') && detail.includes('按接口、应用、租户分别计'), `限流排队没有写明对方声明的计数单位：${detail}`)
+    await shot('monitor-handled-reliability')
+    for (const [testId, kind, label] of [['handled-rate-limit', 'RATE_LIMIT_QUEUED', '等过限流'], ['handled-retries', 'AUTO_RETRY', '自动重试过'], ['handled-catch-up', 'CATCH_UP', '宕机后补上的事件']]) {
+      await page.goto(`${WEB}/monitor`)
+      const item = page.getByTestId(testId)
+      await item.waitFor({ timeout: 120000 })
+      await item.locator('xpath=..').getByRole('button').click()
+      await page.waitForURL(new RegExp(`handled=${kind}`), { timeout: 30000 })
+      await page.locator('tbody tr').first().waitFor({ timeout: 120000 })
+      const body = await page.locator('body').innerText()
+      assert(body.includes(label), `下钻后的筛选条件里没有「${label}」`)
+      const expected = (await runLogsHandled({ kind })).length
+      const rows = await waitFor({
+        probe: async () => {
+          const count = await page.locator('tbody tr').count()
+          return count === Math.min(expected, 10) ? count : null
+        },
+        timeoutMs: 30000,
+      }).catch(async () => page.locator('tbody tr').count())
+      assert(rows === Math.min(expected, 10), `${kind} 下钻后列表有 ${rows} 行，记录里有 ${expected} 次运行`)
+      await shot(`monitor-drilldown-${kind}`)
+    }
+    return api7d
+  })
+}
+
+async function stageReliability() {
+  const batch = Number(process.env.E2E_BATCH ?? Date.now() % 100000) + 2
+  await mock({ method: 'POST', path: '/__admin/feishu-failure', body: {} })
+  await check('限流排队：飞书限流并给了等待时间，平台排队后重试，运行成功、不开问题，次数和单位来自运行记录', async () => {
+    const before = await handledSummary()
+    const issuesBefore = (await listIssues({ view: 'ALL' })).length
+    const stateBefore = await mockState()
+    const person1 = personOf({ number: batch * 100 + 1, department: 20301 })
+    await mock({ method: 'POST', path: '/__admin/feishu-failure', body: { code: 99991400, msg: 'request trigger frequency limit', times: 2, resetSeconds: 2 } })
+    await injectEmployees({ records: [person1.record] })
+    await waitFor({ probe: async () => (await mockState()).feishuUsers.some((user) => user.mobile === person1.mobile), timeoutMs: 420000 })
+    const state = await mockState()
+    assert(state.failuresServed - stateBefore.failuresServed === 2, `飞书应当被限流两次，实际 ${state.failuresServed - stateBefore.failuresServed} 次`)
+    const after = await waitFor({
+      probe: async () => {
+        const summary = await handledSummary()
+        return summary.rateLimitWaits - before.rateLimitWaits >= 2 ? summary : null
+      },
+      timeoutMs: 120000,
+    })
+    assert(after.rateLimitWaits - before.rateLimitWaits === 2, `限流排队应当新增 2 次，实际 ${after.rateLimitWaits - before.rateLimitWaits}`)
+    const feishu = after.rateLimitSources.find((source) => source.connectorName.includes('feishu'))
+    assert(feishu?.unit === 'PER_API_APP_TENANT', `飞书的计数单位应当是按接口、应用、租户：${JSON.stringify(after.rateLimitSources)}`)
+    const rows = await runLogsHandled({ kind: 'RATE_LIMIT_QUEUED' })
+    const row = rows.find((item) => item.businessKey === person1.jobNumber)
+    assert(row !== undefined, `下钻到运行记录里找不到 ${person1.jobNumber}`)
+    assert(row.status === 'SUCCEEDED', `排队后的运行应当成功，实际 ${row.status}`)
+    assert((await listIssues({ view: 'ALL' })).length === issuesBefore, '排队后成功的运行不该开问题')
+    return { waits: after.rateLimitWaits - before.rateLimitWaits, unit: feishu.unit, runs: rows.length }
+  })
+  await check('自动重试：开通账号临时出错两次，按节点重试设置自动重试，运行成功、不开问题，次数来自运行记录', async () => {
+    const before = await handledSummary()
+    const issuesBefore = (await listIssues({ view: 'ALL' })).length
+    const person2 = personOf({ number: batch * 100 + 2, department: 20301 })
+    await mock({ method: 'POST', path: '/__admin/feishu-failure', body: { code: 99990501, msg: 'temporary glitch', times: 2 } })
+    await injectEmployees({ records: [person2.record] })
+    await waitFor({ probe: async () => (await mockState()).feishuUsers.some((user) => user.mobile === person2.mobile), timeoutMs: 420000 })
+    const after = await waitFor({
+      probe: async () => {
+        const summary = await handledSummary()
+        return summary.autoRetries - before.autoRetries >= 2 ? summary : null
+      },
+      timeoutMs: 120000,
+    })
+    assert(after.autoRetries - before.autoRetries === 2, `自动重试应当新增 2 次，实际 ${after.autoRetries - before.autoRetries}`)
+    const rows = await runLogsHandled({ kind: 'AUTO_RETRY' })
+    const row = rows.find((item) => item.businessKey === person2.jobNumber)
+    assert(row !== undefined && row.status === 'SUCCEEDED', `下钻后应当看到成功的运行 ${person2.jobNumber}`)
+    assert((await listIssues({ view: 'ALL' })).length === issuesBefore, '重试成功的运行不该开问题')
+    return { retries: after.autoRetries - before.autoRetries, runs: rows.length }
+  })
+  await mock({ method: 'POST', path: '/__admin/feishu-failure', body: {} })
+}
+
+async function stageRateLimitBlocked() {
+  const { page } = ctx
+  const batch = Number(process.env.E2E_BATCH ?? Date.now() % 100000) + 3
+  const people = Array.from({ length: 3 }, (_, index) => personOf({ number: batch * 100 + index, department: 20301 }))
+  const issuesBefore = (await listIssues({ view: 'ALL' })).map((issue) => issue.id)
+  const queuedBefore = (await handledSummary()).rateLimitWaits
+  await mock({ method: 'POST', path: '/__admin/feishu-failure', body: { code: 99991400, msg: 'request trigger frequency limit', resetSeconds: 75 } })
+  await check('限流受阻：飞书让等 75 秒（超过排队上限），运行直接失败，问题写明解除时间', async () => {
+    await injectEmployees({ records: people.map((person) => person.record) })
+    const issue = await waitFor({
+      probe: async () => {
+        const found = (await listIssues({ view: 'OPEN' })).find((item) => !issuesBefore.includes(item.id) && item.errorCode === 'HTTP_429')
+        return found && found.occurrences >= people.length ? found : null
+      },
+      timeoutMs: 420000,
+    })
+    ctx.blockedIssue = issue
+    const insight = await api({ method: 'GET', path: `/issues/${issue.id}/insight` })
+    assert(insight.cause === 'BLOCKED_UNTIL', `根因应当是受阻到某个时间，实际 ${insight.cause}`)
+    assert(typeof insight.blockedUntil === 'string', '根因里没有解除时间')
+    ctx.blockedUntil = new Date(insight.blockedUntil)
+    assert((await handledSummary()).rateLimitWaits === queuedBefore, '超过排队上限的限流不该被当成排队')
+    return { issueId: issue.id, blockedUntil: insight.blockedUntil, title: issue.title }
+  })
+  await check('受阻项不可重放：批量重跑弹窗把它们列为受阻并写明解除时间，没有可勾选项，重放按钮是 0 次且不可点', async () => {
+    await openIssueDetail({ issue: ctx.blockedIssue })
+    await page.getByRole('button', { name: '批量重跑失败的运行' }).waitFor({ timeout: 60000 })
+    await page.getByRole('button', { name: '批量重跑失败的运行' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByText('被拦下', { exact: true }).first().waitFor({ timeout: 60000 })
+    const text = await dialog.innerText()
+    const expectedTime = new Intl.DateTimeFormat('zh', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(ctx.blockedUntil)
+    const blockedMinute = expectedTime.slice(0, expectedTime.lastIndexOf(':'))
+    assert(text.includes(blockedMinute), `弹窗里没有写明解除时间 ${expectedTime}：${text.slice(0, 400)}`)
+    assert((await dialog.getByRole('checkbox').count()) === 0, '受阻项不该有可勾选的「仍然重放」')
+    const confirm = dialog.getByRole('button', { name: /^重跑 \d+ 次运行/ })
+    assert((await confirm.innerText()).includes('重跑 0 次运行'), `确认按钮应当是 0 次：${await confirm.innerText()}`)
+    assert(await confirm.isDisabled(), '全部受阻时不该能确认重放')
+    await shot('blocked-replay-dialog')
+    await dialog.getByRole('button', { name: '取消' }).click()
+    return expectedTime
+  })
+  await check('受阻项不可重放：运行日志里同一批运行的重跑按钮置灰，写明同一个解除时间，批量重跑也算作不可重跑', async () => {
+    await page.goto(`${WEB}/projects/${ctx.session.projectId}/runs?status=FAILED&businessKey=E${batch}&time=24h`)
+    await page.locator('tbody tr').first().waitFor({ timeout: 120000 })
+    const rerun = page.locator('tbody tr').first().locator('[aria-disabled=true]', { hasText: '重跑' })
+    await rerun.waitFor({ timeout: 30000 })
+    await rerun.hover()
+    const tip = page.getByRole('tooltip')
+    await tip.waitFor({ timeout: 10000 })
+    const tipText = await tip.innerText()
+    const expectedTime = new Intl.DateTimeFormat('zh', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).format(ctx.blockedUntil)
+    assert(tipText.includes(expectedTime.slice(0, expectedTime.lastIndexOf(':'))), `提示里没有解除时间：${tipText}`)
+    await page.getByRole('checkbox', { name: '全选本页' }).first().click()
+    await page.getByText('所选日志都不能重跑').waitFor({ timeout: 10000 })
+    await shot('blocked-run-logs')
+    return tipText
+  })
+  await mock({ method: 'POST', path: '/__admin/feishu-failure', body: {} })
+  await check('解除后可重放：到了解除时间并且对方恢复后，同一个弹窗里它们变成可重放，重放后账号开通、问题自动已解决', async () => {
+    const wait = ctx.blockedUntil.getTime() - Date.now() + 3000
+    if (wait > 0) {
+      await sleep(wait)
+    }
+    await openIssueDetail({ issue: ctx.blockedIssue })
+    await page.getByRole('button', { name: '批量重跑失败的运行' }).click()
+    const dialog = page.getByRole('dialog')
+    const confirm = dialog.getByRole('button', { name: /^重跑 \d+ 次运行/ })
+    await confirm.waitFor({ timeout: 60000 })
+    await waitFor({ probe: async () => ((await confirm.innerText()).includes(`重跑 ${people.length} 次运行`) ? true : null), timeoutMs: 60000 })
+    assert(await confirm.isEnabled(), '解除后应当可以重放')
+    await shot('unblocked-replay-dialog')
+    await confirm.click()
+    const mobiles = people.map((person) => person.mobile)
+    await waitFor({ probe: async () => ((await mockState()).feishuUsers.filter((user) => mobiles.includes(user.mobile)).length === people.length ? true : null), timeoutMs: 420000 })
+    const resolved = await waitFor({
+      probe: async () => {
+        const found = (await listIssues({ view: 'ALL' })).find((item) => item.id === ctx.blockedIssue.id)
+        return found?.status === 'RESOLVED' ? found : null
+      },
+      timeoutMs: 180000,
+    })
+    return { accounts: people.length, issue: resolved.status }
+  })
+}
+
+async function stageDowntime() {
+  const batch = Number(process.env.E2E_BATCH ?? Date.now() % 100000) + 4
+  const person = personOf({ number: batch * 100 + 1, department: 20301 })
+  await check('宕机补事件：worker 停了两个半轮询周期以上，期间的变动在恢复后的第一次轮询里补上，并记为补上的事件', async () => {
+    const before = await handledSummary()
+    runStackScript({ script: 'stop-worker.sh' })
+    await sleep(5000)
+    await injectEmployees({ records: [person.record] })
+    await sleep(165000)
+    assert(!(await mockState()).feishuUsers.some((user) => user.mobile === person.mobile), 'worker 停着时账号不该被开通')
+    runStackScript({ script: 'start-worker.sh' })
+    await waitFor({ probe: async () => ((await mockState()).feishuUsers.some((user) => user.mobile === person.mobile) ? true : null), timeoutMs: 420000 })
+    const after = await waitFor({
+      probe: async () => {
+        const summary = await handledSummary()
+        return summary.caughtUpEvents - before.caughtUpEvents >= 1 ? summary : null
+      },
+      timeoutMs: 120000,
+    })
+    const row = await waitFor({
+      probe: async () => (await runLogsHandled({ kind: 'CATCH_UP' })).find((item) => item.businessKey === person.jobNumber && item.status === 'SUCCEEDED') ?? null,
+      timeoutMs: 120000,
+    })
+    return { caughtUp: after.caughtUpEvents - before.caughtUpEvents, run: row.id }
+  })
+  await check('宕机补事件：正常轮询到的事件不算补上的事件', async () => {
+    const before = await handledSummary()
+    const normal = personOf({ number: batch * 100 + 2, department: 20301 })
+    await injectEmployees({ records: [normal.record] })
+    await waitFor({ probe: async () => ((await mockState()).feishuUsers.some((user) => user.mobile === normal.mobile) ? true : null), timeoutMs: 420000 })
+    await sleep(5000)
+    const after = await handledSummary()
+    assert(after.caughtUpEvents === before.caughtUpEvents, `正常轮询的事件被算成补上的：${before.caughtUpEvents} -> ${after.caughtUpEvents}`)
+    return 'ok'
+  })
+}
+
+async function stageTriggerMerge() {
+  const { page } = ctx
+  const openBefore = (await listIssues({ view: 'OPEN' })).map((issue) => issue.id)
+  ctx.webhooks.length = 0
+  const triggerIssues = async ({ view = 'ALL' } = {}) => (await listIssues({ view })).filter((issue) => issue.kind === 'TRIGGER' && !openBefore.includes(issue.id))
+  await check('同因合并：北森限流时三个工作流的触发器同时失败，只开一个问题，列出三个受影响的工作流，只告警一次', async () => {
+    await mock({ method: 'POST', path: '/__admin/beisen-mode', body: { rules: [{ mode: 'RATE_LIMIT_429' }] } })
+    const issue = await waitFor({
+      probe: async () => {
+        const found = (await triggerIssues({ view: 'OPEN' })).find((item) => item.errorCode === 'HTTP_429')
+        return found && found.affectedWorkflows >= 3 ? found : null
+      },
+      timeoutMs: 300000,
+    })
+    const open429 = (await triggerIssues({ view: 'OPEN' })).filter((item) => item.errorCode === 'HTTP_429')
+    assert(open429.length === 1, `同因的触发器失败应当只开一个问题，实际 ${open429.length} 个`)
+    assert(issue.affectedWorkflows === 3, `应当影响 3 个工作流，实际 ${issue.affectedWorkflows}`)
+    await sleep(20000)
+    const alerts = ctx.webhooks.filter((hook) => hook.title !== '告警渠道测试')
+    assert(alerts.length === 1, `同因合并后应当只告警一次，实际 ${alerts.length} 条：${JSON.stringify(alerts).slice(0, 300)}`)
+    ctx.mergedIssue = issue
+    return { issueId: issue.id, title: issue.title, alerts: alerts.length }
+  })
+  await check('问题标题：用原因归类加关键对象，不再是原始报错全文；原始报错放在详情里', async () => {
+    const issue = ctx.mergedIssue
+    assert(issue.title.length <= 40, `标题应当简短，实际 ${issue.title.length} 个字符：${issue.title}`)
+    assert(!issue.title.includes('Beisen API rate limit'), `标题里不该是原始报错：${issue.title}`)
+    await page.goto(`${WEB}/projects/${ctx.session.projectId}/issues`)
+    const row = page.locator('tbody tr').filter({ hasText: '对方系统限流' }).first()
+    await row.waitFor({ timeout: 120000 })
+    const titleCell = row.locator('span.font-medium').first()
+    const shown = await titleCell.innerText()
+    assert(shown.startsWith('对方系统限流'), `列表里的标题是：${shown}`)
+    const truncated = await titleCell.evaluate((element) => element.scrollWidth > element.clientWidth + 1)
+    assert(!truncated, `列表里的标题被截断了：${shown}`)
+    assert((await row.innerText()).includes('3 个工作流'), '列表里没有写明影响了几个工作流')
+    await shot('issues-list-merged')
+    await openIssueDetail({ issue })
+    const body = await page.locator('body').innerText()
+    assert(body.includes('Beisen API rate limit exceeded') || body.includes('API rate limit exceeded'), '详情里没有原始报错')
+    return shown
+  })
+  await check('问题详情：受影响的工作流逐个列出并能点进去，没有「重放」类修复动作', async () => {
+    const card = page.getByTestId('issue-affected-workflows')
+    await card.waitFor({ timeout: 60000 })
+    const names = await card.locator('li a').allInnerTexts()
+    ;['员工入职开通飞书账号', '员工调岗同步部门', '员工离职暂停飞书账号'].forEach((name) => assert(names.some((item) => item.includes(name)), `受影响的工作流里没有 ${name}：${names.join('、')}`))
+    const body = await page.locator('body').innerText()
+    assert(!body.includes('Affected runs') && !body.includes('受影响的运行'), '触发器问题没有运行，不该显示受影响的运行')
+    assert((await page.getByRole('button', { name: /重放|重跑/ }).count()) === 0, '触发器问题没有可重放的运行，不该有重放按钮')
+    await shot('issue-merged-detail')
+    return names
+  })
+  await check('同一连接上另一个原因互不混淆：一个工作流换成服务端错误，开出第二个问题，原问题少一个工作流但仍未解决', async () => {
+    await mock({ method: 'POST', path: '/__admin/beisen-mode', body: { rules: [{ mode: 'SERVER_ERROR_500', whenEmpStatusIncludes: 8 }, { mode: 'RATE_LIMIT_429', unlessEmpStatusIncludes: 8 }] } })
+    const second = await waitFor({
+      probe: async () => (await triggerIssues({ view: 'OPEN' })).find((item) => item.errorCode === 'HTTP_500' && item.affectedWorkflows >= 1) ?? null,
+      timeoutMs: 300000,
+    })
+    assert(second.affectedWorkflows === 1, `第二个问题应当只影响 1 个工作流，实际 ${second.affectedWorkflows}`)
+    const first = await waitFor({
+      probe: async () => {
+        const found = (await triggerIssues({ view: 'OPEN' })).find((item) => item.id === ctx.mergedIssue.id)
+        return found && found.affectedWorkflows === 2 ? found : null
+      },
+      timeoutMs: 120000,
+    })
+    assert(first.status === 'OPEN', '原问题还有两个工作流在失败，不该被解决')
+    ctx.secondIssue = second
+    return { first: first.affectedWorkflows, second: second.affectedWorkflows }
+  })
+  await check('合并的问题里有工作流修好后：问题仍未解决，活动记录写明哪个工作流恢复了、还剩几个受影响', async () => {
+    await mock({ method: 'POST', path: '/__admin/beisen-mode', body: { rules: [{ mode: 'RATE_LIMIT_429', unlessEmpStatusIncludes: 8 }] } })
+    await waitFor({
+      probe: async () => ((await triggerIssues({ view: 'ALL' })).find((item) => item.id === ctx.secondIssue.id)?.status === 'RESOLVED' ? true : null),
+      timeoutMs: 300000,
+    })
+    const stillOpen = (await triggerIssues({ view: 'OPEN' })).find((item) => item.id === ctx.mergedIssue.id)
+    assert(stillOpen !== undefined && stillOpen.affectedWorkflows === 2, '另一个原因修好后，限流问题应当仍有 2 个工作流受影响')
+    await openIssueDetail({ issue: ctx.mergedIssue })
+    const body = await page.locator('body').innerText()
+    assert(/的触发器已恢复，还有 2 个工作流受影响/.test(body), `活动记录里没有写明工作流恢复：${body.slice(-600)}`)
+    await shot('issue-merged-partial-recovery')
+    return 'ok'
+  })
+  await check('合并的问题在全部工作流恢复后自动已解决', async () => {
+    await mock({ method: 'POST', path: '/__admin/beisen-mode', body: { rules: [] } })
+    const resolved = await waitFor({
+      probe: async () => {
+        const found = (await triggerIssues({ view: 'ALL' })).find((item) => item.id === ctx.mergedIssue.id)
+        return found?.status === 'RESOLVED' ? found : null
+      },
+      timeoutMs: 300000,
+    })
+    return resolved.status
+  })
+}
+
+async function stageNarrowRunLog() {
+  const { page } = ctx
+  const url = `${WEB}/projects/${ctx.session.projectId}/runs?time=24h`
+  for (const scheme of ['light', 'dark']) {
+    await check(`窄屏 800 宽运行日志（${scheme === 'light' ? '亮' : '暗'}色）：状态和操作始终可见，不需要横向滚动`, async () => {
+      await page.setViewportSize({ width: 800, height: 900 })
+      await page.goto(url)
+      await page.evaluate((value) => localStorage.setItem('fema.theme', value), scheme)
+      await page.reload()
+      await page.waitForFunction((value) => document.documentElement.classList.contains('dark') === (value === 'dark'), scheme, { timeout: 30000 })
+      await page.locator('tbody tr').first().waitFor({ timeout: 120000 })
+      const row = page.locator('tbody tr').first()
+      await row.getByTestId('run-log-compact-cell').waitFor({ timeout: 30000 })
+      const status = row.locator('td').nth(3)
+      const viewport = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }))
+      assert(viewport.scrollWidth <= viewport.width, `页面出现了横向滚动：${viewport.scrollWidth} > ${viewport.width}`)
+      const container = await page.locator('[data-slot=table-container]').first().evaluate((element) => ({ scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }))
+      assert(container.scrollWidth <= container.clientWidth + 1, `表格需要横向滚动才能看到后面的列：${container.scrollWidth} > ${container.clientWidth}`)
+      const detailsButton = row.getByRole('button', { name: '详情' })
+      const box = await detailsButton.boundingBox()
+      assert(box !== null && box.x + box.width <= viewport.width, '「详情」按钮超出了窗口')
+      const statusBox = await status.boundingBox()
+      assert(statusBox !== null && statusBox.x + statusBox.width <= viewport.width, '状态列超出了窗口')
+      assert((await row.getByTestId('run-log-compact-cell').count()) === 1, '次要列应当折叠进工作流列的第二行')
+      await shot(`runlogs-narrow-${scheme}`)
+      return container
+    })
+  }
+  await page.evaluate(() => localStorage.setItem('fema.theme', 'light'))
+  await page.setViewportSize({ width: 1440, height: 900 })
+}
+
+async function handledSummary() {
+  const summary = await api({ method: 'GET', path: `/run-monitor/summary?range=7d&timezone=UTC&projectIds=${ctx.session.projectId}` })
+  return summary.handled
+}
+
+async function runLogsHandled({ kind }) {
+  const page = await api({ method: 'GET', path: `/run-logs?type=RUN&time=7d&projectId=${ctx.session.projectId}&handled=${kind}&limit=100` })
+  return page.data
+}
+
+function runStackScript({ script }) {
+  execFileSync(`${process.env.E2E_REPO_ROOT ?? process.cwd()}/tools/e2e/stack/${script}`, [SLOT], { stdio: 'ignore', env: process.env })
 }
 
 async function findIssue({ stepName, view = 'OPEN' }) {
@@ -599,17 +985,15 @@ async function openConnectionWizard({ app }) {
   const { page } = ctx
   await page.goto(`${WEB}/projects/${ctx.session.projectId}/connections`)
   await page.getByRole('button', { name: /新建连接/ }).first().click()
-  await page.getByText(app, { exact: true }).click()
+  await page.getByLabel('新建连接').getByText(app, { exact: true }).click()
   await page.getByRole('dialog').getByText(`连接到 ${app}`).waitFor({ timeout: 30000 })
 }
 
 async function fillConnectionForm({ values }) {
   const dialog = ctx.page.getByRole('dialog')
-  const textInputs = dialog.locator('input[type=text]')
-  const count = await textInputs.count()
-  const secretInput = dialog.locator('input[type=password]')
-  await textInputs.nth(count - 1).fill(values[0])
-  await secretInput.fill(values[1])
+  for (const [label, value] of Object.entries(values)) {
+    await dialog.getByLabel(new RegExp(label)).fill(value)
+  }
 }
 
 async function submitConnectionForm({ expect }) {

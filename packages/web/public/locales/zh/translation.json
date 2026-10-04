@@ -5812,5 +5812,7 @@
   "Saved settings removed": "已移除保存的配置",
   "portRange": "请输入 1 到 65535 之间的端口号",
   "invalidHttpAddress": "请输入 http 或 https 开头的地址",
-  "You can skip this step: once setup is done, set these services under System and upgrades, Optional services, without restarting. To use environment variables instead, set them on the server and restart the app; your answers so far are kept while you restart, except the password.": "这一步可以跳过：安装完成后，在「系统与升级」的「可选服务」里配置这些服务，不需要重启。想改用环境变量的话，在服务器上设置后重启应用；重启期间已填的内容会保留，密码除外。"
+  "You can skip this step: once setup is done, set these services under System and upgrades, Optional services, without restarting. To use environment variables instead, set them on the server and restart the app; your answers so far are kept while you restart, except the password.": "这一步可以跳过：安装完成后，在「系统与升级」的「可选服务」里配置这些服务，不需要重启。想改用环境变量的话，在服务器上设置后重启应用；重启期间已填的内容会保留，密码除外。",
+  "Switch to the light theme": "切换到浅色主题",
+  "Switch to the dark theme": "切换到深色主题"
 }

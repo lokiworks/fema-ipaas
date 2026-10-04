@@ -4,16 +4,15 @@ import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
-import { useTheme } from '@/components/providers/theme-provider';
 import { SetupWizard } from '@/features/setup-wizard';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
 import { AuthDrawerBody, AuthMode } from './auth-drawer-body';
+import { AuthThemeSwitch } from './auth-theme-switch';
 
 export function AuthLanding({ initialMode }: AuthLandingProps) {
-  const { setForceLightMode } = useTheme();
   const redirectAfterLogin = useRedirectAfterLogin();
   const signedIn =
     !isNil(authenticationSession.getToken()) &&
@@ -25,11 +24,6 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
   const [showWizard] = useState(
     () => userCreated !== true && !authenticationSession.isOnboarding(),
   );
-
-  useEffect(() => {
-    setForceLightMode(true);
-    return () => setForceLightMode(false);
-  }, [setForceLightMode]);
 
   useEffect(() => {
     if (signedIn) {
@@ -50,7 +44,10 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
   }
 
   return (
-    <div className="grid min-h-dvh w-full grid-cols-1 bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+    <div className="relative grid min-h-dvh w-full grid-cols-1 bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div className="absolute right-4 top-4 z-10">
+        <AuthThemeSwitch />
+      </div>
       <BrandPanel />
       <main className="flex flex-col items-center justify-center gap-4 overflow-y-auto p-4 lg:flex-row lg:items-start lg:justify-start lg:p-16">
         {showWizard ? (

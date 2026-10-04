@@ -1766,7 +1766,7 @@
   "Data and privacy": "Data and privacy",
   "How long run data is kept, what is recorded, and which fields are masked in logs.": "How long run data is kept, what is recorded, and which fields are masked in logs.",
   "Retention": "Retention",
-  "Run data older than this is deleted every day. Projects can only choose a shorter period.": "Run data older than this is deleted every day. Projects can only choose a shorter period.",
+  "Run data older than this is cleaned up automatically every hour. Projects can only choose a shorter period.": "Run data older than this is cleaned up automatically every hour. Projects can only choose a shorter period.",
   "Keep run logs for": "Keep run logs for",
   "{days} days": "{days} days",
   "Keep unmasked originals for": "Keep unmasked originals for",

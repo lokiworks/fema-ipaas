@@ -108,7 +108,7 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
             <CardTitle>{t('Retention')}</CardTitle>
             <CardDescription>
               {t(
-                'Run data older than this is deleted every day. Projects can only choose a shorter period.',
+                'Run data older than this is cleaned up automatically every hour. Projects can only choose a shorter period.',
               )}
             </CardDescription>
           </CardHeader>

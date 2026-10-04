@@ -1766,7 +1766,7 @@
   "Data and privacy": "数据与隐私",
   "How long run data is kept, what is recorded, and which fields are masked in logs.": "运行数据保留多久、记录哪些内容、日志中哪些字段要脱敏。",
   "Retention": "保留期",
-  "Run data older than this is deleted every day. Projects can only choose a shorter period.": "超过保留期的运行数据每天自动清理。项目只能设置更短的保留期。",
+  "Run data older than this is cleaned up automatically every hour. Projects can only choose a shorter period.": "超过保留期的运行数据每小时自动清理一次。项目只能设置更短的保留期。",
   "Keep run logs for": "运行日志保留",
   "{days} days": "{days} 天",
   "Keep unmasked originals for": "原文保留",

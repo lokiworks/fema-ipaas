@@ -291,6 +291,9 @@ export async function ageRows({ statements }) {
 
 export async function uiLogin({ browser, user, colorScheme = 'light', width = 1440, height = 900 }) {
   const context = await browser.newContext({ viewport: { width, height }, colorScheme })
+  if (colorScheme === 'dark') {
+    await context.addInitScript(() => localStorage.setItem('fema.theme', 'dark'))
+  }
   const page = await context.newPage()
   page.on('pageerror', (error) => process.stdout.write(`pageerror ${error.message.slice(0, 160)}\n`))
   await page.goto(`${WEB}/sign-in`, { waitUntil: 'domcontentloaded', timeout: 120000 })

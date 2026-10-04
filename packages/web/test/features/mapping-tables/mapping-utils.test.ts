@@ -107,6 +107,21 @@ describe('templatePreview.resolveTemplate', () => {
     ).toBe('你好 王磊');
   });
 
+  it('reads the reference form the data selector writes, with the output segment', () => {
+    expect(
+      templatePreview.resolveTemplate({
+        template: "{{trigger['output']['body']['name']}}",
+        sampleData,
+      }),
+    ).toBe('王磊');
+    expect(
+      templatePreview.resolveTemplate({
+        template: "你好 {{trigger['output']['body']['name']}}",
+        sampleData,
+      }),
+    ).toBe('你好 王磊');
+  });
+
   it('keeps constants as they are', () => {
     expect(
       templatePreview.resolveTemplate({ template: 'Web', sampleData }),

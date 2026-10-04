@@ -34,12 +34,14 @@ function readReference({
     .trim()
     .replace(/\['([^']+)'\]/g, '.$1')
     .split('.');
+  const path = rest[0] === OUTPUT_SEGMENT ? rest.slice(1) : rest;
   return dataMapping.readPath({
     root: sampleData[stepName],
-    path: rest.join('.'),
+    path: path.join('.'),
   });
 }
 
+const OUTPUT_SEGMENT = 'output';
 const WHOLE_TEMPLATE = /^\{\{\s*([^{}]+?)\s*\}\}$/;
 const ANY_TEMPLATE = /\{\{\s*([^{}]+?)\s*\}\}/g;
 

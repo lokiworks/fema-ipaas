@@ -9,6 +9,7 @@ import {
   MappingSpec,
   MappingTableData,
   Property,
+  tryCatch,
 } from '@fema-ipaas/connector-sdk';
 
 export const mapFields = createAction({
@@ -41,7 +42,7 @@ export const mapFields = createAction({
   async run(context) {
     const parsed = MappingSpec.safeParse(context.propsValue.mapping);
     if (!parsed.success) {
-      throw new Error('The field mapping is not valid');
+      throw new Error('字段映射的配置不完整或格式不对，请回到编辑器重新保存');
     }
     const tables = await Promise.all(
       dataMapping.lookupTableIds(parsed.data).map((id) =>
@@ -52,11 +53,19 @@ export const mapFields = createAction({
         }),
       ),
     );
-    const result = dataMapping.evaluate({ spec: parsed.data, tables });
-    const errors = result.rows.filter((row) => row.error !== null);
-    if (errors.length > 0 && context.propsValue.failOnError !== false) {
+    const result = dataMapping.evaluate({
+      spec: parsed.data,
+      tables: tables.flatMap((table) => (table === null ? [] : [table])),
+    });
+    const blocking = dataMapping.blockingIssues(result.issues);
+    if (blocking.length > 0 && context.propsValue.failOnError !== false) {
       throw new Error(
-        errors.map((row) => `${row.target}: ${row.error}`).join('; '),
+        blocking
+          .map(
+            (issue) =>
+              `${issue.target.length > 0 ? `字段「${issue.target}」：` : ''}${dataMapping.describeIssue(issue)}`,
+          )
+          .join('；'),
       );
     }
     return result.value;
@@ -71,11 +80,13 @@ async function fetchTable({
   apiUrl: string;
   token: string;
   id: string;
-}): Promise<MappingTableData> {
-  const response = await httpClient.sendRequest<MappingTableData>({
-    method: HttpMethod.GET,
-    url: `${apiUrl.replace(/\/$/, '')}/v1/worker/mapping-tables/${encodeURIComponent(id)}`,
-    authentication: { type: AuthenticationType.BEARER_TOKEN, token },
-  });
-  return response.body;
+}): Promise<MappingTableData | null> {
+  const { data: response } = await tryCatch(() =>
+    httpClient.sendRequest<MappingTableData>({
+      method: HttpMethod.GET,
+      url: `${apiUrl.replace(/\/$/, '')}/v1/worker/mapping-tables/${encodeURIComponent(id)}`,
+      authentication: { type: AuthenticationType.BEARER_TOKEN, token },
+    }),
+  );
+  return response === null ? null : response.body;
 }

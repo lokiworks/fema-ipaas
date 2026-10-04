@@ -70,7 +70,7 @@ describe('the operator may switch a workflow on or off and nothing else', () => 
     it('lets a developer publish but not a viewer', async () => {
         const current = currentWorld()
         await workspaceSeed.setReleaseMode({ projectId: current.scopes.A.project.id, enabled: false })
-        const workflow = await workspaceSeed.validWorkflow({ world: current, scope: 'A' })
+        const workflow = await workspaceSeed.scheduledWorkflow({ world: current, scope: 'A' })
         const body = { type: WorkflowOperationType.LOCK_AND_PUBLISH, request: { status: WorkflowStatus.DISABLED } }
         const viewer = await as({ identity: 'viewer', request: { method: 'POST', url: `/v1/workflows/${workflow.id}`, body } })
         expect(viewer.status).toBe(403)

@@ -96,12 +96,14 @@ const installBody = ({ ctx, acknowledgedChecks = [] }: { ctx: TestContext, ackno
     acknowledgedChecks,
 })
 
+const OFFICIAL_SOLUTION_IDS = ['official-beisen-bitable-roster', 'official-beisen-feishu']
+
 describe('Solutions API', () => {
-    it('starts with only the official solution in the library', async () => {
+    it('starts with only the official solutions in the library', async () => {
         const ctx = await createTestContext(app!)
         const response = await ctx.get('/v1/solutions')
         expect(response.statusCode).toBe(StatusCodes.OK)
-        expect(response.json().map((solution: { id: string }) => solution.id)).toEqual(['official-beisen-feishu'])
+        expect(response.json().map((solution: { id: string }) => solution.id).sort()).toEqual(OFFICIAL_SOLUTION_IDS)
     })
 
     it('refuses to package a workflow that was never published', async () => {
@@ -128,7 +130,7 @@ describe('Solutions API', () => {
         expect(detail.package.checks.some((check: { kind: string }) => check.kind === 'MANUAL')).toBe(true)
 
         const list = await ctx.get('/v1/solutions')
-        expect(list.json().map((solution: { id: string }) => solution.id).sort()).toEqual([detail.id, 'official-beisen-feishu'].sort())
+        expect(list.json().map((solution: { id: string }) => solution.id).sort()).toEqual([detail.id, ...OFFICIAL_SOLUTION_IDS].sort())
     })
 
     it('keeps another tenant from seeing the solution', async () => {
@@ -137,7 +139,7 @@ describe('Solutions API', () => {
         const workflowId = await savePublishedWorkflow({ ctx: owner, name: 'Onboard' })
         const created = (await owner.post('/v1/solutions', createBody({ ctx: owner, workflowIds: [workflowId] }))).json()
 
-        expect((await outsider.get('/v1/solutions')).json().map((solution: { id: string }) => solution.id)).toEqual(['official-beisen-feishu'])
+        expect((await outsider.get('/v1/solutions')).json().map((solution: { id: string }) => solution.id).sort()).toEqual(OFFICIAL_SOLUTION_IDS)
         expect((await outsider.get(`/v1/solutions/${created.id}`)).statusCode).toBe(StatusCodes.NOT_FOUND)
     })
 

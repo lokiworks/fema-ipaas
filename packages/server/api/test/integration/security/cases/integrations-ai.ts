@@ -1,5 +1,5 @@
 import { Permission } from '@fema-ipaas/core-utils'
-import { ConnectionSharePermission, CopilotMode } from '@fema-ipaas/shared'
+import { ConnectionSharePermission, CopilotMode, WorkflowPlanSource } from '@fema-ipaas/shared'
 import { integrationsSeed } from '../support/integrations-seed'
 import { MatrixCase } from '../support/matrix'
 import { Scope, World, WorldRequest } from '../support/world'
@@ -16,10 +16,12 @@ async function visibleModel({ world, scope }: { world: World, scope: Scope }): P
 const PLAN = {
     displayName: 'sec',
     summary: 'sec',
+    source: WorkflowPlanSource.RULES,
     trigger: { connectorName: '@sec/missing', connectorDisplayName: 'x', operationName: 'x', operationDisplayName: 'x', displayName: 'x', input: {}, requiresConnection: false, connectionExternalId: null },
     steps: [],
     questions: [],
     warnings: [],
+    unavailableSystems: [],
     omittedSteps: 0,
 }
 

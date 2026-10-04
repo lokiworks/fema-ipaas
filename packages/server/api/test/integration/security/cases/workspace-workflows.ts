@@ -6,14 +6,16 @@ import { seed } from '../support/seed'
 import { workspaceSeed } from '../support/workspace-seed'
 import { Scope, World } from '../support/world'
 
-function operationCase({ label, permission, expectOk, buildRequest, assertUnchanged }: OperationCaseParams): MatrixCase {
+function operationCase({ label, permission, expectOk, publishable, buildRequest, assertUnchanged }: OperationCaseParams): MatrixCase {
     return {
         id: 'POST /v1/workflows/:id',
         label,
         access: { type: 'project', permission },
         expectOk,
         prepare: async ({ world, scope }) => {
-            const workflow = await workspaceSeed.validWorkflow({ world, scope })
+            const workflow = publishable === true
+                ? await workspaceSeed.scheduledWorkflow({ world, scope })
+                : await workspaceSeed.validWorkflow({ world, scope })
             const request = await buildRequest({ world, scope })
             return { request: { method: 'POST', url: `/v1/workflows/${workflow.id}`, body: request }, state: { workflowId: workflow.id } }
         },
@@ -90,6 +92,7 @@ const operationCases: MatrixCase[] = [
     operationCase({
         label: 'LOCK_AND_PUBLISH',
         permission: Permission.PUBLISH_WORKFLOW,
+        publishable: true,
         buildRequest: async ({ world, scope }) => {
             await workspaceSeed.setReleaseMode({ projectId: world.scopes[scope].project.id, enabled: false })
             return { type: WorkflowOperationType.LOCK_AND_PUBLISH, request: { status: WorkflowStatus.DISABLED } }
@@ -152,6 +155,7 @@ type OperationCaseParams = {
     label: string
     permission: Permission
     expectOk?: readonly number[]
+    publishable?: boolean
     buildRequest: (params: { world: World, scope: Scope }) => Promise<Record<string, unknown>>
     assertUnchanged: (params: AssertUnchangedParams) => Promise<void>
 }

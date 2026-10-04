@@ -78,6 +78,17 @@ export const workspaceReleaseCases: MatrixCase[] = [
         }),
     },
     {
+        id: 'GET /v1/workflow-releases/preview',
+        access: { type: 'project', permission: Permission.READ_PROJECT_RELEASE },
+        prepare: async ({ world, scope }) => {
+            const projectId = world.scopes[scope].project.id
+            await workspaceSeed.setReleaseMode({ projectId, enabled: true })
+            const workflow = await workspaceSeed.scheduledWorkflow({ world, scope })
+            await db.update('workflow', workflow.id, { testVersionId: workflow.versionId })
+            return { request: { method: 'GET', url: '/v1/workflow-releases/preview', query: { projectId, workflowId: workflow.id } } }
+        },
+    },
+    {
         id: 'GET /v1/workflow-releases/pending-count',
         access: { type: 'project', permission: Permission.READ_PROJECT_RELEASE },
         scopedRead: true,
@@ -123,7 +134,7 @@ export const workspaceReleaseCases: MatrixCase[] = [
         prepare: async ({ world, scope }) => {
             const projectId = world.scopes[scope].project.id
             await workspaceSeed.setReleaseMode({ projectId, enabled: true })
-            const workflow = await workspaceSeed.validWorkflow({ world, scope })
+            const workflow = await workspaceSeed.scheduledWorkflow({ world, scope })
             return {
                 request: { method: 'POST', url: '/v1/workflow-releases/deploy-to-test', body: { projectId, workflowId: workflow.id } },
                 state: { workflowId: workflow.id },
@@ -139,7 +150,7 @@ export const workspaceReleaseCases: MatrixCase[] = [
         access: { type: 'project', permission: Permission.PUBLISH_WORKFLOW },
         prepare: async ({ world, scope }) => {
             const projectId = world.scopes[scope].project.id
-            const workflow = await workspaceSeed.validWorkflow({ world, scope, published: true })
+            const workflow = await workspaceSeed.scheduledWorkflow({ world, scope, published: true })
             return {
                 request: { method: 'POST', url: '/v1/workflow-releases/rollback', body: { projectId, workflowId: workflow.id, versionId: workflow.versionId } },
                 state: { workflowId: workflow.id },

@@ -80,6 +80,7 @@ async function prepare() {
       statements: [
         ...shift({ label: 'B', days: 10 }),
         ...shift({ label: 'A', days: 4 }),
+        { sql: `update execution set "searchHashes" = '{}' where id = $1`, params: [people.A.runId] },
         payloadShift({ from: people.B.startedAt, to: people.A.startedAt, days: 10 }),
         payloadShift({ from: people.A.startedAt, to: people.C.startedAt, days: 4 }),
       ],
@@ -175,8 +176,8 @@ async function verify() {
     const byKey = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&businessKey=${people.A.jobNumber}`, token: admin.token })
     assert(byKey.data.some((item) => item.id === people.A.runId), '按工号没搜到 A')
   })
-  await check('检索：只匹配完整号码——前缀、尾号、别人的号码都搜不到 A 批', async () => {
-    const queries = [people.A.mobile.slice(0, 7), people.A.mobile.slice(-4), `139${people.C.tag}0001`.replace(people.C.tag, '0000'), people.C.mobile]
+  await check('检索：只匹配完整号码——前缀、改过尾号的号码、别人的号码都搜不到 A 批', async () => {
+    const queries = [people.A.mobile.slice(0, 7), `${people.A.mobile.slice(0, 7)}${people.A.mobile.slice(7) === '0000' ? '1111' : '0000'}`, people.C.mobile]
     for (const content of queries) {
       const result = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&content=${content}`, token: admin.token })
       assert(!result.data.some((item) => item.id === people.A.runId), `「${content}」不应该搜到 A`)

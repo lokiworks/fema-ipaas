@@ -5498,5 +5498,22 @@
   "Check the permission scope: grant the app the permission this step needs in the Feishu Open Platform, then republish the app.": "检查权限范围：到飞书开放平台给应用开通这一步需要的权限，然后重新发布应用。",
   "Check the availability scope: add the department or member to the contact scope of the app in the Feishu Open Platform, then republish the app.": "检查可用范围：到飞书开放平台把这个部门或成员加入应用的通讯录权限范围，然后重新发布应用。",
   "Check the app credentials, the permission scopes granted to the app, and the availability scope of the app in the Feishu Open Platform.": "检查应用凭证、应用已获得的权限范围和应用的可用范围（均在飞书开放平台）。",
-  "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app.": "检查 app_key 和 app_secret：必须与北森管理后台里连接器的 Key 和 Secret 一致。再检查租户给这个应用开通了哪些接口。"
+  "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app.": "检查 app_key 和 app_secret：必须与北森管理后台里连接器的 Key 和 Secret 一致。再检查租户给这个应用开通了哪些接口。",
+  "Unmasked run states": "未脱敏的运行状态",
+  "Original webhook request bodies": "Webhook 原始请求体",
+  "Business keys and failure messages of expired runs": "过期运行的业务标识和失败原因",
+  "Expired log files": "过期的日志文件",
+  "The next cleanup runs at {time}. Based on the saved settings it will delete the following. Deleted data cannot be recovered.": "下次清理在 {time}。按已保存的设置，会删除下面这些数据，删除后不能恢复。",
+  "No node marks its output as sensitive yet. Turn on \"Output contains sensitive information\" in the Output tab of a step.": "还没有节点把出参标为敏感。可以在节点的「出参」页打开「出参包含敏感信息」。",
+  "{count} nodes mark their output as sensitive. All of their output is masked, and the same values are masked in later steps:": "有 {count} 个节点把出参标为敏感，它们的全部出参都会脱敏，后续节点里出现的相同值也会遮住：",
+  "Originals are not recorded at the saved level, so nobody can view them.": "已保存的记录级别不保存原文，所以没有人能查看原文。",
+  "Nobody can view originals now. Troubleshooting only shows masked data.": "现在没有人可以查看原文，排查问题只能看脱敏后的数据。",
+  "{count} people can view originals now:": "现在有 {count} 人可以查看原文：",
+  "You changed what is recorded. This list follows the saved settings until you save.": "你改了记录内容，保存之前这份名单仍按已保存的设置显示。",
+  "Download receipt": "下载处理记录",
+  "erasureConfirmWord": "删除",
+  "Unmasked run states, original request bodies and saved search hashes for {person} are deleted too.": "{person} 的未脱敏运行状态、原始请求体和已保存的检索哈希也会一并删除。",
+  "Type the full {kind} of this person, or the word {word}, to confirm": "请输入这个人的完整{kind}，或输入「{word}」来确认",
+  "Cleared {logs} log files, {slices} large outputs, {payloads} request bodies, {keys} business keys, {messages} failure messages, {dedupe} dedupe keys and {hashes} search hashes.": "已清除 {logs} 个日志文件、{slices} 个大输出、{payloads} 个请求体、{keys} 个业务标识、{messages} 条失败原因、{dedupe} 个去重键和 {hashes} 个检索哈希。",
+  "erasureConfirmationRequired": "请输入对方的标识或确认词"
 }

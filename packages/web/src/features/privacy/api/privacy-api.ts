@@ -1,6 +1,9 @@
 import {
+  ConfirmDataErasureRequestBody,
   CreateDataErasureRequestBody,
+  DataErasureReceipt,
   DataErasureRequest,
+  PrivacyOverview,
   PrivacySettings,
   RevealExecutionPayloadRequestBody,
   RevealExecutionPayloadResponse,
@@ -16,6 +19,9 @@ export const privacyApi = {
   update(request: UpdatePrivacySettingsRequestBody): Promise<PrivacySettings> {
     return api.post<PrivacySettings>('/v1/privacy-settings', request);
   },
+  overview(): Promise<PrivacyOverview> {
+    return api.get<PrivacyOverview>('/v1/privacy-settings/overview');
+  },
   listErasures(): Promise<DataErasureRequest[]> {
     return api.get<DataErasureRequest[]>('/v1/privacy-settings/erasures');
   },
@@ -27,9 +33,18 @@ export const privacyApi = {
       request,
     );
   },
-  confirmErasure(id: string): Promise<DataErasureRequest> {
+  confirmErasure(
+    id: string,
+    request: ConfirmDataErasureRequestBody,
+  ): Promise<DataErasureRequest> {
     return api.post<DataErasureRequest>(
       `/v1/privacy-settings/erasures/${id}/confirm`,
+      request,
+    );
+  },
+  erasureReceipt(id: string): Promise<DataErasureReceipt> {
+    return api.get<DataErasureReceipt>(
+      `/v1/privacy-settings/erasures/${id}/receipt`,
     );
   },
   cancelErasure(id: string): Promise<DataErasureRequest> {

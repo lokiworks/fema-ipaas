@@ -204,6 +204,7 @@ await check('界面：按工号删除个人数据——先搜索再确认，确�
   assert(await deleteButton.isEnabled(), '输入了一个格式正确的标识，按钮应该可点（由服务端核对是不是这个人）')
   await deleteButton.click()
   await confirm.getByText('The confirmation does not match the person to delete').waitFor({ timeout: 30000 })
+  assert((await page.getByText('发生了意外错误，请稍后再试。').count()) === 0, '输错标识时除了对话框里的提示，还弹出了笼统的错误提示')
   const stillWaiting = (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).find((request) => request.status === 'AWAITING_CONFIRMATION' && request.created >= startedAt)
   assert(stillWaiting, '输错标识后请求不该被推进')
   await shot({ page, name: 's5-ui-erasure-confirm-wrong' })

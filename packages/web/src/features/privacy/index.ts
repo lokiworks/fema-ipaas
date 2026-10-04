@@ -3,3 +3,8 @@ export { privacyHooks } from './hooks/privacy-hooks';
 export { MaskedPayloadNotice } from './components/masked-payload-notice';
 export { DataErasureSection } from './components/data-erasure-section';
 export { ProjectRetentionSection } from './components/project-retention-section';
+export {
+  PurgeEstimateNotice,
+  RawViewersNotice,
+  SensitiveNodesNotice,
+} from './components/privacy-overview-notices';

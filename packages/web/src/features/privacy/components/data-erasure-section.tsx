@@ -1,16 +1,18 @@
 import {
   CreateDataErasureRequestBody,
   DataErasureRequest,
+  ErasureCounts,
   ErasureStatus,
   ErasureSubjectKind,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
+import { Download, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,8 +48,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { api } from '@/lib/api';
 
 import { privacyHooks } from '../hooks/privacy-hooks';
+import { erasureConfirmationUtils } from '../utils/erasure-confirmation';
 
 export function DataErasureSection() {
   const [open, setOpen] = useState(false);
@@ -91,11 +95,10 @@ export function DataErasureSection() {
 }
 
 function ErasureRow({ request }: { request: DataErasureRequest }) {
-  const {
-    mutate: act,
-    mutateAsync,
-    isPending,
-  } = privacyHooks.useErasureAction();
+  const { mutate: cancel, isPending } = privacyHooks.useCancelErasure();
+  const { mutate: downloadReceipt, isPending: isDownloading } =
+    privacyHooks.useDownloadReceipt();
+  const [confirming, setConfirming] = useState(false);
   const subject = request.subjectHint
     ? `${request.subjectHint} · ${request.valueHint}`
     : request.valueHint;
@@ -113,6 +116,26 @@ function ErasureRow({ request }: { request: DataErasureRequest }) {
       </div>
       <span className="text-xs text-muted-foreground">{request.reason}</span>
       <span className="text-sm">{progressText(request)}</span>
+      {request.status === ErasureStatus.DONE &&
+        request.matchedRuns > 0 &&
+        request.counts !== null && (
+          <span className="text-xs text-muted-foreground">
+            {countsText(request.counts)}
+          </span>
+        )}
+      {request.status === ErasureStatus.DONE && (
+        <div>
+          <Button
+            size="sm"
+            variant="outline"
+            loading={isDownloading}
+            onClick={() => downloadReceipt(request.id)}
+          >
+            <Download className="size-4 mr-1" />
+            {t('Download receipt')}
+          </Button>
+        </div>
+      )}
       {request.status === ErasureStatus.AWAITING_CONFIRMATION && (
         <>
           <ul className="text-xs text-muted-foreground">
@@ -128,38 +151,130 @@ function ErasureRow({ request }: { request: DataErasureRequest }) {
               ))}
           </ul>
           <div className="flex gap-2">
-            <ConfirmationDeleteDialog
-              title={t('Delete personal data from {count} runs?', {
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={isPending}
+              onClick={() => setConfirming(true)}
+            >
+              {t('Delete data from {count} runs', {
                 count: request.matchedRuns,
               })}
-              message={t(
-                'This cannot be undone. The runs keep their status, duration and error codes; inputs and outputs that contain this value are cleared.',
-              )}
-              buttonText={t('Delete')}
-              entityName={request.valueHint}
-              showToast={false}
-              mutationFn={async () => {
-                await mutateAsync({ id: request.id, action: 'confirm' });
-              }}
-            >
-              <Button size="sm" variant="destructive" disabled={isPending}>
-                {t('Delete data from {count} runs', {
-                  count: request.matchedRuns,
-                })}
-              </Button>
-            </ConfirmationDeleteDialog>
+            </Button>
             <Button
               size="sm"
               variant="ghost"
               disabled={isPending}
-              onClick={() => act({ id: request.id, action: 'cancel' })}
+              onClick={() => cancel(request.id)}
             >
               {t('Cancel')}
             </Button>
           </div>
+          <Dialog open={confirming} onOpenChange={setConfirming}>
+            <DialogContent className="max-w-lg">
+              <ErasureConfirmForm
+                key={confirming ? 'open' : 'closed'}
+                request={request}
+                onDone={() => setConfirming(false)}
+              />
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>
+  );
+}
+
+function ErasureConfirmForm({
+  request,
+  onDone,
+}: {
+  request: DataErasureRequest;
+  onDone: () => void;
+}) {
+  const [typed, setTyped] = useState('');
+  const {
+    mutate: confirm,
+    isPending,
+    error,
+  } = privacyHooks.useConfirmErasure();
+  const word = t('erasureConfirmWord');
+  const canSubmit = erasureConfirmationUtils.isAcceptable({
+    kind: request.kind,
+    typed,
+  });
+  return (
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!canSubmit) {
+          return;
+        }
+        confirm(
+          { id: request.id, request: { confirmation: typed.trim() } },
+          { onSuccess: onDone },
+        );
+      }}
+    >
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2 text-destructive">
+          <TriangleAlert className="size-5" />
+          {t('Delete personal data from {count} runs?', {
+            count: request.matchedRuns,
+          })}
+        </DialogTitle>
+        <DialogDescription>
+          {t(
+            'This cannot be undone. The runs keep their status, duration and error codes; inputs and outputs that contain this value are cleared.',
+          )}
+        </DialogDescription>
+      </DialogHeader>
+      <Alert variant="destructive">
+        <TriangleAlert className="h-4 w-4" />
+        <AlertDescription>
+          {t(
+            'Unmasked run states, original request bodies and saved search hashes for {person} are deleted too.',
+            { person: request.valueHint },
+          )}
+        </AlertDescription>
+      </Alert>
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium" htmlFor="erasure-confirmation">
+          {t(
+            'Type the full {kind} of this person, or the word {word}, to confirm',
+            { kind: kindLabel(request.kind), word },
+          )}
+        </label>
+        <Input
+          id="erasure-confirmation"
+          autoComplete="off"
+          value={typed}
+          onChange={(event) => setTyped(event.target.value)}
+          placeholder={word}
+          className="font-mono"
+        />
+        {error !== null && (
+          <span className="text-sm text-destructive" role="alert">
+            {api.extractServerErrorMessage(error, t('Something went wrong'))}
+          </span>
+        )}
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="ghost" onClick={onDone}>
+          {t('Cancel')}
+        </Button>
+        <Button
+          type="submit"
+          variant="destructive"
+          disabled={!canSubmit}
+          loading={isPending}
+        >
+          <TriangleAlert className="size-4 mr-2" />
+          {t('Delete')}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
 
@@ -337,6 +452,21 @@ function statusVariant(
     default:
       return 'secondary';
   }
+}
+
+function countsText(counts: ErasureCounts): string {
+  return t(
+    'Cleared {logs} log files, {slices} large outputs, {payloads} request bodies, {keys} business keys, {messages} failure messages, {dedupe} dedupe keys and {hashes} search hashes.',
+    {
+      logs: counts.displayLogFiles + counts.rawStateFiles,
+      slices: counts.logSlices,
+      payloads: counts.webhookPayloads,
+      keys: counts.runIdentifiers,
+      messages: counts.failureMessages,
+      dedupe: counts.dedupeKeys,
+      hashes: counts.searchHashes,
+    },
+  );
 }
 
 function progressText(request: DataErasureRequest): string {

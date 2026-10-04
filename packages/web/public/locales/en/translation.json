@@ -5498,5 +5498,22 @@
   "Check the permission scope: grant the app the permission this step needs in the Feishu Open Platform, then republish the app.": "Check the permission scope: grant the app the permission this step needs in the Feishu Open Platform, then republish the app.",
   "Check the availability scope: add the department or member to the contact scope of the app in the Feishu Open Platform, then republish the app.": "Check the availability scope: add the department or member to the contact scope of the app in the Feishu Open Platform, then republish the app.",
   "Check the app credentials, the permission scopes granted to the app, and the availability scope of the app in the Feishu Open Platform.": "Check the app credentials, the permission scopes granted to the app, and the availability scope of the app in the Feishu Open Platform.",
-  "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app.": "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app."
+  "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app.": "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app.",
+  "Unmasked run states": "Unmasked run states",
+  "Original webhook request bodies": "Original webhook request bodies",
+  "Business keys and failure messages of expired runs": "Business keys and failure messages of expired runs",
+  "Expired log files": "Expired log files",
+  "The next cleanup runs at {time}. Based on the saved settings it will delete the following. Deleted data cannot be recovered.": "The next cleanup runs at {time}. Based on the saved settings it will delete the following. Deleted data cannot be recovered.",
+  "No node marks its output as sensitive yet. Turn on \"Output contains sensitive information\" in the Output tab of a step.": "No node marks its output as sensitive yet. Turn on \"Output contains sensitive information\" in the Output tab of a step.",
+  "{count} nodes mark their output as sensitive. All of their output is masked, and the same values are masked in later steps:": "{count} nodes mark their output as sensitive. All of their output is masked, and the same values are masked in later steps:",
+  "Originals are not recorded at the saved level, so nobody can view them.": "Originals are not recorded at the saved level, so nobody can view them.",
+  "Nobody can view originals now. Troubleshooting only shows masked data.": "Nobody can view originals now. Troubleshooting only shows masked data.",
+  "{count} people can view originals now:": "{count} people can view originals now:",
+  "You changed what is recorded. This list follows the saved settings until you save.": "You changed what is recorded. This list follows the saved settings until you save.",
+  "Download receipt": "Download receipt",
+  "erasureConfirmWord": "DELETE",
+  "Unmasked run states, original request bodies and saved search hashes for {person} are deleted too.": "Unmasked run states, original request bodies and saved search hashes for {person} are deleted too.",
+  "Type the full {kind} of this person, or the word {word}, to confirm": "Type the full {kind} of this person, or the word {word}, to confirm",
+  "Cleared {logs} log files, {slices} large outputs, {payloads} request bodies, {keys} business keys, {messages} failure messages, {dedupe} dedupe keys and {hashes} search hashes.": "Cleared {logs} log files, {slices} large outputs, {payloads} request bodies, {keys} business keys, {messages} failure messages, {dedupe} dedupe keys and {hashes} search hashes.",
+  "erasureConfirmationRequired": "Type the identifier of the person or the confirmation word"
 }

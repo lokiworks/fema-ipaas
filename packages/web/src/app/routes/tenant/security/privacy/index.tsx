@@ -52,6 +52,9 @@ import {
   DataErasureSection,
   privacyHooks,
   ProjectRetentionSection,
+  PurgeEstimateNotice,
+  RawViewersNotice,
+  SensitiveNodesNotice,
 } from '@/features/privacy';
 
 export function PrivacyPage() {
@@ -96,6 +99,7 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
     control: form.control,
     name: 'maskRules',
   });
+  const payloadLevel = form.watch('payloadLevel');
 
   return (
     <Form {...form}>
@@ -172,6 +176,9 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
                 </FormItem>
               )}
             />
+            <div className="col-span-2">
+              <PurgeEstimateNotice />
+            </div>
           </CardContent>
         </Card>
 
@@ -322,6 +329,7 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
               <Plus className="size-4 mr-1" />
               {t('Add field rule')}
             </Button>
+            <SensitiveNodesNotice />
             <MaskPreview control={form.control} />
           </CardContent>
         </Card>
@@ -342,6 +350,7 @@ function PrivacyForm({ settings }: { settings: PrivacySettings }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            <RawViewersNotice payloadLevel={payloadLevel} />
             <FormField
               control={form.control}
               name="rawViewRoles"

@@ -211,6 +211,8 @@ export type ValidationErrorParams = BaseErrorParams<
 ErrorCode.VALIDATION,
 {
     message: string
+    messageKey?: string
+    messageParams?: Record<string, string | number>
 }
 >
 

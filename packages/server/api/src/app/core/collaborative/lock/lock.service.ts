@@ -1,10 +1,12 @@
-import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/shared'
+import { isNil } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { redisConnections } from '../../../database/redis-connections'
+import { localizedError } from '../../../helper/localized-error'
 import { EditLockValue, LockDecisionKind, lockPolicy } from './lock-policy'
 
 const LOCK_TTL_SECONDS = 60
 const KEY_PREFIX = 'lock:'
+const LOCKED_BY_OTHER_MESSAGE = '{name} is editing this workflow, so it cannot be changed or published until they finish or the lock is taken over.'
 
 export const lockService = (log: FastifyBaseLogger) => ({
     async acquire({ resourceId, userId, userDisplayName, force, active }: AcquireParams): Promise<AcquireResult> {
@@ -74,9 +76,9 @@ export const lockService = (log: FastifyBaseLogger) => ({
         if (isNil(lock) || lock.userId === userId) {
             return
         }
-        throw new ApplicationError({
-            code: ErrorCode.VALIDATION,
-            params: { message: `${lock.userDisplayName} is editing this workflow, so it cannot be changed or published until they finish or the lock is taken over.` },
+        localizedError.validation({
+            key: LOCKED_BY_OTHER_MESSAGE,
+            params: { name: lock.userDisplayName },
         })
     },
 })

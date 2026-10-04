@@ -30,7 +30,7 @@ import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectEntity } from '../project/project-entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
-import { ConnectionReplacementEntity, WorkflowReleaseEntity } from '../release/release.entity'
+import { ConnectionReplacementEntity, ReleaseChangeEntity, WorkflowReleaseEntity } from '../release/release.entity'
 import { RunMonitorViewEntity } from '../run-monitor/run-monitor-view.entity'
 import { SolutionEntity, SolutionInstallEntity, SolutionVersionEntity } from '../solution/solution.entity'
 import { StoreEntryEntity } from '../store-entry/store-entry-entity'
@@ -95,6 +95,7 @@ function getEntities(): EntitySchema<unknown>[] {
         DataStoreEntity,
         AiUsageEntity,
         RunMonitorViewEntity,
+        ReleaseChangeEntity,
         AgentApprovalEntity,
         DataErasureRequestEntity,
         McpServiceEntity,

@@ -70,6 +70,14 @@ export const workspaceReleaseCases: MatrixCase[] = [
         },
     },
     {
+        id: 'GET /v1/workflow-releases/changes',
+        access: { type: 'project', permission: Permission.READ_PROJECT_RELEASE },
+        scopedRead: true,
+        prepare: async ({ world, scope }) => ({
+            request: { method: 'GET', url: '/v1/workflow-releases/changes', query: { projectId: world.scopes[scope].project.id } },
+        }),
+    },
+    {
         id: 'GET /v1/workflow-releases/pending-count',
         access: { type: 'project', permission: Permission.READ_PROJECT_RELEASE },
         scopedRead: true,

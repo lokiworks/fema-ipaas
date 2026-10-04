@@ -1,4 +1,4 @@
-import { ConnectionReplacement, Project, WorkflowRelease } from '@fema-ipaas/shared'
+import { ConnectionReplacement, Project, ReleaseChange, WorkflowRelease } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart, EntityIdSchema } from '../database/database-common'
 
@@ -7,6 +7,10 @@ export type WorkflowReleaseSchema = WorkflowRelease & {
 }
 
 export type ConnectionReplacementSchema = ConnectionReplacement & {
+    project?: Project
+}
+
+export type ReleaseChangeSchema = ReleaseChange & {
     project?: Project
 }
 
@@ -96,6 +100,78 @@ export const ConnectionReplacementEntity = new EntitySchema<ConnectionReplacemen
                 name: 'projectId',
                 referencedColumnName: 'id',
                 foreignKeyConstraintName: 'fk_connection_replacement_project_id',
+            },
+        },
+    },
+})
+
+export const ReleaseChangeEntity = new EntitySchema<ReleaseChangeSchema>({
+    name: 'release_change',
+    columns: {
+        ...BaseColumnSchemaPart,
+        projectId: EntityIdSchema,
+        workflowId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        action: {
+            type: String,
+        },
+        actorId: EntityIdSchema,
+        fromVersionId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        toVersionId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        restoredVersionId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        note: {
+            type: 'text',
+            nullable: true,
+        },
+        comment: {
+            type: 'text',
+            nullable: true,
+        },
+        approverIds: {
+            type: String,
+            array: true,
+            nullable: false,
+        },
+        releaseId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        environmentsEnabled: {
+            type: Boolean,
+            nullable: true,
+        },
+    },
+    indices: [
+        {
+            name: 'idx_release_change_project_id_created',
+            columns: ['projectId', 'created'],
+        },
+        {
+            name: 'idx_release_change_workflow_id_created',
+            columns: ['workflowId', 'created'],
+        },
+    ],
+    relations: {
+        project: {
+            type: 'many-to-one',
+            target: 'project',
+            cascade: true,
+            onDelete: 'CASCADE',
+            joinColumn: {
+                name: 'projectId',
+                referencedColumnName: 'id',
+                foreignKeyConstraintName: 'fk_release_change_project_id',
             },
         },
     },

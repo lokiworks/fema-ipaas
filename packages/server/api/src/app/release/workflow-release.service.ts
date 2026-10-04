@@ -9,16 +9,22 @@ import {
     DeployToTestResponse,
     EnvironmentOverview,
     ExecutionStatus,
+    ListReleaseChangesRequestQuery,
     ListWorkflowReleasesRequestQuery,
     Project,
+    ReleaseChangeAction,
+    ReleaseChangeWithDetails,
     ReleaseCheck,
     ReleaseCheckCode,
     ReleaseCheckLevel,
     ReleaseEvidence,
+    ReleasePreview,
+    ReleaseSystemComment,
     RollbackWorkflowRequestBody,
     RollbackWorkflowResponse,
     RunEnvironment,
     UpdateEnvironmentSettingsRequestBody,
+    UnreplacedConnection,
     Workflow,
     WorkflowOperationType,
     WorkflowRelease,
@@ -32,10 +38,9 @@ import {
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, In } from 'typeorm'
-import { AuditEventRow } from '../audit/audit-event.entity'
-import { auditEventService } from '../audit/audit-event.service'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { repoFactory } from '../core/db/repo-factory'
+import { localizedError } from '../helper/localized-error'
 import { projectMemberRepo } from '../project/project-member.repo'
 import { projectService } from '../project/project-service'
 import { variableRepo } from '../variable/variable.service'
@@ -46,6 +51,8 @@ import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { connectionReplacementRepo } from './connection-replacement.service'
+import { releaseChangeService } from './release-change.service'
+import { releaseVersionNumbers } from './release-version-numbers'
 import { releaseSideEffects } from './release-side-effects'
 import { WorkflowReleaseEntity } from './release.entity'
 
@@ -75,14 +82,33 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async history({ projectId, cursor }: { projectId: ProjectId, cursor: string | null }): Promise<SeekPage<AuditEventRow>> {
-        return auditEventService(log).list({
-            tenantId: await projectService(log).getTenantId(projectId),
-            projectId: [projectId],
-            action: RELEASE_HISTORY_ACTIONS,
-            cursor,
-            limit: HISTORY_PAGE_SIZE,
+    async changes({ query }: { query: ListReleaseChangesRequestQuery }): Promise<SeekPage<ReleaseChangeWithDetails>> {
+        return releaseChangeService(log).list({
+            query: { ...query, limit: query.limit ?? HISTORY_PAGE_SIZE },
+            tenantId: await projectService(log).getTenantId(query.projectId),
         })
+    },
+
+    async preview({ projectId, workflowId }: { projectId: ProjectId, workflowId: string }): Promise<ReleasePreview> {
+        const project = await projectService(log).getOneOrThrow(projectId)
+        const workflow = await workflowOrThrow({ id: workflowId, projectId })
+        const version = await testVersionOrThrow({ workflow, log })
+        const checks = await checksFor({
+            release: { projectId, workflowId, workflowVersionId: version.id, status: WorkflowReleaseStatus.PENDING },
+            log,
+        })
+        const numbers = await releaseVersionNumbers.forWorkflows({ workflowIds: [workflowId] })
+        return {
+            workflowId,
+            workflowDisplayName: version.displayName,
+            testVersionId: version.id,
+            testVersionNumber: numbers.get(version.id) ?? null,
+            productionVersionId: workflow.publishedVersionId ?? null,
+            productionVersionNumber: isNil(workflow.publishedVersionId) ? null : numbers.get(workflow.publishedVersionId) ?? null,
+            approverIds: approversOf(project),
+            checks,
+            canSubmit: !checks.some((item) => item.level === ReleaseCheckLevel.ERROR),
+        }
     },
 
     async countPendingForApprover({ projectId, userId }: { projectId: ProjectId, userId: UserId }): Promise<number> {
@@ -99,7 +125,7 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         }
         const pending = await workflowReleaseRepo().existsBy({ workflowId: workflow.id, status: WorkflowReleaseStatus.PENDING })
         if (pending) {
-            invalid('This workflow already has a pending release')
+            invalid({ key: 'This workflow already has a pending release' })
         }
         const version = project.releasesEnabled
             ? await testVersionOrThrow({ workflow, log })
@@ -112,7 +138,7 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
                 log,
             })
         if (workflow.publishedVersionId === version.id) {
-            invalid('This version is already published')
+            invalid({ key: 'This version is already published' })
         }
         const autoApprove = !project.releasesEnabled || approversOf(project).length === 0
         if (autoApprove) {
@@ -122,7 +148,10 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             })
             const failing = preChecks.filter((item) => item.level === ReleaseCheckLevel.ERROR)
             if (failing.length > 0) {
-                invalid(`Fix the failing release checks before promoting: ${failing.map((item) => `${item.code}${isNil(item.subject) ? '' : ` ${item.subject}`}`).join(', ')}`)
+                invalid({
+                    key: 'Fix the failing release checks before promoting: {checks}',
+                    params: { checks: failing.map((item) => `${item.code}${isNil(item.subject) ? '' : ` ${item.subject}`}`).join(', ') },
+                })
             }
         }
         const id = generateId()
@@ -148,6 +177,17 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             workflowId: workflow.id,
             versionId: version.id,
             details: { releaseId: id, previousVersionId: workflow.publishedVersionId ?? null, note: request.note, approverIds: approversOf(project) },
+        })
+        await releaseChangeService(log).record({
+            projectId: request.projectId,
+            actorId: requesterId,
+            action: ReleaseChangeAction.REQUESTED,
+            workflowId: workflow.id,
+            fromVersionId: workflow.publishedVersionId,
+            toVersionId: version.id,
+            note: request.note,
+            approverIds: approversOf(project),
+            releaseId: id,
         })
         if (autoApprove) {
             return this.approve({ id, projectId: request.projectId, userId: requesterId, tenantId, comment: undefined, skipApproverCheck: true })
@@ -177,11 +217,11 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         const release = await getOneOrThrow({ id, projectId })
         assertPending(release)
         if (!skipApproverCheck && !canDecide({ release, userId })) {
-            denied('You are not an approver of this release')
+            denied({ key: 'You are not an approver of this release' })
         }
         const checks = await checksFor({ release, log })
         if (checks.some((check) => check.level === ReleaseCheckLevel.ERROR)) {
-            invalid('Fix the failing release checks before approving')
+            invalid({ key: 'Fix the failing release checks before approving' })
         }
         await workflowService(log).update({
             id: release.workflowId,
@@ -210,6 +250,18 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             versionId: release.workflowVersionId,
             details: { releaseId: id, previousVersionId: release.previousVersionId, comment: comment ?? null },
         })
+        await releaseChangeService(log).record({
+            projectId,
+            actorId: userId,
+            action: ReleaseChangeAction.APPROVED,
+            workflowId: release.workflowId,
+            fromVersionId: release.previousVersionId,
+            toVersionId: release.workflowVersionId,
+            note: release.note,
+            comment,
+            approverIds: release.approverIds,
+            releaseId: id,
+        })
         return deployed
     },
 
@@ -217,7 +269,7 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         const release = await getOneOrThrow({ id, projectId })
         assertPending(release)
         if (!canDecide({ release, userId })) {
-            denied('You are not an approver of this release')
+            denied({ key: 'You are not an approver of this release' })
         }
         await workflowReleaseRepo().update({ id, projectId }, {
             status: WorkflowReleaseStatus.REJECTED,
@@ -235,6 +287,18 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             versionId: release.workflowVersionId,
             details: { releaseId: id, comment },
         })
+        await releaseChangeService(log).record({
+            projectId,
+            actorId: userId,
+            action: ReleaseChangeAction.REJECTED,
+            workflowId: release.workflowId,
+            fromVersionId: release.previousVersionId,
+            toVersionId: release.workflowVersionId,
+            note: release.note,
+            comment,
+            approverIds: release.approverIds,
+            releaseId: id,
+        })
         return rejected
     },
 
@@ -242,7 +306,7 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         const release = await getOneOrThrow({ id, projectId })
         assertPending(release)
         if (release.requestedById !== userId) {
-            denied('Only the requester can withdraw a release')
+            denied({ key: 'Only the requester can withdraw a release' })
         }
         await workflowReleaseRepo().update({ id, projectId }, {
             status: WorkflowReleaseStatus.WITHDRAWN,
@@ -257,25 +321,48 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             versionId: release.workflowVersionId,
             details: { releaseId: id },
         })
+        await releaseChangeService(log).record({
+            projectId,
+            actorId: userId,
+            action: ReleaseChangeAction.WITHDRAWN,
+            workflowId: release.workflowId,
+            fromVersionId: release.previousVersionId,
+            toVersionId: release.workflowVersionId,
+            note: release.note,
+            approverIds: release.approverIds,
+            releaseId: id,
+        })
         return workflowReleaseRepo().findOneByOrFail({ id })
+    },
+
+    async recordDirectPublish({ projectId, workflowId, actorId, fromVersionId, toVersionId, note }: RecordDirectPublishParams): Promise<void> {
+        await releaseChangeService(log).record({
+            projectId,
+            actorId,
+            action: ReleaseChangeAction.PUBLISHED_DIRECTLY,
+            workflowId,
+            fromVersionId,
+            toVersionId,
+            note,
+        })
     },
 
     async assertCanPublishDirectly({ projectId }: { projectId: ProjectId }): Promise<void> {
         const project = await projectService(log).getOneOrThrow(projectId)
         if (project.releasesEnabled) {
-            denied('This project has test and production environments. Deploy to test, then promote to production.')
+            denied({ key: 'This project has test and production environments. Deploy to test, then promote to production.' })
         }
     },
 
     async deployToTest({ request, userId, tenantId }: { request: DeployToTestRequestBody, userId: UserId, tenantId: TenantId }): Promise<DeployToTestResponse> {
         const project = await projectService(log).getOneOrThrow(request.projectId)
         if (!project.releasesEnabled) {
-            invalid('Turn on test and production environments for this project first')
+            invalid({ key: 'Turn on test and production environments for this project first' })
         }
         const workflow = await workflowOrThrow({ id: request.workflowId, projectId: request.projectId })
         const version = await lockVersion({ workflowId: workflow.id, versionId: undefined, projectId: request.projectId, tenantId, userId, log })
         if (!version.valid) {
-            invalid('Fix the validation errors before deploying')
+            invalid({ key: 'Fix the validation errors before deploying' })
         }
         const deployedAt = dayjsUtil().toISOString()
         await workflowRepo().update({ id: workflow.id, projectId: request.projectId }, { testVersionId: version.id, testDeployedAt: deployedAt })
@@ -289,6 +376,15 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             versionId: version.id,
             details: { previousVersionId: workflow.testVersionId ?? null },
         })
+        await releaseChangeService(log).record({
+            projectId: request.projectId,
+            actorId: userId,
+            action: ReleaseChangeAction.DEPLOYED_TO_TEST,
+            workflowId: workflow.id,
+            fromVersionId: workflow.testVersionId,
+            toVersionId: version.id,
+            note: request.note,
+        })
         return { workflowId: workflow.id, versionId: version.id, deployedAt }
     },
 
@@ -296,7 +392,7 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         const workflow = await workflowOrThrow({ id: request.workflowId, projectId: request.projectId })
         const target = await workflowVersionService(log).getWorkflowVersionOrThrow({ workflowId: workflow.id, versionId: request.versionId })
         if (target.state !== WorkflowVersionState.LOCKED) {
-            invalid('Only published versions can be rolled back to')
+            invalid({ key: 'Only published versions can be rolled back to' })
         }
         await workflowService(log).update({
             id: workflow.id,
@@ -317,7 +413,19 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             status: WorkflowReleaseStatus.WITHDRAWN,
             decidedById: userId,
             decidedAt: dayjsUtil().toISOString(),
-            comment: ROLLBACK_WITHDRAW_COMMENT,
+            comment: ReleaseSystemComment.WITHDRAWN_BY_ROLLBACK,
+        })))
+        await Promise.all(pending.map((release) => releaseChangeService(log).record({
+            projectId: request.projectId,
+            actorId: userId,
+            action: ReleaseChangeAction.WITHDRAWN,
+            workflowId: workflow.id,
+            fromVersionId: release.previousVersionId,
+            toVersionId: release.workflowVersionId,
+            note: release.note,
+            comment: ReleaseSystemComment.WITHDRAWN_BY_ROLLBACK,
+            approverIds: release.approverIds,
+            releaseId: release.id,
         })))
         log.info({ project: { id: request.projectId }, workflow: { id: workflow.id }, workflowVersion: { id: target.id } }, '[workflowReleaseService#rollback] Rolled back')
         await releaseSideEffects(log).recordChange({
@@ -327,6 +435,16 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             workflowId: workflow.id,
             versionId: target.id,
             details: { previousVersionId: workflow.publishedVersionId ?? null },
+        })
+        await releaseChangeService(log).record({
+            projectId: request.projectId,
+            actorId: userId,
+            action: ReleaseChangeAction.ROLLED_BACK,
+            workflowId: workflow.id,
+            fromVersionId: workflow.publishedVersionId,
+            toVersionId: updated.publishedVersionId ?? updated.version.id,
+            restoredVersionId: target.id,
+            note: request.reason,
         })
         const rolledBackProject = await projectService(log).getOneOrThrow(request.projectId)
         await releaseSideEffects(log).onRolledBack({ projectId: request.projectId, workflowId: workflow.id, versionId: target.id, approverIds: approversOf(rolledBackProject), actorId: userId })
@@ -340,7 +458,7 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
         if (project.releasesEnabled && !request.enabled) {
             const pending = await workflowReleaseRepo().existsBy({ projectId: project.id, status: WorkflowReleaseStatus.PENDING })
             if (pending) {
-                invalid('Handle the pending release requests before turning environments off')
+                invalid({ key: 'Handle the pending release requests before turning environments off' })
             }
             await workflowRepo().update({ projectId: project.id }, { testVersionId: null, testDeployedAt: null })
             await connectionReplacementRepo().delete({ projectId: project.id })
@@ -351,6 +469,13 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             userId,
             action: ApplicationEventName.ENVIRONMENTS_UPDATED,
             details: { environmentsEnabled: request.enabled, approverIds },
+        })
+        await releaseChangeService(log).record({
+            projectId: project.id,
+            actorId: userId,
+            action: ReleaseChangeAction.ENVIRONMENTS_UPDATED,
+            approverIds,
+            environmentsEnabled: request.enabled,
         })
         return this.overview({ projectId: project.id })
     },
@@ -365,6 +490,9 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
             workflowReleaseRepo().find({ where: { projectId, status: WorkflowReleaseStatus.PENDING }, select: ['id', 'workflowId'] }),
             connectionReplacementRepo().countBy({ projectId }),
         ])
+        const unreplacedConnections = project.releasesEnabled
+            ? await unreplacedConnectionsOf({ projectId, usages: workflows.flatMap((workflow) => versionUsage({ workflowName: latest.get(workflow.id)?.displayName ?? workflow.id, version: latest.get(workflow.id) })) })
+            : []
         const createdAt = new Map(deployedVersions.map((version) => [version.id, dayjsUtil(version.created)]))
         const rows = workflows.map((workflow) => {
             const testCreated = isNil(workflow.testVersionId) ? undefined : createdAt.get(workflow.testVersionId)
@@ -393,6 +521,7 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
                 running: rows.filter((row) => row.enabled).length,
                 pendingApproval: pending.length,
             },
+            unreplacedConnections,
             workflows: rows.sort((a, b) => a.displayName.localeCompare(b.displayName)),
         }
     },
@@ -487,6 +616,36 @@ async function checkVariables({ version, projectId, environmentsEnabled }: { ver
     ]
 }
 
+function versionUsage({ workflowName, version }: { workflowName: string, version: WorkflowVersion | undefined }): ConnectionUsage[] {
+    if (isNil(version)) {
+        return []
+    }
+    return [...new Set(workflowStructureUtil.extractConnectionIds(version))].map((externalId) => ({ externalId, workflowName }))
+}
+
+async function unreplacedConnectionsOf({ projectId, usages }: { projectId: ProjectId, usages: ConnectionUsage[] }): Promise<UnreplacedConnection[]> {
+    const externalIds = [...new Set(usages.map((usage) => usage.externalId))]
+    if (externalIds.length === 0) {
+        return []
+    }
+    const [connections, replacements] = await Promise.all([
+        connectionsRepo().find({
+            where: { externalId: In(externalIds), projectIds: ArrayContains([projectId]) },
+            select: ['id', 'externalId', 'displayName'],
+        }),
+        connectionReplacementRepo().find({ where: { projectId }, select: ['id', 'sourceConnectionId', 'targetConnectionId'] }),
+    ])
+    const covered = new Set(replacements.flatMap((replacement) => [replacement.sourceConnectionId, replacement.targetConnectionId]))
+    return connections
+        .filter((connection) => !covered.has(connection.id))
+        .map((connection) => ({
+            connectionId: connection.id,
+            displayName: connection.displayName,
+            workflowNames: [...new Set(usages.filter((usage) => usage.externalId === connection.externalId).map((usage) => usage.workflowName))].sort((a, b) => a.localeCompare(b)),
+        }))
+        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+}
+
 async function evidenceFor(workflowVersionId: string): Promise<ReleaseEvidence> {
     const runs = await executionRepo().find({
         where: { workflowVersionId, environment: RunEnvironment.TESTING },
@@ -516,7 +675,7 @@ function approversOf(project: Project): string[] {
 
 async function testVersionOrThrow({ workflow, log }: { workflow: Workflow, log: FastifyBaseLogger }): Promise<WorkflowVersion> {
     if (isNil(workflow.testVersionId)) {
-        invalid('Deploy this workflow to test before promoting it')
+        invalid({ key: 'Deploy this workflow to test before promoting it' })
     }
     return workflowVersionService(log).getWorkflowVersionOrThrow({ workflowId: workflow.id, versionId: workflow.testVersionId })
 }
@@ -537,7 +696,7 @@ async function assertApproversEligible({ project, approverIds }: { project: Proj
     const members = await projectMemberRepo().find({ where: { projectId: project.id, userId: In(others) }, select: ['userId', 'role'] })
     const eligible = others.every((approverId) => members.some((member) => member.userId === approverId && APPROVER_ROLES.includes(member.role)))
     if (!eligible) {
-        invalid('Approvers must be the project owner or members who can edit')
+        invalid({ key: 'Approvers must be the project owner or members who can edit' })
     }
 }
 
@@ -551,7 +710,7 @@ function canDecide({ release, userId }: { release: WorkflowRelease, userId: User
 
 function assertPending(release: WorkflowRelease): void {
     if (release.status !== WorkflowReleaseStatus.PENDING) {
-        invalid('This release is no longer pending')
+        invalid({ key: 'This release is no longer pending' })
     }
 }
 
@@ -567,12 +726,12 @@ function check({ level, code, subject }: { level: ReleaseCheckLevel, code: Relea
     return { level, code, subject: subject ?? null }
 }
 
-function invalid(message: string): never {
-    throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message } })
+function invalid({ key, params }: { key: string, params?: Record<string, string | number> }): never {
+    return localizedError.validation({ key, params })
 }
 
-function denied(message: string): never {
-    throw new ApplicationError({ code: ErrorCode.AUTHORIZATION, params: { message } })
+function denied({ key }: { key: string }): never {
+    return localizedError.authorization({ key })
 }
 
 function decodeOffset(cursor: string | undefined): number {
@@ -582,16 +741,6 @@ function decodeOffset(cursor: string | undefined): number {
 
 const DEFAULT_PAGE_SIZE = 20
 const HISTORY_PAGE_SIZE = 50
-const RELEASE_HISTORY_ACTIONS: string[] = [
-    ApplicationEventName.RELEASE_DEPLOYED_TO_TEST,
-    ApplicationEventName.RELEASE_REQUESTED,
-    ApplicationEventName.RELEASE_APPROVED,
-    ApplicationEventName.RELEASE_REJECTED,
-    ApplicationEventName.RELEASE_WITHDRAWN,
-    ApplicationEventName.RELEASE_ROLLED_BACK,
-    ApplicationEventName.ENVIRONMENTS_UPDATED,
-]
-const ROLLBACK_WITHDRAW_COMMENT = 'Withdrawn automatically by a rollback'
 const APPROVER_ROLES: string[] = [DefaultProjectRole.ADMIN, DefaultProjectRole.DEVELOPER]
 const MAX_EVIDENCE_RUNS = 200
 const RECENT_EVIDENCE_RUNS = 5
@@ -634,6 +783,20 @@ type WithdrawParams = {
     id: string
     projectId: ProjectId
     userId: UserId
+}
+
+type RecordDirectPublishParams = {
+    projectId: ProjectId
+    workflowId: string
+    actorId: UserId
+    fromVersionId: string | null | undefined
+    toVersionId: string | null | undefined
+    note?: string
+}
+
+type ConnectionUsage = {
+    externalId: string
+    workflowName: string
 }
 
 type ChecksSubject = Pick<WorkflowRelease, 'projectId' | 'workflowId' | 'workflowVersionId' | 'status'>

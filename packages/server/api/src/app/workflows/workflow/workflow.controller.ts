@@ -117,7 +117,7 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             }
         }
 
-        return workflowService(request.log).update({
+        const updated = await workflowService(request.log).update({
             id: request.params.id,
             userId: actorUserId(request),
             tenantId: request.principal.tenant.id,
@@ -126,6 +126,17 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
             previousWorkflow: workflow,
             ip: networkUtils.clientIp(request),
         })
+        const actorId = actorUserId(request)
+        if (request.body.type === WorkflowOperationType.LOCK_AND_PUBLISH && !isNil(actorId)) {
+            await workflowReleaseService(request.log).recordDirectPublish({
+                projectId: request.projectId,
+                workflowId: request.params.id,
+                actorId,
+                fromVersionId: workflow.publishedVersionId,
+                toVersionId: updated.publishedVersionId,
+            })
+        }
+        return updated
     })
 
     app.get('/', ListWorkflowsRequestOptions, async (request) => {

@@ -214,8 +214,10 @@ GET /v1/worker/project | ENGINE | ENGINE | - | -
 GET /v1/worker/variables/:name | ENGINE | ENGINE | - | -
 GET /v1/workflow-releases | PROJECT | USER | PROJECT:READ_RELEASE | QUERY:projectId
 GET /v1/workflow-releases/:id | PROJECT | USER | PROJECT:READ_RELEASE | TABLE:workflow_release.id@PARAM/id
+GET /v1/workflow-releases/changes | PROJECT | USER | PROJECT:READ_RELEASE | QUERY:projectId
 GET /v1/workflow-releases/environments | PROJECT | USER | PROJECT:READ_RELEASE | QUERY:projectId
 GET /v1/workflow-releases/pending-count | PROJECT | USER | PROJECT:READ_RELEASE | QUERY:projectId
+GET /v1/workflow-releases/preview | PROJECT | USER | PROJECT:READ_RELEASE | QUERY:projectId
 GET /v1/workflows | PROJECT | USER,SERVICE | WORKFLOW:READ | QUERY:projectId
 GET /v1/workflows/:id | PROJECT | USER,SERVICE | WORKFLOW:READ | TABLE:workflow.id@PARAM/id
 GET /v1/workflows/:id/template | PROJECT | USER,SERVICE | WORKFLOW:READ | TABLE:workflow.id@PARAM/id

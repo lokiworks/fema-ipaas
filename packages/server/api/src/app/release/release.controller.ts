@@ -7,8 +7,12 @@ import {
     DeployToTestResponse,
     EnvironmentOverview,
     ListConnectionReplacementsRequestQuery,
+    ListReleaseChangesRequestQuery,
     ListWorkflowReleasesRequestQuery,
     PrincipalType,
+    ReleaseChangeWithDetails,
+    ReleasePreview,
+    ReleasePreviewRequestQuery,
     RejectWorkflowReleaseRequestBody,
     RollbackWorkflowRequestBody,
     RollbackWorkflowResponse,
@@ -38,8 +42,12 @@ export const workflowReleaseController: FastifyPluginAsyncZod = async (app) => {
         return { count }
     })
 
-    app.get('/history', HistoryRequest, async (request) => {
-        return workflowReleaseService(request.log).history({ projectId: request.query.projectId, cursor: request.query.cursor ?? null })
+    app.get('/changes', ChangesRequest, async (request): Promise<SeekPage<ReleaseChangeWithDetails>> => {
+        return workflowReleaseService(request.log).changes({ query: request.query })
+    })
+
+    app.get('/preview', PreviewRequest, async (request): Promise<ReleasePreview> => {
+        return workflowReleaseService(request.log).preview({ projectId: request.projectId, workflowId: request.query.workflowId })
     })
 
     app.post('/', CreateReleaseRequest, async (request, reply) => {
@@ -124,9 +132,14 @@ const PendingCountRequest = {
     schema: { tags: ['workflow-releases'], querystring: z.object({ projectId: z.string() }) },
 }
 
-const HistoryRequest = {
+const ChangesRequest = {
     config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_PROJECT_RELEASE, { type: ProjectResourceType.QUERY }) },
-    schema: { tags: ['workflow-releases'], querystring: z.object({ projectId: z.string(), cursor: z.string().optional() }) },
+    schema: { tags: ['workflow-releases'], querystring: ListReleaseChangesRequestQuery },
+}
+
+const PreviewRequest = {
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_PROJECT_RELEASE, { type: ProjectResourceType.QUERY }) },
+    schema: { tags: ['workflow-releases'], querystring: ReleasePreviewRequestQuery, response: { [StatusCodes.OK]: ReleasePreview } },
 }
 
 const CreateReleaseRequest = {

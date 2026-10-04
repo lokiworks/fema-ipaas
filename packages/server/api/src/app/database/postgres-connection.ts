@@ -29,6 +29,7 @@ import { KeepAlertRecordsAfterPolicyDeletion1790940000000 } from './migration/po
 import { AddExecutionIndexesConcurrently1790950000000 } from './migration/postgres/1790950000000-AddExecutionIndexesConcurrently'
 import { SnapshotAgentApprovalWorkflowName1791010000000 } from './migration/postgres/1791010000000-SnapshotAgentApprovalWorkflowName'
 
+import { AddReleaseChanges1791000000000 } from './migration/postgres/1791000000000-AddReleaseChanges'
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
     if (useSsl === 'true') {
@@ -68,6 +69,7 @@ export const getMigrations = (): (new () => Migration)[] => {
 
 
 export const createPostgresDataSource = (): DataSource => {
+        AddReleaseChanges1791000000000,
     const migrationConfig: MigrationConfig = {
         migrationsRun: true,
         migrationsTransactionMode: 'each',

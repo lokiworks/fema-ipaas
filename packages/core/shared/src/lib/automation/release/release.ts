@@ -9,6 +9,17 @@ export enum WorkflowReleaseStatus {
     WITHDRAWN = 'WITHDRAWN',
 }
 
+export enum ReleaseChangeAction {
+    DEPLOYED_TO_TEST = 'DEPLOYED_TO_TEST',
+    REQUESTED = 'REQUESTED',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+    WITHDRAWN = 'WITHDRAWN',
+    ROLLED_BACK = 'ROLLED_BACK',
+    PUBLISHED_DIRECTLY = 'PUBLISHED_DIRECTLY',
+    ENVIRONMENTS_UPDATED = 'ENVIRONMENTS_UPDATED',
+}
+
 export enum ReleaseCheckLevel {
     OK = 'OK',
     INFO = 'INFO',
@@ -32,6 +43,11 @@ export enum ReleaseCheckCode {
     ALREADY_PUBLISHED = 'ALREADY_PUBLISHED',
 }
 
+export const ReleaseSystemComment = {
+    WITHDRAWN_BY_ROLLBACK: 'Withdrawn automatically by a rollback',
+    WITHDRAWN_BY_WORKFLOW_DELETION: 'Withdrawn automatically because the workflow was deleted',
+} as const
+
 export const WorkflowRelease = z.object({
     ...BaseModelSchema,
     projectId: z.string(),
@@ -53,12 +69,58 @@ export const WorkflowReleaseWithWorkflow = WorkflowRelease.extend({
 })
 export type WorkflowReleaseWithWorkflow = z.infer<typeof WorkflowReleaseWithWorkflow>
 
+export const ReleaseChange = z.object({
+    ...BaseModelSchema,
+    projectId: z.string(),
+    workflowId: Nullable(z.string()),
+    action: z.enum(ReleaseChangeAction),
+    actorId: z.string(),
+    fromVersionId: Nullable(z.string()),
+    toVersionId: Nullable(z.string()),
+    restoredVersionId: Nullable(z.string()),
+    note: Nullable(z.string()),
+    comment: Nullable(z.string()),
+    approverIds: z.array(z.string()),
+    releaseId: Nullable(z.string()),
+    environmentsEnabled: Nullable(z.boolean()),
+})
+export type ReleaseChange = z.infer<typeof ReleaseChange>
+
+export const ReleaseChangeWithDetails = ReleaseChange.extend({
+    actorName: z.string(),
+    approverNames: z.array(z.string()),
+    workflowDisplayName: Nullable(z.string()),
+    fromVersionNumber: Nullable(z.number()),
+    toVersionNumber: Nullable(z.number()),
+    restoredVersionNumber: Nullable(z.number()),
+})
+export type ReleaseChangeWithDetails = z.infer<typeof ReleaseChangeWithDetails>
+
+export const ReleasePreviewRequestQuery = z.object({
+    projectId: z.string(),
+    workflowId: z.string(),
+})
+export type ReleasePreviewRequestQuery = z.infer<typeof ReleasePreviewRequestQuery>
+
 export const ReleaseCheck = z.object({
     level: z.enum(ReleaseCheckLevel),
     code: z.enum(ReleaseCheckCode),
     subject: z.string().nullable(),
 })
 export type ReleaseCheck = z.infer<typeof ReleaseCheck>
+
+export const ReleasePreview = z.object({
+    workflowId: z.string(),
+    workflowDisplayName: z.string(),
+    testVersionId: z.string(),
+    testVersionNumber: Nullable(z.number()),
+    productionVersionId: Nullable(z.string()),
+    productionVersionNumber: Nullable(z.number()),
+    approverIds: z.array(z.string()),
+    checks: z.array(ReleaseCheck),
+    canSubmit: z.boolean(),
+})
+export type ReleasePreview = z.infer<typeof ReleasePreview>
 
 export const ReleaseTestRun = z.object({
     id: z.string(),
@@ -125,6 +187,14 @@ export const UpsertConnectionReplacementRequestBody = z.object({
 })
 export type UpsertConnectionReplacementRequestBody = z.infer<typeof UpsertConnectionReplacementRequestBody>
 
+export const ListReleaseChangesRequestQuery = z.object({
+    projectId: z.string(),
+    workflowId: z.string().optional(),
+    cursor: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(100).optional(),
+})
+export type ListReleaseChangesRequestQuery = z.infer<typeof ListReleaseChangesRequestQuery>
+
 export const ListConnectionReplacementsRequestQuery = z.object({
     projectId: z.string(),
 })
@@ -133,6 +203,7 @@ export type ListConnectionReplacementsRequestQuery = z.infer<typeof ListConnecti
 export const DeployToTestRequestBody = z.object({
     projectId: z.string(),
     workflowId: z.string(),
+    note: z.string().trim().max(300, 'releaseNoteTooLong').optional(),
 })
 export type DeployToTestRequestBody = z.infer<typeof DeployToTestRequestBody>
 
@@ -147,6 +218,7 @@ export const RollbackWorkflowRequestBody = z.object({
     projectId: z.string(),
     workflowId: z.string(),
     versionId: z.string(),
+    reason: z.string().trim().max(300, 'releaseNoteTooLong').optional(),
 })
 export type RollbackWorkflowRequestBody = z.infer<typeof RollbackWorkflowRequestBody>
 
@@ -176,6 +248,13 @@ export const EnvironmentWorkflow = z.object({
 })
 export type EnvironmentWorkflow = z.infer<typeof EnvironmentWorkflow>
 
+export const UnreplacedConnection = z.object({
+    connectionId: z.string(),
+    displayName: z.string(),
+    workflowNames: z.array(z.string()),
+})
+export type UnreplacedConnection = z.infer<typeof UnreplacedConnection>
+
 export const EnvironmentOverview = z.object({
     enabled: z.boolean(),
     approverIds: z.array(z.string()),
@@ -189,6 +268,7 @@ export const EnvironmentOverview = z.object({
         running: z.number(),
         pendingApproval: z.number(),
     }),
+    unreplacedConnections: z.array(UnreplacedConnection),
     workflows: z.array(EnvironmentWorkflow),
 })
 export type EnvironmentOverview = z.infer<typeof EnvironmentOverview>

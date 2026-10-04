@@ -9,6 +9,7 @@ import {
     BatchPublishResultItem,
     ConnectionStatus,
     PopulatedWorkflow,
+    ReleaseSystemComment,
     WorkflowOperationType,
     WorkflowReleaseStatus,
     WorkflowStatus,
@@ -83,7 +84,7 @@ export const workflowBatchService = (log: FastifyBaseLogger) => ({
             status: WorkflowReleaseStatus.WITHDRAWN,
             decidedById: userId,
             decidedAt: dayjsUtil().toISOString(),
-            comment: WORKFLOW_DELETED_WITHDRAW_COMMENT,
+            comment: ReleaseSystemComment.WITHDRAWN_BY_WORKFLOW_DELETION,
         })))
         for (const workflow of workflows) {
             await workflowService(log).delete({ id: workflow.id, projectId, previousWorkflow: workflow, userId })
@@ -123,12 +124,21 @@ async function publishOne({ log, item, target, projectId, userId, tenantId, desc
             const deployed = await workflowReleaseService(log).deployToTest({ request: { projectId, workflowId: item.workflowId }, userId, tenantId })
             return deployed.versionId
         }
+        const before = await workflowRepo().findOne({ where: { id: item.workflowId, projectId }, select: ['id', 'publishedVersionId'] })
         const published = await workflowService(log).update({
             id: item.workflowId,
             projectId,
             tenantId,
             userId,
             operation: { type: WorkflowOperationType.LOCK_AND_PUBLISH, request: { status: WorkflowStatus.ENABLED } },
+        })
+        await workflowReleaseService(log).recordDirectPublish({
+            projectId,
+            workflowId: item.workflowId,
+            actorId: userId,
+            fromVersionId: before?.publishedVersionId,
+            toVersionId: published.publishedVersionId,
+            note: description,
         })
         return published.publishedVersionId
     })
@@ -141,8 +151,6 @@ async function publishOne({ log, item, target, projectId, userId, tenantId, desc
     }
     return { ...base, success: true, error: null }
 }
-
-const WORKFLOW_DELETED_WITHDRAW_COMMENT = 'Withdrawn automatically because the workflow was deleted'
 
 type CheckParams = {
     projectId: ProjectId

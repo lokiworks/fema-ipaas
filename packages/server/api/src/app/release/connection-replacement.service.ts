@@ -1,9 +1,10 @@
-import { ApplicationError, ErrorCode, generateId, isNil, ProjectId } from '@fema-ipaas/core-utils'
+import { generateId, isNil, ProjectId } from '@fema-ipaas/core-utils'
 import { ConnectionReplacement, UpsertConnectionReplacementRequestBody } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { repoFactory } from '../core/db/repo-factory'
+import { localizedError } from '../helper/localized-error'
 import { ConnectionReplacementEntity } from './release.entity'
 
 export const connectionReplacementRepo = repoFactory(ConnectionReplacementEntity)
@@ -16,17 +17,17 @@ export const connectionReplacementService = (log: FastifyBaseLogger) => ({
     async upsert({ request }: { request: UpsertConnectionReplacementRequestBody }): Promise<ConnectionReplacement> {
         const { projectId, sourceConnectionId, targetConnectionId } = request
         if (sourceConnectionId === targetConnectionId) {
-            invalid('A connection cannot replace itself')
+            invalid({ key: 'A connection cannot replace itself' })
         }
         const [source, target] = await Promise.all([
             findProjectConnection({ projectId, id: sourceConnectionId }),
             findProjectConnection({ projectId, id: targetConnectionId }),
         ])
         if (isNil(source) || isNil(target)) {
-            invalid('Both connections must be available in this project')
+            invalid({ key: 'Both connections must be available in this project' })
         }
         if (source.connectorName !== target.connectorName) {
-            invalid('The test connection must use the same connector')
+            invalid({ key: 'The test connection must use the same connector' })
         }
         const existing = await connectionReplacementRepo().findOneBy({ projectId, sourceConnectionId })
         if (isNil(existing)) {
@@ -67,10 +68,6 @@ async function findProjectConnection({ projectId, id }: { projectId: ProjectId, 
     })
 }
 
-function invalid(message: string): never {
-    throw new ApplicationError({
-        code: ErrorCode.VALIDATION,
-        params: { message },
-    })
+function invalid({ key }: { key: string }): never {
+    return localizedError.validation({ key })
 }
-

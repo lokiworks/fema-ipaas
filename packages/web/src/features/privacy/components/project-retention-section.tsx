@@ -1,4 +1,7 @@
-import { LOG_RETENTION_DAYS_OPTIONS, PrivacySettings } from '@fema-ipaas/shared';
+import {
+  LOG_RETENTION_DAYS_OPTIONS,
+  PrivacySettings,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 

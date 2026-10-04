@@ -204,24 +204,46 @@ export async function deleteFlowsNamed({ session, prefix }) {
 }
 
 export function openDatabaseSnapshot() {
-  const source = `${STATE_DIR}/config/pglite`
-  const target = `${STATE_DIR}/pglite-snap`
-  rmSync(target, { recursive: true, force: true })
-  cpSync(source, target, { recursive: true })
   const require = createRequire(new URL('../../../../packages/server/api/package.json', import.meta.url))
   const { PGlite } = require('@electric-sql/pglite')
-  const db = new PGlite(target)
+  const source = `${STATE_DIR}/config/pglite`
+  const target = `${STATE_DIR}/pglite-snap`
+  const state = { db: null }
+  const open = () => {
+    rmSync(target, { recursive: true, force: true })
+    cpSync(source, target, { recursive: true })
+    state.db = new PGlite(target)
+  }
+  const attempt = async (fn, tries = 4) => {
+    try {
+      if (state.db === null) {
+        open()
+      }
+      return await fn(state.db)
+    }
+    catch (error) {
+      if (tries <= 1) {
+        throw error
+      }
+      await state.db?.close().catch(() => undefined)
+      state.db = null
+      await sleep(1500)
+      return attempt(fn, tries - 1)
+    }
+  }
   return {
-    query: async (sql, params) => (await db.query(sql, params)).rows,
-    fileText: async (fileId) => {
+    query: (sql, params) => attempt(async (db) => (await db.query(sql, params)).rows),
+    fileText: (fileId) => attempt(async (db) => {
       const rows = (await db.query('select data, compression from file where id = $1', [fileId])).rows
       if (rows.length === 0) {
         return null
       }
       const buffer = Buffer.from(rows[0].data)
       return rows[0].compression === 'ZSTD' ? zstdDecompressSync(buffer).toString('utf8') : buffer.toString('utf8')
+    }),
+    close: async () => {
+      await state.db?.close().catch(() => undefined)
     },
-    close: () => db.close(),
   }
 }
 

@@ -48,8 +48,8 @@ export default function AuditLogPage() {
   const [range, setRange] = useState<RangeKey>('30d');
   const [userId, setUserId] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
-  const [action, setAction] = useState<ApplicationEventName | 'any'>(
-    () => actionFromParam(searchParams.get('action')),
+  const [action, setAction] = useState<ApplicationEventName | 'any'>(() =>
+    actionFromParam(searchParams.get('action')),
   );
   const [projectId, setProjectId] = useState<string>('any');
   const [cursors, setCursors] = useState<string[]>([]);

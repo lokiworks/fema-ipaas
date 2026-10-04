@@ -5489,5 +5489,6 @@
   "Server removed": "已删除",
   "{step} writes data, but the last successful debug run did not reach it": "「{step}」会写入数据，但最近一次调试通过的运行没有执行到它",
   "Debug passed. The draft is editable again.": "调试通过，草稿可以继续编辑",
-  "View debug records": "查看调试记录"
+  "View debug records": "查看调试记录",
+  "Pick an MCP server to add": "选择要添加的 MCP 服务器"
 }

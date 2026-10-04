@@ -207,7 +207,7 @@ async function pickerChecks({ session, richServer }) {
   await openAgentInputs({ page })
   const editor = page.getByTestId('agent-tools-editor')
   const panelText = await page.locator('body').innerText()
-  check({ name: '智能体节点里是服务器选择器：不再有手填的地址和授权输入框', ok: (await editor.getByLabel('服务器地址').count()) === 0 && (await editor.getByLabel('授权', { exact: true }).count()) === 0 && /添加 MCP 服务器|接入 MCP 服务器/.test(panelText), detail: String(await editor.count()) })
+  check({ name: '智能体节点里是服务器选择器：不再有手填的地址和授权输入框', ok: (await editor.getByLabel('服务器地址').count()) === 0 && (await editor.getByLabel('授权', { exact: true }).count()) === 0 && /选择要添加的 MCP 服务器/.test(panelText), detail: String(await editor.count()) })
   await shot({ page, name: 'pk-01-empty' })
 
   await editor.getByTestId('agent-add-server').click()

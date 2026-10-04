@@ -5489,5 +5489,6 @@
   "Server removed": "Server removed",
   "{step} writes data, but the last successful debug run did not reach it": "{step} writes data, but the last successful debug run did not reach it",
   "Debug passed. The draft is editable again.": "Debug passed. The draft is editable again.",
-  "View debug records": "View debug records"
+  "View debug records": "View debug records",
+  "Pick an MCP server to add": "Pick an MCP server to add"
 }

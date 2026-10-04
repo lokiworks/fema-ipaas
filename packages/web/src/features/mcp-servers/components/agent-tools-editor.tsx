@@ -605,12 +605,12 @@ function AddServerControl({
     >
       <SelectTrigger
         className="w-full"
-        aria-label={t('Add an MCP server')}
+        aria-label={t('Pick an MCP server to add')}
         data-testid="agent-add-server"
       >
         <span className="flex items-center gap-2 text-muted-foreground">
           <PlusIcon className="size-4" />
-          <SelectValue placeholder={t('Add an MCP server')} />
+          <SelectValue placeholder={t('Pick an MCP server to add')} />
         </span>
       </SelectTrigger>
       <SelectContent>

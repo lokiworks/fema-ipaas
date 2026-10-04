@@ -7,3 +7,9 @@ export { ReleaseRequestDialog } from './components/release-request-dialog';
 export { EnvironmentStatus, PromotionBlocker } from './utils/release-ui-utils';
 export type { ApproverCandidate } from './utils/release-ui-utils';
 export { EnvironmentsSection } from './components/environments-section';
+export { ReleaseChecks } from './components/release-checks';
+export {
+  StepDiff,
+  stepChangeHooks,
+  stepChangeUtils,
+} from './components/step-diff';

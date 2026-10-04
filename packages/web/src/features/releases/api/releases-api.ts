@@ -1,14 +1,17 @@
 import { SeekPage } from '@fema-ipaas/core-utils';
 import {
-  ApplicationEvent,
   ApproveWorkflowReleaseRequestBody,
   ConnectionReplacement,
   CreateWorkflowReleaseRequestBody,
   DeployToTestRequestBody,
   DeployToTestResponse,
   EnvironmentOverview,
+  ListReleaseChangesRequestQuery,
   ListWorkflowReleasesRequestQuery,
   RejectWorkflowReleaseRequestBody,
+  ReleaseChangeWithDetails,
+  ReleasePreview,
+  ReleasePreviewRequestQuery,
   RollbackWorkflowRequestBody,
   RollbackWorkflowResponse,
   UpdateEnvironmentSettingsRequestBody,
@@ -29,14 +32,16 @@ export const releasesApi = {
       request,
     );
   },
-  history(request: {
-    projectId: string;
-    cursor?: string;
-  }): Promise<SeekPage<ApplicationEvent>> {
-    return api.get<SeekPage<ApplicationEvent>>(
-      '/v1/workflow-releases/history',
+  changes(
+    request: ListReleaseChangesRequestQuery,
+  ): Promise<SeekPage<ReleaseChangeWithDetails>> {
+    return api.get<SeekPage<ReleaseChangeWithDetails>>(
+      '/v1/workflow-releases/changes',
       request,
     );
+  },
+  preview(request: ReleasePreviewRequestQuery): Promise<ReleasePreview> {
+    return api.get<ReleasePreview>('/v1/workflow-releases/preview', request);
   },
   pendingCount(projectId: string): Promise<{ count: number }> {
     return api.get<{ count: number }>('/v1/workflow-releases/pending-count', {

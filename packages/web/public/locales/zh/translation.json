@@ -5105,5 +5105,22 @@
   "The other system refuses calls until {time}; replay after that": "对方系统在 {time} 之前拒绝调用；之后再重放",
   "the block ends": "限制解除",
   "Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.": "在对方系统恢复接受调用之前不能重放，否则这些运行会再次失败。",
-  "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.": "所选范围内各次运行执行的节点数之和，失败的运行停在的那个节点也计入；失败后被忽略或转入分支的节点不计入。"
+  "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.": "所选范围内各次运行执行的节点数之和，失败的运行停在的那个节点也计入；失败后被忽略或转入分支的节点不计入。",
+  "Connection {name} is a test-only connection; the production version must use the production one": "连接 {name} 是测试专用连接，生产版本必须使用生产连接",
+  "Connection {name} has no test replacement; test runs use the production account directly": "连接 {name} 没有配置测试替换，测试环境运行时会直接使用生产账号",
+  "Variable {name} has no test value; test runs read the production value": "配置值 {name} 没有测试值，测试环境运行时读取的是生产值",
+  "Promotion requested": "申请推广",
+  "Promotion approved": "批准推广",
+  "Promotion rejected": "驳回推广",
+  "Promotion withdrawn": "撤回推广",
+  "Rolled back in production": "生产回滚",
+  "Environments updated": "环境设置变更",
+  "auditReleaseDeployedToTest": "工作流「{workflow}」已发布到测试环境",
+  "auditReleaseRequested": "申请把「{workflow}」推广到生产",
+  "auditReleaseApproved": "批准把「{workflow}」推广到生产，已上线",
+  "auditReleaseRejected": "驳回了「{workflow}」的推广申请",
+  "auditReleaseWithdrawn": "撤回了「{workflow}」的推广申请",
+  "auditReleaseRolledBack": "「{workflow}」已在生产回滚",
+  "auditEnvironmentsOn": "开启或调整了测试与生产环境",
+  "auditEnvironmentsOff": "关闭了测试与生产环境"
 }

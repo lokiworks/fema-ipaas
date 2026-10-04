@@ -1,6 +1,7 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { NotificationType, WorkflowRelease, WorkflowReleaseStatus } from '@fema-ipaas/shared'
+import { NotificationType, WorkflowRelease, WorkflowReleaseEvent, WorkflowReleaseStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { applicationEvents } from '../helper/application-events'
 import { notificationService } from '../notification/notification.service'
 import { projectService } from '../project/project-service'
 import { workflowVersionRepo } from '../workflows/workflow-version/workflow-version.service'
@@ -41,6 +42,19 @@ export const releaseSideEffects = (log: FastifyBaseLogger) => ({
         })
     },
 
+    async recordChange({ projectId, userId, action, workflowId, versionId, details }: RecordChangeParams): Promise<void> {
+        const tenantId = await projectService(log).getTenantId(projectId)
+        const displayName = isNil(versionId) ? undefined : await workflowName(versionId)
+        applicationEvents(log).sendUserEvent({ tenantId, projectId, userId }, {
+            action,
+            data: {
+                ...(isNil(workflowId) || isNil(displayName) ? {} : { workflow: { id: workflowId, displayName } }),
+                ...(isNil(versionId) ? {} : { versionId }),
+                ...details,
+            },
+        })
+    },
+
     async onRolledBack({ projectId, workflowId, versionId, approverIds, actorId }: OnRolledBackParams): Promise<void> {
         await notificationService(log).notify({
             tenantId: await projectService(log).getTenantId(projectId),
@@ -61,6 +75,15 @@ async function workflowName(versionId: string): Promise<string> {
 
 function releaseLink(release: WorkflowRelease): string {
     return `/projects/${release.projectId}/releases/${release.id}`
+}
+
+type RecordChangeParams = {
+    projectId: string
+    userId: string
+    action: WorkflowReleaseEvent['action']
+    workflowId?: string
+    versionId?: string
+    details?: Omit<WorkflowReleaseEvent['data'], 'workflow' | 'versionId'>
 }
 
 type OnRolledBackParams = {

@@ -71,6 +71,13 @@ export enum ApplicationEventName {
     DATA_STORE_RECORD_DELETED = 'data_store.record.deleted',
     PERSONAL_ACCESS_TOKEN_CREATED = 'user.access_token.created',
     PERSONAL_ACCESS_TOKEN_REVOKED = 'user.access_token.revoked',
+    RELEASE_DEPLOYED_TO_TEST = 'release.deployed_to_test',
+    RELEASE_REQUESTED = 'release.requested',
+    RELEASE_APPROVED = 'release.approved',
+    RELEASE_REJECTED = 'release.rejected',
+    RELEASE_WITHDRAWN = 'release.withdrawn',
+    RELEASE_ROLLED_BACK = 'release.rolled_back',
+    ENVIRONMENTS_UPDATED = 'release.environments.updated',
 }
 
 const BaseAuditEventProps = {
@@ -472,13 +479,6 @@ export const ExecutionPayloadRevealedEvent = z.object({
 })
 export type ExecutionPayloadRevealedEvent = z.infer<typeof ExecutionPayloadRevealedEvent>
 
-export const IssueReplayedEvent = z.object({
-    ...BaseAuditEventProps,
-    action: z.literal(ApplicationEventName.ISSUE_REPLAYED),
-    data: z.object({
-        issue: z.object({
-            id: z.string(),
-            title: z.string(),
 export const ExecutionPayloadRevealDeniedEvent = z.object({
     ...BaseAuditEventProps,
     action: z.literal(ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED),
@@ -493,6 +493,13 @@ export const ExecutionPayloadRevealDeniedEvent = z.object({
 })
 export type ExecutionPayloadRevealDeniedEvent = z.infer<typeof ExecutionPayloadRevealDeniedEvent>
 
+export const IssueReplayedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.ISSUE_REPLAYED),
+    data: z.object({
+        issue: z.object({
+            id: z.string(),
+            title: z.string(),
         }),
         strategy: z.string(),
         count: z.number(),
@@ -668,6 +675,33 @@ export const PersonalAccessTokenEvent = z.object({
 })
 export type PersonalAccessTokenEvent = z.infer<typeof PersonalAccessTokenEvent>
 
+export const WorkflowReleaseEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.RELEASE_DEPLOYED_TO_TEST),
+        z.literal(ApplicationEventName.RELEASE_REQUESTED),
+        z.literal(ApplicationEventName.RELEASE_APPROVED),
+        z.literal(ApplicationEventName.RELEASE_REJECTED),
+        z.literal(ApplicationEventName.RELEASE_WITHDRAWN),
+        z.literal(ApplicationEventName.RELEASE_ROLLED_BACK),
+        z.literal(ApplicationEventName.ENVIRONMENTS_UPDATED),
+    ]),
+    data: z.object({
+        workflow: z.object({
+            id: z.string(),
+            displayName: z.string(),
+        }).optional(),
+        releaseId: z.string().optional(),
+        versionId: z.string().optional(),
+        previousVersionId: z.string().nullable().optional(),
+        note: z.string().optional(),
+        comment: z.string().nullable().optional(),
+        approverIds: z.array(z.string()).optional(),
+        environmentsEnabled: z.boolean().optional(),
+    }),
+})
+export type WorkflowReleaseEvent = z.infer<typeof WorkflowReleaseEvent>
+
 export const ApplicationEvent = z.union([
     ConnectionEvent,
     VariableEvent,
@@ -684,6 +718,7 @@ export const ApplicationEvent = z.union([
     ConnectorPublishedEvent,
     MemberEvent,
     ExecutionPayloadRevealedEvent,
+    ExecutionPayloadRevealDeniedEvent,
     IssueReplayedEvent,
     RunsRerunEvent,
     PrivacySettingsUpdatedEvent,
@@ -696,6 +731,7 @@ export const ApplicationEvent = z.union([
     TenantAdminEvent,
     DataStoreEvent,
     PersonalAccessTokenEvent,
+    WorkflowReleaseEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -718,7 +754,6 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         }
         case ApplicationEventName.WORKFLOW_CREATED:
             return `Workflow ${event.data.workflow.id} is created`
-    ExecutionPayloadRevealDeniedEvent,
         case ApplicationEventName.WORKFLOW_DELETED:
             return `Workflow ${event.data.workflow.id} (${event.data.workflowVersion.displayName}) is deleted`
         case ApplicationEventName.WORKFLOW_PUBLISHED:
@@ -745,6 +780,8 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `Variable ${event.data.variable.name} value was revealed`
         case ApplicationEventName.EXECUTION_PAYLOAD_REVEALED:
             return `Raw payload of step ${event.data.stepName} in run ${event.data.execution.id} was revealed`
+        case ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED:
+            return `Viewing the raw payload of step ${event.data.stepName} in run ${event.data.execution.id} was denied`
         case ApplicationEventName.ISSUE_REPLAYED:
             return `${event.data.count} runs of issue "${event.data.issue.title}" were replayed`
         case ApplicationEventName.RUNS_RERUN:
@@ -780,8 +817,6 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.TENANT_USERS_INVITED:
         case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
         case ApplicationEventName.TENANT_USER_REMOVED:
-        case ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED:
-            return `Viewing the raw payload of step ${event.data.stepName} in run ${event.data.execution.id} was denied`
         case ApplicationEventName.TENANT_USER_PASSWORD_RESET:
         case ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED:
         case ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED:
@@ -805,6 +840,20 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `Personal access token "${event.data.token.name}" was created`
         case ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED:
             return `Personal access token "${event.data.token.name}" was revoked`
+        case ApplicationEventName.RELEASE_DEPLOYED_TO_TEST:
+            return `Workflow "${event.data.workflow?.displayName ?? ''}" was deployed to test`
+        case ApplicationEventName.RELEASE_REQUESTED:
+            return `Promotion of workflow "${event.data.workflow?.displayName ?? ''}" to production was requested`
+        case ApplicationEventName.RELEASE_APPROVED:
+            return `Promotion of workflow "${event.data.workflow?.displayName ?? ''}" to production was approved and went live`
+        case ApplicationEventName.RELEASE_REJECTED:
+            return `Promotion of workflow "${event.data.workflow?.displayName ?? ''}" to production was rejected`
+        case ApplicationEventName.RELEASE_WITHDRAWN:
+            return `Promotion of workflow "${event.data.workflow?.displayName ?? ''}" to production was withdrawn`
+        case ApplicationEventName.RELEASE_ROLLED_BACK:
+            return `Workflow "${event.data.workflow?.displayName ?? ''}" was rolled back in production`
+        case ApplicationEventName.ENVIRONMENTS_UPDATED:
+            return event.data.environmentsEnabled === true ? 'Test and production environments were turned on or updated' : 'Test and production environments were turned off'
     }
 }
 

@@ -52,7 +52,7 @@ export const workflowReleaseController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/environments', UpdateEnvironmentsRequest, async (request): Promise<EnvironmentOverview> => {
-        return workflowReleaseService(request.log).updateEnvironmentSettings({ request: request.body })
+        return workflowReleaseService(request.log).updateEnvironmentSettings({ request: request.body, userId: request.principal.id })
     })
 
     app.post('/deploy-to-test', DeployToTestRequest, async (request): Promise<DeployToTestResponse> => {
@@ -61,6 +61,7 @@ export const workflowReleaseController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/rollback', RollbackRequest, async (request): Promise<RollbackWorkflowResponse> => {
+        await lockService(request.log).assertNotLockedByOther({ resourceId: request.body.workflowId, userId: request.principal.id })
         return workflowReleaseService(request.log).rollback({ request: request.body, userId: request.principal.id, tenantId: request.principal.tenant.id })
     })
 

@@ -18,6 +18,16 @@ import { WorkflowEntity } from './workflow.entity'
 import { workflowService } from './workflow.service'
 
 const DEFAULT_PAGE_SIZE = 10
+const OPERATIONS_OUTSIDE_THE_DRAFT: WorkflowOperationType[] = [
+    WorkflowOperationType.CHANGE_STATUS,
+    WorkflowOperationType.LOCK_AND_PUBLISH,
+    WorkflowOperationType.CHANGE_FOLDER,
+    WorkflowOperationType.UPDATE_METADATA,
+    WorkflowOperationType.UPDATE_MINUTES_SAVED,
+    WorkflowOperationType.UPDATE_OWNER,
+    WorkflowOperationType.SAVE_SAMPLE_DATA,
+    WorkflowOperationType.UPDATE_SAMPLE_DATA_INFO,
+]
 
 export const workflowController: FastifyPluginAsyncZod = async (app) => {
     app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
@@ -88,6 +98,12 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
                     params: { message: `These waits would make steps wait for each other forever: ${cyclic.map((edge) => `${edge.to} waits for ${edge.from}`).join(', ')}` },
                 })
             }
+        }
+        if (editsDraft(request.body.type)) {
+            await lockService(request.log).assertNotLockedByOther({
+                resourceId: request.params.id,
+                userId: actorUserId(request),
+            })
         }
         if (request.body.type === WorkflowOperationType.LOCK_AND_PUBLISH) {
             await workflowReleaseService(request.log).assertCanPublishDirectly({
@@ -179,6 +195,10 @@ function permissionForOperation(type: WorkflowOperationType): Permission {
         default:
             return Permission.WRITE_WORKFLOW
     }
+}
+
+function editsDraft(type: WorkflowOperationType): boolean {
+    return !OPERATIONS_OUTSIDE_THE_DRAFT.includes(type)
 }
 
 function actorUserId(request: FastifyRequest): UserId | undefined {

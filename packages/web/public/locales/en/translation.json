@@ -5105,5 +5105,22 @@
   "The other system refuses calls until {time}; replay after that": "The other system refuses calls until {time}; replay after that",
   "the block ends": "the block ends",
   "Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.": "Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.",
-  "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.": "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted."
+  "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.": "Sum of the steps each run executed in the selected range, counting the step a failed run stopped at. Steps whose failure was ignored or sent to a branch are not counted.",
+  "Connection {name} is a test-only connection; the production version must use the production one": "Connection {name} is a test-only connection; the production version must use the production one",
+  "Connection {name} has no test replacement; test runs use the production account directly": "Connection {name} has no test replacement; test runs use the production account directly",
+  "Variable {name} has no test value; test runs read the production value": "Variable {name} has no test value; test runs read the production value",
+  "Promotion requested": "Promotion requested",
+  "Promotion approved": "Promotion approved",
+  "Promotion rejected": "Promotion rejected",
+  "Promotion withdrawn": "Promotion withdrawn",
+  "Rolled back in production": "Rolled back in production",
+  "Environments updated": "Environments updated",
+  "auditReleaseDeployedToTest": "Workflow \"{workflow}\" deployed to test",
+  "auditReleaseRequested": "Promotion of \"{workflow}\" to production requested",
+  "auditReleaseApproved": "Promotion of \"{workflow}\" approved and live in production",
+  "auditReleaseRejected": "Promotion of \"{workflow}\" rejected",
+  "auditReleaseWithdrawn": "Promotion of \"{workflow}\" withdrawn",
+  "auditReleaseRolledBack": "Workflow \"{workflow}\" rolled back in production",
+  "auditEnvironmentsOn": "Test and production environments turned on or updated",
+  "auditEnvironmentsOff": "Test and production environments turned off"
 }

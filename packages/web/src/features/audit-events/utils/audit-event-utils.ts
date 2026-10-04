@@ -288,6 +288,34 @@ function summarize(event: ApplicationEvent): string {
       return t('Personal access token "{name}" was revoked', {
         name: event.data.token.name,
       });
+    case ApplicationEventName.RELEASE_DEPLOYED_TO_TEST:
+      return t('auditReleaseDeployedToTest', {
+        workflow: event.data.workflow?.displayName ?? '',
+      });
+    case ApplicationEventName.RELEASE_REQUESTED:
+      return t('auditReleaseRequested', {
+        workflow: event.data.workflow?.displayName ?? '',
+      });
+    case ApplicationEventName.RELEASE_APPROVED:
+      return t('auditReleaseApproved', {
+        workflow: event.data.workflow?.displayName ?? '',
+      });
+    case ApplicationEventName.RELEASE_REJECTED:
+      return t('auditReleaseRejected', {
+        workflow: event.data.workflow?.displayName ?? '',
+      });
+    case ApplicationEventName.RELEASE_WITHDRAWN:
+      return t('auditReleaseWithdrawn', {
+        workflow: event.data.workflow?.displayName ?? '',
+      });
+    case ApplicationEventName.RELEASE_ROLLED_BACK:
+      return t('auditReleaseRolledBack', {
+        workflow: event.data.workflow?.displayName ?? '',
+      });
+    case ApplicationEventName.ENVIRONMENTS_UPDATED:
+      return event.data.environmentsEnabled === true
+        ? t('auditEnvironmentsOn')
+        : t('auditEnvironmentsOff');
     case ApplicationEventName.TENANT_USERS_INVITED:
     case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
     case ApplicationEventName.TENANT_USER_REMOVED:
@@ -333,6 +361,8 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('Variable value revealed'),
   [ApplicationEventName.EXECUTION_PAYLOAD_REVEALED]: () =>
     t('Run payload revealed'),
+  [ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED]: () =>
+    t('Run payload reveal denied'),
   [ApplicationEventName.ISSUE_REPLAYED]: () => t('Issue runs replayed'),
   [ApplicationEventName.RUNS_RERUN]: () => t('Runs rerun'),
   [ApplicationEventName.PRIVACY_SETTINGS_UPDATED]: () =>
@@ -361,11 +391,18 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.DATA_STORE_RECORD_DELETED]: () =>
     t('Data store key deleted'),
   [ApplicationEventName.PERSONAL_ACCESS_TOKEN_CREATED]: () =>
-  [ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED]: () =>
-    t('Run payload reveal denied'),
     t('Access token created'),
   [ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED]: () =>
     t('Access token revoked'),
+  [ApplicationEventName.RELEASE_DEPLOYED_TO_TEST]: () => t('Deployed to test'),
+  [ApplicationEventName.RELEASE_REQUESTED]: () => t('Promotion requested'),
+  [ApplicationEventName.RELEASE_APPROVED]: () => t('Promotion approved'),
+  [ApplicationEventName.RELEASE_REJECTED]: () => t('Promotion rejected'),
+  [ApplicationEventName.RELEASE_WITHDRAWN]: () => t('Promotion withdrawn'),
+  [ApplicationEventName.RELEASE_ROLLED_BACK]: () =>
+    t('Rolled back in production'),
+  [ApplicationEventName.ENVIRONMENTS_UPDATED]: () =>
+    t('Environments updated'),
   [ApplicationEventName.TENANT_USERS_INVITED]: () => t('Users added'),
   [ApplicationEventName.TENANT_USER_ACCESS_CHANGED]: () =>
     t('User permissions changed'),

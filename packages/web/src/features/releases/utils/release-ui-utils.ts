@@ -40,6 +40,21 @@ function checkText(check: ReleaseCheck): string {
         'Connection {name} is not working; its steps will fail after release',
         { name: subject },
       );
+    case ReleaseCheckCode.CONNECTION_IS_TEST_ONLY:
+      return t(
+        'Connection {name} is a test-only connection; the production version must use the production one',
+        { name: subject },
+      );
+    case ReleaseCheckCode.CONNECTION_NOT_REPLACED:
+      return t(
+        'Connection {name} has no test replacement; test runs use the production account directly',
+        { name: subject },
+      );
+    case ReleaseCheckCode.VARIABLE_NO_TEST_VALUE:
+      return t(
+        'Variable {name} has no test value; test runs read the production value',
+        { name: subject },
+      );
     case ReleaseCheckCode.VARIABLES_OK:
       return t('{count} variables exist', { count: Number(subject) });
     case ReleaseCheckCode.VARIABLE_MISSING:

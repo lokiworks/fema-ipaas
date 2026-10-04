@@ -76,7 +76,7 @@ export const lockService = (log: FastifyBaseLogger) => ({
         }
         throw new ApplicationError({
             code: ErrorCode.VALIDATION,
-            params: { message: `${lock.userDisplayName} is editing this workflow. It cannot be published until they finish or the lock is taken over.` },
+            params: { message: `${lock.userDisplayName} is editing this workflow, so it cannot be changed or published until they finish or the lock is taken over.` },
         })
     },
 })

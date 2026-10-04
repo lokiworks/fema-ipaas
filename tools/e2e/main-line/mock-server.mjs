@@ -70,7 +70,7 @@ const ROUTES = {
     if (body.app_secret === 'wrong') {
       return ok({ code: 99991663, msg: 'app secret invalid' })
     }
-    return ok({ code: 0, msg: 'ok', tenant_access_token: FEISHU_TOKEN, expire: 7200 })
+    return ok({ code: 0, msg: 'ok', tenant_access_token: `${FEISHU_TOKEN}:${body.app_id}`, expire: 7200 })
   },
   'POST /feishu/open-apis/contact/v3/users/batch_get_id': ({ body }) => {
     const mobiles = (body.mobiles ?? []).map((mobile) => ({ mobile, ...userIdFor({ mobile }) }))
@@ -108,8 +108,8 @@ const ROUTES = {
     return ok({ code: 0, msg: 'success', data: { user } })
   },
   'GET /feishu/open-apis/im/v1/chats': () => ok({ code: 0, msg: 'success', data: { items: [{ chat_id: HR_CHAT_ID, name: 'HR 通知群' }] } }),
-  'POST /feishu/open-apis/im/v1/messages': ({ body }) => {
-    const message = { message_id: `om_${state.messages.length + 1}`, chat_id: body.receive_id, msg_type: body.msg_type, content: body.content, create_time: String(Date.now()) }
+  'POST /feishu/open-apis/im/v1/messages': ({ body, headers }) => {
+    const message = { message_id: `om_${state.messages.length + 1}`, chat_id: body.receive_id, msg_type: body.msg_type, content: body.content, create_time: String(Date.now()), app_id: String(headers.authorization ?? '').split(':')[1] ?? null }
     state.messages.push(message)
     return ok({ code: 0, msg: 'success', data: message })
   },

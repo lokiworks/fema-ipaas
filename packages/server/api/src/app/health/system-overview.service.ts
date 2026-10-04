@@ -1,5 +1,9 @@
-import { RedisType, UNKNOWN_VERSION, versionUtil } from '@fema-ipaas/server-utils'
+import fs from 'fs/promises'
+import path from 'path'
+import { generateId } from '@fema-ipaas/core-utils'
+import { DatabaseType, RedisType, UNKNOWN_VERSION, versionUtil } from '@fema-ipaas/server-utils'
 import {
+    ConnectorSyncMode,
     DiagnosticsBundle,
     EncryptionKeySource,
     FileLocation,
@@ -7,7 +11,10 @@ import {
     isNil,
     IssueStatus,
     OptionalServiceKind,
+    OptionalServiceProblem,
     OptionalServiceStatus,
+    ServiceProblemKind,
+    SetupCheck,
     SetupCheckKind,
     SetupCheckLevel,
     SetupChecklist,
@@ -38,15 +45,20 @@ import { machineService } from '../workers/machine/machine-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 
 export const systemOverviewService = (log: FastifyBaseLogger) => ({
-    async getSetupStatus(): Promise<SetupStatus> {
+    async isInitialized(): Promise<boolean> {
         const userCreated = await flagService(log).getOne(FlagId.USER_CREATED)
-        if (userCreated?.value === true) {
+        return userCreated?.value === true
+    },
+
+    async getSetupStatus(): Promise<SetupStatus> {
+        if (await this.isInitialized()) {
             return { initialized: true, version: null, checks: [], services: [] }
         }
-        const [database, redis, workers] = await Promise.all([
+        const [database, redis, workers, dataDirectory] = await Promise.all([
             readDatabaseVersion(log),
             readRedisVersion(log),
             machineService(log).list(''),
+            checkDataDirectory(),
         ])
         const keySource = encryptionKeySource()
         const fileLocation = system.get(AppSystemProp.FILE_STORAGE_LOCATION) ?? null
@@ -62,6 +74,7 @@ export const systemOverviewService = (log: FastifyBaseLogger) => ({
                     detail: keySource === EncryptionKeySource.GENERATED_FILE ? `${system.get(AppSystemProp.CONFIG_PATH) ?? ''}/settings.json` : null,
                 },
                 { kind: SetupCheckKind.FILE_STORAGE, level: SetupCheckLevel.OK, detail: fileLocation },
+                dataDirectory,
                 { kind: SetupCheckKind.WORKERS, level: workers.length > 0 ? SetupCheckLevel.OK : SetupCheckLevel.WARNING, detail: String(workers.length) },
             ],
             services: optionalServices(log),
@@ -163,16 +176,72 @@ function encryptionKeySource(): EncryptionKeySource {
 }
 
 function optionalServices(log: FastifyBaseLogger): OptionalServiceStatus[] {
-    const registry = system.get(AppSystemProp.CONNECTOR_REGISTRY_URL) ?? null
-    const templates = system.get(AppSystemProp.TEMPLATES_SOURCE_URL) ?? null
+    const registry = urlSetting({ prop: AppSystemProp.CONNECTOR_REGISTRY_URL })
+    const templates = urlSetting({ prop: AppSystemProp.TEMPLATES_SOURCE_URL })
+    const smtp = mailSender(log)
     const smtpHost = system.get(AppSystemProp.SMTP_HOST) ?? null
     const s3Bucket = system.get(AppSystemProp.S3_BUCKET) ?? null
+    const syncOff = system.get(AppSystemProp.CONNECTORS_SYNC_MODE) !== ConnectorSyncMode.OFFICIAL_AUTO
     return [
-        { kind: OptionalServiceKind.SMTP, enabled: mailSender(log).isConfigured(), detail: smtpHost },
-        { kind: OptionalServiceKind.OBJECT_STORAGE, enabled: system.get(AppSystemProp.FILE_STORAGE_LOCATION) === FileLocation.S3, detail: s3Bucket },
-        { kind: OptionalServiceKind.CONNECTOR_REGISTRY, enabled: !isNil(registry) && registry.length > 0, detail: hostOf(registry) },
-        { kind: OptionalServiceKind.TEMPLATE_REGISTRY, enabled: !isNil(templates) && templates.length > 0, detail: hostOf(templates) },
+        { kind: OptionalServiceKind.SMTP, enabled: smtp.isConfigured(), detail: smtpHost, problem: smtpProblem({ log }) },
+        { kind: OptionalServiceKind.OBJECT_STORAGE, enabled: system.get(AppSystemProp.FILE_STORAGE_LOCATION) === FileLocation.S3, detail: s3Bucket, problem: null },
+        {
+            kind: OptionalServiceKind.CONNECTOR_REGISTRY,
+            enabled: registry.valid && !syncOff,
+            detail: registry.valid ? hostOf(registry.url) : null,
+            problem: registry.problem ?? (registry.valid && syncOff ? configurationProblem({ message: 'FEMA_CONNECTORS_SYNC_MODE is NONE, so the registry is never read' }) : null),
+        },
+        { kind: OptionalServiceKind.TEMPLATE_REGISTRY, enabled: templates.valid, detail: templates.valid ? hostOf(templates.url) : null, problem: templates.problem },
     ]
+}
+
+function smtpProblem({ log }: { log: FastifyBaseLogger }): OptionalServiceProblem | null {
+    const sender = mailSender(log)
+    const invalid = sender.configurationProblem()
+    if (!isNil(invalid)) {
+        return configurationProblem({ message: invalid })
+    }
+    const delivery = sender.lastDelivery()
+    if (isNil(delivery) || delivery.ok) {
+        return null
+    }
+    return { kind: ServiceProblemKind.RECENT_FAILURE, message: delivery.reason ?? 'The last email was not delivered', at: delivery.at }
+}
+
+function urlSetting({ prop }: { prop: AppSystemProp }): UrlSetting {
+    const configured = system.get(prop)
+    if (isNil(configured) || configured.trim().length === 0) {
+        return { url: null, valid: false, problem: null }
+    }
+    const { data } = tryCatchSync(() => new URL(configured.trim()))
+    const valid = !isNil(data) && (data.protocol === 'http:' || data.protocol === 'https:')
+    return {
+        url: configured.trim(),
+        valid,
+        problem: valid ? null : configurationProblem({ message: `FEMA_${prop} is not a valid http or https address` }),
+    }
+}
+
+function configurationProblem({ message }: { message: string }): OptionalServiceProblem {
+    return { kind: ServiceProblemKind.INVALID_CONFIGURATION, message, at: null }
+}
+
+async function checkDataDirectory(): Promise<SetupCheck> {
+    const directory = system.get(AppSystemProp.CONFIG_PATH) ?? null
+    if (isNil(directory)) {
+        return { kind: SetupCheckKind.DATA_DIRECTORY, level: SetupCheckLevel.OK, detail: null }
+    }
+    const probe = path.join(directory, `.write-test-${generateId()}`)
+    const { error } = await tryCatch(async () => {
+        await fs.mkdir(directory, { recursive: true })
+        await fs.writeFile(probe, 'ok')
+        await fs.rm(probe, { force: true })
+    })
+    if (isNil(error)) {
+        return { kind: SetupCheckKind.DATA_DIRECTORY, level: SetupCheckLevel.OK, detail: directory }
+    }
+    const needed = encryptionKeySource() === EncryptionKeySource.GENERATED_FILE || system.get(AppSystemProp.DB_TYPE) === DatabaseType.PGLITE
+    return { kind: SetupCheckKind.DATA_DIRECTORY, level: needed ? SetupCheckLevel.ERROR : SetupCheckLevel.WARNING, detail: directory }
 }
 
 function hostOf(url: string | null): string | null {
@@ -204,6 +273,12 @@ async function readRedisVersion(log: FastifyBaseLogger): Promise<SystemOverview[
     }
     const match = /redis_version:([^\r\n]+)/.exec(data)
     return { ok: true, type, version: match?.[1]?.trim() ?? null }
+}
+
+type UrlSetting = {
+    url: string | null
+    valid: boolean
+    problem: OptionalServiceProblem | null
 }
 
 const EXCLUDED_FROM_DIAGNOSTICS = [

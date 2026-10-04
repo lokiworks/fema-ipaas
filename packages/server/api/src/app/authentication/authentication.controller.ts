@@ -127,6 +127,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
         const { response, signedUp } = await passwordlessAuthService(request.log).completeSignUp({
             identityId: request.principal.id,
             fullName: request.body.fullName,
+            organizationName: request.body.organizationName,
         })
 
         if (signedUp && !isNil(response.tenantId)) {

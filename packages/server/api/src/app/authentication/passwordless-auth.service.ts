@@ -120,7 +120,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         return authenticationUtils(log).getOnboardingResponse({ identityId: verifiedIdentity.id })
     },
 
-    async completeSignUp({ identityId, fullName }: CompleteSignUpParams): Promise<CompleteSignUpResult> {
+    async completeSignUp({ identityId, fullName, organizationName }: CompleteSignUpParams): Promise<CompleteSignUpResult> {
         const identity = await userIdentityService(log).getOneOrFail({ id: identityId })
         const { firstName, lastName } = signupNames.splitFullName({ fullName, email: identity.email })
         const writeNames = async (): Promise<void> => {
@@ -128,7 +128,7 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         }
         const { response, provisioned } = await tenantService(log).createTenantWithProject({
             identityId,
-            name: signupNames.tenantNameFromPerson({ firstName, email: identity.email }),
+            name: organizationName ?? signupNames.tenantNameFromPerson({ firstName, email: identity.email }),
             invalidatePreviousTokens: false,
             isFirstTenant: true,
             callerTokenVersion: undefined,
@@ -173,6 +173,7 @@ type CompleteSignUpResult = {
 type CompleteSignUpParams = {
     identityId: string
     fullName: string
+    organizationName?: string
 }
 
 type VerifyCodeParams = {

@@ -24,7 +24,23 @@ export enum SetupCheckKind {
     REDIS = 'REDIS',
     ENCRYPTION_KEY = 'ENCRYPTION_KEY',
     FILE_STORAGE = 'FILE_STORAGE',
+    DATA_DIRECTORY = 'DATA_DIRECTORY',
     WORKERS = 'WORKERS',
+}
+
+export enum ServiceProblemKind {
+    INVALID_CONFIGURATION = 'INVALID_CONFIGURATION',
+    RECENT_FAILURE = 'RECENT_FAILURE',
+}
+
+export enum ServiceCheckFailure {
+    NOT_CONFIGURED = 'NOT_CONFIGURED',
+    UNREACHABLE = 'UNREACHABLE',
+    AUTHENTICATION = 'AUTHENTICATION',
+    TLS = 'TLS',
+    TIMEOUT = 'TIMEOUT',
+    REJECTED = 'REJECTED',
+    OTHER = 'OTHER',
 }
 
 export enum SetupCheckLevel {
@@ -33,10 +49,31 @@ export enum SetupCheckLevel {
     ERROR = 'ERROR',
 }
 
+export const OptionalServiceProblem = z.object({
+    kind: z.enum(ServiceProblemKind),
+    message: z.string(),
+    at: z.string().nullable(),
+})
+
 export const OptionalServiceStatus = z.object({
     kind: z.enum(OptionalServiceKind),
     enabled: z.boolean(),
     detail: z.string().nullable(),
+    problem: OptionalServiceProblem.nullable(),
+})
+
+export const ServiceCheckRequest = z.object({
+    kind: z.enum(OptionalServiceKind),
+    recipient: z.string().trim().min(1).max(320).optional(),
+})
+
+export const ServiceCheckResult = z.object({
+    kind: z.enum(OptionalServiceKind),
+    ok: z.boolean(),
+    failure: z.enum(ServiceCheckFailure).nullable(),
+    reason: z.string().nullable(),
+    sentTo: z.string().nullable(),
+    checkedAt: z.string(),
 })
 
 export const SystemOverview = z.object({
@@ -108,6 +145,9 @@ export const SetupChecklist = z.object({
     encryptionKeyFromFile: z.boolean(),
 })
 
+export type OptionalServiceProblem = z.infer<typeof OptionalServiceProblem>
+export type ServiceCheckRequest = z.infer<typeof ServiceCheckRequest>
+export type ServiceCheckResult = z.infer<typeof ServiceCheckResult>
 export type SetupCheck = z.infer<typeof SetupCheck>
 export type SetupStatus = z.infer<typeof SetupStatus>
 export type SetupChecklist = z.infer<typeof SetupChecklist>

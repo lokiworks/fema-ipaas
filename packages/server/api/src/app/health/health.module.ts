@@ -1,11 +1,15 @@
-import { ComponentHealthCheck, ComponentHealthReport, DiagnosticsBundle, GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, SetupChecklist, SetupStatus, SystemOverview, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
+import { ComponentHealthCheck, ComponentHealthReport, DiagnosticsBundle, GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, ServiceCheckRequest, ServiceCheckResult, SetupChecklist, SetupStatus, SystemOverview, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
+import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { authnRateLimit } from '../core/security/rate-limit'
+import { tenantService } from '../tenant/tenant.service'
 import { tenantUtils } from '../tenant/tenant.utils'
 import { componentHealthService } from './component-health.service'
 import { healthMetricsService } from './health-metrics.service'
 import { healthStatusService } from './health.service'
+import { serviceCheckService } from './service-check.service'
 import { systemOverviewService } from './system-overview.service'
 
 export const healthModule: FastifyPluginAsyncZod = async (app) => {
@@ -65,6 +69,28 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/setup', GetSetupStatusRequest, async (request) => {
         return systemOverviewService(request.log).getSetupStatus()
+    })
+
+    app.post('/setup/service-check', SetupServiceCheckRequest, async (request): Promise<ServiceCheckResult> => {
+        if (await systemOverviewService(request.log).isInitialized()) {
+            throw new ApplicationError({
+                code: ErrorCode.AUTHORIZATION,
+                params: { message: 'The platform is already set up. Sign in and check services from System and upgrades.' },
+            })
+        }
+        return serviceCheckService(request.log).check({
+            request: { kind: request.body.kind },
+            tenantName: '',
+        })
+    })
+
+    app.post('/services/check', ServiceCheckRequestOptions, async (request): Promise<ServiceCheckResult> => {
+        await tenantUtils.assertPrimaryTenant({ request })
+        const tenant = await tenantService(request.log).getOneOrThrow(request.principal.tenant.id)
+        return serviceCheckService(request.log).check({
+            request: request.body,
+            tenantName: tenant.name,
+        })
     })
 
     app.get('/setup-checklist', GetSetupChecklistRequest, async (request) => {
@@ -200,6 +226,36 @@ const GetSetupStatusRequest = {
         description: 'Installation checks, only filled in before the first account exists',
         response: {
             200: SetupStatus,
+        },
+    },
+}
+
+const SetupServiceCheckRequest = {
+    config: {
+        security: securityAccess.public(),
+        rateLimit: authnRateLimit,
+    },
+    schema: {
+        tags: ['health'],
+        description: 'Tests an optional service while no account exists yet. Never sends mail; refuses once the first account exists',
+        body: ServiceCheckRequest.pick({ kind: true }),
+        response: {
+            [StatusCodes.OK]: ServiceCheckResult,
+        },
+    },
+}
+
+const ServiceCheckRequestOptions = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+        rateLimit: authnRateLimit,
+    },
+    schema: {
+        tags: ['health'],
+        description: 'Tests an optional service. Checks the connection, or sends a test email when a recipient is given',
+        body: ServiceCheckRequest,
+        response: {
+            [StatusCodes.OK]: ServiceCheckResult,
         },
     },
 }

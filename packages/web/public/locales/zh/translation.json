@@ -5316,5 +5316,8 @@
   "See the problems": "查看问题",
   "failureHintBeisenRateLimited": "北森接口调用超出限额。",
   "failureHintBeisenRateLimitDay": "北森当天不再响应这个租户，次日北京时间 00:00 恢复，现在重试没有用。请降低工作流轮询的频率或一次回放的历史数据量（北森限流）",
-  "failureHintBeisenCredentials": "请到北森管理后台确认连接器的 Key 和 Secret 仍然有效，并且连接里填的是它们（北森凭据）"
+  "failureHintBeisenCredentials": "请到北森管理后台确认连接器的 Key 和 Secret 仍然有效，并且连接里填的是它们（北森凭据）",
+  "The mail server rejected the message or the recipient.": "邮件服务器拒绝了这封邮件或收件人。",
+  "The bucket does not exist or refused the request.": "存储桶不存在，或者拒绝了请求。",
+  "The address answered, but not with a registry listing. Check the path of the address.": "地址有响应，但返回的内容不是仓库格式。检查地址的路径是否正确。"
 }

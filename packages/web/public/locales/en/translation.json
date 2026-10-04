@@ -5316,5 +5316,8 @@
   "See the problems": "See the problems",
   "failureHintBeisenRateLimited": "Beisen API rate limit exceeded.",
   "failureHintBeisenRateLimitDay": "Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day (Beijing time), so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)",
-  "failureHintBeisenCredentials": "Check that the connector Key and Secret are still valid in the Beisen admin console and that the connection uses them (Beisen credentials)"
+  "failureHintBeisenCredentials": "Check that the connector Key and Secret are still valid in the Beisen admin console and that the connection uses them (Beisen credentials)",
+  "The mail server rejected the message or the recipient.": "The mail server rejected the message or the recipient.",
+  "The bucket does not exist or refused the request.": "The bucket does not exist or refused the request.",
+  "The address answered, but not with a registry listing. Check the path of the address.": "The address answered, but not with a registry listing. Check the path of the address."
 }

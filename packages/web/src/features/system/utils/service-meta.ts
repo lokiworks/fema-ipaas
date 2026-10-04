@@ -90,11 +90,23 @@ function failureHint({
         'The server did not answer in time. Check the network and the firewall.',
       );
     case ServiceCheckFailure.REJECTED:
-      return t(
-        'The service refused the request, for example the bucket does not exist, the recipient was rejected, or the address is not a registry.',
-      );
+      return rejectedHint({ kind });
     case ServiceCheckFailure.OTHER:
       return t('The check failed.');
+  }
+}
+
+function rejectedHint({ kind }: { kind: OptionalServiceKind }): string {
+  switch (kind) {
+    case OptionalServiceKind.SMTP:
+      return t('The mail server rejected the message or the recipient.');
+    case OptionalServiceKind.OBJECT_STORAGE:
+      return t('The bucket does not exist or refused the request.');
+    case OptionalServiceKind.CONNECTOR_REGISTRY:
+    case OptionalServiceKind.TEMPLATE_REGISTRY:
+      return t(
+        'The address answered, but not with a registry listing. Check the path of the address.',
+      );
   }
 }
 

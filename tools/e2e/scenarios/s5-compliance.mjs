@@ -101,6 +101,7 @@ if (flows) {
     await permissionChecks({ mainRun, failRun })
     await retryChecks({ failRun })
     await surroundingChecks({ flows, failRun })
+    await erasureChecks({ mainRun })
   }
 }
 
@@ -199,6 +200,7 @@ async function permissionChecks({ mainRun }) {
     const attempts = await Promise.all([row.logsFileId, row.displayLogsFileId].map((fileId) => http({ method: 'GET', path: `/files/${fileId}?projectId=${admin.projectId}`, token: member.token })))
     const leaked = attempts.filter((response) => leakedIn({ text: response.text, secrets, only: ALL_PII }).length > 0)
     assert(leaked.length === 0, `文件接口返回了原文：${attempts.map((response) => response.status)}`)
+    assert(attempts.every((response) => !response.ok), `文件接口对用户令牌返回了 ${attempts.map((response) => response.status)}`)
   })
   await check('查看原文：必须填原因（不填 409，太短 400）', async () => {
     const none = await asAdmin({ stepName: 'trigger' })
@@ -295,6 +297,41 @@ async function surroundingChecks({ flows }) {
     const response = await http({ method: 'POST', path: `/webhooks/${flows.fail}/sync`, body: { ...payload, employee: { ...payload.employee, jobNumber: `${secrets.jobNumber}-sync` }, pwd: secrets.password } })
     assert(leakedIn({ text: response.text, secrets, only: [...ALL_PII, 'password'] }).length === 0, `回包 ${response.status} ${response.text.slice(0, 200)}`)
     return response.status
+  })
+}
+
+async function erasureChecks({ mainRun }) {
+  const created = await check('删除：按手机号（带空格的写法也算）发起删除请求，先扫描出命中的运行', async () => {
+    const request = await api({ method: 'POST', path: '/privacy-settings/erasures', body: { kind: 'PHONE', value: secrets.contactPlain, reason: '员工要求删除个人数据，工单 HR-5002' }, token: admin.token })
+    const scanned = await waitFor({
+      what: '扫描完成',
+      timeoutMs: 90000,
+      probe: async () => (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).find((item) => item.id === request.id && item.status === 'AWAITING_CONFIRMATION'),
+    })
+    assert(scanned.matchedRuns >= 1, `命中 ${scanned.matchedRuns} 条`)
+    assert(!JSON.stringify(scanned).includes(secrets.contactPlain), '请求记录里带了完整手机号')
+    return request.id
+  })
+  await check('删除：确认后日志文件里这个手机号的所有写法都没了，其他人的数据还在，审计里只有脱敏的提示', async () => {
+    assert(created, '前一步失败')
+    await api({ method: 'POST', path: `/privacy-settings/erasures/${created}/confirm`, body: {}, token: admin.token })
+    await waitFor({
+      what: '删除完成',
+      timeoutMs: 90000,
+      probe: async () => (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).find((item) => item.id === created && item.status === 'DONE'),
+    })
+    const db = openDatabaseSnapshot()
+    try {
+      const [row] = await db.query('select "logsFileId", "displayLogsFileId" from execution where id = $1', [mainRun.id])
+      const texts = (await Promise.all([row.logsFileId, row.displayLogsFileId].filter(Boolean).map((fileId) => db.fileText(fileId)))).join('\n')
+      assert(leakedIn({ text: texts, secrets, only: ['contactPlain'] }).length === 0, '日志文件里还有这个手机号')
+      const events = await api({ method: 'GET', path: '/audit-events?action=privacy.personal_data.erasure&limit=10', token: admin.token })
+      assert(events.data.length > 0, '没有删除审计')
+      assert(!JSON.stringify(events).includes(secrets.contactPlain), '审计里带了完整手机号')
+    }
+    finally {
+      await db.close()
+    }
   })
 }
 

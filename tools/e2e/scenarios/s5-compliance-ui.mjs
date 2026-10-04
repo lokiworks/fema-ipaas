@@ -1,6 +1,7 @@
 import { chromium } from '@playwright/test'
 import { ADMIN, DEFAULT_SETTINGS, MEMBER, SHOTS, WEB, api, assert, check, codeStep, http, openDatabaseSnapshot, payloadOf, publishFlow, secretsOf, shot, signIn, sleep, summary, uiLogin, waitFor, webhookTrigger } from './lib/s5-kit.mjs'
 
+const startedAt = new Date().toISOString()
 const TAG = String(1000 + Math.floor(Math.random() * 8999))
 const secrets = secretsOf({ tag: TAG })
 const admin = await signIn(ADMIN)
@@ -84,17 +85,17 @@ await check('界面：按项目设置保留期，保存后生效，再改回跟�
   const { context, page } = await uiLogin({ browser, user: ADMIN })
   await api({ method: 'POST', path: '/privacy-settings', body: { ...DEFAULT_SETTINGS, logRetentionDays: 30 }, token: admin.token })
   await page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
-  const row = page.locator('div').filter({ hasText: /^Dev 的项目/ }).first()
-  await row.getByRole('combobox').click()
+  const row = page.getByRole('combobox', { name: 'Dev 的项目' })
+  await row.click()
   await page.getByRole('option', { name: '7 天' }).click()
-  await waitFor({ what: '项目保留期变成 7 天', timeoutMs: 20000, probe: async () => (await api({ method: 'GET', path: `/projects/${admin.projectId}`, token: admin.token })).executionDataRetentionDays === 7 })
+  await waitFor({ what: '项目保留期变成 7 天', timeoutMs: 20000, probe: async () => (await retentionOf()) === 7 })
   const logs = await signIn(ADMIN)
   const scope = await api({ method: 'GET', path: '/run-logs/scope', token: logs.token })
   assert(scope.projects.some((project) => project.retentionDays === 7), `运行日志范围里的保留期 ${JSON.stringify(scope.projects.map((project) => project.retentionDays))}`)
   await shot({ page, name: 's5-ui-project-retention' })
-  await row.getByRole('combobox').click()
+  await row.click()
   await page.getByRole('option', { name: /跟随平台/ }).click()
-  await waitFor({ what: '项目保留期恢复默认', timeoutMs: 20000, probe: async () => (await api({ method: 'GET', path: `/projects/${admin.projectId}`, token: admin.token })).executionDataRetentionDays === null })
+  await waitFor({ what: '项目保留期恢复默认', timeoutMs: 20000, probe: async () => (await retentionOf()) === null })
   await context.close()
 })
 
@@ -104,7 +105,7 @@ await check('界面：改平台保留期并保存，接口和运行日志页顶�
   }
   const { context, page } = await uiLogin({ browser, user: ADMIN })
   await page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
-  await page.getByText('运行日志保留').waitFor({ timeout: 90000 })
+  await page.getByText('运行日志保留', { exact: true }).waitFor({ timeout: 90000 })
   await page.getByRole('combobox').first().click()
   await page.getByRole('option', { name: '14 天' }).click()
   await page.getByRole('button', { name: '保存' }).click()
@@ -130,11 +131,12 @@ await check('界面：按工号删除个人数据——先搜索再确认，确�
   await shot({ page, name: 's5-ui-erasure-confirm' })
   const confirm = page.getByRole('dialog')
   await confirm.getByRole('button', { name: /^删除$/ }).click()
-  const hint = `${secrets.jobNumber.slice(0, 2)}${'*'.repeat(secrets.jobNumber.length - 4)}${secrets.jobNumber.slice(-2)}`
+  const lowered = secrets.jobNumber.toLowerCase()
+  const hint = `${lowered.slice(0, 2)}${'*'.repeat(lowered.length - 4)}${lowered.slice(-2)}`
   await waitFor({
     what: '删除请求处理完成',
     timeoutMs: 120000,
-    probe: async () => (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).some((request) => request.valueHint === hint && request.status === 'DONE'),
+    probe: async () => (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).some((request) => request.valueHint === hint && request.status === 'DONE' && request.created >= startedAt),
   })
   await page.getByText(/已清除 \d+ 条运行记录中的数据/).first().waitFor({ timeout: 90000 })
   await shot({ page, name: 's5-ui-erasure-done' })
@@ -186,6 +188,11 @@ await browser.close()
 summary()
 void member
 void SHOTS
+
+async function retentionOf() {
+  const projects = await api({ method: 'GET', path: '/projects?limit=100', token: admin.token })
+  return projects.data.find((project) => project.id === admin.projectId)?.executionDataRetentionDays
+}
 
 async function ensureFlow() {
   const listed = await api({ method: 'GET', path: `/workflows?projectId=${admin.projectId}&limit=100`, token: admin.token })

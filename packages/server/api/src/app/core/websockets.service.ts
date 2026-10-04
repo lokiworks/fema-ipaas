@@ -23,6 +23,13 @@ const eventPermissions: Partial<Record<WebsocketServerEvent, Permission>> = {}
 
 export const websocketService = {
     to: (workerId: string) => app!.io.to(workerId),
+    async socketsIn(room: string): Promise<RoomSocket[]> {
+        const sockets = await app!.io.in(room).fetchSockets()
+        return sockets.map((socket) => ({
+            id: socket.id,
+            userId: typeof socket.data?.userId === 'string' ? socket.data.userId : null,
+        }))
+    },
     notifyWorkers: () => createNotifyClient<ApiToWorkerContract>(app!.io.to(WORKERS_ROOM)),
     async init(socket: Socket, log: FastifyBaseLogger): Promise<void> {
         const principal = await websocketService.verifyPrincipal(socket)
@@ -42,6 +49,7 @@ export const websocketService = {
                     user: { id: principal.id },
                     project: { id: projectId },
                 })
+                socket.data.userId = principal.id
                 await socket.join(projectId)
                 await socket.join(principal.id)
                 break
@@ -134,6 +142,11 @@ const validateProjectId = async ({ userId, projectId, log }: ValidateProjectIdAr
 
 function hasPermission(role: ProjectRole | undefined, permission: Permission): boolean {
     return !isNil(role) && (role.permissions ?? []).includes(permission)
+}
+
+type RoomSocket = {
+    id: string
+    userId: string | null
 }
 
 type ValidateProjectIdArgs = {

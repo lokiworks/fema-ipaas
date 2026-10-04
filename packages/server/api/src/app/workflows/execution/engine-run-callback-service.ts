@@ -1,22 +1,28 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { ExecutioOutputFile, FileCompression, FileType, isExecutionStateTerminal, logSerializer, RunInternalError, RunInternalErrorSource, SendWorkflowResponseRequest, StreamStepProgress, truncateFailedStepMessage, UpdateStepProgressRequest, UploadRunLogsRequest, WebsocketClientEvent } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { websocketService } from '../../core/websockets.service'
 import { fileCompressor } from '../../file/file-compressor'
 import { fileService } from '../../file/file.service'
 import { pubsub } from '../../helper/pubsub'
+import { testRunBroadcaster } from '../../privacy/test-run-broadcaster'
 import { projectService } from '../../project/project-service'
 import { RunsMetadataUpsertData } from '../../workers/job'
 import { executionOwnership } from './execution-ownership'
 import { runsMetadataQueue } from './executions-queue'
 
 export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
-    updateRunProgress({ projectId, request }: UpdateRunProgressParams): void {
-        websocketService.to(projectId).emit(WebsocketClientEvent.UPDATE_RUN_PROGRESS, request)
+    async updateRunProgress({ projectId, request }: UpdateRunProgressParams): Promise<void> {
+        const { error } = await tryCatch(() => testRunBroadcaster(log).runProgress({ projectId, request }))
+        if (error) {
+            log.error({ error, project: { id: projectId } }, '[updateRunProgress] Failed to broadcast the masked progress')
+        }
     },
 
-    updateStepProgress({ projectId, request }: UpdateStepProgressParams): void {
-        websocketService.to(projectId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, request)
+    async updateStepProgress({ projectId, request }: UpdateStepProgressParams): Promise<void> {
+        const { error } = await tryCatch(() => testRunBroadcaster(log).stepProgress({ projectId, request }))
+        if (error) {
+            log.error({ error, execution: { id: request.runId } }, '[updateStepProgress] Failed to broadcast the masked progress')
+        }
     },
 
     async sendWorkflowResponse({ request }: SendWorkflowResponseParams): Promise<void> {
@@ -58,12 +64,15 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
         await runsMetadataQueue(log).add(logData)
 
         if (request.stepResponse && request.streamStepProgress === StreamStepProgress.WEBSOCKET) {
-            const stepData = { ...request.stepResponse, projectId }
-            if (!isTerminal) {
-                websocketService.to(projectId).emit(WebsocketClientEvent.TEST_STEP_PROGRESS, stepData)
-            }
-            else {
-                websocketService.to(projectId).emit(WebsocketClientEvent.TEST_STEP_FINISHED, stepData)
+            const stepResponse = request.stepResponse
+            const { error } = await tryCatch(() => testRunBroadcaster(log).stepResponse({
+                projectId,
+                event: isTerminal ? WebsocketClientEvent.TEST_STEP_FINISHED : WebsocketClientEvent.TEST_STEP_PROGRESS,
+                response: stepResponse,
+                stepName: request.stepNameToTest,
+            }))
+            if (error) {
+                log.error({ error, execution: { id: request.runId } }, '[uploadRunLog] Failed to broadcast the masked step result')
             }
         }
     },

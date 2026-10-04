@@ -10,14 +10,16 @@ import {
     RevealExecutionPayloadResponse,
     TenantRole,
     UpdatePrivacySettingsRequestBody,
+    User,
     workflowStructureUtil,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { tenantService } from '../tenant/tenant.service'
-import { userService } from '../user/user-service'
+import { userRepo, userService } from '../user/user-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { PrivacySettingsEntity } from './privacy-settings.entity'
 
@@ -100,6 +102,17 @@ export const privacyService = (log: FastifyBaseLogger) => ({
         }
     },
 
+    async rawViewerIds({ tenantId, userIds }: TenantScope & { userIds: UserId[] }): Promise<Set<UserId>> {
+        const settings = await this.get({ tenantId })
+        if (settings.payloadLevel !== PayloadLevel.FULL || userIds.length === 0) {
+            return new Set()
+        }
+        const tenant = await tenantService(log).getOneOrThrow(tenantId)
+        const users = await userRepo().find({ where: { id: In(userIds), tenantId }, select: ['id', 'tenantRole'] })
+        const allowed = users.filter((user) => settings.rawViewRoles.includes(roleOf({ ownerId: tenant.ownerId, user })))
+        return new Set(allowed.map((user) => user.id))
+    },
+
     revealStep({ execution, stepName }: { execution: Execution, stepName: string }): RevealExecutionPayloadResponse {
         const step = execution.steps?.[stepName]
         if (isNil(step) || !isRecord(step)) {
@@ -118,6 +131,13 @@ async function rawViewRoleOf({ tenantId, userId, log }: { tenantId: TenantId, us
         return RawViewRole.OWNER
     }
     const user = await userService(log).getOneOrFail({ id: userId })
+    return user.tenantRole === TenantRole.ADMIN ? RawViewRole.ADMIN : RawViewRole.MEMBER
+}
+
+function roleOf({ ownerId, user }: { ownerId: UserId, user: Pick<User, 'id' | 'tenantRole'> }): RawViewRole {
+    if (ownerId === user.id) {
+        return RawViewRole.OWNER
+    }
     return user.tenantRole === TenantRole.ADMIN ? RawViewRole.ADMIN : RawViewRole.MEMBER
 }
 

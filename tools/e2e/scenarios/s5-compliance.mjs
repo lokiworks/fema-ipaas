@@ -1,3 +1,4 @@
+import { websocketChecks } from './lib/s5-websocket.mjs'
 import { ADMIN, ALL_PII, DEFAULT_SETTINGS, MEMBER, api, assert, check, codeStep, deleteFlowsNamed, http, leakedIn, openDatabaseSnapshot, payloadOf, publishFlow, secretsOf, signIn, sleep, summary, waitFor, webhookTrigger } from './lib/s5-kit.mjs'
 
 const TAG = String(1000 + Math.floor(Math.random() * 8999))
@@ -64,7 +65,7 @@ const flows = await check('准备：发布三个工作流（主线、失败、�
 
 if (flows) {
   const mainRun = await check('主线：带敏感字段的数据触发一次完整运行', async () => {
-    const response = await http({ method: 'POST', path: `/webhooks/${flows.main}`, body: payload, base: `${process.env.E2E_API_URL ?? 'http://localhost:3105/api/v1'}` })
+    const response = await http({ method: 'POST', path: `/webhooks/${flows.main}`, body: payload })
     assert(response.ok, `webhook 返回 ${response.status}`)
     return waitFor({
       what: '主线运行结束',
@@ -101,6 +102,7 @@ if (flows) {
     await permissionChecks({ mainRun, failRun })
     await retryChecks({ failRun })
     await surroundingChecks({ flows, failRun })
+    await websocketChecks({ admin, member })
     await erasureChecks({ mainRun })
   }
 }

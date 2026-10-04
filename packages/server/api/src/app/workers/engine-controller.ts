@@ -70,7 +70,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/run-progress', RunProgressRequest, async (request, reply) => {
-        engineRunCallbackService(request.log).updateRunProgress({
+        await engineRunCallbackService(request.log).updateRunProgress({
             projectId: request.principal.projectId,
             request: request.body,
         })
@@ -78,7 +78,7 @@ export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/step-progress', StepProgressRequest, async (request, reply) => {
-        engineRunCallbackService(request.log).updateStepProgress({
+        await engineRunCallbackService(request.log).updateStepProgress({
             projectId: request.principal.projectId,
             request: request.body,
         })

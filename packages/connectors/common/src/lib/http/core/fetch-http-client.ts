@@ -78,7 +78,7 @@ export class FetchHttpClient extends BaseHttpClient {
     if (response.status < 200 || response.status >= successCeiling) {
       // A stream response can't carry an error message usefully; read the error body as text.
       const errorBody = await parseResponseBody(response, responseType === 'stream' ? 'text' : responseType);
-      const httpError = new HttpError(request.body, { status: response.status, responseBody: errorBody });
+      const httpError = new HttpError(request.body, { status: response.status, responseBody: errorBody, responseHeaders: toHttpHeaders(response.headers) });
       console.error('[HttpClient#(sanitized error message)] Request failed:', httpError);
       throw httpError;
     }

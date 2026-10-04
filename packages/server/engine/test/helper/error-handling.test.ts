@@ -56,7 +56,8 @@ describe('runWithExponentialBackoff', () => {
 
         const output = await runWithExponentialBackoff(executionState, action, constants, requestFunction)
 
-        expect(output).toEqual(resultExecutionState)
+        expect(output.verdict).toEqual(resultExecutionState.verdict)
+        expect(output.reliabilityEvents).toHaveLength(1)
         // Mock applies for the first attempt and second attempt is a real call which return success
         expect(requestFunction).toHaveBeenCalledTimes(2)
         expect(requestFunction).toHaveBeenCalledWith({ action, executionState, constants })

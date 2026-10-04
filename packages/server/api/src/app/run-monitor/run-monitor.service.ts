@@ -1,6 +1,8 @@
 import { isNil, unique } from '@fema-ipaas/core-utils'
 import {
     ExecutionStatus,
+    RateLimitUnit,
+    ReliabilityEventKind,
     RUN_MONITOR_MAX_WORKFLOW_ROWS,
     RunEnvironment,
     RunMonitorHandled,
@@ -120,7 +122,7 @@ async function statusCounts(scope: MonitorScope): Promise<StatusStepsRow[]> {
 
 async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
     const window = [isoOf(scope.window.from), isoOf(scope.window.to)]
-    const [duplicates, merged]: [{ count: string }[], { failures: string, issues: string }[]] = await Promise.all([
+    const [duplicates, merged, platformEvents]: [{ count: string }[], { failures: string, issues: string }[], PlatformEventRow[]] = await Promise.all([
         databaseConnection().query(
             `SELECT COUNT(*) AS count FROM deduped_event d
             WHERE d."projectId" = ANY($1::varchar[])
@@ -134,11 +136,37 @@ async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
                 AND e.created >= $3 AND e.created <= $4`,
             [...scopeParams(scope), ...window],
         ),
+        databaseConnection().query(
+            `SELECT ev.kind AS kind, ev."connectorName" AS "connectorName", ev."limitUnit" AS "limitUnit",
+                COUNT(*) AS events, COUNT(DISTINCT ev."executionId") AS runs
+            FROM run_reliability_event ev
+            INNER JOIN "execution" e ON e.id = ev."executionId"
+            WHERE ${SCOPE_SQL} AND e.created >= $3 AND e.created <= $4
+            GROUP BY ev.kind, ev."connectorName", ev."limitUnit"`,
+            [...scopeParams(scope), ...window],
+        ),
     ])
     return {
         duplicateEvents: Number(duplicates[0]?.count ?? 0),
         mergedFailures: Number(merged[0]?.failures ?? 0),
         mergedIssues: Number(merged[0]?.issues ?? 0),
+        ...platformEventCounts(platformEvents),
+    }
+}
+
+function platformEventCounts(rows: PlatformEventRow[]): Omit<RunMonitorHandled, 'duplicateEvents' | 'mergedFailures' | 'mergedIssues'> {
+    const ofKind = (kind: ReliabilityEventKind) => rows.filter((row) => row.kind === kind)
+    const events = (kind: ReliabilityEventKind) => ofKind(kind).reduce((sum, row) => sum + Number(row.events), 0)
+    const runs = (kind: ReliabilityEventKind) => ofKind(kind).reduce((sum, row) => sum + Number(row.runs), 0)
+    return {
+        rateLimitWaits: events(ReliabilityEventKind.RATE_LIMIT_QUEUED),
+        rateLimitedRuns: runs(ReliabilityEventKind.RATE_LIMIT_QUEUED),
+        rateLimitSources: ofKind(ReliabilityEventKind.RATE_LIMIT_QUEUED)
+            .map((row) => ({ connectorName: row.connectorName ?? '', unit: row.limitUnit ?? RateLimitUnit.UNDECLARED, count: Number(row.events) }))
+            .sort((first, second) => second.count - first.count),
+        autoRetries: events(ReliabilityEventKind.AUTO_RETRY),
+        retriedRuns: runs(ReliabilityEventKind.AUTO_RETRY),
+        caughtUpEvents: events(ReliabilityEventKind.CATCH_UP),
     }
 }
 
@@ -302,7 +330,7 @@ const ACTIVE_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000
 const PEAK_LOOKBACK_MS = 24 * 60 * 60 * 1000
 const MAX_WORKFLOW_OPTIONS = 2000
 
-const EMPTY_HANDLED: RunMonitorHandled = { duplicateEvents: 0, mergedFailures: 0, mergedIssues: 0 }
+const EMPTY_HANDLED: RunMonitorHandled = { duplicateEvents: 0, mergedFailures: 0, mergedIssues: 0, rateLimitWaits: 0, rateLimitedRuns: 0, rateLimitSources: [], autoRetries: 0, retriedRuns: 0, caughtUpEvents: 0 }
 
 const EMPTY_STATS: RunMonitorStats = {
     runs: 0,
@@ -329,6 +357,14 @@ export type MonitorScope = {
     range: RunMonitorQuery['range']
     timezone: string
     window: MonitorWindow
+}
+
+type PlatformEventRow = {
+    kind: ReliabilityEventKind
+    connectorName: string | null
+    limitUnit: RateLimitUnit | null
+    events: string
+    runs: string
 }
 
 type ResolveScopeParams = {

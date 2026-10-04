@@ -299,3 +299,53 @@ describe('feishuContacts.getUser', () => {
     expect(result).toMatchObject({ is_frozen: false, department_ids: [] });
   });
 });
+
+describe('feishu rate limits', () => {
+  beforeEach(() => {
+    sendRequest.mockReset();
+  });
+
+  function rateLimited({ resetSeconds }: { resetSeconds: number | undefined }) {
+    sendRequest.mockImplementation(async ({ url }: { url: string }) => {
+      if (url.endsWith('/tenant_access_token/internal')) {
+        return reply({ code: 0, msg: 'ok', tenant_access_token: 't-2', expire: 7200 });
+      }
+      throw new HttpError({}, {
+        status: 400,
+        responseBody: { code: 99991400, msg: 'request trigger frequency limit' },
+        responseHeaders: resetSeconds === undefined ? {} : { 'x-ogw-ratelimit-reset': String(resetSeconds) },
+      });
+    });
+  }
+
+  async function failure(): Promise<string> {
+    const { feishuCommon } = await import('../src/lib/common');
+    return feishuCommon
+      .callApi({ auth: { ...auth, props: { ...auth.props, appId: 'cli_limit' } }, method: 'GET' as never, path: '/open-apis/x' })
+      .then(() => '', (error: unknown) => (error instanceof Error ? error.message : String(error)));
+  }
+
+  it('waits for the time the reset header gives', async () => {
+    const { blockedUntilMarker } = await import('@fema-ipaas/connector-sdk');
+    rateLimited({ resetSeconds: 12 });
+    const before = Date.now();
+
+    const message = await failure();
+
+    const until = blockedUntilMarker.parse(message)?.getTime() ?? 0;
+    expect(message).toMatch(/^HTTP 429: /);
+    expect(until - before).toBeGreaterThanOrEqual(11_000);
+    expect(until - before).toBeLessThanOrEqual(13_000);
+  });
+
+  it('falls back to a one second wait when the header is missing', async () => {
+    const { blockedUntilMarker } = await import('@fema-ipaas/connector-sdk');
+    rateLimited({ resetSeconds: undefined });
+    const before = Date.now();
+
+    const message = await failure();
+
+    const until = blockedUntilMarker.parse(message)?.getTime() ?? 0;
+    expect(until - before).toBeLessThanOrEqual(2_000);
+  });
+});

@@ -1,6 +1,7 @@
 import {
   DEFAULT_RUN_MONITOR_VIEW_CONFIG,
   ExecutionStatus,
+  ReliabilityEventKind,
   RunMonitorBucketUnit,
   RunMonitorMetric,
   RunMonitorOptions,
@@ -306,12 +307,14 @@ function logsLink({
   projectIds,
   workflowIds,
   group,
+  handled,
 }: {
   from: string;
   to: string;
   projectIds: string[];
   workflowIds: string[];
   group: RunMonitorStatusGroup | null;
+  handled?: ReliabilityEventKind;
 }): string {
   const params = new URLSearchParams();
   projectIds.forEach((id) => params.append('projectId', id));
@@ -319,6 +322,9 @@ function logsLink({
   (group === null ? [] : statusesOf(group)).forEach((status) =>
     params.append('status', status),
   );
+  if (handled !== undefined) {
+    params.append('handled', handled);
+  }
   params.set('createdAfter', from);
   params.set('createdBefore', to);
   return `/logs?${params.toString()}`;

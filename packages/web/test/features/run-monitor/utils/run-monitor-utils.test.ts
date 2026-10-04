@@ -1,5 +1,6 @@
 import {
   ExecutionStatus,
+  ReliabilityEventKind,
   RunMonitorBucketUnit,
   RunMonitorChartMode,
   RunMonitorMetric,
@@ -300,6 +301,21 @@ describe('runMonitorUtils.logsLink', () => {
     expect(params.getAll('status')).toEqual([ExecutionStatus.CANCELED]);
     expect(params.get('createdAfter')).toBe('2026-09-27T00:00:00.000Z');
     expect(params.get('createdBefore')).toBe('2026-09-27T01:00:00.000Z');
+  });
+
+  it('narrows the run logs to the runs the platform handled', () => {
+    const link = runMonitorUtils.logsLink({
+      from: '2026-09-27T00:00:00.000Z',
+      to: '2026-09-27T01:00:00.000Z',
+      projectIds: ['p1'],
+      workflowIds: ['w1'],
+      group: null,
+      handled: ReliabilityEventKind.RATE_LIMIT_QUEUED,
+    });
+    const params = new URLSearchParams(link.split('?')[1]);
+    expect(params.getAll('handled')).toEqual(['RATE_LIMIT_QUEUED']);
+    expect(params.getAll('workflowId')).toEqual(['w1']);
+    expect(params.getAll('status')).toEqual([]);
   });
 
   it('maps metrics to status groups', () => {

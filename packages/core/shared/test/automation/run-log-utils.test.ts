@@ -1,6 +1,7 @@
 import {
     ExecutionStatus,
     RerunEligibilityInput,
+    ReliabilityEventKind,
     RunEnvironment,
     RunLogConditionField,
     RunLogConditionState,
@@ -47,6 +48,16 @@ describe('runLogFilterUtils.parseSearchParams', () => {
         expect(state.type).toBe(RunLogType.RUN)
         expect(state.conditions).toEqual([])
         expect(ignoredParams).toEqual(['type', 'time', 'status', 'durationSeconds'])
+    })
+
+    it('reads the handled-by-the-platform kinds and drops unknown ones', () => {
+        const params = new URLSearchParams('handled=RATE_LIMIT_QUEUED&handled=CATCH_UP&handled=NOPE')
+        const { state, ignoredParams } = runLogFilterUtils.parseSearchParams({ params, presetProjectId: null })
+        expect(state.conditions).toEqual([{ field: RunLogConditionField.HANDLED, values: [ReliabilityEventKind.RATE_LIMIT_QUEUED, ReliabilityEventKind.CATCH_UP] }])
+        expect(ignoredParams).toEqual(['handled'])
+        expect(runLogFilterUtils.toListQuery({ state }).handled).toEqual([ReliabilityEventKind.RATE_LIMIT_QUEUED, ReliabilityEventKind.CATCH_UP])
+        const written = runLogFilterUtils.writeSearchParams({ state, base: new URLSearchParams(), presetProjectId: null })
+        expect(written.getAll('handled')).toEqual(['RATE_LIMIT_QUEUED', 'CATCH_UP'])
     })
 
     it('presets the project condition in project mode unless all projects were chosen', () => {

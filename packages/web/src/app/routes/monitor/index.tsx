@@ -1,4 +1,5 @@
 import {
+  ReliabilityEventKind,
   RunMonitorBucket,
   RunMonitorMetric,
   RunMonitorViewConfig,
@@ -10,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { connectorsHooks } from '@/features/connectors/hooks/connectors-hooks';
 import {
   MonitorAiUsage,
   MonitorHandledCard,
@@ -69,6 +71,14 @@ export function MonitorPage() {
       : effective.projectIds.length === 0 && options?.projects.length === 1
       ? options.projects[0].id
       : null;
+  const { summaries: connectorSummaries } =
+    connectorsHooks.useConnectorSummariesByNames({
+      names: summary?.handled.rateLimitSources.map(
+        (source) => source.connectorName,
+      ) ?? [],
+    });
+  const connectorName = (name: string) =>
+    connectorSummaries.find((item) => item.name === name)?.displayName ?? name;
   const rangeLabel = runMonitorLabels.range(effective.range);
   const takenNames = [t('Default view'), ...myViews.map((item) => item.name)];
 
@@ -118,6 +128,21 @@ export function MonitorPage() {
       workflowIds: [workflowId],
       metric: RunMonitorMetric.ALL,
     });
+  };
+  const openHandledLogs = (kind: ReliabilityEventKind) => {
+    if (!summary) {
+      return;
+    }
+    navigate(
+      runMonitorUtils.logsLink({
+        from: summary.from,
+        to: summary.to,
+        projectIds: effective.projectIds,
+        workflowIds: effective.workflowIds,
+        group: null,
+        handled: kind,
+      }),
+    );
   };
   const openBucketLogs = (bucket: RunMonitorBucket) =>
     openLogs({
@@ -287,6 +312,8 @@ export function MonitorPage() {
           <MonitorHandledCard
             handled={summary.handled}
             rangeLabel={rangeLabel}
+            connectorName={connectorName}
+            onOpenHandled={openHandledLogs}
             onOpenDuplicates={
               dedupedProjectId === null
                 ? null

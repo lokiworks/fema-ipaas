@@ -18,6 +18,8 @@ icon: 🧪
 5. 停服务时只按上面这几个端口 kill 进程。
 
 ## Gotchas
+- **模拟服务的管理接口（`tools/e2e/main-line/mock-server.mjs`）。** `/__admin/beisen-mode` 现在接 `{ rules: [...] }`，每条规则 `{ mode, retryAfterSeconds, appKey, whenEmpStatusIncludes, unlessEmpStatusIncludes }`，按顺序取第一条匹配的；`mode` 有 `RATE_LIMIT_429`、`RATE_LIMIT_BODY`、`SERVER_ERROR_500`，空数组清除，旧的 `{ mode }` 写法仍可用。三个入职、调岗、离职工作流的轮询请求分别带不同的 `empStatus`（离职只有 8），所以能让其中一个工作流单独失败或恢复。`/__admin/feishu-failure` 多了 `times`（只失败这么多次再自动恢复）和 `resetSeconds`（回 `x-ogw-ratelimit-reset` 头）；`/__admin/state` 多了 `failuresServed`。北森令牌现在带着 app_key，规则才能按连接区分。
+- **宕机补事件的场景要等三分钟左右。** 脚本停 worker（`stop-worker.sh`）约 165 秒，超过「2 个轮询间隔 + 30 秒」才会被判为补上的事件，再用 `start-worker.sh` 拉起。
 - **api 和 worker 的 `bootstrap.ts` 会用 dotenv 加载 `.env.dev`。** 在 shell 里 `unset FEMA_DEV_CONNECTORS` 没用，它会被 `.env.dev` 那份开发名单补回来（名单里没有北森和飞书），表现为建连接时报 `connector_metadata_not_found`。要么显式列全，要么用镜像验证「不设变量即全部内置」这条路径。
 - **步骤引用要带 `['output']`**，例如 `{{trigger['output']['DepartmentName']}}`，漏了会解析成空字符串，映射表查找报 `"" is not in mapping table`。
 - **发布后要等触发器启用完再写入变动。** 触发器启用是异步的，启用时记下的轮询起点晚于已有的变动，启用前的变动不会被处理，这是预期行为。

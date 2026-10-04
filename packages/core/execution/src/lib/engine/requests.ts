@@ -4,6 +4,7 @@ import { ExecutionStatus } from '../execution/state/workflow-execution'
 import { StepOutput } from '../execution/state/step-output'
 import { FailedStep, Execution } from '../execution/execution'
 import { StepRunResponse } from '../workflows/sample-data'
+import { ReliabilityEventReport } from '../execution/reliability'
 import { StreamStepProgress } from './engine-operation'
 
 
@@ -24,6 +25,7 @@ export const UploadRunLogsRequest = z.object({
     finishTime: z.string().optional(),
     stepResponse: StepRunResponse.optional(),
     stepsCount: z.number().optional(),
+    reliabilityEvents: z.array(ReliabilityEventReport).optional(),
     internalError: RunInternalError.optional(),
     provisionMs: z.number().optional(),
     bootMs: z.number().optional(),

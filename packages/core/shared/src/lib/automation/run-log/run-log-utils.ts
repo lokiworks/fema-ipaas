@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { ExecutionStatus, isExecutionStateTerminal, isFailedState, RunEnvironment } from '@fema-ipaas/workflow-core'
+import { ExecutionStatus, isExecutionStateTerminal, isFailedState, ReliabilityEventKind, RunEnvironment } from '@fema-ipaas/workflow-core'
 import {
     ListRunLogsRequestQuery,
     RunLogCondition,
@@ -20,6 +20,7 @@ function conditionState(condition: RunLogCondition): RunLogConditionState {
         case RunLogConditionField.WORKFLOW:
         case RunLogConditionField.STATUS:
         case RunLogConditionField.CONNECTOR:
+        case RunLogConditionField.HANDLED:
             return condition.values.length > 0 ? RunLogConditionState.COMPLETE : RunLogConditionState.EMPTY
         case RunLogConditionField.CONTENT:
         case RunLogConditionField.BUSINESS_KEY:
@@ -53,6 +54,8 @@ function emptyCondition(field: RunLogConditionField): RunLogCondition {
             return { field, values: [] }
         case RunLogConditionField.CONNECTOR:
             return { field, values: [] }
+        case RunLogConditionField.HANDLED:
+            return { field, values: [] }
         case RunLogConditionField.CONTENT:
             return { field, text: '' }
         case RunLogConditionField.BUSINESS_KEY:
@@ -80,6 +83,8 @@ function parseSearchParams({ params, presetProjectId }: ParseSearchParamsInput):
     const customRange = readCustomRange(params)
     const statuses = readList(params, PARAM.STATUS)
     const validStatuses = statuses.filter((status) => isExecutionStatus(status))
+    const handled = readList(params, PARAM.HANDLED)
+    const validHandled = handled.filter((kind) => isReliabilityEventKind(kind))
     const durationText = (params.get(PARAM.DURATION_SECONDS) ?? '').trim()
     const durationValid = durationText.length > 0 && NON_NEGATIVE_NUMBER.test(durationText)
     const durationOperator = readEnum({ raw: params.get(PARAM.DURATION_OPERATOR), values: Object.values(RunLogDurationOperator) })
@@ -95,6 +100,7 @@ function parseSearchParams({ params, presetProjectId }: ParseSearchParamsInput):
         ...listCondition({ field: RunLogConditionField.CONNECTOR, values: readList(params, PARAM.CONNECTOR) }),
         ...contentCondition(content),
         ...businessKeyCondition((params.get(PARAM.BUSINESS_KEY) ?? '').trim()),
+        ...handledCondition(validHandled),
         ...durationCondition({ valid: durationValid, operator: durationOperator.value ?? RunLogDurationOperator.GTE, seconds: durationText }),
     ]
     const ignoredParams = [
@@ -103,6 +109,7 @@ function parseSearchParams({ params, presetProjectId }: ParseSearchParamsInput):
         ...(time.invalid ? [PARAM.TIME] : []),
         ...(customRange.invalid ? [PARAM.CREATED_AFTER] : []),
         ...(validStatuses.length < statuses.length ? [PARAM.STATUS] : []),
+        ...(validHandled.length < handled.length ? [PARAM.HANDLED] : []),
         ...(durationText.length > 0 && !durationValid ? [PARAM.DURATION_SECONDS] : []),
         ...(durationOperator.invalid ? [PARAM.DURATION_OPERATOR] : []),
     ]
@@ -153,6 +160,7 @@ function toListQuery({ state }: { state: RunLogFilterState }): ListRunLogsReques
         connector: byField(RunLogConditionField.CONNECTOR)?.values,
         content: byField(RunLogConditionField.CONTENT)?.text.trim(),
         businessKey: byField(RunLogConditionField.BUSINESS_KEY)?.text.trim(),
+        handled: byField(RunLogConditionField.HANDLED)?.values,
         durationOperator: duration?.operator,
         durationSeconds: isNil(duration) ? undefined : Number(duration.seconds.trim()),
         runIds: state.runIds.length > 0 ? state.runIds : undefined,
@@ -213,6 +221,9 @@ function blockReason(input: RerunEligibilityInput): RunRerunBlockReason | null {
     if (!input.workflowEnabled) {
         return RunRerunBlockReason.WORKFLOW_STOPPED
     }
+    if (!isNil(input.blockedUntil)) {
+        return RunRerunBlockReason.BLOCKED_UNTIL
+    }
     return null
 }
 
@@ -221,9 +232,6 @@ function fromFailedStepBlockReason({ runBlockReason, hasFailedStep, rawDataAvail
         return runBlockReason
     }
     if (!hasFailedStep) {
-    if (!isNil(input.blockedUntil)) {
-        return RunRerunBlockReason.BLOCKED_UNTIL
-    }
         return RunRerunBlockReason.NO_FAILED_STEP
     }
     if (!rawDataAvailable) {
@@ -266,6 +274,14 @@ function listCondition({ field, values }: { field: RunLogConditionField.PROJECT 
     return values.length > 0 ? [{ field, values }] : []
 }
 
+function isReliabilityEventKind(value: string): value is ReliabilityEventKind {
+    return Object.values(ReliabilityEventKind).some((kind) => kind === value)
+}
+
+function handledCondition(values: ReliabilityEventKind[]): RunLogCondition[] {
+    return values.length > 0 ? [{ field: RunLogConditionField.HANDLED, values }] : []
+}
+
 function statusCondition(values: ExecutionStatus[]): RunLogCondition[] {
     return values.length > 0 ? [{ field: RunLogConditionField.STATUS, values }] : []
 }
@@ -306,6 +322,8 @@ function conditionEntries(condition: RunLogCondition): [string, string][] {
             return condition.values.map((value): [string, string] => [PARAM.STATUS, value])
         case RunLogConditionField.CONNECTOR:
             return condition.values.map((value): [string, string] => [PARAM.CONNECTOR, value])
+        case RunLogConditionField.HANDLED:
+            return condition.values.map((value): [string, string] => [PARAM.HANDLED, value])
         case RunLogConditionField.CONTENT:
             return [[PARAM.CONTENT, condition.text.trim()]]
         case RunLogConditionField.BUSINESS_KEY:
@@ -332,6 +350,7 @@ const PARAM = {
     CONNECTOR: 'connector',
     CONTENT: 'content',
     BUSINESS_KEY: 'businessKey',
+    HANDLED: 'handled',
     LEGACY_FAILED_STEP_MESSAGE: 'failedStepMessage',
     DURATION_OPERATOR: 'durationOperator',
     DURATION_SECONDS: 'durationSeconds',
@@ -353,6 +372,7 @@ const FILTER_KEYS: string[] = [
     PARAM.CONNECTOR,
     PARAM.CONTENT,
     PARAM.BUSINESS_KEY,
+    PARAM.HANDLED,
     PARAM.LEGACY_FAILED_STEP_MESSAGE,
     PARAM.DURATION_OPERATOR,
     PARAM.DURATION_SECONDS,
@@ -416,5 +436,5 @@ export type RerunEligibilityInput = {
     canWrite: boolean
     workflowPublished: boolean
     workflowEnabled: boolean
-}
     blockedUntil?: Date | null
+}

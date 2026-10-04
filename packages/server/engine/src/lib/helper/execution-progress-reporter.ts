@@ -144,6 +144,7 @@ export const executionProgressReporter = {
                 finishTime: isTerminal ? dayjs().toISOString() : undefined,
                 tags: Array.from(workflowExecutorContext.tags),
                 stepsCount: workflowExecutorContext.stepsCount,
+                ...(workflowExecutorContext.reliabilityEvents.length > 0 ? { reliabilityEvents: [...workflowExecutorContext.reliabilityEvents] } : {}),
             }
             await sendLogsUpdate({ engineConstants, request })
         })

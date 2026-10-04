@@ -5534,5 +5534,22 @@
   "Last failed": "最近失败",
   "Every affected workflow has recovered.": "受影响的工作流都已恢复。",
   "{workflows} workflows → {alerts} alerts": "{workflows} 个工作流 → {alerts} 条告警",
-  "The other system refuses calls until {time}; rerun after that": "对方系统在 {time} 之前拒绝调用；这之后再重跑"
+  "The other system refuses calls until {time}; rerun after that": "对方系统在 {time} 之前拒绝调用；这之后再重跑",
+  "Rate limits waited out": "限流排队的次数",
+  "{waits, plural, =1 {A call hit} other {# calls hit}} the other system rate limit and waited for the time it asked for instead of failing, across {runs, plural, =1 {1 run} other {# runs}}.": "{waits, plural, other {有 # 次调用}}撞上对方系统的限流，没有当作失败，而是按对方给的等待时间排队后重试，涉及 {runs, plural, other {# 次运行}}。",
+  "{connector} ({unit}): {count}": "{connector}（{unit}）：{count} 次",
+  "counted per enterprise": "按企业计，同一企业的所有应用共用",
+  "counted per API, app and tenant": "按接口、应用、租户分别计",
+  "counting unit not declared": "对方未声明计数单位",
+  "Automatic retries": "自动重试的次数",
+  "{retries, plural, =1 {A step was} other {# step attempts were}} retried by the error handling strategy of its node, across {runs, plural, =1 {1 run} other {# runs}}.": "{retries, plural, other {有 # 次步骤尝试}}按节点「错误处理」里设置的策略自动重试，涉及 {runs, plural, other {# 次运行}}。",
+  "See these runs": "查看这些运行",
+  "Events caught up after downtime": "宕机后补上的事件",
+  "Events picked up by the first poll after the trigger had not polled for a while, for example while the platform was down.": "触发器停了一段时间没有轮询（例如平台宕机）之后，第一次轮询补拉到的事件数。",
+  "See the caught-up runs": "查看补上的运行",
+  "Select what the platform handled": "选择平台处理的事项",
+  "Handled by the platform": "平台已处理",
+  "Waited out a rate limit": "等过限流",
+  "Retried automatically": "自动重试过",
+  "Event caught up after downtime": "宕机后补上的事件"
 }

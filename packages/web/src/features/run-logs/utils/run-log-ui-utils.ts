@@ -1,6 +1,7 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import {
   ConnectionStatus,
+  ReliabilityEventKind,
   RunLogCondition,
   RunLogConditionField,
   RunLogDurationOperator,
@@ -63,6 +64,8 @@ function fieldLabel(field: RunLogConditionField): string {
       return t('Log content');
     case RunLogConditionField.BUSINESS_KEY:
       return t('Business key');
+    case RunLogConditionField.HANDLED:
+      return t('Handled by the platform');
     case RunLogConditionField.DURATION:
       return t('Run duration');
   }
@@ -75,6 +78,17 @@ function blockedUntilText(blockedUntil: string | null | undefined): string {
     : new Intl.DateTimeFormat(i18next.language, BLOCKED_UNTIL_FORMAT).format(
         until,
       );
+}
+
+function handledKindLabel(kind: ReliabilityEventKind): string {
+  switch (kind) {
+    case ReliabilityEventKind.RATE_LIMIT_QUEUED:
+      return t('Waited out a rate limit');
+    case ReliabilityEventKind.AUTO_RETRY:
+      return t('Retried automatically');
+    case ReliabilityEventKind.CATCH_UP:
+      return t('Event caught up after downtime');
+  }
 }
 
 function durationOperatorLabel(operator: RunLogDurationOperator): string {
@@ -224,6 +238,10 @@ function conditionLabel({
       return `${label}: ${condition.values
         .map((name) => connectorName(name))
         .join(t('listSeparator'))}`;
+    case RunLogConditionField.HANDLED:
+      return `${label}: ${condition.values
+        .map((kind) => handledKindLabel(kind))
+        .join(t('listSeparator'))}`;
     case RunLogConditionField.CONTENT:
       return t('Log content contains: {text}', { text: condition.text.trim() });
     case RunLogConditionField.BUSINESS_KEY:
@@ -272,6 +290,7 @@ export const runLogUiUtils = {
   typeLabel,
   fieldLabel,
   durationOperatorLabel,
+  handledKindLabel,
   blockReasonLabel,
   retentionText,
   maxRetentionDays,

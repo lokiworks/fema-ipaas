@@ -1,5 +1,6 @@
 import {
   ExecutionStatus,
+  ReliabilityEventKind,
   RunLogCondition,
   RunLogConditionField,
   RunLogConditionState,
@@ -454,6 +455,23 @@ function ConditionValue({
           }
         />
       );
+    case RunLogConditionField.HANDLED:
+      return (
+        <ValuePicker
+          values={condition.values}
+          placeholder={t('Select what the platform handled')}
+          options={HANDLED_KINDS.map((kind) => ({
+            value: kind,
+            label: runLogUiUtils.handledKindLabel(kind),
+          }))}
+          onChange={(values) =>
+            onChange({
+              ...condition,
+              values: HANDLED_KINDS.filter((kind) => values.includes(kind)),
+            })
+          }
+        />
+      );
     case RunLogConditionField.CONNECTOR:
       return (
         <ValuePicker
@@ -567,5 +585,12 @@ const FIELDS: RunLogConditionField[] = [
   RunLogConditionField.CONNECTOR,
   RunLogConditionField.CONTENT,
   RunLogConditionField.BUSINESS_KEY,
+  RunLogConditionField.HANDLED,
   RunLogConditionField.DURATION,
+];
+
+const HANDLED_KINDS: ReliabilityEventKind[] = [
+  ReliabilityEventKind.RATE_LIMIT_QUEUED,
+  ReliabilityEventKind.AUTO_RETRY,
+  ReliabilityEventKind.CATCH_UP,
 ];

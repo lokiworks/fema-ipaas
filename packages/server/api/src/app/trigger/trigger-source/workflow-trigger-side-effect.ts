@@ -12,8 +12,10 @@ import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { appEventRoutingService } from '../app-event-routing/app-event-routing.service'
+import { triggerPollMarker } from '../trigger-poll-marker'
 
 const environment = system.getOrThrow<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
+const MS_PER_MINUTE = 60_000
 
 export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
     return {
@@ -114,6 +116,7 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
                     await jobQueue(log).removeRepeatingJob({
                         workflowVersionId,
                     })
+                    await triggerPollMarker.clear({ workflowId })
                     break
                 case TriggerStrategy.MANUAL:
                     break
@@ -178,6 +181,10 @@ async function handlePollingTrigger({ engineHelperResponse, workflowId, workflow
     }
     const scheduleOptions = engineHelperResponse.response?.scheduleOptions ?? defaultScheduleOptions
     const tenantId = await projectService(log).getTenantId(projectId)
+    await triggerPollMarker.touch({
+        workflowId,
+        intervalMs: scheduleOptions.type === TriggerSourceScheduleType.INTERVAL ? scheduleOptions.intervalMs : pollIntervalMinutes * MS_PER_MINUTE,
+    })
     await jobQueue(log).add({
         id: workflowVersionId,
         type: JobType.REPEATING,

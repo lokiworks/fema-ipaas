@@ -1,6 +1,6 @@
 import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils'
 import { onCallService, UNKNOWN_VERSION, versionUtil } from '@fema-ipaas/server-utils'
-import { ExecutionType, FileCompression, FileLocation, FileType, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus } from '@fema-ipaas/shared'
+import { ExecutionType, FileCompression, FileLocation, FileType, RunEnvironment, TriggerRunStatus, WorkerGroupScope, WorkerToApiContract, WorkflowOperationType, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { redisConnections } from '../../database/redis-connections'
@@ -12,10 +12,12 @@ import { sleep } from '../../helper/sleep'
 import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { projectService } from '../../project/project-service'
+import { reliabilityEventService } from '../../reliability/reliability-event.service'
 import { dedupeService } from '../../trigger/dedupe-service'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
 import { triggerRunIssues } from '../../trigger/trigger-run/trigger-run-issues'
 import { triggerRunStats } from '../../trigger/trigger-run/trigger-run-stats'
+import { triggerPollMarker } from '../../trigger/trigger-poll-marker'
 import { triggerRunPolicy } from '../../trigger/trigger-run-policy'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
 import { engineRunCallbackService } from '../../workflows/execution/engine-run-callback-service'
@@ -111,7 +113,8 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
 
             const tenantId = await projectService(log).getTenantId(projectId)
             const connectorDeduped = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
-            return triggerRunPolicy(log).startRuns({
+            const pollGap = environment === RunEnvironment.PRODUCTION ? await triggerPollMarker.gapOf({ workflowId: workflowVersion.workflowId }) : null
+            const started = await triggerRunPolicy(log).startRuns({
                 workflowVersion,
                 projectId,
                 tenantId,
@@ -134,6 +137,15 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                     businessKey,
                 }),
             })
+            if (!isNil(pollGap) && pollGap.caughtUp) {
+                await reliabilityEventService(log).recordCatchUp({
+                    projectId,
+                    workflowId: workflowVersion.workflowId,
+                    executionIds: started.map((execution) => execution.id),
+                    gapSeconds: pollGap.gapSeconds,
+                })
+            }
+            return started
         },
 
         async savePayloads(input) {
@@ -181,6 +193,9 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             const redisConnection = await redisConnections.useExisting()
             await triggerRunStats(log, redisConnection).save(input)
             await triggerRunIssues(log).record(input)
+            if (input.status === TriggerRunStatus.COMPLETED && !isNil(input.workflow)) {
+                await triggerPollMarker.recordSuccess({ workflowId: input.workflow.id })
+            }
         },
 
         async getPrewarmData(input) {

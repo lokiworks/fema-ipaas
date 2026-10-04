@@ -2,6 +2,7 @@ import { BaseModelSchema, EntityId, LlmProvider, Nullable, OptionalArrayFromQuer
 import { ExecutionStatus, WorkflowStatus } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 import { formErrors } from '../../form-errors'
+import { RateLimitUnit } from './rate-limit-unit'
 
 export enum RunMonitorRange {
     LAST_15_MINUTES = '15m',
@@ -107,10 +108,23 @@ export const RunMonitorWorkflowRow = z.object({
 })
 export type RunMonitorWorkflowRow = z.infer<typeof RunMonitorWorkflowRow>
 
+export const RunMonitorRateLimitSource = z.object({
+    connectorName: z.string(),
+    unit: z.enum(RateLimitUnit),
+    count: z.number(),
+})
+export type RunMonitorRateLimitSource = z.infer<typeof RunMonitorRateLimitSource>
+
 export const RunMonitorHandled = z.object({
     duplicateEvents: z.number(),
     mergedFailures: z.number(),
     mergedIssues: z.number(),
+    rateLimitWaits: z.number(),
+    rateLimitedRuns: z.number(),
+    rateLimitSources: z.array(RunMonitorRateLimitSource),
+    autoRetries: z.number(),
+    retriedRuns: z.number(),
+    caughtUpEvents: z.number(),
 })
 export type RunMonitorHandled = z.infer<typeof RunMonitorHandled>
 

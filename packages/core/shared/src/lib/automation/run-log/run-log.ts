@@ -1,5 +1,5 @@
 import { Nullable, OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
-import { ExecutionStatus, FailedStep, RunEnvironment, WorkflowRetryStrategy } from '@fema-ipaas/workflow-core'
+import { ExecutionStatus, FailedStep, ReliabilityEventKind, RunEnvironment, WorkflowRetryStrategy } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
 export const RUN_LOG_TEXT_MAX_LENGTH = 255
@@ -39,6 +39,7 @@ export enum RunLogConditionField {
     CONTENT = 'content',
     BUSINESS_KEY = 'businessKey',
     DURATION = 'duration',
+    HANDLED = 'handled',
 }
 
 export enum RunLogConditionState {
@@ -60,8 +61,8 @@ export enum RunRerunBlockReason {
     WORKFLOW_STOPPED = 'WORKFLOW_STOPPED',
     NO_FAILED_STEP = 'NO_FAILED_STEP',
     RAW_DATA_EXPIRED = 'RAW_DATA_EXPIRED',
-}
     BLOCKED_UNTIL = 'BLOCKED_UNTIL',
+}
 
 export const RunLogCondition = z.discriminatedUnion('field', [
     z.object({ field: z.literal(RunLogConditionField.PROJECT), values: z.array(z.string()) }),
@@ -71,6 +72,7 @@ export const RunLogCondition = z.discriminatedUnion('field', [
     z.object({ field: z.literal(RunLogConditionField.CONTENT), text: z.string() }),
     z.object({ field: z.literal(RunLogConditionField.BUSINESS_KEY), text: z.string() }),
     z.object({ field: z.literal(RunLogConditionField.DURATION), operator: z.enum(RunLogDurationOperator), seconds: z.string() }),
+    z.object({ field: z.literal(RunLogConditionField.HANDLED), values: z.array(z.enum(ReliabilityEventKind)) }),
 ])
 export type RunLogCondition = z.infer<typeof RunLogCondition>
 
@@ -103,6 +105,7 @@ export const ListRunLogsRequestQuery = z.object({
     connector: OptionalArrayFromQuery(z.string()),
     content: z.string().max(RUN_LOG_TEXT_MAX_LENGTH).optional(),
     businessKey: z.string().max(RUN_LOG_TEXT_MAX_LENGTH).optional(),
+    handled: OptionalArrayFromQuery(z.enum(ReliabilityEventKind)),
     durationOperator: z.enum(RunLogDurationOperator).optional(),
     durationSeconds: z.coerce.number().min(0).optional(),
     runIds: OptionalArrayFromQuery(z.string()),
@@ -139,10 +142,10 @@ export const RunLogRow = z.object({
     latestRerunId: Nullable(z.string()),
     rerunBlockReason: Nullable(z.enum(RunRerunBlockReason)),
     fromFailedStepBlockReason: Nullable(z.enum(RunRerunBlockReason)),
+    blockedUntil: Nullable(z.string()),
 })
 export type RunLogRow = z.infer<typeof RunLogRow>
 
-    blockedUntil: Nullable(z.string()),
 export const RunLogScopeProject = z.object({
     id: z.string(),
     displayName: z.string(),

@@ -5534,5 +5534,22 @@
   "Last failed": "Last failed",
   "Every affected workflow has recovered.": "Every affected workflow has recovered.",
   "{workflows} workflows → {alerts} alerts": "{workflows} workflows → {alerts} alerts",
-  "The other system refuses calls until {time}; rerun after that": "The other system refuses calls until {time}; rerun after that"
+  "The other system refuses calls until {time}; rerun after that": "The other system refuses calls until {time}; rerun after that",
+  "Rate limits waited out": "Rate limits waited out",
+  "{waits, plural, =1 {A call hit} other {# calls hit}} the other system rate limit and waited for the time it asked for instead of failing, across {runs, plural, =1 {1 run} other {# runs}}.": "{waits, plural, =1 {A call hit} other {# calls hit}} the other system rate limit and waited for the time it asked for instead of failing, across {runs, plural, =1 {1 run} other {# runs}}.",
+  "{connector} ({unit}): {count}": "{connector} ({unit}): {count}",
+  "counted per enterprise": "counted per enterprise",
+  "counted per API, app and tenant": "counted per API, app and tenant",
+  "counting unit not declared": "counting unit not declared",
+  "Automatic retries": "Automatic retries",
+  "{retries, plural, =1 {A step was} other {# step attempts were}} retried by the error handling strategy of its node, across {runs, plural, =1 {1 run} other {# runs}}.": "{retries, plural, =1 {A step was} other {# step attempts were}} retried by the error handling strategy of its node, across {runs, plural, =1 {1 run} other {# runs}}.",
+  "See these runs": "See these runs",
+  "Events caught up after downtime": "Events caught up after downtime",
+  "Events picked up by the first poll after the trigger had not polled for a while, for example while the platform was down.": "Events picked up by the first poll after the trigger had not polled for a while, for example while the platform was down.",
+  "See the caught-up runs": "See the caught-up runs",
+  "Select what the platform handled": "Select what the platform handled",
+  "Handled by the platform": "Handled by the platform",
+  "Waited out a rate limit": "Waited out a rate limit",
+  "Retried automatically": "Retried automatically",
+  "Event caught up after downtime": "Event caught up after downtime"
 }

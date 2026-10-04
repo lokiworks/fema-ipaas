@@ -12,7 +12,8 @@ const state = {
   bitableRecords: [],
   provisionFailure: null,
   messageFailure: null,
-  beisenMode: null,
+  beisenRules: [],
+  failuresServed: 0,
   timeWindowRequests: [],
 }
 
@@ -27,8 +28,8 @@ const server = createServer(async (req, res) => {
   if (!handler) {
     return send(res, 404, { error: 'not_found', path: url.pathname })
   }
-  const { status, payload } = handler({ body, query: url.searchParams, headers: req.headers })
-  return send(res, status, payload)
+  const { status, payload, headers = {} } = handler({ body, query: url.searchParams, headers: req.headers })
+  return send(res, status, payload, headers)
 })
 
 const ROUTES = {
@@ -36,17 +37,23 @@ const ROUTES = {
     if (body.app_key === 'wrong') {
       return ok({ error: 'invalid_client', error_description: 'app_key or app_secret is wrong', error_code: '40001' })
     }
-    return ok({ access_token: BEISEN_TOKEN, expires_in: 7200, token_type: 'bearer' })
+    return ok({ access_token: `${BEISEN_TOKEN}:${body.app_key}`, expires_in: 7200, token_type: 'bearer' })
   },
   'POST /beisen/TenantBaseExternal/api/v5/Employee/GetByTimeWindow': ({ body, headers }) => {
-    if (state.beisenMode === 'RATE_LIMIT_429') {
-      return { status: 429, payload: 'API rate limit exceeded' }
+    const authorization = String(headers.authorization ?? '')
+    if (!authorization.startsWith(`Bearer ${BEISEN_TOKEN}`)) {
+      return ok({ error: 'invalid_token', error_description: 'access_token is invalid', error_code: '40003' })
     }
-    if (state.beisenMode === 'RATE_LIMIT_BODY') {
+    const appKey = authorization.slice(`Bearer ${BEISEN_TOKEN}:`.length)
+    const mode = beisenRuleFor({ appKey, empStatus: body.empStatus }) ?? { mode: null }
+    if (mode.mode === 'RATE_LIMIT_429') {
+      return { status: 429, payload: 'API rate limit exceeded', headers: mode.retryAfterSeconds === undefined ? {} : { 'retry-after': String(mode.retryAfterSeconds) } }
+    }
+    if (mode.mode === 'RATE_LIMIT_BODY') {
       return ok({ error: 'rate_limit', error_description: 'API rate limit exceeded', error_code: '42901' })
     }
-    if (headers.authorization !== `Bearer ${BEISEN_TOKEN}`) {
-      return ok({ error: 'invalid_token', error_description: 'access_token is invalid', error_code: '40003' })
+    if (mode.mode === 'SERVER_ERROR_500') {
+      return { status: 500, payload: 'Beisen internal error' }
     }
     state.timeWindowRequests.push(body)
     const from = beisenTimeToEpoch(body.startTime)
@@ -82,8 +89,9 @@ const ROUTES = {
   },
   'POST /feishu/open-apis/contact/v3/users': ({ body, query }) => {
     state.createCalls += 1
-    if (state.provisionFailure) {
-      return { status: 400, payload: { code: state.provisionFailure.code, msg: state.provisionFailure.msg } }
+    const failure = takeFailure({ key: 'provisionFailure' })
+    if (failure) {
+      return failure
     }
     const clientToken = query.get('client_token')
     const replayed = clientToken ? state.createdByClientToken.get(clientToken) : undefined
@@ -112,8 +120,9 @@ const ROUTES = {
   },
   'GET /feishu/open-apis/im/v1/chats': () => ok({ code: 0, msg: 'success', data: { items: [{ chat_id: HR_CHAT_ID, name: 'HR 通知群' }] } }),
   'POST /feishu/open-apis/im/v1/messages': ({ body, headers }) => {
-    if (state.messageFailure) {
-      return { status: 400, payload: { code: state.messageFailure.code, msg: state.messageFailure.msg } }
+    const failure = takeFailure({ key: 'messageFailure' })
+    if (failure) {
+      return failure
     }
     const message = { message_id: `om_${state.messages.length + 1}`, chat_id: body.receive_id, msg_type: body.msg_type, content: body.content, create_time: String(Date.now()), app_id: String(headers.authorization ?? '').split(':')[1] ?? null }
     state.messages.push(message)
@@ -134,11 +143,11 @@ const ROUTES = {
     return ok({ user })
   },
   'POST /__admin/beisen-mode': ({ body }) => {
-    state.beisenMode = body.mode ?? null
-    return ok({ beisenMode: state.beisenMode })
+    state.beisenRules = Array.isArray(body.rules) ? body.rules : body.mode ? [{ mode: body.mode, retryAfterSeconds: body.retryAfterSeconds, appKey: body.appKey }] : []
+    return ok({ beisenRules: state.beisenRules })
   },
   'POST /__admin/feishu-failure': ({ body }) => {
-    const failure = body.code ? { code: body.code, msg: body.msg ?? 'mock failure' } : null
+    const failure = body.code ? { code: body.code, msg: body.msg ?? 'mock failure', remaining: body.times ?? null, resetSeconds: body.resetSeconds ?? null } : null
     if (body.target === 'messages') {
       state.messageFailure = failure
     }
@@ -155,7 +164,37 @@ const ROUTES = {
     bitableRecords: state.bitableRecords,
     provisionFailure: state.provisionFailure,
     messageFailure: state.messageFailure,
+    failuresServed: state.failuresServed,
   }),
+}
+
+function beisenRuleFor({ appKey, empStatus }) {
+  const statuses = Array.isArray(empStatus) ? empStatus.map(Number) : []
+  return state.beisenRules.find((rule) => {
+    const keyMatches = rule.appKey === undefined || rule.appKey === appKey
+    const whenMatches = rule.whenEmpStatusIncludes === undefined || statuses.includes(Number(rule.whenEmpStatusIncludes))
+    const unlessMatches = rule.unlessEmpStatusIncludes === undefined || !statuses.includes(Number(rule.unlessEmpStatusIncludes))
+    return keyMatches && whenMatches && unlessMatches
+  })
+}
+
+function takeFailure({ key }) {
+  const failure = state[key]
+  if (!failure) {
+    return null
+  }
+  state.failuresServed += 1
+  if (failure.remaining !== null) {
+    failure.remaining -= 1
+    if (failure.remaining <= 0) {
+      state[key] = null
+    }
+  }
+  return {
+    status: 400,
+    payload: { code: failure.code, msg: failure.msg },
+    headers: failure.resetSeconds === null ? {} : { 'x-ogw-ratelimit-reset': String(failure.resetSeconds) },
+  }
 }
 
 function bitable({ body, match, method }) {
@@ -229,8 +268,8 @@ function ok(payload) {
   return { status: 200, payload }
 }
 
-function send(res, status, payload) {
-  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' })
+function send(res, status, payload, headers = {}) {
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', ...headers })
   res.end(JSON.stringify(payload))
 }
 

@@ -217,6 +217,22 @@ describe('beisenCommon.callApi rate limiting', () => {
     expect(message).toMatch(/^HTTP 429: /);
   });
 
+  it('blocks only for the time Beisen asks for when it sends a Retry-After header', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-03T05:30:00.000Z'));
+    sendRequest.mockRejectedValueOnce(
+      new HttpError({}, { status: 429, responseBody: 'API rate limit exceeded', responseHeaders: { 'retry-after': '45' } }),
+    );
+
+    const message = await failureMessage(
+      beisenCommon.callApi({ auth: authFor('limit-key-retry-after'), method: HttpMethod.POST, path: '/any' }),
+    );
+    vi.useRealTimers();
+
+    expect(blockedUntilMarker.parse(message)?.toISOString()).toBe('2026-10-03T05:30:45.000Z');
+    expect(message).not.toContain('00:00 the next day');
+  });
+
   it('marks the limit reported inside a 200 body the same way', async () => {
     sendRequest.mockResolvedValueOnce({
       status: 200,

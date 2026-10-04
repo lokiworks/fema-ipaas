@@ -1,5 +1,5 @@
 import { assertEqual, createByteLruCache, generateId, isNil } from '@fema-ipaas/core-utils'
-import { BaseStepOutput, EngineGenericError, executionJournal, ExecutionStatus, FailedStep, FileType, GenericStepOutput, LogSliceRef, LoopStepOutput, LoopStepResult, RespondResponse, StepOutput, StepOutputStatus, StepOutputType, WorkflowActionType } from '@fema-ipaas/shared'
+import { BaseStepOutput, EngineGenericError, executionJournal, ExecutionStatus, FailedStep, FileType, GenericStepOutput, LogSliceRef, LoopStepOutput, LoopStepResult, PendingReliabilityEvent, ReliabilityEventReport, reliabilityUtils, RespondResponse, StepOutput, StepOutputStatus, StepOutputType, WorkflowActionType } from '@fema-ipaas/shared'
 import { engineFileApi } from '../../api/engine-file-api'
 import { loggingUtils } from '../../helper/logging-utils'
 import { sizeofUtils } from '../../helper/sizeof'
@@ -20,6 +20,7 @@ export class WorkflowExecutorContext {
     currentPath: StepExecutionPath
     stepNameToTest?: boolean
     stepsCount: number
+    reliabilityEvents: readonly ReliabilityEventReport[]
     engineApi?: EngineApiConfig
     resolvedStepOutputCache: SliceCache
     slicingEnabled: boolean
@@ -38,6 +39,7 @@ export class WorkflowExecutorContext {
         this.currentPath = copyFrom?.currentPath ?? StepExecutionPath.empty()
         this.stepNameToTest = copyFrom?.stepNameToTest ?? false
         this.stepsCount = copyFrom?.stepsCount ?? 0
+        this.reliabilityEvents = copyFrom?.reliabilityEvents ?? []
         this.engineApi = copyFrom?.engineApi
         this.resolvedStepOutputCache = copyFrom?.resolvedStepOutputCache ?? createByteLruCache({ budgetBytes: SLICE_CACHE_BUDGET_BYTES })
         this.slicingEnabled = copyFrom?.slicingEnabled ?? true
@@ -165,6 +167,23 @@ export class WorkflowExecutorContext {
         })
     }
 
+    public withReliabilityEvents({ events, stepName, executionId, workflowId }: WithReliabilityEventsParams): WorkflowExecutorContext {
+        if (events.length === 0) {
+            return this
+        }
+        const at = Date.now()
+        const reports = events.map((event, index): ReliabilityEventReport => ({
+            ...event,
+            stepName,
+            workflowId,
+            eventKey: reliabilityUtils.eventKey({ executionId, stepName, path: this.currentPath.path, kind: event.kind, sequence: `${at}-${index}` }),
+        }))
+        return new WorkflowExecutorContext({
+            ...this,
+            reliabilityEvents: [...this.reliabilityEvents, ...reports],
+        })
+    }
+
     public incrementStepsExecuted(): WorkflowExecutorContext {
         return new WorkflowExecutorContext({
             ...this,
@@ -199,6 +218,13 @@ export class WorkflowExecutorContext {
         }
         return stepMaps
     }
+}
+
+type WithReliabilityEventsParams = {
+    events: readonly PendingReliabilityEvent[]
+    stepName: string
+    executionId: string
+    workflowId: string
 }
 
 async function maybeSliceOutput({ value, engineApi }: MaybeSliceOutputParams): Promise<{ ref: LogSliceRef } | undefined> {

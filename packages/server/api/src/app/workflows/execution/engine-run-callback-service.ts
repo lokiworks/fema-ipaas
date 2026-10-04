@@ -6,6 +6,7 @@ import { fileService } from '../../file/file.service'
 import { pubsub } from '../../helper/pubsub'
 import { testRunBroadcaster } from '../../privacy/test-run-broadcaster'
 import { projectService } from '../../project/project-service'
+import { reliabilityEventService } from '../../reliability/reliability-event.service'
 import { RunsMetadataUpsertData } from '../../workers/job'
 import { executionOwnership } from './execution-ownership'
 import { runsMetadataQueue } from './executions-queue'
@@ -62,6 +63,13 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
             runMs: request.runMs,
         }
         await runsMetadataQueue(log).add(logData)
+        const reliabilityEvents = request.reliabilityEvents ?? []
+        if (reliabilityEvents.length > 0) {
+            const { error } = await tryCatch(() => reliabilityEventService(log).recordEngineEvents({ projectId, executionId: request.runId, events: reliabilityEvents }))
+            if (error) {
+                log.error({ error, execution: { id: request.runId } }, '[uploadRunLog] Failed to record the reliability events')
+            }
+        }
 
         if (request.stepResponse && request.streamStepProgress === StreamStepProgress.WEBSOCKET) {
             const stepResponse = request.stepResponse

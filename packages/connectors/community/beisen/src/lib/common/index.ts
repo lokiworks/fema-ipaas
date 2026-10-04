@@ -122,7 +122,7 @@ async function requestOnce<T>({ auth, method, path, body, queryParams }: CallApi
   );
   if (error) {
     if (isRateLimited(error)) {
-      throw rateLimitError();
+      throw rateLimitError({ retryAfterSeconds: retryAfterSecondsOf(error) });
     }
     if (isUnauthorized(error)) {
       throw new AccessTokenRejectedError('Beisen rejected the access token');
@@ -144,7 +144,7 @@ async function callBusinessApi<T>(params: CallApiParams): Promise<T> {
   return body.data;
 }
 
-function isRateLimited(error: Error): boolean {
+function isRateLimited(error: Error): error is HttpError {
   return error instanceof HttpError && error.response.status === HTTP_TOO_MANY_REQUESTS;
 }
 
@@ -162,13 +162,27 @@ function tokenCacheKey({ appKey, appSecret }: TokenParams): string {
   return `${appKey ?? ''}:${appSecret ?? ''}`;
 }
 
-function rateLimitError(): Error {
+function rateLimitError({ retryAfterSeconds }: { retryAfterSeconds?: number } = {}): Error {
+  if (retryAfterSeconds !== undefined) {
+    return new Error(
+      blockedUntilMarker.attach({
+        message: `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen asked the caller to wait before the next call (Beisen retry-after)`,
+        until: new Date(Date.now() + retryAfterSeconds * MS_PER_SECOND),
+      }),
+    );
+  }
   return new Error(
     blockedUntilMarker.attach({
       message: `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day (Beijing time), so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)`,
       until: nextBeijingMidnight({ now: new Date() }),
     }),
   );
+}
+
+function retryAfterSecondsOf(error: HttpError): number | undefined {
+  const raw = error.responseHeaders['retry-after'];
+  const seconds = Number(Array.isArray(raw) ? raw[0] : raw);
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
 }
 
 function nextBeijingMidnight({ now }: { now: Date }): Date {
@@ -197,6 +211,8 @@ const HTTP_UNAUTHORIZED = 401;
 const BEIJING_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const MS_PER_SECOND = 1000;
 
 function isRateLimitMessage(message: string): boolean {
   return message.toLowerCase().includes('rate limit exceeded');

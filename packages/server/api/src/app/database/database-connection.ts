@@ -30,6 +30,7 @@ import { NotificationEntity } from '../notification/notification.entity'
 import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectEntity } from '../project/project-entity'
+import { ReliabilityEventEntity } from '../reliability/reliability-event.entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
 import { ConnectionReplacementEntity, ReleaseChangeEntity, WorkflowReleaseEntity } from '../release/release.entity'
 import { RunMonitorViewEntity } from '../run-monitor/run-monitor-view.entity'
@@ -111,6 +112,7 @@ function getEntities(): EntitySchema<unknown>[] {
         NotificationEntity,
         PersonalAccessTokenEntity,
         DedupedEventEntity,
+        ReliabilityEventEntity,
         HolidayCalendarEntity,
         SolutionEntity,
         SolutionVersionEntity,

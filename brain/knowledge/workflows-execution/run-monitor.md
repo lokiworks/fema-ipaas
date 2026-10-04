@@ -21,7 +21,8 @@ icon: 📈
 - 明细表最多返回 500 个工作流（按运行次数），超出时页面会提示；CSV 只导出已加载的这些行。
 - **「运行节点数」含失败运行停下的那个节点，但存储的 `execution.stepsCount` 仍只数成功节点。** `stepsCount` 由引擎在节点成功后累加，也是单次运行节点上限（`FEMA_MAX_NODES_PER_RUN`）的计数器，所以不能改口径；监控在展示聚合里（`runMonitorUtils.executedStepsOf`）把状态为 FAILED、TIMEOUT、MEMORY_LIMIT_EXCEEDED 的运行各加 1。失败后被忽略或走分支的节点没有数据可数，不计入；INTERNAL_ERROR 和 LOG_SIZE_EXCEEDED 不加。「平均每次」是这个数除以范围内的全部运行数。
 - 点图表柱子或明细行会带 `projectId`、`workflowId`、`status`、`createdAfter`、`createdBefore` 跳到 `/logs`。
-- **「平台替你处理掉的事」两个数都从记录算出、能下钻核对**（`RunMonitorSummary.handled`）：「拦下的重复事件」数 `deduped_event` 在范围内的行，点「查看被拦下的事件」进项目运行日志的「已去重」页签（只选了一个项目，或总共只有一个项目时才能点）；「合并进问题的失败」数范围内带 `issueId` 的生产运行（不含重跑行），并给出涉及的问题数，点「查看问题」进问题中心。限流排队、安全重试、宕机后补上的事件还没有对应记录，所以没有计数，不要在界面上写这些。
+- **「平台替你处理掉的事」五个数都从记录算出、能下钻核对**（`RunMonitorHandled`）：「拦下的重复事件」数 `deduped_event` 在范围内的行，点「查看被拦下的事件」进项目运行日志的「已去重」页签（只选了一个项目，或总共只有一个项目时才能点）；「合并进问题的失败」数范围内带 `issueId` 的生产运行（不含重跑行），并给出涉及的问题数，点「查看问题」进问题中心。另外三项数 `run_reliability_event`（只算范围内生产运行的事件）：「限流排队」是调用撞上对方限流、按对方给的等待时间排队后重试的次数，按连接器列出并写明对方声明的计数单位（北森按企业计、飞书按接口×应用×租户计，登记在 shared 的 `rateLimitUnitUtils`）；「自动重试」是节点错误处理策略（含旧的重试开关）触发的重试次数；「宕机后补上的事件」是触发器停了两个轮询周期以上之后第一次轮询补拉到的事件。三项都能点「查看这些运行」带着 `handled=<类型>` 进运行日志（筛选条件「平台已处理」），列表就是这些事件所在的运行。
+- **界面写「自动重试」而不是「安全重试」。** 平台还没有按动作的幂等声明过滤重试（决定 000040 的保守规则只写在备忘里），重试是节点设置里选的；写「安全」会承诺做不到的事。
 
 ## Key files
 - `packages/server/api/src/app/run-monitor/` — `runMonitorService`、`runMonitorAiService`、`runMonitorViewService`，纯计算在 `runMonitorUtils`

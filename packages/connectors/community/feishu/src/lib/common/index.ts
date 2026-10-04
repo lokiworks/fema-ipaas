@@ -4,7 +4,7 @@ import {
   HttpMethod,
   httpClient,
 } from '@fema-ipaas/connector-common';
-import { tryCatch, type ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import { blockedUntilMarker, tryCatch, type ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
 
 import type { feishuAuth } from '../auth';
 import { FEISHU_DOMAIN } from '../constants';
@@ -90,13 +90,22 @@ function fromHttpError(error: Error): Error {
     return error;
   }
   const body = error.response.body;
-  return isFeishuErrorBody(body) ? feishuError(body.code, body.msg) : error;
+  return isFeishuErrorBody(body) ? feishuError(body.code, body.msg, rateLimitResetSeconds(error)) : error;
 }
 
-function feishuError(code: number, message: string): Error {
+function rateLimitResetSeconds(error: HttpError): number | undefined {
+  const raw = error.responseHeaders[RATE_LIMIT_RESET_HEADER];
+  const seconds = Number(Array.isArray(raw) ? raw[0] : raw);
+  return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
+}
+
+function feishuError(code: number, message: string, resetSeconds?: number): Error {
   const status = HTTP_STATUS_BY_CODE[code];
   const described = describeError(code, message);
-  const text = status ? `HTTP ${status}: ${described}` : described;
+  const plain = status ? `HTTP ${status}: ${described}` : described;
+  const text = status === HTTP_TOO_MANY_REQUESTS
+    ? blockedUntilMarker.attach({ message: plain, until: new Date(Date.now() + (resetSeconds ?? DEFAULT_RATE_LIMIT_WAIT_SECONDS) * MS_PER_SECOND) })
+    : plain;
   return TOKEN_REJECTED_CODES.includes(code) ? new TokenRejectedError(text) : new Error(text);
 }
 
@@ -114,6 +123,14 @@ function describeError(code: number, message: string): string {
 }
 
 const TOKEN_EXPIRY_MARGIN_SECONDS = 300;
+
+const HTTP_TOO_MANY_REQUESTS = 429;
+
+const RATE_LIMIT_RESET_HEADER = 'x-ogw-ratelimit-reset';
+
+const DEFAULT_RATE_LIMIT_WAIT_SECONDS = 1;
+
+const MS_PER_SECOND = 1000;
 
 const tokenCache = new Map<string, { token: string; expiresAt: number }>();
 

@@ -1,6 +1,7 @@
 export class HttpError extends Error {
   private readonly status: number;
   private readonly responseBody: unknown;
+  private readonly headers: HttpErrorHeaders;
 
   constructor(private readonly requestBody: unknown, params: HttpErrorParams) {
     const status = params.status || 500;
@@ -20,6 +21,7 @@ export class HttpError extends Error {
 
     this.status = status;
     this.responseBody = responseBody;
+    this.headers = params.responseHeaders ?? {};
   }
 
   public errorMessage() {
@@ -39,6 +41,10 @@ export class HttpError extends Error {
       status: this.status,
       body: this.responseBody,
     };
+  }
+
+  get responseHeaders(): HttpErrorHeaders {
+    return this.headers;
   }
 
   get request() {
@@ -63,9 +69,12 @@ export function toFailsafeOutput({ error, requestBody }: FailsafeOutputParams) {
   };
 }
 
+export type HttpErrorHeaders = Record<string, string | string[] | undefined>;
+
 export type HttpErrorParams = {
   status: number;
   responseBody: unknown;
+  responseHeaders?: HttpErrorHeaders;
 };
 
 export type FailsafeOutputParams = {

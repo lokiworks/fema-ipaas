@@ -1,4 +1,8 @@
-import { RunMonitorHandled } from '@fema-ipaas/shared';
+import {
+  RateLimitUnit,
+  ReliabilityEventKind,
+  RunMonitorHandled,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { ShieldCheck } from 'lucide-react';
 
@@ -9,13 +13,17 @@ import { formatUtils } from '@/lib/format-utils';
 export function MonitorHandledCard({
   handled,
   rangeLabel,
+  connectorName,
   onOpenDuplicates,
   onOpenIssues,
+  onOpenHandled,
 }: {
   handled: RunMonitorHandled;
   rangeLabel: string;
+  connectorName: (name: string) => string;
   onOpenDuplicates: (() => void) | null;
   onOpenIssues: () => void;
+  onOpenHandled: (kind: ReliabilityEventKind) => void;
 }) {
   const number = formatUtils.formatNumber;
   return (
@@ -32,7 +40,7 @@ export function MonitorHandledCard({
           )}
         </p>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         <HandledItem
           testId="handled-duplicates"
           value={number(handled.duplicateEvents)}
@@ -56,9 +64,80 @@ export function MonitorHandledCard({
           disabledHint={null}
           onAction={onOpenIssues}
         />
+        <HandledItem
+          testId="handled-rate-limit"
+          value={number(handled.rateLimitWaits)}
+          label={t('Rate limits waited out')}
+          description={t(
+            '{waits, plural, =1 {A call hit} other {# calls hit}} the other system rate limit and waited for the time it asked for instead of failing, across {runs, plural, =1 {1 run} other {# runs}}.',
+            { waits: handled.rateLimitWaits, runs: handled.rateLimitedRuns },
+          )}
+          detail={
+            handled.rateLimitSources.length === 0
+              ? null
+              : handled.rateLimitSources
+                  .map((source) =>
+                    t('{connector} ({unit}): {count}', {
+                      connector: connectorName(source.connectorName),
+                      unit: rateLimitUnitLabel(source.unit),
+                      count: number(source.count),
+                    }),
+                  )
+                  .join(t('listSeparator'))
+          }
+          actionLabel={t('See these runs')}
+          disabledHint={null}
+          onAction={
+            handled.rateLimitWaits === 0
+              ? null
+              : () => onOpenHandled(ReliabilityEventKind.RATE_LIMIT_QUEUED)
+          }
+        />
+        <HandledItem
+          testId="handled-retries"
+          value={number(handled.autoRetries)}
+          label={t('Automatic retries')}
+          description={t(
+            '{retries, plural, =1 {A step was} other {# step attempts were}} retried by the error handling strategy of its node, across {runs, plural, =1 {1 run} other {# runs}}.',
+            { retries: handled.autoRetries, runs: handled.retriedRuns },
+          )}
+          actionLabel={t('See these runs')}
+          disabledHint={null}
+          onAction={
+            handled.autoRetries === 0
+              ? null
+              : () => onOpenHandled(ReliabilityEventKind.AUTO_RETRY)
+          }
+        />
+        <HandledItem
+          testId="handled-catch-up"
+          value={number(handled.caughtUpEvents)}
+          label={t('Events caught up after downtime')}
+          description={t(
+            'Events picked up by the first poll after the trigger had not polled for a while, for example while the platform was down.',
+          )}
+          actionLabel={t('See the caught-up runs')}
+          disabledHint={null}
+          onAction={
+            handled.caughtUpEvents === 0
+              ? null
+              : () => onOpenHandled(ReliabilityEventKind.CATCH_UP)
+          }
+        />
       </CardContent>
     </Card>
   );
+}
+
+function rateLimitUnitLabel(unit: RateLimitUnit): string {
+  switch (unit) {
+    case RateLimitUnit.PER_ENTERPRISE:
+      return t('counted per enterprise');
+    case RateLimitUnit.PER_API_APP_TENANT:
+      return t('counted per API, app and tenant');
+    case RateLimitUnit.UNDECLARED:
+      return t('counting unit not declared');
+  }
 }
 
 function HandledItem({
@@ -66,6 +145,7 @@ function HandledItem({
   value,
   label,
   description,
+  detail = null,
   actionLabel,
   disabledHint,
   onAction,
@@ -74,6 +154,7 @@ function HandledItem({
   value: string;
   label: string;
   description: string;
+  detail?: string | null;
   actionLabel: string;
   disabledHint: string | null;
   onAction: (() => void) | null;
@@ -85,6 +166,14 @@ function HandledItem({
         {value}
       </span>
       <span className="text-xs text-muted-foreground">{description}</span>
+      {detail !== null && (
+        <span
+          className="text-xs text-muted-foreground"
+          data-testid={`${testId}-detail`}
+        >
+          {detail}
+        </span>
+      )}
       <div>
         <Button
           variant="link"

@@ -11,6 +11,7 @@ import {
   Map,
   Maximize,
   Minus,
+  MoreHorizontal,
   MousePointer,
   Plus,
   Redo2,
@@ -20,8 +21,16 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { isMac } from '@/lib/dom-utils';
+import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { NoteDragOverlayMode } from '../../state/notes-state';
@@ -138,38 +147,64 @@ const CanvasControls = ({
     (spacePressed || panningMode === 'grab') && !shiftPressed;
   const isHorizontal = canvasOrientation === 'horizontal';
 
+  const compact = canvasWidth > 0 && canvasWidth < COMPACT_CANVAS_PX;
+  const tiny = canvasWidth > 0 && canvasWidth < TINY_CANVAS_PX;
+  const fullScreenLabel = t('Full screen');
+  const downloadLabel = t('Download as image');
+  const orientationLabel = isHorizontal
+    ? t('Vertical layout')
+    : t('Horizontal layout');
+  const noteLabel = t('Add note');
+
   return (
     <div
       id="canvas-controls"
-      className="z-50 absolute bottom-2 left-0 flex items-center  w-full pointer-events-none "
+      className={cn(
+        'z-50 absolute bottom-2 left-0 flex items-center w-full pointer-events-none',
+        compact && 'justify-between gap-2 px-2',
+        tiny && 'justify-center',
+      )}
     >
-      <div className=" absolute flex ml-2 items-center justify-center gap-1 p-1.5 pointer-events-auto rounded-lg bg-background border border-sidebar-border">
-        <CanvasControlButton
-          tooltip={t('Minimap' + (isMac() ? ' (⌘ + M)' : ' (Ctrl + M)'))}
-          icon={Map}
-          active={showMinimap}
-          onClick={() => setShowMinimap(!showMinimap)}
-        />
-        {!readonly && (
-          <>
-            <CanvasControlButton
-              tooltip={`${t('Undo')} (${isMac() ? '⌘Z' : 'Ctrl+Z'})`}
-              icon={Undo2}
-              disabled={!canUndo}
-              onClick={undo}
-            />
-            <CanvasControlButton
-              tooltip={`${t('Redo')} (${isMac() ? '⇧⌘Z' : 'Ctrl+Shift+Z'})`}
-              icon={Redo2}
-              disabled={!canRedo}
-              onClick={redo}
-            />
-          </>
-        )}
-      </div>
-      <div className="grow"></div>
+      {!tiny && (
+        <div
+          className={cn(
+            'flex items-center justify-center gap-1 p-1.5 pointer-events-auto rounded-lg bg-background border border-sidebar-border',
+            compact ? 'shrink-0' : 'absolute ml-2',
+          )}
+        >
+          <CanvasControlButton
+            tooltip={t('Minimap' + (isMac() ? ' (⌘ + M)' : ' (Ctrl + M)'))}
+            icon={Map}
+            active={showMinimap}
+            onClick={() => setShowMinimap(!showMinimap)}
+          />
+          {!readonly && (
+            <>
+              <CanvasControlButton
+                tooltip={`${t('Undo')} (${isMac() ? '⌘Z' : 'Ctrl+Z'})`}
+                icon={Undo2}
+                disabled={!canUndo}
+                onClick={undo}
+              />
+              <CanvasControlButton
+                tooltip={`${t('Redo')} (${isMac() ? '⇧⌘Z' : 'Ctrl+Shift+Z'})`}
+                icon={Redo2}
+                disabled={!canRedo}
+                onClick={redo}
+              />
+            </>
+          )}
+        </div>
+      )}
+      {!compact && <div className="grow"></div>}
 
-      <div className="bg-background gap-2 flex items-center shadow-2xl justify-center border border-sidebar-border p-1.5 rounded-lg pointer-events-auto">
+      <div
+        className={cn(
+          'bg-background gap-2 flex items-center shadow-2xl justify-center border border-sidebar-border p-1.5 rounded-lg pointer-events-auto',
+          compact && 'min-w-0 gap-1',
+        )}
+        data-testid="canvas-controls-main"
+      >
         <CanvasControlButton
           tooltip={t('Zoom in')}
           icon={Plus}
@@ -192,23 +227,27 @@ const CanvasControls = ({
           icon={Fullscreen}
           onClick={() => handleFitToView({ isInitialRenderCall: false })}
         />
-        <CanvasControlButton
-          tooltip={t('Full screen')}
-          icon={Maximize}
-          onClick={toggleFullScreen}
-        />
-        <CanvasControlButton
-          tooltip={t('Download as image')}
-          icon={isCapturingImage ? LoaderCircle : ImageDown}
-          iconClassName={isCapturingImage ? 'animate-spin' : undefined}
-          disabled={isCapturingImage}
-          onClick={handleDownloadWorkflowAsImage}
-        />
-        <CanvasControlButton
-          tooltip={isHorizontal ? t('Vertical layout') : t('Horizontal layout')}
-          icon={isHorizontal ? GalleryVerticalEnd : GalleryHorizontalEnd}
-          onClick={handleToggleOrientation}
-        />
+        {!compact && (
+          <>
+            <CanvasControlButton
+              tooltip={fullScreenLabel}
+              icon={Maximize}
+              onClick={toggleFullScreen}
+            />
+            <CanvasControlButton
+              tooltip={downloadLabel}
+              icon={isCapturingImage ? LoaderCircle : ImageDown}
+              iconClassName={isCapturingImage ? 'animate-spin' : undefined}
+              disabled={isCapturingImage}
+              onClick={handleDownloadWorkflowAsImage}
+            />
+            <CanvasControlButton
+              tooltip={orientationLabel}
+              icon={isHorizontal ? GalleryVerticalEnd : GalleryHorizontalEnd}
+              onClick={handleToggleOrientation}
+            />
+          </>
+        )}
         <div>
           <Separator orientation="vertical" className="h-5"></Separator>
         </div>
@@ -224,16 +263,79 @@ const CanvasControls = ({
           active={!isInGrabMode}
           onClick={() => setPanningMode('pan')}
         />
-        {!readonly && (
+        {!compact && !readonly && (
           <CanvasControlButton
-            tooltip={t('Add note')}
+            tooltip={noteLabel}
             icon={StickyNote}
             active={noteDragOverlayMode === NoteDragOverlayMode.CREATE}
             onClick={handleCreateNote}
           />
         )}
+        {compact && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('More canvas tools')}
+                data-testid="canvas-controls-more"
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top">
+              {tiny && (
+                <>
+                  <DropdownMenuItem
+                    onSelect={() => setShowMinimap(!showMinimap)}
+                  >
+                    <Map className="size-4" />
+                    {t('Minimap')}
+                  </DropdownMenuItem>
+                  {!readonly && (
+                    <>
+                      <DropdownMenuItem disabled={!canUndo} onSelect={undo}>
+                        <Undo2 className="size-4" />
+                        {t('Undo')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem disabled={!canRedo} onSelect={redo}>
+                        <Redo2 className="size-4" />
+                        {t('Redo')}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </>
+              )}
+              <DropdownMenuItem onSelect={toggleFullScreen}>
+                <Maximize className="size-4" />
+                {fullScreenLabel}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isCapturingImage}
+                onSelect={handleDownloadWorkflowAsImage}
+              >
+                <ImageDown className="size-4" />
+                {downloadLabel}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleToggleOrientation}>
+                {isHorizontal ? (
+                  <GalleryVerticalEnd className="size-4" />
+                ) : (
+                  <GalleryHorizontalEnd className="size-4" />
+                )}
+                {orientationLabel}
+              </DropdownMenuItem>
+              {!readonly && (
+                <DropdownMenuItem onSelect={handleCreateNote}>
+                  <StickyNote className="size-4" />
+                  {noteLabel}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
-      <div className="grow"></div>
+      {!compact && <div className="grow"></div>}
     </div>
   );
 };
@@ -245,5 +347,8 @@ function toggleFullScreen() {
   }
   void document.documentElement.requestFullscreen();
 }
+
+const COMPACT_CANVAS_PX = 760;
+const TINY_CANVAS_PX = 460;
 
 export { CanvasControls };

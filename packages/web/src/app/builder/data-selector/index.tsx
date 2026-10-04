@@ -10,7 +10,14 @@ import {
 import { useQueries } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Database, SearchXIcon, Variable } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from 'use-debounce';
 
@@ -25,6 +32,7 @@ import { cn } from '@/lib/utils';
 
 import { ScrollArea } from '../../../components/ui/scroll-area';
 import { BuilderState, useBuilderStateContext } from '../builder-hooks';
+import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
 import { DataSelectorNode } from './data-selector-node';
 import {
@@ -92,6 +100,7 @@ function buildAdvancedStructure(
 type DataSelectorProps = {
   parentHeight: number;
   parentWidth: number;
+  embedded?: boolean;
 };
 
 const doesElementHaveAnInputThatUsesMentions = (
@@ -110,8 +119,37 @@ const doesElementHaveAnInputThatUsesMentions = (
   return false;
 };
 
-const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
+const DataSelector = ({
+  parentHeight,
+  parentWidth,
+  embedded = false,
+}: DataSelectorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [embeddedCount, registerEmbedded] = useBuilderStateContext((state) => [
+    state.embeddedDataSelectorCount,
+    state.registerEmbeddedDataSelector,
+  ]);
+  useEffect(
+    () => (embedded ? registerEmbedded() : undefined),
+    [embedded, registerEmbedded],
+  );
+  const suppressed = !embedded && embeddedCount > 0;
+  const [fit, setFit] = useState<SelectorFit>(DEFAULT_FIT);
+  const placement = fit.placement;
+  const narrow = parentWidth > 0 && parentWidth < NARROW_CANVAS_PX;
+  const dockedWidth = narrow
+    ? Math.max(240, Math.min(DOCKED_PX, parentWidth - 2 * EDGE_GAP_PX))
+    : DOCKED_PX;
+  const preferredHeight = narrow
+    ? Math.max(
+        180,
+        Math.min(DOCKED_PX, Math.floor(parentHeight * NARROW_HEIGHT_RATIO)),
+      )
+    : DOCKED_PX;
+  const dockedHeight = Math.min(
+    preferredHeight,
+    fit.heightLimit ?? preferredHeight,
+  );
   const { i18n } = useTranslation();
   const [dataSelectorSize, setDataSelectorSize] =
     useState<DataSelectorSizeState>(DataSelectorSizeState.DOCKED);
@@ -371,6 +409,28 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
     [expansionScope],
   );
 
+  useLayoutEffect(() => {
+    if (!narrow || !showDataSelector) {
+      setFit(DEFAULT_FIT);
+      return;
+    }
+    setFit(
+      fitAroundNode({
+        container: containerRef.current,
+        stepName: selectedStepName,
+        bodyHeight: preferredHeight,
+      }),
+    );
+  }, [
+    narrow,
+    showDataSelector,
+    selectedStepName,
+    preferredHeight,
+    parentWidth,
+    parentHeight,
+    trigger,
+  ]);
+
   const checkFocus = useCallback(() => {
     const isTextMentionInputFocused =
       (!isNil(containerRef.current) &&
@@ -393,34 +453,54 @@ const DataSelector = ({ parentHeight, parentWidth }: DataSelectorProps) => {
       ref={containerRef}
       tabIndex={0}
       className={cn(
-        'absolute bottom-0 mr-5 mb-5 right-0 z-50 transition-all  border border-solid border-outline overflow-x-hidden bg-background shadow-lg rounded-md',
-        {
-          'opacity-0 pointer-events-none': !showDataSelector,
-        },
+        'border border-solid border-outline overflow-x-hidden bg-background rounded-md',
+        embedded
+          ? 'relative flex h-full w-full flex-col'
+          : cn(
+              'absolute right-0 z-50 transition-all shadow-lg',
+              narrow ? 'mr-2' : 'mr-5',
+              placement === 'top'
+                ? 'top-0 mt-5'
+                : cn('bottom-0', narrow ? 'mb-16' : 'mb-5'),
+              {
+                'opacity-0 pointer-events-none':
+                  !showDataSelector || suppressed,
+              },
+            ),
         textMentionUtils.dataSelectorCssClassSelector,
       )}
+      data-testid={embedded ? 'embedded-data-selector' : 'data-selector'}
     >
       <div className="text-lg items-center px-3 py-2 flex gap-2">
         {t('Data Selector')} <div className="grow"></div>{' '}
-        <DataSelectorSizeTogglers
-          state={dataSelectorSize}
-          setListSizeState={setDataSelectorSize}
-        ></DataSelectorSizeTogglers>
+        {!embedded && (
+          <DataSelectorSizeTogglers
+            state={dataSelectorSize}
+            setListSizeState={setDataSelectorSize}
+          ></DataSelectorSizeTogglers>
+        )}
       </div>
       <div
-        style={{
-          height:
-            dataSelectorSize === DataSelectorSizeState.COLLAPSED
-              ? '0px'
-              : dataSelectorSize === DataSelectorSizeState.DOCKED
-              ? '450px'
-              : `${parentHeight - 100}px`,
-          width:
-            dataSelectorSize !== DataSelectorSizeState.EXPANDED
-              ? '450px'
-              : `${parentWidth - 40}px`,
-        }}
-        className="transition-all overflow-hidden"
+        style={
+          embedded
+            ? undefined
+            : {
+                height:
+                  dataSelectorSize === DataSelectorSizeState.COLLAPSED
+                    ? '0px'
+                    : dataSelectorSize === DataSelectorSizeState.DOCKED
+                    ? `${dockedHeight}px`
+                    : `${parentHeight - 100}px`,
+                width:
+                  dataSelectorSize !== DataSelectorSizeState.EXPANDED
+                    ? `${dockedWidth}px`
+                    : `${parentWidth - 40}px`,
+              }
+        }
+        className={cn(
+          'transition-all overflow-hidden',
+          embedded && 'min-h-0 flex-1',
+        )}
       >
         <Tabs
           key={defaultTab}
@@ -552,7 +632,62 @@ function buildLoopVariableNodes({
   ];
 }
 
+function fitAroundNode({
+  container,
+  stepName,
+  bodyHeight,
+}: {
+  container: HTMLElement | null;
+  stepName: string;
+  bodyHeight: number;
+}): SelectorFit {
+  const canvas = container?.offsetParent;
+  const node = document.querySelector(
+    `[data-${workflowCanvasConsts.STEP_CONTEXT_MENU_ATTRIBUTE}="${stepName}"]`,
+  );
+  if (!container || !canvas || !node) {
+    return DEFAULT_FIT;
+  }
+  const canvasRect = canvas.getBoundingClientRect();
+  const nodeRect = node.getBoundingClientRect();
+  const fullHeight = HEADER_PX + bodyHeight;
+  const spaceBelow =
+    canvasRect.bottom - TOOLBAR_CLEARANCE_PX - (nodeRect.bottom + NODE_GAP_PX);
+  const spaceAbove =
+    nodeRect.top - NODE_GAP_PX - (canvasRect.top + EDGE_GAP_PX);
+  if (spaceBelow >= fullHeight) {
+    return DEFAULT_FIT;
+  }
+  if (spaceAbove >= fullHeight) {
+    return { placement: 'top', heightLimit: null };
+  }
+  const placement: SelectorPlacement =
+    spaceAbove > spaceBelow ? 'top' : 'bottom';
+  const space = Math.max(spaceAbove, spaceBelow);
+  return {
+    placement,
+    heightLimit: Math.max(MIN_BODY_PX, Math.floor(space - HEADER_PX)),
+  };
+}
+
 const LOOP_VARIABLE_KEYS = ['item', 'index'];
+
+const NARROW_CANVAS_PX = 760;
+const DOCKED_PX = 450;
+const EDGE_GAP_PX = 20;
+const TOOLBAR_CLEARANCE_PX = 64;
+const NARROW_HEIGHT_RATIO = 0.4;
+const HEADER_PX = 48;
+const NODE_GAP_PX = 12;
+const MIN_BODY_PX = 140;
+const DEFAULT_FIT: SelectorFit = { placement: 'bottom', heightLimit: null };
+
+type SelectorPlacement = 'top' | 'bottom';
+
+type SelectorFit = {
+  placement: SelectorPlacement;
+  heightLimit: number | null;
+};
 
 const EMPTY_OVERRIDES: ReadonlyMap<string, boolean> = new Map();
 

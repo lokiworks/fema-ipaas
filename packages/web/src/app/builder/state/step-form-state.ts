@@ -16,6 +16,8 @@ export type StepFormState = {
   setReferenceDrag: (drag: ReferenceDrag | null) => void;
   referencePick: ReferencePick | null;
   setReferencePick: (pick: ReferencePick | null) => void;
+  embeddedDataSelectorCount: number;
+  registerEmbeddedDataSelector: () => () => void;
 };
 
 export const createStepFormState = (
@@ -45,6 +47,16 @@ export const createStepFormState = (
     referencePick: null,
     setReferencePick: (referencePick: ReferencePick | null) =>
       set({ referencePick }),
+    embeddedDataSelectorCount: 0,
+    registerEmbeddedDataSelector: () => {
+      set((state) => ({
+        embeddedDataSelectorCount: state.embeddedDataSelectorCount + 1,
+      }));
+      return () =>
+        set((state) => ({
+          embeddedDataSelectorCount: state.embeddedDataSelectorCount - 1,
+        }));
+    },
   };
 };
 
@@ -56,6 +68,7 @@ export type ReferenceDrag = {
 };
 
 export type ReferencePick = {
-  targetStepName: string;
+  targetStepName: string | null;
+  candidateStepNames: string[];
   insert: InsertMentionHandler;
 };

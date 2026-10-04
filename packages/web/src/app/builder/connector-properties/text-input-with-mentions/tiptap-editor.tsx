@@ -85,6 +85,8 @@ type TiptapEditorProps = {
   outputFormat?: 'text' | 'html';
 };
 
+const REFERENCE_SHORTCUT_CODE = 'KeyR';
+
 const INITIAL_SLASH_STATE: SlashCommandState = {
   open: false,
   query: '',
@@ -261,12 +263,17 @@ export const TiptapEditor = ({
     });
 
   const sampleData = useBuilderStateContext((state) => state.outputSampleData);
-  const [setInsertMentionHandler, requestDataSelector, setReferenceDrag] =
-    useBuilderStateContext((state) => [
-      state.setInsertMentionHandler,
-      state.requestDataSelector,
-      state.setReferenceDrag,
-    ]);
+  const [
+    setInsertMentionHandler,
+    requestDataSelector,
+    setReferenceDrag,
+    setReferencePick,
+  ] = useBuilderStateContext((state) => [
+    state.setInsertMentionHandler,
+    state.requestDataSelector,
+    state.setReferenceDrag,
+    state.setReferencePick,
+  ]);
   const pendingTriggerRef = useRef<string | null>(null);
   const [capsule, setCapsule] = useState<CapsuleToolbarState | null>(null);
 
@@ -354,6 +361,14 @@ export const TiptapEditor = ({
     current.chain().focus().insertContent(mentionNode).run();
   };
 
+  const openReferencePickerRef = useRef<() => void>(() => undefined);
+  openReferencePickerRef.current = () =>
+    setReferencePick({
+      targetStepName: null,
+      candidateStepNames: steps.map((step) => step.name),
+      insert: insertMention,
+    });
+
   const editor = useEditor({
     editable: !disabled,
     autofocus: autoFocus ? 'end' : false,
@@ -375,6 +390,16 @@ export const TiptapEditor = ({
         },
     editorProps: {
       handleKeyDown: (view, event) => {
+        if (
+          !isHtml &&
+          event.altKey &&
+          event.shiftKey &&
+          event.code === REFERENCE_SHORTCUT_CODE
+        ) {
+          event.preventDefault();
+          openReferencePickerRef.current();
+          return true;
+        }
         if (!isHtml && !event.metaKey && !event.ctrlKey) {
           const { from } = view.state.selection;
           const previousChar = docCharAt(view.state.doc, from - 1);
@@ -626,8 +651,11 @@ export const TiptapEditor = ({
       {!isHtml && !disabled && !isNil(selectedStepName) && (
         <button
           type="button"
+          tabIndex={-1}
           aria-label={t('Drag to an upstream step to reference its output')}
-          title={t('Drag to an upstream step to reference its output')}
+          title={t(
+            'Drag to an upstream step to reference its output. From the keyboard, press Alt+Shift+R inside the input.',
+          )}
           onPointerDown={(event) => {
             event.preventDefault();
             setReferenceDrag({

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { pathHelpers } from '@/app/builder/data-selector/path-helpers';
+import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
 import { workflowCanvasConsts } from '@/app/builder/workflow-canvas/utils/consts';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,6 +59,7 @@ export function ReferenceDragLayer() {
       }
       setReferencePick({
         targetStepName: stepName,
+        candidateStepNames: referenceDrag.allowedStepNames,
         insert: referenceDrag.insert,
       });
     };
@@ -91,104 +93,164 @@ export function ReferenceDragLayer() {
 }
 
 function ReferencePickDialog() {
-  const [referencePick, setReferencePick, trigger, outputSampleData] =
-    useBuilderStateContext((state) => [
-      state.referencePick,
-      state.setReferencePick,
-      state.workflowVersion.trigger,
-      state.outputSampleData,
-    ]);
-  const [query, setQuery] = useState('');
-  const step = isNil(referencePick)
-    ? null
-    : workflowStructureUtil.getStep(referencePick.targetStepName, trigger);
-  const fields = useMemo(
-    () =>
-      isNil(referencePick)
-        ? []
-        : referenceFields.flatten(
-            outputSampleData[referencePick.targetStepName],
-          ),
-    [referencePick, outputSampleData],
-  );
-  const visible = fields.filter((field) =>
-    field.path.toLowerCase().includes(query.trim().toLowerCase()),
-  );
-  const pick = (path: string | null) => {
-    if (isNil(referencePick)) {
-      return;
-    }
-    referencePick.insert(
-      isNil(path)
-        ? pathHelpers.propertyPathStarter(referencePick.targetStepName)
-        : pathHelpers.convertValuePathToPropertyPath(
-            referencePick.targetStepName,
-            path,
-          ),
-    );
-    setReferencePick(null);
-    setQuery('');
-  };
+  const [referencePick, setReferencePick] = useBuilderStateContext((state) => [
+    state.referencePick,
+    state.setReferencePick,
+  ]);
+  const close = () => setReferencePick(null);
   return (
     <Dialog
       open={!isNil(referencePick)}
       onOpenChange={(open) => {
         if (!open) {
-          setReferencePick(null);
-          setQuery('');
+          close();
         }
       }}
     >
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {t('Pick an output field of {name}', {
-              name: step?.displayName ?? '',
-            })}
-          </DialogTitle>
-          <DialogDescription>
-            {fields.length === 0
-              ? t(
-                  'This step has no sample output yet. Test it to pick a field, or use its whole output.',
-                )
-              : t('The reference is inserted where you started dragging.')}
-          </DialogDescription>
-        </DialogHeader>
-        {fields.length > 0 && (
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t('Search fields')}
-          />
-        )}
-        <ScrollArea className="max-h-80">
-          <div className="flex flex-col gap-0.5">
+        {!isNil(referencePick) &&
+          (isNil(referencePick.targetStepName) ? (
+            <StepChoice
+              candidateStepNames={referencePick.candidateStepNames}
+              onChoose={(stepName) =>
+                setReferencePick({ ...referencePick, targetStepName: stepName })
+              }
+            />
+          ) : (
+            <FieldChoice
+              stepName={referencePick.targetStepName}
+              onPick={(propertyPath) => {
+                referencePick.insert(propertyPath);
+                close();
+              }}
+            />
+          ))}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function StepChoice({
+  candidateStepNames,
+  onChoose,
+}: {
+  candidateStepNames: string[];
+  onChoose: (stepName: string) => void;
+}) {
+  const trigger = useBuilderStateContext(
+    (state) => state.workflowVersion.trigger,
+  );
+  const numbers = useStepDisplayNumbers();
+  const steps = candidateStepNames.flatMap((name) => {
+    const step = workflowStructureUtil.getStep(name, trigger);
+    return isNil(step) ? [] : [step];
+  });
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{t('Pick an upstream step to reference')}</DialogTitle>
+        <DialogDescription>
+          {t(
+            'Same as dragging the dot next to the input onto a step on the canvas. Pick the step first, then one of its output fields.',
+          )}
+        </DialogDescription>
+      </DialogHeader>
+      <ScrollArea className="max-h-80">
+        <div className="flex flex-col gap-0.5" data-testid="reference-steps">
+          {steps.map((step) => (
             <Button
+              key={step.name}
               type="button"
               variant="ghost"
               className="justify-start"
-              onClick={() => pick(null)}
+              onClick={() => onChoose(step.name)}
             >
-              {t('Whole output')}
+              {numbers[step.name] ? `${numbers[step.name]}. ` : ''}
+              {step.displayName}
             </Button>
-            {visible.map((field) => (
-              <button
-                key={field.path}
-                type="button"
-                onClick={() => pick(field.path)}
-                className="flex items-center justify-between gap-3 rounded-md px-3 py-1.5 text-left text-sm hover:bg-muted"
-              >
-                <span className="min-w-0 truncate font-mono text-xs">
-                  {field.path}
-                </span>
-                <span className="max-w-[45%] shrink-0 truncate text-xs text-muted-foreground">
-                  {field.preview}
-                </span>
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+          ))}
+        </div>
+      </ScrollArea>
+    </>
+  );
+}
+
+function FieldChoice({
+  stepName,
+  onPick,
+}: {
+  stepName: string;
+  onPick: (propertyPath: string) => void;
+}) {
+  const [trigger, outputSampleData] = useBuilderStateContext((state) => [
+    state.workflowVersion.trigger,
+    state.outputSampleData,
+  ]);
+  const [query, setQuery] = useState('');
+  const step = workflowStructureUtil.getStep(stepName, trigger);
+  const fields = useMemo(
+    () => referenceFields.flatten(outputSampleData[stepName]),
+    [stepName, outputSampleData],
+  );
+  const visible = fields.filter((field) =>
+    field.path.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+  const pick = (path: string | null) =>
+    onPick(
+      isNil(path)
+        ? pathHelpers.propertyPathStarter(stepName)
+        : pathHelpers.convertValuePathToPropertyPath(stepName, path),
+    );
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          {t('Pick an output field of {name}', {
+            name: step?.displayName ?? '',
+          })}
+        </DialogTitle>
+        <DialogDescription>
+          {fields.length === 0
+            ? t(
+                'This step has no sample output yet. Test it to pick a field, or use its whole output.',
+              )
+            : t('The reference is inserted where you started dragging.')}
+        </DialogDescription>
+      </DialogHeader>
+      {fields.length > 0 && (
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={t('Search fields')}
+        />
+      )}
+      <ScrollArea className="max-h-80">
+        <div className="flex flex-col gap-0.5">
+          <Button
+            type="button"
+            variant="ghost"
+            className="justify-start"
+            onClick={() => pick(null)}
+          >
+            {t('Whole output')}
+          </Button>
+          {visible.map((field) => (
+            <button
+              key={field.path}
+              type="button"
+              onClick={() => pick(field.path)}
+              className="flex items-center justify-between gap-3 rounded-md px-3 py-1.5 text-left text-sm hover:bg-muted"
+            >
+              <span className="min-w-0 truncate font-mono text-xs">
+                {field.path}
+              </span>
+              <span className="max-w-[45%] shrink-0 truncate text-xs text-muted-foreground">
+                {field.preview}
+              </span>
+            </button>
+          ))}
+        </div>
+      </ScrollArea>
+    </>
   );
 }

@@ -81,7 +81,7 @@ function classifyError({ error, target, host, privateAddress }: ClassifyParams):
     return { failure: McpProbeFailure.DNS, detail: message, host };
   }
   const timedOut = error instanceof McpTimeoutError || TIMEOUT_CODES.includes(code);
-  if (privateAddress && (timedOut || UNREACHABLE_CODES.includes(code))) {
+  if (privateAddress && (timedOut || NETWORK_BLOCKED_CODES.includes(code))) {
     return { failure: McpProbeFailure.PRIVATE_UNREACHABLE, detail: message, host };
   }
   if (timedOut) {
@@ -165,6 +165,7 @@ export enum McpProbeFailure {
 const PROBE_TIMEOUT_MS = 10000;
 const DNS_CODES = ['ENOTFOUND', 'EAI_AGAIN', 'EAI_FAIL', 'EAI_NONAME', 'ENODATA'];
 const TIMEOUT_CODES = ['ETIMEDOUT', 'UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT', 'ESOCKETTIMEDOUT'];
+const NETWORK_BLOCKED_CODES = ['EHOSTUNREACH', 'ENETUNREACH'];
 const UNREACHABLE_CODES = ['ECONNREFUSED', 'EHOSTUNREACH', 'ENETUNREACH', 'ECONNRESET', 'UND_ERR_SOCKET'];
 
 type ProbeParams = {

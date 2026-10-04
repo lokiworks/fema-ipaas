@@ -111,6 +111,11 @@ describe('mcpProbe.classifyError', () => {
   test('maps refused connections', () => {
     const error = new Error('fetch failed', { cause: Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' }) });
     expect(classify({ error }).failure).toBe(McpProbeFailure.UNREACHABLE);
+    expect(classify({ error, privateAddress: true }).failure).toBe(McpProbeFailure.UNREACHABLE);
+  });
+
+  test('maps unroutable private addresses to the allow-list hint', () => {
+    const error = new Error('fetch failed', { cause: Object.assign(new Error('connect EHOSTUNREACH'), { code: 'EHOSTUNREACH' }) });
     expect(classify({ error, privateAddress: true }).failure).toBe(McpProbeFailure.PRIVATE_UNREACHABLE);
   });
 });

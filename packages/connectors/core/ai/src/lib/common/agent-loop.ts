@@ -22,6 +22,7 @@ async function run({
   input,
   toolbox,
   maxSteps,
+  tokenBudget,
   needsApproval,
 }: AgentRunParams): Promise<AgentResult> {
   return turn({
@@ -29,6 +30,7 @@ async function run({
     system,
     toolbox,
     maxSteps,
+    tokenBudget,
     needsApproval,
     messages: [{ role: 'user', content: [{ type: 'text', text: input }] }],
     steps: [],
@@ -42,13 +44,14 @@ async function resume({
   system,
   toolbox,
   maxSteps,
+  tokenBudget,
   needsApproval,
   state,
   decision,
 }: AgentResumeParams): Promise<AgentResult> {
   const [call, ...rest] = state.pending.calls;
   if (call === undefined) {
-    return finishBatch({ config, system, toolbox, maxSteps, needsApproval, state, results: state.pending.results });
+    return finishBatch({ config, system, toolbox, maxSteps, tokenBudget, needsApproval, state, results: state.pending.results });
   }
   const decided = decision.approved
     ? await executeCall({ call, toolbox })
@@ -58,6 +61,7 @@ async function resume({
     system,
     toolbox,
     maxSteps,
+    tokenBudget,
     needsApproval,
     state: { ...state, pending: { ...state.pending, calls: rest, results: [...state.pending.results, decided] } },
   });
@@ -68,6 +72,7 @@ async function turn({
   system,
   toolbox,
   maxSteps,
+  tokenBudget,
   needsApproval,
   messages,
   steps,
@@ -84,7 +89,7 @@ async function turn({
     }),
   );
   if (error !== null) {
-    return done({ answer: '', steps, usage, stoppedEarly: false, error });
+    return done({ answer: '', steps, usage, stoppedEarly: false, stopReason: AgentStopReason.ERROR, stopMessage: '', error });
   }
   const totalUsage = {
     inputTokens: usage.inputTokens + response.usage.inputTokens,
@@ -92,14 +97,37 @@ async function turn({
   };
   const calls = response.content.flatMap((block) => (block.type === 'tool_call' ? [block] : []));
   const answer = llmWire.textOf(response);
-  if (calls.length === 0 || round >= maxSteps) {
-    return done({ answer, steps, usage: totalUsage, stoppedEarly: calls.length > 0, error: null });
+  if (calls.length === 0) {
+    return done({ answer, steps, usage: totalUsage, stoppedEarly: false, stopReason: AgentStopReason.COMPLETED, stopMessage: '', error: null });
+  }
+  if (tokenBudget !== null && totalUsage.inputTokens + totalUsage.outputTokens >= tokenBudget) {
+    return done({
+      answer,
+      steps,
+      usage: totalUsage,
+      stoppedEarly: true,
+      stopReason: AgentStopReason.TOKEN_BUDGET,
+      stopMessage: `Stopped: the token budget of ${tokenBudget} was used up (${totalUsage.inputTokens + totalUsage.outputTokens} used) before the agent finished. The tool calls it asked for next were not run.`,
+      error: null,
+    });
+  }
+  if (round >= maxSteps) {
+    return done({
+      answer,
+      steps,
+      usage: totalUsage,
+      stoppedEarly: true,
+      stopReason: AgentStopReason.MAX_STEPS,
+      stopMessage: `Stopped: the agent reached the maximum of ${maxSteps} steps before it finished. The tool calls it asked for next were not run.`,
+      error: null,
+    });
   }
   return processBatch({
     config,
     system,
     toolbox,
     maxSteps,
+    tokenBudget,
     needsApproval,
     state: {
       messages,
@@ -220,6 +248,13 @@ function executedCall({
   };
 }
 
+export enum AgentStopReason {
+  COMPLETED = 'COMPLETED',
+  MAX_STEPS = 'MAX_STEPS',
+  TOKEN_BUDGET = 'TOKEN_BUDGET',
+  ERROR = 'ERROR',
+}
+
 const AGENT_MAX_TOKENS = 4096;
 const MODEL_RESULT_LIMIT = 20000;
 const STEP_RESULT_LIMIT = 2000;
@@ -237,6 +272,7 @@ type LoopSettings = {
   system: string;
   toolbox: AgentToolbox;
   maxSteps: number;
+  tokenBudget: number | null;
   needsApproval: (toolName: string) => boolean;
 };
 
@@ -299,5 +335,7 @@ export type AgentOutcome = {
   steps: AgentStep[];
   usage: LlmUsage;
   stoppedEarly: boolean;
+  stopReason: AgentStopReason;
+  stopMessage: string;
   error: Error | null;
 };

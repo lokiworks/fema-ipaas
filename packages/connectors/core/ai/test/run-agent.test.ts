@@ -32,6 +32,8 @@ describe('runAgent', () => {
       ],
       usage: { inputTokens: 30, outputTokens: 12 },
       stoppedEarly: false,
+      stopReason: 'COMPLETED',
+      stopMessage: '',
     });
 
     const modelCalls = requests.filter((request) => request.url === MODEL_URL);
@@ -109,8 +111,28 @@ describe('runAgent', () => {
     const result = await runAgent.run(agentContext({ allowedTools: [], maxSteps: 1 }));
 
     expect(result.stoppedEarly).toBe(true);
+    expect(result.stopReason).toBe('MAX_STEPS');
+    expect(result.stopMessage).toContain('maximum of 1 steps');
     expect(result.steps).toHaveLength(1);
     expect(result.usage).toEqual({ inputTokens: 20, outputTokens: 10 });
+    expect(requests.filter((request) => request.url === MODEL_URL)).toHaveLength(2);
+    expect(requests.filter((request) => methodOf(request) === 'tools/call')).toHaveLength(1);
+  });
+
+  test('stops with a reason when the token budget is used up and does not run the pending tool calls', async () => {
+    const requests = installServers({
+      replies: [toolUseReply({ id: 'call-1', input: { orderId: '1' } })],
+    });
+
+    const result = await runAgent.run({
+      ...agentContext({ allowedTools: [], maxSteps: 5 }),
+      propsValue: { ...agentContext({ allowedTools: [], maxSteps: 5 }).propsValue, tokenBudget: 20 },
+    });
+
+    expect(result.stoppedEarly).toBe(true);
+    expect(result.stopReason).toBe('TOKEN_BUDGET');
+    expect(result.stopMessage).toContain('token budget of 20');
+    expect(result.steps).toHaveLength(1);
     expect(requests.filter((request) => request.url === MODEL_URL)).toHaveLength(2);
     expect(requests.filter((request) => methodOf(request) === 'tools/call')).toHaveLength(1);
   });

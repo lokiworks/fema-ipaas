@@ -45,7 +45,10 @@ function failureMessage(error: McpServerProbeError): string {
         },
       );
     case McpServerProbeFailure.UNREACHABLE:
-      return t('Could not reach {host}. {detail}', { host, detail });
+      return t(
+        'Could not connect to {host}: the connection was refused or the network is unreachable. Check that the server is running, the port is correct and nothing blocks it. {detail}',
+        { host, detail },
+      );
     case McpServerProbeFailure.PROTOCOL:
       return t(
         "The server's response did not follow the MCP protocol. {detail}",

@@ -44,6 +44,20 @@ describe('callTool', () => {
     });
   });
 
+  test('exposes a JSON object in the text as structured output when the server sends no structured content', async () => {
+    installServer({
+      onCall: () => ({ content: [{ type: 'text', text: '{"total":1,"employees":[{"name":"Zhang"}]}' }], isError: false }),
+    });
+
+    const result = await callTool.run(toolContext({ tool: 'query_employee', args: {} }));
+
+    expect(result).toEqual({
+      text: '{"total":1,"employees":[{"name":"Zhang"}]}',
+      isError: false,
+      structured: { total: 1, employees: [{ name: 'Zhang' }] },
+    });
+  });
+
   test('fails the step when the tool reports an error', async () => {
     installServer({
       onCall: () => ({ content: [{ type: 'text', text: 'Ticket queue is full' }], isError: true }),

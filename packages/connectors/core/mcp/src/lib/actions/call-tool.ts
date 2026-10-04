@@ -39,7 +39,7 @@ export const callTool = createAction({
         return {
           disabled: false,
           options: data.map((tool) => ({
-            label: tool.name,
+            label: tool.title !== undefined && tool.title !== tool.name ? `${tool.title} (${tool.name})` : tool.name,
             value: tool.name,
             description: tool.description,
           })),
@@ -65,7 +65,7 @@ export const callTool = createAction({
         result.text.length > 0 ? result.text : `Tool ${name} returned an error`,
       );
     }
-    return result;
+    return { ...result, structured: result.structured ?? jsonObjectOf(result.text) };
   },
 });
 
@@ -79,6 +79,11 @@ function parseArguments(value: unknown): Record<string, unknown> {
     throw new Error('Arguments must be a JSON object');
   }
   return parsed.data;
+}
+
+function jsonObjectOf(text: string): Record<string, unknown> | null {
+  const parsed = ArgumentsObject.safeParse(safeJson(text));
+  return parsed.success ? parsed.data : null;
 }
 
 function safeJson(text: string): unknown {

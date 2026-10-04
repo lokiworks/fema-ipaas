@@ -39,6 +39,8 @@
   "When set, only these tool names are offered to the model": "填写后，只把这些工具提供给模型",
   "Max steps": "最大步数",
   "How many rounds of tool calls the agent may make before it stops (1 to 20)": "智能体停止前最多可以进行几轮工具调用（1 到 20）",
+  "Token budget": "Token 预算",
+  "Stop the agent once its model calls have used this many tokens in total (input plus output). Leave empty for no limit. The step output says why it stopped.": "智能体的模型调用累计用掉这么多 Token（输入加输出）后就停止；留空表示不限。步骤输出里会写明停止的原因。",
   "Ask before write actions": "写入类操作前先询问",
   "Always ask before these tools": "这些工具调用前一律询问",
   "Approval timeout": "审批超时",

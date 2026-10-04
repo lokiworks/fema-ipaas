@@ -65,6 +65,12 @@ export const runAgent = createAction({
       required: false,
       defaultValue: 6,
     }),
+    tokenBudget: Property.Number({
+      displayName: 'Token budget',
+      description:
+        'Stop the agent once its model calls have used this many tokens in total (input plus output). Leave empty for no limit. The step output says why it stopped.',
+      required: false,
+    }),
     confirmWrites: Property.Checkbox({
       displayName: 'Ask before write actions',
       description:
@@ -112,6 +118,7 @@ export const runAgent = createAction({
         max: MAX_STEPS_LIMIT,
         fallback: DEFAULT_MAX_STEPS,
       }),
+      tokenBudget: tokenBudgetOf(context.propsValue.tokenBudget),
       needsApproval: (toolName: string) =>
         approvalClient.needsApproval({
           toolName,
@@ -190,9 +197,16 @@ export const runAgent = createAction({
       steps: result.steps,
       usage: result.usage,
       stoppedEarly: result.stoppedEarly,
+      stopReason: result.stopReason,
+      stopMessage: result.stopMessage,
     };
   },
 });
+
+function tokenBudgetOf(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
+}
 
 function compact(state: AgentState): AgentState {
   if (JSON.stringify(state).length <= MAX_STATE_CHARS) {

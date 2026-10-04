@@ -98,7 +98,20 @@ async function saveDisabled({ dialog }) {
   return dialog.getByRole('button', { name: '保存并接入' }).isDisabled()
 }
 
-async function tryToolInDrawer({ page, tool, values, expect, name, shotName }) {
+async function tryToolInDrawer(args) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await tryToolOnce(args)
+      return
+    } catch (error) {
+      if (attempt === 2) throw error
+      await go({ page: args.page, url: args.page.url() })
+      await args.page.getByText(args.tool, { exact: true }).first().waitFor({ timeout: 120000 })
+    }
+  }
+}
+
+async function tryToolOnce({ page, tool, values, expect, name, shotName }) {
   await page.getByText(tool, { exact: true }).first().locator('xpath=ancestor::div[.//button[normalize-space()="试用"]][1]').getByRole('button', { name: '试用' }).click()
   const sheet = page.getByRole('dialog')
   await sheet.waitFor()
@@ -113,7 +126,8 @@ async function tryToolInDrawer({ page, tool, values, expect, name, shotName }) {
   await shot({ page, name: shotName })
   check({ name, ok: expect.test(text), detail: text.replace(/\s+/g, ' ').slice(-200) })
   await page.keyboard.press('Escape')
-  await page.waitForTimeout(500)
+  await sheet.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => undefined)
+  await page.waitForTimeout(800)
 }
 
 async function cleanup({ token, projectId }) {
@@ -140,15 +154,15 @@ export async function flowChecks({ session, server }) {
         displayName: '查询员工',
         externalId,
         tool: 'query_employee',
-        args: { keyword: "{{trigger['body']['keyword']}}" },
+        args: { keyword: "{{trigger['output']['body']['keyword']}}" },
         nextAction: connectorStep({
           name: 'format',
           displayName: '拼接姓名和部门',
           connectorName: '@fema-ipaas/connector-text-helper',
           actionName: 'concat',
-          input: { texts: ["{{find['structured']['employees'][0]['name']}}", "{{find['structured']['employees'][0]['dept']}}"], separator: '/' },
+          input: { texts: ["{{find['output']['structured']['employees'][0]['name']}}", "{{find['output']['structured']['employees'][0]['dept']}}"], separator: '/' },
           nextAction: respondStep({
-            body: { summary: "{{format}}", total: "{{find['structured']['total']}}", firstId: "{{find['structured']['employees'][0]['id']}}", isError: "{{find['isError']}}" },
+            body: { summary: "{{format['output']}}", total: "{{find['output']['structured']['total']}}", firstId: "{{find['output']['structured']['employees'][0]['id']}}", isError: "{{find['output']['isError']}}" },
           }),
         }),
       }),
@@ -166,9 +180,9 @@ export async function flowChecks({ session, server }) {
         name: 'call',
         displayName: '调用工具',
         externalId,
-        tool: "{{trigger['body']['tool']}}",
-        args: "{{trigger['body']['args']}}",
-        nextAction: respondStep({ body: { text: "{{call['text']}}", size: "{{call['text'].length}}" } }),
+        tool: "{{trigger['output']['body']['tool']}}",
+        args: "{{trigger['output']['body']['args']}}",
+        nextAction: respondStep({ body: { text: "{{call['output']['text']}}", size: "{{call['output']['text'].length}}" } }),
       }),
     }),
   })

@@ -1,4 +1,4 @@
-import { generateId, isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { generateId, isNil, tryCatch, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
 import { ActionRunStep, ConnectorPackage, EngineResponse, EngineResponseStatus, ExecuteActionResponse, WorkerJobType, WorkflowActionType } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
@@ -49,13 +49,20 @@ export const actionRunService = (log: FastifyBaseLogger) => ({
     },
 })
 
+function readableMessage(message: string | null | undefined): string | null {
+    if (isNil(message)) {
+        return null
+    }
+    return tryParseFriendlyConnectorError(message)?.message ?? message
+}
+
 function toOutcome({ response, durationMs }: { response: EngineResponse<ExecuteActionResponse>, durationMs: number }): ActionRunOutcome {
     switch (response.status) {
         case EngineResponseStatus.OK:
             return {
                 status: response.response.success ? ActionRunStatus.SUCCEEDED : ActionRunStatus.FAILED,
                 output: response.response.output,
-                errorMessage: response.response.success ? null : response.response.message ?? 'The action failed',
+                errorMessage: response.response.success ? null : readableMessage(response.response.message) ?? 'The action failed',
                 neverStarted: false,
                 durationMs,
             }
@@ -86,6 +93,8 @@ export enum ActionRunStatus {
 }
 
 const STEP_NAME = 'step_1'
+export const actionRunOutcome = { toOutcome }
+
 const DEFAULT_TIMEOUT_SECONDS = 120
 
 type RunPackageActionParams = {

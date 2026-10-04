@@ -9,6 +9,7 @@ const state = {
   createdByClientToken: new Map(),
   createCalls: 0,
   messages: [],
+  bitableRecords: [],
   provisionFailure: null,
   messageFailure: null,
   beisenMode: null,
@@ -21,7 +22,8 @@ const server = createServer(async (req, res) => {
   const route = `${req.method} ${url.pathname}`
   const userMatch = url.pathname.match(/^\/feishu\/open-apis\/contact\/v3\/users\/([^/]+)$/)
   const openId = userMatch ? decodeURIComponent(userMatch[1]) : null
-  const handler = userMatch && req.method === 'PATCH' ? (context) => updateUser({ ...context, openId }) : userMatch && req.method === 'GET' ? () => getUser({ openId }) : ROUTES[route]
+  const bitableMatch = url.pathname.match(/^\/feishu\/open-apis\/bitable\/v1\/apps\/([^/]+)\/tables(?:\/([^/]+)\/records)?$/)
+  const handler = bitableMatch ? (context) => bitable({ ...context, match: bitableMatch, method: req.method }) : userMatch && req.method === 'PATCH' ? (context) => updateUser({ ...context, openId }) : userMatch && req.method === 'GET' ? () => getUser({ openId }) : ROUTES[route]
   if (!handler) {
     return send(res, 404, { error: 'not_found', path: url.pathname })
   }
@@ -150,9 +152,22 @@ const ROUTES = {
     timeWindowRequests: state.timeWindowRequests,
     createCalls: state.createCalls,
     messages: state.messages,
+    bitableRecords: state.bitableRecords,
     provisionFailure: state.provisionFailure,
     messageFailure: state.messageFailure,
   }),
+}
+
+function bitable({ body, match, method }) {
+  if (!match[2]) {
+    return ok({ code: 0, msg: 'success', data: { items: [{ table_id: 'tbl_roster', name: '员工花名册' }] } })
+  }
+  if (method !== 'POST') {
+    return { status: 405, payload: { error: 'method_not_allowed' } }
+  }
+  const record = { record_id: `rec_${state.bitableRecords.length + 1}`, fields: body.fields ?? {} }
+  state.bitableRecords.push({ appToken: match[1], tableId: match[2], ...record })
+  return ok({ code: 0, msg: 'success', data: { record } })
 }
 
 function getUser({ openId }) {

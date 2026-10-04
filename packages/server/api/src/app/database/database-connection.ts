@@ -8,6 +8,7 @@ import { AgentApprovalEntity } from '../agent-approval/agent-approval.entity'
 import { AiUsageEntity } from '../ai/ai-usage.entity'
 import { AlertPolicyEntity, AlertRecordEntity, NotificationChannelEntity } from '../alert/alert.entity'
 import { AuditEventEntity } from '../audit/audit-event.entity'
+import { BackupRecordEntity, BackupSettingsEntity } from '../backup/backup.entity'
 import { OtpEntity } from '../authentication/otp/otp-entity'
 import { UserIdentityEntity } from '../authentication/user-identity/user-identity-entity'
 import { ConnectionShareEntity } from '../connection/connection-share.entity'
@@ -112,6 +113,8 @@ function getEntities(): EntitySchema<unknown>[] {
         SolutionEntity,
         SolutionVersionEntity,
         SolutionInstallEntity,
+        BackupRecordEntity,
+        BackupSettingsEntity,
     ]
 }
 

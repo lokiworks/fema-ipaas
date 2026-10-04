@@ -27,6 +27,7 @@ import { AddSolutions1790921911539 } from './migration/postgres/1790921911539-Ad
 import { AddSolutionInstallWorkflowKeys1790930000000 } from './migration/postgres/1790930000000-AddSolutionInstallWorkflowKeys'
 import { KeepAlertRecordsAfterPolicyDeletion1790940000000 } from './migration/postgres/1790940000000-KeepAlertRecordsAfterPolicyDeletion'
 import { AddExecutionIndexesConcurrently1790950000000 } from './migration/postgres/1790950000000-AddExecutionIndexesConcurrently'
+import { AddBackups1790961100000 } from './migration/postgres/1790961100000-AddBackups'
 import { SnapshotAgentApprovalWorkflowName1791010000000 } from './migration/postgres/1791010000000-SnapshotAgentApprovalWorkflowName'
 
 import { AddReleaseChanges1791000000000 } from './migration/postgres/1791000000000-AddReleaseChanges'
@@ -63,6 +64,7 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddSolutionInstallWorkflowKeys1790930000000,
         KeepAlertRecordsAfterPolicyDeletion1790940000000,
         AddExecutionIndexesConcurrently1790950000000,
+        AddBackups1790961100000,
         SnapshotAgentApprovalWorkflowName1791010000000,
     ]
 }

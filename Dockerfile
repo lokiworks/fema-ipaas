@@ -14,6 +14,8 @@ ENV LANG=C.UTF-8 \
 # node base image wipes /var/cache/apt anyway, and a persisted /var/lib/apt/lists goes stale
 # against rotated debian-security packages, failing the build with hash/size fetch errors.
 # libcap2 is isolate's runtime lib (the isolate binaries ship prebuilt in api assets).
+# postgresql-client provides pg_dump and pg_restore for the built-in backups (Debian bookworm ships
+# version 15, which can dump servers up to PostgreSQL 15; the System page says so when it cannot).
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         openssh-client \
@@ -28,7 +30,8 @@ RUN apt-get update && \
         curl \
         ca-certificates \
         iptables \
-        libcap2 && \
+        libcap2 \
+        postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 # Download, extract, and clean up bun in a single layer so the zip never ships

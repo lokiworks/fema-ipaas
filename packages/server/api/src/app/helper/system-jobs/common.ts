@@ -23,6 +23,7 @@ export enum SystemJobName {
     NOTIFICATION_RETENTION = 'notification-retention',
     WEEKLY_DIGEST = 'weekly-digest',
     VERIFY_RECENT_RESULTS = 'verify-recent-results',
+    BACKUP_TICK = 'backup-tick',
 }
 
 type DeleteWorkflowDurableSystemJobData =  {
@@ -72,6 +73,7 @@ type SystemJobDataMap = {
     [SystemJobName.NOTIFICATION_RETENTION]: Record<string, never>
     [SystemJobName.WEEKLY_DIGEST]: Record<string, never>
     [SystemJobName.VERIFY_RECENT_RESULTS]: Record<string, never>
+    [SystemJobName.BACKUP_TICK]: Record<string, never>
 }
 
 export type SystemJobData<T extends SystemJobName = SystemJobName> = T extends SystemJobName ? SystemJobDataMap[T] : never

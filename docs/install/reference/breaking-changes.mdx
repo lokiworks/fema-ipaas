@@ -56,6 +56,32 @@ directly, with no download or install step:
 
 **When is action necessary?**
 
+#### Built-in backups run every night by default (migration)
+
+Backup and restore now makes real backups. The migration adds the `backup_record`
+and `backup_settings` tables. Unless you switch it off, the platform backs up the
+database every day at 02:00 server time, keeps the 7 newest scheduled backups and
+writes them to `backups/` inside `FEMA_CONFIG_PATH`. A new install gets its first
+scheduled backup at the next 02:00. On a PostgreSQL database this needs `pg_dump`;
+the official image now includes `postgresql-client` (version 15), and where
+`pg_dump` is missing or older than the database the page says so and does nothing.
+With PGlite the data directory is exported instead. The encryption key and the JWT
+secret are never written into a backup. Restoring stays a manual step on the server;
+the page only checks a backup first.
+
+`docker-compose.yml` mounts a named volume `app_data` at `/root/.fema`, so backups
+and a generated key file survive a recreated container. Optional services (mail,
+object storage, connector and template registry) can also be saved on the System
+page; environment variables still win. The saved values are in the new
+`service_setting` table, secrets encrypted.
+
+**When is action necessary?**
+
+If the disk is small, lower the number of backups or turn the schedule off in Backup
+and restore. If you mount `/root/.fema` yourself, keep your mount and remove
+`app_data` from the compose file. If your PostgreSQL server is newer than 15, install
+a matching `pg_dump` in the image or keep backing up from the command line.
+
 If you run the worker with `FEMA_EXECUTION_MODE=SANDBOX_PROCESS` or
 `SANDBOX_CODE_AND_PROCESS`, keep a connector registry configured for now. If you
 set `FEMA_DEV_CONNECTORS` in production, unset it to get every built-in connector.

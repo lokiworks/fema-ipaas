@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BackupSummaryForUpgrade } from '../../management/backup'
 
 export enum UpdateCheckStatus {
     UP_TO_DATE = 'UP_TO_DATE',
@@ -109,6 +110,7 @@ export const SystemOverview = z.object({
     containerType: z.string().nullable(),
     frontendUrl: z.string().nullable(),
     services: z.array(OptionalServiceStatus),
+    backup: BackupSummaryForUpgrade,
 })
 
 export const DiagnosticsBundle = z.object({

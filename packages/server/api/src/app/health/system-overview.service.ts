@@ -30,6 +30,7 @@ import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
 import { In } from 'typeorm'
 import { notificationChannelRepo } from '../alert/notification-channel.service'
+import { backupService } from '../backup/backup.service'
 import { databaseConnection } from '../database/database-connection'
 import { redisConnections } from '../database/redis-connections'
 import { flagService } from '../flags/flag.service'
@@ -98,12 +99,13 @@ export const systemOverviewService = (log: FastifyBaseLogger) => ({
     },
 
     async getOverview({ tenantId }: { tenantId: string }): Promise<SystemOverview> {
-        const [tenant, latestRelease, database, redis, workers] = await Promise.all([
+        const [tenant, latestRelease, database, redis, workers, backup] = await Promise.all([
             tenantRepo().findOneByOrFail({ id: tenantId }),
             versionUtil.getLatestRelease(),
             readDatabaseVersion(log),
             readRedisVersion(log),
             machineService(log).list(tenantId),
+            backupService(log).summaryForUpgrade(),
         ])
         const current = versionUtil.getCurrentRelease()
         const fileLocation = system.get(AppSystemProp.FILE_STORAGE_LOCATION) ?? null
@@ -133,6 +135,7 @@ export const systemOverviewService = (log: FastifyBaseLogger) => ({
             containerType: system.get(AppSystemProp.CONTAINER_TYPE) ?? null,
             frontendUrl: system.get(AppSystemProp.FRONTEND_URL) ?? null,
             services: optionalServices(log),
+            backup,
         }
     },
 

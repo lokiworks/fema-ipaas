@@ -74,6 +74,13 @@ export const encryptUtils = {
         }
         return null
     },
+    getKeyFingerprint: async (): Promise<string | null> => {
+        const secret = await encryptUtils.getEncryptionKey()
+        return isNil(secret) ? null : keyIdOf(secret)
+    },
+    getRetiredKeyFingerprints: (): string[] => {
+        return encryptUtils.getRetiredEncryptionKeys().map((key) => keyIdOf(key))
+    },
     getRetiredEncryptionKeys: (): string[] => {
         const raw = system.get(AppSystemProp.RETIRED_ENCRYPTION_KEYS)
         if (isNil(raw) || raw.trim().length === 0) {

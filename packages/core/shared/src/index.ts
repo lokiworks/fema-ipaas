@@ -31,6 +31,7 @@ export * from './lib/management/analytics'
 export * from './lib/management/home/home-summary'
 export * from './lib/management/ai-tools'
 export * from './lib/management/template'
+export * from './lib/management/backup'
 
 // automation — workflows / execution / engine / agents / workers were extracted to
 // @fema-ipaas/workflow-core (SRE-163); shared re-exports them for backward compat.

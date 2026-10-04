@@ -496,6 +496,7 @@ export const workflowService = (log: FastifyBaseLogger) => ({
         })
         if (workflowVersionToPublish.state !== WorkflowVersionState.LOCKED) {
             workflowPublishUtils.assertNoPendingReview({ version: workflowVersionToPublish })
+            await workflowPublishUtils.assertMappingsValid({ version: workflowVersionToPublish, projectId: workflowToUpdate.projectId, log })
         }
 
         if (workflowToUpdate.status === WorkflowStatus.ENABLED && !isNil(workflowToUpdate.publishedVersionId)) {

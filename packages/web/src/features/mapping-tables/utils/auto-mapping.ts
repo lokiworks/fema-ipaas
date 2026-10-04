@@ -1,8 +1,15 @@
+import {
+  MappingFieldType,
+  MappingTransform,
+  MappingTransformType,
+} from '@fema-ipaas/core-utils';
+
 export const autoMapping = {
   flattenSources,
   suggestByName,
   merge,
   sourceTemplate,
+  coercion,
 };
 
 function flattenSources({
@@ -18,16 +25,24 @@ function flattenSources({
 function suggestByName({
   targets,
   sources,
+  labels = {},
 }: {
   targets: string[];
   sources: MappingSource[];
+  labels?: Record<string, string>;
 }): MappingSuggestion[] {
   return targets.flatMap((target) => {
     const scored = sources
       .map((source) => ({
         target,
         sourcePath: source.path,
-        confidence: nameScore({ target, key: lastSegment(source.path) }),
+        confidence: Math.max(
+          nameScore({ target, key: lastSegment(source.path) }),
+          nameScore({
+            target: labels[target] ?? '',
+            key: lastSegment(source.path),
+          }),
+        ),
         depth: source.path.split('.').length,
       }))
       .filter((candidate) => candidate.confidence > 0)
@@ -39,10 +54,45 @@ function suggestByName({
             target: best.target,
             sourcePath: best.sourcePath,
             confidence: best.confidence,
+            basis: basisOf(best.confidence),
           },
         ]
       : [];
   });
+}
+
+function basisOf(confidence: number): MappingSuggestionBasis {
+  if (confidence >= EXACT) {
+    return MappingSuggestionBasis.SAME_NAME;
+  }
+  return confidence >= SYNONYM
+    ? MappingSuggestionBasis.SYNONYM
+    : MappingSuggestionBasis.SIMILAR_NAME;
+}
+
+function coercion({
+  targetType,
+  valueType,
+  sample,
+}: {
+  targetType: MappingFieldType | undefined;
+  valueType: MappingSource['valueType'];
+  sample: string;
+}): MappingTransform[] {
+  if (targetType === MappingFieldType.NUMBER && valueType === 'string') {
+    return NUMERIC_TEXT.test(sample.trim())
+      ? [{ type: MappingTransformType.NUMBER }]
+      : [];
+  }
+  if (targetType === MappingFieldType.STRING && valueType === 'number') {
+    return [{ type: MappingTransformType.STRING }];
+  }
+  if (targetType === MappingFieldType.DATE && valueType === 'string') {
+    return DATE_TEXT.test(sample.trim())
+      ? [{ type: MappingTransformType.DATE, arg: 'YYYY-MM-DD' }]
+      : [];
+  }
+  return [];
 }
 
 function merge({
@@ -69,7 +119,10 @@ function merge({
 }
 
 function sourceTemplate(path: string): string {
-  return `{{${path}}}`;
+  const [stepName, ...rest] = path.split('.');
+  return `{{${[stepName, 'output', ...rest]
+    .map((segment, index) => (index === 0 ? segment : `['${segment}']`))
+    .join('')}}}`;
 }
 
 function walk({
@@ -91,7 +144,20 @@ function walk({
       walk({ value: child, path: `${path}.${key}`, depth: depth + 1 }),
     );
   }
-  return [{ path, sample: sampleText(value) }];
+  return [{ path, sample: sampleText(value), valueType: valueTypeOf(value) }];
+}
+
+function valueTypeOf(value: unknown): MappingSource['valueType'] {
+  if (typeof value === 'string') {
+    return 'string';
+  }
+  if (typeof value === 'number') {
+    return 'number';
+  }
+  if (typeof value === 'boolean') {
+    return 'boolean';
+  }
+  return Array.isArray(value) ? 'array' : 'other';
 }
 
 function sampleText(value: unknown): string {
@@ -144,6 +210,8 @@ function editDistance({ a, b }: { a: string; b: string }): number {
   return final[b.length];
 }
 
+const NUMERIC_TEXT = /^-?[\d,]+(\.\d+)?$/;
+const DATE_TEXT = /^\d{4}[-/.年]\d{1,2}[-/.月]\d{1,2}/;
 const EXACT = 0.95;
 const SYNONYM = 0.88;
 const SIMILAR = 0.55;
@@ -174,15 +242,22 @@ const SYNONYMS: string[][] = [
   ['remark', 'remarks', 'note', 'notes', 'comment', 'memo', '备注'],
 ];
 
-export const AUTO_MAPPING_DEFAULT_THRESHOLD = 0.8;
+export enum MappingSuggestionBasis {
+  SAME_NAME = 'SAME_NAME',
+  SYNONYM = 'SYNONYM',
+  SIMILAR_NAME = 'SIMILAR_NAME',
+  MODEL = 'MODEL',
+}
 
 export type MappingSource = {
   path: string;
   sample: string;
+  valueType: 'string' | 'number' | 'boolean' | 'array' | 'other';
 };
 
 export type MappingSuggestion = {
   target: string;
   sourcePath: string;
   confidence: number;
+  basis?: MappingSuggestionBasis;
 };

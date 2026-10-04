@@ -8,4 +8,5 @@ export {
 } from './utils/csv-utils';
 export type { ImportPreview } from './utils/csv-utils';
 export { templatePreview } from './utils/template-preview';
+export { targetSchema } from './utils/target-schema';
 export { MappingEditor } from './components/mapping-editor';

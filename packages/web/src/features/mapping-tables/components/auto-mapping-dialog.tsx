@@ -1,3 +1,4 @@
+import { MappingFieldType, MappingTransform } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { Sparkles } from 'lucide-react';
 import { useState } from 'react';
@@ -14,12 +15,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { aiHooks, ModelConnectionSelect } from '@/features/ai';
-import { cn } from '@/lib/utils';
 
 import {
-  AUTO_MAPPING_DEFAULT_THRESHOLD,
   autoMapping,
   MappingSuggestion,
+  MappingSuggestionBasis,
 } from '../utils/auto-mapping';
 
 export function AutoMappingButton({
@@ -75,10 +75,17 @@ function AutoMappingContent({
   onCancel,
 }: AutoMappingContentProps) {
   const sources = autoMapping.flattenSources({ sampleData });
-  const byName = autoMapping.suggestByName({ targets, sources });
+  const targetNames = targets.map((target) => target.name);
+  const labels = Object.fromEntries(
+    targets.map((target) => [target.name, target.label]),
+  );
+  const byName = autoMapping.suggestByName({
+    targets: targetNames,
+    sources,
+    labels,
+  });
   const [byModel, setByModel] = useState<MappingSuggestion[]>([]);
   const suggestions = autoMapping.merge({ byName, byModel });
-  const [unchecked, setUnchecked] = useState<Set<string>>(new Set());
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const models = aiHooks.useModelSelection(projectId);
   const {
@@ -88,19 +95,26 @@ function AutoMappingContent({
   } = aiHooks.useSuggestFieldMapping({
     onError: (message) => toast.error(message),
   });
-  const isSelected = (suggestion: MappingSuggestion): boolean =>
-    checked.has(suggestion.target) ||
-    (suggestion.confidence >= AUTO_MAPPING_DEFAULT_THRESHOLD &&
-      !unchecked.has(suggestion.target));
-  const toggle = ({ target, value }: { target: string; value: boolean }) => {
+  const toggle = ({ target, value }: { target: string; value: boolean }) =>
     setChecked(withMembership({ set: checked, key: target, present: value }));
-    setUnchecked(
-      withMembership({ set: unchecked, key: target, present: !value }),
-    );
+  const selected = suggestions.filter((suggestion) =>
+    checked.has(suggestion.target),
+  );
+  const sourceOf = (path: string) =>
+    sources.find((source) => source.path === path);
+  const withTransforms = (suggestion: MappingSuggestion) => {
+    const source = sourceOf(suggestion.sourcePath);
+    return {
+      ...suggestion,
+      transforms: autoMapping.coercion({
+        targetType: targets.find((target) => target.name === suggestion.target)
+          ?.type,
+        valueType: source?.valueType ?? 'other',
+        sample: source?.sample ?? '',
+      }),
+    };
   };
-  const selected = suggestions.filter(isSelected);
-  const sampleOf = (path: string) =>
-    sources.find((source) => source.path === path)?.sample ?? '';
+  const hasModel = models.connections.length > 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -108,7 +122,7 @@ function AutoMappingContent({
         <DialogTitle>{t('AI auto-mapping')}</DialogTitle>
         <DialogDescription>
           {t(
-            'Suggestions come from field names in the sample data; a model can fill in the rest. Suggestions with confidence below 80% are not selected by default.',
+            'Suggestions come from field names in the sample data and say why. Nothing is selected for you: tick the ones you want, apply them, then check the preview.',
           )}
         </DialogDescription>
       </DialogHeader>
@@ -120,38 +134,56 @@ function AutoMappingContent({
         </p>
       ) : (
         <>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <ModelConnectionSelect
-                connections={models.connections}
-                isLoading={models.isLoading}
-                value={models.selectedId}
-                onChange={models.select}
-              />
+          {!models.isLoading && !hasModel && (
+            <p className="text-xs text-muted-foreground">
+              {t(
+                'No model connection in this project, so these suggestions use field-name rules only. Map the rest by hand, or add a model connection to let a model suggest more.',
+              )}
+            </p>
+          )}
+          {hasModel && (
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <ModelConnectionSelect
+                  connections={models.connections}
+                  isLoading={models.isLoading}
+                  value={models.selectedId}
+                  onChange={models.select}
+                />
+              </div>
+              {models.selectedId && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  loading={isPending}
+                  onClick={() =>
+                    suggest(
+                      {
+                        projectId,
+                        modelConnectionExternalId: models.selectedId ?? '',
+                        targets: targetNames,
+                        sources: sources.map((source) => ({
+                          path: source.path,
+                          sample: source.sample,
+                        })),
+                      },
+                      {
+                        onSuccess: (response) =>
+                          setByModel(
+                            response.suggestions.map((suggestion) => ({
+                              ...suggestion,
+                              basis: MappingSuggestionBasis.MODEL,
+                            })),
+                          ),
+                      },
+                    )
+                  }
+                >
+                  {t('Ask the model')}
+                </Button>
+              )}
             </div>
-            {models.selectedId && (
-              <Button
-                type="button"
-                variant="outline"
-                loading={isPending}
-                onClick={() =>
-                  suggest(
-                    {
-                      projectId,
-                      modelConnectionExternalId: models.selectedId ?? '',
-                      targets,
-                      sources,
-                    },
-                    {
-                      onSuccess: (response) => setByModel(response.suggestions),
-                    },
-                  )
-                }
-              >
-                {t('Ask the model')}
-              </Button>
-            )}
-          </div>
+          )}
           {data && (
             <span className="text-xs text-muted-foreground">
               {t('Tokens: {input} in · {output} out', {
@@ -163,26 +195,37 @@ function AutoMappingContent({
           <div className="flex max-h-80 flex-col divide-y overflow-y-auto rounded-md border">
             {targets.map((target) => {
               const suggestion = suggestions.find(
-                (item) => item.target === target,
+                (item) => item.target === target.name,
               );
               return (
-                <div key={target} className="flex items-start gap-3 p-3">
+                <div
+                  key={target.name}
+                  className="flex items-start gap-3 p-3"
+                  data-testid={`auto-mapping-${target.name}`}
+                >
                   <Checkbox
                     disabled={!suggestion}
-                    checked={suggestion ? isSelected(suggestion) : false}
+                    checked={checked.has(target.name)}
+                    aria-label={target.name}
                     onCheckedChange={(value) =>
-                      toggle({ target, value: value === true })
+                      toggle({ target: target.name, value: value === true })
                     }
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="font-mono text-sm">{target}</span>
+                    <span className="font-mono text-sm">
+                      {target.label.length > 0
+                        ? `${target.label} · ${target.name}`
+                        : target.name}
+                    </span>
                     {suggestion ? (
                       <>
                         <span className="truncate font-mono text-xs">
                           ← {suggestion.sourcePath}
                         </span>
                         <span className="truncate text-xs text-muted-foreground">
-                          {sampleOf(suggestion.sourcePath)}
+                          {t('Basis')}: {basisText(suggestion.basis)} ·{' '}
+                          {t('Sample')}:{' '}
+                          {sourceOf(suggestion.sourcePath)?.sample ?? ''}
                         </span>
                       </>
                     ) : (
@@ -191,17 +234,6 @@ function AutoMappingContent({
                       </span>
                     )}
                   </div>
-                  {suggestion && (
-                    <span
-                      className={cn(
-                        'shrink-0 text-xs',
-                        suggestion.confidence <
-                          AUTO_MAPPING_DEFAULT_THRESHOLD && 'text-warning-700',
-                      )}
-                    >
-                      {Math.round(suggestion.confidence * 100)}%
-                    </span>
-                  )}
                 </div>
               );
             })}
@@ -215,13 +247,26 @@ function AutoMappingContent({
         <Button
           type="button"
           disabled={selected.length === 0}
-          onClick={() => onApply(selected)}
+          onClick={() => onApply(selected.map(withTransforms))}
         >
           {t('Apply {count}', { count: selected.length })}
         </Button>
       </DialogFooter>
     </div>
   );
+}
+
+function basisText(basis: MappingSuggestionBasis | undefined): string {
+  switch (basis) {
+    case MappingSuggestionBasis.SAME_NAME:
+      return t('same field name');
+    case MappingSuggestionBasis.SYNONYM:
+      return t('same meaning, different name');
+    case MappingSuggestionBasis.SIMILAR_NAME:
+      return t('similar field name');
+    default:
+      return t('suggested by the model from names and samples');
+  }
 }
 
 function withMembership({
@@ -244,16 +289,26 @@ function withMembership({
 
 type AutoMappingButtonProps = {
   projectId: string;
-  targets: string[];
+  targets: AutoMappingTarget[];
   sampleData: Record<string, unknown>;
   disabled: boolean;
-  onApply: (suggestions: MappingSuggestion[]) => void;
+  onApply: (suggestions: AppliedSuggestion[]) => void;
 };
 
 type AutoMappingContentProps = {
   projectId: string;
-  targets: string[];
+  targets: AutoMappingTarget[];
   sampleData: Record<string, unknown>;
-  onApply: (suggestions: MappingSuggestion[]) => void;
+  onApply: (suggestions: AppliedSuggestion[]) => void;
   onCancel: () => void;
+};
+
+export type AutoMappingTarget = {
+  name: string;
+  label: string;
+  type: MappingFieldType | undefined;
+};
+
+export type AppliedSuggestion = MappingSuggestion & {
+  transforms: MappingTransform[];
 };

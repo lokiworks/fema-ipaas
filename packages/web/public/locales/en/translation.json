@@ -5281,5 +5281,9 @@
   "Full name": "Full name",
   "Full name is required": "Full name is required",
   "Full name is too long": "Full name is too long",
-  "Full name cannot contain . or /": "Full name cannot contain . or /"
+  "Full name cannot contain . or /": "Full name cannot contain . or /",
+  "Change history": "Change history",
+  "No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.": "No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.",
+  "(empty)": "(empty)",
+  "This version has not been run in the test environment yet.": "This version has not been run in the test environment yet."
 }

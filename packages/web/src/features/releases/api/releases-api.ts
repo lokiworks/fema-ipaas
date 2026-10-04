@@ -1,5 +1,6 @@
 import { SeekPage } from '@fema-ipaas/core-utils';
 import {
+  ApplicationEvent,
   ApproveWorkflowReleaseRequestBody,
   ConnectionReplacement,
   CreateWorkflowReleaseRequestBody,
@@ -25,6 +26,15 @@ export const releasesApi = {
   ): Promise<SeekPage<WorkflowReleaseWithWorkflow>> {
     return api.get<SeekPage<WorkflowReleaseWithWorkflow>>(
       '/v1/workflow-releases',
+      request,
+    );
+  },
+  history(request: {
+    projectId: string;
+    cursor?: string;
+  }): Promise<SeekPage<ApplicationEvent>> {
+    return api.get<SeekPage<ApplicationEvent>>(
+      '/v1/workflow-releases/history',
       request,
     );
   },

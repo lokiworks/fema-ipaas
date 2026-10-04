@@ -25,6 +25,20 @@ function useReleases(request: ListWorkflowReleasesRequestQuery) {
   });
 }
 
+function useHistory({
+  projectId,
+  cursor,
+}: {
+  projectId: string;
+  cursor?: string;
+}) {
+  return useQuery({
+    queryKey: [RELEASES_KEY, 'history', projectId, cursor],
+    queryFn: () => releasesApi.history({ projectId, cursor }),
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
+  });
+}
+
 function usePendingCount(projectId: string | null) {
   return useQuery({
     queryKey: [RELEASES_KEY, 'pending-count', projectId],
@@ -216,6 +230,7 @@ const RELEASES_KEY = 'workflow-releases';
 
 export const releasesHooks = {
   useReleases,
+  useHistory,
   usePendingCount,
   useRelease,
   useCreateRelease,

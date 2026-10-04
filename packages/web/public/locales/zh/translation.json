@@ -5281,5 +5281,9 @@
   "Full name": "姓名",
   "Full name is required": "请输入姓名",
   "Full name is too long": "姓名不能超过 50 个字",
-  "Full name cannot contain . or /": "姓名不能包含 . 或 /"
+  "Full name cannot contain . or /": "姓名不能包含 . 或 /",
+  "Change history": "变更记录",
+  "No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.": "还没有变更。发布到测试、推广、批准、驳回和回滚都会记录在这里。",
+  "(empty)": "（空）",
+  "This version has not been run in the test environment yet.": "这个版本还没有在测试环境运行过。"
 }

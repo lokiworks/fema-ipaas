@@ -20,6 +20,7 @@ import { CardListItem } from '@/components/custom/card-list';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { UserAvatar } from '@/components/custom/user-avatar';
 import { useEmbedding } from '@/components/providers/embed-provider';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -32,6 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { projectCollectionUtils } from '@/features/projects';
 import { WorkflowVersionStateDot, workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -52,10 +54,13 @@ const WorkflowVersionDetailsCard = React.memo(
     const userHasPermissionToWriteWorkflow = checkAccess(
       Permission.WRITE_WORKFLOW,
     );
-    const [setVersion, setReadonly] = useBuilderStateContext((state) => [
-      state.setVersion,
-      state.setReadOnly,
-    ]);
+    const [setVersion, setReadonly, workflow] = useBuilderStateContext(
+      (state) => [state.setVersion, state.setReadOnly, state.workflow],
+    );
+    const { project } = projectCollectionUtils.useCurrentProject();
+    const inProduction = workflowVersion.id === workflow.publishedVersionId;
+    const inTest =
+      project.releasesEnabled && workflowVersion.id === workflow.testVersionId;
     const [dropdownMenuOpen, setDropdownMenuOpen] = useState(false);
     const canRollbackToThisVersion =
       workflowVersion.state === WorkflowVersionState.LOCKED &&
@@ -94,10 +99,12 @@ const WorkflowVersionDetailsCard = React.memo(
             includeTime={true}
             className="break-words text-sm font-medium leading-tight select-none cursor-default"
           ></FormattedDate>
-          <p className="flex gap-1 text-xs text-muted-foreground">
+          <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
             {workflowVersion.state === WorkflowVersionState.DRAFT
               ? t('Draft')
               : `v${workflowVersionNumber}`}
+            {inProduction && <Badge variant="success">{t('Production')}</Badge>}
+            {inTest && <Badge variant="info">{t('Test')}</Badge>}
           </p>
         </div>
         <div className="flex shrink-0 items-center justify-center gap-1 font-medium">

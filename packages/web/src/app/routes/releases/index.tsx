@@ -1,5 +1,7 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import {
+  ApplicationEvent,
+  ApplicationEventName,
   ConnectionWithoutSensitiveData,
   WorkflowReleaseStatus,
   WorkflowReleaseWithWorkflow,
@@ -36,7 +38,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { auditEventUtils } from '@/features/audit-events';
 import { connectionsApi } from '@/features/connections/api/connections';
 import { issueMembersHooks } from '@/features/issues';
 import { projectCollectionUtils } from '@/features/projects';
@@ -70,6 +82,9 @@ function ReleasesPage() {
             {t('Release requests')}
           </TabsTrigger>
         )}
+        {project.releasesEnabled && (
+          <TabsTrigger value={HISTORY_TAB}>{t('Change history')}</TabsTrigger>
+        )}
       </TabsList>
       <TabsContent value={ENVIRONMENTS_TAB}>
         <EnvironmentsSection
@@ -79,6 +94,11 @@ function ReleasesPage() {
       {project.releasesEnabled && (
         <TabsContent value={REQUESTS_TAB}>
           <ReleaseRequests />
+        </TabsContent>
+      )}
+      {project.releasesEnabled && (
+        <TabsContent value={HISTORY_TAB}>
+          <ChangeHistory />
         </TabsContent>
       )}
     </Tabs>
@@ -214,6 +234,93 @@ function ReleaseRequests() {
       }
     />
   );
+}
+
+function ChangeHistory() {
+  const projectId = authenticationSession.getProjectId()!;
+  const [cursors, setCursors] = useState<string[]>([]);
+  const { data, isLoading } = releasesHooks.useHistory({
+    projectId,
+    cursor: cursors[cursors.length - 1],
+  });
+  if (isLoading) {
+    return <Skeleton className="h-64 w-full" />;
+  }
+  const events = data?.data ?? [];
+  return (
+    <div className="flex flex-col gap-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-44">{t('Time')}</TableHead>
+            <TableHead className="w-48">{t('Actor')}</TableHead>
+            <TableHead className="w-40">{t('Action')}</TableHead>
+            <TableHead>{t('Details')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {events.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={4} className="text-muted-foreground">
+                {t(
+                  'No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.',
+                )}
+              </TableCell>
+            </TableRow>
+          )}
+          {events.map((event) => (
+            <TableRow key={event.id}>
+              <TableCell>
+                <FormattedDate date={new Date(event.created)} />
+              </TableCell>
+              <TableCell className="truncate">
+                {event.userEmail ?? '—'}
+              </TableCell>
+              <TableCell>{auditEventUtils.actionLabel(event.action)}</TableCell>
+              <TableCell className="text-muted-foreground">
+                <div className="flex flex-col">
+                  <span>{auditEventUtils.summarize(event)}</span>
+                  {historyNote(event) && (
+                    <span className="text-xs">{historyNote(event)}</span>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={cursors.length === 0}
+          onClick={() => setCursors(cursors.slice(0, -1))}
+        >
+          {t('Previous')}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!data?.next}
+          onClick={() => data?.next && setCursors([...cursors, data.next])}
+        >
+          {t('Next')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function historyNote(event: ApplicationEvent): string | null {
+  switch (event.action) {
+    case ApplicationEventName.RELEASE_REQUESTED:
+      return event.data.note ?? null;
+    case ApplicationEventName.RELEASE_APPROVED:
+    case ApplicationEventName.RELEASE_REJECTED:
+      return event.data.comment ?? null;
+    default:
+      return null;
+  }
 }
 
 function TestConnections({ canManage }: { canManage: boolean }) {
@@ -365,6 +472,7 @@ function ConnectionSelect({
 const DEFAULT_LIMIT = 20;
 const ENVIRONMENTS_TAB = 'environments';
 const REQUESTS_TAB = 'requests';
+const HISTORY_TAB = 'history';
 const MAX_CONNECTIONS = 500;
 const STATUS_VARIANT: Record<
   WorkflowReleaseStatus,

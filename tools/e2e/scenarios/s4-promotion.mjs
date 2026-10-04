@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { chromium } from '@playwright/test'
 
 const { io } = createRequire(new URL('../../../packages/web/package.json', import.meta.url))('socket.io-client')
 
@@ -23,11 +24,12 @@ let release1 = null
 let release2 = null
 let release3 = null
 let release4 = null
+let uiReleaseUrl = null
 let messageBase = 0
 
 mkdirSync(SHOTS, { recursive: true })
 
-const owner = await signIn({ email: 'dev@ap.com', password: '12345678' })
+const owner = { ...(await signIn({ email: 'dev@ap.com', password: '12345678' })), password: '12345678' }
 const alice = await createUser({ label: 'alice', first: 'Alice', last: 'Requester' })
 const bob = await createUser({ label: 'bob', first: 'Bob', last: 'Editor' })
 const carol = await createUser({ label: 'carol', first: 'Carol', last: 'Viewer' })
@@ -132,7 +134,7 @@ await check('提交推广申请前，开发者可以看到测试运行证据；�
   const created = await call('POST', '/workflow-releases', { projectId, workflowId: flow.id, note: '首次上线：门店通知' }, alice.token)
   assert(created.status === 201 && created.body.status === 'PENDING', `申请没有进入待审批：${created.status} ${JSON.stringify(created.body).slice(0, 300)}`)
   release1 = created.body
-  const detail = await getRelease({ token: owner.token, id: release1.id })
+  const detail = await settledEvidence({ token: owner.token, id: release1.id })
   assert(detail.evidence.testRuns >= 1 && detail.evidence.succeeded >= 1, `详情里没有测试运行证据：${JSON.stringify(detail.evidence)}`)
   assert(detail.checks.every((item) => item.level === 'OK'), `自动检查不是全绿：${JSON.stringify(detail.checks)}`)
   assert(detail.canApprove === true, '审批人看到的 canApprove 应为 true')
@@ -340,6 +342,129 @@ await check('编辑锁：所有者可以接管他人的锁，被接管的人随�
   return 'ok'
 })
 
+
+await importFlow({ token: alice.token, id: flow.id, text: '版本五：界面里发布和推广', variables: ['storeChatId'] })
+const browser = await chromium.launch()
+const shot = (page, name) => page.screenshot({ path: `${SHOTS}/s4-${name}.png`, fullPage: false })
+
+await check('界面：开发者在编辑器里发布到测试，再点「推广到生产」填说明提交，落到申请详情页', async () => {
+  return inPage({ browser, user: alice }, async (page) => {
+  await page.goto(`${WEB}/projects/${projectId}/workflows/${flow.id}`)
+  await page.locator('button[name="Deploy to test"]').waitFor({ timeout: 120000 })
+  await shot(page, '01-editor-draft')
+  await page.locator('button[name="Deploy to test"]').click()
+  const proceed = page.getByRole('button', { name: '仍然发布到测试' })
+  const warned = await proceed.waitFor({ timeout: 10000 }).then(() => true).catch(() => false)
+  if (warned) {
+    await shot(page, '01b-deploy-warning')
+    await proceed.click()
+  }
+  await page.getByText('已发布到测试').first().waitFor({ timeout: 60000 })
+  await page.waitForTimeout(1500)
+  await shot(page, '02-editor-deployed')
+  await page.locator('button[name="Promote to production"]').click()
+  await page.getByRole('dialog').waitFor()
+  await shot(page, '03-promote-dialog')
+  await page.getByRole('dialog').locator('textarea').fill('界面推广：版本五')
+  await page.getByRole('dialog').getByRole('button', { name: '提交审批' }).click()
+  await page.waitForURL(/\/releases\/[A-Za-z0-9_-]+$/, { timeout: 60000 })
+  await page.getByText('上线前检查').first().waitFor({ timeout: 60000 })
+  await page.waitForTimeout(1500)
+  await shot(page, '04-release-detail-requester')
+  uiReleaseUrl = page.url()
+  return uiReleaseUrl
+  })
+})
+
+await check('界面：审批人看到版本差异和自动检查，批准后生产版本变成申请的版本', async () => {
+  assert(uiReleaseUrl, '上一步没有产生申请')
+  const releaseId = uiReleaseUrl.split('/').at(-1)
+  return inPage({ browser, user: owner }, async (page) => {
+  await page.goto(uiReleaseUrl)
+  await page.getByText('上线前检查').first().waitFor({ timeout: 120000 })
+  await page.getByText('本次改动').first().waitFor()
+  await page.waitForTimeout(1500)
+  await shot(page, '05-release-detail-approver')
+  const diffText = await page.locator('main, body').first().innerText()
+  assert(diffText.includes('通知门店群') && (diffText.includes('版本五') || diffText.includes('content')), '差异里没有写出改动的步骤和字段')
+  await page.getByRole('button', { name: '批准并发布' }).click()
+  await page.getByText('已发布').first().waitFor({ timeout: 60000 })
+  await page.waitForTimeout(1500)
+  await shot(page, '06-release-detail-approved')
+  const detail = await getRelease({ token: owner.token, id: releaseId })
+  const published = await getFlow({ token: owner.token, id: flow.id })
+  assert(detail.status === 'DEPLOYED' && published.publishedVersionId === detail.workflowVersionId, '批准后生产版本不对')
+  return 'ok'
+  })
+})
+
+await check('界面：版本面板按版本回滚，确认框说明影响，回滚后生产回到旧内容', async () => {
+  await inPage({ browser, user: owner }, async (page) => {
+  await page.goto(`${WEB}/projects/${projectId}/workflows/${flow.id}`)
+  await page.getByText('通知门店群').first().waitFor({ timeout: 120000 })
+  await page.getByRole('button', { name: '版本', exact: true }).click()
+  await page.waitForTimeout(1500)
+  await shot(page, '07-versions-panel')
+  const panelText = await page.locator('body').innerText()
+  assert(panelText.includes('生产环境') && panelText.includes('测试'), '版本面板里没有标出哪个版本在测试、哪个在生产')
+  const oldest = page.getByText('v1', { exact: true }).locator('xpath=ancestor::*[.//button[@aria-label="更多操作"]][1]').getByLabel('更多操作')
+  await oldest.click()
+  await page.getByText('回滚到这个版本').click()
+  await page.getByRole('dialog').waitFor()
+  await shot(page, '08-rollback-dialog')
+  await page.getByRole('dialog').getByRole('button', { name: '回滚', exact: true }).click()
+  await page.getByText(/已回滚到版本/).first().waitFor({ timeout: 60000 })
+  await shot(page, '09-rolled-back')
+  })
+  await mockReset()
+  await webhook({ id: flow.id, env: 'live', body: { n: 7 } })
+  const state = await waitForMessages({ count: 1 })
+  assert(state.messages[0].content.includes('版本'), `回滚后生产内容不对：${state.messages[0].content}`)
+  return state.messages[0].content
+}, { attempts: 2 })
+
+await check('界面：环境页、申请列表、变更记录、详情页在亮色、深色和窄屏下都能打开且没有横向滚动', async () => {
+  const outcomes = []
+  for (const mode of [{ name: 'light', colorScheme: 'light', width: 1440, height: 900 }, { name: 'dark', colorScheme: 'dark', width: 1440, height: 900 }, { name: 'narrow', colorScheme: 'light', width: 390, height: 844 }]) {
+    await inPage({ browser, user: owner, viewport: { width: mode.width, height: mode.height }, colorScheme: mode.colorScheme }, async (page) => {
+    for (const [label, path, ready] of [['environments', `/projects/${projectId}/releases`, '测试环境'], ['requests', `/projects/${projectId}/releases?tab=requests`, '申请时间'], ['history', `/projects/${projectId}/releases?tab=history`, '变更记录'], ['detail', uiReleaseUrl.replace(WEB, ''), '上线前检查']]) {
+      await page.goto(`${WEB}${path}`)
+      if (label === 'history') {
+        await page.getByRole('tab', { name: '变更记录' }).click()
+        await page.getByText('操作人').first().waitFor({ timeout: 60000 })
+      }
+      else {
+        await page.getByText(ready).first().waitFor({ timeout: 120000 })
+      }
+      await page.waitForTimeout(1200)
+      await shot(page, `10-${label}-${mode.name}`)
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+      outcomes.push({ page: label, mode: mode.name, overflow })
+    }
+    })
+  }
+  const wide = outcomes.filter((outcome) => outcome.overflow > 4)
+  assert(wide.length === 0, `出现横向滚动：${JSON.stringify(wide)}`)
+  return outcomes.length
+})
+
+await check('界面：变更记录页写出谁、何时、做了什么，含推广说明和审批意见', async () => {
+  return inPage({ browser, user: carol }, async (page) => {
+  await page.goto(`${WEB}/projects/${projectId}/releases?tab=history`)
+  await page.getByRole('tab', { name: '变更记录' }).click()
+  await page.getByText('操作人').first().waitFor({ timeout: 120000 })
+  await page.waitForTimeout(1500)
+  const text = await page.locator('body').innerText()
+  for (const needle of ['申请推广', '批准推广', '驳回推广', '生产回滚', '发布到测试', 'alice.', '界面推广：版本五', '这是测试账号，不能上生产']) {
+    assert(text.includes(needle), `变更记录里没有「${needle}」`)
+  }
+  await shot(page, '11-history-viewer')
+  return 'ok'
+  })
+})
+
+await browser.close()
+
 printSummary()
 
 function connectionBody({ externalId, appId }) {
@@ -354,6 +479,30 @@ function connectionBody({ externalId, appId }) {
 }
 
 
+
+
+async function inPage({ browser, user, viewport, colorScheme }, run) {
+  const page = await newPage({ browser, user, viewport, colorScheme })
+  try {
+    return await run(page)
+  }
+  finally {
+    await page.context().close()
+  }
+}
+
+async function newPage({ browser, user, viewport = { width: 1440, height: 900 }, colorScheme = 'light' }) {
+  const context = await browser.newContext({ viewport, colorScheme })
+  context.setDefaultTimeout(120000)
+  const page = await context.newPage()
+  await page.goto(`${WEB}/sign-in`)
+  await page.getByLabel(/邮箱|Email/).first().fill(user.email)
+  await page.locator('input[type=password]').fill(user.password ?? PASSWORD)
+  await page.getByRole('button', { name: /登录|Sign in/ }).click()
+  await page.waitForURL((url) => !url.pathname.includes('sign-in'), { timeout: 90000 })
+  await page.waitForTimeout(2000)
+  return page
+}
 
 async function holdLock({ token, resourceId }) {
   const origin = API.replace(/\/api\/v1$/, '')
@@ -384,6 +533,16 @@ async function holdLock({ token, resourceId }) {
       rivals.forEach((rivalSocket) => rivalSocket.close())
     },
   }
+}
+
+async function settledEvidence({ token, id }) {
+  const deadline = Date.now() + WAIT_MS
+  let detail = await getRelease({ token, id })
+  while (detail.evidence.succeeded < 1 && Date.now() < deadline) {
+    await sleep(2000)
+    detail = await getRelease({ token, id })
+  }
+  return detail
 }
 
 async function getRelease({ token, id }) {
@@ -497,10 +656,10 @@ async function call(method, path, body, token) {
   return { status: response.status, body: response.body }
 }
 
-async function check(label, fn) {
+async function check(label, fn, { attempts = 1 } = {}) {
   const startedAt = Date.now()
   try {
-    const detail = await fn()
+    const detail = await retried(fn, attempts)
     results.push({ label, ok: true })
     process.stdout.write(`PASS ${label} ${JSON.stringify(detail ?? '')} (${Math.round((Date.now() - startedAt) / 1000)}s)\n`)
     return detail ?? true
@@ -509,6 +668,18 @@ async function check(label, fn) {
     results.push({ label, ok: false })
     process.stdout.write(`FAIL ${label} ${error.message}\n`)
     return null
+  }
+}
+
+async function retried(fn, attempts) {
+  try {
+    return await fn()
+  }
+  catch (error) {
+    if (attempts <= 1) {
+      throw error
+    }
+    return retried(fn, attempts - 1)
   }
 }
 

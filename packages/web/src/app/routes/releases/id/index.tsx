@@ -2,6 +2,7 @@ import {
   ReleaseCheckLevel,
   WorkflowReleaseDetail,
   WorkflowReleaseStatus,
+  workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -146,7 +147,9 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
               <CardTitle>{t('Test runs of this version')}</CardTitle>
               <CardDescription>
                 {release.evidence.testRuns === 0
-                  ? t('This version has not been tested in the editor yet.')
+                  ? t(
+                      'This version has not been run in the test environment yet.',
+                    )
                   : t(
                       '{runs} test runs · {succeeded} succeeded · {failed} failed',
                       {
@@ -284,30 +287,67 @@ function StepDiff({ release }: { release: WorkflowReleaseDetail }) {
       </p>
     );
   }
+  const beforeSteps = new Map(
+    (previous
+      ? workflowStructureUtil.getAllSteps(previous.version.trigger)
+      : []
+    ).map((step) => [step.name, step]),
+  );
+  const afterSteps = new Map(
+    workflowStructureUtil
+      .getAllSteps(target.version.trigger)
+      .map((step) => [step.name, step]),
+  );
   return (
-    <ul className="flex flex-col gap-1 text-sm">
-      {changes.map((change) => (
-        <li
-          key={`${change.kind}-${change.name}`}
-          className="flex items-center gap-2"
-        >
-          <Badge
-            variant={
-              change.kind === StepChangeKind.ADDED
-                ? 'success'
-                : change.kind === StepChangeKind.REMOVED
-                ? 'destructive'
-                : 'info'
-            }
+    <ul className="flex flex-col gap-2 text-sm">
+      {changes.map((change) => {
+        const fields =
+          change.kind === StepChangeKind.MODIFIED
+            ? versionDiff.fieldChanges({
+                before: beforeSteps.get(change.name) ?? null,
+                after: afterSteps.get(change.name) ?? null,
+              })
+            : [];
+        return (
+          <li
+            key={`${change.kind}-${change.name}`}
+            className="flex flex-col gap-1"
           >
-            {CHANGE_LABELS[change.kind]()}
-          </Badge>
-          <span>{change.displayName}</span>
-          <span className="text-xs text-muted-foreground font-mono">
-            {change.name}
-          </span>
-        </li>
-      ))}
+            <div className="flex items-center gap-2">
+              <Badge
+                variant={
+                  change.kind === StepChangeKind.ADDED
+                    ? 'success'
+                    : change.kind === StepChangeKind.REMOVED
+                    ? 'destructive'
+                    : 'info'
+                }
+              >
+                {CHANGE_LABELS[change.kind]()}
+              </Badge>
+              <span>{change.displayName}</span>
+              <span className="text-xs text-muted-foreground font-mono">
+                {change.name}
+              </span>
+            </div>
+            {fields.length > 0 && (
+              <ul className="ml-2 flex flex-col gap-1 rounded-md border bg-muted/30 p-2 text-xs font-mono">
+                {fields.map((field) => (
+                  <li key={field.path} className="flex flex-col">
+                    <span className="text-muted-foreground">{field.path}</span>
+                    <span className="text-destructive break-all">
+                      − {field.before ?? t('(empty)')}
+                    </span>
+                    <span className="text-success break-all">
+                      + {field.after ?? t('(empty)')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

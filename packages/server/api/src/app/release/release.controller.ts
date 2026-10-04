@@ -38,6 +38,10 @@ export const workflowReleaseController: FastifyPluginAsyncZod = async (app) => {
         return { count }
     })
 
+    app.get('/history', HistoryRequest, async (request) => {
+        return workflowReleaseService(request.log).history({ projectId: request.query.projectId, cursor: request.query.cursor ?? null })
+    })
+
     app.post('/', CreateReleaseRequest, async (request, reply) => {
         const release = await workflowReleaseService(request.log).create({
             request: request.body,
@@ -118,6 +122,11 @@ const ListReleasesRequest = {
 const PendingCountRequest = {
     config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_PROJECT_RELEASE, { type: ProjectResourceType.QUERY }) },
     schema: { tags: ['workflow-releases'], querystring: z.object({ projectId: z.string() }) },
+}
+
+const HistoryRequest = {
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_PROJECT_RELEASE, { type: ProjectResourceType.QUERY }) },
+    schema: { tags: ['workflow-releases'], querystring: z.object({ projectId: z.string(), cursor: z.string().optional() }) },
 }
 
 const CreateReleaseRequest = {

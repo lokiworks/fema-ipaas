@@ -14,7 +14,7 @@ try {
   children.push(startProcess({ file: 'external-mcp-server.mjs', extraEnv: { EXTERNAL_MCP_PORT: String(env.externalPort) }, name: 'ext-mcp' }))
   await waitFor({ fn: () => portOpen({ port: env.externalPort }), what: 'external mcp server' })
 
-  await restartStack({ allowList: '203.0.113.9' })
+  await restartStack({ allowList: '127.0.0.1' })
   const strict = await probe()
   check({ name: '严格网络模式、没放行：内网地址被拒绝，并提示 FEMA_SSRF_ALLOW_LIST', ok: strict.result?.ok === false && /FEMA_SSRF_ALLOW_LIST|SSRF|安全策略/.test(JSON.stringify(strict.result) + strict.message), detail: `${strict.result?.error?.failure} ${strict.message}` })
   const strictLoop = await probe({ url: `http://127.0.0.1:${env.externalPort}/mcp` })
@@ -22,7 +22,7 @@ try {
   const blockedRun = await runCallToolFlow()
   check({ name: '严格网络模式：工作流里调用同一地址，步骤失败，失败说明不是空白', ok: blockedRun.status === 'FAILED' && blockedRun.failure.length > 0, detail: `${blockedRun.status} ${blockedRun.failure.slice(0, 200)}` })
 
-  await restartStack({ allowList: env.lanHost })
+  await restartStack({ allowList: `127.0.0.1,${env.lanHost}` })
   const allowed = await probe()
   check({ name: '把内网地址加入 FEMA_SSRF_ALLOW_LIST 后：测试通过并列出工具', ok: allowed.result?.ok === true && allowed.result.tools.length === 6, detail: allowed.message })
   const allowedRun = await runCallToolFlow()
@@ -36,6 +36,17 @@ try {
 process.exit(summary() === 0 ? 0 : 1)
 
 async function probe({ url = `http://${env.lanHost}:${env.externalPort}/mcp` } = {}) {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const outcome = await probeOnce({ url })
+    if (outcome.result?.error?.failure !== 'WORKER_UNAVAILABLE') {
+      return outcome
+    }
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+  }
+  return probeOnce({ url })
+}
+
+async function probeOnce({ url }) {
   const session = await login()
   const response = await api({
     method: 'POST',
@@ -48,13 +59,22 @@ async function probe({ url = `http://${env.lanHost}:${env.externalPort}/mcp` } =
 
 async function runCallToolFlow() {
   const session = await login()
+  const staleFlows = ((await api({ url: `/v1/workflows?projectId=${session.projectId}&limit=100`, token: session.token })).json?.data ?? []).filter((item) => (item.version?.displayName ?? '').startsWith('s7-ssrf'))
+  for (const item of staleFlows) {
+    await api({ method: 'DELETE', url: `/v1/workflows/${item.id}?projectId=${session.projectId}`, token: session.token })
+  }
+  await new Promise((resolve) => setTimeout(resolve, 3000))
+  const stale = ((await api({ url: '/v1/mcp-servers', token: session.token })).json ?? []).filter((item) => item.displayName.startsWith('S7 SSRF'))
+  for (const item of stale) {
+    await api({ method: 'DELETE', url: `/v1/mcp-servers/${item.id}`, token: session.token })
+  }
   const created = await api({
     method: 'POST',
     url: '/v1/mcp-servers',
     token: session.token,
     body: {
       projectId: session.projectId,
-      displayName: 'S7 SSRF 测试服务器',
+      displayName: `S7 SSRF 测试服务器 ${Date.now()}`,
       description: '测试用',
       url: `http://${env.lanHost}:${env.externalPort}/mcp`,
       transport: 'streamable_http',
@@ -70,7 +90,7 @@ async function runCallToolFlow() {
   }
   const flowId = await createFlow({
     session,
-    displayName: 's7-ssrf',
+    displayName: `s7-ssrf-${Date.now()}`,
     trigger: webhookTrigger({
       nextAction: mcpCallStep({ name: 'call', displayName: '调用工具', externalId: server.externalId, tool: 'query_employee', args: { keyword: '张' } }),
     }),

@@ -103,7 +103,8 @@ if (flows) {
     await retryChecks({ failRun })
     await surroundingChecks({ flows, failRun })
     await websocketChecks({ admin, member })
-    await erasureChecks({ mainRun })
+    const erasureId = await erasureChecks({ mainRun })
+    await receiptChecks({ erasureId })
   }
 }
 
@@ -200,6 +201,47 @@ async function permissionChecks({ mainRun }) {
   await check('权限：成员读不到审计日志', async () => {
     const response = await http({ method: 'GET', path: '/audit-events?limit=5', token: member.token })
     assert(response.status === 403, `状态 ${response.status}`)
+  })
+  await check('权限：成员读不到数据与隐私总览（敏感节点、可查看原文的人、下次清理数量）', async () => {
+    const response = await http({ method: 'GET', path: '/privacy-settings/overview', token: member.token })
+    assert(response.status === 403, `状态 ${response.status}`)
+    assert(!response.text.includes('sensitiveWorkflows'), '被拒绝的响应里带了总览内容')
+  })
+  await check('总览：按工作流列出标了出参敏感的节点，现在可查看原文的人带姓名，下次清理数量来自真实查询', async () => {
+    const overview = await api({ method: 'GET', path: '/privacy-settings/overview', token: admin.token })
+    const mainFlow = overview.sensitiveWorkflows.find((workflow) => workflow.displayName === `${FLOW_PREFIX}员工入职同步`)
+    assert(mainFlow && mainFlow.steps.some((step) => step.name === 'step_2' && step.displayName === '薪资核算'), `没列出主线的敏感节点：${JSON.stringify(overview.sensitiveWorkflows.map((workflow) => workflow.displayName))}`)
+    assert(mainFlow.projectId === admin.projectId && mainFlow.workflowId, '缺少可点进去的工作流和项目')
+    assert(!overview.sensitiveWorkflows.some((workflow) => workflow.displayName === `${FLOW_PREFIX}员工同步失败`), '没有敏感节点的工作流也被列出来了')
+    assert(overview.rawViewersRecorded === true, '默认级别应该保存原文')
+    assert(overview.rawViewers.length >= 1 && overview.rawViewers.every((viewer) => viewer.name.length > 0 && ['OWNER', 'ADMIN'].includes(viewer.role)), `可查看原文的人：${JSON.stringify(overview.rawViewers)}`)
+    assert(!overview.rawViewers.some((viewer) => viewer.email === MEMBER.email), '普通成员不该在可查看原文的名单里')
+    const purge = overview.purge
+    assert(['rawStates', 'webhookPayloads', 'runIdentifiers', 'logFiles'].every((key) => Number.isInteger(purge[key]) && purge[key] >= 0), `清理数量不对：${JSON.stringify(purge)}`)
+    assert(new Date(purge.nextRunAt) > new Date() && new Date(purge.nextRunAt).getUTCMinutes() === 17, `下次清理时间不对：${purge.nextRunAt}`)
+    const db = openDatabaseSnapshot()
+    try {
+      const [rows] = await Promise.all([db.query(`select count(*)::int as count from execution where "displayLogsFileId" is not null and "logsFileId" is not null and "finishTime" < $1`, [purge.rawStateCutoff])])
+      assert(rows[0].count === purge.rawStates, `库里按保留期查出 ${rows[0].count}，总览写 ${purge.rawStates}`)
+    }
+    finally {
+      await db.close()
+    }
+  })
+  await check('总览：把成员加入「可以查看原文」并保存后，名单里出现成员；改成不保存原文后名单为空', async () => {
+    const settings = await api({ method: 'GET', path: '/privacy-settings', token: admin.token })
+    const base = { logRetentionDays: settings.logRetentionDays, payloadLevel: settings.payloadLevel, rawPayloadRetentionDays: settings.rawPayloadRetentionDays, maskRules: settings.maskRules, rawViewRoles: settings.rawViewRoles, requireRawViewReason: settings.requireRawViewReason }
+    try {
+      await api({ method: 'POST', path: '/privacy-settings', body: { ...base, rawViewRoles: ['OWNER', 'ADMIN', 'MEMBER'] }, token: admin.token })
+      const withMember = await api({ method: 'GET', path: '/privacy-settings/overview', token: admin.token })
+      assert(withMember.rawViewers.some((viewer) => viewer.email === MEMBER.email), '成员有权限后没出现在名单里')
+      await api({ method: 'POST', path: '/privacy-settings', body: { ...base, payloadLevel: 'METADATA' }, token: admin.token })
+      const metadataOnly = await api({ method: 'GET', path: '/privacy-settings/overview', token: admin.token })
+      assert(metadataOnly.rawViewersRecorded === false && metadataOnly.rawViewers.length === 0, '不保存原文时名单应该为空')
+    }
+    finally {
+      await api({ method: 'POST', path: '/privacy-settings', body: base, token: admin.token })
+    }
   })
   await check('权限：成员不能改隐私设置', async () => {
     const response = await http({ method: 'POST', path: '/privacy-settings', body: DEFAULT_SETTINGS, token: member.token })
@@ -326,7 +368,15 @@ async function erasureChecks({ mainRun }) {
   })
   await check('删除：确认后日志文件里这个手机号的所有写法都没了，其他人的数据还在，审计里只有脱敏的提示', async () => {
     assert(created, '前一步失败')
-    await api({ method: 'POST', path: `/privacy-settings/erasures/${created}/confirm`, body: {}, token: admin.token })
+    const rejected = [
+      await http({ method: 'POST', path: `/privacy-settings/erasures/${created}/confirm`, body: {}, token: admin.token }),
+      await http({ method: 'POST', path: `/privacy-settings/erasures/${created}/confirm`, body: { confirmation: '13800000000' }, token: admin.token }),
+      await http({ method: 'POST', path: `/privacy-settings/erasures/${created}/confirm`, body: { confirmation: secrets.contactPlain }, token: member.token }),
+    ]
+    assert(rejected.every((response) => !response.ok), `没带确认词、写错号码、非管理员都应该被拒绝：${rejected.map((response) => response.status)}`)
+    const stillWaiting = (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).find((item) => item.id === created)
+    assert(stillWaiting.status === 'AWAITING_CONFIRMATION', `被拒绝的确认不该推进请求：${stillWaiting.status}`)
+    await api({ method: 'POST', path: `/privacy-settings/erasures/${created}/confirm`, body: { confirmation: '删除' }, token: admin.token })
     await waitFor({
       what: '删除完成',
       timeoutMs: 90000,
@@ -344,6 +394,40 @@ async function erasureChecks({ mainRun }) {
     finally {
       await db.close()
     }
+  })
+  return created
+}
+
+async function receiptChecks({ erasureId }) {
+  await check('回执：已完成的删除请求可以下载处理记录——谁、何时、哈希而不是明文、各类清理条数', async () => {
+    assert(erasureId, '前一步失败')
+    const response = await http({ method: 'GET', path: `/privacy-settings/erasures/${erasureId}/receipt`, token: admin.token })
+    assert(response.ok, `下载回执返回 ${response.status} ${response.text.slice(0, 200)}`)
+    const receipt = response.body
+    assert(receipt.requestedBy?.email === ADMIN.email && receipt.confirmedBy?.email === ADMIN.email, `发起人或确认人不对：${JSON.stringify([receipt.requestedBy, receipt.confirmedBy])}`)
+    assert(receipt.requestedAt && receipt.confirmedAt && receipt.finishedAt, '缺少时间')
+    assert(/^[0-9a-f]{64}$/.test(receipt.valueHash ?? ''), `查询条件的哈希不对：${receipt.valueHash}`)
+    assert(!response.text.includes(secrets.contactPlain), '回执里带了完整手机号')
+    const counts = receipt.counts
+    assert(counts && ['displayLogFiles', 'rawStateFiles', 'logSlices', 'webhookPayloads', 'runIdentifiers', 'failureMessages', 'dedupeKeys', 'searchHashes'].every((key) => Number.isInteger(counts[key])), `各类条数缺失：${JSON.stringify(counts)}`)
+    assert(counts.rawStateFiles >= 1 && counts.searchHashes >= 1, `清理条数不对：${JSON.stringify(counts)}`)
+  })
+  await check('回执：未完成的请求不能下载，成员不能下载，下载本身写进审计日志', async () => {
+    const pending = await api({ method: 'POST', path: '/privacy-settings/erasures', body: { kind: 'EMPLOYEE_ID', value: `NOPE${TAG}`, reason: '回执权限校验' }, token: admin.token })
+    const early = await http({ method: 'GET', path: `/privacy-settings/erasures/${pending.id}/receipt`, token: admin.token })
+    assert(!early.ok, `没完成的请求居然给了回执：${early.status}`)
+    const asMember = await http({ method: 'GET', path: `/privacy-settings/erasures/${erasureId}/receipt`, token: member.token })
+    assert(asMember.status === 403, `成员下载回执返回 ${asMember.status}`)
+    const events = await waitFor({
+      what: '下载回执的审计记录',
+      timeoutMs: 15000,
+      probe: async () => {
+        const page = await api({ method: 'GET', path: '/audit-events?action=privacy.personal_data.erasure&limit=20', token: admin.token })
+        const mine = page.data.filter((event) => event.data?.phase === 'RECEIPT_DOWNLOADED' && event.data?.request?.id === erasureId)
+        return mine.length > 0 ? mine : null
+      },
+    })
+    assert(events[0].userEmail === ADMIN.email, '审计里的下载人不对')
   })
 }
 

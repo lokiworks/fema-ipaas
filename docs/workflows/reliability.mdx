@@ -66,6 +66,20 @@ Replaying from the failed step needs the run's unmasked saved state. That is kep
 
 You can also rerun single runs from **Run logs** (运行日志): open a run and choose **Rerun from the failed step** or **Rerun the whole run**, or select several rows and use **Batch rerun** (批量重跑). Debug runs, runs that were skipped as duplicates, and subflow runs (they rerun with their parent) cannot be rerun. Every rerun is written to the audit log.
 
+## Finding and deleting one person's data
+
+Run logs are masked before they are saved, so once the original data has been cleared a log only shows `138****0001`. To still find the runs of one person, the platform keeps a keyed hash of each mobile number, email and business key (employee ID) of a run. You can then search **Run logs** (运行日志) for the full number or the exact employee ID and open the run, and **Delete personal data** (个人数据删除) can find it, even though nobody can read the original any more. A partial number, the last four digits or someone else's number never match.
+
+How the hash is made, and what it does not protect:
+
+- It is an HMAC-SHA256 of the normalised value (a mobile number as 11 digits without spaces, dashes or `+86`; an email or business key in lower case) and its kind. The key is derived with HKDF from your existing `FEMA_ENCRYPTION_KEY`, so there is nothing new to configure.
+- A mobile number has only about a billion possibilities, so a plain hash would be reversed in seconds. With a key it cannot be tested guess by guess: someone who only has a copy of the database sees 64 random-looking hex characters and has no way to check a candidate number against them. The unit test `test/unit/privacy/searchable-hash.test.ts` runs that dictionary attack against plain SHA-256, against SHA-256 with the kind prefix, against HMAC with the wrong key and against a different key, and none of them finds the number.
+- If the encryption key leaks together with the database, the hashes can be reversed by trying every number. Treat the key the way you already treat it: it also protects your connections.
+- Rotating the key keeps old hashes searchable only while the previous key is listed in `FEMA_RETIRED_ENCRYPTION_KEYS`; hashes written after the rotation use the new key.
+- The hashes are removed with the run's other identifiers when the log retention ends, and **Delete personal data** removes the hashes of the person it deletes. The receipt of a deletion request records how many were removed.
+
+Confirming a deletion needs the person's full identifier (employee ID, email or mobile number) or the word `DELETE` typed in the confirmation dialog. The same check runs on the server, so an API call without it is rejected. When a request is done you can download its receipt (处理记录): who asked, who confirmed, when, an HMAC of the lookup value instead of the value, and how many log files, request bodies, business keys, failure messages, dedupe keys and search hashes were cleared.
+
 ## Issues that close themselves
 
 You do not have to resolve everything by hand. The platform resolves an issue, with no person recorded, when:

@@ -8,6 +8,18 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Confirming a personal data deletion needs the person or a confirmation word
+
+`POST /v1/privacy-settings/erasures/{id}/confirm` now requires a body
+`{ "confirmation": "..." }`. It must be the full employee ID, email or mobile
+number of the request, or the word `DELETE` (`删除` also works). A call without it,
+or with a wrong value, is rejected and nothing is deleted. The confirmation dialog
+in Data and privacy asks for the same.
+
+**When is action necessary?**
+
+If a script confirms deletion requests through the API, add the field.
+
 #### Shorter run-log retention now takes effect
 
 The retention period chosen in Data and privacy (7 or 14 days) and a project's

@@ -167,6 +167,56 @@ async function verify() {
     const response = await http({ method: 'GET', path: `/executions/${people.A.runId}?projectId=${admin.projectId}`, token: admin.token })
     assert(response.ok && !response.text.includes(people.A.mobile), '展示日志泄露手机号')
   })
+  await check('检索：原文清掉后，按完整手机号仍能搜到 A 批的运行，按工号精确搜也能搜到', async () => {
+    const byPhone = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&content=${people.A.mobile}`, token: admin.token })
+    assert(byPhone.data.some((item) => item.id === people.A.runId), `按手机号没搜到 A，结果 ${byPhone.data.length} 条`)
+    const spaced = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&content=${encodeURIComponent(`${people.A.mobile.slice(0, 3)} ${people.A.mobile.slice(3, 7)} ${people.A.mobile.slice(7)}`)}`, token: admin.token })
+    assert(spaced.data.some((item) => item.id === people.A.runId), '带空格写法的手机号没搜到 A')
+    const byKey = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&businessKey=${people.A.jobNumber}`, token: admin.token })
+    assert(byKey.data.some((item) => item.id === people.A.runId), '按工号没搜到 A')
+  })
+  await check('检索：只匹配完整号码——前缀、尾号、别人的号码都搜不到 A 批', async () => {
+    const queries = [people.A.mobile.slice(0, 7), people.A.mobile.slice(-4), `139${people.C.tag}0001`.replace(people.C.tag, '0000'), people.C.mobile]
+    for (const content of queries) {
+      const result = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&content=${content}`, token: admin.token })
+      assert(!result.data.some((item) => item.id === people.A.runId), `「${content}」不应该搜到 A`)
+    }
+  })
+  await check('检索：库里存的是带密钥的哈希，不含手机号和工号原文', async () => {
+    const db = openDatabaseSnapshot()
+    try {
+      const [row] = await db.query('select "searchHashes" from execution where id = $1', [people.A.runId])
+      assert(row.searchHashes.length >= 2, `A 的哈希只有 ${row.searchHashes.length} 个`)
+      const text = JSON.stringify(row.searchHashes)
+      assert(row.searchHashes.every((hash) => /^[0-9a-f]{64}$/.test(hash)), '哈希格式不对')
+      assert(!text.includes(people.A.mobile) && !text.includes(people.A.jobNumber), '哈希列里出现了原文')
+      const plain = (await import('node:crypto')).createHash('sha256').update(people.A.mobile).digest('hex')
+      assert(!row.searchHashes.includes(plain), '哈希就是明文的普通 SHA-256，可以被撞库')
+    }
+    finally {
+      await db.close()
+    }
+  })
+  await check('删除：按手机号删除，原文清掉的 A 批也能被找到，确认后哈希一并清掉，回执里有各类清理条数', async () => {
+    const request = await api({ method: 'POST', path: '/privacy-settings/erasures', body: { kind: 'PHONE', value: people.A.mobile, reason: '员工要求删除个人数据，工单 HR-5003' }, token: admin.token })
+    const scanned = await waitFor({
+      what: '扫描完成',
+      timeoutMs: 120000,
+      probe: async () => (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).find((item) => item.id === request.id && ['AWAITING_CONFIRMATION', 'DONE'].includes(item.status)),
+    })
+    assert(scanned.status === 'AWAITING_CONFIRMATION' && scanned.matchedRuns >= 1, `原文清掉后没有找到 A：${scanned.status} 命中 ${scanned.matchedRuns}`)
+    await api({ method: 'POST', path: `/privacy-settings/erasures/${request.id}/confirm`, body: { confirmation: people.A.mobile }, token: admin.token })
+    const done = await waitFor({
+      what: '删除完成',
+      timeoutMs: 120000,
+      probe: async () => (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).find((item) => item.id === request.id && item.status === 'DONE'),
+    })
+    assert(done.counts && done.counts.searchHashes >= 1, `回执里没有清掉哈希：${JSON.stringify(done.counts)}`)
+    const phoneAfter = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&content=${people.A.mobile}`, token: admin.token })
+    assert(!phoneAfter.data.some((item) => item.id === people.A.runId), '删除后还能按手机号搜到')
+    const keyAfter = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&businessKey=${people.A.jobNumber}`, token: admin.token })
+    assert(keyAfter.data.some((item) => item.id === people.A.runId), '工号的哈希不该被按手机号删除清掉')
+  })
   void nextCron
   void MEMBER
   void ALL_PII

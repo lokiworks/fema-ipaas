@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { chromium } from '@playwright/test'
 import { ADMIN, DEFAULT_SETTINGS, MEMBER, SHOTS, WEB, api, assert, check, codeStep, http, openDatabaseSnapshot, payloadOf, publishFlow, secretsOf, shot, signIn, sleep, summary, uiLogin, waitFor, webhookTrigger } from './lib/s5-kit.mjs'
 
@@ -116,6 +117,69 @@ await check('界面：改平台保留期并保存，接口和运行日志页顶�
   await context.close()
 })
 
+await check('界面：数据与隐私页——哪些节点标了敏感（可点进去）、现在谁能查看原文、下次清理会删多少，数字和接口一致', async () => {
+  const overview = await api({ method: 'GET', path: '/privacy-settings/overview', token: admin.token })
+  const { context, page } = await uiLogin({ browser, user: ADMIN })
+  await page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
+  const purge = page.getByTestId('purge-estimate')
+  await purge.waitFor({ timeout: 90000 })
+  const purgeText = await purge.innerText()
+  for (const key of ['rawStates', 'webhookPayloads', 'runIdentifiers', 'logFiles']) {
+    assert(purgeText.includes(String(overview.purge[key])), `下次清理里没有 ${key} 的数量 ${overview.purge[key]}：${purgeText}`)
+  }
+  assert(/下次清理在 \d\d-\d\d \d\d:17/.test(purgeText), `下次清理时间的写法不对：${purgeText}`)
+  const viewers = page.getByTestId('raw-viewers')
+  await viewers.waitFor()
+  const viewersText = await viewers.innerText()
+  assert(viewersText.includes(`现在有 ${overview.rawViewers.length} 人可以查看原文`), `人数不对：${viewersText}`)
+  overview.rawViewers.forEach((viewer) => assert(viewersText.includes(viewer.name.length > 0 ? viewer.name : viewer.email), `名单里缺 ${viewer.name}`))
+  assert(!viewersText.includes('Mem Ber'), '普通成员不该在名单里')
+  const sensitive = page.getByTestId('sensitive-nodes')
+  await sensitive.waitFor()
+  const link = sensitive.getByRole('link', { name: 'S5UI 员工入职同步 · 薪资核算' })
+  await link.waitFor()
+  assert((await link.getAttribute('href')) === `/projects/${admin.projectId}/workflows/${flow.flowId}`, '链接没有指向这个工作流')
+  const widths = []
+  for (const [name, options] of [['light', {}], ['dark', { colorScheme: 'dark' }], ['narrow', { width: 480, height: 900 }]]) {
+    const view = await uiLogin({ browser, user: ADMIN, ...options })
+    await view.page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
+    await view.page.getByTestId('purge-estimate').waitFor({ timeout: 90000 })
+    await view.page.getByTestId('purge-estimate').scrollIntoViewIfNeeded()
+    await shot({ page: view.page, name: `s5-ui-overview-purge-${name}` })
+    await view.page.getByTestId('sensitive-nodes').scrollIntoViewIfNeeded()
+    await shot({ page: view.page, name: `s5-ui-overview-sensitive-${name}` })
+    await view.page.getByTestId('raw-viewers').scrollIntoViewIfNeeded()
+    await shot({ page: view.page, name: `s5-ui-overview-viewers-${name}` })
+    widths.push([name, await view.page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)])
+    await view.context.close()
+  }
+  const overflowing = widths.filter(([, overflow]) => overflow > 1)
+  assert(overflowing.length === 0, `页面出现横向滚动：${JSON.stringify(overflowing)}`)
+  await link.click()
+  await page.waitForURL((url) => url.pathname === `/projects/${admin.projectId}/workflows/${flow.flowId}`, { timeout: 60000 })
+  await page.getByText('薪资核算').first().waitFor({ timeout: 90000 })
+  await context.close()
+})
+
+await check('界面：把成员加入「可以查看原文」并保存，名单里立刻出现成员的姓名', async () => {
+  const { context, page } = await uiLogin({ browser, user: ADMIN })
+  await page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
+  const viewers = page.getByTestId('raw-viewers')
+  await viewers.waitFor({ timeout: 90000 })
+  const before = await viewers.innerText()
+  assert(!before.includes('Mem Ber'), '保存前成员就在名单里')
+  await page.getByRole('checkbox', { name: '成员' }).click()
+  await page.getByRole('button', { name: '保存' }).click()
+  try {
+    await waitFor({ what: '名单里出现成员', timeoutMs: 30000, probe: async () => (await viewers.innerText()).includes('Mem Ber') })
+    await shot({ page, name: 's5-ui-overview-viewers-with-member' })
+  }
+  finally {
+    await api({ method: 'POST', path: '/privacy-settings', body: DEFAULT_SETTINGS, token: admin.token })
+  }
+  await context.close()
+})
+
 await check('界面：按工号删除个人数据——先搜索再确认，确认后接口和库里都找不到', async () => {
   const { context, page } = await uiLogin({ browser, user: ADMIN })
   await page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
@@ -128,9 +192,23 @@ await check('界面：按工号删除个人数据——先搜索再确认，确�
   await page.getByRole('button', { name: /删除 \d+ 条记录中的数据/ }).waitFor({ timeout: 90000 })
   await shot({ page, name: 's5-ui-erasure-found' })
   await page.getByRole('button', { name: /删除 \d+ 条记录中的数据/ }).click()
-  await shot({ page, name: 's5-ui-erasure-confirm' })
   const confirm = page.getByRole('dialog')
-  await confirm.getByRole('button', { name: /^删除$/ }).click()
+  const deleteButton = confirm.getByRole('button', { name: /^删除$/ })
+  const confirmInput = confirm.getByRole('textbox')
+  await confirmInput.waitFor()
+  assert(await deleteButton.isDisabled(), '没输入确认内容时，删除按钮应该是禁用的')
+  await confirmInput.fill('随便写点什么')
+  assert(await deleteButton.isDisabled(), '输入的既不是标识也不是确认词，删除按钮应该是禁用的')
+  await shot({ page, name: 's5-ui-erasure-confirm' })
+  await confirmInput.fill('ZZ99999')
+  assert(await deleteButton.isEnabled(), '输入了一个格式正确的标识，按钮应该可点（由服务端核对是不是这个人）')
+  await deleteButton.click()
+  await confirm.getByText('The confirmation does not match the person to delete').waitFor({ timeout: 30000 })
+  const stillWaiting = (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).find((request) => request.status === 'AWAITING_CONFIRMATION' && request.created >= startedAt)
+  assert(stillWaiting, '输错标识后请求不该被推进')
+  await shot({ page, name: 's5-ui-erasure-confirm-wrong' })
+  await confirmInput.fill('删除')
+  await deleteButton.click()
   const lowered = secrets.jobNumber.toLowerCase()
   const hint = `${lowered.slice(0, 2)}${'*'.repeat(lowered.length - 4)}${lowered.slice(-2)}`
   await waitFor({
@@ -140,6 +218,15 @@ await check('界面：按工号删除个人数据——先搜索再确认，确�
   })
   await page.getByText(/已清除 \d+ 条运行记录中的数据/).first().waitFor({ timeout: 90000 })
   await shot({ page, name: 's5-ui-erasure-done' })
+  const downloadPromise = page.waitForEvent('download')
+  await page.locator('div.py-3').filter({ hasText: hint }).getByRole('button', { name: '下载处理记录' }).click()
+  const download = await downloadPromise
+  const receiptPath = `${SHOTS}/${download.suggestedFilename()}`
+  await download.saveAs(receiptPath)
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'))
+  assert(receipt.kind === 'personal-data-erasure-receipt' && /^[0-9a-f]{64}$/.test(receipt.valueHash), `回执内容不对：${JSON.stringify(receipt).slice(0, 200)}`)
+  assert(!JSON.stringify(receipt).includes(secrets.jobNumber), '回执里带了工号原文')
+  assert(receipt.requestedBy?.email === ADMIN.email && receipt.confirmedBy?.email === ADMIN.email && receipt.counts !== null, '回执里缺发起人、确认人或各类条数')
   const found = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&businessKey=${secrets.jobNumber}`, token: admin.token })
   assert(found.data.length === 0, `按工号还能搜到 ${found.data.length} 条运行`)
   const content = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&content=${secrets.jobNumber}`, token: admin.token })

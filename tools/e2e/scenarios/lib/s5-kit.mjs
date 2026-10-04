@@ -296,11 +296,22 @@ export async function uiLogin({ browser, user, colorScheme = 'light', width = 14
   }
   const page = await context.newPage()
   page.on('pageerror', (error) => process.stdout.write(`pageerror ${error.message.slice(0, 160)}\n`))
-  await page.goto(`${WEB}/sign-in`, { waitUntil: 'domcontentloaded', timeout: 120000 })
-  await page.getByLabel(/邮箱|Email/).first().fill(user.email)
-  await page.locator('input[type=password]').fill(user.password)
-  await page.getByRole('button', { name: /登录|Sign in/ }).click()
-  await page.waitForURL((url) => !url.pathname.includes('sign-in'), { timeout: 120000 })
+  const attempt = async (tries) => {
+    await page.goto(`${WEB}/sign-in`, { waitUntil: 'domcontentloaded', timeout: 120000 })
+    await page.getByLabel(/邮箱|Email/).first().fill(user.email)
+    await page.locator('input[type=password]').fill(user.password)
+    await page.getByRole('button', { name: /登录|Sign in/ }).click()
+    try {
+      await page.waitForURL((url) => !url.pathname.includes('sign-in'), { timeout: 60000 })
+    }
+    catch (error) {
+      if (tries <= 1) {
+        throw error
+      }
+      await attempt(tries - 1)
+    }
+  }
+  await attempt(3)
   return { context, page }
 }
 

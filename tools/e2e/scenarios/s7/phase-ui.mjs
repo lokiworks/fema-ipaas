@@ -35,13 +35,24 @@ export async function uiPhase({ session }) {
         await page.getByText('入参', { exact: true }).first().click().catch(() => undefined)
         await page.waitForTimeout(2500)
       }
-      const state = await page.evaluate(() => ({
-        dark: document.documentElement.classList.contains('dark'),
-        background: getComputedStyle(document.body).backgroundColor,
-        overflow: document.documentElement.scrollWidth - window.innerWidth,
-      }))
+      const state = await page.evaluate(() => {
+        const background = getComputedStyle(document.body).backgroundColor
+        const canvas = document.createElement('canvas')
+        canvas.width = 1
+        canvas.height = 1
+        const context = canvas.getContext('2d')
+        context.fillStyle = background
+        context.fillRect(0, 0, 1, 1)
+        const [red, green, blue] = context.getImageData(0, 0, 1, 1).data
+        return {
+          dark: document.documentElement.classList.contains('dark'),
+          background,
+          luminance: (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255,
+          overflow: document.documentElement.scrollWidth - window.innerWidth,
+        }
+      })
       const wantDark = variant.colorScheme === 'dark'
-      check({ name: `界面截图 ${target.name} / ${variant.suffix}：页面加载出来，主题是${wantDark ? '深' : '浅'}色${variant.width < 1000 ? '，窄屏没有横向滚动条' : ''}`, ok: shown && state.dark === wantDark && luminanceOf(state.background) < 0.5 === wantDark && (variant.width >= 1000 || state.overflow <= 1), detail: JSON.stringify({ shown, ...state }) })
+      check({ name: `界面截图 ${target.name} / ${variant.suffix}：页面加载出来，主题是${wantDark ? '深' : '浅'}色${variant.width < 1000 ? '，窄屏没有横向滚动条' : ''}`, ok: shown && state.dark === wantDark && (state.luminance < 0.5) === wantDark && (variant.width >= 1000 || state.overflow <= 1), detail: JSON.stringify({ shown, ...state }) })
       await shot({ page, name: `ui-${target.name}-${variant.suffix}` })
     }
     await browser.close()
@@ -66,13 +77,4 @@ async function marketChecks() {
   check({ name: '连接器详情页：所属分类和动作分类徽标是中文', ok: /人力资源/.test(detailText) && /读取|搜索|写入/.test(detailText) && !/\b(READ|WRITE|SEARCH|DESTRUCTIVE|HUMAN_RESOURCES)\b/.test(detailText), detail: detailText.replace(/\s+/g, ' ').slice(0, 260) })
   await shot({ page, name: 'ui-connector-detail' })
   await browser.close()
-}
-
-function luminanceOf(color) {
-  const match = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color)
-  if (match === null) {
-    return 1
-  }
-  const [red, green, blue] = [match[1], match[2], match[3]].map((value) => Number(value) / 255)
-  return 0.2126 * red + 0.7152 * green + 0.0722 * blue
 }

@@ -31,10 +31,10 @@ export async function ensureRichServer({ token, projectId }) {
       description: '带复杂参数的测试工具集',
       url: `http://${env.lanHost}:${env.externalPort}/rich`,
       transport: 'streamable_http',
-      auth: { type: 'bearer', token: bearer },
+      auth: { type: 'bearer', token: env.externalToken },
       allProjects: true,
       projectIds: [],
-      saveWithoutPassingTest,
+      saveWithoutPassingTest: false,
     },
   })
   return created.json.server

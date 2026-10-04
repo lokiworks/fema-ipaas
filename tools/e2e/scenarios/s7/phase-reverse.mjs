@@ -1,4 +1,4 @@
-import { api, check, env, go, openBrowser, shot, uiLogin } from './lib.mjs'
+import { api, check, env, go, openBrowser, shot, uiLogin, waitFor } from './lib.mjs'
 
 export const SERVER_NAME = 'S7 企业人事工具'
 
@@ -137,13 +137,20 @@ async function tryToolOnce({ page, tool, values, expect, name, shotName }) {
 }
 
 async function cleanup({ token, projectId }) {
-  const workflows = await api({ url: `/v1/workflows?projectId=${projectId}&limit=100`, token })
-  for (const workflow of (workflows.json?.data ?? []).filter((item) => (item.version?.displayName ?? '').startsWith('s7-'))) {
+  const listFlows = async () => ((await api({ url: `/v1/workflows?projectId=${projectId}&limit=100`, token })).json?.data ?? []).filter((item) => (item.version?.displayName ?? '').startsWith('s7-'))
+  for (const workflow of await listFlows()) {
     await api({ method: 'DELETE', url: `/v1/workflows/${workflow.id}?projectId=${projectId}`, token })
   }
-  const servers = await api({ url: '/v1/mcp-servers', token })
-  for (const server of (servers.json ?? []).filter((item) => item.displayName.startsWith('S7'))) {
-    await api({ method: 'DELETE', url: `/v1/mcp-servers/${server.id}`, token })
+  await waitFor({ fn: async () => (await listFlows()).length === 0, timeoutMs: 120000, intervalMs: 2000, what: 's7 workflows deleted' }).catch(() => undefined)
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const servers = ((await api({ url: '/v1/mcp-servers', token })).json ?? []).filter((item) => item.displayName.startsWith('S7'))
+    if (servers.length === 0) {
+      return
+    }
+    for (const server of servers) {
+      await api({ method: 'DELETE', url: `/v1/mcp-servers/${server.id}`, token })
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000))
   }
 }
 

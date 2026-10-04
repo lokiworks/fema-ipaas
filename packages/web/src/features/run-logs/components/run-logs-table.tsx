@@ -31,6 +31,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useIsCompact } from '@/hooks/use-mobile';
 import { formatUtils } from '@/lib/format-utils';
 
 import { runLogUiUtils } from '../utils/run-log-ui-utils';
@@ -55,6 +56,7 @@ export function RunLogsTable({
     strategy: WorkflowRetryStrategy;
   }) => void;
 }) {
+  const compact = useIsCompact();
   const bulkActions: BulkAction<RunLogRow>[] = [
     {
       render: (selectedRows, resetSelection) => (
@@ -75,7 +77,10 @@ export function RunLogsTable({
         'Try a longer time range or remove some of the conditions.',
       )}
       emptyStateIcon={<ScrollText className="size-14" />}
-      columns={columns({ onOpenRun, onRerun }).filter(
+      columns={(compact
+        ? compactColumns({ onOpenRun, onRerun, hideProjectColumn })
+        : columns({ onOpenRun, onRerun })
+      ).filter(
         (column) =>
           !hideProjectColumn ||
           !('accessorKey' in column) ||
@@ -357,6 +362,99 @@ function columns({
       ),
     },
   ];
+}
+
+function compactColumns({
+  onOpenRun,
+  onRerun,
+  hideProjectColumn,
+}: {
+  onOpenRun: (runId: string) => void;
+  onRerun: (request: {
+    rows: RunLogRow[];
+    strategy: WorkflowRetryStrategy;
+  }) => void;
+  hideProjectColumn: boolean;
+}): ColumnDef<RowDataWithActions<RunLogRow>, unknown>[] {
+  const all = columns({ onOpenRun, onRerun });
+  const byKey = (key: string) =>
+    all.find((column) => 'accessorKey' in column && column.accessorKey === key);
+  const created = byKey('created');
+  const status = byKey('status');
+  const actions = byKey('actions');
+  const workflow: ColumnDef<RowDataWithActions<RunLogRow>, unknown> = {
+    accessorKey: 'workflowDisplayName',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title={t('Workflow')} />
+    ),
+    cell: ({ row }) => (
+      <CompactWorkflowCell
+        row={row.original}
+        hideProjectColumn={hideProjectColumn}
+      />
+    ),
+  };
+  return [
+    ...(created ? [{ ...created, size: 120 }] : []),
+    workflow,
+    ...(status ? [{ ...status, size: 100 }] : []),
+    ...(actions ? [{ ...actions, size: 100 }] : []),
+  ];
+}
+
+function CompactWorkflowCell({
+  row,
+  hideProjectColumn,
+}: {
+  row: RunLogRow;
+  hideProjectColumn: boolean;
+}) {
+  const name = row.workflowExists
+    ? row.workflowDisplayName ?? row.workflowId
+    : t('Deleted workflow');
+  const details = [
+    row.businessKey,
+    hideProjectColumn ? null : row.projectDisplayName,
+    row.type === RunLogType.DEBUG
+      ? t('Debug log')
+      : row.environment === RunEnvironment.PRODUCTION
+      ? t('Production')
+      : t('Test'),
+    row.type === RunLogType.DEBUG || isNil(row.versionNumber)
+      ? null
+      : `v${row.versionNumber}`,
+    isNil(row.durationMs) ? null : formatUtils.formatDuration(row.durationMs, true),
+    row.errorCount > 0
+      ? t('{count, plural, =1 {1 error} other {# errors}}', {
+          count: row.errorCount,
+        })
+      : null,
+  ].filter((item): item is string => !isNil(item) && item.length > 0);
+  return (
+    <div className="min-w-0" data-testid="run-log-compact-cell">
+      <div className="flex items-center gap-1.5">
+        <TextWithTooltip tooltipMessage={name}>
+          <p className="truncate text-sm font-medium">{name}</p>
+        </TextWithTooltip>
+        {isRerun(row) && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="info" className="shrink-0 gap-1 px-1.5">
+                <RotateCcw className="size-3" />
+                {t('Rerun')}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>{rerunTagTooltip(row)}</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+      <TextWithTooltip tooltipMessage={details.join(' · ')}>
+        <p className="truncate text-xs text-muted-foreground">
+          {details.join(' · ')}
+        </p>
+      </TextWithTooltip>
+    </div>
+  );
 }
 
 function RowRerun({ row, onRerun }: { row: RunLogRow; onRerun: () => void }) {

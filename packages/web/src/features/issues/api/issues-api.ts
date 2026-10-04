@@ -4,6 +4,7 @@ import {
   BatchUpdateIssuesRequestBody,
   Execution,
   IssueActivity,
+  IssueAffectedWorkflow,
   IssueInsight,
   IssueOverview,
   IssueReplayRequestBody,
@@ -65,8 +66,8 @@ export const issuesApi = {
   ): Promise<SeekPage<Execution>> {
     return api.get<SeekPage<Execution>>(`/v1/issues/${id}/executions`, request);
   },
-  workflows(id: string): Promise<string[]> {
-    return api.get<string[]>(`/v1/issues/${id}/workflows`);
+  workflows(id: string): Promise<IssueAffectedWorkflow[]> {
+    return api.get<IssueAffectedWorkflow[]>(`/v1/issues/${id}/workflows`);
   },
   trend(id: string, granularity: IssueTrendGranularity): Promise<IssueTrend> {
     return api.get<IssueTrend>(`/v1/issues/${id}/trend`, {

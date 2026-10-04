@@ -22,7 +22,7 @@ import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { IssueActivityEntity, IssueEntity } from '../issue/issue.entity'
+import { IssueActivityEntity, IssueEntity, IssueWorkflowEntity } from '../issue/issue.entity'
 import { MappingTableEntity } from '../mapping-table/mapping-table.entity'
 import { McpServerEntity } from '../mcp-server/mcp-server.entity'
 import { McpServiceEntity, McpServiceMemberEntity, McpServiceUsageEntity } from '../mcp-service/mcp-service.entity'
@@ -88,6 +88,7 @@ function getEntities(): EntitySchema<unknown>[] {
         IssueEntity,
         IssueActivityEntity,
         NotificationChannelEntity,
+        IssueWorkflowEntity,
         AlertPolicyEntity,
         AlertRecordEntity,
         PrivacySettingsEntity,

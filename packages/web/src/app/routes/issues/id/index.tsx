@@ -103,11 +103,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             />
             <IssueSeverityBadge severity={issue.severity} />
             <Badge variant="outline">
-              {issue.kind === IssueKind.CONNECTION
-                ? t('Connection issue')
-                : issue.kind === IssueKind.DRIFT
-                ? t('Result mismatch')
-                : t('Step issue')}
+              {issueUiUtils.kindLabel(issue.kind)}
             </Badge>
             {issue.errorCode && (
               <span className="font-mono">{issue.errorCode}</span>
@@ -219,7 +215,10 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             onReplay={() => setReplayOpen(true)}
             onIgnore={() => update({ status: IssueStatus.IGNORED })}
           />
-          {issue.kind !== IssueKind.DRIFT && (
+          {issue.kind === IssueKind.TRIGGER && (
+            <AffectedWorkflowsCard issueId={issue.id} />
+          )}
+          {issue.kind !== IssueKind.DRIFT && issue.kind !== IssueKind.TRIGGER && (
             <>
               <TrendCard issueId={issue.id} />
               <AffectedRunsCard
@@ -237,7 +236,11 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
         </div>
         <div className="flex flex-col gap-4">
           <OverviewCard issue={issue} nameOf={nameOf} />
-          <AlertsCard issueId={issue.id} />
+          <AlertsCard
+            issueId={issue.id}
+            kind={issue.kind}
+            affectedWorkflows={issue.affectedWorkflows}
+          />
         </div>
       </div>
 
@@ -404,10 +407,15 @@ function InsightCard({
               </span>
             </p>
             <p className="text-sm text-muted-foreground">
-              {t('Affects {runs} runs across {workflows} workflows.', {
-                runs: issue.occurrences,
-                workflows: issue.affectedWorkflows,
-              })}
+              {issue.kind === IssueKind.TRIGGER
+                ? t(
+                    '{count, plural, =1 {The trigger of 1 workflow cannot check for new events, so none are picked up until it recovers.} other {The triggers of # workflows cannot check for new events, so none are picked up until it recovers.}}',
+                    { count: issue.affectedWorkflows },
+                  )
+                : t('Affects {runs} runs across {workflows} workflows.', {
+                    runs: issue.occurrences,
+                    workflows: issue.affectedWorkflows,
+                  })}
             </p>
             <div className="rounded-md bg-muted/50 p-3 font-mono text-xs break-words">
               {issueUiUtils.messageText(issue.message)}
@@ -448,6 +456,50 @@ function InsightCard({
             )}
           </>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AffectedWorkflowsCard({ issueId }: { issueId: string }) {
+  const { data: workflows } = issuesHooks.useAffectedWorkflows(issueId);
+  return (
+    <Card data-testid="issue-affected-workflows">
+      <CardHeader>
+        <CardTitle>{t('Affected workflows')}</CardTitle>
+        <CardDescription>
+          {t(
+            'One cause, one problem: every workflow whose trigger fails for this reason is listed here and was alerted once.',
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="flex flex-col divide-y">
+          {(workflows ?? []).map((workflow) => (
+            <li
+              key={workflow.id}
+              className="flex items-center justify-between gap-2 py-2 text-sm"
+            >
+              <Link
+                className="min-w-0 truncate text-primary hover:underline"
+                to={authenticationSession.appendProjectRoutePrefix(
+                  `/workflows/${workflow.id}`,
+                )}
+              >
+                {workflow.displayName}
+              </Link>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                {t('Last failed')}{' '}
+                <FormattedDate date={new Date(workflow.lastSeenAt)} />
+              </span>
+            </li>
+          ))}
+          {(workflows ?? []).length === 0 && (
+            <li className="py-2 text-sm text-muted-foreground">
+              {t('Every affected workflow has recovered.')}
+            </li>
+          )}
+        </ul>
       </CardContent>
     </Card>
   );
@@ -662,11 +714,25 @@ function OverviewCard({
   nameOf: (userId: string | null) => string;
 }) {
   const rows: [string, string][] = [
-    [
-      issue.kind === IssueKind.DRIFT ? t('Records affected') : t('Failures'),
-      String(issue.occurrences),
-    ],
+    ...(issue.kind === IssueKind.TRIGGER
+      ? []
+      : [
+          [
+            issue.kind === IssueKind.DRIFT
+              ? t('Records affected')
+              : t('Failures'),
+            String(issue.occurrences),
+          ] satisfies [string, string],
+        ]),
     [t('Affected workflows'), String(issue.affectedWorkflows)],
+    ...(issue.kind === IssueKind.TRIGGER
+      ? [
+          [
+            t('Connection'),
+            issue.connectionExternalId ?? '—',
+          ] satisfies [string, string],
+        ]
+      : []),
     [t('Workflow'), issue.workflowDisplayName ?? '—'],
     [t('Step'), issue.stepDisplayName ?? '—'],
     [
@@ -693,7 +759,15 @@ function OverviewCard({
   );
 }
 
-function AlertsCard({ issueId }: { issueId: string }) {
+function AlertsCard({
+  issueId,
+  kind,
+  affectedWorkflows,
+}: {
+  issueId: string;
+  kind: IssueKind;
+  affectedWorkflows: number;
+}) {
   const { data: alerts } = issuesHooks.useAlerts(issueId);
   const merged = (alerts ?? [])
     .filter((alert) => FAILURE_ALERT_KINDS.includes(alert.kind))
@@ -703,10 +777,15 @@ function AlertsCard({ issueId }: { issueId: string }) {
       <CardHeader>
         <CardTitle>{t('Alerts')}</CardTitle>
         <CardDescription>
-          {t('{failures} failures → {alerts} alerts', {
-            failures: merged,
-            alerts: alerts?.length ?? 0,
-          })}
+          {kind === IssueKind.TRIGGER
+            ? t('{workflows} workflows → {alerts} alerts', {
+                workflows: affectedWorkflows,
+                alerts: alerts?.length ?? 0,
+              })
+            : t('{failures} failures → {alerts} alerts', {
+                failures: merged,
+                alerts: alerts?.length ?? 0,
+              })}
         </CardDescription>
       </CardHeader>
       <CardContent>

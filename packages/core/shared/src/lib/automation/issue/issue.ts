@@ -12,6 +12,19 @@ export enum IssueKind {
     STEP = 'STEP',
     CONNECTION = 'CONNECTION',
     DRIFT = 'DRIFT',
+    TRIGGER = 'TRIGGER',
+}
+
+export enum IssueTitleCategory {
+    RATE_LIMITED = 'RATE_LIMITED',
+    ACCESS_DENIED = 'ACCESS_DENIED',
+    NOT_FOUND = 'NOT_FOUND',
+    SERVER_ERROR = 'SERVER_ERROR',
+    TIMED_OUT = 'TIMED_OUT',
+    REQUEST_REJECTED = 'REQUEST_REJECTED',
+    MAPPING_MISSING = 'MAPPING_MISSING',
+    TRIGGER_FAILED = 'TRIGGER_FAILED',
+    STEP_FAILED = 'STEP_FAILED',
 }
 
 export enum IssueSeverity {
@@ -29,6 +42,7 @@ export enum IssueActivityType {
     NOTE = 'NOTE',
     ALERT_SENT = 'ALERT_SENT',
     REPLAYED = 'REPLAYED',
+    TRIGGER_RECOVERED = 'TRIGGER_RECOVERED',
 }
 
 export const Issue = z.object({
@@ -61,6 +75,13 @@ export const IssueWithSeverity = Issue.extend({
     affectedWorkflows: z.number(),
 })
 export type IssueWithSeverity = z.infer<typeof IssueWithSeverity>
+
+export const IssueAffectedWorkflow = z.object({
+    id: z.string(),
+    displayName: z.string(),
+    lastSeenAt: z.string(),
+})
+export type IssueAffectedWorkflow = z.infer<typeof IssueAffectedWorkflow>
 
 export const IssueActivityData = z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null(), z.array(z.string())]))
 export type IssueActivityData = z.infer<typeof IssueActivityData>

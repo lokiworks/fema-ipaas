@@ -142,10 +142,7 @@ function UnresolvedIssues() {
                 {issue.projectDisplayName}
               </TableCell>
               <TableCell className="text-sm whitespace-nowrap">
-                {t('{runs} runs · {workflows} workflows', {
-                  runs: issue.occurrences,
-                  workflows: issue.affectedWorkflows,
-                })}
+                {issueUiUtils.impactText(issue)}
               </TableCell>
               <TableCell className="text-sm whitespace-nowrap">
                 <FormattedDate date={new Date(issue.lastSeenAt)} />
@@ -213,12 +210,7 @@ function ProjectChip({
 }
 
 function IssueTitle({ issue }: { issue: IssueOverviewItem }) {
-  const detail =
-    issue.kind === IssueKind.CONNECTION
-      ? t('Connection issue')
-      : [issue.workflowDisplayName, issue.stepDisplayName]
-          .filter(Boolean)
-          .join(' · ');
+  const detail = issueUiUtils.scopeText(issue);
   return (
     <div className="flex min-w-0 items-start gap-2">
       <div className="mt-0.5 shrink-0 text-muted-foreground">

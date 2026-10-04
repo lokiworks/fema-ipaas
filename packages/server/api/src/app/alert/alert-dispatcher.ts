@@ -8,6 +8,8 @@ import {
     IssueActivityType,
     IssueKind,
     IssueStatus,
+    IssueTitleCategory,
+    issueUtils,
     NotificationType,
     QuietHours,
     RunEnvironment,
@@ -42,7 +44,8 @@ export const alertDispatcher = (log: FastifyBaseLogger) => ({
         if (event === IssueRecordEvent.OCCURRED && !counted) {
             return
         }
-        const policies = (await alertPolicyService(log).listEnabled({ tenantId })).filter((policy) => policyCoversIssue({ policy, issue }))
+        const affectedWorkflowIds = await affectedWorkflowIdsOf({ issue, log })
+        const policies = (await alertPolicyService(log).listEnabled({ tenantId })).filter((policy) => policyCoversIssue({ policy, issue, affectedWorkflowIds }))
         for (const policy of policies) {
             const kind = kindFor({ policy, issue, event })
             if (isNil(kind)) {
@@ -80,9 +83,17 @@ function kindFor({ policy, issue, event }: { policy: AlertPolicySchema, issue: I
     }
 }
 
-function policyCoversIssue({ policy, issue }: { policy: AlertPolicySchema, issue: Issue }): boolean {
+async function affectedWorkflowIdsOf({ issue, log }: { issue: Issue, log: FastifyBaseLogger }): Promise<string[]> {
+    if (issue.kind !== IssueKind.TRIGGER || !isNil(issue.workflowId)) {
+        return isNil(issue.workflowId) ? [] : [issue.workflowId]
+    }
+    const affected = await issueService(log).affectedWorkflows({ id: issue.id, projectId: issue.projectId })
+    return affected.map((workflow) => workflow.id)
+}
+
+function policyCoversIssue({ policy, issue, affectedWorkflowIds }: { policy: AlertPolicySchema, issue: Issue, affectedWorkflowIds: string[] }): boolean {
     const projectMatches = policy.projectIds.length === 0 || policy.projectIds.includes(issue.projectId)
-    const workflowMatches = policy.workflowIds.length === 0 || (!isNil(issue.workflowId) && policy.workflowIds.includes(issue.workflowId))
+    const workflowMatches = policy.workflowIds.length === 0 || affectedWorkflowIds.some((workflowId) => policy.workflowIds.includes(workflowId))
     return projectMatches && workflowMatches
 }
 
@@ -340,8 +351,16 @@ function summarize({ kind, issue, policy }: { kind: AlertRecordKind, issue: Issu
     if (isNil(issue)) {
         return policy.name
     }
-    const subject = issue.kind === IssueKind.CONNECTION ? `连接 ${issue.connectionExternalId ?? ''} 认证失败` : issue.title
+    const subject = issue.kind === IssueKind.CONNECTION ? `连接 ${issue.connectionExternalId ?? ''} 认证失败` : chineseTitleOf({ issue })
     return kind === AlertRecordKind.ESCALATED ? `${subject}（${policy.escalation.afterMinutes} 分钟无人处理）` : subject
+}
+
+function chineseTitleOf({ issue }: { issue: Issue }): string {
+    const parsed = issueUtils.titleCategoryOfTitle({ title: issue.title })
+    if (isNil(parsed)) {
+        return issue.title
+    }
+    return parsed.object.length === 0 ? TITLE_CATEGORY_LABELS[parsed.category] : `${TITLE_CATEGORY_LABELS[parsed.category]}：${parsed.object}`
 }
 
 function isMuted(issue: Pick<Issue, 'mutedUntil'>): boolean {
@@ -400,6 +419,18 @@ const KIND_LABELS: Record<AlertRecordKind, string> = {
     [AlertRecordKind.ESCALATED]: '已升级',
     [AlertRecordKind.STILL_FAILING]: '仍在失败',
     [AlertRecordKind.CAPACITY]: '容量告警',
+}
+
+const TITLE_CATEGORY_LABELS: Record<IssueTitleCategory, string> = {
+    [IssueTitleCategory.RATE_LIMITED]: '对方系统限流',
+    [IssueTitleCategory.ACCESS_DENIED]: '访问被拒绝',
+    [IssueTitleCategory.NOT_FOUND]: '找不到对象',
+    [IssueTitleCategory.SERVER_ERROR]: '对方服务出错',
+    [IssueTitleCategory.TIMED_OUT]: '超时',
+    [IssueTitleCategory.REQUEST_REJECTED]: '对方系统拒绝了请求',
+    [IssueTitleCategory.MAPPING_MISSING]: '映射表缺少对应值',
+    [IssueTitleCategory.TRIGGER_FAILED]: '触发器检查失败',
+    [IssueTitleCategory.STEP_FAILED]: '步骤失败',
 }
 
 type OnIssueRecordedParams = {

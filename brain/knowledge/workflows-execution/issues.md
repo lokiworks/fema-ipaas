@@ -9,7 +9,7 @@ icon: 🩺
 问题中心是「出事了」的唯一入口（2026-09-27 定）：运行日志是原始记录，从问题下钻；告警策略是问题中心的设置，不是独立的安全配置；首发不做「告警触发器」工作流。
 
 **问题（Issue）** —— 同一签名的失败集合，项目级。_Avoid_：「报错」「事件」
-**签名** —— 聚合键：连接错误是 `conn:<连接外部 ID>`（多个工作流共用一个问题），其余是 `<工作流 ID>:<步骤名>:<错误码>`，错误码取 `STEP_TIMEOUT` / `HTTP_<状态码>` / `STEP_FAILED`。
+**签名** —— 聚合键：连接错误是 `conn:<连接外部 ID>`（多个工作流共用一个问题），触发器失败有连接时是 `trigger:<连接外部 ID>:<错误码>`（同样多个工作流共用），其余是 `<工作流 ID>:<步骤名>:<错误码>`，错误码取 `STEP_TIMEOUT` / `HTTP_<状态码>` / `STEP_FAILED`。
 **重放** —— 从失败步骤重跑原运行（`FROM_FAILED_STEP`），复用同一条运行记录，所以问题下的运行会显示重放后的结果。
 **问题中心页** —— 全局侧栏「问题」，路由 `/issue-center`（`/issues` 已被「跳到当前项目的问题页」占用）。「未处理的问题」跨项目列出最近 50 条，按项目筛选，点进项目内的问题详情；「告警设置」只对租户管理员显示，旧地址 `/tenant/alerts` 重定向到这里。
 **问题概览** —— `GET /v1/issues/overview`，租户级，项目范围由服务端按 `projectAccess.projectsWithPermission(READ_ISSUE)` 推导，返回各项目未处理数量和最近 50 条未处理问题（不含静音的）。问题中心页和首页的「未处理的问题」卡片共用它。
@@ -39,7 +39,9 @@ icon: 🩺
 - **问题概览 `GET /v1/issues/overview?projectId=` 只收窄 `latest`，各项目的数量不变**；问题中心选中某个项目时，最近 50 条是这个项目自己的。
 - **问题详情的「谁能修」（`IssueInsight.owner`）由规则表归类，不显示置信度。** 缺映射值（消息含「不在映射表「…」里」）归映射表负责人并给出「打开映射表」；401/403 归对方系统的管理员；429、5xx、限流受阻归「暂时不需要人处理」；其余归工作流负责人。归类在 `issueUtils.insightOf`，新增原因时要同时补 `IssueFixOwner`、前端 `issueUiUtils.ownerLabel` 和中英文翻译。
 - **重放弹窗在确认前写明版本和写步骤。** `ReplayCheckItem` 带 `workflowVersionId`、`versionNumber`、`failedStepName`，前端 `RerunPreview` 按（版本，失败步骤）分组，取该版本的触发器树，用连接器动作分类（WRITE、DESTRUCTIVE）列出「会再次调用并写入」和「沿用原结果、不再调用」（失败步骤及之后的写步骤会调用，之前的沿用）；整体重跑要勾选「会写入数据的步骤会被再次调用，可能产生重复数据」才能确认。分支是否真的执行取决于运行时，界面已注明。运行日志的批量重跑弹窗用同一个组件。
-- **同一原因跨工作流不一定合并成一个问题。** 北森限流这类触发器失败按 `<工作流>:trigger:HTTP_429` 签名，三个工作流各开一个问题、各告警一次；连接错误才按连接合并。已记为缺口。
+- **触发器失败同因合并成一个问题（`IssueKind.TRIGGER`）。** 轮询触发器失败时，`issueUtils.classifyTriggerFailure` 取触发器输入里引用的连接（`connectionExternalIdOf` 扫 `{{connections['…']}}`），有连接时签名是 `trigger:<连接外部 ID>:<错误码>`，同一连接同一错误类别的所有工作流共用这个问题，只在第一次出现时告警；没有连接的触发器仍按 `<工作流>:<触发器>:<错误码>` 一个工作流一个问题。授权过期类仍走 `conn:<连接>`。受影响的工作流记在 `issue_workflow` 表（问题、工作流、最近失败时间，唯一键 `issueId + workflowId`），`GET /v1/issues/:id/workflows` 返回名字和最近失败时间，问题详情页的「受影响的工作流」卡片列出并可点进去；按工作流筛选问题时合并问题也算进去。不同原因互不混淆：同一个工作流换了错误类别（限流变成 500），它会从旧问题里摘出来加入新问题，旧问题没有工作流了就自动已解决（`reason: CAUSE_CHANGED`）。
+- **合并的触发器问题在其中一个工作流修好后不会被解决。** 工作流的触发器下一次轮询成功（`resolveTriggerFailures`），只把它从 `issue_workflow` 摘掉，问题仍是未处理，活动记录加一条 `TRIGGER_RECOVERED`（写明哪个工作流恢复、还剩几个受影响）；最后一个也恢复才自动已解决（`reason: TRIGGER_RECOVERED`）；已忽略的问题不会被改状态；工作流被删除时同样摘掉（`WORKFLOW_DELETED`）。触发器问题没有运行，所以没有「受影响的运行」和趋势图，修复动作里没有重放；合并问题（`connectionExternalId` 非空）也不给「打开节点」，只留重新授权（401/403）和忽略。告警策略限定了工作流时，合并问题按受影响的工作流匹配。
+- **问题标题是「原因归类：关键对象」，原始报错只放在详情里。** 归类由 `issueUtils.titleCategoryOf` 按错误码和消息定（限流、访问被拒绝、找不到、服务出错、超时、请求被拒绝、映射表缺值、触发器检查失败、步骤失败），对象是步骤名（映射表缺值时是映射表名，合并的触发器问题是连接显示名，单个工作流的触发器问题是工作流名）。库里存英文（告警和 API 用），页面由 `issueUiUtils.issueTitle` 按 `ISSUE_TITLE_CATEGORY_ENGLISH` 反查归类再翻译；认不出归类的旧标题走 `failureText.localize`。改归类要同时补 shared 的英文表、`IssueTitleCategory`、前端 `titleCategoryLabel` 和中英文翻译。
 
 ## Key files
 - `packages/server/api/src/app/issue/` — `issueService.recordFailure`、`issueReplayService`

@@ -176,14 +176,7 @@ function IssuesPage() {
                   {issueUiUtils.issueTitle(row.original)}
                 </span>
                 <span className="text-xs text-muted-foreground truncate">
-                  {row.original.kind === IssueKind.CONNECTION
-                    ? t('Connection issue')
-                    : [
-                        row.original.workflowDisplayName,
-                        row.original.stepDisplayName,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
+                  {issueUiUtils.scopeText(row.original)}
                   {row.original.errorCode ? ` · ${row.original.errorCode}` : ''}
                 </span>
               </div>
@@ -198,10 +191,7 @@ function IssuesPage() {
           ),
           cell: ({ row }) => (
             <div className="text-sm">
-              {t('{runs} runs · {workflows} workflows', {
-                runs: row.original.occurrences,
-                workflows: row.original.affectedWorkflows,
-              })}
+              {issueUiUtils.impactText(row.original)}
             </div>
           ),
         },

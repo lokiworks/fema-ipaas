@@ -74,7 +74,7 @@ export const issueSideEffects = (log: FastifyBaseLogger) => ({
     },
 
     async onTriggerRecovered({ projectId, workflowVersion }: OnTriggerRecoveredParams): Promise<void> {
-        const { error } = await tryCatch(() => issueService(log).resolveTriggerFailures({ projectId, workflowId: workflowVersion.workflowId, triggerName: workflowVersion.trigger.name }))
+        const { error } = await tryCatch(() => issueService(log).resolveTriggerFailures({ projectId, workflowId: workflowVersion.workflowId, triggerName: workflowVersion.trigger.name, workflowName: workflowVersion.displayName }))
         if (!isNil(error)) {
             log.error({ error, workflow: { id: workflowVersion.workflowId } }, '[issueSideEffects#onTriggerRecovered] Failed to resolve trigger issues')
         }

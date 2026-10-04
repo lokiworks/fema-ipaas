@@ -8,6 +8,7 @@ import {
     IssueActivity,
     IssueActivityData,
     IssueActivityType,
+    IssueAffectedWorkflow,
     IssueKind,
     IssueListView,
     IssueOverview,
@@ -32,15 +33,17 @@ import { repoFactory } from '../core/db/repo-factory'
 import { databaseConnection } from '../database/database-connection'
 import { distributedLock } from '../database/redis-connections'
 import { likePatternUtils } from '../helper/like-pattern'
+import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { projectAccess } from '../project/project-access'
 import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { issueAssignmentSideEffects } from './issue-assignment-side-effects'
-import { IssueActivityEntity, IssueEntity } from './issue.entity'
+import { IssueActivityEntity, IssueEntity, IssueWorkflowEntity } from './issue.entity'
 
 export const issueRepo = repoFactory(IssueEntity)
 export const issueActivityRepo = repoFactory(IssueActivityEntity)
+export const issueWorkflowRepo = repoFactory(IssueWorkflowEntity)
 
 export const issueService = (log: FastifyBaseLogger) => ({
     async recordFailure({ execution, workflowVersion }: RecordFailureParams): Promise<RecordFailureResult | null> {
@@ -85,19 +88,22 @@ export const issueService = (log: FastifyBaseLogger) => ({
 
     async recordTriggerFailure({ projectId, workflowVersion, message }: RecordTriggerFailureParams): Promise<RecordFailureResult> {
         const failedStep: FailedStep = { name: workflowVersion.trigger.name, displayName: workflowVersion.trigger.displayName, message }
-        const classification = issueUtils.classifyFailure({
+        const connectionExternalId = issueUtils.connectionExternalIdOf({ input: workflowVersion.trigger.settings?.input })
+        const classification = issueUtils.classifyTriggerFailure({
             workflowId: workflowVersion.workflowId,
-            executionStatus: ExecutionStatus.FAILED,
-            failedStep,
+            triggerName: workflowVersion.trigger.name,
+            message,
+            connectionExternalId,
         })
         const now = dayjsUtil().toISOString()
-        return distributedLock(log).runExclusive({
+        const outcome = await distributedLock(log).runExclusive({
             key: `issue:${projectId}:${classification.signature}`,
             timeoutInSeconds: 15,
             fn: async (): Promise<RecordFailureResult> => {
                 const existing = await issueRepo().findOneBy({ projectId, signature: classification.signature })
                 if (isNil(existing)) {
                     const created = await insertIssue({ projectId, workflowId: workflowVersion.workflowId, failedStep, workflowVersion, classification, now })
+                    await attachWorkflow({ issueId: created.id, projectId, workflowId: workflowVersion.workflowId, now })
                     await recordActivity({ issue: created, type: IssueActivityType.FIRST_SEEN, actorId: null, data: {} })
                     return { issue: created, event: IssueRecordEvent.NEW, counted: true }
                 }
@@ -109,12 +115,15 @@ export const issueService = (log: FastifyBaseLogger) => ({
                     ...(reopening ? { status: IssueStatus.OPEN, reopened: true, resolvedAt: null, resolvedById: null } : {}),
                 })
                 const updated = await getOneOrThrow({ id: existing.id, projectId })
+                await attachWorkflow({ issueId: updated.id, projectId, workflowId: workflowVersion.workflowId, now })
                 if (reopening) {
                     await recordActivity({ issue: updated, type: IssueActivityType.REOPENED, actorId: null, data: {} })
                 }
                 return { issue: updated, event: reopening ? IssueRecordEvent.REOPENED : IssueRecordEvent.OCCURRED, counted: reopening }
             },
         })
+        await leaveOtherTriggerIssues({ keepIssueId: outcome.issue.id, projectId, workflowId: workflowVersion.workflowId, workflowName: workflowVersion.displayName, log })
+        return outcome
     },
 
     async resolveIfRecovered({ execution }: { execution: Execution }): Promise<boolean> {
@@ -216,9 +225,13 @@ export const issueService = (log: FastifyBaseLogger) => ({
         return open.id
     },
 
-    async resolveTriggerFailures({ projectId, workflowId, triggerName }: ResolveTriggerFailuresParams): Promise<void> {
+    async resolveTriggerFailures({ projectId, workflowId, triggerName, workflowName }: ResolveTriggerFailuresParams): Promise<void> {
+        const attached = await issueWorkflowRepo().find({ where: { projectId, workflowId }, select: ['issueId'] })
+        for (const { issueId } of attached) {
+            await detachWorkflow({ issueId, projectId, workflowId, workflowName, reason: TRIGGER_RECOVERED_REASON, log })
+        }
         const stale = await issueRepo().find({
-            where: { projectId, workflowId, stepName: triggerName, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
+            where: { projectId, workflowId, stepName: triggerName, kind: IssueKind.STEP, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
             select: ['id', 'status'],
         })
         if (stale.length === 0) {
@@ -395,6 +408,10 @@ export const issueService = (log: FastifyBaseLogger) => ({
     },
 
     async onWorkflowDeleted({ workflowId, projectId }: { workflowId: string, projectId: ProjectId }): Promise<void> {
+        const attached = await issueWorkflowRepo().find({ where: { projectId, workflowId }, select: ['issueId'] })
+        for (const { issueId } of attached) {
+            await detachWorkflow({ issueId, projectId, workflowId, workflowName: null, reason: WORKFLOW_DELETED_REASON, log })
+        }
         const stale = await issueRepo().find({
             where: { workflowId, projectId, status: In([IssueStatus.OPEN, IssueStatus.INVESTIGATING]) },
             select: ['id', 'status'],
@@ -418,29 +435,48 @@ export const issueService = (log: FastifyBaseLogger) => ({
         })))
     },
 
-    async affectedWorkflowIds({ id, projectId }: IssueRef): Promise<string[]> {
-        const rows = await executionRepo().createQueryBuilder('execution')
-            .select('DISTINCT execution."workflowId"', 'workflowId')
-            .where('execution."issueId" = :id', { id })
-            .andWhere('execution."projectId" = :projectId', { projectId })
-            .getRawMany<{ workflowId: string }>()
-        return rows.map((row) => row.workflowId)
+    async affectedWorkflows({ id, projectId }: IssueRef): Promise<IssueAffectedWorkflow[]> {
+        const issue = await getOneOrThrow({ id, projectId })
+        const rows: AffectedWorkflowRow[] = issue.kind === IssueKind.TRIGGER
+            ? await issueWorkflowRepo().createQueryBuilder('affected')
+                .select('affected."workflowId"', 'workflowId')
+                .addSelect('affected."lastSeenAt"', 'lastSeenAt')
+                .where('affected."issueId" = :id', { id })
+                .andWhere('affected."projectId" = :projectId', { projectId })
+                .getRawMany<AffectedWorkflowRow>()
+            : await executionRepo().createQueryBuilder('execution')
+                .select('execution."workflowId"', 'workflowId')
+                .addSelect('MAX(execution.created)', 'lastSeenAt')
+                .where('execution."issueId" = :id', { id })
+                .andWhere('execution."projectId" = :projectId', { projectId })
+                .groupBy('execution."workflowId"')
+                .getRawMany<AffectedWorkflowRow>()
+        if (rows.length === 0) {
+            return []
+        }
+        const versions = await workflowVersionService(log).getLatestVersionsByWorkflowIds(rows.map((row) => row.workflowId), projectId)
+        return rows.map((row) => ({
+            id: row.workflowId,
+            displayName: versions.get(row.workflowId)?.displayName ?? row.workflowId,
+            lastSeenAt: new Date(row.lastSeenAt).toISOString(),
+        }))
     },
 })
 
 async function insertIssue({ projectId, workflowId, failedStep, workflowVersion, classification, now }: InsertIssueParams): Promise<Issue> {
     const id = generateId()
+    const sharedAcrossWorkflows = classification.kind === IssueKind.CONNECTION || (classification.kind === IssueKind.TRIGGER && !isNil(classification.connectionExternalId))
     await issueRepo().insert({
         id,
         projectId,
         kind: classification.kind,
         signature: classification.signature,
-        workflowId: classification.kind === IssueKind.CONNECTION ? null : workflowId,
-        stepName: classification.kind === IssueKind.CONNECTION ? null : failedStep?.name ?? null,
-        stepDisplayName: classification.kind === IssueKind.CONNECTION ? null : failedStep?.displayName ?? null,
+        workflowId: sharedAcrossWorkflows ? null : workflowId,
+        stepName: sharedAcrossWorkflows ? null : failedStep?.name ?? null,
+        stepDisplayName: sharedAcrossWorkflows ? null : failedStep?.displayName ?? null,
         connectionExternalId: classification.connectionExternalId,
         errorCode: classification.errorCode,
-        title: titleFor({ classification, workflowVersion, stepDisplayName: failedStep?.displayName ?? '' }),
+        title: await titleFor({ classification, projectId, workflowVersion, stepDisplayName: failedStep?.displayName ?? '' }),
         message: classification.message,
         status: IssueStatus.OPEN,
         reopened: false,
@@ -455,16 +491,81 @@ async function insertIssue({ projectId, workflowId, failedStep, workflowVersion,
     return getOneOrThrow({ id, projectId })
 }
 
-function titleFor({ classification, workflowVersion, stepDisplayName }: TitleForParams): string {
+async function titleFor({ classification, projectId, workflowVersion, stepDisplayName }: TitleForParams): Promise<string> {
     if (classification.kind === IssueKind.DRIFT) {
         return `${isNil(workflowVersion) ? '' : `${workflowVersion.displayName} · `}${stepDisplayName}: the connected system does not match the run`.slice(0, MAX_TITLE_LENGTH)
     }
     if (classification.kind === IssueKind.CONNECTION) {
         return classification.connectionExternalId ?? classification.errorCode
     }
-    const firstLine = classification.message.split('\n')[0].slice(0, MAX_TITLE_LENGTH)
-    const prefix = isNil(workflowVersion) ? stepDisplayName : `${workflowVersion.displayName} · ${stepDisplayName}`
-    return firstLine.length > 0 ? `${prefix}: ${firstLine}` : prefix
+    const title = issueUtils.titleOf({
+        kind: classification.kind,
+        errorCode: classification.errorCode,
+        message: classification.message,
+        object: await titleObjectOf({ classification, projectId, workflowVersion, stepDisplayName }),
+    })
+    return title.slice(0, MAX_TITLE_LENGTH)
+}
+
+async function titleObjectOf({ classification, projectId, workflowVersion, stepDisplayName }: TitleForParams): Promise<string> {
+    if (classification.kind === IssueKind.TRIGGER && !isNil(classification.connectionExternalId)) {
+        return connectionDisplayName({ externalId: classification.connectionExternalId, projectId })
+    }
+    if (classification.kind === IssueKind.TRIGGER) {
+        return workflowVersion?.displayName ?? stepDisplayName
+    }
+    const mappingTable = MAPPING_TABLE_PATTERN.exec(classification.message)?.[1]
+    return isNil(mappingTable) ? stepDisplayName : `「${mappingTable}」`
+}
+
+async function connectionDisplayName({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<string> {
+    const candidates = await connectionsRepo().find({ where: { externalId }, select: ['id', 'displayName', 'projectIds'] })
+    return candidates.find((candidate) => candidate.projectIds.includes(projectId))?.displayName ?? externalId
+}
+
+async function attachWorkflow({ issueId, projectId, workflowId, now }: AttachWorkflowParams): Promise<void> {
+    const existing = await issueWorkflowRepo().findOneBy({ issueId, workflowId, projectId })
+    if (isNil(existing)) {
+        await issueWorkflowRepo().insert({ id: generateId(), issueId, workflowId, projectId, lastSeenAt: now })
+        return
+    }
+    await issueWorkflowRepo().update({ id: existing.id, projectId }, { lastSeenAt: now })
+}
+
+async function leaveOtherTriggerIssues({ keepIssueId, projectId, workflowId, workflowName, log }: LeaveOtherTriggerIssuesParams): Promise<void> {
+    const attached = await issueWorkflowRepo().find({ where: { projectId, workflowId }, select: ['issueId'] })
+    for (const { issueId } of attached.filter((row) => row.issueId !== keepIssueId)) {
+        await detachWorkflow({ issueId, projectId, workflowId, workflowName, reason: CAUSE_CHANGED_REASON, log })
+    }
+}
+
+async function detachWorkflow({ issueId, projectId, workflowId, workflowName, reason, log }: DetachWorkflowParams): Promise<void> {
+    const issue = await issueRepo().findOneBy({ id: issueId, projectId })
+    if (isNil(issue)) {
+        return
+    }
+    await distributedLock(log).runExclusive({
+        key: `issue:${projectId}:${issue.signature}`,
+        timeoutInSeconds: 15,
+        fn: async (): Promise<void> => {
+            const attached = await issueWorkflowRepo().existsBy({ issueId, workflowId, projectId })
+            if (!attached) {
+                return
+            }
+            await issueWorkflowRepo().delete({ issueId, workflowId, projectId })
+            const current = await issueRepo().findOneBy({ id: issueId, projectId })
+            if (isNil(current) || (current.status !== IssueStatus.OPEN && current.status !== IssueStatus.INVESTIGATING)) {
+                return
+            }
+            const remaining = await issueWorkflowRepo().countBy({ issueId, projectId })
+            if (remaining > 0) {
+                await recordActivity({ issue: current, type: IssueActivityType.TRIGGER_RECOVERED, actorId: null, data: { workflowId, workflowName, remaining, reason } })
+                return
+            }
+            await issueRepo().update({ id: issueId, projectId }, { status: IssueStatus.RESOLVED, resolvedAt: dayjsUtil().toISOString(), resolvedById: null, reopened: false })
+            await recordActivity({ issue: current, type: IssueActivityType.STATUS_CHANGED, actorId: null, data: { from: current.status, to: IssueStatus.RESOLVED, reason } })
+        },
+    })
 }
 
 async function applyUpdate({ issue, request, actorId, log }: ApplyUpdateParams): Promise<void> {
@@ -529,7 +630,7 @@ async function getOneOrThrow({ id, projectId }: IssueRef): Promise<Issue> {
 async function withSeverity({ issues, projectId, log }: WithSeverityParams): Promise<IssueWithSeverity[]> {
     const workflowIds = [...new Set(issues.map((issue) => issue.workflowId).filter((id): id is string => !isNil(id)))]
     const versions = workflowIds.length === 0 ? new Map<string, WorkflowVersion>() : await workflowVersionService(log).getLatestVersionsByWorkflowIds(workflowIds, projectId)
-    const affected = await countAffectedWorkflows(issues.map((issue) => issue.id))
+    const affected = await countAffectedWorkflows(issues)
     return issues.map((issue) => ({
         ...issue,
         severity: issueUtils.severityOf(issue),
@@ -556,17 +657,25 @@ function overviewProject({ project, issues }: { project: { id: string, displayNa
     }
 }
 
-async function countAffectedWorkflows(issueIds: string[]): Promise<Map<string, number>> {
-    if (issueIds.length === 0) {
+async function countAffectedWorkflows(issues: Issue[]): Promise<Map<string, number>> {
+    if (issues.length === 0) {
         return new Map()
     }
-    const rows = await executionRepo().createQueryBuilder('execution')
+    const triggerIds = issues.filter((issue) => issue.kind === IssueKind.TRIGGER).map((issue) => issue.id)
+    const otherIds = issues.filter((issue) => issue.kind !== IssueKind.TRIGGER).map((issue) => issue.id)
+    const executionRows = otherIds.length === 0 ? [] : await executionRepo().createQueryBuilder('execution')
         .select('execution."issueId"', 'issueId')
         .addSelect('COUNT(DISTINCT execution."workflowId")', 'count')
-        .where({ issueId: In(issueIds) })
+        .where({ issueId: In(otherIds) })
         .groupBy('execution."issueId"')
         .getRawMany<{ issueId: string, count: string }>()
-    return new Map(rows.map((row) => [row.issueId, Number(row.count)]))
+    const triggerRows = triggerIds.length === 0 ? [] : await issueWorkflowRepo().createQueryBuilder('affected')
+        .select('affected."issueId"', 'issueId')
+        .addSelect('COUNT(*)', 'count')
+        .where({ issueId: In(triggerIds) })
+        .groupBy('affected."issueId"')
+        .getRawMany<{ issueId: string, count: string }>()
+    return new Map([...executionRows, ...triggerRows].map((row) => [row.issueId, Number(row.count)]))
 }
 
 function applyListFilters({ builder, query, currentUserId }: ApplyListFiltersParams): SelectQueryBuilder<Issue> {
@@ -575,7 +684,10 @@ function applyListFilters({ builder, query, currentUserId }: ApplyListFiltersPar
     const withView = applyView({ builder, view: query.view ?? IssueListView.UNRESOLVED, now, todayStart })
     const withSeverityFilter = isNil(query.severity) ? withView : applySeverityFilter({ builder: withView, severity: query.severity })
     const withAssignee = isNil(query.assignee) ? withSeverityFilter : applyAssigneeFilter({ builder: withSeverityFilter, assignee: query.assignee, currentUserId })
-    const withWorkflow = isNil(query.workflowId) ? withAssignee : withAssignee.andWhere('issue."workflowId" = :workflowId', { workflowId: query.workflowId })
+    const withWorkflow = isNil(query.workflowId) ? withAssignee : withAssignee.andWhere(new Brackets((qb) => {
+        qb.where('issue."workflowId" = :workflowId', { workflowId: query.workflowId })
+            .orWhere('EXISTS (SELECT 1 FROM issue_workflow affected WHERE affected."issueId" = issue.id AND affected."workflowId" = :workflowId)', { workflowId: query.workflowId })
+    }))
     if (isNil(query.search) || query.search.trim().length === 0) {
         return withWorkflow
     }
@@ -692,6 +804,36 @@ type ResolveTriggerFailuresParams = {
     projectId: ProjectId
     workflowId: string
     triggerName: string
+    workflowName: string
+}
+
+type AffectedWorkflowRow = {
+    workflowId: string
+    lastSeenAt: string | Date
+}
+
+type AttachWorkflowParams = {
+    issueId: string
+    projectId: ProjectId
+    workflowId: string
+    now: string
+}
+
+type LeaveOtherTriggerIssuesParams = {
+    keepIssueId: string
+    projectId: ProjectId
+    workflowId: string
+    workflowName: string
+    log: FastifyBaseLogger
+}
+
+type DetachWorkflowParams = {
+    issueId: string
+    projectId: ProjectId
+    workflowId: string
+    workflowName: string | null
+    reason: string
+    log: FastifyBaseLogger
 }
 
 type RecordFailureParams = {
@@ -710,6 +852,7 @@ type InsertIssueParams = {
 
 type TitleForParams = {
     classification: ReturnType<typeof issueUtils.classifyFailure>
+    projectId: ProjectId
     workflowVersion: WorkflowVersion | null
     stepDisplayName: string
 }
@@ -731,6 +874,10 @@ type OverviewParams = {
 }
 
 const AUTO_RESOLVED_REASON = 'REPLAY_SUCCEEDED'
+const TRIGGER_RECOVERED_REASON = 'TRIGGER_RECOVERED'
+const CAUSE_CHANGED_REASON = 'CAUSE_CHANGED'
+const WORKFLOW_DELETED_REASON = 'WORKFLOW_DELETED'
+const MAPPING_TABLE_PATTERN = /不在映射表「([^」]*)」里/
 
 const UNRECOVERED_ROOTS_SQL = `SELECT COUNT(*)::int AS count
     FROM execution failed

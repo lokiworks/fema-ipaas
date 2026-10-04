@@ -1,11 +1,16 @@
 import { blockedUntilMarker, isNil } from '@fema-ipaas/core-utils'
 import { errorHandlingUtils, ExecutionStatus, FailedStep } from '@fema-ipaas/workflow-core'
-import { Issue, IssueKind, IssueSeverity } from './issue'
+import { Issue, IssueKind, IssueSeverity, IssueTitleCategory } from './issue'
 import { IssueFix, IssueFixKind, IssueFixOwner, IssueInsight, IssueInsightCause, ReplayReason } from './issue-requests'
 
 export const issueUtils = {
     classifyFailure,
+    classifyTriggerFailure,
     classifyDrift,
+    connectionExternalIdOf,
+    titleCategoryOf,
+    titleOf,
+    titleCategoryOfTitle,
     severityOf,
     insightOf,
     isTransientHttpStatus,
@@ -40,6 +45,71 @@ function classifyFailure({ workflowId, executionStatus, failedStep }: ClassifyFa
     }
 }
 
+function classifyTriggerFailure({ workflowId, triggerName, message, connectionExternalId }: ClassifyTriggerFailureParams): FailureClassification {
+    const base = classifyFailure({ workflowId, executionStatus: ExecutionStatus.FAILED, failedStep: { name: triggerName, displayName: triggerName, message } })
+    if (base.kind === IssueKind.CONNECTION) {
+        return base
+    }
+    const shared = !isNil(connectionExternalId)
+    return {
+        kind: IssueKind.TRIGGER,
+        signature: shared ? `${TRIGGER_SIGNATURE_PREFIX}${connectionExternalId}:${base.errorCode}` : base.signature,
+        errorCode: base.errorCode,
+        connectionExternalId: connectionExternalId ?? null,
+        httpStatus: base.httpStatus,
+        message: base.message,
+    }
+}
+
+function connectionExternalIdOf({ input }: { input: unknown }): string | null {
+    if (typeof input === 'string') {
+        return CONNECTION_REFERENCE_PATTERN.exec(input)?.[1] ?? null
+    }
+    if (Array.isArray(input)) {
+        return input.map((item) => connectionExternalIdOf({ input: item })).find((id) => !isNil(id)) ?? null
+    }
+    if (typeof input === 'object' && input !== null) {
+        return Object.values(input).map((value) => connectionExternalIdOf({ input: value })).find((id) => !isNil(id)) ?? null
+    }
+    return null
+}
+
+function titleCategoryOf({ kind, errorCode, message }: TitleCategoryOfParams): IssueTitleCategory {
+    if (isMappingMiss({ message })) {
+        return IssueTitleCategory.MAPPING_MISSING
+    }
+    const status = httpStatusOf(errorCode)
+    if (!isNil(blockedUntilMarker.parse(message)) || status === 429 || status === 529) {
+        return IssueTitleCategory.RATE_LIMITED
+    }
+    if (errorCode === STEP_TIMEOUT_CODE || status === 504) {
+        return IssueTitleCategory.TIMED_OUT
+    }
+    if (isNil(status)) {
+        return kind === IssueKind.TRIGGER ? IssueTitleCategory.TRIGGER_FAILED : IssueTitleCategory.STEP_FAILED
+    }
+    if (AUTHORIZATION_HTTP_STATUSES.includes(status)) {
+        return IssueTitleCategory.ACCESS_DENIED
+    }
+    if (status === 404) {
+        return IssueTitleCategory.NOT_FOUND
+    }
+    return status >= SERVER_ERROR_MIN_STATUS ? IssueTitleCategory.SERVER_ERROR : IssueTitleCategory.REQUEST_REJECTED
+}
+
+function titleOf({ kind, errorCode, message, object }: TitleCategoryOfParams & { object: string }): string {
+    const category = ISSUE_TITLE_CATEGORY_ENGLISH[titleCategoryOf({ kind, errorCode, message })]
+    return object.length === 0 ? category : `${category}: ${object}`
+}
+
+function titleCategoryOfTitle({ title }: { title: string }): { category: IssueTitleCategory, object: string } | null {
+    const match = Object.values(IssueTitleCategory).find((category) => title === ISSUE_TITLE_CATEGORY_ENGLISH[category] || title.startsWith(`${ISSUE_TITLE_CATEGORY_ENGLISH[category]}: `))
+    if (isNil(match)) {
+        return null
+    }
+    return { category: match, object: title.slice(ISSUE_TITLE_CATEGORY_ENGLISH[match].length).replace(/^: /, '') }
+}
+
 function classifyDrift({ workflowId, stepName, message }: { workflowId: string, stepName: string, message: string }): FailureClassification {
     return {
         kind: IssueKind.DRIFT,
@@ -62,6 +132,9 @@ function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
 }
 
 function insightOf({ issue, connectionHealthy, connectionMissing = false, now = new Date() }: InsightOfParams): IssueInsight {
+    if (issue.kind === IssueKind.TRIGGER) {
+        return triggerInsightOf({ issue, connectionHealthy, connectionMissing, now })
+    }
     if (issue.kind === IssueKind.DRIFT) {
         return {
             cause: IssueInsightCause.RESULT_MISMATCH,
@@ -177,6 +250,15 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     }
 }
 
+function triggerInsightOf({ issue, connectionHealthy, connectionMissing, now }: InsightOfParams): IssueInsight {
+    const insight = insightOf({ issue: { ...issue, kind: IssueKind.STEP }, connectionHealthy, connectionMissing, now })
+    const sharedAcrossWorkflows = !isNil(issue.connectionExternalId)
+    const supported = insight.fixes.filter((item) => !TRIGGER_UNSUPPORTED_FIXES.includes(item.kind) && !(sharedAcrossWorkflows && WORKFLOW_FIXES.includes(item.kind)))
+    const reauthorize = insight.cause === IssueInsightCause.ACCESS_DENIED && sharedAcrossWorkflows ? [fix({ kind: IssueFixKind.REAUTHORIZE_CONNECTION })] : []
+    const fixes = [...reauthorize, ...supported]
+    return { ...insight, fixes: fixes.some((item) => item.kind === IssueFixKind.IGNORE) ? fixes : [...fixes, fix({ kind: IssueFixKind.IGNORE })] }
+}
+
 function isMappingMiss({ message }: { message: string | null | undefined }): boolean {
     return !isNil(message) && MAPPING_MISS_PATTERN.test(message)
 }
@@ -220,6 +302,10 @@ function fix({ kind, disabledReason }: { kind: IssueFixKind, disabledReason?: Re
     return { kind, disabledReason: disabledReason ?? null }
 }
 
+const TRIGGER_SIGNATURE_PREFIX = 'trigger:'
+const TRIGGER_UNSUPPORTED_FIXES = [IssueFixKind.REPLAY_FROM_FAILED_STEP, IssueFixKind.REPLAY_FULL, IssueFixKind.OPEN_MAPPING_TABLES, IssueFixKind.OPEN_RUN]
+const WORKFLOW_FIXES = [IssueFixKind.OPEN_STEP_INPUT, IssueFixKind.OPEN_STEP_ERROR_HANDLING]
+const CONNECTION_REFERENCE_PATTERN = /\{\{\s*connections\['([^']+)'\]\s*\}\}/
 const MAPPING_MISS_PATTERN = /不在映射表「[^」]*」里/
 const STEP_TIMEOUT_CODE = 'STEP_TIMEOUT'
 const RESULT_MISMATCH_CODE = 'RESULT_MISMATCH'
@@ -228,6 +314,19 @@ const MEDIUM_SEVERITY_OCCURRENCES = 3
 const TRANSIENT_HTTP_STATUSES = [429, 502, 503, 504, 529]
 const AUTHORIZATION_HTTP_STATUSES = [401, 403]
 const SERVER_ERROR_MIN_STATUS = 500
+
+type ClassifyTriggerFailureParams = {
+    workflowId: string
+    triggerName: string
+    message: string
+    connectionExternalId: string | null
+}
+
+type TitleCategoryOfParams = {
+    kind: IssueKind
+    errorCode: string | null | undefined
+    message: string | null | undefined
+}
 
 type IsRepeatAttemptParams = {
     execution: {
@@ -245,7 +344,7 @@ type ClassifyFailureParams = {
 }
 
 type InsightOfParams = {
-    issue: Pick<Issue, 'kind' | 'errorCode'> & Partial<Pick<Issue, 'message'>>
+    issue: Pick<Issue, 'kind' | 'errorCode'> & Partial<Pick<Issue, 'message' | 'connectionExternalId'>>
     connectionHealthy: boolean
     connectionMissing?: boolean
     now?: Date
@@ -258,4 +357,16 @@ export type FailureClassification = {
     connectionExternalId: string | null
     httpStatus: number | null
     message: string
+}
+
+export const ISSUE_TITLE_CATEGORY_ENGLISH: Record<IssueTitleCategory, string> = {
+    [IssueTitleCategory.RATE_LIMITED]: 'Rate limited',
+    [IssueTitleCategory.ACCESS_DENIED]: 'Access denied',
+    [IssueTitleCategory.NOT_FOUND]: 'Not found',
+    [IssueTitleCategory.SERVER_ERROR]: 'Server error',
+    [IssueTitleCategory.TIMED_OUT]: 'Timed out',
+    [IssueTitleCategory.REQUEST_REJECTED]: 'Rejected by the other system',
+    [IssueTitleCategory.MAPPING_MISSING]: 'Missing mapping value',
+    [IssueTitleCategory.TRIGGER_FAILED]: 'Trigger check failed',
+    [IssueTitleCategory.STEP_FAILED]: 'Step failed',
 }

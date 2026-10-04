@@ -58,8 +58,8 @@ describe('A failure the connector marked as blocked until a later time', () => {
 
         expect(issue.signature).toBe(`${workflowId}:step_1:HTTP_429`)
         expect(issue.errorCode).toBe('HTTP_429')
-        expect(issue.title).toContain('HTTP 429: Beisen API rate limit exceeded')
-        expect(issue.title).not.toContain('blocked-until')
+        expect(issue.title).toBe('Rate limited: Fetch employees')
+        expect(issue.message).toContain('HTTP 429: Beisen API rate limit exceeded')
     })
 
     it('is held back by the replay check and not replayed while the block lasts', async () => {

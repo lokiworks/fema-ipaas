@@ -1,4 +1,5 @@
-import { Issue, IssueActivity, Project } from '@fema-ipaas/shared'
+import { BaseModel } from '@fema-ipaas/core-utils'
+import { Issue, IssueActivity, Project, Workflow } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart, EntityIdSchema } from '../database/database-common'
 
@@ -8,6 +9,15 @@ export type IssueSchema = Issue & {
 
 export type IssueActivitySchema = IssueActivity & {
     issue: Issue
+}
+
+export type IssueWorkflowSchema = BaseModel<string> & {
+    projectId: string
+    issueId: string
+    workflowId: string
+    lastSeenAt: string
+    issue?: Issue
+    workflow?: Workflow
 }
 
 export const IssueEntity = new EntitySchema<IssueSchema>({
@@ -140,6 +150,54 @@ export const IssueActivityEntity = new EntitySchema<IssueActivitySchema>({
                 name: 'issueId',
                 referencedColumnName: 'id',
                 foreignKeyConstraintName: 'fk_issue_activity_issue_id',
+            },
+        },
+    },
+})
+
+export const IssueWorkflowEntity = new EntitySchema<IssueWorkflowSchema>({
+    name: 'issue_workflow',
+    columns: {
+        ...BaseColumnSchemaPart,
+        projectId: EntityIdSchema,
+        issueId: EntityIdSchema,
+        workflowId: EntityIdSchema,
+        lastSeenAt: {
+            type: 'timestamp with time zone',
+        },
+    },
+    indices: [
+        {
+            name: 'idx_issue_workflow_issue_id_workflow_id',
+            columns: ['issueId', 'workflowId'],
+            unique: true,
+        },
+        {
+            name: 'idx_issue_workflow_workflow_id',
+            columns: ['workflowId'],
+        },
+    ],
+    relations: {
+        issue: {
+            type: 'many-to-one',
+            target: 'issue',
+            cascade: true,
+            onDelete: 'CASCADE',
+            joinColumn: {
+                name: 'issueId',
+                referencedColumnName: 'id',
+                foreignKeyConstraintName: 'fk_issue_workflow_issue_id',
+            },
+        },
+        workflow: {
+            type: 'many-to-one',
+            target: 'workflow',
+            cascade: true,
+            onDelete: 'CASCADE',
+            joinColumn: {
+                name: 'workflowId',
+                referencedColumnName: 'id',
+                foreignKeyConstraintName: 'fk_issue_workflow_workflow_id',
             },
         },
     },

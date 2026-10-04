@@ -1,4 +1,4 @@
-import { blockedUntilMarker } from '@fema-ipaas/core-utils';
+import { blockedUntilMarker, isNil } from '@fema-ipaas/core-utils';
 import {
   AlertRecordKind,
   IssueActivity,
@@ -8,7 +8,9 @@ import {
   IssueInsightCause,
   IssueKind,
   IssueSeverity,
+  IssueTitleCategory,
   IssueStatus,
+  issueUtils,
   IssueWithSeverity,
   ReplayCategory,
   ReplayReason,
@@ -52,7 +54,89 @@ function issueTitle(
   if (issue.kind === IssueKind.DRIFT) {
     return t('The connected system does not match what the run did');
   }
-  return failureText.localize(issue.title);
+  const parsed = issueUtils.titleCategoryOfTitle({ title: issue.title });
+  if (parsed === null) {
+    return failureText.localize(issue.title);
+  }
+  const category = titleCategoryLabel(parsed.category);
+  return parsed.object.length === 0
+    ? category
+    : t('{category}: {object}', { category, object: parsed.object });
+}
+
+function titleCategoryLabel(category: IssueTitleCategory): string {
+  switch (category) {
+    case IssueTitleCategory.RATE_LIMITED:
+      return t('Rate limited');
+    case IssueTitleCategory.ACCESS_DENIED:
+      return t('Access denied');
+    case IssueTitleCategory.NOT_FOUND:
+      return t('Not found');
+    case IssueTitleCategory.SERVER_ERROR:
+      return t('Server error');
+    case IssueTitleCategory.TIMED_OUT:
+      return t('Timed out');
+    case IssueTitleCategory.REQUEST_REJECTED:
+      return t('Rejected by the other system');
+    case IssueTitleCategory.MAPPING_MISSING:
+      return t('Missing mapping value');
+    case IssueTitleCategory.TRIGGER_FAILED:
+      return t('Trigger check failed');
+    case IssueTitleCategory.STEP_FAILED:
+      return t('Step failed');
+  }
+}
+
+function kindLabel(kind: IssueKind): string {
+  switch (kind) {
+    case IssueKind.CONNECTION:
+      return t('Connection issue');
+    case IssueKind.DRIFT:
+      return t('Result mismatch');
+    case IssueKind.TRIGGER:
+      return t('Trigger issue');
+    case IssueKind.STEP:
+      return t('Step issue');
+  }
+}
+
+function impactText(
+  issue: Pick<IssueWithSeverity, 'kind' | 'occurrences' | 'affectedWorkflows'>,
+): string {
+  if (issue.kind === IssueKind.TRIGGER) {
+    return t(
+      '{count, plural, =1 {1 workflow affected} other {# workflows affected}}',
+      { count: issue.affectedWorkflows },
+    );
+  }
+  return t('{runs} runs · {workflows} workflows', {
+    runs: issue.occurrences,
+    workflows: issue.affectedWorkflows,
+  });
+}
+
+function scopeText(
+  issue: Pick<
+    IssueWithSeverity,
+    | 'kind'
+    | 'workflowDisplayName'
+    | 'stepDisplayName'
+    | 'affectedWorkflows'
+    | 'connectionExternalId'
+  >,
+): string {
+  if (issue.kind === IssueKind.CONNECTION) {
+    return t('Connection issue');
+  }
+  if (issue.kind === IssueKind.TRIGGER && isNil(issue.workflowDisplayName)) {
+    return t(
+      '{count, plural, =1 {Trigger of 1 workflow} other {Triggers of # workflows}}',
+      { count: issue.affectedWorkflows },
+    );
+  }
+  return [issue.workflowDisplayName, issue.stepDisplayName]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 function causeText({
@@ -275,6 +359,15 @@ function activityText({
         actor,
         count: typeof data.queued === 'number' ? data.queued : 0,
       });
+    case IssueActivityType.TRIGGER_RECOVERED:
+      return t(
+        'The trigger of {workflow} recovered; {count, plural, =1 {1 workflow is} other {# workflows are}} still affected',
+        {
+          workflow:
+            typeof data.workflowName === 'string' ? data.workflowName : '',
+          count: typeof data.remaining === 'number' ? data.remaining : 0,
+        },
+      );
   }
 }
 
@@ -311,6 +404,7 @@ const BLOCKED_UNTIL_FORMAT: Intl.DateTimeFormatOptions = {
   day: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
+  second: '2-digit',
   hourCycle: 'h23',
 };
 
@@ -318,6 +412,9 @@ export const issueUiUtils = {
   statusLabel,
   severityLabel,
   issueTitle,
+  kindLabel,
+  scopeText,
+  impactText,
   causeText,
   ownerLabel,
   fixLabel,

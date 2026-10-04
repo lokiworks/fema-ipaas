@@ -6,6 +6,7 @@ import {
     BatchUpdateIssuesRequestBody,
     Execution,
     IssueActivity,
+    IssueAffectedWorkflow,
     IssueInsight,
     IssueKind,
     IssueOverview,
@@ -93,8 +94,8 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
         })
     })
 
-    app.get('/:id/workflows', GetIssueRequest, async (request): Promise<string[]> => {
-        return issueService(request.log).affectedWorkflowIds({ id: request.params.id, projectId: request.projectId })
+    app.get('/:id/workflows', AffectedWorkflowsRequest, async (request): Promise<IssueAffectedWorkflow[]> => {
+        return issueService(request.log).affectedWorkflows({ id: request.params.id, projectId: request.projectId })
     })
 
     app.get('/:id/trend', TrendRequest, async (request): Promise<IssueTrend> => {
@@ -207,6 +208,15 @@ const AddNoteRequest = {
         tags: ['issues'],
         params: IdParams,
         body: AddIssueNoteRequestBody,
+    },
+}
+
+const AffectedWorkflowsRequest = {
+    config: { security: readIssue },
+    schema: {
+        tags: ['issues'],
+        params: IdParams,
+        response: { [StatusCodes.OK]: z.array(IssueAffectedWorkflow) },
     },
 }
 

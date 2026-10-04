@@ -18,7 +18,7 @@ describe('personalDataEraser', () => {
                 other: { status: 'SUCCEEDED', input: { a: 1 }, output: { b: 2 } },
                 failed: { status: 'FAILED', input: { x: 1 }, output: null, errorMessage: 'user tang@xinghe.tech not found' },
             },
-            value: 'tang@xinghe.tech',
+            needle: personalDataEraser.needleOf({ kind: ErasureSubjectKind.EMAIL, value: 'tang@xinghe.tech' }),
             hitSliceFileIds: new Set(),
         })
         expect(erased).toBe(2)
@@ -33,7 +33,7 @@ describe('personalDataEraser', () => {
                 loop: { status: 'SUCCEEDED', input: {}, output: { item: 1, iterations: [{ inner: { status: 'SUCCEEDED', input: { phone: '13812345678' }, output: {} } }] } },
                 big: { status: 'SUCCEEDED', input: {}, output: { fileId: 'slice-1', size: 1 }, outputType: StepOutputType.SLICE },
             },
-            value: '13812345678',
+            needle: personalDataEraser.needleOf({ kind: ErasureSubjectKind.PHONE, value: '13812345678' }),
             hitSliceFileIds: new Set(['slice-1']),
         })
         expect(erased).toBe(3)
@@ -46,5 +46,20 @@ describe('personalDataEraser', () => {
             a: { output: { fileId: 'f1' }, outputType: StepOutputType.SLICE },
             loop: { output: { iterations: [{ b: { output: { fileId: 'f2' }, outputType: StepOutputType.SLICE } }] } },
         })).toEqual([{ stepName: 'a', fileId: 'f1' }, { stepName: 'b', fileId: 'f2' }])
+    })
+
+    it('finds a phone number however it was written, but not a longer number or another person', () => {
+        const needle = personalDataEraser.needleOf({ kind: ErasureSubjectKind.PHONE, value: '13812345678' })
+        const hits = ['13812345678', '138 1234 5678', '138-1234-5678', '+86 138 1234 5678', 'tel:13812345678,']
+        hits.forEach((text) => expect(personalDataEraser.contains({ text, needle })).toBe(true))
+        expect(personalDataEraser.contains({ text: '613812345678', needle })).toBe(false)
+        expect(personalDataEraser.contains({ text: '138123456789', needle })).toBe(false)
+    })
+
+    it('matches an employee id as a whole word only', () => {
+        const needle = personalDataEraser.needleOf({ kind: ErasureSubjectKind.EMPLOYEE_ID, value: 'E1001' })
+        expect(personalDataEraser.contains({ text: '{"jobNumber":"e1001"}', needle })).toBe(true)
+        expect(personalDataEraser.contains({ text: '{"jobNumber":"E10010"}', needle })).toBe(false)
+        expect(personalDataEraser.contains({ text: 'XE1001', needle })).toBe(false)
     })
 })

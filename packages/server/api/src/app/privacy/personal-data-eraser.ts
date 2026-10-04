@@ -3,10 +3,12 @@ import { z } from 'zod'
 
 export const personalDataEraser = {
     normalize,
+    needleOf,
     hintOf,
     maskName,
     contains,
     eraseSteps,
+    replaceAll,
     sliceRefs,
 }
 
@@ -36,13 +38,19 @@ function maskName(name: string | undefined): string | null {
     return `${[...trimmed][0]}${'*'.repeat(Math.max(1, [...trimmed].length - 1))}`
 }
 
-function contains({ text, value }: { text: string, value: string }): boolean {
-    return text.toLowerCase().includes(value.toLowerCase())
+function needleOf({ kind, value }: { kind: ErasureSubjectKind, value: string }): RegExp {
+    const body = kind === ErasureSubjectKind.PHONE ? [...value.replace(/\D/g, '')].map(escapeRegExp).join('[\\s-]?') : escapeRegExp(value)
+    const edge = kind === ErasureSubjectKind.PHONE ? '\\d' : '[A-Za-z0-9_-]'
+    return new RegExp(`(?<!${edge})${body}(?!${edge})`, 'i')
 }
 
-function eraseSteps({ steps, value, hitSliceFileIds }: EraseParams): ErasedSteps {
+function contains({ text, needle }: { text: string, needle: RegExp }): boolean {
+    return needle.test(text)
+}
+
+function eraseSteps({ steps, needle, hitSliceFileIds }: EraseParams): ErasedSteps {
     return Object.entries(steps).reduce<ErasedSteps>((acc, [stepName, step]) => {
-        const erased = eraseStep({ step, value, hitSliceFileIds })
+        const erased = eraseStep({ step, needle, hitSliceFileIds })
         return { steps: { ...acc.steps, [stepName]: erased.value }, erased: acc.erased + erased.erased }
     }, { steps: {}, erased: 0 })
 }
@@ -62,20 +70,20 @@ function sliceRefs(steps: Record<string, unknown>): SliceLocation[] {
     })
 }
 
-function eraseStep({ step, value, hitSliceFileIds }: { step: unknown, value: string, hitSliceFileIds: ReadonlySet<string> }): { value: unknown, erased: number } {
+function eraseStep({ step, needle, hitSliceFileIds }: { step: unknown, needle: RegExp, hitSliceFileIds: ReadonlySet<string> }): { value: unknown, erased: number } {
     const parsed = LoggedStep.safeParse(step)
     if (!parsed.success) {
         return { value: step, erased: 0 }
     }
     const current = parsed.data
     const loop = LoopOutput.safeParse(current.output)
-    const nested = loop.success ? loop.data.iterations.map((iteration) => eraseSteps({ steps: iteration, value, hitSliceFileIds })) : []
+    const nested = loop.success ? loop.data.iterations.map((iteration) => eraseSteps({ steps: iteration, needle, hitSliceFileIds })) : []
     const slice = current.outputType === StepOutputType.SLICE ? SliceRef.safeParse(current.output) : null
-    const inputHit = contains({ text: JSON.stringify(current.input ?? null), value })
+    const inputHit = contains({ text: JSON.stringify(current.input ?? null), needle })
     const outputHit = slice?.success
         ? hitSliceFileIds.has(slice.data.fileId)
-        : !loop.success && contains({ text: JSON.stringify(current.output ?? null), value })
-    const errorHit = typeof current.errorMessage === 'string' && contains({ text: current.errorMessage, value })
+        : !loop.success && contains({ text: JSON.stringify(current.output ?? null), needle })
+    const errorHit = typeof current.errorMessage === 'string' && contains({ text: current.errorMessage, needle })
     const nestedErased = nested.reduce((sum, iteration) => sum + iteration.erased, 0)
     if (!inputHit && !outputHit && !errorHit && nestedErased === 0) {
         return { value: step, erased: 0 }
@@ -86,16 +94,19 @@ function eraseStep({ step, value, hitSliceFileIds }: { step: unknown, value: str
             input: inputHit ? null : current.input,
             output: loop.success ? { ...loop.data, iterations: nested.map((iteration) => iteration.steps) } : outputHit ? null : current.output,
             outputType: outputHit ? undefined : current.outputType,
-            errorMessage: errorHit && typeof current.errorMessage === 'string' ? replaceAll({ text: current.errorMessage, value }) : current.errorMessage,
+            errorMessage: errorHit && typeof current.errorMessage === 'string' ? replaceAll({ text: current.errorMessage, needle }) : current.errorMessage,
             personalDataErased: true,
         },
         erased: 1 + nestedErased,
     }
 }
 
-function replaceAll({ text, value }: { text: string, value: string }): string {
-    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    return text.replace(new RegExp(escaped, 'gi'), MASKED_PLACEHOLDER)
+function replaceAll({ text, needle }: { text: string, needle: RegExp }): string {
+    return text.replace(new RegExp(needle.source, 'gi'), MASKED_PLACEHOLDER)
+}
+
+function escapeRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 const LoggedStep = z.looseObject({
@@ -113,7 +124,7 @@ const LoopOutput = z.looseObject({
 
 type EraseParams = {
     steps: Record<string, unknown>
-    value: string
+    needle: RegExp
     hitSliceFileIds: ReadonlySet<string>
 }
 

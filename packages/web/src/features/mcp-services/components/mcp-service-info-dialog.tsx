@@ -98,7 +98,7 @@ function CreateForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Service name')}</FormLabel>
+              <FormLabel showRequiredIndicator>{t('Service name')}</FormLabel>
               <FormControl>
                 <Input {...field} maxLength={30} autoFocus />
               </FormControl>
@@ -111,7 +111,7 @@ function CreateForm({
           name="key"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Unique key')}</FormLabel>
+              <FormLabel showRequiredIndicator>{t('Unique key')}</FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -134,7 +134,7 @@ function CreateForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Description')}</FormLabel>
+              <FormLabel showRequiredIndicator>{t('Description')}</FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
@@ -235,7 +235,7 @@ function EditForm({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Service name')}</FormLabel>
+              <FormLabel showRequiredIndicator>{t('Service name')}</FormLabel>
               <FormControl>
                 <Input {...field} maxLength={30} autoFocus />
               </FormControl>
@@ -248,7 +248,7 @@ function EditForm({
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Description')}</FormLabel>
+              <FormLabel showRequiredIndicator>{t('Description')}</FormLabel>
               <FormControl>
                 <Textarea {...field} rows={3} maxLength={300} />
               </FormControl>

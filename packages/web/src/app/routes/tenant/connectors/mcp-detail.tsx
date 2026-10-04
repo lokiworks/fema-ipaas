@@ -109,6 +109,10 @@ export default function McpServerDetailPage() {
       },
     });
 
+  const authorizationExpression = isNil(server)
+    ? null
+    : authorizationExpressionOf({ server });
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
@@ -276,9 +280,28 @@ export default function McpServerDetailPage() {
       )}
       <Alert>
         <AlertTitle>{t('Where these tools show up')}</AlertTitle>
-        <AlertDescription>
-          {t(
-            'While connected, this server appears under "Apps" in the step picker so its tools can be added as steps; it can also be added to an AI agent step\'s tools, where the agent decides on its own when to call it.',
+        <AlertDescription className="flex flex-col gap-2">
+          <span>
+            {t(
+              'While connected, this server appears at the top of "Apps" in the step picker so its tools can be added as steps. To let an AI agent step use it, add the address below to the step\'s "MCP servers" list and paste the authorization expression into its Authorization field; the agent then decides on its own when to call the tools.',
+            )}
+          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium">
+              {t('Address for an AI agent step')}
+            </span>
+            <CopyToClipboardInput textToCopy={server.url} useInput={true} />
+          </div>
+          {authorizationExpression && (
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium">
+                {t('Authorization for an AI agent step')}
+              </span>
+              <CopyToClipboardInput
+                textToCopy={authorizationExpression}
+                useInput={true}
+              />
+            </div>
           )}
         </AlertDescription>
       </Alert>
@@ -509,4 +532,18 @@ function authTypeLabel(authType: McpServerAuthType): string {
     case McpServerAuthType.OAUTH2:
       return t('OAuth 2.0');
   }
+}
+
+function authorizationExpressionOf({
+  server,
+}: {
+  server: { authType: McpServerAuthType; externalId: string };
+}): string | null {
+  if (server.authType === McpServerAuthType.BEARER) {
+    return `{{connections['${server.externalId}'].props.token}}`;
+  }
+  if (server.authType === McpServerAuthType.OAUTH2) {
+    return `{{connections['${server.externalId}'].access_token}}`;
+  }
+  return null;
 }

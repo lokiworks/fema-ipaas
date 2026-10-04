@@ -9,6 +9,7 @@ import {
   McpToolParam,
   McpToolParamMode,
   McpToolSource,
+  McpToolSourceType,
   McpToolTriggerKind,
   McpWorkflowToolCandidate,
   mcpServiceUtils,
@@ -28,7 +29,14 @@ function buildToolDraft({
 }): McpServiceTool {
   return {
     id: crypto.randomUUID(),
-    name: toolNameFor({ displayName: titleHint, taken }),
+    name: toolNameFor({
+      displayName: titleHint,
+      fallback:
+        source.type === McpToolSourceType.CONNECTOR_ACTION
+          ? source.actionName
+          : '',
+      taken,
+    }),
     title: titleHint.slice(0, 30),
     description: '',
     source,
@@ -53,13 +61,16 @@ function workflowCandidateBlockedReason(
 
 function toolNameFor({
   displayName,
+  fallback,
   taken,
 }: {
   displayName: string;
+  fallback: string;
   taken: string[];
 }): string {
+  const source = /[a-z0-9]/i.test(displayName) ? displayName : fallback;
   return mcpServiceUtils.uniqueName({
-    base: mcpServiceUtils.toSnakeName(displayName),
+    base: mcpServiceUtils.toSnakeName(source),
     taken,
   });
 }

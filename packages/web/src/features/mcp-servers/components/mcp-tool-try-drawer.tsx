@@ -160,7 +160,18 @@ function TryDrawerContent({
               )}
             />
           ))}
-          {data && (
+          {data && (data.isError || !data.ok) && (
+            <Alert variant="destructive">
+              <AlertTitle>{t('The call failed')}</AlertTitle>
+              <AlertDescription>
+                {data.errorMessage ?? data.text}
+                <span className="mt-1 block text-xs">
+                  {t('Took {duration} ms', { duration: data.durationMs })}
+                </span>
+              </AlertDescription>
+            </Alert>
+          )}
+          {data && !data.isError && data.ok && (
             <div className="flex flex-col gap-2">
               <div className="text-sm font-medium">{t('Result')}</div>
               <JsonViewer
@@ -169,6 +180,8 @@ function TryDrawerContent({
                 json={data.structured ?? data.text}
               />
               <p className="text-xs text-muted-foreground">
+                {t('Took {duration} ms', { duration: data.durationMs })}
+                {' · '}
                 {t(
                   'Trials are recorded in the audit log; they do not create a run.',
                 )}

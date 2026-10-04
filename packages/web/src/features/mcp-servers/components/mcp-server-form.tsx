@@ -16,7 +16,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { CircleCheckIcon, LogInIcon, PlugZapIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Resolver, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -146,6 +146,16 @@ export function McpServerForm({
     signature: string;
     result: McpServerProbeResult;
   } | null>(null);
+  const testResultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (testState !== null) {
+      testResultRef.current?.scrollIntoView({
+        block: 'end',
+        behavior: 'smooth',
+      });
+    }
+  }, [testState]);
 
   const currentAuthorized =
     authorizedSignature !== null &&
@@ -724,7 +734,10 @@ export function McpServerForm({
                 </FormItem>
               )}
             />
-            <div className="flex flex-col gap-2 rounded-md border p-3">
+            <div
+              ref={testResultRef}
+              className="flex flex-col gap-2 rounded-md border p-3"
+            >
               <div className="flex items-center gap-2">
                 <Button
                   type="button"

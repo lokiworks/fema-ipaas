@@ -9,7 +9,6 @@ import {
 import { t } from 'i18next';
 import { ServerIcon } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
 import {
   ConnectorSelectorConnectorItem,
   ConnectorSelectorOperation,
@@ -101,7 +100,7 @@ export function McpServerPickerEntries({
   };
 
   return (
-    <div className="flex flex-col gap-0.5 border-t p-2">
+    <div className="flex flex-col gap-0.5 border-b p-2">
       <div className="px-1 pb-1 text-xs font-medium text-muted-foreground">
         {t('MCP servers')}
       </div>
@@ -115,9 +114,6 @@ export function McpServerPickerEntries({
         >
           <ServerIcon className="size-4 shrink-0 text-muted-foreground" />
           <span className="min-w-0 grow truncate">{server.displayName}</span>
-          <Badge variant="outline" className="shrink-0 text-[10px]">
-            {t('MCP')}
-          </Badge>
         </button>
       ))}
     </div>

@@ -7,10 +7,19 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { RotateCcw } from 'lucide-react';
+import { useState } from 'react';
 
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -31,6 +40,7 @@ function McpUsageTab({
   const { mutate: resetKey, isPending: resetting } =
     mcpServicesHooks.useResetMyKey(service.id);
   const endpointFor = mcpServicesHooks.useEndpointUrl();
+  const [confirmingReset, setConfirmingReset] = useState(false);
 
   if (!service.canEdit && !service.obtained) {
     return (
@@ -99,7 +109,7 @@ function McpUsageTab({
             variant="outline"
             size="sm"
             loading={resetting}
-            onClick={() => resetKey()}
+            onClick={() => setConfirmingReset(true)}
           >
             <RotateCcw className="size-4 mr-1" />
             {t('Reset')}
@@ -111,6 +121,39 @@ function McpUsageTab({
           )}
         </p>
       </div>
+      <Dialog open={confirmingReset} onOpenChange={setConfirmingReset}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('Reset your API key?')}</DialogTitle>
+            <DialogDescription>
+              {t(
+                'Every client using the current key will stop working immediately and must be given the new key.',
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmingReset(false)}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              loading={resetting}
+              onClick={() =>
+                resetKey(undefined, {
+                  onSuccess: () => setConfirmingReset(false),
+                })
+              }
+            >
+              {t('Reset')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {service.credentialMode === McpCredentialMode.USER && (
         <p className="text-xs text-muted-foreground">
           {t(

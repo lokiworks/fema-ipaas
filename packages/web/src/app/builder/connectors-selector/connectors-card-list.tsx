@@ -95,6 +95,10 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
           'w-full md:w-full': searchQuery.length > 0 || noResultsFound,
         })}
       >
+        {selectedTab === ConnectorSelectorTabType.APPS &&
+          searchQuery.length === 0 && (
+            <McpServerPickerEntries operation={operation} />
+          )}
         {isLoading && (
           <div className="flex flex-col gap-2">
             <CardListItemSkeleton numberOfCards={2} withCircle={false} />
@@ -154,10 +158,6 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
         )}
 
         {noResultsFound && <NoResultsFound />}
-        {selectedTab === ConnectorSelectorTabType.APPS &&
-          searchQuery.length === 0 && (
-            <McpServerPickerEntries operation={operation} />
-          )}
       </div>
 
       {showActionsOrTriggersList && (

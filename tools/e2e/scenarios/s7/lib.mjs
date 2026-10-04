@@ -141,8 +141,8 @@ export async function go({ page, url }) {
 }
 
 export async function recoverFromStaleBundle({ page }) {
-  for (let reload = 0; reload < 3; reload += 1) {
-    await page.waitForTimeout(2500)
+  for (let reload = 0; reload < 6; reload += 1) {
+    await page.waitForTimeout(reload === 0 ? 2500 : 8000)
     const stale = await page.getByText('应用已更新，请刷新页面以获取最新版本。').isVisible().catch(() => false)
     if (!stale) {
       return

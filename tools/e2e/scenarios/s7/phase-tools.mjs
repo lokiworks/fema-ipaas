@@ -171,13 +171,15 @@ async function extState({ path, method = 'GET' }) {
 }
 
 async function openAgentInputs({ page }) {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const opened = await page.getByText(/2\. AI 智能体/).first().click({ timeout: 90000 }).then(() => true, () => false)
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const opened = await page.getByText(/2\. AI 智能体/).first().click({ timeout: 40000 }).then(() => true, () => false)
     if (opened) {
       await page.getByText('入参', { exact: true }).first().click({ timeout: 60000 })
       await page.getByTestId('agent-tools-editor').waitFor({ timeout: 120000 })
       return
     }
+    await shot({ page, name: `pk-open-failed-${attempt}` })
+    await page.waitForTimeout(15000)
     await page.reload({ waitUntil: 'domcontentloaded' })
     await recoverFromStaleBundle({ page })
   }

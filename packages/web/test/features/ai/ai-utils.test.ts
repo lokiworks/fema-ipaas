@@ -127,6 +127,51 @@ describe('aiUtils plan helpers', () => {
   });
 });
 
+describe('aiUtils recommendations and mapping rows', () => {
+  const planWith = (recommendations: WorkflowPlan['recommendations']) =>
+    ({ recommendations } as WorkflowPlan);
+
+  it('looks up the recommendation of a question', () => {
+    const plan = planWith([
+      { question: 'Which group?', value: 'oc_hr', basis: 'used before' },
+    ]);
+    expect(
+      aiUtils.recommendationFor({ plan, question: 'Which group?' })?.value,
+    ).toBe('oc_hr');
+    expect(aiUtils.recommendationFor({ plan, question: 'Other?' })).toBeNull();
+  });
+
+  it('collects only the recommendations that carry a value, and selects nothing by itself', () => {
+    const plan = planWith([
+      { question: 'Which group?', value: 'oc_hr', basis: 'used before' },
+      { question: 'Which table?', value: null, basis: 'none yet' },
+    ]);
+    expect(
+      aiUtils.recommendedAnswers({
+        plan,
+        questions: ['Which group?', 'Which table?', 'Unknown?'],
+      }),
+    ).toEqual({ 'Which group?': 'oc_hr' });
+    expect(
+      aiUtils.planAnswers({ questions: ['Which group?'], answers: {} }),
+    ).toEqual([]);
+  });
+
+  it('parses mapping rows from comma or tab separated lines and reports the first broken line', () => {
+    expect(aiUtils.parseMappingRows('20301, od-rd\n20302\tod-hr')).toEqual({
+      rows: [
+        { k: '20301', v: 'od-rd' },
+        { k: '20302', v: 'od-hr' },
+      ],
+      brokenLine: null,
+    });
+    expect(aiUtils.parseMappingRows('20301, od-rd\n\n20302').brokenLine).toBe(
+      2,
+    );
+    expect(aiUtils.parseMappingRows('').rows).toEqual([]);
+  });
+});
+
 describe('aiUtils.targetProjectOptions', () => {
   const project = ({
     id,

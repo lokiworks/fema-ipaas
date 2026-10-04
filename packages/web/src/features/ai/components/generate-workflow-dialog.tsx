@@ -2,6 +2,7 @@ import {
   AI_PROMPT_MAX_LENGTH,
   GenerateWorkflowPlanRequestBody,
   PlanAnswer,
+  PlanTemplate,
   ProjectDirectoryItem,
   WorkflowPlan,
 } from '@fema-ipaas/shared';
@@ -114,6 +115,7 @@ function GenerateWorkflowForm({
   const [plannedWithModel, setPlannedWithModel] = useState(false);
   const [planCount, setPlanCount] = useState(0);
   const [answerLog, setAnswerLog] = useState<PlanAnswer[]>([]);
+  const [excluded, setExcluded] = useState<string[]>([]);
   const form = useForm<PromptValues>({
     resolver: zodResolver(PromptSchema),
     mode: 'onChange',
@@ -129,19 +131,24 @@ function GenerateWorkflowForm({
   const openCount = plan
     ? aiUtils.openQuestions({ plan, answered: answerLog }).length
     : 0;
-  const modelFailed =
-    form.formState.errors.root?.serverError !== undefined &&
-    !models.usesRules &&
-    !isPlanning;
+  const hasPlanError = form.formState.errors.root?.serverError !== undefined;
+  const modelFailed = hasPlanError && !models.usesRules && !isPlanning;
+  const { data: closestTemplates } = aiHooks.usePlanTemplates({
+    projectId,
+    prompt: prompt.trim(),
+    enabled: hasPlanError && !isPlanning,
+  });
 
   const requestPlan = ({
     values,
     answers,
     withModel,
+    nextExcluded = excluded,
   }: {
     values: PromptValues;
     answers: PlanAnswer[];
     withModel: boolean;
+    nextExcluded?: string[];
   }) => {
     form.clearErrors('root.serverError');
     if (models.isLoading) {
@@ -158,11 +165,13 @@ function GenerateWorkflowForm({
         ...(modelId === null ? {} : { modelConnectionExternalId: modelId }),
         prompt: values.prompt,
         answers: nextLog,
+        ...(nextExcluded.length === 0 ? {} : { excludedSteps: nextExcluded }),
       },
       {
         onSuccess: (next) => {
           setPlan(next);
           setAnswerLog(nextLog);
+          setExcluded(nextExcluded);
           setPlannedPrompt(values.prompt.trim());
           setPlannedWithModel(modelId !== null);
           setPlanCount((count) => count + 1);
@@ -225,6 +234,7 @@ function GenerateWorkflowForm({
               setChosenProjectId(next);
               setPlan(null);
               setAnswerLog([]);
+              setExcluded([]);
             }}
           />
           <PlanModelField
@@ -330,6 +340,22 @@ function GenerateWorkflowForm({
                   )}
                 </div>
               )}
+              {hasPlanError &&
+                !isPlanning &&
+                (closestTemplates ?? []).length > 0 && (
+                  <ClosestTemplates
+                    templates={closestTemplates ?? []}
+                    onPick={(template) => {
+                      form.setValue('prompt', template.examplePrompt, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                      void form.handleSubmit((values) =>
+                        requestPlan({ values, answers: [], withModel: true }),
+                      )();
+                    }}
+                  />
+                )}
               <div className="flex flex-wrap items-center gap-3">
                 <Button
                   type="submit"
@@ -380,6 +406,22 @@ function GenerateWorkflowForm({
                   requestPlan({ values, answers, withModel: plannedWithModel }),
                 )()
               }
+              onRemoveStep={(key) =>
+                requestPlan({
+                  values: { prompt: plannedPrompt },
+                  answers: [],
+                  withModel: plannedWithModel,
+                  nextExcluded: [...excluded, key],
+                })
+              }
+              onRestoreStep={(key) =>
+                requestPlan({
+                  values: { prompt: plannedPrompt },
+                  answers: [],
+                  withModel: plannedWithModel,
+                  nextExcluded: excluded.filter((item) => item !== key),
+                })
+              }
             />
           ) : (
             <PlanIntro />
@@ -419,6 +461,45 @@ function GenerateWorkflowForm({
         )}
       </DialogFooter>
     </div>
+  );
+}
+
+function ClosestTemplates({
+  templates,
+  onPick,
+}: {
+  templates: PlanTemplate[];
+  onPick: (template: PlanTemplate) => void;
+}) {
+  return (
+    <section
+      className="flex flex-col gap-2"
+      data-testid="plan-closest-templates"
+    >
+      <h4 className="text-sm font-medium">{t('Closest templates')}</h4>
+      <span className="text-xs text-muted-foreground">
+        {t(
+          'These are the scenarios the built-in rules know. Pick one to fill in the description and plan again.',
+        )}
+      </span>
+      <ul className="flex flex-col gap-2">
+        {templates.map((template) => (
+          <li key={template.id}>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-auto w-full flex-col items-start gap-0.5 whitespace-normal py-2 text-left font-normal"
+              onClick={() => onPick(template)}
+            >
+              <span className="text-sm font-medium">{template.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {template.description}
+              </span>
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

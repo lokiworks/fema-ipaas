@@ -7,6 +7,7 @@ import {
   CopilotResponse,
   GenerateWorkflowPlanRequestBody,
   ListAiUsageRequestQuery,
+  PlanTemplate,
   WorkflowPlan,
   SuggestFieldMappingRequestBody,
   SuggestFieldMappingResponse,
@@ -24,6 +25,18 @@ export const aiApi = {
     request: GenerateWorkflowPlanRequestBody,
   ): Promise<WorkflowPlan> {
     return api.post<WorkflowPlan>('/v1/ai/workflow-plans', request);
+  },
+  listPlanTemplates({
+    projectId,
+    prompt,
+  }: {
+    projectId: string;
+    prompt: string;
+  }): Promise<PlanTemplate[]> {
+    return api.get<PlanTemplate[]>('/v1/ai/plan-templates', {
+      projectId,
+      prompt,
+    });
   },
   applyPlan(
     request: ApplyWorkflowPlanRequestBody,

@@ -1,17 +1,24 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import {
   PlanAnswer,
+  PlanRecommendation,
   WorkflowPlan,
   WorkflowPlanSource,
   WorkflowPlanStep,
+  workflowPlanUtils,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
+  CheckCheck,
   CircleCheck,
   CircleX,
   ExternalLink,
   Info,
+  Lock,
+  RotateCcw,
   Sparkles,
+  Table2,
+  Trash2,
   TriangleAlert,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -27,18 +34,24 @@ import { NEW_CONNECTION_QUERY_PARAM } from '@/lib/route-utils';
 
 import { aiUtils, ConnectionRow } from '../utils/ai-utils';
 
+import { PlanMappingTableDialog } from './plan-mapping-table-dialog';
+
 export function PlanReview({
   plan,
   projectId,
   answered,
   isBusy,
   onReplan,
+  onRemoveStep,
+  onRestoreStep,
 }: {
   plan: WorkflowPlan;
   projectId: string;
   answered: PlanAnswer[];
   isBusy: boolean;
   onReplan: (answers: PlanAnswer[]) => void;
+  onRemoveStep: (key: string) => void;
+  onRestoreStep: (key: string) => void;
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const open = aiUtils.openQuestions({ plan, answered });
@@ -90,8 +103,17 @@ export function PlanReview({
           </AlertDescription>
         </Alert>
       )}
+      {plan.missingMappingTable && (
+        <PlanMappingTableHint
+          hint={plan.missingMappingTable}
+          projectId={projectId}
+          isBusy={isBusy}
+          onCreated={() => onReplan([])}
+        />
+      )}
       <PlanQuestions
         key={open.join('|')}
+        plan={plan}
         questions={open}
         answered={answered}
         answers={answers}
@@ -103,16 +125,55 @@ export function PlanReview({
       <section className="flex flex-col gap-2">
         <h4 className="text-sm font-medium">{t('Steps')}</h4>
         <ol className="flex flex-col gap-2">
-          <PlanStepRow step={plan.trigger} label={t('Trigger')} />
+          <PlanStepRow
+            step={plan.trigger}
+            label={t('Trigger')}
+            isBusy={isBusy}
+            onRemove={null}
+          />
           {plan.steps.map((step, index) => (
             <PlanStepRow
               key={`${index}-${step.connectorName}-${step.operationName}`}
               step={step}
               label={t('Step {number}', { number: index + 1 })}
+              isBusy={isBusy}
+              onRemove={() => onRemoveStep(workflowPlanUtils.stepKey(step))}
             />
           ))}
         </ol>
+        {plan.removedSteps.length > 0 && (
+          <ul
+            className="flex flex-col gap-1 text-sm"
+            data-testid="plan-removed-steps"
+          >
+            <li className="text-xs text-muted-foreground">
+              {t('Removed steps')}
+            </li>
+            {plan.removedSteps.map((removed) => (
+              <li
+                key={removed.key}
+                className="flex items-center gap-2 rounded-md border border-dashed px-3 py-1.5"
+              >
+                <span className="text-muted-foreground line-through">
+                  {removed.displayName}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto h-7 gap-1"
+                  disabled={isBusy}
+                  onClick={() => onRestoreStep(removed.key)}
+                >
+                  <RotateCcw className="size-3.5" />
+                  {t('Restore')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
+      {plan.dedupe && <PlanDedupe dedupe={plan.dedupe} />}
       <PlanConnections
         rows={aiUtils.connectionRows(plan)}
         projectId={projectId}
@@ -124,6 +185,7 @@ export function PlanReview({
 }
 
 function PlanQuestions({
+  plan,
   questions,
   answered,
   answers,
@@ -132,6 +194,7 @@ function PlanQuestions({
   onChange,
   onReplan,
 }: {
+  plan: WorkflowPlan;
   questions: string[];
   answered: PlanAnswer[];
   answers: Record<string, string>;
@@ -143,6 +206,9 @@ function PlanQuestions({
   if (questions.length === 0 && answered.length === 0) {
     return null;
   }
+  const recommended = Object.keys(
+    aiUtils.recommendedAnswers({ plan, questions }),
+  ).length;
   return (
     <section className="flex flex-col gap-3" data-testid="plan-questions">
       <div className="flex flex-col gap-1">
@@ -160,6 +226,31 @@ function PlanQuestions({
               'Answer what you can, then plan again. What stays unanswered is left empty in the draft, and the workflow cannot be published until you fill it in the editor.',
             )}
           </span>
+        )}
+        {recommended > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              disabled={isBusy}
+              onClick={() =>
+                onChange({
+                  ...answers,
+                  ...aiUtils.recommendedAnswers({ plan, questions }),
+                })
+              }
+            >
+              <CheckCheck className="size-3.5" />
+              {t('Use all recommended answers')}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {t(
+                'Recommendations are never selected for you. Use one to fill the answer box, then plan again.',
+              )}
+            </span>
+          </div>
         )}
       </div>
       {answered.map((answer) => (
@@ -179,6 +270,11 @@ function PlanQuestions({
       {questions.map((question, index) => (
         <div key={question} className="flex flex-col gap-1">
           <Label htmlFor={`plan-question-${index}`}>{question}</Label>
+          <PlanRecommendationHint
+            recommendation={aiUtils.recommendationFor({ plan, question })}
+            isBusy={isBusy}
+            onUse={(value) => onChange({ ...answers, [question]: value })}
+          />
           <Input
             id={`plan-question-${index}`}
             value={answers[question] ?? ''}
@@ -303,12 +399,19 @@ function PlanConnections({
 function PlanStepRow({
   step,
   label,
+  isBusy,
+  onRemove,
 }: {
   step: WorkflowPlanStep;
   label: string;
+  isBusy: boolean;
+  onRemove: (() => void) | null;
 }) {
   return (
-    <li className="flex flex-col gap-1 rounded-md bg-muted/50 px-3 py-2">
+    <li
+      className="flex flex-col gap-1 rounded-md bg-muted/50 px-3 py-2"
+      data-testid="plan-step"
+    >
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted-foreground">{label}</span>
         <span className="text-sm font-medium">{step.displayName}</span>
@@ -323,6 +426,33 @@ function PlanStepRow({
             })}
           </Badge>
         )}
+        {onRemove === null ? (
+          <span
+            className="ml-auto text-muted-foreground"
+            title={t(
+              'The trigger cannot be removed. Change it in the editor after the draft is created.',
+            )}
+            aria-label={t(
+              'The trigger cannot be removed. Change it in the editor after the draft is created.',
+            )}
+            role="img"
+          >
+            <Lock className="size-3.5" />
+          </span>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="ml-auto size-7"
+            disabled={isBusy}
+            aria-label={t('Remove this step')}
+            title={t('Remove this step')}
+            onClick={onRemove}
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        )}
       </div>
       <span className="text-xs text-muted-foreground">
         {step.connectorDisplayName} · {step.operationDisplayName}
@@ -336,6 +466,138 @@ function PlanStepRow({
         )}
       </span>
     </li>
+  );
+}
+
+function PlanRecommendationHint({
+  recommendation,
+  isBusy,
+  onUse,
+}: {
+  recommendation: PlanRecommendation | null;
+  isBusy: boolean;
+  onUse: (value: string) => void;
+}) {
+  if (recommendation === null) {
+    return null;
+  }
+  const value = recommendation.value;
+  return (
+    <div
+      className="flex flex-wrap items-start gap-2 rounded-md bg-muted/50 px-2 py-1.5 text-xs"
+      data-testid="plan-recommendation"
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        {value !== null && (
+          <span className="break-all font-medium">
+            {t('Recommended: {value}', { value })}
+          </span>
+        )}
+        <span className="text-muted-foreground">{recommendation.basis}</span>
+      </div>
+      {value !== null && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7"
+          disabled={isBusy}
+          onClick={() => onUse(value)}
+        >
+          {t('Use this answer')}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function PlanDedupe({
+  dedupe,
+}: {
+  dedupe: NonNullable<WorkflowPlan['dedupe']>;
+}) {
+  return (
+    <section className="flex flex-col gap-2" data-testid="plan-dedupe">
+      <div className="flex items-center gap-2">
+        <h4 className="text-sm font-medium">
+          {t('Business key and de-duplication')}
+        </h4>
+        <Badge variant="outline" className="gap-1">
+          <Sparkles className="size-3 text-primary" />
+          {t('To confirm')}
+        </Badge>
+      </div>
+      <div className="flex flex-col gap-1 rounded-md bg-muted/50 px-3 py-2 text-sm">
+        <span className="font-medium">
+          {t('Business key: {label}', { label: dedupe.keyLabel })}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {t('Window: {window}', {
+            window: aiUtils.windowLabel(dedupe.windowSeconds),
+          })}
+        </span>
+        <span className="text-xs text-muted-foreground">{dedupe.reason}</span>
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {t(
+          'This is set on the trigger and confirmed together with it. You can change it in the trigger run settings.',
+        )}
+      </span>
+    </section>
+  );
+}
+
+function PlanMappingTableHint({
+  hint,
+  projectId,
+  isBusy,
+  onCreated,
+}: {
+  hint: NonNullable<WorkflowPlan['missingMappingTable']>;
+  projectId: string;
+  isBusy: boolean;
+  onCreated: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const { checkAccess } = useAuthorization();
+  const canCreate = checkAccess(Permission.WRITE_WORKFLOW);
+  return (
+    <Alert variant="warning" data-testid="plan-mapping-table-hint">
+      <Table2 className="size-4" />
+      <AlertDescription>
+        <div className="flex flex-col items-start gap-2">
+          <span className="font-medium">
+            {t('This project has no department mapping table yet')}
+          </span>
+          <span>
+            {t(
+              'Beisen department codes are not Feishu department IDs. Create the table here and the plan maps departments with it.',
+            )}
+          </span>
+          {canCreate && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isBusy}
+              onClick={() => setOpen(true)}
+            >
+              {t('Create mapping table')}
+            </Button>
+          )}
+        </div>
+        <PlanMappingTableDialog
+          open={open}
+          onOpenChange={setOpen}
+          hint={hint}
+          projectId={projectId}
+          onCreated={() => {
+            setOpen(false);
+            onCreated();
+          }}
+        />
+      </AlertDescription>
+    </Alert>
   );
 }
 

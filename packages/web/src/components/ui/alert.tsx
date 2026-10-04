@@ -10,11 +10,11 @@ const alertVariants = cva(
       variant: {
         default: 'bg-card text-card-foreground',
         warning:
-          'border-warning/50 text-warning-700 dark:border-warning dark:text-warning-300 *:data-[slot=alert-description]:text-warning-700/90 dark:*:data-[slot=alert-description]:text-warning-300/90 *:[svg]:text-warning',
+          'border-warning/50 text-warning-700 dark:border-warning dark:text-warning-300 *:data-[slot=alert-description]:text-warning-700 dark:*:data-[slot=alert-description]:text-warning-300 *:[svg]:text-warning',
         destructive:
           'text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current',
         primary:
-          'border-primary/50 text-primary bg-primary-100/10 dark:border-primary *:data-[slot=alert-description]:text-primary/90 *:[svg]:text-primary',
+          'border-primary/50 text-[color-mix(in_oklab,hsl(var(--primary))_55%,var(--foreground))] bg-primary-100/10 dark:border-primary *:data-[slot=alert-description]:text-[color-mix(in_oklab,hsl(var(--primary))_55%,var(--foreground))] *:[svg]:text-primary',
         success:
           'border-success/50 text-success-700 bg-success-100/10 dark:border-success dark:text-success-300 *:data-[slot=alert-description]:text-success-700/90 dark:*:data-[slot=alert-description]:text-success-300/90 *:[svg]:text-success-700 dark:*:[svg]:text-success-300',
       },

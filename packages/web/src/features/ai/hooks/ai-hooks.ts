@@ -66,6 +66,23 @@ function useGeneratePlan({ onError }: ErrorHandler) {
   });
 }
 
+function usePlanTemplates({
+  projectId,
+  prompt,
+  enabled,
+}: {
+  projectId: string;
+  prompt: string;
+  enabled: boolean;
+}) {
+  return useQuery({
+    queryKey: [AI_KEY, 'plan-templates', projectId, prompt],
+    queryFn: () => aiApi.listPlanTemplates({ projectId, prompt }),
+    enabled: enabled && projectId.length > 0,
+    staleTime: 60_000,
+  });
+}
+
 function useApplyPlan() {
   return useMutation({
     mutationFn: (request: ApplyWorkflowPlanRequestBody) =>
@@ -134,6 +151,7 @@ export const aiHooks = {
   useModelSelection,
   usePlanModelSelection,
   useGeneratePlan,
+  usePlanTemplates,
   useApplyPlan,
   useCopilot,
   useUsage,

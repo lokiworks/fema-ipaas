@@ -1,3 +1,4 @@
+import { OptionalServiceKind } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { MatrixCase } from '../support/matrix'
 
@@ -19,6 +20,12 @@ const healthCases: MatrixCase[] = [
         access: { type: 'tenantAdmin' },
         crossScope: false,
         prepare: async () => ({ request: { method: 'POST', url: '/v1/health/backup-confirmation' } }),
+    },
+    {
+        id: 'POST /v1/health/services/check',
+        access: { type: 'tenantAdmin' },
+        crossScope: false,
+        prepare: async () => ({ request: { method: 'POST', url: '/v1/health/services/check', body: { kind: OptionalServiceKind.OBJECT_STORAGE } } }),
     },
     {
         id: 'GET /v1/health/run-metrics',

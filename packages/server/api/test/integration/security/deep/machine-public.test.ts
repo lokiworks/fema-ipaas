@@ -1,7 +1,8 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { ConnectorType, PackageType, PrincipalType, TemplateType } from '@fema-ipaas/shared'
+import { ConnectorType, FlagId, OptionalServiceKind, PackageType, PrincipalType, TemplateType } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { connectorCache } from '../../../../src/app/connectors/metadata/connector-cache'
+import { flagService } from '../../../../src/app/flags/flag.service'
 import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
 import { createMockConnectorMetadata, createMockWorkflowVersion } from '../../../helpers/mocks'
@@ -200,5 +201,20 @@ describe('public endpoints answer unknown or unauthorized callers without side e
         const chat = await w.send({ identity: 'anonymous', request: { method: 'GET', url: `/v1/human-input/chat/${plain.id}` } })
 
         expect([form.status, draftForm.status, chat.status]).toEqual([404, 404, 404])
+    })
+})
+
+describe('the setup wizard service check', () => {
+    it('refuses every caller once the platform has an account', async () => {
+        const w = currentWorld()
+        const kinds = Object.values(OptionalServiceKind)
+        await flagService(w.app.log).save({ id: FlagId.USER_CREATED, value: true })
+
+        const statuses = await Promise.all(kinds.map(async (kind) => {
+            const response = await w.send({ identity: 'anonymous', request: { method: 'POST', url: '/v1/health/setup/service-check', body: { kind } } })
+            return response.status
+        }))
+
+        expect(statuses).toEqual(kinds.map(() => 403))
     })
 })

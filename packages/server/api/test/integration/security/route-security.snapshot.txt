@@ -352,6 +352,8 @@ POST /v1/folders/:id | PROJECT | USER,SERVICE | WORKFLOW:UPDATE | TABLE:folder.i
 POST /v1/global-connections | TENANT_ADMIN | USER,SERVICE | - | -
 POST /v1/global-connections/:id | TENANT_ADMIN | USER,SERVICE | - | -
 POST /v1/health/backup-confirmation | TENANT_ADMIN | USER | - | -
+POST /v1/health/services/check | TENANT_ADMIN | USER | - | -
+POST /v1/health/setup/service-check | PUBLIC | - | - | -
 POST /v1/holiday-calendar | TENANT_ADMIN | USER | - | -
 POST /v1/issues/:id | PROJECT | USER | ISSUE:MANAGE | TABLE:issue.id@PARAM/id
 POST /v1/issues/:id/notes | PROJECT | USER | ISSUE:MANAGE | TABLE:issue.id@PARAM/id

@@ -103,6 +103,7 @@ export const machineReviews: Record<string, Review> = {
     'GET /.well-known/jwks.json': { verdict: 'ok', note: 'OIDC 公钥集，按规范必须公开，只含公钥' },
     'GET /v1/health': { verdict: 'ok', note: '存活探针，只返回 Healthy / Unhealthy' },
     'GET /v1/health/setup': { verdict: 'ok', note: '安装向导用：只在还没有任何账号时返回依赖检查，之后只返回 initialized: true' },
+    'POST /v1/health/setup/service-check': { verdict: 'ok', note: '安装向导用：请求体只有服务类型，检查的是服务器自己配置的地址，不带收件人所以不发邮件；已有账号后一律 403（deep/machine-public.test.ts），带认证限流' },
     'GET /v1/docs': { verdict: 'ok', note: 'OpenAPI 文档页面，不含数据' },
     'GET /v1/connectors/categories': { verdict: 'ok', note: '静态枚举' },
     'POST /v1/authentication/sign-up': { verdict: 'ok', note: '实例已有租户后只允许受邀邮箱注册（ALLOW_OPEN_SIGN_UP 默认关）；带认证限流；deep/machine-public.test.ts 验证未受邀 403 且不建身份' },

@@ -13,12 +13,12 @@ export function startMockLlm({ port }) {
       const userText = lastUserText(body)
       calls.push({ url: request.url, userText })
       if (userText.includes('模型故障')) {
-        response.writeHead(500, { 'content-type': 'application/json' })
+        response.writeHead(500, { 'content-type': 'application/json', connection: 'close' })
         response.end(JSON.stringify({ error: { message: 'upstream overloaded' } }))
         return
       }
       const reply = respond({ userText })
-      response.writeHead(200, { 'content-type': 'application/json' })
+      response.writeHead(200, { 'content-type': 'application/json', connection: 'close' })
       response.end(JSON.stringify({
         id: 'mock-completion',
         choices: [{ index: 0, finish_reason: 'stop', message: { role: 'assistant', content: reply } }],
@@ -54,7 +54,7 @@ function respond({ userText }) {
     return JSON.stringify(unknownSystemPlan())
   }
   if (requestText.includes('入职')) {
-    return JSON.stringify(onboardingPlan({ answers }))
+    return JSON.stringify(onboardingPlan({ answers, withDedupe: !requestText.includes('无去重') }))
   }
   return JSON.stringify({
     displayName: '未识别',
@@ -66,7 +66,7 @@ function respond({ userText }) {
   })
 }
 
-function onboardingPlan({ answers }) {
+function onboardingPlan({ answers, withDedupe }) {
   const chat = (answers.match(/oc_[A-Za-z0-9_-]+/) ?? [])[0] ?? ''
   const department = (answers.match(/od-[A-Za-z0-9_-]+/) ?? [])[0] ?? ''
   return {
@@ -108,6 +108,7 @@ function onboardingPlan({ answers }) {
       ...(department ? [] : ['新员工放进哪个飞书部门？请给出飞书部门 ID']),
     ],
     warnings: [],
+    ...(withDedupe ? { dedupe: { keyPath: 'recordInfo.jobNumber', keyLabel: '工号' } } : {}),
   }
 }
 

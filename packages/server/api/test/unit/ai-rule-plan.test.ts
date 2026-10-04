@@ -105,7 +105,7 @@ describe('aiRulePlanner', () => {
         expect(result.trigger.operationName).toBe('employee_changed')
         expect(result.trigger.input).toMatchObject({ statusScope: 'ONBOARDING', filterColumn: 'recordInfo.changeTypeOID' })
         expect(result.steps.map((step) => step.operationName)).toEqual(['create_bitable_record', 'provision_user', 'send_group_message'])
-        expect(result.steps[1].input).toMatchObject({ name: "{{trigger['output']['employeeInfo']['name']}}", employeeNo: "{{trigger['output']['recordInfo']['jobNumber']}}" })
+        expect(result.steps[1].input).toMatchObject({ name: '{{trigger[\'output\'][\'employeeInfo\'][\'name\']}}', employeeNo: '{{trigger[\'output\'][\'recordInfo\'][\'jobNumber\']}}' })
         expect(result.steps[1].connectionExternalId).toBe('feishu-main')
         expect(result.steps[1].connectionDisplayName).toBe('飞书主连接')
         expect(result.trigger.connectionExternalId).toBeNull()
@@ -126,7 +126,7 @@ describe('aiRulePlanner', () => {
     it('uses the department mapping table of the project and wires the lookup result into the account step', () => {
         const result = plan({ prompt: '员工入职后在飞书开通账号', mappingTables: [DEPARTMENT_TABLE] })
         expect(result.steps.map((step) => step.operationName)).toEqual(['map_fields', 'provision_user'])
-        expect(result.steps[1].input['departmentId']).toBe("{{step_1['output']['departmentId']}}")
+        expect(result.steps[1].input['departmentId']).toBe('{{step_1[\'output\'][\'departmentId\']}}')
         expect(result.questions).toEqual([])
         expect(result.summary).toContain('北森部门到飞书部门')
     })
@@ -155,7 +155,7 @@ describe('aiRulePlanner', () => {
     it('suspends instead of deleting when the description asks to delete the account', () => {
         const result = plan({ prompt: '员工离职后删除飞书账号并通知 IT 群' })
         expect(result.steps.map((step) => step.operationName)).toEqual(['find_user', 'suspend_user', 'send_group_message'])
-        expect(result.steps[1].input['openId']).toBe("{{step_1['output']['open_id']}}")
+        expect(result.steps[1].input['openId']).toBe('{{step_1[\'output\'][\'open_id\']}}')
         expect(result.warnings.some((warning) => warning.includes('不提供删除飞书账号'))).toBe(true)
         expect(result.trigger.input).toMatchObject({ statusScope: 'LEFT' })
     })
@@ -163,7 +163,7 @@ describe('aiRulePlanner', () => {
     it('plans a transfer with the mapped department', () => {
         const result = plan({ prompt: '员工调岗后同步飞书部门', mappingTables: [DEPARTMENT_TABLE] })
         expect(result.steps.map((step) => step.operationName)).toEqual(['find_user', 'map_fields', 'update_user'])
-        expect(result.steps[2].input).toMatchObject({ openId: "{{step_1['output']['open_id']}}", departmentId: "{{step_2['output']['departmentId']}}" })
+        expect(result.steps[2].input).toMatchObject({ openId: '{{step_1[\'output\'][\'open_id\']}}', departmentId: '{{step_2[\'output\'][\'departmentId\']}}' })
     })
 
     it('refuses descriptions it cannot understand with a readable reason', () => {
@@ -228,8 +228,8 @@ describe('aiRulePlanner scenarios beyond hiring and leaving', () => {
         const result = plan({ prompt: '每天对账北森入职员工并通知 HR 群' })
         expect(result.trigger.connectorName).toBe(SCHEDULE)
         expect(result.steps.map((step) => step.operationName)).toEqual(['get_current_date', 'add_subtract_date', 'search_changed_employees', 'send_group_message'])
-        expect(result.steps[2].input).toMatchObject({ startTime: "{{step_2['output']['result']}}", stopTime: "{{step_1['output']['result']}}", statusScope: 'ONBOARDING' })
-        expect(result.steps[3].input['content']).toContain("{{step_3['output']['count']}}")
+        expect(result.steps[2].input).toMatchObject({ startTime: '{{step_2[\'output\'][\'result\']}}', stopTime: '{{step_1[\'output\'][\'result\']}}', statusScope: 'ONBOARDING' })
+        expect(result.steps[3].input['content']).toContain('{{step_3[\'output\'][\'count\']}}')
         expect(result.dedupe).toBeNull()
         expect(result.warnings.some((warning) => warning.includes('不会逐人比对'))).toBe(true)
     })
@@ -314,22 +314,22 @@ describe('aiPlanSteps.assemble', () => {
             steps: [
                 { connector: '@fema-ipaas/connector-missing', name: 'x', displayName: 'gone' },
                 { connector: FEISHU, name: 'find_user', displayName: 'find', input: { lookupBy: 'mobile', value: '1' } },
-                { connector: FEISHU, name: 'suspend_user', displayName: 'suspend', input: { openId: "{{step_2['output']['open_id']}}" } },
-                { connector: FEISHU, name: 'send_group_message', displayName: 'notify', input: { content: "{{step_1['output']['x']}}" } },
+                { connector: FEISHU, name: 'suspend_user', displayName: 'suspend', input: { openId: '{{step_2[\'output\'][\'open_id\']}}' } },
+                { connector: FEISHU, name: 'send_group_message', displayName: 'notify', input: { content: '{{step_1[\'output\'][\'x\']}}' } },
             ],
             catalog: CATALOG,
             connections: [],
         })
         expect(assembled.omittedSteps).toBe(1)
         expect(assembled.steps.map((step) => step.operationName)).toEqual(['find_user', 'suspend_user', 'send_group_message'])
-        expect(assembled.steps[1].input['openId']).toBe("{{step_1['output']['open_id']}}")
+        expect(assembled.steps[1].input['openId']).toBe('{{step_1[\'output\'][\'open_id\']}}')
         expect(assembled.steps[2].input['content']).toBe('')
     })
 })
 
 describe('aiReferences', () => {
     it('detects references to a step', () => {
-        expect(aiReferences.referencesStep({ value: { a: ["{{step_3['output']['x']}}"] }, index: 3 })).toBe(true)
-        expect(aiReferences.referencesStep({ value: "{{step_13['output']['x']}}", index: 3 })).toBe(false)
+        expect(aiReferences.referencesStep({ value: { a: ['{{step_3[\'output\'][\'x\']}}'] }, index: 3 })).toBe(true)
+        expect(aiReferences.referencesStep({ value: '{{step_13[\'output\'][\'x\']}}', index: 3 })).toBe(false)
     })
 })

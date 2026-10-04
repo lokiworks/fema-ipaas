@@ -38,7 +38,7 @@ export function createHarness({ slot }) {
   async function call({ method, path, body }) {
     const response = await fetch(`${env.api}${path}`, {
       method,
-      headers: { 'content-type': 'application/json', authorization: `Bearer ${session.token}` },
+      headers: { ...(body === undefined ? {} : { 'content-type': 'application/json' }), authorization: `Bearer ${session.token}` },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
     const text = await response.text()

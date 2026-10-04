@@ -5537,7 +5537,6 @@
   "The other system refuses calls until {time}; rerun after that": "对方系统在 {time} 之前拒绝调用；这之后再重跑",
   "Rate limits waited out": "限流排队的次数",
   "{waits, plural, =1 {A call hit} other {# calls hit}} the other system rate limit and waited for the time it asked for instead of failing, across {runs, plural, =1 {1 run} other {# runs}}.": "{waits, plural, other {有 # 次调用}}撞上对方系统的限流，没有当作失败，而是按对方给的等待时间排队后重试，涉及 {runs, plural, other {# 次运行}}。",
-  "{connector} ({unit}): {count}": "{connector}（{unit}）：{count} 次",
   "counted per enterprise": "按企业计，同一企业的所有应用共用",
   "counted per API, app and tenant": "按接口、应用、租户分别计",
   "counting unit not declared": "对方未声明计数单位",
@@ -5620,5 +5619,6 @@
   "{count, plural, =1 {1 added step to confirm} other {# added steps to confirm}}": "{count, plural, other {自动加入的节点待确认 · # 个}}",
   "Added for you": "自动加入",
   "Added for you. Open it, check it and confirm.": "自动加入的节点，打开检查后确认",
-  "Step not confirmed. Open it, check it, then confirm it.": "节点还没有确认：打开它检查后，点「确认无误」"
+  "Step not confirmed. Open it, check it, then confirm it.": "节点还没有确认：打开它检查后，点「确认无误」",
+  "{connector} ({unit}): {total}": "{connector}（{unit}）：{total} 次"
 }

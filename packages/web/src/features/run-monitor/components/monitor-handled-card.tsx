@@ -77,10 +77,10 @@ export function MonitorHandledCard({
               ? null
               : handled.rateLimitSources
                   .map((source) =>
-                    t('{connector} ({unit}): {count}', {
+                    t('{connector} ({unit}): {total}', {
                       connector: connectorName(source.connectorName),
                       unit: rateLimitUnitLabel(source.unit),
-                      count: number(source.count),
+                      total: number(source.count),
                     }),
                   )
                   .join(t('listSeparator'))

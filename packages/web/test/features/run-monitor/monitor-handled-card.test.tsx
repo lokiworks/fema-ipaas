@@ -2,7 +2,11 @@
  * @vitest-environment jsdom
  */
 /* eslint-disable testing-library/no-unnecessary-act */
-import { RateLimitUnit, ReliabilityEventKind, RunMonitorHandled } from '@fema-ipaas/shared';
+import {
+  RateLimitUnit,
+  ReliabilityEventKind,
+  RunMonitorHandled,
+} from '@fema-ipaas/shared';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { describe, expect, it, vi } from 'vitest';
@@ -23,15 +27,29 @@ const HANDLED: RunMonitorHandled = {
   rateLimitWaits: 6,
   rateLimitedRuns: 3,
   rateLimitSources: [
-    { connectorName: '@fema-ipaas/connector-feishu', unit: RateLimitUnit.PER_API_APP_TENANT, count: 5 },
-    { connectorName: '@fema-ipaas/connector-beisen', unit: RateLimitUnit.PER_ENTERPRISE, count: 1 },
+    {
+      connectorName: '@fema-ipaas/connector-feishu',
+      unit: RateLimitUnit.PER_API_APP_TENANT,
+      count: 5,
+    },
+    {
+      connectorName: '@fema-ipaas/connector-beisen',
+      unit: RateLimitUnit.PER_ENTERPRISE,
+      count: 1,
+    },
   ],
   autoRetries: 8,
   retriedRuns: 4,
   caughtUpEvents: 0,
 };
 
-async function render({ handled, onOpenHandled }: { handled: RunMonitorHandled; onOpenHandled: (kind: ReliabilityEventKind) => void }) {
+async function render({
+  handled,
+  onOpenHandled,
+}: {
+  handled: RunMonitorHandled;
+  onOpenHandled: (kind: ReliabilityEventKind) => void;
+}) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -52,12 +70,23 @@ async function render({ handled, onOpenHandled }: { handled: RunMonitorHandled; 
 
 describe('MonitorHandledCard', () => {
   it('shows the three reliability counts with the rate limit counted in the unit the other system declared', async () => {
-    const container = await render({ handled: HANDLED, onOpenHandled: vi.fn() });
+    const view = await render({
+      handled: HANDLED,
+      onOpenHandled: vi.fn(),
+    });
 
-    expect(container.querySelector('[data-testid=handled-rate-limit]')?.textContent).toBe('6');
-    expect(container.querySelector('[data-testid=handled-retries]')?.textContent).toBe('8');
-    expect(container.querySelector('[data-testid=handled-catch-up]')?.textContent).toBe('0');
-    const detail = container.querySelector('[data-testid=handled-rate-limit-detail]')?.textContent ?? '';
+    expect(
+      view.querySelector('[data-testid=handled-rate-limit]')?.textContent,
+    ).toBe('6');
+    expect(
+      view.querySelector('[data-testid=handled-retries]')?.textContent,
+    ).toBe('8');
+    expect(
+      view.querySelector('[data-testid=handled-catch-up]')?.textContent,
+    ).toBe('0');
+    const detail =
+      view.querySelector('[data-testid=handled-rate-limit-detail]')
+        ?.textContent ?? '';
     expect(detail).toContain('feishu');
     expect(detail).toContain('counted per API, app and tenant');
     expect(detail).toContain('counted per enterprise');
@@ -65,8 +94,11 @@ describe('MonitorHandledCard', () => {
 
   it('opens the runs behind a count and has nothing to open for a zero count', async () => {
     const onOpenHandled = vi.fn();
-    const container = await render({ handled: HANDLED, onOpenHandled });
-    const buttonOf = (testId: string) => container.querySelector(`[data-testid=${testId}]`)?.parentElement?.querySelector('button');
+    const view = await render({ handled: HANDLED, onOpenHandled });
+    const buttonOf = (testId: string) =>
+      view
+        .querySelector(`[data-testid=${testId}]`)
+        ?.parentElement?.querySelector('button');
 
     await act(async () => {
       buttonOf('handled-retries')?.click();

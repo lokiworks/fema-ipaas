@@ -218,16 +218,17 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
           {issue.kind === IssueKind.TRIGGER && (
             <AffectedWorkflowsCard issueId={issue.id} />
           )}
-          {issue.kind !== IssueKind.DRIFT && issue.kind !== IssueKind.TRIGGER && (
-            <>
-              <TrendCard issueId={issue.id} />
-              <AffectedRunsCard
-                issueId={issue.id}
-                canReplay={canReplay}
-                onReplay={() => setReplayOpen(true)}
-              />
-            </>
-          )}
+          {issue.kind !== IssueKind.DRIFT &&
+            issue.kind !== IssueKind.TRIGGER && (
+              <>
+                <TrendCard issueId={issue.id} />
+                <AffectedRunsCard
+                  issueId={issue.id}
+                  canReplay={canReplay}
+                  onReplay={() => setReplayOpen(true)}
+                />
+              </>
+            )}
           <ActivityCard
             issueId={issue.id}
             canWrite={canWrite}
@@ -727,10 +728,10 @@ function OverviewCard({
     [t('Affected workflows'), String(issue.affectedWorkflows)],
     ...(issue.kind === IssueKind.TRIGGER
       ? [
-          [
-            t('Connection'),
-            issue.connectionExternalId ?? '—',
-          ] satisfies [string, string],
+          [t('Connection'), issue.connectionExternalId ?? '—'] satisfies [
+            string,
+            string,
+          ],
         ]
       : []),
     [t('Workflow'), issue.workflowDisplayName ?? '—'],

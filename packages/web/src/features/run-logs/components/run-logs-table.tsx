@@ -423,7 +423,9 @@ function CompactWorkflowCell({
     row.type === RunLogType.DEBUG || isNil(row.versionNumber)
       ? null
       : `v${row.versionNumber}`,
-    isNil(row.durationMs) ? null : formatUtils.formatDuration(row.durationMs, true),
+    isNil(row.durationMs)
+      ? null
+      : formatUtils.formatDuration(row.durationMs, true),
     row.errorCount > 0
       ? t('{count, plural, =1 {1 error} other {# errors}}', {
           count: row.errorCount,

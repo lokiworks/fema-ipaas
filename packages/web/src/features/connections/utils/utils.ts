@@ -24,8 +24,8 @@ import { CheckIcon, UnplugIcon, XIcon } from 'lucide-react';
 
 import { OAuth2App } from '@/features/connections/utils/oauth2-utils';
 import { connectorErrorGuideUtils } from '@/features/connectors/utils/connector-error-guides';
-import { failureText } from '@/features/issues/utils/failure-text';
 import { formUtils } from '@/features/connectors/utils/form-utils';
+import { failureText } from '@/features/issues/utils/failure-text';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { connectionsApi } from '../api/connections';
@@ -57,7 +57,9 @@ export const connectionUtils = {
       msg: failureText.localize(message),
     });
     const guide = connectorErrorGuideUtils.guideFor({ connectorName, message });
-    return guide === null ? base : `${base}\n${t('How to fix: {guide}', { guide })}`;
+    return guide === null
+      ? base
+      : `${base}\n${t('How to fix: {guide}', { guide })}`;
   },
   getStatusIcon(status: ConnectionStatus): {
     variant: 'default' | 'success' | 'error';

@@ -4,7 +4,9 @@ const MOBILE_BREAKPOINT = 768;
 const COMPACT_BREAKPOINT = 1024;
 
 function useBelowWidth(breakpoint: number) {
-  const [below, setBelow] = React.useState<boolean | undefined>(undefined);
+  const [below, setBelow] = React.useState<boolean | undefined>(() =>
+    typeof window === 'undefined' ? undefined : window.innerWidth < breakpoint,
+  );
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);

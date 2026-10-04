@@ -5537,7 +5537,6 @@
   "The other system refuses calls until {time}; rerun after that": "The other system refuses calls until {time}; rerun after that",
   "Rate limits waited out": "Rate limits waited out",
   "{waits, plural, =1 {A call hit} other {# calls hit}} the other system rate limit and waited for the time it asked for instead of failing, across {runs, plural, =1 {1 run} other {# runs}}.": "{waits, plural, =1 {A call hit} other {# calls hit}} the other system rate limit and waited for the time it asked for instead of failing, across {runs, plural, =1 {1 run} other {# runs}}.",
-  "{connector} ({unit}): {count}": "{connector} ({unit}): {count}",
   "counted per enterprise": "counted per enterprise",
   "counted per API, app and tenant": "counted per API, app and tenant",
   "counting unit not declared": "counting unit not declared",
@@ -5620,5 +5619,6 @@
   "{count, plural, =1 {1 added step to confirm} other {# added steps to confirm}}": "{count, plural, =1 {1 added step to confirm} other {# added steps to confirm}}",
   "Added for you": "Added for you",
   "Added for you. Open it, check it and confirm.": "Added for you. Open it, check it and confirm.",
-  "Step not confirmed. Open it, check it, then confirm it.": "Step not confirmed. Open it, check it, then confirm it."
+  "Step not confirmed. Open it, check it, then confirm it.": "Step not confirmed. Open it, check it, then confirm it.",
+  "{connector} ({unit}): {total}": "{connector} ({unit}): {total}"
 }

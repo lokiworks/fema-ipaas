@@ -73,9 +73,10 @@ export function MonitorPage() {
       : null;
   const { summaries: connectorSummaries } =
     connectorsHooks.useConnectorSummariesByNames({
-      names: summary?.handled.rateLimitSources.map(
-        (source) => source.connectorName,
-      ) ?? [],
+      names:
+        summary?.handled.rateLimitSources.map(
+          (source) => source.connectorName,
+        ) ?? [],
     });
   const connectorName = (name: string) =>
     connectorSummaries.find((item) => item.name === name)?.displayName ?? name;

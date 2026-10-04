@@ -1,5 +1,8 @@
 import {
   EncryptionKeySource,
+  OptionalServiceKind,
+  ServiceClearBlock,
+  ServiceConfigSource,
   SystemOverview,
   UpdateCheckStatus,
 } from '@fema-ipaas/shared';
@@ -22,15 +25,19 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BackupCheckRow } from '@/features/backup';
 import {
   CheckLevel,
   CheckRow,
   DeploymentKind,
   RunbookSteps,
   ServiceCheck,
+  ServiceConfigDialog,
   ServiceProblem,
+  ServiceSourceBadge,
   ServiceStatusBadge,
   serviceMeta,
+  serviceSettingsHooks,
   systemApi,
   systemHooks,
   systemRunbook,
@@ -251,6 +258,7 @@ function UpgradeGuide({
           <CardTitle>{t('1. Before you upgrade')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col divide-y">
+          <BackupCheckRow overview={overview} />
           {checks.map((check) => (
             <CheckRow key={check.id} level={check.level} title={check.title}>
               {check.text}
@@ -316,49 +324,104 @@ function UpgradeGuide({
 
 function ServicesCard({ overview }: { overview: SystemOverview }) {
   const { data: user } = userHooks.useCurrentUser();
+  const { data: settings } = serviceSettingsHooks.useList();
+  const clear = serviceSettingsHooks.useClear();
+  const [editing, setEditing] = useState<OptionalServiceKind | null>(null);
+  const editingSetting = settings?.find((setting) => setting.kind === editing);
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t('Optional services')}</CardTitle>
         <CardDescription>
           {t(
-            'None of these are required. Features that need an unconfigured service stay switched off instead of failing. Configure them with environment variables and restart the app.',
+            'None of these are required. Features that need an unconfigured service stay switched off instead of failing. Set them up here, or with environment variables. Environment variables take priority and make a service read-only here.',
           )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col divide-y">
-        {overview.services.map((service) => (
-          <div key={service.kind} className="flex flex-col gap-2 py-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">
-                {serviceMeta.name({ kind: service.kind })}
+        {overview.services.map((service) => {
+          const setting = settings?.find(
+            (candidate) => candidate.kind === service.kind,
+          );
+          return (
+            <div
+              key={service.kind}
+              className="flex flex-col gap-2 py-3"
+              data-testid={`service-${service.kind}`}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium">
+                  {serviceMeta.name({ kind: service.kind })}
+                </span>
+                <ServiceStatusBadge service={service} />
+                {setting && <ServiceSourceBadge setting={setting} />}
+                {service.detail && (
+                  <span className="truncate text-xs text-muted-foreground">
+                    {service.detail}
+                  </span>
+                )}
+                {setting && (
+                  <div className="ml-auto flex gap-2">
+                    {setting.canClear && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        loading={clear.isPending}
+                        onClick={() => clear.mutate({ kind: service.kind })}
+                      >
+                        {t('Remove saved settings')}
+                      </Button>
+                    )}
+                    {setting.source !== ServiceConfigSource.ENVIRONMENT && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setEditing(service.kind)}
+                      >
+                        {setting.source === ServiceConfigSource.SAVED
+                          ? t('Edit')
+                          : t('Set up')}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {service.enabled
+                  ? serviceMeta.whenEnabled({ kind: service.kind })
+                  : serviceMeta.whenDisabled({ kind: service.kind })}
               </span>
-              <ServiceStatusBadge service={service} />
-              {service.detail && (
-                <span className="truncate text-xs text-muted-foreground">
-                  {service.detail}
+              {setting?.clearBlock ===
+                ServiceClearBlock.FILES_IN_OBJECT_STORAGE && (
+                <span className="text-xs text-muted-foreground">
+                  {t(
+                    'Files are stored in this bucket, so the settings cannot be removed.',
+                  )}
                 </span>
               )}
+              {service.problem && <ServiceProblem problem={service.problem} />}
+              {service.enabled && (
+                <ServiceCheck
+                  kind={service.kind}
+                  check={systemApi.checkService}
+                  testRecipient={user?.email}
+                />
+              )}
+              <span className="font-mono text-xs text-muted-foreground">
+                {serviceMeta.variables({ kind: service.kind })}
+              </span>
             </div>
-            <span className="text-xs text-muted-foreground">
-              {service.enabled
-                ? serviceMeta.whenEnabled({ kind: service.kind })
-                : serviceMeta.whenDisabled({ kind: service.kind })}
-            </span>
-            {service.problem && <ServiceProblem problem={service.problem} />}
-            {service.enabled && (
-              <ServiceCheck
-                kind={service.kind}
-                check={systemApi.checkService}
-                testRecipient={user?.email}
-              />
-            )}
-            <span className="font-mono text-xs text-muted-foreground">
-              {serviceMeta.variables({ kind: service.kind })}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
+      {editingSetting && (
+        <ServiceConfigDialog
+          setting={editingSetting}
+          open
+          onOpenChange={(open) => !open && setEditing(null)}
+          testRecipient={user?.email}
+        />
+      )}
     </Card>
   );
 }
@@ -377,14 +440,6 @@ function preUpgradeChecks({
     workerVersions: overview.workers.versions,
   });
   return [
-    {
-      id: 'backup',
-      level: 'warning',
-      title: t('Back up the database'),
-      text: t(
-        'Migrations cannot be undone. Take a backup right before upgrading; it is the only way back. See Backup and restore.',
-      ),
-    },
     {
       id: 'key',
       level: keyMissing ? 'error' : 'ok',

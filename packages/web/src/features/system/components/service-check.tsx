@@ -68,7 +68,7 @@ export function ServiceCheck({
   );
 }
 
-function CheckOutcome({
+export function CheckOutcome({
   kind,
   result,
 }: {

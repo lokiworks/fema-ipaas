@@ -31,7 +31,7 @@ export function ServicesStep({
       <Alert>
         <AlertDescription>
           {t(
-            'These services are set with environment variables on the server and take effect after a restart. Your answers so far are kept while you restart, except the password.',
+            'You can skip this step: once setup is done, set these services under System and upgrades, Optional services, without restarting. To use environment variables instead, set them on the server and restart the app; your answers so far are kept while you restart, except the password.',
           )}
         </AlertDescription>
       </Alert>

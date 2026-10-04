@@ -3,7 +3,7 @@ import { WorkflowRetryStrategy, WorkflowTrigger } from '@fema-ipaas/shared';
 import {
   WriteStep,
   workflowValidator,
-} from '@/app/builder/validation/workflow-validator';
+} from '@/features/workflows/utils/workflow-validator';
 
 function stepOrderOf({ trigger }: { trigger: WorkflowTrigger }): string[] {
   return workflowValidator

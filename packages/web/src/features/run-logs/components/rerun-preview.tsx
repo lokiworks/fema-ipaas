@@ -3,14 +3,11 @@ import { WorkflowRetryStrategy, WorkflowTrigger } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 
-import { useValidationFor } from '@/app/builder/validation/use-workflow-validation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { workflowsApi } from '@/features/workflows';
+import { useValidationFor } from '@/features/workflows/hooks/use-validation-for';
 
-import {
-  RerunGroup,
-  rerunPreviewUtils,
-} from '../utils/rerun-preview-utils';
+import { RerunGroup, rerunPreviewUtils } from '../utils/rerun-preview-utils';
 
 export function RerunPreview({
   groups,
@@ -146,9 +143,12 @@ function versionText({
   }
   return isNil(target.number)
     ? t('Restarts from the trigger on the latest published version.')
-    : t('Restarts from the trigger on the latest published version v{version}.', {
-        version: target.number,
-      });
+    : t(
+        'Restarts from the trigger on the latest published version v{version}.',
+        {
+          version: target.number,
+        },
+      );
 }
 
 function useTargetVersion({
@@ -176,7 +176,11 @@ function useTargetVersion({
   });
   const numbersQuery = useQuery({
     queryKey: ['rerun-preview-numbers', group.workflowId],
-    queryFn: () => workflowsApi.listVersions(group.workflowId, { limit: 100 }),
+    queryFn: () =>
+      workflowsApi.listVersions(group.workflowId, {
+        cursor: undefined,
+        limit: 100,
+      }),
     enabled: !original,
     staleTime: 30_000,
   });
@@ -188,7 +192,11 @@ function useTargetVersion({
     : workflowQuery.isLoading ||
       numbersQuery.isLoading ||
       (!isNil(publishedId) && versionQuery.isLoading);
-  return { number, trigger: versionQuery.data?.version.trigger ?? null, isLoading };
+  return {
+    number,
+    trigger: versionQuery.data?.version.trigger ?? null,
+    isLoading,
+  };
 }
 
 function numberOf({

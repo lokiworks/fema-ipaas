@@ -5,9 +5,9 @@ import { Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { ValidationTab } from '@/features/workflows/utils/workflow-validator';
 
 import { useBuilderStateContext } from '../../builder-hooks';
-import { ValidationTab } from '../../validation/workflow-validator';
 
 import LargeWidgetWrapper from './large-widget-wrapper';
 

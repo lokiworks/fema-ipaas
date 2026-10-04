@@ -44,7 +44,7 @@ async function refusal(mapping: unknown): Promise<string> {
         return ''
     }
     catch (error) {
-        return error instanceof ApplicationError ? String(Reflect.get(error.error.params, 'message')) : ''
+        return error instanceof ApplicationError ? String(Reflect.get(error.error.params ?? {}, 'message')) : ''
     }
 }
 

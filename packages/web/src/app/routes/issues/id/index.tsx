@@ -396,7 +396,9 @@ function InsightCard({
           <>
             <p className="text-sm">{issueUiUtils.causeText(insight)}</p>
             <p className="text-sm" data-testid="issue-fix-owner">
-              <span className="text-muted-foreground">{t('Who can fix it')}</span>{' '}
+              <span className="text-muted-foreground">
+                {t('Who can fix it')}
+              </span>{' '}
               <span className="font-medium">
                 {issueUiUtils.ownerLabel(insight.owner)}
               </span>

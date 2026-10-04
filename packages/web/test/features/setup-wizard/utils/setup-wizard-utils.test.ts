@@ -5,7 +5,7 @@ import {
   setupWizardUtils,
   WizardDraft,
   WizardStep,
-} from './setup-wizard-utils';
+} from '@/features/setup-wizard/utils/setup-wizard-utils';
 
 const validDraft: WizardDraft = {
   fullName: 'Lin Xiao',

@@ -6,8 +6,10 @@ import {
 import { t } from 'i18next';
 
 import { mappingIssueText } from '@/features/mapping-tables/utils/mapping-issue-text';
-
-import { ValidationCode, ValidationIssue } from './workflow-validator';
+import {
+  ValidationCode,
+  ValidationIssue,
+} from '@/features/workflows/utils/workflow-validator';
 
 function messageOf(issue: ValidationIssue): string {
   return MESSAGES[issue.code](issue.params);

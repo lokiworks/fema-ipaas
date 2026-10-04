@@ -98,9 +98,9 @@ function RerunChoice({
   const groups = rerunPreviewUtils.groupRuns({
     runs: eligible.map((row) => ({
       workflowId: row.workflowId,
-      workflowName: row.workflowDisplayName,
+      workflowName: row.workflowDisplayName ?? null,
       workflowVersionId: row.workflowVersionId,
-      versionNumber: row.versionNumber,
+      versionNumber: row.versionNumber ?? null,
       failedStepName: row.failedStep?.name ?? null,
     })),
   });

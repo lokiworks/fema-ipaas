@@ -8,10 +8,6 @@ import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { LeftSideBarType } from '@/app/builder/types';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
-import {
-  ValidationIssue,
-  ValidationSeverity,
-} from '@/app/builder/validation/workflow-validator';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,6 +18,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  ValidationIssue,
+  ValidationSeverity,
+} from '@/features/workflows/utils/workflow-validator';
 
 import { PublishTarget, publishGuardLabels } from './publish-guard-labels';
 

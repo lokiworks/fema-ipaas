@@ -223,7 +223,7 @@ function suspendStep({ text }: { text: Text }): StepDraft {
         connector: FEISHU,
         name: 'suspend_user',
         displayName: text.stepNames.suspend,
-        input: { openId: "{{step_1['output']['open_id']}}" },
+        input: { openId: '{{step_1[\'output\'][\'open_id\']}}' },
     }
 }
 
@@ -232,7 +232,7 @@ function updateDepartmentStep({ facts, text, mapStepIndex }: { facts: Facts, tex
         connector: FEISHU,
         name: 'update_user',
         displayName: text.stepNames.update,
-        input: { openId: "{{step_1['output']['open_id']}}", ...departmentInput({ facts, mapStepIndex }) },
+        input: { openId: '{{step_1[\'output\'][\'open_id\']}}', ...departmentInput({ facts, mapStepIndex }) },
     }
 }
 

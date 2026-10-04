@@ -12,13 +12,13 @@ import { LeftSideBarType } from '@/app/builder/types';
 import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
-import {
-  ValidationIssue,
-  ValidationSeverity,
-} from '@/app/builder/validation/workflow-validator';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import {
+  ValidationIssue,
+  ValidationSeverity,
+} from '@/features/workflows/utils/workflow-validator';
 import { cn } from '@/lib/utils';
 
 export function ValidationPanel() {

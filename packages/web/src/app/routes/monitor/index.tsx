@@ -67,8 +67,8 @@ export function MonitorPage() {
     effective.projectIds.length === 1
       ? effective.projectIds[0]
       : effective.projectIds.length === 0 && options?.projects.length === 1
-        ? options.projects[0].id
-        : null;
+      ? options.projects[0].id
+      : null;
   const rangeLabel = runMonitorLabels.range(effective.range);
   const takenNames = [t('Default view'), ...myViews.map((item) => item.name)];
 

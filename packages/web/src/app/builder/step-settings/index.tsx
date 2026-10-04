@@ -27,6 +27,11 @@ import {
 } from '@/features/connectors';
 import { executionUtils } from '@/features/executions';
 import { projectCollectionUtils } from '@/features/projects';
+import {
+  ValidationSeverity,
+  ValidationTab,
+  workflowValidator,
+} from '@/features/workflows/utils/workflow-validator';
 import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import { ActionErrorHandlingForm } from '../connector-properties/action-error-handling';
@@ -40,11 +45,6 @@ import {
 import { TestStepCTAButton } from '../test-step/test-step-cta-button';
 import { useStepDisplayNumbers } from '../use-step-display-numbers';
 import { useBuilderValidation } from '../validation/validation-context';
-import {
-  ValidationSeverity,
-  ValidationTab,
-  workflowValidator,
-} from '../validation/workflow-validator';
 
 import { CodeSettings } from './code-settings';
 import { ComponentSettings } from './component-settings';

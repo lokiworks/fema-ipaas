@@ -11,11 +11,6 @@ import React, { useMemo } from 'react';
 
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
-import {
-  ValidationCode,
-  ValidationSeverity,
-  workflowValidator,
-} from '@/app/builder/validation/workflow-validator';
 import { InvalidStepIcon } from '@/components/custom/alert-icon';
 import {
   Tooltip,
@@ -24,6 +19,11 @@ import {
 } from '@/components/ui/tooltip';
 import { connectorSelectorUtils } from '@/features/connectors';
 import { StepStatusIcon, executionUtils } from '@/features/executions';
+import {
+  ValidationCode,
+  ValidationSeverity,
+  workflowValidator,
+} from '@/features/workflows/utils/workflow-validator';
 
 import { useBuilderStateContext } from '../../../builder-hooks';
 import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';

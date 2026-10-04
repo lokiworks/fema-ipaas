@@ -7,7 +7,7 @@ describe('actionRunOutcome.toOutcome', () => {
         const message = JSON.stringify({ __apErrorVersion: 1, message: 'Ticket queue is full (E_QUEUE)', raw: 'Error: x\n    at IAction.<anonymous> (/srv/app/file.js:1:1)' })
 
         const outcome = actionRunOutcome.toOutcome({
-            response: { status: EngineResponseStatus.OK, response: { success: false, output: null, message } },
+            response: { status: EngineResponseStatus.OK, response: { success: false, input: {}, output: null, message } },
             durationMs: 5,
         })
 
@@ -16,7 +16,7 @@ describe('actionRunOutcome.toOutcome', () => {
 
     it('keeps a plain error message as it is', () => {
         const outcome = actionRunOutcome.toOutcome({
-            response: { status: EngineResponseStatus.OK, response: { success: false, output: null, message: 'plain failure' } },
+            response: { status: EngineResponseStatus.OK, response: { success: false, input: {}, output: null, message: 'plain failure' } },
             durationMs: 5,
         })
 

@@ -17,7 +17,7 @@ import {
   ValidationSeverity,
   ValidationTab,
   workflowValidator,
-} from '@/app/builder/validation/workflow-validator';
+} from '@/features/workflows/utils/workflow-validator';
 
 const DATE = '2026-05-02T00:00:00.000Z';
 

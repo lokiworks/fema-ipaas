@@ -20,11 +20,11 @@ import { OutputSchema } from '@/components/custom/smart-output-viewer/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VirtualizedList } from '@/components/ui/virtualized-list';
 import { connectorsApi } from '@/features/connectors';
+import { workflowValidator } from '@/features/workflows/utils/workflow-validator';
 import { cn } from '@/lib/utils';
 
 import { ScrollArea } from '../../../components/ui/scroll-area';
 import { BuilderState, useBuilderStateContext } from '../builder-hooks';
-import { workflowValidator } from '../validation/workflow-validator';
 
 import { DataSelectorNode } from './data-selector-node';
 import {

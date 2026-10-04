@@ -1,9 +1,8 @@
 import { createContext, useContext } from 'react';
 
-import {
-  useWorkflowValidation,
-  WorkflowValidationState,
-} from './use-workflow-validation';
+import { WorkflowValidationState } from '@/features/workflows/hooks/use-validation-for';
+
+import { useWorkflowValidation } from './use-workflow-validation';
 
 const ValidationContext = createContext<WorkflowValidationState | null>(null);
 

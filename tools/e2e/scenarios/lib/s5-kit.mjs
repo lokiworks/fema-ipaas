@@ -294,6 +294,19 @@ export async function uiLogin({ browser, user, colorScheme = 'light', width = 14
   if (colorScheme === 'dark') {
     await context.addInitScript(() => localStorage.setItem('fema.theme', 'dark'))
   }
+  await context.addInitScript(() => {
+    const hideOverlay = () => {
+      const style = document.createElement('style')
+      style.textContent = 'vite-plugin-checker-error-overlay { display: none !important; }'
+      document.documentElement.appendChild(style)
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hideOverlay)
+    }
+    else {
+      hideOverlay()
+    }
+  })
   const page = await context.newPage()
   page.on('pageerror', (error) => process.stdout.write(`pageerror ${error.message.slice(0, 160)}\n`))
   const attempt = async (tries) => {

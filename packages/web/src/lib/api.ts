@@ -10,6 +10,7 @@ import axios, {
   HttpStatusCode,
   isAxiosError,
 } from 'axios';
+import { t } from 'i18next';
 import qs from 'qs';
 
 import { authenticationSession } from '@/lib/authentication-session';
@@ -184,10 +185,18 @@ export const api = {
   extractServerErrorMessage(error: unknown, fallback: string): string {
     if (api.isError(error)) {
       const data = error.response?.data as ApplicationErrorParams | undefined;
+      const params = data?.params;
+      const messageKey =
+        params && 'messageKey' in params ? params.messageKey : undefined;
+      if (typeof messageKey === 'string' && messageKey.length > 0) {
+        const messageParams =
+          params && 'messageParams' in params
+            ? params.messageParams
+            : undefined;
+        return t(messageKey, interpolationValues(messageParams));
+      }
       const message =
-        data?.params && 'message' in data.params
-          ? data.params.message
-          : undefined;
+        params && 'message' in params ? params.message : undefined;
       if (typeof message === 'string' && message.length > 0) {
         return message;
       }
@@ -254,3 +263,15 @@ export const api = {
     }),
   httpStatus: HttpStatusCode,
 };
+
+function interpolationValues(value: unknown): Record<string, string | number> {
+  if (typeof value !== 'object' || value === null) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      (entry): entry is [string, string | number] =>
+        typeof entry[1] === 'string' || typeof entry[1] === 'number',
+    ),
+  );
+}

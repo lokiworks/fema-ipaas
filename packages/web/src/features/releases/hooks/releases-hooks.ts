@@ -2,7 +2,9 @@ import {
   ApproveWorkflowReleaseRequestBody,
   CreateWorkflowReleaseRequestBody,
   DeployToTestRequestBody,
+  ListReleaseChangesRequestQuery,
   ListWorkflowReleasesRequestQuery,
+  ReleasePreviewRequestQuery,
   RejectWorkflowReleaseRequestBody,
   RollbackWorkflowRequestBody,
   UpdateEnvironmentSettingsRequestBody,
@@ -25,17 +27,41 @@ function useReleases(request: ListWorkflowReleasesRequestQuery) {
   });
 }
 
-function useHistory({
+function useChanges(request: ListReleaseChangesRequestQuery) {
+  return useQuery({
+    queryKey: [RELEASES_KEY, 'changes', request],
+    queryFn: () => releasesApi.changes(request),
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
+  });
+}
+
+function useWorkflowChanges({
   projectId,
-  cursor,
+  workflowId,
 }: {
   projectId: string;
-  cursor?: string;
+  workflowId: string;
 }) {
   return useQuery({
-    queryKey: [RELEASES_KEY, 'history', projectId, cursor],
-    queryFn: () => releasesApi.history({ projectId, cursor }),
-    meta: { showErrorDialog: true, loadSubsetOptions: {} },
+    queryKey: [RELEASES_KEY, 'workflow-changes', projectId, workflowId],
+    queryFn: () =>
+      releasesApi.changes({ projectId, workflowId, limit: MAX_PANEL_CHANGES }),
+  });
+}
+
+function usePreview({
+  request,
+  enabled,
+}: {
+  request: ReleasePreviewRequestQuery;
+  enabled: boolean;
+}) {
+  return useQuery({
+    queryKey: [RELEASES_KEY, 'preview', request],
+    queryFn: () => releasesApi.preview(request),
+    enabled,
+    retry: false,
+    gcTime: 0,
   });
 }
 
@@ -133,6 +159,9 @@ function useUpsertReplacement() {
       void queryClient.invalidateQueries({
         queryKey: [RELEASES_KEY, 'replacements'],
       });
+      void queryClient.invalidateQueries({
+        queryKey: [RELEASES_KEY, 'environments'],
+      });
       toast.success(t('Test connection saved'));
     },
     onError: (error) =>
@@ -149,6 +178,9 @@ function useDeleteReplacement() {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: [RELEASES_KEY, 'replacements'],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [RELEASES_KEY, 'environments'],
       });
     },
     onError: (error) =>
@@ -227,10 +259,13 @@ function useRollback() {
 }
 
 const RELEASES_KEY = 'workflow-releases';
+const MAX_PANEL_CHANGES = 100;
 
 export const releasesHooks = {
   useReleases,
-  useHistory,
+  useChanges,
+  useWorkflowChanges,
+  usePreview,
   usePendingCount,
   useRelease,
   useCreateRelease,

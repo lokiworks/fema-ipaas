@@ -1,15 +1,15 @@
-import { Permission } from '@fema-ipaas/core-utils';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
-  ApplicationEvent,
-  ApplicationEventName,
   ConnectionWithoutSensitiveData,
+  ReleaseChangeAction,
+  ReleaseChangeWithDetails,
   WorkflowReleaseStatus,
   WorkflowReleaseWithWorkflow,
 } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import { ArrowRight, Rocket, Trash2 } from 'lucide-react';
+import { ArrowRight, CircleAlert, Rocket, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -48,7 +48,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { auditEventUtils } from '@/features/audit-events';
 import { connectionsApi } from '@/features/connections/api/connections';
 import { issueMembersHooks } from '@/features/issues';
 import { projectCollectionUtils } from '@/features/projects';
@@ -82,9 +81,7 @@ function ReleasesPage() {
             {t('Release requests')}
           </TabsTrigger>
         )}
-        {project.releasesEnabled && (
-          <TabsTrigger value={HISTORY_TAB}>{t('Change history')}</TabsTrigger>
-        )}
+        <TabsTrigger value={HISTORY_TAB}>{t('Change history')}</TabsTrigger>
       </TabsList>
       <TabsContent value={ENVIRONMENTS_TAB}>
         <EnvironmentsSection
@@ -96,11 +93,9 @@ function ReleasesPage() {
           <ReleaseRequests />
         </TabsContent>
       )}
-      {project.releasesEnabled && (
-        <TabsContent value={HISTORY_TAB}>
-          <ChangeHistory />
-        </TabsContent>
-      )}
+      <TabsContent value={HISTORY_TAB}>
+        <ChangeHistory />
+      </TabsContent>
     </Tabs>
   );
 }
@@ -239,27 +234,27 @@ function ReleaseRequests() {
 function ChangeHistory() {
   const projectId = authenticationSession.getProjectId()!;
   const [cursors, setCursors] = useState<string[]>([]);
-  const { data, isLoading } = releasesHooks.useHistory({
+  const { data, isLoading } = releasesHooks.useChanges({
     projectId,
     cursor: cursors[cursors.length - 1],
   });
   if (isLoading) {
     return <Skeleton className="h-64 w-full" />;
   }
-  const events = data?.data ?? [];
+  const changes = data?.data ?? [];
   return (
     <div className="flex flex-col gap-4">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-44">{t('Time')}</TableHead>
-            <TableHead className="w-48">{t('Actor')}</TableHead>
+            <TableHead className="w-44">{t('Actor')}</TableHead>
             <TableHead className="w-40">{t('Action')}</TableHead>
             <TableHead>{t('Details')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.length === 0 && (
+          {changes.length === 0 && (
             <TableRow>
               <TableCell colSpan={4} className="text-muted-foreground">
                 {t(
@@ -268,22 +263,19 @@ function ChangeHistory() {
               </TableCell>
             </TableRow>
           )}
-          {events.map((event) => (
-            <TableRow key={event.id}>
+          {changes.map((change) => (
+            <TableRow key={change.id}>
               <TableCell>
-                <FormattedDate date={new Date(event.created)} />
+                <FormattedDate date={new Date(change.created)} />
               </TableCell>
               <TableCell className="truncate">
-                {event.userEmail ?? '—'}
+                {change.actorName || '—'}
               </TableCell>
-              <TableCell>{auditEventUtils.actionLabel(event.action)}</TableCell>
+              <TableCell>
+                {releaseUiUtils.changeActionLabel(change.action)}
+              </TableCell>
               <TableCell className="text-muted-foreground">
-                <div className="flex flex-col">
-                  <span>{auditEventUtils.summarize(event)}</span>
-                  {historyNote(event) && (
-                    <span className="text-xs">{historyNote(event)}</span>
-                  )}
-                </div>
+                <ChangeDetails change={change} />
               </TableCell>
             </TableRow>
           ))}
@@ -311,16 +303,81 @@ function ChangeHistory() {
   );
 }
 
-function historyNote(event: ApplicationEvent): string | null {
-  switch (event.action) {
-    case ApplicationEventName.RELEASE_REQUESTED:
-      return event.data.note ?? null;
-    case ApplicationEventName.RELEASE_APPROVED:
-    case ApplicationEventName.RELEASE_REJECTED:
-      return event.data.comment ?? null;
-    default:
-      return null;
+function ChangeDetails({ change }: { change: ReleaseChangeWithDetails }) {
+  const versions = versionPath(change);
+  const approvers = approversText(change);
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-foreground">{headline(change)}</span>
+      {versions && <span className="text-xs">{versions}</span>}
+      {change.note && <span className="text-xs">{change.note}</span>}
+      {change.comment && (
+        <span className="text-xs">
+          {t('Comment: {comment}', {
+            comment: releaseUiUtils.commentText(change.comment),
+          })}
+        </span>
+      )}
+      {approvers && <span className="text-xs">{approvers}</span>}
+    </div>
+  );
+}
+
+function headline(change: ReleaseChangeWithDetails): string {
+  if (change.action === ReleaseChangeAction.ENVIRONMENTS_UPDATED) {
+    return change.environmentsEnabled
+      ? t('Test and production environments turned on')
+      : t('Test and production environments turned off');
   }
+  return change.workflowDisplayName ?? '';
+}
+
+function versionPath(change: ReleaseChangeWithDetails): string | null {
+  const from = versionText(change.fromVersionNumber);
+  const to = versionText(change.toVersionNumber);
+  if (change.action === ReleaseChangeAction.ROLLED_BACK) {
+    return t('Production {from} → {to}, with the content of {restored}', {
+      from: from ?? t('Not published yet'),
+      to: to ?? '',
+      restored: versionText(change.restoredVersionNumber) ?? '',
+    });
+  }
+  if (isNil(to)) {
+    return null;
+  }
+  const target = TEST_ACTIONS.includes(change.action)
+    ? t('Test')
+    : t('Production');
+  return t('{target} {from} → {to}', {
+    target,
+    from: from ?? t('Not published yet'),
+    to,
+  });
+}
+
+function approversText(change: ReleaseChangeWithDetails): string | null {
+  if (
+    change.action === ReleaseChangeAction.ENVIRONMENTS_UPDATED ||
+    change.action === ReleaseChangeAction.REQUESTED ||
+    change.action === ReleaseChangeAction.APPROVED ||
+    change.action === ReleaseChangeAction.REJECTED
+  ) {
+    const names = change.approverNames.filter((name) => name.length > 0);
+    return names.length > 0
+      ? t('Approvers: {names}', { names: names.join('、') })
+      : t('No approval required');
+  }
+  if (
+    change.action === ReleaseChangeAction.ROLLED_BACK ||
+    change.action === ReleaseChangeAction.PUBLISHED_DIRECTLY
+  ) {
+    return t('No approval required');
+  }
+  return null;
+}
+
+function versionText(versionNumber: number | null | undefined): string | null {
+  return versionNumber ? `v${versionNumber}` : null;
 }
 
 function TestConnections({ canManage }: { canManage: boolean }) {
@@ -328,6 +385,12 @@ function TestConnections({ canManage }: { canManage: boolean }) {
   const { data: replacements } = releasesHooks.useReplacements(projectId);
   const { mutate: upsert, isPending } = releasesHooks.useUpsertReplacement();
   const { mutate: remove } = releasesHooks.useDeleteReplacement();
+  const { data: overview } = releasesHooks.useEnvironments({
+    projectId,
+    enabled: true,
+    showErrorDialog: false,
+  });
+  const unreplaced = overview?.unreplacedConnections ?? [];
   const { data: connectionsPage } = useQuery({
     queryKey: ['release-settings-connections', projectId],
     queryFn: () => connectionsApi.list({ projectId, limit: MAX_CONNECTIONS }),
@@ -360,6 +423,46 @@ function TestConnections({ canManage }: { canManage: boolean }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <ul className="flex flex-col gap-2">
+          {unreplaced.map((connection) => (
+            <li
+              key={connection.connectionId}
+              className="flex items-center justify-between gap-2 rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2 text-sm"
+              data-testid="unreplaced-connection"
+            >
+              <span className="flex min-w-0 items-start gap-2">
+                <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
+                <span className="flex min-w-0 flex-col">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="truncate font-medium">
+                      {connection.displayName}
+                    </span>
+                    <Badge variant="destructive">
+                      {t('No test replacement')}
+                    </Badge>
+                  </span>
+                  <span className="text-xs text-destructive">
+                    {t(
+                      'Test runs use the production account directly. Used by: {names}',
+                      { names: connection.workflowNames.join('、') },
+                    )}
+                  </span>
+                </span>
+              </span>
+              {canManage && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => {
+                    setSource(connection.connectionId);
+                    setTarget(undefined);
+                  }}
+                >
+                  {t('Set test connection')}
+                </Button>
+              )}
+            </li>
+          ))}
           {(replacements ?? []).map((replacement) => (
             <li
               key={replacement.id}
@@ -386,7 +489,7 @@ function TestConnections({ canManage }: { canManage: boolean }) {
               )}
             </li>
           ))}
-          {(replacements ?? []).length === 0 && (
+          {(replacements ?? []).length === 0 && unreplaced.length === 0 && (
             <li className="text-sm text-muted-foreground">
               {t(
                 'No test connections yet. Test runs use the production connections.',
@@ -473,6 +576,9 @@ const DEFAULT_LIMIT = 20;
 const ENVIRONMENTS_TAB = 'environments';
 const REQUESTS_TAB = 'requests';
 const HISTORY_TAB = 'history';
+const TEST_ACTIONS: ReleaseChangeAction[] = [
+  ReleaseChangeAction.DEPLOYED_TO_TEST,
+];
 const MAX_CONNECTIONS = 500;
 const STATUS_VARIANT: Record<
   WorkflowReleaseStatus,

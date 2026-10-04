@@ -2231,7 +2231,6 @@
   "aiPromptTooLong": "The text is too long. Keep it under 4,000 characters.",
   "mcpToolNameInvalid": "Use letters, digits, _ and -, start with a letter, and keep it under 64 characters.",
   "mcpToolNameDuplicate": "Another tool in this service already uses this name.",
-  "Logs are masked before they are saved. The unmasked run state is kept only this long after a run ends, for viewing originals and replaying from the failed step; after that only a full rerun is possible.": "Logs are masked before they are saved. The unmasked run state is kept only this long after a run ends, for viewing originals and replaying from the failed step; after that only a full rerun is possible.",
   "{count, plural, =1 {1 run has} other {# runs have}} passed the retention period for original data and can only be rerun as a whole. They are skipped here.": "{count, plural, =1 {1 run has} other {# runs have}} passed the retention period for original data and can only be rerun as a whole. They are skipped here.",
   "A project admin can turn on test and production.": "A project admin can turn on test and production.",
   "A promotion of this workflow is waiting for approval": "A promotion of this workflow is waiting for approval",
@@ -2318,7 +2317,6 @@
   "erasureEmailInvalid": "Enter a valid email address",
   "erasurePhoneInvalid": "Enter an 11-digit mobile number",
   "Delete personal data": "Delete personal data",
-  "Find a person in run inputs, outputs and error messages across all projects and clear it. Run status, duration and error codes are kept. Trigger payload files and sample data are not covered.": "Find a person in run inputs, outputs and error messages across all projects and clear it. Run status, duration and error codes are kept. Trigger payload files and sample data are not covered.",
   "New deletion request": "New deletion request",
   "No deletion requests yet.": "No deletion requests yet.",
   "{workflow}: {count} runs": "{workflow}: {count} runs",
@@ -3430,7 +3428,6 @@
   "The connection used by this step is no longer authorized. Reconnect it on the Connections page, then rerun from the failed step.": "The connection used by this step is no longer authorized. Reconnect it on the Connections page, then rerun from the failed step.",
   "The connection used by this step was deleted. Pick another connection in the workflow, publish, then rerun.": "The connection used by this step was deleted. Pick another connection in the workflow, publish, then rerun.",
   "The connection was deleted. Pick another connection in the workflow.": "The connection was deleted. Pick another connection in the workflow.",
-  "The original run data has expired. Rerun the whole run instead": "The original run data has expired. Rerun the whole run instead",
   "The run stops waiting and will not continue. Steps that already ran are not rolled back, and pending agent approvals for this run expire.": "The run stops waiting and will not continue. Steps that already ran are not rolled back, and pending agent approvals for this run expire.",
   "The same cause has failed {count} times and was merged into one issue": "The same cause has failed {count} times and was merged into one issue",
   "The step failed without an error message.": "The step failed without an error message.",
@@ -5163,5 +5160,13 @@
   "Nobody for now: wait for the other system to recover": "Nobody for now: wait for the other system to recover",
   "Who can fix it": "Who can fix it",
   "Open the mapping tables": "Open the mapping tables",
-  "Stated reason": "Stated reason"
+  "Stated reason": "Stated reason",
+  "Logs are masked before they are saved. The unmasked run state and the original request bodies are kept only this long after a run ends, for viewing originals and replaying from the failed step; after that the run can no longer be replayed or viewed in original form.": "Logs are masked before they are saved. The unmasked run state and the original request bodies are kept only this long after a run ends, for viewing originals and replaying from the failed step; after that the run can no longer be replayed or viewed in original form.",
+  "Find a person in run inputs, outputs, error messages, business keys and received request bodies across all projects and clear it. Run status, duration and error codes are kept. Sample data saved in the editor is not covered.": "Find a person in run inputs, outputs, error messages, business keys and received request bodies across all projects and clear it. Run status, duration and error codes are kept. Sample data saved in the editor is not covered.",
+  "The original run data has expired, so this run can no longer be rerun": "The original run data has expired, so this run can no longer be rerun",
+  "Output contains sensitive information": "Output contains sensitive information",
+  "Every field of this output is masked in run logs, and the same values (4 characters or longer) are masked wherever later steps show them. Viewing the original needs permission and is audited.": "Every field of this output is masked in run logs, and the same values (4 characters or longer) are masked wherever later steps show them. Viewing the original needs permission and is audited.",
+  "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.": "Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.",
+  "Original expired": "The original has passed its retention period",
+  "You cannot view originals. Ask an admin.": "You cannot view originals. Ask an admin."
 }

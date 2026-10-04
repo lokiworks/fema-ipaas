@@ -225,6 +225,8 @@ function NodeDetail({
             stepName={node.name}
             maskedFields={run.privacyMaskedFields ?? 0}
             redacted={run.payloadRedacted ?? false}
+            canReveal={run.canRevealPayload ?? false}
+            rawExpired={run.rawPayloadExpired ?? false}
           />
           <JsonViewer json={node.input ?? {}} title={t('Input')} />
           <JsonViewer json={node.output ?? null} title={t('Output')} />

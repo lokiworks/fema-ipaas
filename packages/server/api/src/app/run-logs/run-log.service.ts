@@ -212,7 +212,8 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         .filter((member) => member.rerunOfExecutionId === root)
         .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime())
     const inPlaceRetryCount = execution.inPlaceRetryCount ?? 0
-    const runBlockReason = runRerunUtils.blockReason({
+    const rawDataExpired = isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId)
+    const eligibilityBlockReason = runRerunUtils.blockReason({
         environment: execution.environment,
         deduped: false,
         workflowExists: !isNil(workflow),
@@ -224,6 +225,7 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         workflowPublished: !isNil(workflow?.publishedVersionId),
         workflowEnabled: workflow?.status === WorkflowStatus.ENABLED,
     })
+    const runBlockReason = eligibilityBlockReason ?? (rawDataExpired ? RunRerunBlockReason.RAW_DATA_EXPIRED : null)
     const debug = execution.environment === RunEnvironment.TESTING
     return {
         id: execution.id,
@@ -255,7 +257,7 @@ function toRow({ execution, workflow, workflowName, version, project, chain }: T
         fromFailedStepBlockReason: runRerunUtils.fromFailedStepBlockReason({
             runBlockReason,
             hasFailedStep: !isNil(execution.failedStep),
-            rawDataAvailable: !(isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId)),
+            rawDataAvailable: !rawDataExpired,
         }),
     }
 }

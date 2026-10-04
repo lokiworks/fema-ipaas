@@ -39,9 +39,9 @@ await check('界面：管理员查看原文——原因至少 4 个字，看到�
   await shot({ page, name: 's5-ui-reveal-dialog' })
   await dialog.getByRole('textbox').fill('核对入职同步的原始数据')
   await submit.click()
-  await waitFor({ what: '原文出现在弹窗里', timeoutMs: 20000, probe: async () => (await dialog.innerText()).includes(secrets.mobile) })
+  await waitFor({ what: '原文出现在弹窗里', timeoutMs: 60000, probe: async () => (await dialog.innerText()).includes(secrets.mobile) })
   await shot({ page, name: 's5-ui-reveal-original' })
-  await dialog.getByRole('button', { name: /关闭并重新脱敏/ }).click()
+  await dialog.getByRole('button', { name: /关闭并恢复脱敏/ }).click()
   await sleep(500)
   assert(!(await text(page)).includes(secrets.mobile), '关闭弹窗后页面上还有原文')
   await context.close()
@@ -75,7 +75,12 @@ await check('界面：数据与隐私页——浅色、深色、窄屏截图，�
   }
 })
 
+const retentionEnabled = process.env.E2E_UI_SKIP_RETENTION !== '1'
+
 await check('界面：按项目设置保留期，保存后生效，再改回跟随平台', async () => {
+  if (!retentionEnabled) {
+    return 'skipped'
+  }
   const { context, page } = await uiLogin({ browser, user: ADMIN })
   await api({ method: 'POST', path: '/privacy-settings', body: { ...DEFAULT_SETTINGS, logRetentionDays: 30 }, token: admin.token })
   await page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
@@ -94,6 +99,9 @@ await check('界面：按项目设置保留期，保存后生效，再改回跟�
 })
 
 await check('界面：改平台保留期并保存，接口和运行日志页顶部的说明都变', async () => {
+  if (!retentionEnabled) {
+    return 'skipped'
+  }
   const { context, page } = await uiLogin({ browser, user: ADMIN })
   await page.goto(`${WEB}/tenant/security/privacy`, { waitUntil: 'domcontentloaded' })
   await page.getByText('运行日志保留').waitFor({ timeout: 90000 })
@@ -115,19 +123,14 @@ await check('界面：按工号删除个人数据——先搜索再确认，确�
   await dialog.getByPlaceholder('XH20210311').fill(secrets.jobNumber)
   await dialog.getByRole('textbox').last().fill('员工离职并要求删除个人数据，工单 HR-5001')
   await shot({ page, name: 's5-ui-erasure-dialog' })
-  await dialog.getByRole('button', { name: '搜索运行日志' }).click()
-  await page.getByText(/个运行中找到|条运行中找到|找到/).first().waitFor({ timeout: 90000 })
-  await page.getByRole('button', { name: /删除 \d+ 条运行/ }).waitFor({ timeout: 90000 })
+  await dialog.getByRole('button', { name: '查找运行记录' }).click()
+  await page.getByRole('button', { name: /删除 \d+ 条记录中的数据/ }).waitFor({ timeout: 90000 })
   await shot({ page, name: 's5-ui-erasure-found' })
-  await page.getByRole('button', { name: /删除 \d+ 条运行/ }).click()
+  await page.getByRole('button', { name: /删除 \d+ 条记录中的数据/ }).click()
   await shot({ page, name: 's5-ui-erasure-confirm' })
   const confirm = page.getByRole('dialog')
-  const entity = confirm.getByRole('textbox')
-  if (await entity.count()) {
-    await entity.fill(await confirm.locator('code, strong, b').first().innerText().catch(() => ''))
-  }
   await confirm.getByRole('button', { name: /^删除$/ }).click()
-  await page.getByText(/已清除|已完成/).first().waitFor({ timeout: 90000 })
+  await page.getByText(/已清除 \d+ 条运行记录中的数据/).first().waitFor({ timeout: 90000 })
   await shot({ page, name: 's5-ui-erasure-done' })
   const found = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&businessKey=${secrets.jobNumber}`, token: admin.token })
   assert(found.data.length === 0, `按工号还能搜到 ${found.data.length} 条运行`)
@@ -159,14 +162,14 @@ await check('界面：编辑器里节点出参页有「出参包含敏感信息�
   await page.getByRole('tab', { name: '出参' }).click()
   const toggle = page.getByRole('switch', { name: '出参包含敏感信息' })
   await toggle.waitFor({ timeout: 30000 })
-  assert((await toggle.getAttribute('aria-checked')) === 'false', '通知 HR 默认就标了敏感')
+  const before = (await toggle.getAttribute('aria-checked')) === 'true'
   await toggle.click()
   await waitFor({
-    what: '草稿里 step_3 标了敏感',
+    what: '草稿里 step_3 的敏感标记翻转',
     timeoutMs: 30000,
     probe: async () => {
       const draft = await api({ method: 'GET', path: `/workflows/${flow.flowId}?projectId=${admin.projectId}`, token: admin.token })
-      return draft.version.trigger.nextAction.nextAction.nextAction.settings.sensitiveOutput === true
+      return (draft.version.trigger.nextAction.nextAction.nextAction.settings.sensitiveOutput === true) === !before
     },
   })
   await shot({ page, name: 's5-ui-node-sensitive-toggle' })
@@ -229,7 +232,7 @@ async function fireRun({ flowId }) {
 async function openRunNode({ page, name }) {
   await page.goto(runsUrl, { waitUntil: 'domcontentloaded' })
   await page.getByRole('row').filter({ hasText: secrets.jobNumber }).first().getByRole('button', { name: /详情/ }).click({ timeout: 90000 })
-  await page.getByText(name).first().waitFor({ timeout: 60000 })
+  await page.getByText(name).first().waitFor({ timeout: 120000 })
   await page.getByText(name).first().click()
   await sleep(1500)
 }

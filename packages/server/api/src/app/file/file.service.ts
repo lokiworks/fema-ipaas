@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream'
 import { buffer as streamToBuffer } from 'node:stream/consumers'
 import { ApplicationError, assertNotNullOrUndefined, ErrorCode, generateId, isMultipartFile, isNil, ProjectId } from '@fema-ipaas/core-utils'
-import { File, FileCompression, FileId, FileLocation, FileType, Project } from '@fema-ipaas/shared'
+import { ExecutionStatus, File, FileCompression, FileId, FileLocation, FileType, Project } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In, LessThan, LessThanOrEqual } from 'typeorm'
@@ -12,6 +12,7 @@ import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { projectRepo } from '../project/project-repo'
+import { ExecutionEntity } from '../workflows/execution/execution-entity'
 import { fileCompressor } from './file-compressor'
 import { FileEntity } from './file.entity'
 import { s3Helper } from './s3-helper'
@@ -22,6 +23,8 @@ const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
 
 export const fileRepo = repoFactory<File>(FileEntity)
 const EXECUTION_DATA_RETENTION_DAYS = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
+const MIN_RETENTION_DAYS = 1
+const OPEN_EXECUTION_STATUSES = [ExecutionStatus.QUEUED, ExecutionStatus.RUNNING, ExecutionStatus.PAUSED]
 const privacySettingsRepo = repoFactory(PrivacySettingsEntity)
 
 type BaseFile = Pick<File, 'id' | 'projectId' | 'tenantId' | 'type' | 'fileName' | 'compression' | 'size' | 'metadata' | 'created' | 'updated'>
@@ -170,11 +173,13 @@ export const fileService = (log: FastifyBaseLogger) => ({
                 ...(tenantIds.length > 0 ? [{ tenantId: In(tenantIds) }] : []),
             ],
         })
+        const customPasses = await Promise.all(Array.from(groupProjectIdsByRetentionDays({ projects: customRetentionProjects, tenantRetention }), async ([retentionDays, projectIds]) => {
+            const retentionDateBoundary = dayjs().subtract(retentionDays, 'days').toISOString()
+            const blocked = await projectIdsWithOpenRunsBefore({ projectIds, boundary: retentionDateBoundary })
+            return { retentionDateBoundary, projectIds: projectIds.filter((projectId) => !blocked.has(projectId)) }
+        }))
         const cleanupPasses: CleanupPass[] = [
-            ...Array.from(groupProjectIdsByRetentionDays({ projects: customRetentionProjects, tenantRetention }), ([retentionDays, projectIds]) => ({
-                retentionDateBoundary: dayjs().subtract(retentionDays, 'days').toISOString(),
-                projectIds,
-            })),
+            ...customPasses.filter((pass) => pass.projectIds.length > 0),
             {
                 retentionDateBoundary: dayjs().subtract(EXECUTION_DATA_RETENTION_DAYS, 'days').toISOString(),
                 projectIds: undefined,
@@ -341,6 +346,17 @@ async function tenantsWithShorterRetention(): Promise<Map<string, number>> {
     return new Map(settings.map((setting) => [setting.tenantId, setting.logRetentionDays]))
 }
 
+async function projectIdsWithOpenRunsBefore({ projectIds, boundary }: { projectIds: ProjectId[], boundary: string }): Promise<Set<ProjectId>> {
+    const rows = await repoFactory(ExecutionEntity)()
+        .createQueryBuilder('execution')
+        .select('DISTINCT execution."projectId"', 'projectId')
+        .where('execution."projectId" IN (:...projectIds)', { projectIds })
+        .andWhere('execution.status IN (:...openStatuses)', { openStatuses: OPEN_EXECUTION_STATUSES })
+        .andWhere('execution.created < :boundary', { boundary })
+        .getRawMany<{ projectId: ProjectId }>()
+    return new Set(rows.map((row) => row.projectId))
+}
+
 function groupProjectIdsByRetentionDays({ projects, tenantRetention }: GroupByRetentionParams): Map<number, ProjectId[]> {
     const retentionDaysToProjectIds = new Map<number, ProjectId[]>()
     for (const project of projects) {
@@ -373,8 +389,7 @@ export function getEffectiveExecutionDataRetentionDays(executionDataRetentionDay
     if (isNil(executionDataRetentionDays)) {
         return EXECUTION_DATA_RETENTION_DAYS
     }
-    const pausedWorkflowTimeoutDays = system.getNumberOrThrow(AppSystemProp.PAUSED_WORKFLOW_TIMEOUT_DAYS)
-    return Math.min(EXECUTION_DATA_RETENTION_DAYS, Math.max(executionDataRetentionDays, pausedWorkflowTimeoutDays))
+    return Math.min(EXECUTION_DATA_RETENTION_DAYS, Math.max(executionDataRetentionDays, MIN_RETENTION_DAYS))
 }
 
 function isExecutionDataFileThatExpires(type: FileType) {

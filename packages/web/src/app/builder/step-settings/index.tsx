@@ -56,6 +56,7 @@ import { LoopsSettings } from './loops-settings';
 import { ParallelSettings } from './parallel-settings';
 import { PendingReviewNotice } from './pending-review-notice';
 import { RouterSettings } from './router-settings';
+import { SensitiveOutputToggle } from './sensitive-output-toggle';
 import { StepNavigationButtons } from './step-navigation-buttons';
 import { StepOperationSummary } from './step-operation-summary';
 import { useStepSettingsContext } from './step-settings-context';
@@ -366,6 +367,7 @@ const StepSettingsContainer = () => {
       ))}
       <TabsContent value="output" className="mt-0 min-h-0 flex-1">
         <div className="flex h-full min-h-0 flex-col">
+          {!isEmptyTrigger && <SensitiveOutputToggle readonly={readonly} />}
           {showTestPanel ? (
             <>
               <div className="min-h-0 flex-1">

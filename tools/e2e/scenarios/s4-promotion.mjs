@@ -338,10 +338,26 @@ await check('编辑锁：所有者可以接管他人的锁，被接管的人随�
   const aliceAfter = await call('POST', `/workflows/${flow.id}?projectId=${projectId}`, { type: 'CHANGE_NAME', request: { displayName: 'alice 被接管后还在改' } }, alice.token)
   assert(aliceAfter.status >= 400, `被接管后 alice 仍能改：${aliceAfter.status}`)
   holder.release()
-  holder.closeRivals()
+  await holder.closeRivals()
   return 'ok'
 })
 
+
+
+await check('不设审批人的项目：推广被检查拦住时，错误里写明缺什么，且不留下卡住的待审批记录', async () => {
+  const solo = await asOwner('POST', '/projects', { displayName: `S4 免审批 ${RUN}` })
+  await asOwner('POST', '/workflow-releases/environments', { projectId: solo.id, enabled: true, approverIds: [] })
+  const created = await call('POST', '/workflows', { displayName: '免审批流程', projectId: solo.id }, owner.token)
+  await call('POST', `/workflows/${created.body.id}?projectId=${solo.id}`, { type: 'IMPORT_WORKFLOW', request: { displayName: '免审批流程', trigger: flowTrigger({ text: '免审批', variables: ['storeChatId'], connection: 'ghost_connection' }), schemaVersion: null, notes: null } }, owner.token)
+  const deployed = await call('POST', '/workflow-releases/deploy-to-test', { projectId: solo.id, workflowId: created.body.id }, owner.token)
+  assert(deployed.status === 200, `部署到测试失败：${JSON.stringify(deployed.body)}`)
+  const refused = await call('POST', '/workflow-releases', { projectId: solo.id, workflowId: created.body.id, note: '免审批上线' }, owner.token)
+  const message = JSON.stringify(refused.body)
+  assert(refused.status >= 400 && message.includes('CONNECTION_MISSING') && message.includes('ghost_connection'), `没有写明缺什么：${refused.status} ${message}`)
+  const pending = await call('GET', `/workflow-releases?projectId=${solo.id}&status=PENDING`, undefined, owner.token)
+  assert(pending.body.data.length === 0, `留下了卡住的待审批记录：${JSON.stringify(pending.body.data)}`)
+  return refused.body
+})
 
 await importFlow({ token: alice.token, id: flow.id, text: '版本五：界面里发布和推广', variables: ['storeChatId'] })
 const browser = await chromium.launch()
@@ -529,8 +545,12 @@ async function holdLock({ token, resourceId }) {
       socket.emit('UNLOCK_RESOURCE', { resourceId })
       socket.close()
     },
-    closeRivals() {
-      rivals.forEach((rivalSocket) => rivalSocket.close())
+    async closeRivals() {
+      rivals.forEach((rivalSocket) => {
+        rivalSocket.emit('UNLOCK_RESOURCE', { resourceId })
+        rivalSocket.close()
+      })
+      await sleep(1500)
     },
   }
 }

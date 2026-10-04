@@ -120,8 +120,9 @@ export const workflowReleaseService = (log: FastifyBaseLogger) => ({
                 release: { projectId: request.projectId, workflowId: workflow.id, workflowVersionId: version.id, status: WorkflowReleaseStatus.PENDING },
                 log,
             })
-            if (preChecks.some((item) => item.level === ReleaseCheckLevel.ERROR)) {
-                invalid('Fix the failing release checks before promoting')
+            const failing = preChecks.filter((item) => item.level === ReleaseCheckLevel.ERROR)
+            if (failing.length > 0) {
+                invalid(`Fix the failing release checks before promoting: ${failing.map((item) => `${item.code}${isNil(item.subject) ? '' : ` ${item.subject}`}`).join(', ')}`)
             }
         }
         const id = generateId()

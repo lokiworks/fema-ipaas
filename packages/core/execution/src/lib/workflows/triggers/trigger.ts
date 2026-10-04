@@ -39,6 +39,7 @@ const connectorTriggerSettingsFields = {
     customLogoUrl: z.string().optional(),
     displayNumber: z.string().max(80).optional(),
     pendingReview: z.boolean().optional(),
+    sensitiveOutput: z.boolean().optional(),
     connectorName: z.string(),
     connectorVersion: VersionType,
     triggerName: z.string().optional(),

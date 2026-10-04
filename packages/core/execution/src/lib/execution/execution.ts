@@ -111,6 +111,8 @@ export const Execution = z.object({
     inPlaceRetryCount: z.number().optional(),
     privacyMaskedFields: z.number().optional(),
     payloadRedacted: z.boolean().optional(),
+    canRevealPayload: z.boolean().optional(),
+    rawPayloadExpired: z.boolean().optional(),
     // Populated only for tenant admins on INTERNAL_ERROR runs; stripped from the response otherwise.
     internalError: RunInternalError.optional(),
 })

@@ -27,9 +27,15 @@ describe('privacyMasking.maskDeep', () => {
         expect(result.maskedCount).toBe(4)
     })
 
-    it('leaves emails alone while the email rule is off by default', () => {
+    it('masks emails by default', () => {
         const result = privacyMasking.maskDeep({ value: { email: 'a@b.cn' }, rules: privacyMasking.defaultMaskRules(), maskAll: false })
-        expect(result.value).toEqual({ email: 'a@b.cn' })
+        expect(result.value).toEqual({ email: 'a***@b.cn' })
+    })
+
+    it('leaves emails alone once the email rule is switched off', () => {
+        const rules = privacyMasking.defaultMaskRules().map((rule) => (rule.detector === 'EMAIL' ? { ...rule, enabled: false } : rule))
+        const result = privacyMasking.maskDeep({ value: { note: 'mail a@b.cn' }, rules, maskAll: false })
+        expect(result.value).toEqual({ note: 'mail a@b.cn' })
     })
 
     it('masks every value under a field rule match', () => {

@@ -155,6 +155,17 @@ function getAllSteps(step: Step): Step[] {
     return steps
 }
 
+function getSensitiveStepNames(trigger: WorkflowTrigger): string[] {
+    return getAllSteps(trigger)
+        .filter((step) => hasSensitiveOutput(step))
+        .map((step) => step.name)
+}
+
+function hasSensitiveOutput(step: Step): boolean {
+    const settings: unknown = step.settings
+    return typeof settings === 'object' && settings !== null && 'sensitiveOutput' in settings && settings.sensitiveOutput === true
+}
+
 function getStepNumber(trigger: WorkflowTrigger, stepName: string): number {
     return getAllSteps(trigger).findIndex((s) => s.name === stepName) + 1
 }
@@ -274,6 +285,7 @@ export const workflowStructureUtil = {
     isTrigger,
     isAction,
     getAllSteps,
+    getSensitiveStepNames,
     getStepNumber,
     transferStep,
     transferWorkflow,

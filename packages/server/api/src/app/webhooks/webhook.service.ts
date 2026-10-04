@@ -15,6 +15,7 @@ import { executionService } from '../workflows/execution/execution-service'
 import { workflowExecutionCache } from '../workflows/workflow/workflow-execution-cache'
 import { workflowVersionRepo } from '../workflows/workflow-version/workflow-version.service'
 import { webhookHandshake } from './webhook-handshake'
+import { webhookRunPolicy } from './webhook-run-policy'
 
 const WEBHOOK_TIMEOUT_MS = system.getNumberOrThrow(AppSystemProp.WEBHOOK_TIMEOUT_SECONDS) * 1000
 const MAX_PAYLOAD_SIZE_BYTES = system.getNumberOrThrow(AppSystemProp.MAX_WEBHOOK_PAYLOAD_SIZE_MB) * 1024 * 1024
@@ -176,7 +177,7 @@ export const webhookService = {
                 webhookRequestId,
                 runEnvironment: workflowVersionToRun === WebhookWorkflowVersionToRun.LOCKED_FALL_BACK_TO_LATEST ? RunEnvironment.PRODUCTION : RunEnvironment.TESTING,
                 webhookHeader,
-                execute: workflow.status === WorkflowStatus.ENABLED && execute,
+                execute: webhookRunPolicy.shouldExecute({ workflowStatus: workflow.status, isTestDeployment: workflowVersionToRun === WebhookWorkflowVersionToRun.TEST_DEPLOYMENT, execute }),
                 parentRunId,
                 failParentOnFailure,
             })

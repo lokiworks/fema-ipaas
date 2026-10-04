@@ -65,4 +65,35 @@ describe('logRedaction.redactSteps', () => {
         expect(logRedaction.redactSteps({ steps: { s: step }, privacy: privacy(PayloadLevel.METADATA) }).steps.s).toMatchObject({ input: null, output: null, errorMessage: 'boom', status: 'FAILED' })
         expect(logRedaction.redactSteps({ steps: { s: step }, privacy: privacy(PayloadLevel.NONE) }).steps.s).toMatchObject({ input: null, output: null, errorMessage: undefined })
     })
+
+    it('masks the whole output of a step marked sensitive and scrubs its values from other steps', () => {
+        const { steps } = logRedaction.redactSteps({
+            steps: {
+                trigger: { type: 'CONNECTOR_TRIGGER', status: 'SUCCEEDED', input: {}, output: { body: { name: 'x' } } },
+                pay: { type: WorkflowActionType.CODE, status: 'SUCCEEDED', input: {}, output: { salary: 32000, grade: 'Level-P7', nested: { bonus: 'twelve thousand' } } },
+                notify: { type: WorkflowActionType.CODE, status: 'FAILED', input: { text: 'grade Level-P7 salary 32000' }, output: { ok: 'twelve thousand yuan' }, errorMessage: 'bad Level-P7' },
+            },
+            privacy: { ...privacy(PayloadLevel.FULL), sensitiveStepNames: ['pay'] },
+        })
+        expect(steps.pay).toMatchObject({ output: { salary: '******', grade: '******', nested: { bonus: '******' } } })
+        expect(steps.notify).toMatchObject({
+            input: { text: 'grade ****** salary ******' },
+            output: { ok: '****** yuan' },
+            errorMessage: 'bad ******',
+        })
+        expect(steps.trigger).toMatchObject({ output: { body: { name: 'x' } } })
+    })
+
+    it('masks numbers hidden in a raw request body string and in free text', () => {
+        const rawBody = JSON.stringify({ employee: { mobile: '13912345678', apiToken: 'sk-live-abcdef123456' } })
+        const { steps } = logRedaction.redactSteps({
+            steps: { trigger: { type: 'CONNECTOR_TRIGGER', status: 'SUCCEEDED', input: {}, output: { rawBody, note: 'backup 138 0013 8001 mail a.b@corp.com' } } },
+            privacy: privacy(PayloadLevel.FULL),
+        })
+        const serialized = JSON.stringify(steps)
+        expect(serialized).not.toContain('13912345678')
+        expect(serialized).not.toContain('sk-live-abcdef123456')
+        expect(serialized).not.toContain('138 0013 8001')
+        expect(serialized).not.toContain('a.b@corp.com')
+    })
 })

@@ -36,6 +36,7 @@ const commonActionSettings = {
     customLogoUrl: z.string().optional(),
     displayNumber: z.string().max(80).optional(),
     pendingReview: z.boolean().optional(),
+    sensitiveOutput: z.boolean().optional(),
 }
 
 export const ActionErrorHandlingOptions = z.object({

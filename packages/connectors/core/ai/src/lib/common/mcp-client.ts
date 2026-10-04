@@ -145,7 +145,18 @@ function describeFailure({ url, error }: { url: string; error: Error }): string 
     const short = body.length > ERROR_BODY_LIMIT ? `${body.slice(0, ERROR_BODY_LIMIT)}…` : body;
     return `MCP server ${url} returned HTTP ${error.response.status}${short.length > 0 ? `: ${short}` : ''}`;
   }
+  if (isTimeout(error)) {
+    return `MCP server ${url} did not respond within ${REQUEST_TIMEOUT_MS / 1000} seconds; the request was given up, but a slow tool may still be running on the server`;
+  }
   return `Could not reach MCP server ${url}: ${error.message}`;
+}
+
+function isTimeout(error: Error): boolean {
+  return (
+    error.name === 'AbortError' ||
+    error.name === 'TimeoutError' ||
+    /aborted|timed out|timeout/i.test(error.message)
+  );
 }
 
 function headerOf({

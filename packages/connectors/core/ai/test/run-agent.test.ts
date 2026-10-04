@@ -145,6 +145,29 @@ describe('runAgent', () => {
     ).rejects.toThrow('no model connection');
   });
 
+  test('reports a timed out tool call as a readable step failure instead of "This operation was aborted"', async () => {
+    const next = sequence([toolUseReply({ id: 'call-1', input: { orderId: '1' } }), textReply('The tool did not answer')]);
+    const mcp = mcpRoute();
+    fakeHttp.install({
+      routes: {
+        [MCP_URL]: (request) => {
+          if (methodOf(request) === 'tools/call') {
+            throw Object.assign(new Error('This operation was aborted'), { name: 'AbortError' });
+          }
+          return mcp(request);
+        },
+        [MODEL_URL]: () => fakeHttp.jsonResponse({ body: next() }),
+        [USAGE_URL]: () => fakeHttp.jsonResponse({ body: {} }),
+      },
+    });
+
+    const result = await runAgent.run(agentContext({ allowedTools: [], maxSteps: 5 }));
+
+    expect(result.steps[0].isError).toBe(true);
+    expect(result.steps[0].result).toContain('did not respond within 60 seconds');
+    expect(result.steps[0].result).not.toContain('aborted');
+  });
+
   test('fails with the provider message when the model call is rejected', async () => {
     const requests = fakeHttp.install({
       routes: {

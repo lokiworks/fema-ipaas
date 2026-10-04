@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectionsQueries } from '@/features/connections';
 import { connectorUsageHooks } from '@/features/connector-usage';
 import { ConnectorIcon, connectorsHooks } from '@/features/connectors';
+import { connectorCategoryLabels } from '@/features/connectors/utils/connector-category-labels';
 import { connectorMarketUtils } from '@/features/connectors/utils/connector-market-utils';
 import { templatesApi } from '@/features/templates';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -135,6 +136,11 @@ export default function ConnectorDetailPage() {
               {connectorModel.displayName}
             </h1>
             <SourceTag source={connectorModel.source} />
+            {(connectorModel.categories ?? []).map((category) => (
+              <Badge key={category} variant="outline">
+                {connectorCategoryLabels.categoryLabel(category)}
+              </Badge>
+            ))}
           </div>
           <p className="text-sm text-muted-foreground">
             {connectorModel.description || t('No description')}
@@ -474,6 +480,16 @@ function OpBlock({ op }: { op: ActionBase | TriggerBase }) {
         <span className="font-mono text-xs text-muted-foreground">
           {op.name}
         </span>
+        {'classification' in op && !isNil(op.classification) && (
+          <Badge
+            variant={
+              op.classification === 'DESTRUCTIVE' ? 'destructive' : 'accent'
+            }
+            className="px-1.5 py-0 text-[10px] font-normal"
+          >
+            {connectorCategoryLabels.classificationLabel(op.classification)}
+          </Badge>
+        )}
       </button>
       {open && (
         <div className="flex flex-col gap-3 border-t p-3">

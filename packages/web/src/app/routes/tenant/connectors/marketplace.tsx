@@ -54,6 +54,7 @@ import {
 import { ConnectorRequestDialog } from '@/features/connector-demands';
 import { connectorUsageHooks } from '@/features/connector-usage';
 import { ConnectorIcon, connectorsHooks } from '@/features/connectors';
+import { connectorCategoryLabels } from '@/features/connectors/utils/connector-category-labels';
 import {
   connectorMarketUtils,
   MARKET_CATEGORIES,
@@ -203,7 +204,7 @@ export default function ConnectorMarketplacePage() {
             <CategoryNavButton
               key={item.value}
               icon={CATEGORY_ICONS[item.value]}
-              label={t(item.label)}
+              label={connectorCategoryLabels.marketLabel(item.value)}
               count={counts[item.value] ?? 0}
               active={category === item.value}
               onClick={() => setCategory(item.value)}

@@ -1,6 +1,5 @@
 import type { ActionClassification } from '@fema-ipaas/connector-sdk';
 import { WorkflowActionType, WorkflowTriggerType } from '@fema-ipaas/shared';
-import { t } from 'i18next';
 
 import { CardListItem } from '@/components/custom/card-list';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +9,7 @@ import {
   StepMetadataWithSuggestions,
   CONNECTOR_SELECTOR_ELEMENTS_HEIGHTS,
 } from '@/features/connectors';
+import { connectorCategoryLabels } from '@/features/connectors/utils/connector-category-labels';
 import { cn } from '@/lib/utils';
 type GenericActionOrTriggerItemProps = {
   item: ConnectorSelectorItem;
@@ -112,8 +112,20 @@ const CLASSIFICATION_BADGE: Record<
   ActionClassification,
   { label: () => string; variant: 'accent' | 'destructive' }
 > = {
-  READ: { label: () => t('Read'), variant: 'accent' },
-  SEARCH: { label: () => t('Search'), variant: 'accent' },
-  WRITE: { label: () => t('Write'), variant: 'accent' },
-  DESTRUCTIVE: { label: () => t('Destructive'), variant: 'destructive' },
+  READ: {
+    label: () => connectorCategoryLabels.classificationLabel('READ'),
+    variant: 'accent',
+  },
+  SEARCH: {
+    label: () => connectorCategoryLabels.classificationLabel('SEARCH'),
+    variant: 'accent',
+  },
+  WRITE: {
+    label: () => connectorCategoryLabels.classificationLabel('WRITE'),
+    variant: 'accent',
+  },
+  DESTRUCTIVE: {
+    label: () => connectorCategoryLabels.classificationLabel('DESTRUCTIVE'),
+    variant: 'destructive',
+  },
 };

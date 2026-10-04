@@ -164,19 +164,19 @@ export const connectorMarketUtils = {
 };
 
 export const MARKET_CATEGORIES = [
-  { value: 'all', label: 'All', icon: 'LayoutGrid' },
-  { value: 'office', label: 'Office & Collaboration', icon: 'Users' },
-  { value: 'hr', label: 'Human Resources', icon: 'IdCard' },
-  { value: 'crm', label: 'Customer Management', icon: 'Handshake' },
-  { value: 'erp', label: 'Finance & ERP', icon: 'Landmark' },
-  { value: 'dev', label: 'Developer Tools', icon: 'Code' },
-  { value: 'ecommerce', label: 'Ecommerce & Retail', icon: 'ShoppingBag' },
-  { value: 'database', label: 'Databases', icon: 'Database' },
-  { value: 'storage', label: 'File Storage', icon: 'HardDrive' },
-  { value: 'ai', label: 'AI Models', icon: 'Sparkles' },
-  { value: 'marketing', label: 'Marketing & Messaging', icon: 'Megaphone' },
-  { value: 'builtin', label: 'Built-in Tools', icon: 'Wrench' },
-  { value: 'custom', label: 'Custom', icon: 'Blocks' },
+  { value: 'all', icon: 'LayoutGrid' },
+  { value: 'office', icon: 'Users' },
+  { value: 'hr', icon: 'IdCard' },
+  { value: 'crm', icon: 'Handshake' },
+  { value: 'erp', icon: 'Landmark' },
+  { value: 'dev', icon: 'Code' },
+  { value: 'ecommerce', icon: 'ShoppingBag' },
+  { value: 'database', icon: 'Database' },
+  { value: 'storage', icon: 'HardDrive' },
+  { value: 'ai', icon: 'Sparkles' },
+  { value: 'marketing', icon: 'Megaphone' },
+  { value: 'builtin', icon: 'Wrench' },
+  { value: 'custom', icon: 'Blocks' },
 ] as const;
 
 export type MarketCategoryValue = (typeof MARKET_CATEGORIES)[number]['value'];

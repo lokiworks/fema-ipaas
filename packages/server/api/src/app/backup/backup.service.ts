@@ -144,6 +144,7 @@ export const backupService = (log: FastifyBaseLogger) => ({
             latestSuccessVersion: latest?.appVersion ?? null,
             matchesCurrentVersion: !isNil(latest) && latest.appVersion === versionUtil.getCurrentRelease(),
             engineAvailable: engine.available,
+            serverTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }
     },
 

@@ -11,7 +11,7 @@ import {
 import { FastifyBaseLogger } from 'fastify'
 import { repoFactory } from '../core/db/repo-factory'
 import { FileEntity } from '../file/file.entity'
-import { serviceCheckService, ServiceCandidate } from '../health/service-check.service'
+import { ServiceCandidate, serviceCheckService } from '../health/service-check.service'
 import { encryptUtils } from '../helper/encryption'
 import { savedOverrides } from '../helper/system/saved-overrides'
 import { system } from '../helper/system/system'

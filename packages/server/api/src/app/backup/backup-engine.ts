@@ -2,8 +2,11 @@ import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { createReadStream } from 'node:fs'
 import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 import { Writable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
+import { pathToFileURL } from 'node:url'
 import { createGunzip } from 'node:zlib'
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { BackupEngine, BackupEngineProblem } from '@fema-ipaas/shared'
@@ -17,6 +20,18 @@ const COMMAND_TIMEOUT_MS = 60 * 60 * 1000
 const PROBE_TIMEOUT_MS = 10 * 1000
 const STDERR_LIMIT = 4000
 const PG_DUMP_MAGIC = 'PGDMP'
+const OPEN_DATABASE_SCRIPT = `
+;(async () => {
+    const { PGlite } = await import(process.argv[1])
+    const { vector } = await import(process.argv[2])
+    const database = await PGlite.create({ dataDir: process.argv[3], extensions: { vector } })
+    await database.query('SELECT count(*) FROM information_schema.tables')
+    await database.close()
+})().catch((error) => {
+    console.error(String((error && error.message) || error))
+    process.exit(1)
+})
+`
 const PG_VERSION_ENTRY = /(^|\/)PG_VERSION$/m
 
 export const backupEngine = {
@@ -57,7 +72,10 @@ async function inspect(): Promise<EngineInspection> {
 async function dump({ destination }: { destination: string }): Promise<void> {
     if (kind() === BackupEngine.PGLITE) {
         const pglite = await getPGliteInstance()
-        const archive = await pglite.dumpDataDir('gzip')
+        const archive = await pglite.transaction(async (transaction) => {
+            await transaction.exec('CHECKPOINT')
+            return pglite.dumpDataDir('gzip')
+        })
         await fs.writeFile(destination, Buffer.from(await archive.arrayBuffer()))
         return
     }
@@ -92,9 +110,33 @@ async function verifyPgliteArchive({ file }: { file: string }): Promise<Readable
     if (tarError) {
         return { ok: true, verifiedWith: 'gzip', detail: null }
     }
-    return PG_VERSION_ENTRY.test(listing)
-        ? { ok: true, verifiedWith: 'tar', detail: null }
-        : { ok: false, verifiedWith: 'tar', detail: 'The archive does not contain a database directory' }
+    if (!PG_VERSION_ENTRY.test(listing)) {
+        return { ok: false, verifiedWith: 'tar', detail: 'The archive does not contain a database directory' }
+    }
+    const { error: openError } = await tryCatch(() => openArchivedDatabase({ file }))
+    return openError
+        ? { ok: false, verifiedWith: 'open', detail: `The database inside the archive does not start: ${openError.message.slice(0, 200)}` }
+        : { ok: true, verifiedWith: 'open', detail: null }
+}
+
+function esmEntryOf({ specifier, file }: { specifier: string, file: string }): string {
+    return pathToFileURL(path.join(path.dirname(require.resolve(specifier)), file)).href
+}
+
+async function openArchivedDatabase({ file }: { file: string }): Promise<void> {
+    const workdir = await fs.mkdtemp(path.join(os.tmpdir(), 'fema-backup-open-'))
+    try {
+        await run({ command: 'tar', args: ['-xzf', file, '-C', workdir], env: {}, timeoutMs: COMMAND_TIMEOUT_MS })
+        await run({
+            command: process.execPath,
+            args: ['-e', OPEN_DATABASE_SCRIPT, esmEntryOf({ specifier: '@electric-sql/pglite', file: 'index.js' }), esmEntryOf({ specifier: '@electric-sql/pglite/vector', file: 'index.js' }), workdir],
+            env: {},
+            timeoutMs: COMMAND_TIMEOUT_MS,
+        })
+    }
+    finally {
+        await fs.rm(workdir, { recursive: true, force: true })
+    }
 }
 
 async function verifyPgDumpArchive({ file }: { file: string }): Promise<ReadableResult> {
@@ -244,7 +286,7 @@ type EngineInspection = {
 
 type ReadableResult = {
     ok: boolean
-    verifiedWith: 'gzip' | 'tar' | 'header' | 'pg_restore' | null
+    verifiedWith: 'gzip' | 'tar' | 'open' | 'header' | 'pg_restore' | null
     detail: string | null
 }
 

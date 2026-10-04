@@ -171,6 +171,7 @@ export const BackupSummaryForUpgrade = z.object({
     latestSuccessVersion: Nullable(z.string()),
     matchesCurrentVersion: z.boolean(),
     engineAvailable: z.boolean(),
+    serverTimezone: z.string(),
 })
 
 export const BACKUP_KEEP_MIN = KEEP_MIN

@@ -41,10 +41,12 @@ export function RunLogsTable({
   page,
   isLoading,
   isError,
+  hideProjectColumn,
   onOpenRun,
   onRerun,
 }: {
   page: SeekPage<RunLogRow> | undefined;
+  hideProjectColumn: boolean;
   isLoading: boolean;
   isError: boolean;
   onOpenRun: (runId: string) => void;
@@ -73,7 +75,12 @@ export function RunLogsTable({
         'Try a longer time range or remove some of the conditions.',
       )}
       emptyStateIcon={<ScrollText className="size-14" />}
-      columns={columns({ onOpenRun, onRerun })}
+      columns={columns({ onOpenRun, onRerun }).filter(
+        (column) =>
+          !hideProjectColumn ||
+          !('accessorKey' in column) ||
+          column.accessorKey !== 'projectDisplayName',
+      )}
       page={page}
       isLoading={isLoading}
       isError={isError}
@@ -162,7 +169,7 @@ function columns({
   return [
     {
       accessorKey: 'created',
-      size: 150,
+      size: 140,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Created')} />
       ),
@@ -176,7 +183,7 @@ function columns({
     },
     {
       accessorKey: 'workflowDisplayName',
-      size: 220,
+      size: 180,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Workflow')} />
       ),
@@ -195,7 +202,7 @@ function columns({
     },
     {
       accessorKey: 'businessKey',
-      size: 150,
+      size: 120,
       enableSorting: false,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Business key')} />
@@ -229,12 +236,12 @@ function columns({
     },
     {
       accessorKey: 'environment',
-      size: 80,
+      size: 90,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Environment')} />
       ),
       cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
+        <span className="whitespace-nowrap text-sm text-muted-foreground">
           {row.original.environment === RunEnvironment.PRODUCTION
             ? t('Production')
             : t('Test')}
@@ -248,7 +255,7 @@ function columns({
         <DataTableColumnHeader column={column} title={t('Type')} />
       ),
       cell: ({ row }) => (
-        <div className="flex items-center gap-1.5 text-sm">
+        <div className="flex items-center gap-1.5 whitespace-nowrap text-sm">
           {row.original.type === RunLogType.DEBUG
             ? t('Debug log')
             : t('Run log')}
@@ -268,7 +275,7 @@ function columns({
     },
     {
       accessorKey: 'versionNumber',
-      size: 70,
+      size: 60,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Version')} />
       ),
@@ -285,7 +292,7 @@ function columns({
     },
     {
       accessorKey: 'status',
-      size: 130,
+      size: 110,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Status')} />
       ),
@@ -293,7 +300,7 @@ function columns({
     },
     {
       accessorKey: 'durationMs',
-      size: 90,
+      size: 80,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Duration')} />
       ),
@@ -307,7 +314,7 @@ function columns({
     },
     {
       accessorKey: 'errorCount',
-      size: 70,
+      size: 60,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Errors')} />
       ),
@@ -317,7 +324,7 @@ function columns({
     },
     {
       accessorKey: 'actions',
-      size: 130,
+      size: 110,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Actions')} />
       ),

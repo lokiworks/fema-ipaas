@@ -271,6 +271,7 @@ const RunsPage = () => {
           />
           <RunLogsTable
             page={page}
+            hideProjectColumn={presetProjectId !== null}
             isLoading={isLoading}
             isError={isError}
             onOpenRun={openRun}

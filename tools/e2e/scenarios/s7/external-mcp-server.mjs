@@ -33,7 +33,7 @@ function textResult(text, extra = {}) {
   return { content: [{ type: 'text', text }], ...extra }
 }
 
-function buildServer() {
+function buildServer(req) {
   const server = new McpServer({ name: 'corp-hr-tools', version: '1.0.0' })
   server.registerTool(
     'query_employee',
@@ -111,7 +111,8 @@ function buildServer() {
     },
     async () => {
       state.calls.push({ tool: 'drop_connection' })
-      state.dropNext = true
+      req?.socket.destroy()
+      await new Promise((resolve) => setTimeout(resolve, 3000))
       return textResult('unreachable')
     },
   )
@@ -174,21 +175,13 @@ const http = createServer(async (req, res) => {
       return
     }
     const body = await readBody(req)
-    const server = buildServer()
+    const server = buildServer(req)
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true })
     res.on('close', () => {
       transport.close()
       server.close()
     })
     await server.connect(transport)
-    const dropWatcher = setInterval(() => {
-      if (state.dropNext) {
-        state.dropNext = false
-        clearInterval(dropWatcher)
-        req.socket.destroy()
-      }
-    }, 20)
-    res.on('close', () => clearInterval(dropWatcher))
     await transport.handleRequest(req, res, body)
     return
   }

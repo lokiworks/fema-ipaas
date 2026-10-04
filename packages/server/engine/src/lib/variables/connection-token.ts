@@ -25,7 +25,9 @@ export const connectionToken = {
 
 function parsePathAfterConnectionName(variableName: string, connectionName: string): string | null {
     if (variableName.includes('[')) {
-        return variableName.substring(`connections.['${connectionName}']`.length)
+        const marker = `['${connectionName}']`
+        const remainder = variableName.substring(variableName.indexOf(marker) + marker.length)
+        return remainder.length === 0 ? remainder : `connection${remainder}`
     }
     const cp = variableName.substring(`connections.${connectionName}`.length)
     if (cp.length === 0) {

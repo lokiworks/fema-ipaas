@@ -70,6 +70,9 @@ function describeFailure({ url, error }: { url: string; error: unknown }): strin
     const short = error.body.length > ERROR_BODY_LIMIT ? `${error.body.slice(0, ERROR_BODY_LIMIT)}…` : error.body;
     return `MCP server ${url} returned HTTP ${error.status}${short.length > 0 ? `: ${short}` : ''}`;
   }
+  if (error instanceof McpTimeoutError) {
+    return error.message;
+  }
   const message = error instanceof Error ? error.message : String(error);
   return `Could not reach MCP server ${url}: ${message}`;
 }
@@ -325,7 +328,7 @@ export class McpHttpError extends Error {
 
 export class McpTimeoutError extends Error {
   constructor(url: string) {
-    super(`MCP server ${url} did not respond in time`);
+    super(`MCP server ${url} did not respond in time; the request was given up, but a slow tool may still be running on the server`);
     this.name = 'McpTimeoutError';
   }
 }

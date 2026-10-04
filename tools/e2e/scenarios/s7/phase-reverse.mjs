@@ -31,7 +31,10 @@ export async function reversePhase({ session }) {
   const ok = await trial({ url: `${lan}/mcp`, token: env.externalToken, shotName: 'rv-06-ok' })
   check({ name: '地址令牌都对：测试通过并列出 6 个工具', ok: /6 个工具|6/.test(ok), detail: ok.slice(0, 160) })
   await dialog.getByRole('button', { name: '保存并接入' }).click()
-  await dialog.waitFor({ state: 'hidden', timeout: 120000 })
+  await dialog.waitFor({ state: 'hidden', timeout: 60000 }).catch(async () => {
+    await shot({ page, name: 'rv-save-stuck' })
+    throw new Error(`保存没有完成：${(await dialog.innerText()).replace(/\s+/g, ' ').slice(-300)}`)
+  })
   await page.waitForTimeout(1500)
   await shot({ page, name: 'rv-07-saved' })
 

@@ -77,9 +77,17 @@ export async function runDraftSync({ workflowId, body, timeoutMs = 180000 }) {
   return { status: response.status, text: await response.text() }
 }
 
-export async function latestRun({ session, workflowId }) {
-  const list = await api({ url: `/v1/run-logs?projectId=${session.projectId}&workflowId=${workflowId}&type=ALL&limit=5`, token: session.token })
-  return (list.json?.data ?? [])[0] ?? null
+export async function latestRun({ session, workflowId, timeoutMs = 120000 }) {
+  const started = Date.now()
+  for (;;) {
+    const list = await api({ url: `/v1/run-logs?projectId=${session.projectId}&workflowId=${workflowId}&type=ALL&limit=5`, token: session.token })
+    const run = (list.json?.data ?? [])[0] ?? null
+    const finished = run !== null && !['RUNNING', 'QUEUED', 'PAUSED'].includes(run.status)
+    if (finished || Date.now() - started > timeoutMs) {
+      return run
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+  }
 }
 
 export async function runDetail({ session, runId }) {

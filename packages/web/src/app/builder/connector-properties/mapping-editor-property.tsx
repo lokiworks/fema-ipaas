@@ -10,7 +10,7 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { useQueries } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
@@ -39,10 +39,25 @@ export function MappingEditorProperty({
   disabled: boolean;
 }) {
   const sampleData = useBuilderStateContext((state) => state.outputSampleData);
-  const [workflowId, stepName] = useBuilderStateContext((state) => [
+  const [workflowId, stepName, versionId] = useBuilderStateContext((state) => [
     state.workflow.id,
     state.selectedStep,
+    state.workflowVersion.id,
   ]);
+  const [savedExpansion, setSavedExpansion] = useBuilderStateContext(
+    (state) => [state.expandedMappingEditor, state.setExpandedMappingEditor],
+  );
+  const [expanded, setExpanded] = useState(
+    () =>
+      savedExpansion !== null &&
+      savedExpansion.stepName === stepName &&
+      savedExpansion.versionId !== versionId,
+  );
+  useEffect(() => {
+    setSavedExpansion(
+      expanded && stepName !== null ? { stepName, versionId } : null,
+    );
+  }, [expanded, stepName, versionId, setSavedExpansion]);
   const targetOptions = useTargetOptions();
   const { checkAccess } = useAuthorization();
   const { data: coverage } = mappingTablesHooks.useWorkflowCoverage({
@@ -63,6 +78,8 @@ export function MappingEditorProperty({
       targetOptions={targetOptions}
       runCoverage={runCoverage}
       canEditTables={checkAccess(Permission.WRITE_WORKFLOW)}
+      expanded={expanded}
+      onExpandedChange={setExpanded}
       renderSourcePanel={() => (
         <DataSelector parentHeight={0} parentWidth={0} embedded />
       )}

@@ -33,6 +33,8 @@ export function MappingEditor({
   targetOptions,
   runCoverage = NO_COVERAGE,
   canEditTables = false,
+  expanded,
+  onExpandedChange,
   renderSourceInput,
   renderSourcePanel,
   renderAddTarget,
@@ -44,6 +46,8 @@ export function MappingEditor({
   targetOptions: TargetOption[];
   runCoverage?: MappingCoverageSource[];
   canEditTables?: boolean;
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
   renderSourceInput: (params: SourceInputParams) => React.ReactNode;
   renderSourcePanel?: () => React.ReactNode;
   renderAddTarget?: (params: AddTargetSlotParams) => React.ReactNode;
@@ -56,7 +60,6 @@ export function MappingEditor({
     projectId,
     runCoverage,
   });
-  const [expanded, setExpanded] = useState(false);
   const [addTargetOpen, setAddTargetOpen] = useState(false);
   const [coverageTableId, setCoverageTableId] = useState<string | null>(null);
   const hasSample = Object.keys(sampleData).length > 0;
@@ -70,7 +73,7 @@ export function MappingEditor({
       targetOptions={targetOptions}
       canAddTarget={renderAddTarget !== undefined}
       renderSourceInput={renderSourceInput}
-      onExpand={() => setExpanded(true)}
+      onExpand={() => onExpandedChange(true)}
       onAddTarget={() => setAddTargetOpen(true)}
       onOpenCoverage={setCoverageTableId}
     />
@@ -86,7 +89,7 @@ export function MappingEditor({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setExpanded(false)}
+            onClick={() => onExpandedChange(false)}
           >
             {t('Back to the compact view')}
           </Button>
@@ -96,7 +99,7 @@ export function MappingEditor({
       )}
       <MappingWideEditor
         open={expanded}
-        onOpenChange={setExpanded}
+        onOpenChange={onExpandedChange}
         jsonPreview={
           <MappingJsonPreview
             spec={model.spec}

@@ -18,6 +18,8 @@ export type StepFormState = {
   setReferencePick: (pick: ReferencePick | null) => void;
   embeddedDataSelectorCount: number;
   registerEmbeddedDataSelector: () => () => void;
+  expandedMappingEditor: ExpandedMappingEditor | null;
+  setExpandedMappingEditor: (expanded: ExpandedMappingEditor | null) => void;
 };
 
 export const createStepFormState = (
@@ -47,6 +49,9 @@ export const createStepFormState = (
     referencePick: null,
     setReferencePick: (referencePick: ReferencePick | null) =>
       set({ referencePick }),
+    expandedMappingEditor: null,
+    setExpandedMappingEditor: (expandedMappingEditor) =>
+      set({ expandedMappingEditor }),
     embeddedDataSelectorCount: 0,
     registerEmbeddedDataSelector: () => {
       set((state) => ({
@@ -58,6 +63,11 @@ export const createStepFormState = (
         }));
     },
   };
+};
+
+export type ExpandedMappingEditor = {
+  stepName: string;
+  versionId: string;
 };
 
 export type ReferenceDrag = {

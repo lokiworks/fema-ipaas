@@ -37,6 +37,9 @@ icon: 🩺
 - **根因分析是规则引擎，不用模型，也不需要配置模型。** 5xx 是「下游返回服务端错误」，401/403 是「对方拒绝访问」，没有 HTTP 状态码的失败是「步骤失败」，不再一律说成「下游拒绝了请求（HTTP 422）」。
 - **连接器在错误消息末尾带 `[blocked-until=<ISO 时间>]`，表示「这个时间之前不要重试」（北森限频后到次日北京时间 00:00）。** 问题签名不变（错误码仍是 `HTTP_429`）。标记没过期时：根因分析是 `BLOCKED_UNTIL`（「X 之前不要重试」，不再推荐「打开节点配置重试」，`insight.blockedUntil` 带时间），重放检查按每条运行自己的 `failedStep.message` 判断，归 `BLOCKED` / `BLOCKED_UNTIL`（弹窗里不可勾选，原因文案写明何时可重放，`ReplayCheckItem.blockedUntil` 取同原因里最晚的）；时间一过自动回到按状态码的判断（429 归「偶发错误」可重放）。标记留在 `issue.message` 里，页面展示用 `issueUiUtils.messageText` 去掉。机制见连接器页 `building-connectors`。轮询触发器的失败文本同样带标记，所以触发器问题也会显示。
 - **问题概览 `GET /v1/issues/overview?projectId=` 只收窄 `latest`，各项目的数量不变**；问题中心选中某个项目时，最近 50 条是这个项目自己的。
+- **问题详情的「谁能修」（`IssueInsight.owner`）由规则表归类，不显示置信度。** 缺映射值（消息含「不在映射表「…」里」）归映射表负责人并给出「打开映射表」；401/403 归对方系统的管理员；429、5xx、限流受阻归「暂时不需要人处理」；其余归工作流负责人。归类在 `issueUtils.insightOf`，新增原因时要同时补 `IssueFixOwner`、前端 `issueUiUtils.ownerLabel` 和中英文翻译。
+- **重放弹窗在确认前写明版本和写步骤。** `ReplayCheckItem` 带 `workflowVersionId`、`versionNumber`、`failedStepName`，前端 `RerunPreview` 按（版本，失败步骤）分组，取该版本的触发器树，用连接器动作分类（WRITE、DESTRUCTIVE）列出「会再次调用并写入」和「沿用原结果、不再调用」（失败步骤及之后的写步骤会调用，之前的沿用）；整体重跑要勾选「会写入数据的步骤会被再次调用，可能产生重复数据」才能确认。分支是否真的执行取决于运行时，界面已注明。运行日志的批量重跑弹窗用同一个组件。
+- **同一原因跨工作流不一定合并成一个问题。** 北森限流这类触发器失败按 `<工作流>:trigger:HTTP_429` 签名，三个工作流各开一个问题、各告警一次；连接错误才按连接合并。已记为缺口。
 
 ## Key files
 - `packages/server/api/src/app/issue/` — `issueService.recordFailure`、`issueReplayService`

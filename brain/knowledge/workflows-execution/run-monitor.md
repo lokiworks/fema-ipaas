@@ -21,6 +21,7 @@ icon: 📈
 - 明细表最多返回 500 个工作流（按运行次数），超出时页面会提示；CSV 只导出已加载的这些行。
 - **「运行节点数」含失败运行停下的那个节点，但存储的 `execution.stepsCount` 仍只数成功节点。** `stepsCount` 由引擎在节点成功后累加，也是单次运行节点上限（`FEMA_MAX_NODES_PER_RUN`）的计数器，所以不能改口径；监控在展示聚合里（`runMonitorUtils.executedStepsOf`）把状态为 FAILED、TIMEOUT、MEMORY_LIMIT_EXCEEDED 的运行各加 1。失败后被忽略或走分支的节点没有数据可数，不计入；INTERNAL_ERROR 和 LOG_SIZE_EXCEEDED 不加。「平均每次」是这个数除以范围内的全部运行数。
 - 点图表柱子或明细行会带 `projectId`、`workflowId`、`status`、`createdAfter`、`createdBefore` 跳到 `/logs`。
+- **「平台替你处理掉的事」两个数都从记录算出、能下钻核对**（`RunMonitorSummary.handled`）：「拦下的重复事件」数 `deduped_event` 在范围内的行，点「查看被拦下的事件」进项目运行日志的「已去重」页签（只选了一个项目，或总共只有一个项目时才能点）；「合并进问题的失败」数范围内带 `issueId` 的生产运行（不含重跑行），并给出涉及的问题数，点「查看问题」进问题中心。限流排队、安全重试、宕机后补上的事件还没有对应记录，所以没有计数，不要在界面上写这些。
 
 ## Key files
 - `packages/server/api/src/app/run-monitor/` — `runMonitorService`、`runMonitorAiService`、`runMonitorViewService`，纯计算在 `runMonitorUtils`

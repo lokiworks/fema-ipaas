@@ -144,7 +144,8 @@ async function verify() {
       probe: async () => {
         const current = await snapshot()
         const b = current.rows.find((item) => item.id === people.B.runId)
-        return b.displayLogsFileId === null && b.logsFileId === null
+        const alive = new Set(current.files.map((file) => file.id))
+        return !alive.has(b.displayLogsFileId) && !alive.has(b.logsFileId)
       },
     })
   })

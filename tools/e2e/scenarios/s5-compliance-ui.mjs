@@ -130,6 +130,12 @@ await check('界面：按工号删除个人数据——先搜索再确认，确�
   await shot({ page, name: 's5-ui-erasure-confirm' })
   const confirm = page.getByRole('dialog')
   await confirm.getByRole('button', { name: /^删除$/ }).click()
+  const hint = `${secrets.jobNumber.slice(0, 2)}${'*'.repeat(secrets.jobNumber.length - 4)}${secrets.jobNumber.slice(-2)}`
+  await waitFor({
+    what: '删除请求处理完成',
+    timeoutMs: 120000,
+    probe: async () => (await api({ method: 'GET', path: '/privacy-settings/erasures', token: admin.token })).some((request) => request.valueHint === hint && request.status === 'DONE'),
+  })
   await page.getByText(/已清除 \d+ 条运行记录中的数据/).first().waitFor({ timeout: 90000 })
   await shot({ page, name: 's5-ui-erasure-done' })
   const found = await api({ method: 'GET', path: `/run-logs?projectId=${admin.projectId}&limit=20&type=ALL&time=30d&businessKey=${secrets.jobNumber}`, token: admin.token })

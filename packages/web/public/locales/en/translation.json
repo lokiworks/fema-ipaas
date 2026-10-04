@@ -5302,5 +5302,14 @@
   "Continues on v{version}, the version these runs were on. Later published versions are not used.": "Continues on v{version}, the version these runs were on. Later published versions are not used.",
   "Restarts from the trigger on the latest published version.": "Restarts from the trigger on the latest published version.",
   "Restarts from the trigger on the latest published version v{version}.": "Restarts from the trigger on the latest published version v{version}.",
-  "I understand that steps which write data are called again and may create duplicates": "I understand that steps which write data are called again and may create duplicates"
+  "I understand that steps which write data are called again and may create duplicates": "I understand that steps which write data are called again and may create duplicates",
+  "What the platform handled for you": "What the platform handled for you",
+  "{range}. Counted from the runs and the trigger records; open the details to check each number.": "{range}. Counted from the runs and the trigger records; open the details to check each number.",
+  "Duplicate events blocked": "Duplicate events blocked",
+  "The trigger saw the same event again and did not process it a second time.": "The trigger saw the same event again and did not process it a second time.",
+  "See the blocked events": "See the blocked events",
+  "Select one project to open its blocked events": "Select one project to open its blocked events",
+  "Failures merged into problems": "Failures merged into problems",
+  "{failures, plural, =1 {1 failed run was} other {# failed runs were}} grouped into {issues, plural, =1 {1 problem} other {# problems}}, so one alert covers each cause.": "{failures, plural, =1 {1 failed run was} other {# failed runs were}} grouped into {issues, plural, =1 {1 problem} other {# problems}}, so one alert covers each cause.",
+  "See the problems": "See the problems"
 }

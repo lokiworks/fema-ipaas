@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   MonitorAiUsage,
+  MonitorHandledCard,
   MonitorStatCards,
   MonitorStatusCard,
   MonitorToolbar,
@@ -62,6 +63,12 @@ export function MonitorPage() {
   const summaryQuery = runMonitorHooks.useSummary(request);
   const aiQuery = runMonitorHooks.useAiUsage(request);
   const summary = summaryQuery.data;
+  const dedupedProjectId =
+    effective.projectIds.length === 1
+      ? effective.projectIds[0]
+      : effective.projectIds.length === 0 && options?.projects.length === 1
+        ? options.projects[0].id
+        : null;
   const rangeLabel = runMonitorLabels.range(effective.range);
   const takenNames = [t('Default view'), ...myViews.map((item) => item.name)];
 
@@ -277,6 +284,23 @@ export function MonitorPage() {
               byStatus={summary.byStatus}
             />
           </div>
+          <MonitorHandledCard
+            handled={summary.handled}
+            rangeLabel={rangeLabel}
+            onOpenDuplicates={
+              dedupedProjectId === null
+                ? null
+                : () =>
+                    navigate(
+                      `/projects/${dedupedProjectId}/runs?view=deduped${
+                        effective.workflowIds.length === 1
+                          ? `&workflowId=${effective.workflowIds[0]}`
+                          : ''
+                      }`,
+                    )
+            }
+            onOpenIssues={() => navigate('/issue-center')}
+          />
           <MonitorWorkflowTable
             rows={summary.workflows}
             truncated={summary.workflowsTruncated}

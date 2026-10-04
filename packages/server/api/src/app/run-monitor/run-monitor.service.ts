@@ -3,6 +3,7 @@ import {
     ExecutionStatus,
     RUN_MONITOR_MAX_WORKFLOW_ROWS,
     RunEnvironment,
+    RunMonitorHandled,
     RunMonitorOptions,
     RunMonitorQuery,
     RunMonitorStats,
@@ -53,9 +54,10 @@ export const runMonitorService = (log: FastifyBaseLogger) => ({
                 byStatus: [],
                 workflows: [],
                 workflowsTruncated: false,
+                handled: EMPTY_HANDLED,
             }
         }
-        const [statusRows, previousRuns, bucketRows, workflowCounts, activeWorkflows, peak, workflowRows] = await Promise.all([
+        const [statusRows, previousRuns, bucketRows, workflowCounts, activeWorkflows, peak, workflowRows, handled] = await Promise.all([
             statusCounts(scope),
             previousRunCount(scope),
             bucketCounts(scope),
@@ -63,6 +65,7 @@ export const runMonitorService = (log: FastifyBaseLogger) => ({
             activeWorkflowCount(scope),
             peakConcurrency(scope),
             workflowDetails(scope),
+            handledCounts(scope),
         ])
         const totals = runMonitorUtils.countsOf(statusRows)
         const runs = statusRows.reduce((sum, row) => sum + row.count, 0)
@@ -84,6 +87,7 @@ export const runMonitorService = (log: FastifyBaseLogger) => ({
             byStatus: statusRows.map((row) => ({ status: row.status, count: row.count })),
             workflows: workflowRows.rows,
             workflowsTruncated: workflowRows.truncated,
+            handled,
         }
     },
 
@@ -112,6 +116,30 @@ async function statusCounts(scope: MonitorScope): Promise<StatusStepsRow[]> {
         [...scopeParams(scope), isoOf(scope.window.from), isoOf(scope.window.to)],
     )
     return rows.map((row) => ({ status: row.status, count: Number(row.count), steps: Number(row.steps) }))
+}
+
+async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
+    const window = [isoOf(scope.window.from), isoOf(scope.window.to)]
+    const [duplicates, merged]: [{ count: string }[], { failures: string, issues: string }[]] = await Promise.all([
+        databaseConnection().query(
+            `SELECT COUNT(*) AS count FROM deduped_event d
+            WHERE d."projectId" = ANY($1::varchar[])
+                AND (cardinality($2::varchar[]) = 0 OR d."workflowId" = ANY($2::varchar[]))
+                AND d.created >= $3 AND d.created <= $4`,
+            [...scopeParams(scope), ...window],
+        ),
+        databaseConnection().query(
+            `SELECT COUNT(*) AS failures, COUNT(DISTINCT e."issueId") AS issues FROM "execution" e
+            WHERE ${SCOPE_SQL} AND e."issueId" IS NOT NULL AND e."rerunOfExecutionId" IS NULL
+                AND e.created >= $3 AND e.created <= $4`,
+            [...scopeParams(scope), ...window],
+        ),
+    ])
+    return {
+        duplicateEvents: Number(duplicates[0]?.count ?? 0),
+        mergedFailures: Number(merged[0]?.failures ?? 0),
+        mergedIssues: Number(merged[0]?.issues ?? 0),
+    }
 }
 
 async function previousRunCount(scope: MonitorScope): Promise<number> {
@@ -273,6 +301,8 @@ const SCOPE_SQL = `e."projectId" = ANY($1::varchar[])
 const ACTIVE_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000
 const PEAK_LOOKBACK_MS = 24 * 60 * 60 * 1000
 const MAX_WORKFLOW_OPTIONS = 2000
+
+const EMPTY_HANDLED: RunMonitorHandled = { duplicateEvents: 0, mergedFailures: 0, mergedIssues: 0 }
 
 const EMPTY_STATS: RunMonitorStats = {
     runs: 0,

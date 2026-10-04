@@ -107,6 +107,13 @@ export const RunMonitorWorkflowRow = z.object({
 })
 export type RunMonitorWorkflowRow = z.infer<typeof RunMonitorWorkflowRow>
 
+export const RunMonitorHandled = z.object({
+    duplicateEvents: z.number(),
+    mergedFailures: z.number(),
+    mergedIssues: z.number(),
+})
+export type RunMonitorHandled = z.infer<typeof RunMonitorHandled>
+
 export const RunMonitorSummary = z.object({
     range: z.enum(RunMonitorRange),
     timezone: z.string(),
@@ -120,6 +127,7 @@ export const RunMonitorSummary = z.object({
     byStatus: z.array(RunMonitorStatusCount),
     workflows: z.array(RunMonitorWorkflowRow),
     workflowsTruncated: z.boolean(),
+    handled: RunMonitorHandled,
 })
 export type RunMonitorSummary = z.infer<typeof RunMonitorSummary>
 

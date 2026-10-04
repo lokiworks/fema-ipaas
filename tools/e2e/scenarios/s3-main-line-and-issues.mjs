@@ -35,6 +35,11 @@ async function main() {
   ctx.page = await context.newPage()
   ctx.page.setDefaultNavigationTimeout(180000)
   ctx.page.setDefaultTimeout(60000)
+  await context.addInitScript(() => {
+    const style = document.createElement('style')
+    style.textContent = 'vite-plugin-checker-error-overlay { display: none !important; }'
+    document.addEventListener('DOMContentLoaded', () => document.head.appendChild(style))
+  })
   ctx.page.on('pageerror', (error) => gaps.push(`页面脚本错误：${error.message.slice(0, 160)}`))
   await signIn()
   const onlyStage = process.env.E2E_ONLY ?? ''
@@ -47,6 +52,7 @@ async function main() {
     ['alerts', stageAlerts],
     ['failA', stageMissingMapping],
     ['failB', stagePermission],
+    ['monitor', stageMonitor],
   ]
   let started = FROM_STAGE === ''
   for (const [name, run] of stages) {
@@ -460,6 +466,30 @@ async function stagePermission() {
       timeoutMs: 180000,
     })
     return { createCallsDuringReplay: state.createCalls - ctx.createCallsBefore, accounts, issue: resolved.status }
+  })
+}
+
+async function stageMonitor() {
+  const { page } = ctx
+  await check('运行监控：「平台替你处理掉的事」的计数能从运行下钻核对', async () => {
+    await page.goto(`${WEB}/monitor`)
+    const duplicates = page.getByTestId('handled-duplicates')
+    await duplicates.waitFor({ timeout: 180000 })
+    const shown = Number((await duplicates.innerText()).replace(/,/g, ''))
+    const merged = Number((await page.getByTestId('handled-merged').innerText()).replace(/,/g, ''))
+    await shot('monitor-handled')
+    const dedupedApi = await api({ method: 'GET', path: `/deduped-events?projectId=${ctx.session.projectId}&limit=100` })
+    assert(shown === dedupedApi.data.length, `拦下的重复事件显示 ${shown}，记录里有 ${dedupedApi.data.length}`)
+    const issues = await listIssues({ view: 'ALL' })
+    const occurrences = issues.reduce((sum, issue) => sum + issue.occurrences, 0)
+    assert(merged === occurrences, `合并进问题的失败显示 ${merged}，问题里累计 ${occurrences}`)
+    await page.getByRole('button', { name: '查看被拦下的事件' }).click()
+    await page.waitForURL(/view=deduped/, { timeout: 30000 })
+    await page.locator('tbody tr').nth(0).waitFor({ timeout: 120000 })
+    await shot('monitor-handled-drilldown')
+    const rows = await page.locator('tbody tr').count()
+    assert(rows === Math.min(shown, 10), `下钻后列表行数 ${rows}`)
+    return { duplicates: shown, mergedFailures: merged, drilldownRows: rows }
   })
 }
 

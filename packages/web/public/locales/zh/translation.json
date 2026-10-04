@@ -5302,5 +5302,14 @@
   "Continues on v{version}, the version these runs were on. Later published versions are not used.": "沿用这些运行当时的版本 v{version} 继续，之后发布的新版本不会生效。",
   "Restarts from the trigger on the latest published version.": "改用最新发布的版本，从触发器重新开始。",
   "Restarts from the trigger on the latest published version v{version}.": "改用最新发布的版本 v{version}，从触发器重新开始。",
-  "I understand that steps which write data are called again and may create duplicates": "我知道会写入数据的步骤会被再次调用，可能产生重复数据"
+  "I understand that steps which write data are called again and may create duplicates": "我知道会写入数据的步骤会被再次调用，可能产生重复数据",
+  "What the platform handled for you": "平台替你处理掉的事",
+  "{range}. Counted from the runs and the trigger records; open the details to check each number.": "{range}。数字取自运行记录和触发器记录，点开明细可以逐条核对。",
+  "Duplicate events blocked": "拦下的重复事件",
+  "The trigger saw the same event again and did not process it a second time.": "触发器又收到了同一个事件，没有再处理一遍。",
+  "See the blocked events": "查看被拦下的事件",
+  "Select one project to open its blocked events": "选择一个项目后可以查看它被拦下的事件",
+  "Failures merged into problems": "合并进问题的失败",
+  "{failures, plural, =1 {1 failed run was} other {# failed runs were}} grouped into {issues, plural, =1 {1 problem} other {# problems}}, so one alert covers each cause.": "{failures} 次失败被归并成 {issues} 个问题，每个原因只告警一次。",
+  "See the problems": "查看问题"
 }

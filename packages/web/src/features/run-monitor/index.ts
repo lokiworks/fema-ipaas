@@ -19,3 +19,4 @@ export type {
   ViewNameMode,
 } from './components/monitor-view-name-dialog';
 export { MonitorAiUsage } from './components/monitor-ai-usage';
+export { MonitorHandledCard } from './components/monitor-handled-card';

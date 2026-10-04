@@ -127,11 +127,14 @@ export const agentApprovalService = (log: FastifyBaseLogger) => ({
 })
 
 async function settle({ approval, status, decidedById, comment }: SettleParams): Promise<AgentApprovalSchema> {
-    const result = await agentApprovalRepo().update(
-        { id: approval.id, projectId: approval.projectId, status: AgentApprovalStatus.PENDING },
-        { status, decidedById, decidedAt: dayjs().toISOString(), comment },
-    )
-    if ((result.affected ?? 0) === 0) {
+    const result = await agentApprovalRepo()
+        .createQueryBuilder()
+        .update()
+        .set({ status, decidedById, decidedAt: dayjs().toISOString(), comment })
+        .where({ id: approval.id, projectId: approval.projectId, status: AgentApprovalStatus.PENDING })
+        .returning('id')
+        .execute()
+    if (!Array.isArray(result.raw) || result.raw.length === 0) {
         invalid('This request has already been handled')
     }
     return agentApprovalRepo().findOneByOrFail({ id: approval.id })

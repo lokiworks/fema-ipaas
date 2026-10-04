@@ -14,12 +14,16 @@ import {
   waitFor,
 } from './s7/lib.mjs'
 import { forwardPhase } from './s7/phase-forward.mjs'
+import { agentPhase } from './s7/phase-agent.mjs'
 import { reversePhase } from './s7/phase-reverse.mjs'
+import { uiPhase } from './s7/phase-ui.mjs'
 
 const only = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
 const phases = [
   { name: 'forward', run: forwardPhase },
   { name: 'reverse', run: reversePhase },
+  { name: 'agent', run: agentPhase },
+  { name: 'ui', run: uiPhase },
 ]
 
 const children = []
@@ -51,4 +55,3 @@ async function ensureHelpers() {
   await waitFor({ fn: () => portOpen({ port: env.llmPort }), what: 'fake llm' })
 }
 
-export { api, check, mcpClientFor, openBrowser, shot, textOfToolResult, uiLogin }

@@ -82,7 +82,7 @@ export async function latestRun({ session, workflowId, timeoutMs = 120000 }) {
   for (;;) {
     const list = await api({ url: `/v1/run-logs?projectId=${session.projectId}&workflowId=${workflowId}&type=ALL&limit=5`, token: session.token })
     const run = (list.json?.data ?? [])[0] ?? null
-    const finished = run !== null && !['RUNNING', 'QUEUED', 'PAUSED'].includes(run.status)
+    const finished = run !== null && !['RUNNING', 'QUEUED'].includes(run.status)
     if (finished || Date.now() - started > timeoutMs) {
       return run
     }

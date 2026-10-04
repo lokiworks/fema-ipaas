@@ -9,6 +9,9 @@ export async function reversePhase({ session }) {
 
   const { browser, page } = await openBrowser()
   await uiLogin({ page })
+  await go({ page, url: `${env.web}/tenant/connectors?cat=mcp` })
+  await page.waitForTimeout(6000)
+  await shot({ page, name: 'rv-00-empty-state' })
   const dialog = page.getByRole('dialog')
   const trial = (args) => runTest({ page, dialog, ...args })
 

@@ -95,6 +95,15 @@ export async function portOpen({ port }) {
 export async function openBrowser({ width = 1440, height = 900, colorScheme = 'light' } = {}) {
   const browser = await chromium.launch()
   const context = await browser.newContext({ viewport: { width, height }, colorScheme })
+  await context.addInitScript(() => {
+    const hide = () => {
+      const style = document.createElement('style')
+      style.textContent = 'vite-plugin-checker-error-overlay{display:none!important}'
+      document.head.appendChild(style)
+    }
+    if (document.head) hide()
+    else document.addEventListener('DOMContentLoaded', hide)
+  })
   const page = await context.newPage()
   page.setDefaultTimeout(60000)
   return { browser, context, page }

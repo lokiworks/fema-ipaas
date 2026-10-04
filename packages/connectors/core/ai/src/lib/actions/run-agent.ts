@@ -99,7 +99,7 @@ export const runAgent = createAction({
     }),
   },
   async run(context) {
-    const config = modelClient.configOf(context.auth.props);
+    const config = modelClient.configFromAuth({ auth: context.auth });
     const servers = await Promise.all(
       parseServers(context.propsValue.mcpServers).map(connectServer),
     );

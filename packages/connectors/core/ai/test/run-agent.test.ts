@@ -137,6 +137,14 @@ describe('runAgent', () => {
     expect(requests.filter((request) => methodOf(request) === 'tools/call')).toHaveLength(1);
   });
 
+  test('says a model connection is missing instead of failing on an undefined property', async () => {
+    installServers({ replies: [] });
+
+    await expect(
+      runAgent.run({ ...agentContext({ allowedTools: [], maxSteps: 5 }), auth: undefined }),
+    ).rejects.toThrow('no model connection');
+  });
+
   test('fails with the provider message when the model call is rejected', async () => {
     const requests = fakeHttp.install({
       routes: {

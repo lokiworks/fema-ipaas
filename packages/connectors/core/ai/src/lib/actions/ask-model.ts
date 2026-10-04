@@ -52,7 +52,7 @@ export const askModel = createAction({
     }),
   },
   async run(context) {
-    const config = modelClient.configOf(context.auth.props);
+    const config = modelClient.configFromAuth({ auth: context.auth });
     const json = context.propsValue.outputFormat === 'JSON';
     const response = await modelClient.call({
       config,

@@ -19,9 +19,21 @@ import { textUtils } from './text';
 
 export const modelClient = {
   configOf,
+  configFromAuth,
   call,
   reportUsage,
 };
+
+function configFromAuth({
+  auth,
+}: {
+  auth: { props: Parameters<typeof configOf>[0] } | null | undefined;
+}): LlmConfig {
+  if (auth === null || auth === undefined || auth.props === undefined || auth.props === null) {
+    throw new Error('This step has no model connection. Choose one in the Model field before running it.');
+  }
+  return configOf(auth.props);
+}
 
 function configOf({
   provider,

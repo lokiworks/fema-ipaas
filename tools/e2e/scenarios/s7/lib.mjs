@@ -104,6 +104,13 @@ export async function openBrowser({ width = 1440, height = 900, colorScheme = 'l
     if (document.head) hide()
     else document.addEventListener('DOMContentLoaded', hide)
   })
+  await context.addInitScript((scheme) => {
+    try {
+      localStorage.setItem('fema.theme', scheme)
+    } catch {
+      return
+    }
+  }, colorScheme)
   const page = await context.newPage()
   page.setDefaultTimeout(60000)
   return { browser, context, page }

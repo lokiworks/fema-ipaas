@@ -9,6 +9,11 @@ describe('serviceFailure.classify', () => {
         expect(result.reason).toContain('ECONNREFUSED')
     })
 
+    it('sees a refused connection that nodemailer wraps in a generic socket error', () => {
+        const result = serviceFailure.classify({ error: Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:25060'), { code: 'ESOCKET' }) })
+        expect(result.failure).toBe(ServiceCheckFailure.UNREACHABLE)
+    })
+
     it('treats a login rejection as an authentication failure', () => {
         const result = serviceFailure.classify({ error: Object.assign(new Error('Invalid login: 535 Authentication failed'), { code: 'EAUTH' }) })
         expect(result.failure).toBe(ServiceCheckFailure.AUTHENTICATION)

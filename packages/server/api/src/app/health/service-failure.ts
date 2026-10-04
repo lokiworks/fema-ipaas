@@ -21,10 +21,11 @@ function classify({ error, secrets = [] }: ClassifyParams): ClassifiedFailure {
 }
 
 function failureOf({ details }: { details: ErrorDetails }): ServiceCheckFailure {
-    if (TLS_PATTERN.test(details.message) && !UNREACHABLE_CODES.includes(details.code)) {
+    const unreachable = UNREACHABLE_CODES.includes(details.code) || UNREACHABLE_CODES.some((code) => details.message.includes(code))
+    if (TLS_PATTERN.test(details.message) && !unreachable) {
         return ServiceCheckFailure.TLS
     }
-    if (UNREACHABLE_CODES.includes(details.code)) {
+    if (unreachable) {
         return ServiceCheckFailure.UNREACHABLE
     }
     if (TIMEOUT_CODES.includes(details.code) || TIMEOUT_PATTERN.test(details.message)) {

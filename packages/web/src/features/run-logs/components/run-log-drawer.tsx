@@ -273,6 +273,7 @@ function DrawerBody({
           <>
             <ActionWithReason
               reason={row.fromFailedStepBlockReason ?? null}
+              blockedUntil={row.blockedUntil ?? null}
               label={t('Rerun from the failed step')}
               icon={<SkipForward className="size-4" />}
               variant="default"
@@ -285,6 +286,7 @@ function DrawerBody({
             />
             <ActionWithReason
               reason={row.rerunBlockReason ?? null}
+              blockedUntil={row.blockedUntil ?? null}
               label={t('Rerun the whole run')}
               icon={<RotateCcw className="size-4" />}
               variant="outline"
@@ -394,12 +396,14 @@ function DrawerBody({
 
 function ActionWithReason({
   reason,
+  blockedUntil,
   label,
   icon,
   variant,
   onClick,
 }: {
   reason: RunRerunBlockReason | null;
+  blockedUntil: string | null;
   label: string;
   icon: ReactNode;
   variant: 'default' | 'outline';
@@ -423,7 +427,7 @@ function ActionWithReason({
       </TooltipTrigger>
       {reason !== null && (
         <TooltipContent className="max-w-64">
-          {runLogUiUtils.blockReasonLabel(reason)}
+          {runLogUiUtils.blockReasonLabel(reason, blockedUntil)}
         </TooltipContent>
       )}
     </Tooltip>

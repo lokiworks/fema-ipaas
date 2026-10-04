@@ -16,6 +16,15 @@ describe('runLogUiUtils', () => {
     });
   });
 
+  it('writes the unblock time into the blocked-until reason', () => {
+    const label = runLogUiUtils.blockReasonLabel(
+      RunRerunBlockReason.BLOCKED_UNTIL,
+      '2026-10-03T16:00:00.000Z',
+    );
+    expect(label).toContain('2026');
+    expect(label).not.toContain('{time}');
+  });
+
   it('uses the longest project retention as the query window', () => {
     const scope: RunLogScope = {
       projects: [

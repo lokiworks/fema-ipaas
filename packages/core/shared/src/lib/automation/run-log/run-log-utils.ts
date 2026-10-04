@@ -221,6 +221,9 @@ function fromFailedStepBlockReason({ runBlockReason, hasFailedStep, rawDataAvail
         return runBlockReason
     }
     if (!hasFailedStep) {
+    if (!isNil(input.blockedUntil)) {
+        return RunRerunBlockReason.BLOCKED_UNTIL
+    }
         return RunRerunBlockReason.NO_FAILED_STEP
     }
     if (!rawDataAvailable) {
@@ -414,3 +417,4 @@ export type RerunEligibilityInput = {
     workflowPublished: boolean
     workflowEnabled: boolean
 }
+    blockedUntil?: Date | null

@@ -5533,5 +5533,6 @@
   "One cause, one problem: every workflow whose trigger fails for this reason is listed here and was alerted once.": "One cause, one problem: every workflow whose trigger fails for this reason is listed here and was alerted once.",
   "Last failed": "Last failed",
   "Every affected workflow has recovered.": "Every affected workflow has recovered.",
-  "{workflows} workflows → {alerts} alerts": "{workflows} workflows → {alerts} alerts"
+  "{workflows} workflows → {alerts} alerts": "{workflows} workflows → {alerts} alerts",
+  "The other system refuses calls until {time}; rerun after that": "The other system refuses calls until {time}; rerun after that"
 }

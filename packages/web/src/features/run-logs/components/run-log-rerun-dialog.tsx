@@ -89,9 +89,14 @@ function RerunChoice({
   const eligible = rows.filter((row) => reasonOf(row) === null);
   const blocked = rows.flatMap((row) => {
     const reason = reasonOf(row);
-    return reason === null ? [] : [reason];
+    return reason === null ? [] : [{ reason, blockedUntil: row.blockedUntil }];
   });
-  const reasons = [...new Set(blocked)];
+  const reasons = [...new Set(blocked.map((item) => item.reason))];
+  const latestBlockedUntil = blocked
+    .map((item) => item.blockedUntil)
+    .filter((value): value is string => !!value)
+    .sort()
+    .at(-1);
   const [acknowledged, setAcknowledged] = useState(false);
   const needsAcknowledgement =
     strategy === WorkflowRetryStrategy.ON_LATEST_VERSION;
@@ -171,7 +176,7 @@ function RerunChoice({
           </span>
           {reasons.map((reason) => (
             <span key={reason} className="text-muted-foreground">
-              {runLogUiUtils.blockReasonLabel(reason)}
+              {runLogUiUtils.blockReasonLabel(reason, latestBlockedUntil)}
             </span>
           ))}
         </div>

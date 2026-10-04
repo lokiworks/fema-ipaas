@@ -61,6 +61,7 @@ export enum RunRerunBlockReason {
     NO_FAILED_STEP = 'NO_FAILED_STEP',
     RAW_DATA_EXPIRED = 'RAW_DATA_EXPIRED',
 }
+    BLOCKED_UNTIL = 'BLOCKED_UNTIL',
 
 export const RunLogCondition = z.discriminatedUnion('field', [
     z.object({ field: z.literal(RunLogConditionField.PROJECT), values: z.array(z.string()) }),
@@ -141,6 +142,7 @@ export const RunLogRow = z.object({
 })
 export type RunLogRow = z.infer<typeof RunLogRow>
 
+    blockedUntil: Nullable(z.string()),
 export const RunLogScopeProject = z.object({
     id: z.string(),
     displayName: z.string(),

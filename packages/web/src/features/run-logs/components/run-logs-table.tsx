@@ -485,7 +485,7 @@ function RowRerun({ row, onRerun }: { row: RunLogRow; onRerun: () => void }) {
         </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-64">
-        {runLogUiUtils.blockReasonLabel(row.rerunBlockReason)}
+        {runLogUiUtils.blockReasonLabel(row.rerunBlockReason, row.blockedUntil)}
       </TooltipContent>
     </Tooltip>
   );

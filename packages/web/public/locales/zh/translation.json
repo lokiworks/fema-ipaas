@@ -5533,5 +5533,6 @@
   "One cause, one problem: every workflow whose trigger fails for this reason is listed here and was alerted once.": "同一原因只开一个问题：触发器因这个原因失败的工作流都列在这里，并且只告警一次。",
   "Last failed": "最近失败",
   "Every affected workflow has recovered.": "受影响的工作流都已恢复。",
-  "{workflows} workflows → {alerts} alerts": "{workflows} 个工作流 → {alerts} 条告警"
+  "{workflows} workflows → {alerts} alerts": "{workflows} 个工作流 → {alerts} 条告警",
+  "The other system refuses calls until {time}; rerun after that": "对方系统在 {time} 之前拒绝调用；这之后再重跑"
 }

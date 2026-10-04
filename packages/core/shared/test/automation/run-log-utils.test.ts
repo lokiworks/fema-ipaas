@@ -188,6 +188,7 @@ describe('runRerunUtils.blockReason', () => {
         [{ canWrite: false }, RunRerunBlockReason.VIEW_ONLY],
         [{ workflowPublished: false }, RunRerunBlockReason.NO_PUBLISHED_VERSION],
         [{ workflowEnabled: false }, RunRerunBlockReason.WORKFLOW_STOPPED],
+        [{ blockedUntil: new Date('2030-01-01T00:00:00Z') }, RunRerunBlockReason.BLOCKED_UNTIL],
     ])('blocks %o with %s', (override, reason) => {
         expect(runRerunUtils.blockReason({ ...eligible, ...override })).toBe(reason)
     })

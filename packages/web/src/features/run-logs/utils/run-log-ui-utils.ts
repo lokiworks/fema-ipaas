@@ -13,7 +13,7 @@ import {
   workflowStructureUtil,
   WorkflowTrigger,
 } from '@fema-ipaas/shared';
-import { t } from 'i18next';
+import i18next, { t } from 'i18next';
 
 import { executionUtils } from '@/features/executions/utils/execution-utils';
 
@@ -68,12 +68,29 @@ function fieldLabel(field: RunLogConditionField): string {
   }
 }
 
+function blockedUntilText(blockedUntil: string | null | undefined): string {
+  const until = isNil(blockedUntil) ? null : new Date(blockedUntil);
+  return until === null || Number.isNaN(until.getTime())
+    ? t('the block ends')
+    : new Intl.DateTimeFormat(i18next.language, BLOCKED_UNTIL_FORMAT).format(
+        until,
+      );
+}
+
 function durationOperatorLabel(operator: RunLogDurationOperator): string {
   return operator === RunLogDurationOperator.GTE ? t('At least') : t('At most');
 }
 
-function blockReasonLabel(reason: RunRerunBlockReason): string {
+function blockReasonLabel(
+  reason: RunRerunBlockReason,
+  blockedUntil?: string | null,
+): string {
   switch (reason) {
+    case RunRerunBlockReason.BLOCKED_UNTIL:
+      return t(
+        'The other system refuses calls until {time}; rerun after that',
+        { time: blockedUntilText(blockedUntil) },
+      );
     case RunRerunBlockReason.DEBUG_RUN:
       return t('Debug logs cannot be rerun');
     case RunRerunBlockReason.DEDUPED:
@@ -272,4 +289,14 @@ export type RunLogStepNode = {
   errorMessage: string | null;
   input: unknown;
   output: unknown;
+};
+
+const BLOCKED_UNTIL_FORMAT: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
 };

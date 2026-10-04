@@ -168,8 +168,17 @@ async function cleanupChecks({ session, server }) {
   const live = await pausedApproval({ session, server, name: 's7-智能体-删除清理-界面' })
   const { browser, page } = await openBrowser()
   await uiLogin({ page })
+  let staleList = null
+  page.on('response', async (response) => {
+    const url = new URL(response.url())
+    if (response.request().method() === 'GET' && url.pathname.endsWith('/v1/agent-approvals') && url.searchParams.get('status') === 'PENDING') {
+      staleList = await response.text().catch(() => staleList)
+    }
+  })
   await go({ page, url: `${env.web}/projects/${projectId}/agent-approvals` })
   await page.getByText('s7-智能体-删除清理-界面').first().waitFor({ timeout: 120000 })
+  const isPendingList = (url) => url.pathname.endsWith('/v1/agent-approvals') && url.searchParams.get('status') === 'PENDING'
+  await page.route(isPendingList, (route) => (route.request().method() === 'GET' && staleList !== null ? route.fulfill({ status: 200, contentType: 'application/json', body: staleList }) : route.continue()))
   await api({ method: 'DELETE', url: `/v1/workflows/${live.flowId}?projectId=${projectId}`, token })
   await waitFor({ fn: async () => (await approvalsOf({ session, executionId: live.run.id }))[0]?.status === 'INVALIDATED', timeoutMs: 30000, what: 'ui approval invalidated' })
   await page.getByRole('button', { name: '批准并继续' }).first().click()
@@ -177,6 +186,11 @@ async function cleanupChecks({ session, server }) {
   const toastText = await page.locator('[data-sonner-toast]').first().innerText().catch(() => '')
   check({ name: '页面上对已删除工作流的待批项点批准：提示中文说明已失效，卡片退出待批列表', ok: /已失效|不再有效/.test(toastText) && !/This request is no longer valid/.test(toastText), detail: toastText.replace(/\s+/g, ' ') })
   await shot({ page, name: 'ag-05-approval-invalidated-toast' })
+  await page.unroute(isPendingList)
+  await page.getByRole('tab', { name: '全部' }).click()
+  await page.getByRole('tab', { name: '待处理' }).click()
+  await page.waitForTimeout(2500)
+  check({ name: '刷新后这条失效的待批项不在「待处理」里，没有批准按钮', ok: (await page.getByRole('button', { name: '批准并继续' }).count()) === 0, detail: String(await page.getByRole('button', { name: '批准并继续' }).count()) })
   await page.getByRole('tab', { name: '全部' }).click()
   await page.getByText(/工作流已被删除，这次调用已取消/).first().waitFor({ timeout: 20000 })
   const allText = await page.locator('body').innerText()

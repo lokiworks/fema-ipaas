@@ -1,4 +1,4 @@
-import { api, check, env, go, openBrowser, shot, uiLogin, waitFor } from './lib.mjs'
+import { api, check, env, go, openBrowser, recoverFromStaleBundle, shot, uiLogin, waitFor } from './lib.mjs'
 import { connectorStep, createFlow, latestRun, runDraftSync, webhookTrigger } from './flow-kit.mjs'
 import { ensureModelConnection, ensureServer } from './phase-agent.mjs'
 
@@ -171,9 +171,17 @@ async function extState({ path, method = 'GET' }) {
 }
 
 async function openAgentInputs({ page }) {
-  await page.getByText(/2\. AI 智能体/).first().click({ timeout: 180000 })
-  await page.getByText('入参', { exact: true }).first().click({ timeout: 60000 })
-  await page.getByTestId('agent-tools-editor').waitFor({ timeout: 120000 })
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const opened = await page.getByText(/2\. AI 智能体/).first().click({ timeout: 90000 }).then(() => true, () => false)
+    if (opened) {
+      await page.getByText('入参', { exact: true }).first().click({ timeout: 60000 })
+      await page.getByTestId('agent-tools-editor').waitFor({ timeout: 120000 })
+      return
+    }
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await recoverFromStaleBundle({ page })
+  }
+  throw new Error('智能体节点没有在编辑器里出现')
 }
 
 async function pickerChecks({ session, richServer }) {

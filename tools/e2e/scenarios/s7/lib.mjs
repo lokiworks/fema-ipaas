@@ -131,11 +131,23 @@ export async function go({ page, url }) {
   for (let attempt = 0; attempt < 4; attempt += 1) {
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded' })
+      await recoverFromStaleBundle({ page })
       return
     } catch (error) {
       if (attempt === 3) throw error
       await page.waitForTimeout(1500)
     }
+  }
+}
+
+export async function recoverFromStaleBundle({ page }) {
+  for (let reload = 0; reload < 3; reload += 1) {
+    await page.waitForTimeout(2500)
+    const stale = await page.getByText('应用已更新，请刷新页面以获取最新版本。').isVisible().catch(() => false)
+    if (!stale) {
+      return
+    }
+    await page.reload({ waitUntil: 'domcontentloaded' })
   }
 }
 

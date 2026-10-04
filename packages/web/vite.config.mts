@@ -9,6 +9,8 @@ import tailwindcss from '@tailwindcss/vite';
 import customHtmlPlugin from './vite-plugins/html-plugin';
 
 export default defineConfig(({ command, mode }) => {
+  const API_PORT = process.env.FEMA_DEV_API_PORT ?? '3000';
+  const WEB_PORT = process.env.FEMA_DEV_WEB_PORT ?? '4200';
   const isDev = command === 'serve' || mode === 'development';
 
   const FEMA_TITLE = 'Integration Platform';
@@ -21,70 +23,70 @@ export default defineConfig(({ command, mode }) => {
       // allowedHosts: ['wozcsvaint.loclx.io'],
       proxy: {
         '/api': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
           headers: {
-            Host: '127.0.0.1:4200',
+            Host: `127.0.0.1:${WEB_PORT}`,
           },
           ws: true,
         },
         '/ingest': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
         },
         '^/mcp(/|$)': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
           headers: {
-            'X-Forwarded-Host': 'localhost:4200',
+            'X-Forwarded-Host': `localhost:${WEB_PORT}`,
           },
           rewrite: (p: string) => p,
         },
         '/.well-known': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
           headers: {
-            'X-Forwarded-Host': 'localhost:4200',
+            'X-Forwarded-Host': `localhost:${WEB_PORT}`,
           },
         },
         '/register': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
           headers: {
-            'X-Forwarded-Host': 'localhost:4200',
+            'X-Forwarded-Host': `localhost:${WEB_PORT}`,
           },
         },
         '/authorize': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
           headers: {
-            'X-Forwarded-Host': 'localhost:4200',
+            'X-Forwarded-Host': `localhost:${WEB_PORT}`,
           },
         },
         '/token': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
           headers: {
-            'X-Forwarded-Host': 'localhost:4200',
+            'X-Forwarded-Host': `localhost:${WEB_PORT}`,
           },
         },
         '/revoke': {
-          target: 'http://127.0.0.1:3000',
+          target: `http://127.0.0.1:${API_PORT}`,
           secure: false,
           changeOrigin: true,
           headers: {
-            'X-Forwarded-Host': 'localhost:4200',
+            'X-Forwarded-Host': `localhost:${WEB_PORT}`,
           },
         },
       },
-      port: 4200,
+      port: Number(WEB_PORT),
       host: '0.0.0.0',
     },
 

@@ -46,6 +46,7 @@ async function main() {
     ['search', stageSearch],
     ['alerts', stageAlerts],
     ['failA', stageMissingMapping],
+    ['failB', stagePermission],
   ]
   let started = FROM_STAGE === ''
   for (const [name, run] of stages) {
@@ -384,6 +385,81 @@ async function stageMissingMapping() {
       timeoutMs: 180000,
     })
     return { accounts: accounts.length, notices: notices.length, issue: resolved.status }
+  })
+}
+
+async function stagePermission() {
+  const { page } = ctx
+  const batch = Number(process.env.E2E_BATCH ?? Date.now() % 100000) + 1
+  const people = Array.from({ length: BATCH_SIZE }, (_, index) => personOf({ number: batch * 100 + index, department: 20301 }))
+  const issueAFinal = (await listIssues({ view: 'ALL' })).find((issue) => issue.stepName === 'map_department') ?? null
+  const issuesBefore = (await listIssues({ view: 'ALL' })).map((issue) => issue.id)
+  ctx.webhooks.length = 0
+  await mock({ method: 'POST', path: '/__admin/feishu-failure', body: { code: 99991672, msg: 'Access denied. One of the following scopes is required: [im:message:send_as_bot]', target: 'messages' } })
+  await check('失败路径 B：飞书应用没有发消息权限，账号已开通但通知失败，聚合成第二个独立的问题', async () => {
+    await injectEmployees({ records: people.map((person) => person.record) })
+    const issue = await waitFor({
+      probe: async () => {
+        const found = (await listIssues({ view: 'OPEN' })).find((item) => !issuesBefore.includes(item.id))
+        return found && found.occurrences >= BATCH_SIZE ? found : null
+      },
+      timeoutMs: 420000,
+    })
+    assert(issue.stepName !== 'map_department', '第二个问题不该和缺映射混在一起')
+    const after = (await listIssues({ view: 'ALL' })).find((item) => item.stepName === 'map_department') ?? null
+    assert(JSON.stringify(after?.occurrences) === JSON.stringify(issueAFinal?.occurrences), `第一个问题被串了：${issueAFinal?.occurrences} -> ${after?.occurrences}`)
+    ctx.issueB = issue
+    const state = await mockState()
+    const created = state.feishuUsers.filter((user) => people.some((person) => person.mobile === user.mobile)).length
+    assert(created === BATCH_SIZE, `账号应当都已开通，实际 ${created}`)
+    ctx.createCallsBefore = state.createCalls
+    return { issueId: issue.id, step: issue.stepName, occurrences: issue.occurrences, code: issue.errorCode }
+  })
+  await check('失败路径 B：这一批同样只告警一次，且告警属于第二个问题', async () => {
+    await sleep(15000)
+    const alerts = ctx.webhooks.filter((hook) => hook.title !== '告警渠道测试')
+    assert(alerts.length === 1, `应当只告警一次，实际 ${alerts.length} 条`)
+    assert(!alerts[0].title.includes('部门对照'), `告警指向了第一个问题：${alerts[0].title}`)
+    return alerts[0].title.slice(0, 80)
+  })
+  await check('问题详情 B：根因和「谁能修」与第一个问题不同（对方系统的管理员）', async () => {
+    await openIssueDetail({ issue: ctx.issueB })
+    const owner = await page.getByTestId('issue-fix-owner').innerText()
+    assert(owner.includes('对方系统的管理员'), `谁能修写的是：${owner}`)
+    await shot('issue-b-detail')
+    return owner
+  })
+  await mock({ method: 'POST', path: '/__admin/feishu-failure', body: { target: 'messages' } })
+  await check('重试前确认 B：通知步骤会再调用，开通账号的步骤沿用原结果不再调用', async () => {
+    await page.getByRole('button', { name: '批量重跑失败的运行' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByTestId('rerun-preview').waitFor({ timeout: 60000 })
+    await dialog.getByText(/会再次调用并写入：通知 HR 群/).waitFor({ timeout: 60000 })
+    await dialog.getByText(/不会再次调用，沿用原结果：开通飞书账号/).waitFor({ timeout: 60000 })
+    await shot('issue-b-replay-dialog')
+    return 'ok'
+  })
+  await check('批量重跑 B：HR 群补发通知，账号不重复开通', async () => {
+    await page.getByRole('dialog').getByRole('button', { name: /^重跑 \d+ 次运行/ }).click()
+    await waitFor({
+      probe: async () => {
+        const state = await mockState()
+        return people.every((person) => state.messages.some((message) => message.content.includes(person.jobNumber))) ? state : null
+      },
+      timeoutMs: 420000,
+    })
+    const state = await mockState()
+    assert(state.createCalls === ctx.createCallsBefore, `重跑期间又调用了 ${state.createCalls - ctx.createCallsBefore} 次开通账号`)
+    const accounts = state.feishuUsers.filter((user) => people.some((person) => person.mobile === user.mobile)).length
+    assert(accounts === BATCH_SIZE, `账号数 ${accounts}`)
+    const resolved = await waitFor({
+      probe: async () => {
+        const issue = (await listIssues({ view: 'ALL' })).find((item) => item.id === ctx.issueB.id)
+        return issue?.status === 'RESOLVED' ? issue : null
+      },
+      timeoutMs: 180000,
+    })
+    return { createCallsDuringReplay: state.createCalls - ctx.createCallsBefore, accounts, issue: resolved.status }
   })
 }
 

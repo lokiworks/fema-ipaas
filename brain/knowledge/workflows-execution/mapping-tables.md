@@ -17,6 +17,12 @@ icon: 🔁
 - 连接器运行时通过 `/v1/worker/mapping-tables/:id` 取映射表，映射表改动对下一次运行立即生效，不需要重新发布。
 - 同步 Webhook（`/sync`）不经过工作流去重。
 - 被已发布步骤引用的映射表不能删除。
+- **映射规格里的「写入目标」键叫 `destination`，不能叫 `target`。** react-hook-form 的 `field.onChange` 会把带 `target` 键的对象当成 DOM 事件，值写不进表单（选了目标节点却什么都没发生）。行里的 `target`（目标字段名）在嵌套层，不受影响。
+- **映射校验只有一份**：`core-utils` 的 `dataMapping.validateSpec`（不需要样例，必填未映射、日期格式、没选映射表、目标里没有的字段）和 `evaluate`（带值，类型不符、必填为空、可选值、列表某项缺字段、查表未命中）。编辑器预览、构建器的 `workflowValidator`、服务端发布前的 `workflowPublishUtils.assertMappingsValid`、运行时 `map_fields` 都调它，所以手动、AI 建议、方案模板产出的映射走同一个关。
+- **日期按文本原样解析，不看服务器时区**：`2026/10/08`、`2026年10月8日`、`20261008`、带时间的写法都保留写出来的年月日和时分秒；只有数字（秒或毫秒时间戳）按东八区格式化。格式串区分大小写，`yyyy-MM-dd` 会被判为无法识别，而不是输出 `yyyy-10-dd`。
+- **步骤引用带 `['output']`**：数据选择器和自动映射写入的都是 `{{trigger['output']['body']['x']}}`，编辑器预览按同样的形式读样例；以前预览读不到，永远显示「还没有样例数据」。
+- **自动映射建议不看请求头和原始请求体**（`headers`、`rawBody`），否则 `sec-ch-ua-mobile` 会被当成手机号的来源。建议默认不勾选、不显示置信度、写明依据。
+- 端到端脚本：`tools/e2e/scenarios/s2-field-mapping.mjs`，起栈用 `tools/e2e/stack/` 下的脚本，另需单独起 worker。
 
 ## Key files
 - `packages/core/utils/src/lib/data-mapping.ts`

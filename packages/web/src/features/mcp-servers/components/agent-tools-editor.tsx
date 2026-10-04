@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import { McpServer, McpServerStatus, McpServerTool } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
@@ -311,9 +312,9 @@ function ServerStateNotice({
       <Alert variant="destructive">
         <AlertTitle>{t('This server cannot be reached')}</AlertTitle>
         <AlertDescription>
-          {server.lastError !== null
-            ? mcpProbeMessageUtils.failureMessage(server.lastError)
-            : t('The last connection test failed.')}{' '}
+          {isNil(server.lastError)
+            ? t('The last connection test failed.')
+            : mcpProbeMessageUtils.failureMessage(server.lastError)}{' '}
           {t('This step cannot be published until the connection works again.')}
         </AlertDescription>
       </Alert>

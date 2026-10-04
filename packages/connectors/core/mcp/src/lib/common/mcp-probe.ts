@@ -1,5 +1,5 @@
 import { lookup } from 'node:dns/promises';
-import { McpTool } from '@fema-ipaas/connector-sdk';
+import { McpTool, ssrfIpClassifier } from '@fema-ipaas/connector-sdk';
 import { McpHttpError, mcpClient, McpTimeoutError, McpTransportMismatchError } from './mcp-client';
 import { McpAuthType, McpTarget } from './mcp-target';
 import { AddressKind, networkAddress } from './network-address';
@@ -9,30 +9,44 @@ export const mcpProbe = {
   classifyError,
 };
 
-async function probe({ target, resolveHost = defaultResolveHost, timeoutMs = PROBE_TIMEOUT_MS }: ProbeParams): Promise<McpProbeResult> {
+async function probe({
+  target,
+  resolveHost = defaultResolveHost,
+  timeoutMs = PROBE_TIMEOUT_MS,
+  allowList = ssrfIpClassifier.parseAllowList({ raw: process.env['FEMA_SSRF_ALLOW_LIST'] }),
+}: ProbeParams): Promise<McpProbeResult> {
   const parsed = parseUrl(target.url);
   if (parsed === null) {
     return failure({ failure: McpProbeFailure.INVALID_URL, detail: 'The server address is not a valid http(s) URL', host: target.url });
   }
   const host = parsed.host;
+  const literalHost = stripBrackets(parsed.hostname);
   const literalKind = networkAddress.classifyHost(parsed.hostname);
-  if (literalKind === AddressKind.LOOPBACK || literalKind === AddressKind.LINK_LOCAL) {
+  const literalBlocked =
+    (literalKind === AddressKind.LOOPBACK || literalKind === AddressKind.LINK_LOCAL) &&
+    !isAllowedLiteral({ hostname: literalHost, allowList });
+  if (literalBlocked) {
     return failure({ failure: kindFailure(literalKind), detail: `${host} is not reachable from the worker`, host });
   }
   const resolved: ResolvedHost = networkAddress.isIpLiteral(parsed.hostname)
-    ? { kinds: [literalKind], error: null }
+    ? { addresses: [literalHost], error: null }
     : await resolveHost(parsed.hostname).then(
-      (addresses) => ({ kinds: addresses.map((address) => networkAddress.classifyIp(address)), error: null }),
-      (error: unknown) => ({ kinds: [], error }),
+      (addresses) => ({ addresses, error: null }),
+      (error: unknown) => ({ addresses: [], error }),
     );
   if (resolved.error !== null) {
     return failure(classifyError({ error: resolved.error, target, host, privateAddress: false }));
   }
-  const resolvedBlocked = resolved.kinds.find((kind) => kind === AddressKind.LOOPBACK || kind === AddressKind.LINK_LOCAL);
+  const kinds = resolved.addresses.map((address) => ({ address, kind: networkAddress.classifyIp(address) }));
+  const resolvedBlocked = kinds.find(
+    ({ address, kind }) =>
+      (kind === AddressKind.LOOPBACK || kind === AddressKind.LINK_LOCAL) &&
+      !ssrfIpClassifier.isInAllowList({ ip: address, allowList }),
+  );
   if (resolvedBlocked !== undefined) {
-    return failure({ failure: kindFailure(resolvedBlocked), detail: `${host} resolves to an address the worker does not call`, host });
+    return failure({ failure: kindFailure(resolvedBlocked.kind), detail: `${host} resolves to an address the worker does not call`, host });
   }
-  const privateAddress = resolved.kinds.includes(AddressKind.PRIVATE);
+  const privateAddress = kinds.some(({ kind }) => kind === AddressKind.PRIVATE);
   const started = Date.now();
   try {
     const session = await mcpClient.connect({ target, timeoutMs });
@@ -101,6 +115,17 @@ function toProbeTool(tool: McpTool): McpProbeTool {
     ...(tool.title === undefined ? {} : { title: tool.title }),
     ...(tool.readOnly === undefined ? {} : { readOnly: tool.readOnly }),
   };
+}
+
+function isAllowedLiteral({ hostname, allowList }: { hostname: string; allowList: string[] }): boolean {
+  if (networkAddress.isIpLiteral(hostname)) {
+    return ssrfIpClassifier.isInAllowList({ ip: hostname, allowList });
+  }
+  return allowList.length > 0;
+}
+
+function stripBrackets(value: string): string {
+  return value.startsWith('[') && value.endsWith(']') ? value.slice(1, -1) : value;
 }
 
 function kindFailure(kind: AddressKind): McpProbeFailure {
@@ -179,10 +204,11 @@ type ProbeParams = {
   target: McpTarget;
   resolveHost?: (hostname: string) => Promise<string[]>;
   timeoutMs?: number;
+  allowList?: string[];
 };
 
 type ResolvedHost = {
-  kinds: AddressKind[];
+  addresses: string[];
   error: unknown;
 };
 

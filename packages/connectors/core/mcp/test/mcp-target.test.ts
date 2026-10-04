@@ -43,6 +43,9 @@ describe('networkAddress', () => {
     ['172.20.0.1', AddressKind.PRIVATE],
     ['192.168.1.9', AddressKind.PRIVATE],
     ['::ffff:10.0.0.1', AddressKind.PRIVATE],
+    ['::ffff:7f00:1', AddressKind.LOOPBACK],
+    ['::ffff:a9fe:a9fe', AddressKind.LINK_LOCAL],
+    ['64:ff9b::7f00:1', AddressKind.PRIVATE],
     ['fd00::1', AddressKind.PRIVATE],
     ['8.8.8.8', AddressKind.PUBLIC],
   ])('classifies %s', (ip, kind) => {

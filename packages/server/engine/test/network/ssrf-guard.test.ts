@@ -249,6 +249,102 @@ describe('ssrf-guard', () => {
         })
     })
 
+    describe('bypass attempts against loopback', () => {
+        let loopbackServer: Server
+        let loopbackPort: number
+
+        beforeAll(async () => {
+            loopbackServer = createServer((socket) => socket.end())
+            await new Promise<void>((resolve) => loopbackServer.listen(0, '127.0.0.1', () => resolve()))
+            loopbackPort = (loopbackServer.address() as { port: number }).port
+        })
+
+        afterAll(() => {
+            loopbackServer.close()
+        })
+
+        afterEach(() => {
+            vi.restoreAllMocks()
+        })
+
+        it.each([
+            ['IPv6 loopback', '::1'],
+            ['IPv6 loopback, expanded', '0:0:0:0:0:0:0:1'],
+            ['IPv4-mapped IPv6 loopback', '::ffff:127.0.0.1'],
+            ['IPv4-mapped IPv6 loopback, hex groups', '::ffff:7f00:1'],
+            ['IPv4-mapped IPv6 metadata address', '::ffff:169.254.169.254'],
+            ['NAT64 spelling of loopback', '64:ff9b::7f00:1'],
+        ])('refuses a raw connect to %s', async (_name, host) => {
+            ssrfGuard.install({ enabled: true, allowList: [] })
+            const result = await connectOnce({ host, port: loopbackPort })
+            expect(result.connected).toBe(false)
+            expect(result.error).toBeInstanceOf(SSRFBlockedError)
+        })
+
+        it.each([
+            ['decimal', '2130706433'],
+            ['hexadecimal', '0x7f000001'],
+            ['short form', '127.1'],
+            ['decimal metadata address', '2852039166'],
+        ])('refuses a connect to the %s spelling of an internal IPv4 address', async (_name, host) => {
+            ssrfGuard.install({ enabled: true, allowList: [] })
+            const result = await connectOnce({ host, port: loopbackPort })
+            expect(result.connected).toBe(false)
+            expect(result.error).toBeInstanceOf(SSRFBlockedError)
+        })
+
+        it.each([
+            ['decimal', `http://2130706433:${'PORT'}/`],
+            ['hexadecimal', `http://0x7f000001:${'PORT'}/`],
+            ['octal', `http://0177.0.0.1:${'PORT'}/`],
+            ['IPv4-mapped IPv6', `http://[::ffff:127.0.0.1]:${'PORT'}/`],
+            ['IPv6 loopback', `http://[::1]:${'PORT'}/`],
+        ])('refuses the global fetch to the %s spelling', async (_name, template) => {
+            ssrfGuard.install({ enabled: true, allowList: [] })
+            await expect(fetch(template.replace('PORT', String(loopbackPort)))).rejects.toThrow()
+        })
+
+        it('allow-listing 127.0.0.1 also opens its decimal and IPv4-mapped spellings, and nothing else', async () => {
+            ssrfGuard.install({ enabled: true, allowList: ['127.0.0.1'] })
+            const decimal = await connectOnce({ host: '2130706433', port: loopbackPort })
+            const mapped = await connectOnce({ host: '::ffff:127.0.0.1', port: loopbackPort })
+            const metadata = await connectOnce({ host: '169.254.169.254', port: 80 })
+            expect(decimal.connected).toBe(true)
+            expect(mapped.connected).toBe(true)
+            expect(metadata.error).toBeInstanceOf(SSRFBlockedError)
+        })
+
+        it('checks the address of every lookup, so a DNS answer that flips to loopback after validation is refused', async () => {
+            const publicAnswer = [{ address: '93.184.216.34', family: 4 }]
+            const loopbackAnswer = [{ address: '127.0.0.1', family: 4 }]
+            vi.spyOn(dns.promises, 'lookup').mockResolvedValue(publicAnswer as unknown as dns.LookupAddress)
+            vi.spyOn(dns, 'lookup').mockImplementation(((_host: string, _options: unknown, callback: (error: null, addresses: dns.LookupAddress[]) => void) => {
+                callback(null, loopbackAnswer)
+            }) as unknown as typeof dns.lookup)
+            ssrfGuard.install({ enabled: true, allowList: [] })
+
+            const validation = await dns.promises.lookup('rebind.example.test', { all: true })
+            expect(validation).toEqual(publicAnswer)
+
+            const result = await connectOnce({ host: 'rebind.example.test', port: loopbackPort })
+            expect(result.connected).toBe(false)
+            expect(result.error).toBeInstanceOf(SSRFBlockedError)
+        })
+
+        it('refuses a name whose answers mix a public and a loopback address, in either order', async () => {
+            const mixed = [
+                [{ address: '93.184.216.34', family: 4 }, { address: '127.0.0.1', family: 4 }],
+                [{ address: '127.0.0.1', family: 4 }, { address: '93.184.216.34', family: 4 }],
+            ]
+            const lookup = vi.spyOn(dns.promises, 'lookup')
+            lookup.mockResolvedValueOnce(mixed[0] as unknown as dns.LookupAddress)
+            lookup.mockResolvedValueOnce(mixed[1] as unknown as dns.LookupAddress)
+            ssrfGuard.install({ enabled: true, allowList: [] })
+            await expect(dns.promises.lookup('mixed.example.test')).rejects.toBeInstanceOf(SSRFBlockedError)
+            await expect(dns.promises.lookup('mixed.example.test')).rejects.toBeInstanceOf(SSRFBlockedError)
+        })
+    })
+
     describe('disabled guard', () => {
         it('leaves dns.lookup untouched', async () => {
             ssrfGuard.install({ enabled: false })

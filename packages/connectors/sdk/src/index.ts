@@ -26,6 +26,8 @@ export {
   mcpWire,
   MCP_PROTOCOL_VERSION,
   blockedUntilMarker,
+  ssrfIpClassifier,
+  SsrfAddressKind,
 } from '@fema-ipaas/core-utils';
 export type {
   SeekPage,

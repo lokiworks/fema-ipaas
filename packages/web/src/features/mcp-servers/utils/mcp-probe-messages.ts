@@ -6,12 +6,12 @@ function failureMessage(error: McpServerProbeError): string {
   switch (error.failure) {
     case McpServerProbeFailure.LOOPBACK:
       return t(
-        'Connection failed: {host} points to the worker itself. Both the connection test and tool calls are made by the worker, and localhost only works on your own computer. Enter an address or domain the worker can reach.',
+        'Connection refused: {host} points to the worker itself. Both the connection test and tool calls are made by the worker, so localhost only works when the server runs on the worker's own machine and an operator has added the address to FEMA_SSRF_ALLOW_LIST. Otherwise enter an address or domain the worker can reach.',
         { host },
       );
     case McpServerProbeFailure.LINK_LOCAL:
       return t(
-        'Connection refused: {host} is a link-local address, often used by cloud metadata services. For security, the worker will not access this kind of address.',
+        'Connection refused: {host} is a link-local address, often used by cloud metadata services. The worker only calls it after an operator adds it to FEMA_SSRF_ALLOW_LIST.',
         { host },
       );
     case McpServerProbeFailure.PRIVATE_UNREACHABLE:

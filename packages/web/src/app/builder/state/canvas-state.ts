@@ -36,6 +36,8 @@ export type CanvasState = {
   setStepPanelTab: (tab: string | null) => void;
   editLockHolder: EditLockHolder | null;
   setEditLockHolder: (holder: EditLockHolder | null) => void;
+  editLockActions: EditLockActions | null;
+  setEditLockActions: (actions: EditLockActions | null) => void;
   highlightedSteps: string[];
   setHighlightedSteps: (steps: string[]) => void;
   collapsedSteps: string[];
@@ -133,6 +135,9 @@ export const createCanvasState = (
     editLockHolder: null,
     setEditLockHolder: (holder: EditLockHolder | null) =>
       set({ editLockHolder: holder }),
+    editLockActions: null,
+    setEditLockActions: (actions: EditLockActions | null) =>
+      set({ editLockActions: actions }),
     highlightedSteps: [],
     setHighlightedSteps: (steps: string[]) => set({ highlightedSteps: steps }),
     collapsedSteps: [],
@@ -258,4 +263,10 @@ function getPanningModeFromLocalStorage(): 'grab' | 'pan' {
 export type EditLockHolder = {
   userId: string;
   userDisplayName: string;
+};
+
+export type EditLockActions = {
+  takeOver: () => void;
+  requestEdit: () => void;
+  canTakeOver: boolean;
 };

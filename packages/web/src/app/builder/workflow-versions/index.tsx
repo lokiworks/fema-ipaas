@@ -7,7 +7,9 @@ import { LeftSideBarType } from '@/app/builder/types';
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { releasesHooks, versionReleaseInfo } from '@/features/releases';
 import { workflowHooks } from '@/features/workflows';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { SidebarHeader } from '../sidebar-header';
 
@@ -31,6 +33,14 @@ const WorkflowVersionsList = () => {
   const numbers = useMemo(
     () => versionNumbers.numberVersions(workflowVersionPage?.data ?? []),
     [workflowVersionPage],
+  );
+  const { data: changesPage } = releasesHooks.useWorkflowChanges({
+    projectId: authenticationSession.getProjectId() ?? '',
+    workflowId: workflow.id,
+  });
+  const releaseInfo = useMemo(
+    () => versionReleaseInfo.byVersion(changesPage?.data ?? []),
+    [changesPage],
   );
   const [compare, setCompare] = useState<{
     left: string | null;
@@ -70,6 +80,7 @@ const WorkflowVersionsList = () => {
                 publishedVersionId={workflow.publishedVersionId}
                 workflowVersion={workflowVersion}
                 workflowVersionNumber={numbers[workflowVersion.id] ?? 0}
+                releaseInfo={releaseInfo[workflowVersion.id]}
                 onCompare={() =>
                   setCompare({
                     left: workflowVersion.id,

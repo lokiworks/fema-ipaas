@@ -10,14 +10,21 @@ import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasHooks } from '../hooks';
 
 function useWorkflowLock() {
-  const [readonly, workflowId, setReadOnly, setEditLockHolder, saving] =
-    useBuilderStateContext((state) => [
-      state.readonly,
-      state.workflow.id,
-      state.setReadOnly,
-      state.setEditLockHolder,
-      state.saving,
-    ]);
+  const [
+    readonly,
+    workflowId,
+    setReadOnly,
+    setEditLockHolder,
+    setEditLockActions,
+    saving,
+  ] = useBuilderStateContext((state) => [
+    state.readonly,
+    state.workflow.id,
+    state.setReadOnly,
+    state.setEditLockHolder,
+    state.setEditLockActions,
+    state.saving,
+  ]);
   const run = useBuilderStateContext((state) => state.run);
   const readonlySetByLock = useRef(false);
   const lastActivityAt = useRef(Date.now());
@@ -56,6 +63,12 @@ function useWorkflowLock() {
     setEditLockHolder(lockedBy);
   }, [lockedBy, setEditLockHolder]);
 
+  const canTakeOver = projectRole?.role === DefaultProjectRole.ADMIN;
+  useEffect(() => {
+    setEditLockActions({ takeOver, requestEdit, canTakeOver });
+    return () => setEditLockActions(null);
+  }, [takeOver, requestEdit, canTakeOver, setEditLockActions]);
+
   useEffect(() => {
     if (lockedBy && !readonly) {
       readonlySetByLock.current = true;
@@ -71,7 +84,7 @@ function useWorkflowLock() {
     lockedBy,
     takeOver,
     requestEdit,
-    canTakeOver: projectRole?.role === DefaultProjectRole.ADMIN,
+    canTakeOver,
   };
 }
 

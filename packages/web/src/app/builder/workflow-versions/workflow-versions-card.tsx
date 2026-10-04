@@ -1,5 +1,7 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import {
+  ReleaseChangeAction,
+  ReleaseChangeWithDetails,
   WorkflowVersionMetadata,
   WorkflowVersionState,
 } from '@fema-ipaas/shared';
@@ -34,6 +36,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { projectCollectionUtils } from '@/features/projects';
+import { VersionReleaseInfo } from '@/features/releases';
 import { WorkflowVersionStateDot, workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -47,6 +50,7 @@ const WorkflowVersionDetailsCard = React.memo(
     selected,
     publishedVersionId,
     workflowVersionNumber,
+    releaseInfo,
     onCompare,
   }: WorkflowVersionDetailsCardProps) => {
     const navigate = useNavigate();
@@ -106,6 +110,10 @@ const WorkflowVersionDetailsCard = React.memo(
             {inProduction && <Badge variant="success">{t('Production')}</Badge>}
             {inTest && <Badge variant="info">{t('Test')}</Badge>}
           </p>
+          <VersionPublisher
+            workflowVersion={workflowVersion}
+            releaseInfo={releaseInfo}
+          />
         </div>
         <div className="flex shrink-0 items-center justify-center gap-1 font-medium">
           {selected && (
@@ -211,6 +219,90 @@ const WorkflowVersionDetailsCard = React.memo(
   },
 );
 
+function VersionPublisher({
+  workflowVersion,
+  releaseInfo,
+}: {
+  workflowVersion: WorkflowVersionMetadata;
+  releaseInfo: VersionReleaseInfo | undefined;
+}) {
+  const entries = [
+    releaseInfo?.production
+      ? {
+          change: releaseInfo.production,
+          text: productionText({
+            change: releaseInfo.production,
+            requestedBy: releaseInfo.requestedBy,
+          }),
+        }
+      : null,
+    releaseInfo?.test
+      ? {
+          change: releaseInfo.test,
+          text: t('Deployed to test by {name}', {
+            name: releaseInfo.test.actorName,
+          }),
+        }
+      : null,
+  ].filter((entry) => entry !== null);
+  if (entries.length === 0) {
+    const editor = workflowVersion.updatedByUser;
+    return editor ? (
+      <p className="text-xs text-muted-foreground">
+        {t('Last edited by {name}', {
+          name: `${editor.firstName} ${editor.lastName}`.trim(),
+        })}
+      </p>
+    ) : null;
+  }
+  return (
+    <div className="flex flex-col gap-0.5" data-testid="version-publisher">
+      {entries.map(({ change, text }) => (
+        <div
+          key={change.id}
+          className="flex flex-col text-xs text-muted-foreground"
+        >
+          <span>{text}</span>
+          {change.note && (
+            <span
+              className="line-clamp-2 break-words text-foreground/80"
+              title={change.note}
+            >
+              {t('Release note: {note}', { note: change.note })}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function productionText({
+  change,
+  requestedBy,
+}: {
+  change: ReleaseChangeWithDetails;
+  requestedBy: string | null;
+}): string {
+  if (change.action === ReleaseChangeAction.ROLLED_BACK) {
+    return t('Rolled back by {name} to the content of v{version}', {
+      name: change.actorName,
+      version: change.restoredVersionNumber ?? 0,
+    });
+  }
+  if (change.action === ReleaseChangeAction.PUBLISHED_DIRECTLY) {
+    return t('Published by {name}', { name: change.actorName });
+  }
+  const requester = requestedBy ?? change.actorName;
+  if (requester !== change.actorName) {
+    return t('Promoted by {name}, approved by {approver}', {
+      name: requester,
+      approver: change.actorName,
+    });
+  }
+  return t('Promoted to production by {name}', { name: requester });
+}
+
 WorkflowVersionDetailsCard.displayName = 'WorkflowVersionDetailsCard';
 export { WorkflowVersionDetailsCard };
 
@@ -219,5 +311,6 @@ type WorkflowVersionDetailsCardProps = {
   selected: boolean;
   publishedVersionId: string | undefined | null;
   workflowVersionNumber: number;
+  releaseInfo: VersionReleaseInfo | undefined;
   onCompare: () => void;
 };

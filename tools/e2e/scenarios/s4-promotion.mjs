@@ -12,6 +12,7 @@ const WEB = process.env.E2E_WEB_URL ?? ports.WEB_URL ?? `http://localhost:${4200
 const MOCK = process.env.E2E_MOCK_URL ?? ports.MOCK_URL ?? `http://127.0.0.1:${18900 + SLOT}`
 const SHOTS = process.env.E2E_SHOTS ?? `${STATE_DIR}/shots`
 const WAIT_MS = Number(process.env.E2E_WAIT_MS ?? 90000)
+const LABEL_FILTER = process.env.E2E_LABELS ? new RegExp(process.env.E2E_LABELS) : null
 const RUN = Date.now().toString(36)
 const PASSWORD = 'Passw0rd!2026'
 
@@ -43,12 +44,22 @@ for (const user of [alice, bob, carol]) {
   user.token = (await signIn({ email: user.email, password: PASSWORD })).token
 }
 
+const prodConnection = await asOwner('POST', '/connections', connectionBody({ externalId: PROD_APP, appId: PROD_APP }))
+const testConnection = await asOwner('POST', '/connections', connectionBody({ externalId: TEST_APP, appId: TEST_APP }))
+for (const connection of [prodConnection, testConnection]) {
+  await asOwner('POST', `/connections/${connection.id}/access`, { allProjects: false, projectIds: [projectId], projectMembersPermission: 'USE' })
+}
+const chatVariable = await asOwner('POST', '/variables', { projectId, name: 'storeChatId', value: PROD_CHAT, testValue: TEST_CHAT })
+
 await check('单环境项目：打开双环境前可以直接发布（对照基线）', async () => {
   const workflow = await createWorkflow({ token: owner.token, name: '基线流程', text: '基线' })
   const response = await call('POST', `/workflows/${workflow.id}?projectId=${projectId}`, { type: 'LOCK_AND_PUBLISH', request: {} }, owner.token)
   assert(response.status === 200, `单环境发布失败：${response.status} ${JSON.stringify(response.body).slice(0, 200)}`)
+  const recorded = await changesOf({ token: owner.token, scope: projectId })
+  const direct = recorded.find((row) => row.action === 'PUBLISHED_DIRECTLY' && row.workflowId === workflow.id)
+  assert(direct && direct.actorId === owner.id && direct.toVersionNumber === 1 && direct.approverIds.length === 0, `直接上线没有留下持久记录：${JSON.stringify(direct)}`)
   await asOwner('DELETE', `/workflows/${workflow.id}?projectId=${projectId}`)
-  return 'ok'
+  return { directPublishRecorded: direct.id }
 })
 
 await check('开启测试与生产：所有者设为审批人，非项目成员的人不能当审批人', async () => {
@@ -69,13 +80,6 @@ await check('开发者不能改环境开关，只读成员也看得到环境概�
   assert(viewer.status === 200, `只读成员看环境概览返回 ${viewer.status}`)
   return 'ok'
 })
-
-const prodConnection = await asOwner('POST', '/connections', connectionBody({ externalId: PROD_APP, appId: PROD_APP }))
-const testConnection = await asOwner('POST', '/connections', connectionBody({ externalId: TEST_APP, appId: TEST_APP }))
-for (const connection of [prodConnection, testConnection]) {
-  await asOwner('POST', `/connections/${connection.id}/access`, { allProjects: false, projectIds: [projectId], projectMembersPermission: 'USE' })
-}
-const chatVariable = await asOwner('POST', '/variables', { projectId, name: 'storeChatId', value: PROD_CHAT, testValue: TEST_CHAT })
 
 await check('连接替换：生产连接换成测试账号；不同连接器、自己换自己都被拒绝', async () => {
   const same = await call('POST', '/connection-replacements', { projectId, sourceConnectionId: prodConnection.id, targetConnectionId: prodConnection.id }, owner.token)
@@ -194,7 +198,7 @@ await check('申请记录和审批人、时间、意见都留存', async () => {
   return 'ok'
 })
 
-const v1Published = release1.workflowVersionId
+const v1Published = release1?.workflowVersionId
 
 flow = await getFlow({ token: owner.token, id: flow.id })
 await importFlow({ token: alice.token, id: flow.id, text: '版本二：加了签名', variables: ['storeChatId', 'signature'] })
@@ -228,7 +232,7 @@ await check('补上缺的配置值后重新检查通过，批准生效，生产�
   return state.messages[0].content
 })
 
-const v2Published = release2.workflowVersionId
+const v2Published = release2?.workflowVersionId
 
 await importFlow({ token: alice.token, id: flow.id, text: '版本三：用了一个不存在的连接', connection: 'ghost_connection' })
 await check('版本三引用了生产里不存在的连接：自动检查报错并写出连接名', async () => {
@@ -322,8 +326,7 @@ await check('编辑锁：一个人正在编辑时，另一个人不能通过接�
   const lock = await holder.rival({ token: bob.token })
   assert(lock.acquired === false && lock.lock?.userDisplayName?.includes('Alice'), `bob 抢锁应失败并告知是谁：${JSON.stringify(lock)}`)
   holder.release()
-  await sleep(1000)
-  const after = await call('POST', `/workflows/${flow.id}?projectId=${projectId}`, { type: 'CHANGE_NAME', request: { displayName: '门店通知' } }, bob.token)
+  const after = await untilStatus({ expected: 200, attempt: () => call('POST', `/workflows/${flow.id}?projectId=${projectId}`, { type: 'CHANGE_NAME', request: { displayName: '门店通知' } }, bob.token) })
   assert(after.status === 200, `锁释放后 bob 应能改：${after.status} ${JSON.stringify(after.body).slice(0, 200)}`)
   return 'ok'
 })
@@ -375,6 +378,11 @@ await check('界面：开发者在编辑器里发布到测试，再点「推广�
     await shot(page, '01b-deploy-warning')
     await proceed.click()
   }
+  const deployDialog = page.getByRole('dialog').filter({ hasText: '发布说明（可选）' })
+  await deployDialog.waitFor({ timeout: 30000 })
+  await deployDialog.locator('textarea').fill('界面发布到测试：版本五')
+  await shot(page, '01c-deploy-dialog')
+  await deployDialog.getByRole('button', { name: '发布到测试' }).click()
   await page.getByText('已发布到测试').first().waitFor({ timeout: 60000 })
   await page.waitForTimeout(1500)
   await shot(page, '02-editor-deployed')
@@ -471,7 +479,7 @@ await check('界面：变更记录页写出谁、何时、做了什么，含推�
   await page.getByText('操作人').first().waitFor({ timeout: 120000 })
   await page.waitForTimeout(1500)
   const text = await page.locator('body').innerText()
-  for (const needle of ['申请推广', '批准推广', '驳回推广', '生产回滚', '发布到测试', 'alice.', '界面推广：版本五', '这是测试账号，不能上生产']) {
+  for (const needle of ['申请推广', '批准推广', '驳回推广', '生产回滚', '发布到测试', '直接发布', 'Alice Requester', '界面推广：版本五', '这是测试账号，不能上生产', '内容取自', '无需审批']) {
     assert(text.includes(needle), `变更记录里没有「${needle}」`)
   }
   await shot(page, '11-history-viewer')
@@ -479,16 +487,317 @@ await check('界面：变更记录页写出谁、何时、做了什么，含推�
   })
 })
 
+const VIEW_MODES = [
+  { name: 'light', colorScheme: 'light', width: 1440, height: 900 },
+  { name: 'dark', colorScheme: 'dark', width: 1440, height: 900 },
+  { name: 'narrow', colorScheme: 'light', width: 390, height: 844 },
+]
+let previewFlow = null
+
+await check('持久发布记录：环境开关、测试发布、申请、批准、驳回、撤回、回滚都留下记录（谁、何时、从哪个版本到哪个版本、说明、审批人），非成员读不到', async () => {
+  const rows = await changesOf({ token: carol.token, scope: projectId })
+  const actions = new Set(rows.map((row) => row.action))
+  const missing = ['ENVIRONMENTS_UPDATED', 'DEPLOYED_TO_TEST', 'REQUESTED', 'APPROVED', 'REJECTED', 'WITHDRAWN', 'ROLLED_BACK', 'PUBLISHED_DIRECTLY'].filter((action) => !actions.has(action))
+  assert(missing.length === 0, `缺少记录：${missing.join('、')}；已有：${[...actions].join('、')}`)
+  const toggle = rows.find((row) => row.action === 'ENVIRONMENTS_UPDATED')
+  assert(toggle.environmentsEnabled === true && toggle.approverIds.includes(owner.id) && toggle.actorId === owner.id && toggle.actorName.length > 0, `环境开关记录不完整：${JSON.stringify(toggle)}`)
+  const approved = rows.find((row) => row.action === 'APPROVED' && row.releaseId === release1.id)
+  assert(approved && approved.actorId === owner.id && approved.note === '首次上线：门店通知' && approved.comment === '看过了' && approved.approverNames.length === 1, `批准记录不完整：${JSON.stringify(approved)}`)
+  assert(approved.toVersionNumber === 1 && approved.fromVersionNumber === null && approved.workflowDisplayName === '门店通知', `批准记录的版本不对：${JSON.stringify(approved)}`)
+  const rolled = rows.find((row) => row.action === 'ROLLED_BACK' && row.actorId === alice.id)
+  assert(rolled && rolled.restoredVersionNumber === 1 && rolled.toVersionNumber > rolled.fromVersionNumber && rolled.approverIds.length === 0, `回滚记录不完整：${JSON.stringify(rolled)}`)
+  const autoWithdrawn = rows.find((row) => row.action === 'WITHDRAWN' && row.comment === 'Withdrawn automatically by a rollback')
+  assert(autoWithdrawn, '回滚自动撤回的申请没有留下记录')
+  const other = await asOwner('POST', '/projects', { displayName: `S4 他人项目 ${RUN}` })
+  const denied = await call('GET', `/workflow-releases/changes?projectId=${other.id}`, undefined, alice.token)
+  assert(denied.status === 403, `非成员读到了别的项目的发布记录：${denied.status}`)
+  const crossProject = await call('GET', `/workflow-releases/changes?projectId=${projectId}`, undefined, alice.token)
+  assert(crossProject.body.data.every((row) => row.projectId === projectId), '读到了其他项目的记录')
+  return { rows: rows.length, actions: [...actions] }
+})
+
+await check('推广预览（接口）：没部署到测试时说明原因；版本引用了不存在的连接和配置值时逐项写出名字，canSubmit 为 false', async () => {
+  previewFlow = await createWorkflow({ token: alice.token, name: '预览流程', text: '预览版本', variables: ['storeChatId', 'nameSuffix'], connection: 'ghost_connection' })
+  const notDeployed = await call('GET', `/workflow-releases/preview?projectId=${projectId}&workflowId=${previewFlow.id}`, undefined, alice.token)
+  assert(notDeployed.status >= 400 && notDeployed.body.params?.messageKey === 'Deploy this workflow to test before promoting it', `没部署就预览应说明原因：${JSON.stringify(notDeployed.body)}`)
+  const deployed = await call('POST', '/workflow-releases/deploy-to-test', { projectId, workflowId: previewFlow.id, note: '预览流程首次测试' }, alice.token)
+  assert(deployed.status === 200, `部署到测试失败：${JSON.stringify(deployed.body)}`)
+  const preview = await call('GET', `/workflow-releases/preview?projectId=${projectId}&workflowId=${previewFlow.id}`, undefined, carol.token)
+  assert(preview.status === 200, `预览失败：${preview.status} ${JSON.stringify(preview.body).slice(0, 200)}`)
+  const subjects = preview.body.checks.filter((item) => item.level === 'ERROR').map((item) => `${item.code}:${item.subject}`)
+  assert(subjects.includes('CONNECTION_MISSING:ghost_connection') && subjects.includes('VARIABLE_MISSING:nameSuffix'), `没写出具体名字：${JSON.stringify(preview.body.checks)}`)
+  assert(preview.body.canSubmit === false && preview.body.productionVersionId === null && preview.body.testVersionId === deployed.body.versionId, `预览内容不对：${JSON.stringify(preview.body)}`)
+  const notes = await changesOf({ token: carol.token, scope: projectId, workflowId: previewFlow.id })
+  assert(notes.some((row) => row.action === 'DEPLOYED_TO_TEST' && row.note === '预览流程首次测试'), '发布到测试的说明没有留下')
+  return subjects
+})
+
+await check('界面：推广对话框直接显示与生产的差异和自动检查，缺连接、缺配置值写出名字，有阻断项时禁用提交并说明；亮暗窄屏不横向滚动', async () => {
+  const outcomes = []
+  for (const mode of VIEW_MODES) {
+    await inPage({ browser, user: alice, viewport: { width: mode.width, height: mode.height }, colorScheme: mode.colorScheme }, async (page) => {
+      if (mode.name === 'narrow') {
+        await page.goto(`${WEB}/projects/${projectId}/releases`)
+        const row = page.getByRole('row').filter({ hasText: '预览流程' })
+        await row.getByRole('button', { name: '推广' }).click({ timeout: 120000 })
+      }
+      else {
+        await page.goto(`${WEB}/projects/${projectId}/workflows/${previewFlow.id}`)
+        const promote = page.locator('button[name="Promote to production"]')
+        await promote.waitFor({ timeout: 120000 })
+        await promote.click()
+      }
+      const dialog = page.getByRole('dialog')
+      await dialog.getByText('与生产当前版本的差异').waitFor()
+      await dialog.getByText('有 2 项必须先处理').waitFor({ timeout: 60000 })
+      await dialog.getByText('通知门店群').first().waitFor({ timeout: 60000 })
+      await page.waitForTimeout(800)
+      const text = await dialog.innerText()
+      for (const needle of ['通知门店群', 'ghost_connection', 'nameSuffix', '上线前检查', '尚未发布', '重新检查']) {
+        assert(text.includes(needle), `对话框里没有「${needle}」：${text.slice(0, 400)}`)
+      }
+      assert(await dialog.getByRole('button', { name: '提交审批' }).isDisabled(), '有阻断项时提交按钮没有禁用')
+      const isDark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
+      assert(isDark === (mode.colorScheme === 'dark'), `${mode.name} 的主题不对：dark=${isDark}`)
+      await shot(page, `12-promote-blocked-${mode.name}`)
+      const box = await dialog.boundingBox()
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+      outcomes.push({ mode: mode.name, overflow, fits: box.x >= -1 && box.x + box.width <= mode.width + 1 })
+    })
+  }
+  const bad = outcomes.filter((outcome) => outcome.overflow > 4 || !outcome.fits)
+  assert(bad.length === 0, `对话框超出屏幕：${JSON.stringify(bad)}`)
+  return outcomes
+})
+
+await check('界面：补上缺的配置值、换成存在的连接、重新发布到测试后点「重新检查」，阻断消失，提交审批进入详情页', async () => {
+  return inPage({ browser, user: alice }, async (page) => {
+    await page.goto(`${WEB}/projects/${projectId}/workflows/${previewFlow.id}`)
+    await page.locator('button[name="Promote to production"]').waitFor({ timeout: 120000 })
+    await page.locator('button[name="Promote to production"]').click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByText('有 2 项必须先处理').waitFor({ timeout: 60000 })
+    await asOwner('POST', '/variables', { projectId, name: 'nameSuffix', value: '生产后缀', testValue: '测试后缀' })
+    await dialog.getByRole('button', { name: '重新检查' }).click()
+    await dialog.getByText('有 1 项必须先处理').waitFor({ timeout: 60000 })
+    assert(await dialog.getByRole('button', { name: '提交审批' }).isDisabled(), '还剩一个阻断项时提交按钮应禁用')
+    await importFlow({ token: alice.token, id: previewFlow.id, text: '预览版本：已修好', variables: ['storeChatId', 'nameSuffix'], connection: PROD_APP })
+    const redeployed = await call('POST', '/workflow-releases/deploy-to-test', { projectId, workflowId: previewFlow.id }, alice.token)
+    assert(redeployed.status === 200, `重新发布到测试失败：${JSON.stringify(redeployed.body)}`)
+    await dialog.getByRole('button', { name: '重新检查' }).click()
+    await dialog.getByText('必须先处理').waitFor({ state: 'detached', timeout: 60000 })
+    await dialog.getByText('测试 v2').first().waitFor({ timeout: 60000 })
+    await dialog.getByText('通知门店群').first().waitFor({ timeout: 60000 })
+    await shot(page, '13-promote-ready')
+    await dialog.locator('textarea').fill('预览流程：修好后提交')
+    const submit = dialog.getByRole('button', { name: '提交审批' })
+    assert(await submit.isEnabled(), '检查全部通过后提交按钮应可用')
+    await submit.click()
+    await page.waitForURL(/\/releases\/[A-Za-z0-9_-]+$/, { timeout: 60000 })
+    await page.getByText('上线前检查').first().waitFor({ timeout: 60000 })
+    return page.url()
+  })
+})
+
+await check('界面：没有审批人的项目点推广先弹出二次确认，列出将上线的变更，返回保留说明，确认后才真的上线；有阻断项时按钮禁用', async () => {
+  const solo = await asOwner('POST', '/projects', { displayName: `S4 免审批界面 ${RUN}` })
+  await asOwner('POST', '/workflow-releases/environments', { projectId: solo.id, enabled: true, approverIds: [] })
+  const soloApp = `cli_solo_${RUN}`
+  const soloConnection = await asOwner('POST', '/connections', connectionBody({ externalId: soloApp, appId: soloApp, forProject: solo.id }))
+  await asOwner('POST', `/connections/${soloConnection.id}/access`, { allProjects: false, projectIds: [solo.id], projectMembersPermission: 'USE' })
+  await asOwner('POST', '/variables', { projectId: solo.id, name: 'storeChatId', value: PROD_CHAT, testValue: TEST_CHAT })
+  const good = await createWorkflow({ token: owner.token, name: '免审批界面流程', text: '免审批：界面', connection: soloApp, scope: solo.id })
+  const bad = await createWorkflow({ token: owner.token, name: '免审批阻断流程', text: '免审批：阻断', connection: 'ghost_connection', scope: solo.id })
+  for (const workflow of [good, bad]) {
+    const deployed = await call('POST', '/workflow-releases/deploy-to-test', { projectId: solo.id, workflowId: workflow.id }, owner.token)
+    assert(deployed.status === 200, `部署到测试失败：${JSON.stringify(deployed.body)}`)
+  }
+  const note = '免审批：界面上线说明'
+  await inPage({ browser, user: owner }, async (page) => {
+    await page.goto(`${WEB}/projects/${solo.id}/workflows/${good.id}`)
+    await page.locator('button[name="Promote to production"]').waitFor({ timeout: 120000 })
+    await page.locator('button[name="Promote to production"]').click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByText('与生产当前版本的差异').waitFor()
+    await dialog.locator('textarea').fill(note)
+    await dialog.getByRole('button', { name: '推广到生产' }).click()
+    await dialog.getByText('不经审批直接上线？').waitFor()
+    const confirmText = await dialog.innerText()
+    for (const needle of ['已添加', '通知门店群', note, '确认并上线']) {
+      assert(confirmText.includes(needle), `二次确认里没有「${needle}」：${confirmText.slice(0, 300)}`)
+    }
+    const beforeConfirm = await getFlow({ token: owner.token, id: good.id, scope: solo.id })
+    assert(!beforeConfirm.publishedVersionId, '二次确认之前不该已经上线')
+    await shot(page, '14-promote-confirm-no-approver')
+    await dialog.getByRole('button', { name: '后退' }).click()
+    await dialog.getByText('与生产当前版本的差异').waitFor()
+    assert((await dialog.locator('textarea').inputValue()) === note, '返回后说明丢了')
+    await dialog.getByRole('button', { name: '推广到生产' }).click()
+    await dialog.getByRole('button', { name: '确认并上线' }).click()
+    await dialog.waitFor({ state: 'detached', timeout: 60000 })
+    await page.getByText('已推广到生产').first().waitFor({ timeout: 60000 })
+  })
+  const live = await getFlow({ token: owner.token, id: good.id, scope: solo.id })
+  assert(live.publishedVersionId === live.testVersionId, '确认后生产没有变成测试里的版本')
+  const rows = await changesOf({ token: owner.token, scope: solo.id, workflowId: good.id })
+  const approved = rows.find((row) => row.action === 'APPROVED')
+  assert(approved && approved.approverIds.length === 0 && approved.note === note && approved.actorId === owner.id, `免审批上线的记录不对：${JSON.stringify(approved)}`)
+  await inPage({ browser, user: owner }, async (page) => {
+    await page.goto(`${WEB}/projects/${solo.id}/workflows/${bad.id}`)
+    await page.locator('button[name="Promote to production"]').waitFor({ timeout: 120000 })
+    await page.locator('button[name="Promote to production"]').click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByText('有 1 项必须先处理').waitFor({ timeout: 60000 })
+    assert((await dialog.innerText()).includes('ghost_connection'), '阻断项里没有写出连接名')
+    assert(await dialog.getByRole('button', { name: '推广到生产' }).isDisabled(), '有阻断项时免审批的上线按钮没有禁用')
+    await shot(page, '15-promote-blocked-no-approver')
+  })
+  const stillDraft = await getFlow({ token: owner.token, id: bad.id, scope: solo.id })
+  assert(!stillDraft.publishedVersionId, '被拦住的流程不该上线')
+  return { published: live.publishedVersionId }
+})
+
+await check('界面：回滚确认框先查编辑锁，提示是谁在编辑，给出通知、等待和接管（仅所有者）；服务端拒绝带 i18n 键；回滚原因进发布记录', async () => {
+  const holder = await holdLock({ token: alice.token, resourceId: flow.id })
+  assert(holder.acquired, '持有人没能拿到编辑锁')
+  const versions = await call('GET', `/workflows/${flow.id}/versions?projectId=${projectId}&limit=20`, undefined, owner.token)
+  const locked = versions.body.data.filter((version) => version.state === 'LOCKED').sort((a, b) => new Date(a.created) - new Date(b.created))
+  const target = locked[1]
+  const refused = await call('POST', '/workflow-releases/rollback', { projectId, workflowId: flow.id, versionId: target.id }, owner.token)
+  assert(refused.status >= 400 && refused.body.params?.messageKey?.includes('is editing this workflow') && refused.body.params?.messageParams?.name?.includes('Alice'), `服务端拒绝没有带 i18n 键和编辑者：${JSON.stringify(refused.body)}`)
+  const openRollback = async (page) => {
+    await page.goto(`${WEB}/projects/${projectId}/workflows/${flow.id}`)
+    await page.getByText('通知门店群').first().waitFor({ timeout: 120000 })
+    await page.getByRole('button', { name: '版本', exact: true }).click()
+    await page.waitForTimeout(1500)
+    const row = page.getByText('v2', { exact: true }).locator('xpath=ancestor::*[.//button[@aria-label="更多操作"]][1]')
+    await row.getByLabel('更多操作').click()
+    await page.getByText('回滚到这个版本').click()
+    const dialog = page.getByRole('dialog')
+    await dialog.waitFor()
+    return dialog
+  }
+  await inPage({ browser, user: bob }, async (page) => {
+    const dialog = await openRollback(page)
+    const warning = dialog.getByTestId('rollback-lock-warning')
+    await warning.waitFor({ timeout: 60000 })
+    assert((await warning.innerText()).includes('Alice Requester'), '提示里没有写出谁在编辑')
+    assert(await dialog.getByRole('button', { name: '回滚', exact: true }).isDisabled(), '有人编辑时回滚按钮应禁用')
+    assert((await dialog.getByRole('button', { name: '接管编辑' }).count()) === 0, '非所有者不该看到接管按钮')
+    await shot(page, '16-rollback-lock-developer')
+  })
+  await inPage({ browser, user: owner }, async (page) => {
+    const dialog = await openRollback(page)
+    const warning = dialog.getByTestId('rollback-lock-warning')
+    await warning.waitFor({ timeout: 60000 })
+    assert((await warning.innerText()).includes('Alice Requester'), '提示里没有写出谁在编辑')
+    assert(await dialog.getByRole('button', { name: '回滚', exact: true }).isDisabled(), '有人编辑时回滚按钮应禁用')
+    await shot(page, '16-rollback-lock-owner')
+    await warning.getByRole('button', { name: '通知 Alice Requester' }).click()
+    const deadline = Date.now() + 15000
+    while (holder.editRequests.length === 0 && Date.now() < deadline) {
+      await sleep(500)
+    }
+    assert(holder.editRequests.length > 0, '持有人没有收到通知')
+    await warning.getByRole('button', { name: '等待' }).click()
+    await warning.getByText('正在等待 Alice Requester 离开编辑器').waitFor()
+    await warning.getByRole('button', { name: '接管编辑' }).click()
+    await warning.waitFor({ state: 'detached', timeout: 30000 })
+    await dialog.locator('#rollback-reason').fill('界面回滚：新版本重复发消息')
+    const rollback = dialog.getByRole('button', { name: '回滚', exact: true })
+    assert(await rollback.isEnabled(), '接管后回滚按钮应可用')
+    await shot(page, '17-rollback-after-takeover')
+    await rollback.click()
+    await page.getByText(/已回滚到版本/).first().waitFor({ timeout: 60000 })
+  })
+  holder.release()
+  await holder.closeRivals()
+  const rows = await changesOf({ token: owner.token, scope: projectId, workflowId: flow.id })
+  const rolled = rows.find((row) => row.action === 'ROLLED_BACK' && row.actorId === owner.id)
+  assert(rolled && rolled.note === '界面回滚：新版本重复发消息' && rolled.restoredVersionNumber === 2, `回滚原因没有进发布记录：${JSON.stringify(rolled)}`)
+  return { restored: rolled.restoredVersionNumber }
+})
+
+await check('界面：版本面板写出发布人、说明，标出测试和生产当前版本；亮暗两套', async () => {
+  const outcomes = []
+  for (const mode of VIEW_MODES.slice(0, 2)) {
+    await inPage({ browser, user: owner, viewport: { width: mode.width, height: mode.height }, colorScheme: mode.colorScheme }, async (page) => {
+      await page.goto(`${WEB}/projects/${projectId}/workflows/${flow.id}`)
+      await page.getByText('通知门店群').first().waitFor({ timeout: 120000 })
+      await page.getByRole('button', { name: '版本', exact: true }).click()
+      await page.getByTestId('version-publisher').first().waitFor({ timeout: 60000 })
+      await page.waitForTimeout(800)
+      const text = await page.locator('body').innerText()
+      const needles = ['Alice Requester 推广，', '批准', '发布说明：首次上线：门店通知', '发布说明：界面推广：版本五', '发布说明：界面发布到测试：版本五', '回滚，内容取自 v', '发布说明：界面回滚：新版本重复发消息', '发布到测试', '生产环境']
+      const absent = needles.filter((needle) => !text.includes(needle))
+      assert(absent.length === 0, `版本面板里没有：${absent.join('、')}`)
+      await shot(page, `18-versions-${mode.name}`)
+      outcomes.push(mode.name)
+    })
+  }
+  return outcomes
+})
+
+await check('界面：测试连接设置里，流程用到却没配测试替换的连接行内标红并写明哪些流程；配上替换后消失；已配替换的和测试连接本身不标红', async () => {
+  const extraApp = `cli_extra_${RUN}`
+  const extraTestApp = `cli_extra_test_${RUN}`
+  const extra = await asOwner('POST', '/connections', connectionBody({ externalId: extraApp, appId: extraApp }))
+  const extraTest = await asOwner('POST', '/connections', connectionBody({ externalId: extraTestApp, appId: extraTestApp }))
+  for (const connection of [extra, extraTest]) {
+    await asOwner('POST', `/connections/${connection.id}/access`, { allProjects: false, projectIds: [projectId], projectMembersPermission: 'USE' })
+  }
+  await createWorkflow({ token: owner.token, name: '额外连接流程', text: '额外', connection: extraApp })
+  const overview = await asOwner('GET', `/workflow-releases/environments?projectId=${projectId}`)
+  const names = overview.unreplacedConnections.map((item) => item.displayName)
+  assert(names.includes(extraApp) && overview.unreplacedConnections.find((item) => item.displayName === extraApp).workflowNames.includes('额外连接流程'), `概览没有列出未配替换的连接：${JSON.stringify(overview.unreplacedConnections)}`)
+  assert(!names.includes(PROD_APP) && !names.includes(TEST_APP) && !names.includes(extraTestApp), `已配替换的连接或测试连接被误标：${JSON.stringify(names)}`)
+  for (const mode of VIEW_MODES) {
+    await inPage({ browser, user: owner, viewport: { width: mode.width, height: mode.height }, colorScheme: mode.colorScheme }, async (page) => {
+      await page.goto(`${WEB}/projects/${projectId}/releases`)
+      const row = page.getByTestId('unreplaced-connection').filter({ hasText: extraApp })
+      await row.waitFor({ timeout: 120000 })
+      const rowText = await row.innerText()
+      for (const needle of ['未配测试替换', '额外连接流程', '直接用生产账号']) {
+        assert(rowText.includes(needle), `标红行里没有「${needle}」：${rowText}`)
+      }
+      const border = await row.evaluate((element) => {
+        const canvas = document.createElement('canvas')
+        canvas.width = 1
+        canvas.height = 1
+        const context = canvas.getContext('2d')
+        context.fillStyle = getComputedStyle(element).borderTopColor
+        context.fillRect(0, 0, 1, 1)
+        return [...context.getImageData(0, 0, 1, 1).data]
+      })
+      const [red, green, blue] = border
+      assert(red > green + 40 && red > blue + 40, `行没有标红：${border}`)
+      assert((await page.getByTestId('unreplaced-connection').filter({ hasText: PROD_APP }).count()) === 0, '已配替换的连接被标红')
+      await row.scrollIntoViewIfNeeded()
+      await shot(page, `19-unreplaced-${mode.name}`)
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+      assert(overflow <= 4, `${mode.name} 出现横向滚动：${overflow}`)
+    })
+  }
+  await asOwner('POST', '/connection-replacements', { projectId, sourceConnectionId: extra.id, targetConnectionId: extraTest.id })
+  await inPage({ browser, user: owner }, async (page) => {
+    await page.goto(`${WEB}/projects/${projectId}/releases`)
+    await page.getByText('测试连接').first().waitFor({ timeout: 120000 })
+    await page.waitForTimeout(1500)
+    assert((await page.getByTestId('unreplaced-connection').filter({ hasText: extraApp }).count()) === 0, '配上替换后仍然标红')
+  })
+  return names
+})
+
 await browser.close()
 
 printSummary()
 
-function connectionBody({ externalId, appId }) {
+function connectionBody({ externalId, appId, forProject = projectId }) {
   return {
     externalId,
     displayName: externalId,
     connectorName: '@fema-ipaas/connector-feishu',
-    projectId,
+    projectId: forProject,
     type: 'CUSTOM_AUTH',
     value: { type: 'CUSTOM_AUTH', props: { domain: 'https://open.feishu.cn', appId, appSecret: 'mock-secret' } },
   }
@@ -510,6 +819,19 @@ async function inPage({ browser, user, viewport, colorScheme }, run) {
 async function newPage({ browser, user, viewport = { width: 1440, height: 900 }, colorScheme = 'light' }) {
   const context = await browser.newContext({ viewport, colorScheme })
   context.setDefaultTimeout(120000)
+  await context.addInitScript(() => {
+    const style = document.createElement('style')
+    style.textContent = 'vite-plugin-checker-error-overlay { display: none !important; }'
+    document.addEventListener('DOMContentLoaded', () => document.head.appendChild(style))
+  })
+  await context.addInitScript((scheme) => {
+    try {
+      localStorage.setItem('fema.theme', scheme)
+    }
+    catch {
+      return
+    }
+  }, colorScheme)
   const page = await context.newPage()
   await page.goto(`${WEB}/sign-in`)
   await page.getByLabel(/邮箱|Email/).first().fill(user.email)
@@ -533,9 +855,12 @@ async function holdLock({ token, resourceId }) {
   }
   const emitLock = (socket, payload) => new Promise((resolve) => socket.emit('LOCK_RESOURCE', payload, resolve))
   const socket = await connect(token)
+  const editRequests = []
+  socket.on('RESOURCE_EDIT_REQUESTED', (event) => editRequests.push(event))
   const first = await emitLock(socket, { resourceId, active: true })
   return {
     acquired: first.acquired === true,
+    editRequests,
     async rival({ token: rivalToken, force = false }) {
       const rivalSocket = await connect(rivalToken)
       rivals.push(rivalSocket)
@@ -565,28 +890,35 @@ async function settledEvidence({ token, id }) {
   return detail
 }
 
+async function changesOf({ token, scope, workflowId }) {
+  const query = workflowId ? `&workflowId=${workflowId}` : ''
+  const response = await call('GET', `/workflow-releases/changes?projectId=${scope}&limit=100${query}`, undefined, token)
+  assert(response.status === 200, `读取发布记录失败：${response.status} ${JSON.stringify(response.body).slice(0, 200)}`)
+  return response.body.data
+}
+
 async function getRelease({ token, id }) {
   const response = await call('GET', `/workflow-releases/${id}?projectId=${projectId}`, undefined, token)
   assert(response.status === 200, `读取申请 ${id} 失败：${response.status} ${JSON.stringify(response.body).slice(0, 200)}`)
   return response.body
 }
 
-async function getFlow({ token, id }) {
-  const response = await call('GET', `/workflows/${id}?projectId=${projectId}`, undefined, token)
+async function getFlow({ token, id, scope = projectId }) {
+  const response = await call('GET', `/workflows/${id}?projectId=${scope}`, undefined, token)
   assert(response.status === 200, `读取工作流失败：${response.status}`)
   return response.body
 }
 
-async function importFlow({ token, id, text, variables = ['storeChatId'], connection = PROD_APP }) {
-  const imported = await call('POST', `/workflows/${id}?projectId=${projectId}`, { type: 'IMPORT_WORKFLOW', request: { displayName: '门店通知', trigger: flowTrigger({ text, variables, connection }), schemaVersion: null, notes: null } }, token)
+async function importFlow({ token, id, text, variables = ['storeChatId'], connection = PROD_APP, scope = projectId }) {
+  const imported = await call('POST', `/workflows/${id}?projectId=${scope}`, { type: 'IMPORT_WORKFLOW', request: { displayName: '门店通知', trigger: flowTrigger({ text, variables, connection }), schemaVersion: null, notes: null } }, token)
   assert(imported.status === 200, `改草稿失败：${imported.status} ${JSON.stringify(imported.body).slice(0, 300)}`)
   return imported.body
 }
 
-async function createWorkflow({ token, name, text, variables = ['storeChatId'], connection = PROD_APP }) {
-  const created = await call('POST', '/workflows', { displayName: name, projectId }, token)
+async function createWorkflow({ token, name, text, variables = ['storeChatId'], connection = PROD_APP, scope = projectId }) {
+  const created = await call('POST', '/workflows', { displayName: name, projectId: scope }, token)
   assert(created.status === 201, `创建工作流失败：${created.status} ${JSON.stringify(created.body).slice(0, 200)}`)
-  const imported = await call('POST', `/workflows/${created.body.id}?projectId=${projectId}`, { type: 'IMPORT_WORKFLOW', request: { displayName: name, trigger: flowTrigger({ text, variables, connection }), schemaVersion: null, notes: null } }, token)
+  const imported = await call('POST', `/workflows/${created.body.id}?projectId=${scope}`, { type: 'IMPORT_WORKFLOW', request: { displayName: name, trigger: flowTrigger({ text, variables, connection }), schemaVersion: null, notes: null } }, token)
   assert(imported.status === 200, `导入流程失败：${imported.status} ${JSON.stringify(imported.body).slice(0, 300)}`)
   return created.body
 }
@@ -677,6 +1009,9 @@ async function call(method, path, body, token) {
 }
 
 async function check(label, fn, { attempts = 1 } = {}) {
+  if (LABEL_FILTER && !LABEL_FILTER.test(label)) {
+    return null
+  }
   const startedAt = Date.now()
   try {
     const detail = await retried(fn, attempts)
@@ -707,6 +1042,16 @@ function assert(condition, message) {
   if (!condition) {
     throw new Error(message)
   }
+}
+
+async function untilStatus({ expected, attempt, timeoutMs = 20000 }) {
+  const deadline = Date.now() + timeoutMs
+  let response = await attempt()
+  while (response.status !== expected && Date.now() < deadline) {
+    await sleep(1000)
+    response = await attempt()
+  }
+  return response
 }
 
 function sleep(ms) {

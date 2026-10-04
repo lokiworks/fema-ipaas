@@ -37,6 +37,7 @@ const harness = vi.hoisted(() => {
     workflow: { id: string };
     setReadOnly: (value: boolean) => void;
     setEditLockHolder: (value: unknown) => void;
+    setEditLockActions: (value: unknown) => void;
     saving: boolean;
     run: Record<string, unknown> | null;
   };
@@ -47,6 +48,7 @@ const harness = vi.hoisted(() => {
     workflow: { id: 'workflow-1' },
     setReadOnly: () => undefined,
     setEditLockHolder: () => undefined,
+    setEditLockActions: () => undefined,
     saving: false,
     run: null,
   };

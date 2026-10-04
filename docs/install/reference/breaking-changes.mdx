@@ -8,6 +8,23 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Release change history is stored permanently
+
+The Change history tab of Test and production used to read the audit log, which is
+cleaned up after its retention period. Deploys to test, promotions, approvals,
+rollbacks, environment switches and direct publishes are now also written to a
+`release_change` table that has no retention period, and the tab reads that table.
+The migration copies the release events that are still in the audit log.
+
+`GET /v1/workflow-releases/history` is replaced by `GET /v1/workflow-releases/changes`
+(same `projectId` and `cursor` query, new response shape with the actor name, version
+numbers, note, comment and approvers). Validation errors from the release and edit-lock
+endpoints now also carry `messageKey` and `messageParams` next to `message`.
+
+**When is action necessary?**
+
+If a script calls `GET /v1/workflow-releases/history`, switch it to `/changes`.
+
 #### Confirming a personal data deletion needs the person or a confirmation word
 
 `POST /v1/privacy-settings/erasures/{id}/confirm` now requires a body

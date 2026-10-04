@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/tooltip';
 import { projectCollectionUtils } from '@/features/projects';
 import {
+  DeployToTestDialog,
   EnvironmentStatus,
   ReleaseRequestDialog,
   releasesHooks,
@@ -245,6 +246,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
   const canDeploy = checkAccess(Permission.WRITE_WORKFLOW);
   const canPromote = checkAccess(Permission.WRITE_PROJECT_RELEASE);
   const [promoteDialogOpen, setPromoteDialogOpen] = useState(false);
+  const [deployDialogOpen, setDeployDialogOpen] = useState(false);
   const { data: webhookUrlPrefix } = flagsHooks.useFlag<string>(
     FlagId.WEBHOOK_URL_PREFIX,
   );
@@ -255,10 +257,10 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
   });
   const { mutateAsync: deployToTest } = releasesHooks.useDeployToTest();
   const { mutate: deploy } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (note: string | undefined) => {
       setIsPublishing(true);
       try {
-        await deployToTest({ projectId, workflowId: workflow.id });
+        await deployToTest({ projectId, workflowId: workflow.id, note });
         return await workflowsApi.get(workflow.id);
       } finally {
         setIsPublishing(false);
@@ -340,7 +342,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
                 variant="default"
                 loading={isBusy}
                 name="Deploy to test"
-                onClick={() => guard.run(() => deploy())}
+                onClick={() => guard.run(() => setDeployDialogOpen(true))}
                 disabled={!isNil(deployDisabledReason) || isBusy}
               >
                 {t('Deploy to test')}
@@ -373,6 +375,14 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
         </Tooltip>
       )}
       {guard.dialog}
+      <DeployToTestDialog
+        open={deployDialogOpen}
+        onOpenChange={setDeployDialogOpen}
+        onConfirm={(note) => {
+          setDeployDialogOpen(false);
+          deploy(note);
+        }}
+      />
       <ReleaseRequestDialog
         open={promoteDialogOpen}
         onOpenChange={setPromoteDialogOpen}

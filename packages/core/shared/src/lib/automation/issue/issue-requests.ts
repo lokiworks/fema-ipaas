@@ -61,6 +61,15 @@ export enum IssueInsightCause {
     STEP_ERROR = 'STEP_ERROR',
     BLOCKED_UNTIL = 'BLOCKED_UNTIL',
     RESULT_MISMATCH = 'RESULT_MISMATCH',
+    MAPPING_MISSING = 'MAPPING_MISSING',
+}
+
+export enum IssueFixOwner {
+    MAPPING_OWNER = 'MAPPING_OWNER',
+    CONNECTION_OWNER = 'CONNECTION_OWNER',
+    TARGET_ADMIN = 'TARGET_ADMIN',
+    WORKFLOW_OWNER = 'WORKFLOW_OWNER',
+    WAIT = 'WAIT',
 }
 
 export const VERIFICATION_DEFAULT_WINDOW_HOURS = 72
@@ -96,6 +105,7 @@ export enum IssueFixKind {
     REPLAY_FROM_FAILED_STEP = 'REPLAY_FROM_FAILED_STEP',
     REPLAY_FULL = 'REPLAY_FULL',
     OPEN_RUN = 'OPEN_RUN',
+    OPEN_MAPPING_TABLES = 'OPEN_MAPPING_TABLES',
     IGNORE = 'IGNORE',
 }
 
@@ -193,6 +203,7 @@ export type IssueFix = z.infer<typeof IssueFix>
 
 export const IssueInsight = z.object({
     cause: z.enum(IssueInsightCause),
+    owner: z.enum(IssueFixOwner),
     confidence: z.number(),
     httpStatus: z.number().nullable(),
     blockedUntil: z.string().nullable().optional(),

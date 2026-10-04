@@ -4,6 +4,7 @@ import {
   IssueActivity,
   IssueActivityType,
   IssueFixKind,
+  IssueFixOwner,
   IssueInsightCause,
   IssueKind,
   IssueSeverity,
@@ -112,6 +113,25 @@ function causeText({
       return t(
         'The step failed without an HTTP status, for example a network or script error. Check the error below and the step inputs before replaying.',
       );
+    case IssueInsightCause.MAPPING_MISSING:
+      return t(
+        'A value from the source system has no row in the mapping table. Add it to the table, then replay: runs that already passed the earlier steps keep their results.',
+      );
+  }
+}
+
+function ownerLabel(owner: IssueFixOwner): string {
+  switch (owner) {
+    case IssueFixOwner.MAPPING_OWNER:
+      return t('The owner of the mapping table');
+    case IssueFixOwner.CONNECTION_OWNER:
+      return t('The owner of the connection');
+    case IssueFixOwner.TARGET_ADMIN:
+      return t('The administrator of the other system');
+    case IssueFixOwner.WORKFLOW_OWNER:
+      return t('The owner of the workflow');
+    case IssueFixOwner.WAIT:
+      return t('Nobody for now: wait for the other system to recover');
   }
 }
 
@@ -129,6 +149,8 @@ function fixLabel(kind: IssueFixKind): string {
       return t('Replay the whole run');
     case IssueFixKind.OPEN_RUN:
       return t('Open the runs of this workflow');
+    case IssueFixKind.OPEN_MAPPING_TABLES:
+      return t('Open the mapping tables');
     case IssueFixKind.IGNORE:
       return t('Confirm it is transient and ignore');
   }
@@ -297,6 +319,7 @@ export const issueUiUtils = {
   severityLabel,
   issueTitle,
   causeText,
+  ownerLabel,
   fixLabel,
   replayReasonLabel,
   replayCategoryLabel,

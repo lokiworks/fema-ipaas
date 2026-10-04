@@ -2,6 +2,7 @@ import { blockedUntilMarker } from '@fema-ipaas/core-utils'
 import {
     ExecutionStatus,
     IssueFixKind,
+    IssueFixOwner,
     IssueInsightCause,
     IssueKind,
     IssueSeverity,
@@ -103,6 +104,24 @@ describe('issueUtils.insightOf', () => {
         const insight = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'STEP_FAILED' }, connectionHealthy: true })
         expect(insight.cause).toBe(IssueInsightCause.STEP_ERROR)
         expect(insight.httpStatus).toBeNull()
+    })
+
+    it('hands a missing mapping table value to the mapping owner and offers the mapping tables', () => {
+        const insight = issueUtils.insightOf({
+            issue: { kind: IssueKind.STEP, errorCode: 'STEP_FAILED', message: '字段「departmentId」：「20399」不在映射表「北森部门到飞书部门」里，请先在映射表中补上这个值，再重试' },
+            connectionHealthy: true,
+        })
+        expect(insight.cause).toBe(IssueInsightCause.MAPPING_MISSING)
+        expect(insight.owner).toBe(IssueFixOwner.MAPPING_OWNER)
+        expect(insight.fixes.map((fix) => fix.kind)).toEqual([IssueFixKind.OPEN_MAPPING_TABLES, IssueFixKind.REPLAY_FROM_FAILED_STEP])
+    })
+
+    it('names who can fix each kind of cause', () => {
+        const ownerOf = (errorCode: string) => issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode }, connectionHealthy: true }).owner
+        expect(ownerOf('HTTP_403')).toBe(IssueFixOwner.TARGET_ADMIN)
+        expect(ownerOf('HTTP_429')).toBe(IssueFixOwner.WAIT)
+        expect(ownerOf('HTTP_422')).toBe(IssueFixOwner.WORKFLOW_OWNER)
+        expect(issueUtils.insightOf({ issue: { kind: IssueKind.CONNECTION, errorCode: 'CONNECTION_EXPIRED' }, connectionHealthy: false }).owner).toBe(IssueFixOwner.CONNECTION_OWNER)
     })
 
     it('recognises transient statuses', () => {

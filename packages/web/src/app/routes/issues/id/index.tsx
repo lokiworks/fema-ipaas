@@ -371,6 +371,13 @@ function InsightCard({
           ),
         allowed: !!issue.workflowId,
       },
+      [IssueFixKind.OPEN_MAPPING_TABLES]: {
+        run: () =>
+          navigate(
+            authenticationSession.appendProjectRoutePrefix('/mapping-tables'),
+          ),
+        allowed: true,
+      },
       [IssueFixKind.IGNORE]: { run: onIgnore, allowed: canWrite },
     };
   return (
@@ -380,13 +387,6 @@ function InsightCard({
           <Sparkles className="size-4 text-primary" />
           {t('Root cause analysis')}
         </CardTitle>
-        {insight && (
-          <CardDescription>
-            {t('Confidence {percent}%', {
-              percent: Math.round(insight.confidence * 100),
-            })}
-          </CardDescription>
-        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {isLoading || !insight ? (
@@ -394,6 +394,12 @@ function InsightCard({
         ) : (
           <>
             <p className="text-sm">{issueUiUtils.causeText(insight)}</p>
+            <p className="text-sm" data-testid="issue-fix-owner">
+              <span className="text-muted-foreground">{t('Who can fix it')}</span>{' '}
+              <span className="font-medium">
+                {issueUiUtils.ownerLabel(insight.owner)}
+              </span>
+            </p>
             <p className="text-sm text-muted-foreground">
               {t('Affects {runs} runs across {workflows} workflows.', {
                 runs: issue.occurrences,

@@ -5154,5 +5154,13 @@
   "The trigger and each step, in order.": "触发器和每个步骤，按顺序列出。",
   "Which systems the steps talk to, and whether this project already has a connection for each.": "步骤要连接哪些系统，以及这个项目里是否已有对应的连接。",
   "What cannot be guessed, such as the group to notify. Unanswered ones stay empty in the draft.": "猜不出来的内容，例如要通知的群。没回答的在草稿里留空。",
-  "AI-generated step not confirmed. Open it, check it, then confirm it.": "AI 生成的节点还没有确认：打开它检查后，点「确认无误」"
+  "AI-generated step not confirmed. Open it, check it, then confirm it.": "AI 生成的节点还没有确认：打开它检查后，点「确认无误」",
+  "A value from the source system has no row in the mapping table. Add it to the table, then replay: runs that already passed the earlier steps keep their results.": "来源系统里的某个值在映射表里没有对应的行。把它补进映射表再重放，前面步骤已经成功的运行会沿用原结果。",
+  "The owner of the mapping table": "映射表负责人",
+  "The owner of the connection": "连接的所有者",
+  "The administrator of the other system": "对方系统的管理员",
+  "The owner of the workflow": "工作流负责人",
+  "Nobody for now: wait for the other system to recover": "暂时不需要人处理，等对方系统恢复",
+  "Who can fix it": "谁能修",
+  "Open the mapping tables": "打开映射表"
 }

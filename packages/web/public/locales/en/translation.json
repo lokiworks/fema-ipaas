@@ -5154,5 +5154,13 @@
   "The trigger and each step, in order.": "The trigger and each step, in order.",
   "Which systems the steps talk to, and whether this project already has a connection for each.": "Which systems the steps talk to, and whether this project already has a connection for each.",
   "What cannot be guessed, such as the group to notify. Unanswered ones stay empty in the draft.": "What cannot be guessed, such as the group to notify. Unanswered ones stay empty in the draft.",
-  "AI-generated step not confirmed. Open it, check it, then confirm it.": "AI-generated step not confirmed. Open it, check it, then confirm it."
+  "AI-generated step not confirmed. Open it, check it, then confirm it.": "AI-generated step not confirmed. Open it, check it, then confirm it.",
+  "A value from the source system has no row in the mapping table. Add it to the table, then replay: runs that already passed the earlier steps keep their results.": "A value from the source system has no row in the mapping table. Add it to the table, then replay: runs that already passed the earlier steps keep their results.",
+  "The owner of the mapping table": "The owner of the mapping table",
+  "The owner of the connection": "The owner of the connection",
+  "The administrator of the other system": "The administrator of the other system",
+  "The owner of the workflow": "The owner of the workflow",
+  "Nobody for now: wait for the other system to recover": "Nobody for now: wait for the other system to recover",
+  "Who can fix it": "Who can fix it",
+  "Open the mapping tables": "Open the mapping tables"
 }

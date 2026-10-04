@@ -1,7 +1,7 @@
 import { blockedUntilMarker, isNil } from '@fema-ipaas/core-utils'
 import { errorHandlingUtils, ExecutionStatus, FailedStep } from '@fema-ipaas/workflow-core'
 import { Issue, IssueKind, IssueSeverity } from './issue'
-import { IssueFix, IssueFixKind, IssueInsight, IssueInsightCause, ReplayReason } from './issue-requests'
+import { IssueFix, IssueFixKind, IssueFixOwner, IssueInsight, IssueInsightCause, ReplayReason } from './issue-requests'
 
 export const issueUtils = {
     classifyFailure,
@@ -65,6 +65,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (issue.kind === IssueKind.DRIFT) {
         return {
             cause: IssueInsightCause.RESULT_MISMATCH,
+            owner: IssueFixOwner.WORKFLOW_OWNER,
             confidence: 0.9,
             httpStatus: null,
             fixes: [fix({ kind: IssueFixKind.OPEN_RUN }), fix({ kind: IssueFixKind.IGNORE })],
@@ -74,6 +75,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
         const replayBlocked = connectionMissing ? ReplayReason.CONNECTION_DELETED : connectionHealthy ? null : ReplayReason.CONNECTION_STILL_BROKEN
         return {
             cause: IssueInsightCause.CONNECTION_AUTH,
+            owner: IssueFixOwner.CONNECTION_OWNER,
             confidence: 0.96,
             httpStatus: null,
             fixes: [
@@ -86,6 +88,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (!isNil(blockedUntil)) {
         return {
             cause: IssueInsightCause.BLOCKED_UNTIL,
+            owner: IssueFixOwner.WAIT,
             confidence: 0.95,
             httpStatus: httpStatusOf(issue.errorCode),
             blockedUntil: blockedUntil.toISOString(),
@@ -95,15 +98,26 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (issue.errorCode === STEP_TIMEOUT_CODE) {
         return {
             cause: IssueInsightCause.STEP_TIMEOUT,
+            owner: IssueFixOwner.WORKFLOW_OWNER,
             confidence: 0.72,
             httpStatus: null,
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_INPUT }), fix({ kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING })],
+        }
+    }
+    if (isMappingMiss({ message: issue.message })) {
+        return {
+            cause: IssueInsightCause.MAPPING_MISSING,
+            owner: IssueFixOwner.MAPPING_OWNER,
+            confidence: 0.95,
+            httpStatus: null,
+            fixes: [fix({ kind: IssueFixKind.OPEN_MAPPING_TABLES }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
         }
     }
     const httpStatus = httpStatusOf(issue.errorCode)
     if (httpStatus === 429 || httpStatus === 529) {
         return {
             cause: IssueInsightCause.RATE_LIMITED,
+            owner: IssueFixOwner.WAIT,
             confidence: 0.83,
             httpStatus,
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING }), fix({ kind: IssueFixKind.IGNORE })],
@@ -112,6 +126,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (httpStatus === 404) {
         return {
             cause: IssueInsightCause.NOT_FOUND,
+            owner: IssueFixOwner.WORKFLOW_OWNER,
             confidence: 0.78,
             httpStatus,
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING }), fix({ kind: IssueFixKind.IGNORE })],
@@ -120,6 +135,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (httpStatus === 504) {
         return {
             cause: IssueInsightCause.UPSTREAM_TIMEOUT,
+            owner: IssueFixOwner.WAIT,
             confidence: 0.7,
             httpStatus,
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING }), fix({ kind: IssueFixKind.REPLAY_FULL })],
@@ -128,6 +144,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (isNil(httpStatus)) {
         return {
             cause: IssueInsightCause.STEP_ERROR,
+            owner: IssueFixOwner.WORKFLOW_OWNER,
             confidence: 0.4,
             httpStatus: null,
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_INPUT }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
@@ -136,6 +153,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (AUTHORIZATION_HTTP_STATUSES.includes(httpStatus)) {
         return {
             cause: IssueInsightCause.ACCESS_DENIED,
+            owner: IssueFixOwner.TARGET_ADMIN,
             confidence: 0.8,
             httpStatus,
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_INPUT }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
@@ -144,6 +162,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     if (httpStatus >= SERVER_ERROR_MIN_STATUS) {
         return {
             cause: IssueInsightCause.UPSTREAM_ERROR,
+            owner: IssueFixOwner.WAIT,
             confidence: 0.7,
             httpStatus,
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
@@ -151,10 +170,15 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
     }
     return {
         cause: IssueInsightCause.REJECTED_INPUT,
+        owner: IssueFixOwner.WORKFLOW_OWNER,
         confidence: 0.68,
         httpStatus,
         fixes: [fix({ kind: IssueFixKind.OPEN_STEP_INPUT }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
     }
+}
+
+function isMappingMiss({ message }: { message: string | null | undefined }): boolean {
+    return !isNil(message) && MAPPING_MISS_PATTERN.test(message)
 }
 
 function activeBlockedUntil({ message, now }: { message: string | null | undefined, now: Date }): Date | null {
@@ -196,6 +220,7 @@ function fix({ kind, disabledReason }: { kind: IssueFixKind, disabledReason?: Re
     return { kind, disabledReason: disabledReason ?? null }
 }
 
+const MAPPING_MISS_PATTERN = /不在映射表「[^」]*」里/
 const STEP_TIMEOUT_CODE = 'STEP_TIMEOUT'
 const RESULT_MISMATCH_CODE = 'RESULT_MISMATCH'
 const HIGH_SEVERITY_OCCURRENCES = 10

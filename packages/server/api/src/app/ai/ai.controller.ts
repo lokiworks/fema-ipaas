@@ -8,6 +8,8 @@ import {
     CopilotResponse,
     GenerateWorkflowPlanRequestBody,
     ListAiUsageRequestQuery,
+    ListPlanTemplatesRequestQuery,
+    PlanTemplate,
     PrincipalType,
     ReportAiUsageRequestBody,
     SuggestFieldMappingRequestBody,
@@ -32,6 +34,10 @@ export const aiController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/workflow-plans', GeneratePlanRequest, async (request): Promise<WorkflowPlan> => {
         return aiPlanService(request.log).generate({ request: request.body, tenantId: request.principal.tenant.id, userId: request.principal.id })
+    })
+
+    app.get('/plan-templates', PlanTemplatesRequest, async (request): Promise<PlanTemplate[]> => {
+        return aiPlanService(request.log).templates({ prompt: request.query.prompt ?? '' })
     })
 
     app.post('/workflow-plans/apply', ApplyPlanRequest, async (request, reply) => {
@@ -84,6 +90,11 @@ const ModelConnectionsRequest = {
 const GeneratePlanRequest = {
     config: { security: securityAccess.project([PrincipalType.USER], Permission.WRITE_WORKFLOW, { type: ProjectResourceType.BODY }) },
     schema: { tags: ['ai'], body: GenerateWorkflowPlanRequestBody, response: { [StatusCodes.OK]: WorkflowPlan } },
+}
+
+const PlanTemplatesRequest = {
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_WORKFLOW, { type: ProjectResourceType.QUERY }) },
+    schema: { tags: ['ai'], querystring: ListPlanTemplatesRequestQuery, response: { [StatusCodes.OK]: z.array(PlanTemplate) } },
 }
 
 const ApplyPlanRequest = {

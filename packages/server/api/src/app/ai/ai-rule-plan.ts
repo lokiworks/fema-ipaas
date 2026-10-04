@@ -4,55 +4,137 @@ import {
     isNil,
     MappingTableSummary,
     PlanAnswer,
+    PlanDedupe,
+    PlanMappingTableHint,
+    PlanTemplate,
     WorkflowPlan,
     WorkflowPlanSource,
 } from '@fema-ipaas/shared'
 import { aiPlanSteps, CatalogEntry, ConnectionRef, StepDraft } from './ai-plan-steps'
+import { aiRuleScenarios, ScenarioBlueprint, ScenarioFacts, ScenarioIntent } from './ai-rule-scenarios'
 
 export const aiRulePlanner = {
     plan,
+    templates,
 }
 
-function plan({ prompt, answers, catalog, connections, mappingTables, unavailableSystems }: PlanParams): WorkflowPlan {
+function plan({ prompt, answers, catalog, connections, mappingTables, unavailableSystems, excluded }: PlanParams): WorkflowPlan {
     const language: Language = CJK_PATTERN.test(prompt) ? 'zh' : 'en'
     const text = TEXTS[language]
     const intent = detectIntent(prompt)
     if (isNil(intent)) {
         throw validation(text.unrecognized)
     }
-    if (unavailableSystems.length > 0 && !BEISEN_PATTERN.test(prompt)) {
+    if (unavailableSystems.length > 0 && !TRIGGER_SYSTEM_PATTERNS[intent].test(prompt)) {
         throw validation(text.sourceUnavailable(unavailableSystems))
     }
-    const facts = readFacts({ prompt, answers, mappingTables, intent })
-    const blueprint = blueprintFor({ intent, facts, text })
-    const assembled = aiPlanSteps.assemble({ trigger: blueprint.trigger, steps: blueprint.steps, catalog, connections })
+    const blueprint = blueprintOf({ prompt, answers, mappingTables, intent, language, excluded })
+    const assembled = aiPlanSteps.assemble({ trigger: blueprint.trigger, steps: blueprint.steps, catalog, connections, excluded })
     if (isNil(assembled.trigger)) {
-        throw validation(text.triggerMissing)
+        throw validation(text.triggerMissing(blueprint.trigger.connector))
     }
-    const questions = openQuestions({ facts, text })
     return {
-        displayName: text.names[intent],
-        summary: text.summary({ intent, stepNames: blueprint.steps.map((step) => step.displayName), mappingTable: facts.mappingTable?.name ?? null }),
+        displayName: blueprint.displayName,
+        summary: blueprint.summary(assembled.steps.map((step) => step.displayName)),
         source: WorkflowPlanSource.RULES,
         trigger: assembled.trigger,
         steps: assembled.steps,
-        questions,
-        warnings: [...new Set([...blueprint.warnings, ...invalidAnswerWarnings({ facts, text }), ...(assembled.omittedSteps > 0 ? [text.omitted] : [])])],
+        questions: blueprint.questions.slice(0, MAX_QUESTIONS),
+        warnings: [...new Set([
+            ...blueprint.warnings,
+            ...(assembled.omittedSteps > 0 ? [text.omitted] : []),
+            ...assembled.brokenReferences.map((name) => text.brokenReference(name)),
+        ])],
         unavailableSystems,
         omittedSteps: assembled.omittedSteps,
+        recommendations: [],
+        dedupe: blueprint.dedupe,
+        missingMappingTable: blueprint.missingMappingTable,
+        removedSteps: assembled.removedSteps,
     }
+}
+
+function templates({ prompt }: { prompt: string }): PlanTemplate[] {
+    const language: Language = CJK_PATTERN.test(prompt) ? 'zh' : 'en'
+    return aiRuleScenarios.closestTemplates({ prompt, language, limit: CLOSEST_TEMPLATES })
+}
+
+function blueprintOf({ prompt, answers, mappingTables, intent, language, excluded }: { prompt: string, answers: PlanAnswer[], mappingTables: MappingTableSummary[], intent: Intent, language: Language, excluded: string[] }): ScenarioBlueprint {
+    const text = TEXTS[language]
+    const dropped = new Set(excluded.map((key) => key.split('/').pop() ?? key))
+    if (isScenarioIntent(intent)) {
+        return aiRuleScenarios.blueprint({ intent, language, facts: scenarioFacts({ prompt, answers, dropped }) })
+    }
+    const facts = readFacts({ prompt, answers, mappingTables, intent, dropped })
+    const blueprint = blueprintFor({ intent, facts, text })
+    return {
+        displayName: text.names[intent],
+        trigger: blueprint.trigger,
+        steps: blueprint.steps,
+        summary: (stepNames) => text.summary({ intent, stepNames, mappingTable: facts.mappingTable?.name ?? null }),
+        warnings: [...blueprint.warnings, ...invalidAnswerWarnings({ facts, text })],
+        dedupe: dedupeFor({ intent, text }),
+        missingMappingTable: missingTableFor({ facts, text }),
+        questions: openQuestions({ facts, text }),
+    }
+}
+
+function scenarioFacts({ prompt, answers, dropped }: { prompt: string, answers: PlanAnswer[], dropped: Set<string> }): ScenarioFacts {
+    const text = prompt.toLowerCase()
+    return {
+        prompt,
+        recordKept: !dropped.has('create_bitable_record'),
+        notifyKept: !dropped.has('send_group_message'),
+        wantsNotify: NOTIFY_PATTERN.test(text) || GROUP_PATTERN.test(text),
+        groupLabel: groupLabelOf(prompt),
+        chat: answerFor({ answers, kind: 'chat', pattern: CHAT_ID_PATTERN }),
+        bitable: answerFor({ answers, kind: 'bitable', pattern: BITABLE_TOKEN_PATTERN }),
+        eventType: eventTypeAnswer({ answers }),
+    }
+}
+
+function eventTypeAnswer({ answers }: { answers: PlanAnswer[] }): ParsedAnswer {
+    const given = answers.find((answer) => QUESTION_PREFIXES.eventType.some((prefix) => answer.question.startsWith(prefix)))
+    const answer = given?.answer.trim() ?? ''
+    if (answer.length === 0) {
+        return { value: null, rejected: null }
+    }
+    if (ANY_EVENT_PATTERN.test(answer)) {
+        return { value: '', rejected: null }
+    }
+    const matched = answer.match(EVENT_TYPE_PATTERN)
+    return matched === null ? { value: null, rejected: answer } : { value: matched[1], rejected: null }
+}
+
+function dedupeFor({ intent, text }: { intent: HrIntent, text: Text }): PlanDedupe {
+    const withDate = intent === 'TRANSFER'
+    return {
+        keyPath: withDate ? '{{trigger.recordInfo.jobNumber}}-{{trigger.recordInfo.startDate}}' : 'recordInfo.jobNumber',
+        keyLabel: withDate ? text.jobNumberAndDate : text.jobNumber,
+        windowSeconds: THIRTY_DAYS_SECONDS,
+        reason: text.dedupeReasons[intent],
+    }
+}
+
+function missingTableFor({ facts, text }: { facts: Facts, text: Text }): PlanMappingTableHint | null {
+    return needsDepartmentOf({ facts }) && facts.mappingTable === null ? text.mappingTableHint : null
+}
+
+function isScenarioIntent(intent: Intent): intent is ScenarioIntent {
+    return intent === 'ARCHIVE' || intent === 'FEISHU_EVENT' || intent === 'RECONCILE'
 }
 
 function detectIntent(prompt: string): Intent | null {
     const text = prompt.toLowerCase()
-    const hits = INTENTS
+    const hr = HR_INTENTS
         .map((intent) => ({ intent, index: text.search(INTENT_PATTERNS[intent]) }))
         .filter((hit) => hit.index >= 0)
-        .sort((a, b) => a.index - b.index)
+    const scenario = aiRuleScenarios.detect(prompt)
+    const hits = [...hr, ...(isNil(scenario) ? [] : [scenario])].sort((a, b) => a.index - b.index)
     return hits[0]?.intent ?? null
 }
 
-function readFacts({ prompt, answers, mappingTables, intent }: { prompt: string, answers: PlanAnswer[], mappingTables: MappingTableSummary[], intent: Intent }): Facts {
+function readFacts({ prompt, answers, mappingTables, intent, dropped }: { prompt: string, answers: PlanAnswer[], mappingTables: MappingTableSummary[], intent: HrIntent, dropped: Set<string> }): Facts {
     const text = prompt.toLowerCase()
     const chat = answerFor({ answers, kind: 'chat', pattern: CHAT_ID_PATTERN })
     const bitable = answerFor({ answers, kind: 'bitable', pattern: BITABLE_TOKEN_PATTERN })
@@ -66,6 +148,14 @@ function readFacts({ prompt, answers, mappingTables, intent }: { prompt: string,
         wantsAccount,
         wantsNotify,
         wantsDelete: intent === 'OFFBOARD' && DELETE_PATTERN.test(text),
+        kept: {
+            record: !dropped.has('create_bitable_record'),
+            account: !dropped.has('provision_user'),
+            update: !dropped.has('update_user'),
+            notify: !dropped.has('send_group_message'),
+            find: !dropped.has('find_user'),
+            suspend: !dropped.has('suspend_user'),
+        },
         groupLabel: groupLabelOf(prompt),
         mappingTable: mappingTables.find((table) => DEPARTMENT_TABLE_PATTERN.test(table.name)) ?? null,
         chat,
@@ -92,7 +182,7 @@ function groupLabelOf(prompt: string): string | null {
     return ASCII_LABEL.test(label) ? `${label.toUpperCase()} 群` : `${label}群`
 }
 
-function blueprintFor({ intent, facts, text }: { intent: Intent, facts: Facts, text: Text }): Blueprint {
+function blueprintFor({ intent, facts, text }: { intent: HrIntent, facts: Facts, text: Text }): Blueprint {
     const departmentStep = facts.mappingTable !== null && (intent === 'ONBOARD' ? facts.wantsAccount : true) ? [departmentMapStep({ table: facts.mappingTable, text })] : []
     const trigger = triggerFor({ intent, text })
     if (intent === 'ONBOARD') {
@@ -104,8 +194,8 @@ function blueprintFor({ intent, facts, text }: { intent: Intent, facts: Facts, t
             trigger,
             steps: [...record, ...mapped, ...account, ...notify],
             warnings: [
-                ...(facts.wantsRecord ? [text.recordColumns] : []),
-                ...departmentWarnings({ facts, text, needsDepartment: facts.wantsAccount }),
+                ...(facts.wantsRecord && facts.kept.record ? [text.recordColumns] : []),
+                ...departmentWarnings({ facts, text, needsDepartment: facts.wantsAccount && facts.kept.account }),
             ],
         }
     }
@@ -114,14 +204,14 @@ function blueprintFor({ intent, facts, text }: { intent: Intent, facts: Facts, t
         return {
             trigger,
             steps: [...find, suspendStep({ text }), ...(facts.wantsNotify ? [notifyStep({ facts, text })] : [])],
-            warnings: [text.notFoundFails, ...(facts.wantsDelete ? [text.noDelete] : [])],
+            warnings: [...(facts.kept.find ? [text.notFoundFails] : []), ...(facts.wantsDelete && facts.kept.suspend ? [text.noDelete] : [])],
         }
     }
     const mapped = departmentStep
     return {
         trigger,
         steps: [...find, ...mapped, updateDepartmentStep({ facts, text, mapStepIndex: mapped.length > 0 ? 2 : null }), ...(facts.wantsNotify ? [notifyStep({ facts, text })] : [])],
-        warnings: [text.notFoundFails, ...departmentWarnings({ facts, text, needsDepartment: true })],
+        warnings: [...(facts.kept.find ? [text.notFoundFails] : []), ...departmentWarnings({ facts, text, needsDepartment: facts.kept.update })],
     }
 }
 
@@ -133,11 +223,15 @@ function departmentWarnings({ facts, text, needsDepartment }: { facts: Facts, te
 }
 
 function openQuestions({ facts, text }: { facts: Facts, text: Text }): string[] {
-    const chat = facts.wantsNotify && facts.chat.value === null ? [text.questionChat(facts.groupLabel)] : []
-    const bitable = facts.wantsRecord && facts.bitable.value === null ? [text.questionBitable] : []
-    const needsDepartment = (facts.intent === 'ONBOARD' && facts.wantsAccount) || facts.intent === 'TRANSFER'
+    const chat = facts.wantsNotify && facts.kept.notify && facts.chat.value === null ? [text.questionChat(facts.groupLabel)] : []
+    const bitable = facts.wantsRecord && facts.kept.record && facts.bitable.value === null ? [text.questionBitable] : []
+    const needsDepartment = needsDepartmentOf({ facts })
     const department = needsDepartment && facts.mappingTable === null && facts.department.value === null ? [text.questionDepartment(facts.intent)] : []
     return [...department, ...bitable, ...chat].slice(0, MAX_QUESTIONS)
+}
+
+function needsDepartmentOf({ facts }: { facts: Facts }): boolean {
+    return (facts.intent === 'ONBOARD' && facts.wantsAccount && facts.kept.account) || (facts.intent === 'TRANSFER' && facts.kept.update)
 }
 
 function invalidAnswerWarnings({ facts, text }: { facts: Facts, text: Text }): string[] {
@@ -148,7 +242,7 @@ function invalidAnswerWarnings({ facts, text }: { facts: Facts, text: Text }): s
     ]
 }
 
-function triggerFor({ intent, text }: { intent: Intent, text: Text }): StepDraft {
+function triggerFor({ intent, text }: { intent: HrIntent, text: Text }): StepDraft {
     const scope = SCOPES[intent]
     return {
         connector: BEISEN,
@@ -271,8 +365,17 @@ const ASCII_LABEL = /^[A-Za-z]+$/
 const CJK_PATTERN = /[一-鿿]/
 const MAX_QUESTIONS = 3
 const BEISEN_PATTERN = /北森|beisen/i
-const INTENTS: Intent[] = ['OFFBOARD', 'TRANSFER', 'ONBOARD']
-const INTENT_PATTERNS: Record<Intent, RegExp> = {
+const HR_INTENTS: HrIntent[] = ['OFFBOARD', 'TRANSFER', 'ONBOARD']
+const FEISHU_PATTERN = /飞书|feishu|lark/i
+const TRIGGER_SYSTEM_PATTERNS: Record<Intent, RegExp> = {
+    ONBOARD: BEISEN_PATTERN,
+    OFFBOARD: BEISEN_PATTERN,
+    TRANSFER: BEISEN_PATTERN,
+    ARCHIVE: BEISEN_PATTERN,
+    RECONCILE: BEISEN_PATTERN,
+    FEISHU_EVENT: FEISHU_PATTERN,
+}
+const INTENT_PATTERNS: Record<HrIntent, RegExp> = {
     OFFBOARD: /离职|辞职|离开公司|resign|offboard|\bleaves?\b|\bleft\b|terminat/,
     TRANSFER: /调岗|转岗|调动|换部门|调部门|transfer|department change/,
     ONBOARD: /入职|新员工|新人|onboard|new hire|\bhires?\b/,
@@ -286,7 +389,11 @@ const DEPARTMENT_TABLE_PATTERN = /部门|department/i
 const CHAT_ID_PATTERN = /(oc_[A-Za-z0-9_-]+)/
 const BITABLE_TOKEN_PATTERN = /(?:base\/)?([A-Za-z0-9]{12,})/
 const DEPARTMENT_ID_PATTERN = /\b(od-[A-Za-z0-9]+)\b|^\s*(\d+)\s*$/
-const SCOPES: Record<Intent, { statusScope: string, changeTypes: string[] }> = {
+const EVENT_TYPE_PATTERN = /([a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+)/
+const ANY_EVENT_PATTERN = /^(不限|所有|全部|任意|all|any|every)/i
+const THIRTY_DAYS_SECONDS = 30 * 24 * 60 * 60
+const CLOSEST_TEMPLATES = 3
+const SCOPES: Record<HrIntent, { statusScope: string, changeTypes: string[] }> = {
     ONBOARD: { statusScope: 'ONBOARDING', changeTypes: ['1', '2'] },
     OFFBOARD: { statusScope: 'LEFT', changeTypes: [] },
     TRANSFER: { statusScope: 'ACTIVE', changeTypes: ['7', '9'] },
@@ -295,13 +402,23 @@ const QUESTION_PREFIXES: Record<QuestionKind, string[]> = {
     chat: ['通知哪个飞书群', 'Which Feishu group'],
     bitable: ['建档写进哪张多维表格', 'Which Feishu bitable'],
     department: ['新员工放进哪个飞书部门', '调岗后放进哪个飞书部门', 'Which Feishu department'],
+    eventType: ['要响应哪类飞书事件', 'Which Feishu event type'],
 }
 
 const ZH: Text = {
-    unrecognized: '没有听出要做的事。规则规划目前只认识北森员工的入职、离职和调岗，请写明「哪个系统、什么事件、要做什么」。配置模型连接后可以规划更多场景。',
+    unrecognized: '没有听出要做的事。规则规划认识这几类：北森员工的入职、离职、调岗、信息变更归档，飞书事件通知到群，以及每天对账提醒。请写明「哪个系统、什么事件、要做什么」，或从下面最接近的模板里选一个。配置模型连接后可以规划更多场景。',
     sourceUnavailable: (systems) => `描述里提到的「${systems.join('」「')}」在这个实例里没有对应的连接器，无法确定由哪个系统触发。请写明触发的系统（例如北森），或让管理员先安装对应的连接器。`,
-    triggerMissing: '这个实例里没有北森连接器，规则规划无法搭出触发器。请让管理员先安装北森连接器。',
+    triggerMissing: (connector) => `这个实例里没有${connector === FEISHU ? '飞书' : '北森'}连接器，规则规划无法搭出触发器。请让管理员先安装${connector === FEISHU ? '飞书' : '北森'}连接器。`,
     omitted: '有些步骤用到的连接器在这个实例里没有，没有生成。可以在编辑器里用「发送 HTTP 请求」调用对方接口。',
+    brokenReference: (stepName) => `「${stepName}」引用过没有生成或已移除的步骤的输出，这些引用已留空，需要在编辑器里补填。`,
+    jobNumber: '工号',
+    jobNumberAndDate: '工号加生效日期',
+    dedupeReasons: {
+        ONBOARD: '同一个工号 30 天内只开通一次账号，北森重复返回同一条入职记录时不会再开一次',
+        OFFBOARD: '同一个工号 30 天内只处理一次离职，北森重复返回同一条离职记录时不会再处理一次',
+        TRANSFER: '同一个工号、同一个生效日期，30 天内只同步一次调岗；同一个人再次调岗（生效日期不同）仍会处理',
+    },
+    mappingTableHint: { name: '部门对照', keyLabel: '北森部门编号', valueLabel: '飞书部门 ID' },
     names: { ONBOARD: '员工入职开通飞书账号', OFFBOARD: '员工离职暂停飞书账号', TRANSFER: '员工调岗同步飞书部门' },
     triggerNames: { ONBOARD: '北森员工入职', OFFBOARD: '北森员工离职', TRANSFER: '北森员工调岗' },
     stepNames: {
@@ -334,10 +451,19 @@ const ZH: Text = {
 }
 
 const EN: Text = {
-    unrecognized: 'Could not tell what to automate. Rule-based planning only understands Beisen employee onboarding, offboarding and transfers; name the system, the event and the action. Connect a model to plan more scenarios.',
+    unrecognized: 'Could not tell what to automate. Rule-based planning understands Beisen employee onboarding, offboarding, transfers and info-change archiving, Feishu events to a group, and a daily reconciliation reminder. Name the system, the event and the action, or pick the closest template below. Connect a model to plan more scenarios.',
     sourceUnavailable: (systems) => `"${systems.join('", "')}" has no connector in this instance, so the trigger system is unclear. Name the system that starts the workflow (for example Beisen), or ask an admin to install the connector.`,
-    triggerMissing: 'This instance has no Beisen connector, so rule-based planning cannot build a trigger. Ask an admin to install it.',
+    triggerMissing: (connector) => `This instance has no ${connector === FEISHU ? 'Feishu' : 'Beisen'} connector, so rule-based planning cannot build a trigger. Ask an admin to install it.`,
     omitted: 'Some steps need connectors that this instance does not have, so they were left out. Use "Send HTTP request" in the editor to call their API.',
+    brokenReference: (stepName) => `"${stepName}" referred to the output of a step that was not generated or was removed. Those references were left empty; fill them in the editor.`,
+    jobNumber: 'employee number',
+    jobNumberAndDate: 'employee number plus effective date',
+    dedupeReasons: {
+        ONBOARD: 'The same employee number gets an account once within 30 days, even if Beisen returns the same onboarding record again',
+        OFFBOARD: 'The same employee number is handled once within 30 days, even if Beisen returns the same leaving record again',
+        TRANSFER: 'The same employee number and effective date is synced once within 30 days; a later transfer of the same person (another effective date) is still handled',
+    },
+    mappingTableHint: { name: 'Department mapping', keyLabel: 'Beisen department code', valueLabel: 'Feishu department ID' },
     names: { ONBOARD: 'Employee onboarding: create Feishu account', OFFBOARD: 'Employee offboarding: suspend Feishu account', TRANSFER: 'Employee transfer: sync Feishu department' },
     triggerNames: { ONBOARD: 'Beisen employee onboarded', OFFBOARD: 'Beisen employee left', TRANSFER: 'Beisen employee transferred' },
     stepNames: {
@@ -370,12 +496,13 @@ const EN: Text = {
 }
 
 const TEXTS: Record<Language, Text> = { zh: ZH, en: EN }
-const INTENT_LABELS_ZH: Record<Intent, string> = { ONBOARD: '入职', OFFBOARD: '离职', TRANSFER: '调岗' }
-const INTENT_LABELS_EN: Record<Intent, string> = { ONBOARD: 'new-hire', OFFBOARD: 'leaving', TRANSFER: 'transferred' }
+const INTENT_LABELS_ZH: Record<HrIntent, string> = { ONBOARD: '入职', OFFBOARD: '离职', TRANSFER: '调岗' }
+const INTENT_LABELS_EN: Record<HrIntent, string> = { ONBOARD: 'new-hire', OFFBOARD: 'leaving', TRANSFER: 'transferred' }
 
-type Intent = 'ONBOARD' | 'OFFBOARD' | 'TRANSFER'
+type HrIntent = 'ONBOARD' | 'OFFBOARD' | 'TRANSFER'
+type Intent = HrIntent | ScenarioIntent
 type Language = 'zh' | 'en'
-type QuestionKind = 'chat' | 'bitable' | 'department'
+type QuestionKind = 'chat' | 'bitable' | 'department' | 'eventType'
 
 type ParsedAnswer = {
     value: string | null
@@ -383,11 +510,12 @@ type ParsedAnswer = {
 }
 
 type Facts = {
-    intent: Intent
+    intent: HrIntent
     wantsRecord: boolean
     wantsAccount: boolean
     wantsNotify: boolean
     wantsDelete: boolean
+    kept: { record: boolean, account: boolean, update: boolean, notify: boolean, find: boolean, suspend: boolean }
     groupLabel: string | null
     mappingTable: MappingTableSummary | null
     chat: ParsedAnswer
@@ -404,10 +532,15 @@ type Blueprint = {
 type Text = {
     unrecognized: string
     sourceUnavailable: (systems: string[]) => string
-    triggerMissing: string
+    triggerMissing: (connector: string) => string
     omitted: string
-    names: Record<Intent, string>
-    triggerNames: Record<Intent, string>
+    brokenReference: (stepName: string) => string
+    jobNumber: string
+    jobNumberAndDate: string
+    dedupeReasons: Record<HrIntent, string>
+    mappingTableHint: PlanMappingTableHint
+    names: Record<HrIntent, string>
+    triggerNames: Record<HrIntent, string>
     stepNames: {
         record: string
         department: string
@@ -418,8 +551,8 @@ type Text = {
         notify: (label: string | null) => string
     }
     columns: { name: string, jobNumber: string, mobile: string, email: string, startDate: string }
-    messages: Record<Intent, (name: string, jobNumber: string) => string>
-    summary: (params: { intent: Intent, stepNames: string[], mappingTable: string | null }) => string
+    messages: Record<HrIntent, (name: string, jobNumber: string) => string>
+    summary: (params: { intent: HrIntent, stepNames: string[], mappingTable: string | null }) => string
     recordColumns: string
     noMappingTable: string
     fixedDepartment: string
@@ -427,13 +560,14 @@ type Text = {
     noDelete: string
     questionChat: (label: string | null) => string
     questionBitable: string
-    questionDepartment: (intent: Intent) => string
+    questionDepartment: (intent: HrIntent) => string
     invalidChat: (answer: string) => string
     invalidBitable: (answer: string) => string
     invalidDepartment: (answer: string) => string
 }
 
 type PlanParams = {
+    excluded: string[]
     prompt: string
     answers: PlanAnswer[]
     catalog: CatalogEntry[]

@@ -93,6 +93,34 @@ export enum WorkflowPlanSource {
     RULES = 'RULES',
 }
 
+export const PlanRecommendation = z.object({
+    question: z.string(),
+    value: Nullable(z.string()),
+    basis: z.string(),
+})
+export type PlanRecommendation = z.infer<typeof PlanRecommendation>
+
+export const PlanDedupe = z.object({
+    keyPath: z.string(),
+    keyLabel: z.string(),
+    windowSeconds: z.number(),
+    reason: z.string(),
+})
+export type PlanDedupe = z.infer<typeof PlanDedupe>
+
+export const PlanMappingTableHint = z.object({
+    name: z.string(),
+    keyLabel: z.string(),
+    valueLabel: z.string(),
+})
+export type PlanMappingTableHint = z.infer<typeof PlanMappingTableHint>
+
+export const PlanRemovedStep = z.object({
+    key: z.string(),
+    displayName: z.string(),
+})
+export type PlanRemovedStep = z.infer<typeof PlanRemovedStep>
+
 export const WorkflowPlan = z.object({
     displayName: z.string(),
     summary: z.string(),
@@ -103,6 +131,10 @@ export const WorkflowPlan = z.object({
     warnings: z.array(z.string()),
     unavailableSystems: z.array(z.string()),
     omittedSteps: z.number(),
+    recommendations: z.array(PlanRecommendation).default([]),
+    dedupe: Nullable(PlanDedupe),
+    missingMappingTable: Nullable(PlanMappingTableHint),
+    removedSteps: z.array(PlanRemovedStep).default([]),
 })
 export type WorkflowPlan = z.infer<typeof WorkflowPlan>
 
@@ -117,8 +149,27 @@ export const GenerateWorkflowPlanRequestBody = z.object({
     modelConnectionExternalId: z.string().min(1, formErrors.required).optional(),
     prompt: z.string().trim().min(1, formErrors.required).max(AI_PROMPT_MAX_LENGTH, 'aiPromptTooLong'),
     answers: z.array(PlanAnswer).max(10).optional(),
+    excludedSteps: z.array(z.string().max(300)).max(20).optional(),
 })
 export type GenerateWorkflowPlanRequestBody = z.infer<typeof GenerateWorkflowPlanRequestBody>
+
+export const PlanTemplate = z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
+    examplePrompt: z.string(),
+})
+export type PlanTemplate = z.infer<typeof PlanTemplate>
+
+export const ListPlanTemplatesRequestQuery = z.object({
+    projectId: z.string(),
+    prompt: z.string().max(AI_PROMPT_MAX_LENGTH).optional(),
+})
+export type ListPlanTemplatesRequestQuery = z.infer<typeof ListPlanTemplatesRequestQuery>
+
+export const workflowPlanUtils = {
+    stepKey: ({ connectorName, operationName }: { connectorName: string, operationName: string }): string => `${connectorName}/${operationName}`,
+}
 
 export const ApplyWorkflowPlanRequestBody = z.object({
     projectId: z.string(),

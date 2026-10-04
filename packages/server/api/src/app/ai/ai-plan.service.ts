@@ -11,10 +11,13 @@ import {
     llmWire,
     LocalesEnum,
     NoteColorVariant,
+    PlanDedupe,
+    PlanTemplate,
     ProjectId,
     StepLocationRelativeToParent,
     SuggestionType,
     TenantId,
+    triggerRunSettingsUtils,
     tryCatchSync,
     UserId,
     WorkflowActionType,
@@ -34,6 +37,7 @@ import { mappingTableService } from '../mapping-table/mapping-table.service'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { aiModelService } from './ai-model.service'
 import { aiPlanSteps, ConnectionRef, MAX_NAME_LENGTH, StepDraft } from './ai-plan-steps'
+import { aiRecommendations } from './ai-recommendations'
 import { aiRulePlanner } from './ai-rule-plan'
 import { aiSystems } from './ai-systems'
 
@@ -44,26 +48,16 @@ export const aiPlanService = (log: FastifyBaseLogger) => ({
             loadConnections({ projectId: request.projectId }),
         ])
         const unavailableSystems = aiSystems.unavailable({ prompt: request.prompt, catalog })
-        if (isNil(request.modelConnectionExternalId)) {
-            const mappingTables = await mappingTableService(log).list({ projectId: request.projectId })
-            return aiRulePlanner.plan({ prompt: request.prompt, answers: request.answers ?? [], catalog, connections, mappingTables, unavailableSystems })
-        }
-        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, userId, externalId: request.modelConnectionExternalId })
-        const response = await aiModelService(log).call({
-            params: {
-                config,
-                system: planSystemPrompt(),
-                messages: [{ role: 'user', content: [{ type: 'text', text: planUserPrompt({ request, catalog }) }] }],
-                maxTokens: PLAN_MAX_TOKENS,
-                jsonOutput: true,
-            },
-            usage: { projectId: request.projectId, feature: AiFeature.GENERATE_WORKFLOW, userId },
-        })
-        const draft = parseDraft(llmWire.textOf(response))
-        if (isNil(draft)) {
-            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'The model did not return a usable plan. Try describing the workflow in more detail.' } })
-        }
-        return toPlan({ draft, catalog, connections, unavailableSystems })
+        const excluded = request.excludedSteps ?? []
+        const plan = isNil(request.modelConnectionExternalId)
+            ? aiRulePlanner.plan({ prompt: request.prompt, answers: request.answers ?? [], catalog, connections, mappingTables: await mappingTableService(log).list({ projectId: request.projectId }), unavailableSystems, excluded })
+            : await planWithModel({ log, request, tenantId, userId, catalog, connections, unavailableSystems, excluded })
+        const recommendations = await aiRecommendations(log).forQuestions({ questions: plan.questions, prompt: request.prompt, projectId: request.projectId })
+        return { ...plan, recommendations }
+    },
+
+    templates({ prompt }: { prompt: string }): PlanTemplate[] {
+        return aiRulePlanner.templates({ prompt })
     },
 
     async apply({ request, tenantId, userId }: { request: ApplyWorkflowPlanRequestBody, tenantId: TenantId, userId: UserId }): Promise<{ workflowId: string }> {
@@ -93,6 +87,62 @@ export const aiPlanService = (log: FastifyBaseLogger) => ({
         return { workflowId: workflow.id }
     },
 })
+
+async function planWithModel({ log, request, tenantId, userId, catalog, connections, unavailableSystems, excluded }: PlanWithModelParams): Promise<WorkflowPlan> {
+    const modelConnectionExternalId = request.modelConnectionExternalId
+    if (isNil(modelConnectionExternalId)) {
+        throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'Model connection not found in this project' } })
+    }
+    const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, userId, externalId: modelConnectionExternalId })
+    const response = await aiModelService(log).call({
+        params: {
+            config,
+            system: planSystemPrompt(),
+            messages: [{ role: 'user', content: [{ type: 'text', text: planUserPrompt({ request, catalog }) }] }],
+            maxTokens: PLAN_MAX_TOKENS,
+            jsonOutput: true,
+        },
+        usage: { projectId: request.projectId, feature: AiFeature.GENERATE_WORKFLOW, userId },
+    })
+    const draft = parseDraft(llmWire.textOf(response))
+    if (isNil(draft)) {
+        throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'The model did not return a usable plan. Try describing the workflow in more detail.' } })
+    }
+    const plan = toPlan({ draft, catalog, connections, unavailableSystems, excluded })
+    const dedupe = await resolveDedupe({ log, projectId: request.projectId, tenantId, plan, hint: draft.dedupe })
+    return { ...plan, dedupe }
+}
+
+async function resolveDedupe({ log, projectId, tenantId, plan, hint }: { log: FastifyBaseLogger, projectId: ProjectId, tenantId: TenantId, plan: WorkflowPlan, hint: DedupeHint | undefined }): Promise<PlanDedupe | null> {
+    const identity = { connectorName: plan.trigger.connectorName, triggerName: plan.trigger.operationName }
+    if (!triggerRunSettingsUtils.supportsDedupe(identity)) {
+        return null
+    }
+    const zh = CJK_PATTERN.test(plan.summary)
+    const hinted = hint?.keyPath.trim() ?? ''
+    if (hinted.length > 0 && isNil(triggerRunSettingsUtils.validateKeyPath(hinted))) {
+        return {
+            keyPath: hinted,
+            keyLabel: hint?.keyLabel?.trim() || hinted,
+            windowSeconds: DEFAULT_DEDUPE_SECONDS,
+            reason: zh ? `按「${hint?.keyLabel?.trim() || hinted}」去重，同一个值 30 天内只处理一次` : `De-duplicated by "${hint?.keyLabel?.trim() || hinted}": the same value is handled once within 30 days`,
+        }
+    }
+    const connector = await connectorMetadataService(log).get({ name: identity.connectorName, projectId, tenantId })
+    const trigger = connector?.triggers[identity.triggerName]
+    const candidate = triggerRunSettingsUtils.keyCandidates(trigger?.sampleData)[0]
+    if (isNil(candidate)) {
+        return null
+    }
+    return {
+        keyPath: candidate.path,
+        keyLabel: candidate.path,
+        windowSeconds: DEFAULT_DEDUPE_SECONDS,
+        reason: zh
+            ? `按「${candidate.path}」去重，同一个值 30 天内只处理一次。这个业务键是从触发器的示例数据里挑出来的（例如 ${candidate.sample}），请在触发器的运行设置里确认`
+            : `De-duplicated by "${candidate.path}": the same value is handled once within 30 days. The key was picked from the trigger's sample data (for example ${candidate.sample}); confirm it in the trigger run settings`,
+    }
+}
 
 async function loadCatalog({ log, projectId, tenantId }: { log: FastifyBaseLogger, projectId: ProjectId, tenantId: TenantId }): Promise<ConnectorMetadataModelSummary[]> {
     return connectorMetadataService(log).list({
@@ -132,16 +182,19 @@ function planSystemPrompt(): string {
         'Only fill inputs you are confident about; leave the rest out. Never invent credentials, ids or URLs.',
         'If information is missing, ask at most 3 short questions. Put risks or assumptions in warnings.',
         'Write displayName, summary, questions and warnings in the language the user writes in.',
-        'Reply with JSON only: {"displayName": string, "summary": string, "trigger": {"connector": string, "name": string, "displayName": string, "input": object}, "steps": [{"connector": string, "name": string, "displayName": string, "input": object}], "questions": string[], "warnings": string[]}',
+        'When the trigger has a business key that identifies one event (an employee number, an order id, an event id), give it as "dedupe": {"keyPath": "<field path inside the trigger output, such as recordInfo.jobNumber>", "keyLabel": "<short label>"}; omit "dedupe" when no field identifies an event.',
+        'Reply with JSON only: {"displayName": string, "summary": string, "trigger": {"connector": string, "name": string, "displayName": string, "input": object}, "steps": [{"connector": string, "name": string, "displayName": string, "input": object}], "questions": string[], "warnings": string[], "dedupe"?: {"keyPath": string, "keyLabel": string}}',
     ].join('\n')
 }
 
 function planUserPrompt({ request, catalog }: { request: GenerateWorkflowPlanRequestBody, catalog: ConnectorMetadataModelSummary[] }): string {
     const answers = (request.answers ?? []).map((answer) => `Q: ${answer.question}\nA: ${answer.answer}`).join('\n')
+    const removed = (request.excludedSteps ?? []).join(', ')
     return [
         `Catalog:\n${JSON.stringify(catalog.map(catalogEntry))}`,
         `Request:\n${request.prompt}`,
         ...(answers.length > 0 ? [`Answers to your earlier questions:\n${answers}`] : []),
+        ...(removed.length > 0 ? [`The user removed these steps (connector/name), do not include them and do not ask about them: ${removed}`] : []),
     ].join('\n\n')
 }
 
@@ -171,11 +224,12 @@ function parseDraft(text: string): PlanDraft | null {
     return parsed.success ? parsed.data : null
 }
 
-function toPlan({ draft, catalog, connections, unavailableSystems }: { draft: PlanDraft, catalog: ConnectorMetadataModelSummary[], connections: ConnectionRef[], unavailableSystems: string[] }): WorkflowPlan {
-    const assembled = aiPlanSteps.assemble({ trigger: draft.trigger, steps: draft.steps, catalog, connections })
+function toPlan({ draft, catalog, connections, unavailableSystems, excluded }: { draft: PlanDraft, catalog: ConnectorMetadataModelSummary[], connections: ConnectionRef[], unavailableSystems: string[], excluded: string[] }): WorkflowPlan {
+    const assembled = aiPlanSteps.assemble({ trigger: draft.trigger, steps: draft.steps, catalog, connections, excluded })
     if (isNil(assembled.trigger)) {
         throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'The suggested trigger is not available. Try naming the system that starts the workflow.' } })
     }
+    const zh = CJK_PATTERN.test(draft.summary)
     return {
         displayName: draft.displayName.slice(0, MAX_NAME_LENGTH),
         summary: draft.summary,
@@ -183,9 +237,16 @@ function toPlan({ draft, catalog, connections, unavailableSystems }: { draft: Pl
         trigger: assembled.trigger,
         steps: assembled.steps,
         questions: draft.questions.slice(0, MAX_QUESTIONS),
-        warnings: [...new Set(draft.warnings)],
+        warnings: [...new Set([
+            ...draft.warnings,
+            ...assembled.brokenReferences.map((name) => (zh ? `「${name}」引用过没有生成或已移除的步骤的输出，这些引用已留空，需要在编辑器里补填。` : `"${name}" referred to the output of a step that was not generated or was removed. Those references were left empty; fill them in the editor.`)),
+        ])],
         unavailableSystems,
         omittedSteps: assembled.omittedSteps,
+        recommendations: [],
+        dedupe: null,
+        missingMappingTable: null,
+        removedSteps: assembled.removedSteps,
     }
 }
 
@@ -213,9 +274,19 @@ function triggerOperation({ plan, versions }: { plan: WorkflowPlan, versions: Ma
                 input: inputOf(plan.trigger),
                 propertySettings: {},
                 pendingReview: true,
+                ...dedupeSettings({ plan }),
             },
         },
     }
+}
+
+function dedupeSettings({ plan }: { plan: WorkflowPlan }): { dedupe?: { enabled: boolean, keyPath: string, windowSeconds: number } } {
+    const dedupe = plan.dedupe
+    const identity = { connectorName: plan.trigger.connectorName, triggerName: plan.trigger.operationName }
+    if (isNil(dedupe) || !triggerRunSettingsUtils.supportsDedupe(identity) || !isNil(triggerRunSettingsUtils.validateKeyPath(dedupe.keyPath))) {
+        return {}
+    }
+    return { dedupe: { enabled: true, keyPath: dedupe.keyPath, windowSeconds: dedupe.windowSeconds } }
 }
 
 function actionOperation({ step, index, versions }: { step: WorkflowPlanStep, index: number, versions: Map<string, string> }): WorkflowOperationRequest {
@@ -265,6 +336,7 @@ function reviewNote(plan: WorkflowPlan): string {
         plan.summary,
         '',
         CJK_PATTERN.test(plan.summary) ? '这是 AI 生成的草稿，发布前请逐步检查每个步骤。' : 'AI draft: check every step before publishing.',
+        ...(isNil(plan.dedupe) ? [] : [`- ${CJK_PATTERN.test(plan.summary) ? '去重' : 'De-duplication'}: ${plan.dedupe.reason}`]),
         ...plan.questions.map((question) => `- ${question}`),
         ...plan.warnings.map((warning) => `- ${warning}`),
     ].join('\n')
@@ -291,6 +363,7 @@ const MAX_QUESTIONS = 3
 const NOTE_OFFSET_X = 420
 const NOTE_WIDTH = 320
 const NOTE_HEIGHT = 220
+const DEFAULT_DEDUPE_SECONDS = 30 * 24 * 60 * 60
 
 const DraftStep = z.object({
     connector: z.string(),
@@ -306,5 +379,18 @@ const PlanDraft = z.object({
     steps: z.array(DraftStep).max(20).default([]),
     questions: z.array(z.string()).default([]),
     warnings: z.array(z.string()).default([]),
+    dedupe: z.object({ keyPath: z.string(), keyLabel: z.string().optional() }).optional(),
 })
 type PlanDraft = z.infer<typeof PlanDraft>
+type DedupeHint = NonNullable<PlanDraft['dedupe']>
+
+type PlanWithModelParams = {
+    log: FastifyBaseLogger
+    request: GenerateWorkflowPlanRequestBody
+    tenantId: TenantId
+    userId: UserId
+    catalog: ConnectorMetadataModelSummary[]
+    connections: ConnectionRef[]
+    unavailableSystems: string[]
+    excluded: string[]
+}

@@ -42,6 +42,13 @@ export const integrationsAiCases: MatrixCase[] = [
         },
     },
     {
+        id: 'GET /v1/ai/plan-templates',
+        access: { type: 'project', permission: Permission.READ_WORKFLOW },
+        prepare: async ({ world, scope }) => ({
+            request: { method: 'GET', url: '/v1/ai/plan-templates', query: { projectId: world.scopes[scope].project.id, prompt: 'sec' } },
+        }),
+    },
+    {
         id: 'GET /v1/ai/usage',
         access: { type: 'project', permission: Permission.READ_PROJECT },
         scopedRead: true,

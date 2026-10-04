@@ -1,4 +1,4 @@
-import { isNil, WorkflowPlanStep } from '@fema-ipaas/shared'
+import { isNil, PlanRemovedStep, WorkflowPlanStep, workflowPlanUtils } from '@fema-ipaas/shared'
 import { aiReferences } from './ai-references'
 
 export const aiPlanSteps = {
@@ -6,15 +6,20 @@ export const aiPlanSteps = {
     assemble,
 }
 
-function assemble({ trigger, steps, catalog, connections }: AssembleParams): AssembledSteps {
+function assemble({ trigger, steps, catalog, connections, excluded = [] }: AssembleParams): AssembledSteps {
     const resolvedTrigger = resolve({ step: trigger, catalog, connections, kind: 'trigger' })
+    const excludedKeys = new Set(excluded)
     const resolvedSteps = steps.map((step) => resolve({ step, catalog, connections, kind: 'action' }))
-    const kept = resolvedSteps.flatMap((step, index) => (isNil(step) ? [] : [{ step, original: index + 1 }]))
+    const isExcluded = (step: WorkflowPlanStep): boolean => excludedKeys.has(workflowPlanUtils.stepKey(step))
+    const kept = resolvedSteps.flatMap((step, index) => (isNil(step) || isExcluded(step) ? [] : [{ step, original: index + 1 }]))
     const indexMap = new Map(kept.map((entry, position) => [entry.original, position + 1]))
+    const droppedIndexes = resolvedSteps.flatMap((step, index) => (isNil(step) || isExcluded(step) ? [index + 1] : []))
     return {
         trigger: resolvedTrigger,
         steps: kept.map(({ step }) => ({ ...step, input: renumberInput({ input: step.input, indexMap }) })),
-        omittedSteps: steps.length - kept.length,
+        omittedSteps: resolvedSteps.filter((step) => isNil(step)).length,
+        removedSteps: resolvedSteps.flatMap((step): PlanRemovedStep[] => (!isNil(step) && isExcluded(step) ? [{ key: workflowPlanUtils.stepKey(step), displayName: step.displayName }] : [])),
+        brokenReferences: kept.filter(({ step }) => droppedIndexes.some((index) => aiReferences.referencesStep({ value: step.input, index }))).map(({ step }) => step.displayName),
     }
 }
 
@@ -77,6 +82,8 @@ export type AssembledSteps = {
     trigger: WorkflowPlanStep | null
     steps: WorkflowPlanStep[]
     omittedSteps: number
+    removedSteps: PlanRemovedStep[]
+    brokenReferences: string[]
 }
 
 type AssembleParams = {
@@ -84,6 +91,7 @@ type AssembleParams = {
     steps: StepDraft[]
     catalog: CatalogEntry[]
     connections: ConnectionRef[]
+    excluded?: string[] | undefined
 }
 
 type ResolveParams = {

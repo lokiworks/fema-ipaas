@@ -9,6 +9,8 @@ import { aiSystems } from '../../src/app/ai/ai-systems'
 const BEISEN = '@fema-ipaas/connector-beisen'
 const FEISHU = '@fema-ipaas/connector-feishu'
 const DATA_MAPPER = '@fema-ipaas/connector-data-mapper'
+const SCHEDULE = '@fema-ipaas/connector-schedule'
+const DATE_HELPER = '@fema-ipaas/connector-date-helper'
 
 function operation({ name, props }: { name: string, props: string[] }): { name: string, displayName: string, props: Record<string, unknown> } {
     return { name, displayName: name, props: Object.fromEntries(props.map((prop) => [prop, {}])) }
@@ -16,17 +18,10 @@ function operation({ name, props }: { name: string, props: string[] }): { name: 
 
 const CATALOG: CatalogEntry[] = [
     {
-        name: BEISEN,
-        displayName: '北森',
-        auth: {},
-        suggestedTriggers: [operation({ name: 'employee_changed', props: ['statusScope', 'queryType', 'timezone', 'filterColumn', 'filterValues'] })],
-        suggestedActions: [],
-    },
-    {
         name: FEISHU,
         displayName: '飞书',
         auth: {},
-        suggestedTriggers: [],
+        suggestedTriggers: [operation({ name: 'event_received', props: ['verificationToken', 'encryptKey', 'eventType'] })],
         suggestedActions: [
             operation({ name: 'provision_user', props: ['name', 'mobile', 'departmentId', 'employeeType', 'email', 'employeeNo'] }),
             operation({ name: 'send_group_message', props: ['chatId', 'messageType', 'content'] }),
@@ -34,6 +29,28 @@ const CATALOG: CatalogEntry[] = [
             operation({ name: 'find_user', props: ['lookupBy', 'value'] }),
             operation({ name: 'suspend_user', props: ['openId'] }),
             operation({ name: 'update_user', props: ['openId', 'departmentId'] }),
+        ],
+    },
+    {
+        name: BEISEN,
+        displayName: '北森',
+        auth: {},
+        suggestedTriggers: [operation({ name: 'employee_changed', props: ['statusScope', 'queryType', 'timezone', 'filterColumn', 'filterValues'] })],
+        suggestedActions: [operation({ name: 'search_changed_employees', props: ['startTime', 'stopTime', 'statusScope', 'queryType'] })],
+    },
+    {
+        name: SCHEDULE,
+        displayName: '定时',
+        suggestedTriggers: [operation({ name: 'every_day', props: ['hour_of_the_day', 'timezone', 'run_on_weekends'] })],
+        suggestedActions: [],
+    },
+    {
+        name: DATE_HELPER,
+        displayName: '日期助手',
+        suggestedTriggers: [],
+        suggestedActions: [
+            operation({ name: 'get_current_date', props: ['timeFormat', 'timeZone'] }),
+            operation({ name: 'add_subtract_date', props: ['inputDate', 'inputDateFormat', 'outputFormat', 'expression', 'timeZone'] }),
         ],
     },
     {
@@ -59,7 +76,7 @@ const DEPARTMENT_TABLE: MappingTableSummary = {
     rowCount: 3,
 }
 
-function plan({ prompt, answers = [], mappingTables = [], catalog = CATALOG }: { prompt: string, answers?: { question: string, answer: string }[], mappingTables?: MappingTableSummary[], catalog?: CatalogEntry[] }): WorkflowPlan {
+function plan({ prompt, answers = [], mappingTables = [], catalog = CATALOG, excluded = [] }: { prompt: string, answers?: { question: string, answer: string }[], mappingTables?: MappingTableSummary[], catalog?: CatalogEntry[], excluded?: string[] }): WorkflowPlan {
     return aiRulePlanner.plan({
         prompt,
         answers,
@@ -67,6 +84,7 @@ function plan({ prompt, answers = [], mappingTables = [], catalog = CATALOG }: {
         connections: [{ externalId: 'feishu-main', connectorName: FEISHU, displayName: '飞书主连接' }],
         mappingTables,
         unavailableSystems: aiSystems.unavailable({ prompt, catalog }),
+        excluded,
     })
 }
 
@@ -171,6 +189,109 @@ describe('aiRulePlanner', () => {
         const result = plan({ prompt: 'When an employee is onboarded in Beisen, create their Feishu account and notify the HR group' })
         expect(result.displayName).toBe('Employee onboarding: create Feishu account')
         expect(result.questions[0]).toContain('Feishu')
+    })
+})
+
+describe('aiRulePlanner scenarios beyond hiring and leaving', () => {
+    it('archives Beisen employee info changes to a Feishu bitable', () => {
+        const result = plan({ prompt: '北森员工信息变更后归档到飞书多维表格' })
+        expect(result.trigger.operationName).toBe('employee_changed')
+        expect(result.trigger.input).toMatchObject({ statusScope: 'ACTIVE' })
+        expect(result.steps.map((step) => step.operationName)).toEqual(['create_bitable_record'])
+        expect(result.questions.some((question) => question.startsWith('建档写进哪张多维表格'))).toBe(true)
+        expect(result.dedupe).toMatchObject({ keyPath: '{{trigger.recordInfo.jobNumber}}-{{trigger.recordInfo.startDate}}', windowSeconds: 86400 })
+        expect(result.warnings.some((warning) => warning.includes('生效日期去重'))).toBe(true)
+    })
+
+    it('turns a Feishu event into a group notification and asks for the event type and group', () => {
+        const result = plan({ prompt: '飞书收到机器人消息事件后通知 IT 群' })
+        expect(result.trigger.connectorName).toBe(FEISHU)
+        expect(result.trigger.operationName).toBe('event_received')
+        expect(result.steps.map((step) => step.operationName)).toEqual(['send_group_message'])
+        expect(result.questions.map((question) => question.slice(0, 7))).toEqual(['要响应哪类飞书', '通知哪个飞书群'])
+        expect(result.dedupe?.keyPath).toBe('header.event_id')
+        expect(result.warnings.some((warning) => warning.includes('Verification Token'))).toBe(true)
+    })
+
+    it('takes the event type from the answer, and accepts "any" as no filter', () => {
+        const asked = plan({ prompt: '飞书收到事件后通知 IT 群' })
+        const eventQuestion = asked.questions[0]
+        const typed = plan({ prompt: '飞书收到事件后通知 IT 群', answers: [{ question: eventQuestion, answer: '事件类型是 im.message.receive_v1' }] })
+        expect(typed.trigger.input).toMatchObject({ eventType: 'im.message.receive_v1' })
+        expect(typed.questions.some((question) => question.startsWith('要响应哪类飞书事件'))).toBe(false)
+        const any = plan({ prompt: '飞书收到事件后通知 IT 群', answers: [{ question: eventQuestion, answer: '不限' }] })
+        expect(any.trigger.input['eventType']).toBeUndefined()
+        expect(any.questions.some((question) => question.startsWith('要响应哪类飞书事件'))).toBe(false)
+    })
+
+    it('plans a daily reconciliation reminder with a 24 hour window wired through the steps', () => {
+        const result = plan({ prompt: '每天对账北森入职员工并通知 HR 群' })
+        expect(result.trigger.connectorName).toBe(SCHEDULE)
+        expect(result.steps.map((step) => step.operationName)).toEqual(['get_current_date', 'add_subtract_date', 'search_changed_employees', 'send_group_message'])
+        expect(result.steps[2].input).toMatchObject({ startTime: "{{step_2['output']['result']}}", stopTime: "{{step_1['output']['result']}}", statusScope: 'ONBOARDING' })
+        expect(result.steps[3].input['content']).toContain("{{step_3['output']['count']}}")
+        expect(result.dedupe).toBeNull()
+        expect(result.warnings.some((warning) => warning.includes('不会逐人比对'))).toBe(true)
+    })
+
+    it('keeps the Beisen hiring rules ahead of the new scenarios when the description starts with them', () => {
+        expect(plan({ prompt: '员工入职后在飞书开通账号' }).trigger.input).toMatchObject({ statusScope: 'ONBOARDING' })
+    })
+
+    it('gives the onboarding, offboarding and transfer flows a business key and a window', () => {
+        expect(plan({ prompt: '员工入职后在飞书开通账号' }).dedupe).toMatchObject({ keyPath: 'recordInfo.jobNumber', windowSeconds: 2592000 })
+        expect(plan({ prompt: '员工离职后暂停飞书账号' }).dedupe).toMatchObject({ keyPath: 'recordInfo.jobNumber' })
+        expect(plan({ prompt: '员工调岗后同步飞书部门' }).dedupe?.keyPath).toBe('{{trigger.recordInfo.jobNumber}}-{{trigger.recordInfo.startDate}}')
+    })
+
+    it('asks for a department mapping table to be created when none exists, and not when one does', () => {
+        expect(plan({ prompt: '员工入职后在飞书开通账号' }).missingMappingTable).toMatchObject({ name: '部门对照' })
+        expect(plan({ prompt: '员工入职后在飞书开通账号', mappingTables: [DEPARTMENT_TABLE] }).missingMappingTable).toBeNull()
+        expect(plan({ prompt: '员工离职后暂停飞书账号' }).missingMappingTable).toBeNull()
+    })
+})
+
+describe('aiRulePlanner step removal', () => {
+    it('drops the removed step, its question and its warning, and lists it so it can be restored', () => {
+        const prompt = '员工入职后在飞书建档、按部门开通账号并通知 HR 群'
+        const result = plan({ prompt, excluded: [`${FEISHU}/send_group_message`, `${FEISHU}/create_bitable_record`] })
+        expect(result.steps.map((step) => step.operationName)).toEqual(['provision_user'])
+        expect(result.questions.map((question) => question.slice(0, 5))).toEqual(['新员工放进'])
+        expect(result.warnings.some((warning) => warning.includes('列名'))).toBe(false)
+        expect(result.removedSteps.map((removed) => removed.key)).toEqual([`${FEISHU}/create_bitable_record`, `${FEISHU}/send_group_message`])
+        expect(result.summary).not.toContain('通知')
+    })
+
+    it('keeps the other answers when a step is removed', () => {
+        const prompt = '员工入职后在飞书建档、按部门开通账号并通知 HR 群'
+        const asked = plan({ prompt })
+        const chat = asked.questions.find((question) => question.startsWith('通知哪个飞书群')) ?? ''
+        const result = plan({ prompt, answers: [{ question: chat, answer: 'oc_hr_notice' }], excluded: [`${FEISHU}/create_bitable_record`] })
+        expect(result.steps.find((step) => step.operationName === 'send_group_message')?.input['chatId']).toBe('oc_hr_notice')
+        expect(result.steps.map((step) => step.operationName)).toEqual(['provision_user', 'send_group_message'])
+    })
+
+    it('says which later step lost its reference when the step it read from is removed', () => {
+        const result = plan({ prompt: '员工离职后暂停飞书账号', excluded: [`${FEISHU}/find_user`] })
+        expect(result.steps.map((step) => step.operationName)).toEqual(['suspend_user'])
+        expect(result.steps[0].input['openId']).toBe('')
+        expect(result.warnings.some((warning) => warning.includes('暂停飞书账号') && warning.includes('引用'))).toBe(true)
+        expect(result.warnings.some((warning) => warning.includes('找不到这个人'))).toBe(false)
+    })
+})
+
+describe('aiRulePlanner.templates', () => {
+    it('always returns the three closest templates, closest first', () => {
+        const found = aiRulePlanner.templates({ prompt: '每天定时核对一下花名册' })
+        expect(found).toHaveLength(3)
+        expect(found[0].id).toBe('RECONCILE')
+        expect(found.every((template) => template.examplePrompt.length > 0)).toBe(true)
+    })
+
+    it('still returns three templates when nothing matches, and writes English for English prompts', () => {
+        const found = aiRulePlanner.templates({ prompt: 'do something clever' })
+        expect(found).toHaveLength(3)
+        expect(found[0].name).toMatch(/[A-Za-z]/)
     })
 })
 

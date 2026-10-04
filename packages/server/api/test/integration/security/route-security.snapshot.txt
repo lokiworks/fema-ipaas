@@ -58,6 +58,7 @@ GET /v1/agent-approvals/pending-count | PROJECT | USER | EXECUTION:READ | QUERY:
 GET /v1/ai/model-connections | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/ai/usage | PROJECT | USER | PROJECT:READ | QUERY:projectId
 GET /v1/alerts/capabilities | TENANT_ADMIN | USER | - | -
+GET /v1/ai/plan-templates | PROJECT | USER | WORKFLOW:READ | QUERY:projectId
 GET /v1/alerts/channels | TENANT_ADMIN | USER | - | -
 GET /v1/alerts/policies | TENANT_ADMIN | USER | - | -
 GET /v1/alerts/records | TENANT_ADMIN | USER | - | -

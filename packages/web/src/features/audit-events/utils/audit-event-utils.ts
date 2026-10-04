@@ -417,8 +417,7 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.RELEASE_WITHDRAWN]: () => t('Promotion withdrawn'),
   [ApplicationEventName.RELEASE_ROLLED_BACK]: () =>
     t('Rolled back in production'),
-  [ApplicationEventName.ENVIRONMENTS_UPDATED]: () =>
-    t('Environments updated'),
+  [ApplicationEventName.ENVIRONMENTS_UPDATED]: () => t('Environments updated'),
   [ApplicationEventName.TENANT_USERS_INVITED]: () => t('Users added'),
   [ApplicationEventName.TENANT_USER_ACCESS_CHANGED]: () =>
     t('User permissions changed'),

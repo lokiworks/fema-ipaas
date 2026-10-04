@@ -156,6 +156,16 @@ async function apiLayerChecks({ mainRun, failRun }) {
       const leaks = leakedIn({ text: texts.join('\n'), secrets, only: [...ALL_PII, 'password', 'grade', 'memo'] })
       assert(leaks.length === 0, `泄露：${leaks.join(', ')}`)
     })
+    await check('库：展示日志和失败原因不含服务器本地路径和堆栈，错误信息本身还在', async () => {
+      const failRow = byId.get(failRun.id)
+      const displayText = await db.fileText(failRow.displayLogsFileId)
+      const combined = `${displayText}${JSON.stringify(failRow.failedStep)}`
+      const traces = [/\/(private|tmp|Users|home|var)\//, /worker-cache/, /\\n\s+at\s/, /\n\s+at\s/, /node:internal/].filter((pattern) => pattern.test(combined))
+      assert(traces.length === 0, `还有本地路径或堆栈：${traces.map(String)}`)
+      assert(displayText.includes('飞书拒绝了'), '错误信息被一并删掉了')
+      const response = await http({ method: 'GET', path: `/executions/${failRun.id}?projectId=${admin.projectId}`, token: admin.token })
+      assert(!/worker-cache|\/private\//.test(JSON.stringify(response.body.steps)), '执行详情接口还带本地路径')
+    })
     await check('库：原始日志文件保留原文（用于查看原文和从失败节点重跑）', async () => {
       const text = await db.fileText(byId.get(mainRun.id).logsFileId)
       assert(text.includes(secrets.mobile) && text.includes(secrets.idCard), '原始日志里没有原文')

@@ -1,5 +1,5 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { ExecutioOutputFile, FileCompression, FileType, isExecutionStateTerminal, logSerializer, RunInternalError, RunInternalErrorSource, SendWorkflowResponseRequest, StreamStepProgress, truncateFailedStepMessage, UpdateStepProgressRequest, UploadRunLogsRequest, WebsocketClientEvent } from '@fema-ipaas/shared'
+import { errorSanitizer, ExecutioOutputFile, FileCompression, FileType, isExecutionStateTerminal, logSerializer, RunInternalError, RunInternalErrorSource, SendWorkflowResponseRequest, StreamStepProgress, truncateFailedStepMessage, UpdateStepProgressRequest, UploadRunLogsRequest, WebsocketClientEvent } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { fileCompressor } from '../../file/file-compressor'
 import { fileService } from '../../file/file.service'
@@ -52,7 +52,7 @@ export const engineRunCallbackService = (log: FastifyBaseLogger) => ({
             tags: request.tags,
             logsFileId: request.logsFileId,
             displayLogsFileId: request.displayLogsFileId,
-            failedStep: truncateFailedStepMessage(request.failedStep),
+            failedStep: truncateFailedStepMessage(errorSanitizer.stripFailedStepMessage({ failedStep: request.failedStep })),
             startTime: request.startTime,
             finishTime: request.finishTime,
             stepsCount: request.stepsCount,

@@ -19,6 +19,7 @@ icon: 🛡️
 - 没有 `displayLogsFileId` 的旧运行仍走读取时打码，原始状态也不会被清理。
 - **编辑器测试的 websocket 结果在服务端按接收者逐个发。** `testRunBroadcaster` 按连接查出用户，有「查看原文」权限的人收到原文，其余人收到打码后的；标了「出参敏感」的节点对所有人都打码，下游步骤里出现的敏感值也遮住。新增会往项目房间推步骤数据的事件，必须走它，不能直接 `websocketService.to(projectId).emit`。已保存的样例数据（`sample-data` 接口）仍是原文，编辑器靠它搭映射。
 - 删除请求里要查的值只加密暂存到任务结束，之后库里只有打码提示；扫描和清除走一次性系统任务 `DATA_ERASURE`。重写日志文件后要把文件的 `created` 改回原值，否则日志保留期被重新计算。
+- **展示日志和失败原因不带堆栈、不带服务器路径。** `errorSanitizer.stripLocalDetails` 在脱敏前去掉友好错误里的 `raw`（`inspect` 出来的堆栈）、`at ...` 帧和本地绝对路径（`/Users`、`/private/tmp`、`C:\\` 等），只留 `message`、状态码和错误名；`failedStep.message` 在 API 收到时同样处理。原始运行状态（`logsFileId`）和只给租户管理员看的 `internalError` 不动。引擎是打包产物，改了 `core/execution` 要重新 `npm run build`（引擎和 `core/execution`）才在本机生效。
 - 日志保留天数由文件清理任务按租户和项目设置执行，不是 `FEMA_EXECUTION_DATA_RETENTION_DAYS` 一刀切；设置页的「按项目设置保留期」只能选比平台更短的。
 
 - **新增运行元数据字段必须登记到 `RUNS_METADATA_UPSERT_KEYS`。** 它是 Redis 合并前的白名单，漏掉的字段静默丢弃：`displayLogsFileId` 曾因此从未落库，所有运行都退回读取时打码，原始状态也从不被清理。`runs-metadata-upsert-keys.test.ts` 守着这一条。

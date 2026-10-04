@@ -5325,5 +5325,9 @@
   "failureHintBeisenCredentials": "请到北森管理后台确认连接器的 Key 和 Secret 仍然有效，并且连接里填的是它们（北森凭据）",
   "The mail server rejected the message or the recipient.": "邮件服务器拒绝了这封邮件或收件人。",
   "The bucket does not exist or refused the request.": "存储桶不存在，或者拒绝了请求。",
-  "The address answered, but not with a registry listing. Check the path of the address.": "地址有响应，但返回的内容不是仓库格式。检查地址的路径是否正确。"
+  "The address answered, but not with a registry listing. Check the path of the address.": "地址有响应，但返回的内容不是仓库格式。检查地址的路径是否正确。",
+  "Pick an upstream step to reference": "选择要引用的上游节点",
+  "Same as dragging the dot next to the input onto a step on the canvas. Pick the step first, then one of its output fields.": "和把输入框旁的圆点拖到画布节点上一样：先选节点，再选它的一个出参字段。",
+  "Drag to an upstream step to reference its output. From the keyboard, press Alt+Shift+R inside the input.": "拖到上游节点上以引用它的出参。用键盘时，在输入框里按 Alt+Shift+R。",
+  "More canvas tools": "更多画布工具"
 }

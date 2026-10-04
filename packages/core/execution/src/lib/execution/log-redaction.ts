@@ -1,6 +1,7 @@
 import { BuiltinMaskDetector, MASKED_PLACEHOLDER, MaskRuleType, PayloadLevel, privacyMasking } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { WorkflowActionType } from '../workflows/actions/action'
+import { errorSanitizer } from './error-sanitizer'
 import { StepOutputType } from './state/step-output'
 
 export const logRedaction = {
@@ -68,7 +69,7 @@ function redactError({ errorMessage, privacy, literals }: { errorMessage: unknow
     if (privacy.payloadLevel === PayloadLevel.NONE) {
         return { value: undefined, maskedCount: 0 }
     }
-    const masked = privacyMasking.maskText({ text: errorMessage, rules: privacy.maskRules })
+    const masked = privacyMasking.maskText({ text: errorSanitizer.stripLocalDetails({ text: errorMessage }), rules: privacy.maskRules })
     return scrubLiterals({ masked, literals })
 }
 

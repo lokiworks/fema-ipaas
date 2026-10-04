@@ -20,6 +20,7 @@ import {
 } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
+import { z } from 'zod'
 import { ConnectionEntity } from '../connection/connection.entity'
 import { repoFactory } from '../core/db/repo-factory'
 import { getMigrations } from '../database/postgres-connection'
@@ -38,7 +39,9 @@ import { backupSchedule } from './backup-schedule'
 import { BackupRecordEntity, BackupSettingsEntity } from './backup.entity'
 
 const MINIMUM_FREE_BYTES = 64 * 1024 * 1024
-const STALE_RUNNING_HOURS = 6
+const STALE_RUNNING_SECONDS = 180
+const HEARTBEAT_MS = 30_000
+const MANIFEST_SUFFIX = '.manifest.json'
 const FAILED_RECORDS_KEPT = 10
 const OBJECT_STORAGE_PREFIX = 'backups'
 const ENGINE_CACHE_SECONDS = 60
@@ -48,6 +51,21 @@ export const backupSettingsRepo = repoFactory(BackupSettingsEntity)
 const connectionRepo = repoFactory(ConnectionEntity)
 const executionCountRepo = repoFactory(ExecutionEntity)
 
+const BackupManifest = z.object({
+    id: z.string(),
+    engine: z.enum(BackupEngine),
+    appVersion: z.string(),
+    schemaVersion: z.string().nullable(),
+    databaseVersion: z.string().nullable(),
+    checksum: z.string(),
+    sizeBytes: z.number(),
+    keyFingerprint: z.string().nullable(),
+    counts: BackupCounts,
+    startedAt: z.string(),
+    finishedAt: z.string(),
+})
+type BackupManifest = z.infer<typeof BackupManifest>
+const activeBackups = new Set<string>()
 let cachedEngine: { at: number, value: Awaited<ReturnType<typeof backupEngine.inspect>> } | null = null
 
 export const backupService = (log: FastifyBaseLogger) => ({
@@ -129,6 +147,20 @@ export const backupService = (log: FastifyBaseLogger) => ({
         }
     },
 
+    async isWorking(): Promise<boolean> {
+        const primary = await tenantService(log).getOldestTenant()
+        if (isNil(primary)) {
+            return false
+        }
+        const [settings, summary] = await Promise.all([this.getSettings({ tenantId: primary.id }), this.summaryForUpgrade()])
+        return settings.enabled && summary.engineAvailable && !isNil(summary.latestSuccessAt)
+    },
+
+    async latestSuccessAt(): Promise<string | null> {
+        const summary = await this.summaryForUpgrade()
+        return summary.latestSuccessAt ?? null
+    },
+
     async list({ tenantId }: TenantScope): Promise<BackupListItem[]> {
         await markStaleRunning({ tenantId })
         const records = await backupRecordRepo().find({ where: { tenantId }, order: { startedAt: 'DESC' } })
@@ -157,10 +189,10 @@ export const backupService = (log: FastifyBaseLogger) => ({
                     })
                 }
                 const engine = await inspectEngine()
-                const created = await insertRecord({ tenantId, trigger, createdBy, note, status: engine.available ? BackupStatus.RUNNING : BackupStatus.FAILED, error: engine.available ? null : unavailableMessage({ engine }) })
                 if (!engine.available && trigger === BackupTrigger.MANUAL) {
                     throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: unavailableMessage({ engine }) } })
                 }
+                const created = await insertRecord({ tenantId, trigger, createdBy, note, status: engine.available ? BackupStatus.RUNNING : BackupStatus.FAILED, error: engine.available ? null : unavailableMessage({ engine }) })
                 return created
             },
         })
@@ -213,7 +245,13 @@ export const backupService = (log: FastifyBaseLogger) => ({
 })
 
 async function execute({ log, record }: { log: FastifyBaseLogger, record: BackupRecord }): Promise<void> {
+    activeBackups.add(record.id)
+    const heartbeat = setInterval(() => {
+        void backupRecordRepo().update({ id: record.id, tenantId: record.tenantId }, { status: BackupStatus.RUNNING })
+    }, HEARTBEAT_MS)
     const { error } = await tryCatch(() => produce({ log, record }))
+    clearInterval(heartbeat)
+    activeBackups.delete(record.id)
     if (isNil(error)) {
         return
     }
@@ -354,14 +392,48 @@ async function uploadIfWanted({ log, tenantId, file, fileName }: UploadParams): 
 
 async function markStaleRunning({ tenantId }: TenantScope): Promise<void> {
     const running = await backupRecordRepo().findBy({ tenantId, status: BackupStatus.RUNNING })
-    const stale = running.filter((record) => dayjs().diff(dayjs(record.startedAt), 'hour', true) > STALE_RUNNING_HOURS)
-    for (const record of stale) {
-        await backupRecordRepo().update({ id: record.id, tenantId }, {
-            status: BackupStatus.FAILED,
-            finishedAt: new Date().toISOString(),
-            error: 'The server stopped while this backup was running',
-        })
+    const orphans = running.filter((record) => !activeBackups.has(record.id))
+    for (const record of orphans) {
+        const manifest = await findManifest({ id: record.id })
+        if (!isNil(manifest)) {
+            await backupRecordRepo().update({ id: record.id, tenantId }, {
+                status: BackupStatus.SUCCEEDED,
+                fileName: manifest.fileName,
+                sizeBytes: manifest.sizeBytes,
+                checksum: manifest.checksum,
+                keyFingerprint: manifest.keyFingerprint,
+                databaseVersion: manifest.databaseVersion,
+                counts: manifest.counts,
+                finishedAt: manifest.finishedAt,
+                error: null,
+            })
+            continue
+        }
+        if (dayjs().diff(dayjs(record.updated), 'second') > STALE_RUNNING_SECONDS) {
+            await backupRecordRepo().update({ id: record.id, tenantId }, {
+                status: BackupStatus.FAILED,
+                finishedAt: new Date().toISOString(),
+                error: 'The server stopped while this backup was running',
+            })
+        }
     }
+}
+
+async function findManifest({ id }: { id: string }): Promise<(BackupManifest & { fileName: string }) | null> {
+    const directory = backupDirectory()
+    const { data: names, error } = await tryCatch(() => fs.readdir(directory))
+    if (error) {
+        return null
+    }
+    for (const name of names.filter((entry) => entry.endsWith(MANIFEST_SUFFIX))) {
+        const { data: raw } = await tryCatch<unknown>(async () => JSON.parse(await fs.readFile(path.join(directory, name), 'utf8')))
+        const parsed = BackupManifest.safeParse(raw)
+        const fileName = name.slice(0, -MANIFEST_SUFFIX.length)
+        if (parsed.success && parsed.data.id === id && existsSync(path.join(directory, fileName))) {
+            return { ...parsed.data, fileName }
+        }
+    }
+    return null
 }
 
 async function assertFreeSpace({ tenantId, directory }: { tenantId: string, directory: string }): Promise<void> {
@@ -537,18 +609,4 @@ type UploadParams = TenantScope & {
     log: FastifyBaseLogger
     file: string
     fileName: string
-}
-
-type BackupManifest = {
-    id: string
-    engine: BackupEngine
-    appVersion: string
-    schemaVersion: string | null
-    databaseVersion: string | null
-    checksum: string
-    sizeBytes: number
-    keyFingerprint: string | null
-    counts: BackupCounts
-    startedAt: string
-    finishedAt: string
 }

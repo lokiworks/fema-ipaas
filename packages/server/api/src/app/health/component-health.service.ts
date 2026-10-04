@@ -4,6 +4,7 @@ import { BACKUP_STALE_DAYS, ComponentHealthCheck, ComponentHealthLevel, Componen
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import semver from 'semver'
+import { backupService } from '../backup/backup.service'
 import { repoFactory } from '../core/db/repo-factory'
 import { databaseConnection } from '../database/database-connection'
 import { redisConnections } from '../database/redis-connections'
@@ -25,7 +26,7 @@ export const componentHealthService = (log: FastifyBaseLogger) => ({
             checkQueue(log),
             countTriggers({ tenantId, log }),
             checkFileStorage(log),
-            checkBackup(),
+            checkBackup(log),
             checkVersion(),
             summarizeWorkers(log),
         ])
@@ -59,7 +60,7 @@ export const componentHealthService = (log: FastifyBaseLogger) => ({
 
     async confirmBackup(): Promise<ComponentHealthCheck> {
         await flagRepo().save({ id: BACKUP_FLAG_ID, value: { confirmedAt: dayjs().toISOString() } })
-        return checkBackup()
+        return checkBackup(log)
     },
 })
 
@@ -147,15 +148,24 @@ function checkSmtp(log: FastifyBaseLogger): ComponentHealthCheck {
     return { component: HealthComponent.SMTP, level: ComponentHealthLevel.OK, facts: { host: system.get(AppSystemProp.SMTP_HOST) ?? null } }
 }
 
-async function checkBackup(): Promise<ComponentHealthCheck> {
+async function checkBackup(log: FastifyBaseLogger): Promise<ComponentHealthCheck> {
     const flag = await flagRepo().findOneBy({ id: BACKUP_FLAG_ID })
     const value: unknown = flag?.value
     const confirmedAt = typeof value === 'object' && !isNil(value) && 'confirmedAt' in value && typeof value.confirmedAt === 'string' ? value.confirmedAt : null
+    const platformBackupAt = await backupService(log).latestSuccessAt()
+    const latest = newestOf({ first: confirmedAt, second: platformBackupAt })
     return {
         component: HealthComponent.BACKUP,
-        level: backupLevel({ confirmedAt, now: dayjs().toISOString() }),
-        facts: { confirmedAt },
+        level: backupLevel({ confirmedAt: latest, now: dayjs().toISOString() }),
+        facts: { confirmedAt, platformBackupAt },
     }
+}
+
+function newestOf({ first, second }: { first: string | null, second: string | null }): string | null {
+    if (isNil(first) || isNil(second)) {
+        return first ?? second
+    }
+    return dayjs(first).isAfter(dayjs(second)) ? first : second
 }
 
 async function checkVersion(): Promise<ComponentHealthCheck> {

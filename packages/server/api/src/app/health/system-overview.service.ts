@@ -95,6 +95,7 @@ export const systemOverviewService = (log: FastifyBaseLogger) => ({
             alertChannelsConfigured: channels > 0,
             smtpEnabled: mailSender(log).isConfigured(),
             encryptionKeyFromFile: encryptionKeySource() === EncryptionKeySource.GENERATED_FILE,
+            backupsWorking: await backupService(log).isWorking(),
         }
     },
 

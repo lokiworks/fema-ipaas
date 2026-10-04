@@ -145,6 +145,7 @@ export const SetupChecklist = z.object({
     alertChannelsConfigured: z.boolean(),
     smtpEnabled: z.boolean(),
     encryptionKeyFromFile: z.boolean(),
+    backupsWorking: z.boolean(),
 })
 
 export type OptionalServiceProblem = z.infer<typeof OptionalServiceProblem>

@@ -44,6 +44,11 @@ Workflows are the core automation primitive: a versioned directed graph of trigg
 - **校验只扫 `settings.input / items / branches` 里的引用**：触发器 `dedupe.keyPath` 本身写着 `{{trigger.x}}`，扫它会得到「引用非上游节点」的假错误。上游按树计算：兄弟分支互不可见，循环体外不可见循环体内，`item`/`index` 只在所属循环体内合法。连接器元数据加载中时相关规则跳过、发布按钮显示「正在校验」；元数据 404 视为已下架。
 - **节点显示编号存在 `settings.displayNumber`（如 `feishu-1`）**：由 `stepDisplayNumberUtil.assign` 在 `workflowOperations.apply` 里对增/改/导入/复制类操作统一补号，客户端和服务端结果一致；老工作流没有这个字段时按树序确定性回填。`UPDATE_ACTION`/`UPDATE_TRIGGER` 请求不带编号时沿用旧编号，前缀变了才重编；粘贴的副本会删掉编号拿新号。表达式仍引用内部名 `step_n`。
 - **AI「待确认」标记是 `settings.pendingReview = true`**：AI 生成（`ai-plan.service`）和助手「修改」都写它。节点面板「确认无误」是通过表单 `setValue` 去掉这个键，让自动保存把它带走——单独发一条 UPDATE_ACTION 会被表单下一次自动保存用旧值覆盖回来。
+- **未确认的 AI 节点是错误，不是警告，服务端也拦。** 编辑器里 `AI_PENDING_REVIEW` 算错误，调试、发布、发布到测试都被挡；绕过界面调接口时，`workflowPublishUtils.assertNoPendingReview` 在锁定草稿（发布、发布到测试）前拒绝，并写出是哪些节点。AI 路径和手动路径用同一套校验，AI 只多这一条。
+- **一句话生成有两条规划路径，产出同一种 `WorkflowPlan`。** 项目里有模型连接且选了模型时走 `ai-plan.service`；没配模型、或在弹窗里选「内置规则」时走 `ai-rule-plan.ts`（只认北森员工入职、离职、调岗，部门走项目里名字含「部门」的映射表）。规则规划靠问题文字前缀识别回答，所以改问题措辞要同步改 `QUESTION_PREFIXES`。描述里点名了系统里没有的连接器（`ai-systems.ts` 的名单）时进 `unavailableSystems`，不生成步骤；「删除账号」一律改成暂停。
+- **规划里丢掉不存在的步骤后会重排 `step_N` 引用**（`aiPlanSteps.assemble`），指向被丢掉步骤的引用变空，由编辑器的必填校验兜住。
+- **规划弹窗从首页输入框带着描述打开时会自动规划**；项目页的「新建工作流」弹窗里点「用 AI 生成」，要由调用方（项目概览、工作流侧栏）切到 AI 弹窗，因为它们用条件渲染挂弹窗，关掉新建弹窗会把里面嵌的弹窗一起卸掉。
+- 验证脚本 `tools/e2e/scenarios/s1-ai-build.mjs`：自己起隔离栈、起本机模拟模型，覆盖三个入口、规则和模型两条路径、失败数据，调试真的写入模拟飞书。
 - **助手「修改」只能产出四种可校验的变更**（加 app 节点 / 改入参 / 删节点 / 改名），服务端 `copilot-proposal.ts` 逐条在本地 `workflowOperations.apply` 预演，失败的进 `rejected`；前端在编辑器的正常 `applyOperations` 路径里执行，所以整批修改是一次可撤销的历史记录。
 - **撤销是快照历史**：`undo-history.ts` 记 before/after，撤销时能用 UPDATE_* 定点还原就定点还原，结构变了就发 `IMPORT_WORKFLOW`（会丢掉被还原动作节点的样例数据引用）。撤销/重做后节点面板靠 `historyNonce` 重挂载，否则表单会把旧值自动保存回去。
 - **编辑锁**：Redis 值里记 `lastActiveAt`，只有真实保存才刷新；闲置超过 2 小时别人可直接拿锁。强制接管只允许项目 Admin（所有者），原编辑者通过 `RESOURCE_LOCKED` 事件里的 `previousUserId` 收到提示；「请求编辑」用 `REQUEST_RESOURCE_EDIT` 通知持锁人。`LOCK_AND_PUBLISH`（非回滚）和 `deploy-to-test` 在锁被他人持有时直接拒绝。

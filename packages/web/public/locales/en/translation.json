@@ -5490,5 +5490,13 @@
   "{step} writes data, but the last successful debug run did not reach it": "{step} writes data, but the last successful debug run did not reach it",
   "Debug passed. The draft is editable again.": "Debug passed. The draft is editable again.",
   "View debug records": "View debug records",
-  "Pick an MCP server to add": "Pick an MCP server to add"
+  "Pick an MCP server to add": "Pick an MCP server to add",
+  "How to fix: {guide}": "How to fix: {guide}",
+  "Check how often the workflows poll Beisen: the whole tenant shares one daily quota, so lower the polling frequency or the history replayed.": "Check how often the workflows poll Beisen: the whole tenant shares one daily quota, so lower the polling frequency or the history replayed.",
+  "Check app_key and app_secret, and which APIs the tenant has enabled for this app in the Beisen admin console.": "Check app_key and app_secret, and which APIs the tenant has enabled for this app in the Beisen admin console.",
+  "Check the app credentials: the App ID and App Secret must be copied from the same app in the Feishu Open Platform.": "Check the app credentials: the App ID and App Secret must be copied from the same app in the Feishu Open Platform.",
+  "Check the permission scope: grant the app the permission this step needs in the Feishu Open Platform, then republish the app.": "Check the permission scope: grant the app the permission this step needs in the Feishu Open Platform, then republish the app.",
+  "Check the availability scope: add the department or member to the contact scope of the app in the Feishu Open Platform, then republish the app.": "Check the availability scope: add the department or member to the contact scope of the app in the Feishu Open Platform, then republish the app.",
+  "Check the app credentials, the permission scopes granted to the app, and the availability scope of the app in the Feishu Open Platform.": "Check the app credentials, the permission scopes granted to the app, and the availability scope of the app in the Feishu Open Platform.",
+  "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app.": "Check app_key and app_secret: they must match the connector Key and Secret in the Beisen admin console. Then check which APIs the tenant has enabled for that app."
 }

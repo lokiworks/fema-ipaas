@@ -7,3 +7,4 @@ export {
 } from './components/issue-badges';
 export { IssueReplayDialog } from './components/issue-replay-dialog';
 export { issueMembersHooks } from './hooks/issue-members-hooks';
+export { failureText } from './utils/failure-text';

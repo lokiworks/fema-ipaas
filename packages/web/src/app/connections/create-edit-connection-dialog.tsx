@@ -266,7 +266,10 @@ function CreateOrEditConnectionSection({
           {errorMessage && (
             <FormError
               formMessageId="create-connection-server-error-message"
-              className={isInline ? 'text-left px-1' : 'text-left px-6'}
+              className={cn(
+                'whitespace-pre-line',
+                isInline ? 'text-left px-1' : 'text-left px-6',
+              )}
             >
               {errorMessage}
             </FormError>

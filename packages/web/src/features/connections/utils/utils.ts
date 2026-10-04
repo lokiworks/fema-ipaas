@@ -23,6 +23,8 @@ import { t } from 'i18next';
 import { CheckIcon, UnplugIcon, XIcon } from 'lucide-react';
 
 import { OAuth2App } from '@/features/connections/utils/oauth2-utils';
+import { connectorErrorGuideUtils } from '@/features/connectors/utils/connector-error-guides';
+import { failureText } from '@/features/issues/utils/failure-text';
 import { formUtils } from '@/features/connectors/utils/form-utils';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -44,6 +46,19 @@ export class NoProjectSelected extends Error {
 }
 
 export const connectionUtils = {
+  failureMessage({
+    connectorName,
+    message,
+  }: {
+    connectorName: string;
+    message: string;
+  }): string {
+    const base = t('Connection failed with error {msg}', {
+      msg: failureText.localize(message),
+    });
+    const guide = connectorErrorGuideUtils.guideFor({ connectorName, message });
+    return guide === null ? base : `${base}\n${t('How to fix: {guide}', { guide })}`;
+  },
   getStatusIcon(status: ConnectionStatus): {
     variant: 'default' | 'success' | 'error';
     icon: React.ComponentType;

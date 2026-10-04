@@ -41,6 +41,7 @@ import { globalConnectionsApi } from '../api/global-connections';
 import {
   ConnectionNameAlreadyExists,
   NoProjectSelected,
+  connectionUtils,
   isConnectionNameUnique,
 } from '../utils/utils';
 
@@ -158,16 +159,18 @@ export const connectionsMutations = {
             }
             case ErrorCode.INVALID_CLAIM: {
               setErrorMessage(
-                t('Connection failed with error {msg}', {
-                  msg: applicationError.params.message,
+                connectionUtils.failureMessage({
+                  connectorName: form.getValues().request.connectorName,
+                  message: applicationError.params.message,
                 }),
               );
               break;
             }
             case ErrorCode.INVALID_CONNECTION: {
               setErrorMessage(
-                t('Connection failed with error {msg}', {
-                  msg: applicationError.params.error,
+                connectionUtils.failureMessage({
+                  connectorName: form.getValues().request.connectorName,
+                  message: applicationError.params.error,
                 }),
               );
               break;

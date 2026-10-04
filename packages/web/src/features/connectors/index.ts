@@ -36,6 +36,7 @@ export type {
   CategorizedStepMetadataWithSuggestions,
 } from './types';
 export { formUtils } from './utils/form-utils';
+export { connectorErrorGuideUtils } from './utils/connector-error-guides';
 export {
   CONNECTOR_SELECTOR_ELEMENTS_HEIGHTS,
   connectorSelectorUtils,

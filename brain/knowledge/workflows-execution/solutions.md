@@ -13,7 +13,8 @@ icon: 📦
 
 ## Gotchas
 
-- **官方目录现在有一个方案：北森 → 飞书 人员同步（`official/beisen-feishu.ts`）。** 三条流（入职开通、调岗改部门、离职暂停）按北森 `GetByTimeWindow` 的字段写，部门用任职部门 OId 查映射表（文档里任职记录只有 OId 没有名称），映射表行留空由安装的人填，缺对照会明确失败而不是悄悄用错。群 ID 两项没有默认值。构建函数在模块加载时就用 `WorkflowTrigger.parse` 校验，结构写错会让 API 启动失败，所以改它要先跑 `test/unit/official-beisen-feishu.test.ts`。端到端验证脚本是 `tools/e2e/main-line/run-official-solution.mjs`，配合同目录的模拟服务。
+- **官方目录现在有两个方案，第一个是：北森 → 飞书 人员同步（`official/beisen-feishu.ts`）。** 三条流（入职开通、调岗改部门、离职暂停）按北森 `GetByTimeWindow` 的字段写，部门用任职部门 OId 查映射表（文档里任职记录只有 OId 没有名称），映射表行留空由安装的人填，缺对照会明确失败而不是悄悄用错。群 ID 两项没有默认值。构建函数在模块加载时就用 `WorkflowTrigger.parse` 校验，结构写错会让 API 启动失败，所以改它要先跑 `test/unit/official-beisen-feishu.test.ts`。端到端验证脚本是 `tools/e2e/main-line/run-official-solution.mjs`，配合同目录的模拟服务。
+- **官方目录里第二个方案：北森员工信息 → 飞书多维表格 花名册（`official/beisen-bitable-roster.ts`）。** 一条流：北森员工变动 → 字段映射（姓名、工号、手机号、邮箱、部门名称、入职日期，没有目标节点，字段名就是多维表格的列名）→ 写入多维表格。安装时填 App Token 和数据表 ID，部门用 OId 查映射表换成名称，表行留空由安装的人填。**所有方案安装前都过 `solutionMappingCheck`**（走 `core-utils` 的 `dataMapping.validateSpec`，和编辑器、发布前检查是同一套规则），映射有阻塞问题、或查的表不在方案里，安装直接拒绝。两个官方方案共用 `official/official-solution-builders.ts` 里的构建函数。端到端验证在 `tools/e2e/scenarios/s2-field-mapping.mjs` 的 `solution` 阶段。
 - 方案页是租户级页面（和问题中心同级，在 `guards/index.tsx` 注册），不属于某个项目；`/solutions` 开头的路径在 `ProjectDashboardLayout` 里隐藏项目头。
 - 官方方案目录为空时，方案库显示空状态并引导「基于项目生成方案」，不是错误。
 - 列表接口的 `mine` 只认字符串 `'true'` 和 `'false'`；查询参数不能用 `z.coerce.boolean()`，它会把 `'false'` 也当成 `true`。前端目前不传，在客户端按 `createdBy` 过滤。

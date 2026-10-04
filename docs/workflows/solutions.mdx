@@ -23,7 +23,7 @@ Credentials, variable values and run logs are never packaged.
 
 ## Browse and install
 
-Open **Solutions** (方案) in the left sidebar. It is a page of its own, not part of one project. **Solution library** (方案库) lists what you can install, with a category filter, a search over names and connectors, and **Created by me** (我创建的). **Installed solutions** (已安装的方案) lists the installs of the projects you can read, grouped by project. Solutions from the platform carry the **Official** (官方) badge. A fresh installation includes the official [Beisen to Feishu people sync](/workflows/guides/beisen-to-feishu-people-sync); your own solutions appear next to it.
+Open **Solutions** (方案) in the left sidebar. It is a page of its own, not part of one project. **Solution library** (方案库) lists what you can install, with a category filter, a search over names and connectors, and **Created by me** (我创建的). **Installed solutions** (已安装的方案) lists the installs of the projects you can read, grouped by project. Solutions from the platform carry the **Official** (官方) badge. A fresh installation includes two official solutions: the [Beisen to Feishu people sync](/workflows/guides/beisen-to-feishu-people-sync), and **Beisen employee info to Feishu Bitable roster** (北森员工信息 → 飞书多维表格 花名册), which uses field mapping to turn each new hire, rehire or transfer into one Bitable row (name, job number, phone, email, department name, start date). Your own solutions appear next to them.
 
 Open a solution to read what it does, which resources it creates, which connections it needs, what to prepare, and its version history, then choose **Install**. The wizard has five steps and you can go back at any time:
 
@@ -41,7 +41,7 @@ Open a solution to read what it does, which resources it creates, which connecti
     The wizard runs the checks. A check marked **Required** (必填) has to pass before you can continue. A **Recommended** (推荐) check can be skipped after you tick **I know about this and want to continue**, and skipped checks are recorded with the install. A check that is not yours to fix shows who handles it, with steps you can copy and send, and **Check again** (重新检查) runs it once more.
   </Step>
   <Step title="Confirm (确认)">
-    The preview lists the workflows that will be created and which mapping tables are reused or new. Installing is disabled when the project has no room left for the workflows under its workflow limit.
+    The preview lists the workflows that will be created and which mapping tables are reused or new. Installing is disabled when the project has no room left for the workflows under its workflow limit. Before anything is created, every field mapping in the package goes through the same validation the editor and publishing use; a package whose mapping has a blocking problem, or looks up a mapping table the package does not carry, is refused with the reason.
   </Step>
 </Steps>
 

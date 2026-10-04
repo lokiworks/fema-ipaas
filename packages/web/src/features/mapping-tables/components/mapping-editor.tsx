@@ -1,58 +1,29 @@
 import {
-  dataMapping,
-  generateId,
-  MappingFieldType,
-  MappingIssue,
-  MappingIssueSeverity,
-  MappingItemRow,
-  MappingMissingBehavior,
-  MappingRow,
+  MappingCoverageSource,
   MappingSpec,
-  MappingTableData,
-  MappingTargetField,
-  MappingTargetItemField,
-  MappingTransform,
-  MappingTransformType,
+  MappingTarget,
 } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
-import {
-  ArrowDown,
-  ArrowUp,
-  Check,
-  CircleAlert,
-  ListTree,
-  Plus,
-  Trash2,
-  X,
-} from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { Maximize2, Plus } from 'lucide-react';
+import { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
 
-import { mappingTablesHooks } from '../hooks/mapping-tables-hooks';
-import { autoMapping } from '../utils/auto-mapping';
-import { mappingIssueText } from '../utils/mapping-issue-text';
+import { MappingModel, useMappingModel } from '../hooks/mapping-editor-model';
 import { TargetOption } from '../utils/target-schema';
-import { templatePreview } from '../utils/template-preview';
 
-import { AutoMappingButton, AutoMappingTarget } from './auto-mapping-dialog';
+import { AutoMappingButton } from './auto-mapping-dialog';
+import { MappingCoverageDialog } from './mapping-coverage-dialog';
+import { MappingJsonPreview } from './mapping-json-preview';
+import {
+  MappingRowCard,
+  MappingRowLayout,
+  SourceInputParams,
+} from './mapping-rows';
+import { MappingTargetPicker } from './mapping-target-picker';
+import { MappingWideEditor } from './mapping-wide-editor';
 
 export function MappingEditor({
   value,
@@ -60,148 +31,179 @@ export function MappingEditor({
   disabled,
   sampleData,
   targetOptions,
+  runCoverage = NO_COVERAGE,
+  canEditTables = false,
   renderSourceInput,
+  renderSourcePanel,
+  renderAddTarget,
 }: {
   value: unknown;
   onChange: (value: MappingSpec) => void;
   disabled: boolean;
   sampleData: Record<string, unknown>;
   targetOptions: TargetOption[];
+  runCoverage?: MappingCoverageSource[];
+  canEditTables?: boolean;
   renderSourceInput: (params: SourceInputParams) => React.ReactNode;
+  renderSourcePanel?: () => React.ReactNode;
+  renderAddTarget?: (params: AddTargetSlotParams) => React.ReactNode;
 }) {
-  const spec = parseSpec(value);
   const projectId = authenticationSession.getProjectId();
-  const [showAll, setShowAll] = useState(false);
-  const { data: tableSummaries } =
-    mappingTablesHooks.useMappingTables(projectId);
-  const lookupIds = dataMapping.lookupTableIds(spec);
-  const { data: tables } = mappingTablesHooks.useMappingTablesData(lookupIds);
-  const tableData: MappingTableData[] = (tables ?? []).map((table) => ({
-    id: table.id,
-    name: table.name,
-    rows: table.rows,
-    missingBehavior: table.missingBehavior,
-    defaultValue: table.defaultValue ?? null,
-  }));
-  const preview = useMemo(() => {
-    const resolved: MappingSpec = {
-      ...spec,
-      fields: spec.fields.map((row) => ({
-        ...row,
-        source: templatePreview.resolveTemplate({
-          template: row.source,
-          sampleData,
-        }),
-      })),
-    };
-    return dataMapping.evaluate({ spec: resolved, tables: tableData });
-  }, [spec, sampleData, tableData]);
-  const entries = buildEntries(spec);
-  const visible = entries.filter(
-    (entry) =>
-      showAll ||
-      entry.field === null ||
-      entry.field.required ||
-      (entry.row !== null && hasSource(entry.row)),
+  const model = useMappingModel({
+    value,
+    onChange,
+    sampleData,
+    projectId,
+    runCoverage,
+  });
+  const [expanded, setExpanded] = useState(false);
+  const [addTargetOpen, setAddTargetOpen] = useState(false);
+  const [coverageTableId, setCoverageTableId] = useState<string | null>(null);
+  const hasSample = Object.keys(sampleData).length > 0;
+  const body = (layout: MappingRowLayout) => (
+    <MappingBody
+      model={model}
+      layout={layout}
+      projectId={projectId}
+      disabled={disabled}
+      sampleData={sampleData}
+      targetOptions={targetOptions}
+      canAddTarget={renderAddTarget !== undefined}
+      renderSourceInput={renderSourceInput}
+      onExpand={() => setExpanded(true)}
+      onAddTarget={() => setAddTargetOpen(true)}
+      onOpenCoverage={setCoverageTableId}
+    />
   );
-  const hiddenCount = entries.length - visible.length;
-  const mappedCount = entries.filter(
-    (entry) =>
-      (spec.destination === undefined || entry.field !== null) &&
-      entry.row !== null &&
-      hasSource(entry.row),
-  ).length;
-  const problems = preview.issues.length;
-  const tableOptions = tableSummaries ?? [];
-
-  const patchSpec = (patch: Partial<MappingSpec>) =>
-    onChange({ ...spec, ...patch });
-  const updateEntry = ({
-    entry,
-    patch,
-  }: {
-    entry: Entry;
-    patch: Partial<MappingRow>;
-  }) => {
-    if (entry.row !== null) {
-      const rowId = entry.row.id;
-      patchSpec({
-        fields: spec.fields.map((row) =>
-          row.id === rowId ? { ...row, ...patch } : row,
-        ),
-      });
-      return;
-    }
-    patchSpec({
-      fields: [
-        ...spec.fields,
-        {
-          id: generateId(),
-          target: entry.field?.name ?? '',
-          source: '',
-          transforms: [],
-          ...patch,
-        },
-      ],
-    });
-  };
-  const removeRow = (id: string) =>
-    patchSpec({ fields: spec.fields.filter((row) => row.id !== id) });
-  const addRow = () =>
-    patchSpec({
-      fields: [
-        ...spec.fields,
-        { id: generateId(), target: '', source: '', transforms: [] },
-      ],
-    });
-  const autoTargets: AutoMappingTarget[] =
-    spec.destination === undefined
-      ? spec.fields
-          .filter((row) => row.target.trim().length > 0 && !hasSource(row))
-          .map((row) => ({
-            name: row.target.trim(),
-            label: '',
-            type: undefined,
-          }))
-      : entries.flatMap((entry) =>
-          entry.field !== null && (entry.row === null || !hasSource(entry.row))
-            ? [
-                {
-                  name: entry.field.name,
-                  label: entry.field.label ?? '',
-                  type: entry.field.type,
-                },
-              ]
-            : [],
-        );
-
   return (
     <div className="@container flex flex-col gap-3">
-      <TargetPicker
+      {expanded ? (
+        <div className="flex flex-col items-start gap-2 rounded-md border border-dashed p-3">
+          <span className="text-xs text-muted-foreground">
+            {t('The mapping is open in the wide editor.')}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setExpanded(false)}
+          >
+            {t('Back to the compact view')}
+          </Button>
+        </div>
+      ) : (
+        body(MappingRowLayout.COMPACT)
+      )}
+      <MappingWideEditor
+        open={expanded}
+        onOpenChange={setExpanded}
+        jsonPreview={
+          <MappingJsonPreview
+            spec={model.spec}
+            preview={model.preview}
+            hasSample={hasSample}
+          />
+        }
+        sidePanel={renderSourcePanel?.()}
+      >
+        {expanded && body(MappingRowLayout.WIDE)}
+      </MappingWideEditor>
+      {renderAddTarget?.({
+        open: addTargetOpen,
+        onOpenChange: setAddTargetOpen,
+        onCreated: (destination) => model.patchSpec({ destination }),
+      })}
+      <MappingCoverageDialog
+        tableId={coverageTableId}
+        tables={model.tableOptions}
+        entries={model.coverage}
+        canWrite={canEditTables}
+        onClose={() => setCoverageTableId(null)}
+      />
+    </div>
+  );
+}
+
+function MappingBody({
+  model,
+  layout,
+  projectId,
+  disabled,
+  sampleData,
+  targetOptions,
+  canAddTarget,
+  renderSourceInput,
+  onExpand,
+  onAddTarget,
+  onOpenCoverage,
+}: {
+  model: MappingModel;
+  layout: MappingRowLayout;
+  projectId: string | null;
+  disabled: boolean;
+  sampleData: Record<string, unknown>;
+  targetOptions: TargetOption[];
+  canAddTarget: boolean;
+  renderSourceInput: (params: SourceInputParams) => React.ReactNode;
+  onExpand: () => void;
+  onAddTarget: () => void;
+  onOpenCoverage: (tableId: string) => void;
+}) {
+  const { spec, preview, entries, visible, hiddenCount, problems } = model;
+  const wide = layout === MappingRowLayout.WIDE;
+  return (
+    <div className="flex flex-col gap-3">
+      <MappingTargetPicker
         value={spec.destination}
         options={targetOptions}
         disabled={disabled}
-        onChange={(destination) => patchSpec({ destination })}
+        onChange={(destination) => model.patchSpec({ destination })}
+        onAddRequested={canAddTarget && !disabled ? onAddTarget : undefined}
       />
-      <div
-        className={cn(
-          'text-xs text-muted-foreground',
-          problems > 0 && 'text-destructive',
+      <div className="flex items-center justify-between gap-2">
+        <div
+          className={cn(
+            'text-xs text-muted-foreground',
+            problems > 0 && 'text-destructive',
+          )}
+          data-testid="mapping-summary"
+        >
+          {spec.destination
+            ? t('{mapped} of {total} fields mapped · {problems} problems', {
+                mapped: model.mappedCount,
+                total: entries.filter((entry) => entry.field !== null).length,
+                problems,
+              })
+            : t('{fields} fields mapped · {errors} problems', {
+                fields: spec.fields.filter(
+                  (row) => row.target.trim().length > 0,
+                ).length,
+                errors: problems,
+              })}
+        </div>
+        {!wide && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-testid="mapping-expand"
+            onClick={onExpand}
+          >
+            <Maximize2 className="size-4 mr-1" />
+            {t('Expand')}
+          </Button>
         )}
-        data-testid="mapping-summary"
-      >
-        {spec.destination
-          ? t('{mapped} of {total} fields mapped · {problems} problems', {
-              mapped: mappedCount,
-              total: entries.filter((entry) => entry.field !== null).length,
-              problems,
-            })
-          : t('{fields} fields mapped · {errors} problems', {
-              fields: spec.fields.filter((row) => row.target.trim().length > 0)
-                .length,
-              errors: problems,
-            })}
       </div>
+      {wide && (
+        <div
+          className="hidden grid-cols-[minmax(140px,0.9fr)_minmax(200px,1.4fr)_minmax(220px,1.7fr)] gap-x-4 px-3 text-xs font-medium text-muted-foreground @xl:grid"
+          data-testid="mapping-wide-columns"
+        >
+          <span>{t('Target field')}</span>
+          <span>{t('Transform')}</span>
+          <span>{t('Source')}</span>
+        </div>
+      )}
       {visible.map((entry) => {
         const rowId = entry.row?.id ?? null;
         const rowResult = preview.rows.find(
@@ -216,16 +218,19 @@ export function MappingEditor({
           <MappingRowCard
             key={entry.key}
             entry={entry}
+            layout={layout}
             disabled={disabled}
             issues={rowIssues}
             value={rowResult?.value}
             hasPreview={rowResult !== undefined}
             sampleData={sampleData}
-            tables={tableOptions}
-            tableData={tableData}
+            tables={model.tableOptions}
+            tableData={model.tableData}
+            coverage={model.coverage}
             renderSourceInput={renderSourceInput}
-            onPatch={(patch) => updateEntry({ entry, patch })}
-            onRemove={() => rowId !== null && removeRow(rowId)}
+            onPatch={(patch) => model.updateEntry({ entry, patch })}
+            onRemove={() => rowId !== null && model.removeRow(rowId)}
+            onOpenCoverage={onOpenCoverage}
           />
         );
       })}
@@ -235,18 +240,18 @@ export function MappingEditor({
           variant="ghost"
           size="sm"
           className="self-start"
-          onClick={() => setShowAll(true)}
+          onClick={() => model.setShowAll(true)}
         >
           {t('Show {count} optional fields', { count: hiddenCount })}
         </Button>
       )}
-      {showAll && hiddenCount === 0 && spec.destination !== undefined && (
+      {model.showAll && hiddenCount === 0 && spec.destination !== undefined && (
         <Button
           type="button"
           variant="ghost"
           size="sm"
           className="self-start"
-          onClick={() => setShowAll(false)}
+          onClick={() => model.setShowAll(false)}
         >
           {t('Hide unmapped optional fields')}
         </Button>
@@ -265,7 +270,7 @@ export function MappingEditor({
             variant="outline"
             size="sm"
             disabled={disabled}
-            onClick={addRow}
+            onClick={model.addRow}
           >
             <Plus className="size-4 mr-1" />
             {t('Add field')}
@@ -274,40 +279,21 @@ export function MappingEditor({
         {projectId && (
           <AutoMappingButton
             projectId={projectId}
-            targets={autoTargets}
+            targets={model.autoTargets}
             sampleData={sampleData}
             disabled={disabled}
-            onApply={(suggestions) => {
-              const applied = suggestions.reduce<MappingRow[]>(
-                (rows, suggestion) => {
-                  const existing = rows.find(
-                    (row) => row.target.trim() === suggestion.target,
-                  );
-                  const patch = {
-                    source: autoMapping.sourceTemplate(suggestion.sourcePath),
-                    transforms: suggestion.transforms,
-                  };
-                  return existing
-                    ? rows.map((row) =>
-                        row.id === existing.id ? { ...row, ...patch } : row,
-                      )
-                    : [
-                        ...rows,
-                        {
-                          id: generateId(),
-                          target: suggestion.target,
-                          ...patch,
-                        },
-                      ];
-                },
-                spec.fields,
-              );
-              patchSpec({ fields: applied });
-            }}
+            onApply={model.applySuggestions}
           />
         )}
       </div>
-      {preview.rows.length > 0 && (
+      {!disabled && (
+        <p className="text-xs text-muted-foreground">
+          {t(
+            'In a source input, press Alt+Shift+R to pick an upstream step and field with the keyboard.',
+          )}
+        </p>
+      )}
+      {!wide && preview.rows.length > 0 && (
         <details className="rounded-md border px-3 py-2 text-xs">
           <summary className="cursor-pointer text-muted-foreground">
             {t('Preview result')}
@@ -324,733 +310,12 @@ export function MappingEditor({
   );
 }
 
-function TargetPicker({
-  value,
-  options,
-  disabled,
-  onChange,
-}: {
-  value: MappingSpec['destination'];
-  options: TargetOption[];
-  disabled: boolean;
-  onChange: (destination: MappingSpec['destination']) => void;
-}) {
-  const current = value
-    ? `${value.connectorName}/${value.actionName}`
-    : NO_TARGET;
-  const known = options.some((option) => option.key === current);
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs font-medium">{t('Write the result to')}</span>
-      <Select
-        value={current}
-        disabled={disabled}
-        onValueChange={(key) =>
-          onChange(options.find((option) => option.key === key)?.target)
-        }
-      >
-        <SelectTrigger
-          className="h-8 text-xs"
-          aria-label={t('Write the result to')}
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={NO_TARGET}>
-            {t('No target, free fields')}
-          </SelectItem>
-          {!known && value && (
-            <SelectItem value={current}>
-              {value.displayName ?? value.actionName}
-            </SelectItem>
-          )}
-          {options.map((option) => (
-            <SelectItem key={option.key} value={option.key}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {options.length === 0 && value === undefined && (
-        <span className="text-xs text-muted-foreground">
-          {t(
-            'Add the step that writes the data first, then pick it here to get its fields with types and required marks.',
-          )}
-        </span>
-      )}
-    </div>
-  );
-}
+const NO_COVERAGE: MappingCoverageSource[] = [];
 
-function MappingRowCard({
-  entry,
-  disabled,
-  issues,
-  value,
-  hasPreview,
-  sampleData,
-  tables,
-  tableData,
-  renderSourceInput,
-  onPatch,
-  onRemove,
-}: {
-  entry: Entry;
-  disabled: boolean;
-  issues: MappingIssue[];
-  value: unknown;
-  hasPreview: boolean;
-  sampleData: Record<string, unknown>;
-  tables: TableOption[];
-  tableData: MappingTableData[];
-  renderSourceInput: (params: SourceInputParams) => React.ReactNode;
-  onPatch: (patch: Partial<MappingRow>) => void;
-  onRemove: () => void;
-}) {
-  const { field, row } = entry;
-  const transforms = row?.transforms ?? [];
-  const errors = issues.filter(
-    (found) => found.severity === MappingIssueSeverity.ERROR,
-  );
-  const warnings = issues.filter(
-    (found) => found.severity === MappingIssueSeverity.WARNING,
-  );
-  const status =
-    errors.length > 0 ? 'error' : warnings.length > 0 ? 'warning' : 'ok';
-  const trail = trailOf({ row, sampleData, tableData });
-  const source = typeof row?.source === 'string' ? row.source : '';
-  const lastEmitted = useRef(source);
-  const revision = useRef(0);
-  if (source !== lastEmitted.current) {
-    revision.current += 1;
-    lastEmitted.current = source;
-  }
-  return (
-    <div
-      className={cn(
-        'flex flex-col gap-2 rounded-md border p-3 @2xl:grid @2xl:grid-cols-[minmax(140px,1fr)_minmax(200px,2fr)_minmax(160px,2fr)_minmax(140px,1.5fr)] @2xl:items-start',
-        errors.length > 0 && 'border-destructive/60',
-      )}
-      data-testid={`mapping-row-${field?.name ?? row?.target ?? ''}`}
-    >
-      <div className="flex items-center gap-2">
-        {field ? (
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="flex items-center gap-1 text-sm font-medium">
-              <span className="truncate">{field.label ?? field.name}</span>
-              {field.required && (
-                <span className="text-destructive" title={t('Required')}>
-                  *
-                </span>
-              )}
-            </span>
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <span className="font-mono">{field.name}</span>
-              <Badge variant="outline" className="px-1 py-0 text-[10px]">
-                {mappingIssueText.typeLabel(field.type)}
-              </Badge>
-            </span>
-          </div>
-        ) : (
-          <Input
-            className="h-8 font-mono text-xs"
-            value={row?.target ?? ''}
-            disabled={disabled}
-            placeholder={t('Target field')}
-            aria-label={t('Target field')}
-            onChange={(event) => onPatch({ target: event.target.value })}
-          />
-        )}
-        {(field === null || field.type === MappingFieldType.ARRAY) && (
-          <Button
-            type="button"
-            variant={row?.each ? 'secondary' : 'ghost'}
-            size="sm"
-            disabled={disabled}
-            title={t('Map each item of a list')}
-            aria-label={t('Map each item of a list')}
-            onClick={() =>
-              onPatch({
-                each: row?.each ? undefined : eachRowsFor(field?.item ?? []),
-              })
-            }
-          >
-            <ListTree className="size-4" />
-          </Button>
-        )}
-        {field === null && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={disabled}
-            aria-label={t('Delete')}
-            onClick={onRemove}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        )}
-      </div>
-      <div key={revision.current}>
-        {renderSourceInput({
-          value: source,
-          disabled,
-          onChange: (next) => {
-            lastEmitted.current = next;
-            onPatch({ source: next });
-          },
-        })}
-      </div>
-      <div>
-        {row?.each ? (
-          <EachEditor
-            rows={row.each}
-            itemFields={field?.item ?? []}
-            disabled={disabled}
-            tables={tables}
-            onChange={(each) => onPatch({ each })}
-          />
-        ) : (
-          <TransformChain
-            transforms={transforms}
-            disabled={disabled}
-            tables={tables}
-            onChange={(next) => onPatch({ transforms: next })}
-          />
-        )}
-      </div>
-      <div
-        className={cn(
-          'flex items-start gap-1.5 rounded bg-muted/40 px-2 py-1 font-mono text-xs break-all',
-          status === 'error' && 'text-destructive',
-          status === 'warning' && 'text-warning-700',
-        )}
-        data-testid="mapping-row-preview"
-        data-status={status}
-      >
-        {status === 'error' ? (
-          <CircleAlert className="mt-0.5 size-3 shrink-0" />
-        ) : (
-          row !== null &&
-          hasPreview &&
-          value !== undefined && <Check className="mt-0.5 size-3 shrink-0" />
-        )}
-        <span>
-          {row === null || !hasSource(row)
-            ? field?.required
-              ? t('Not mapped')
-              : t('Not written')
-            : previewText(value)}
-        </span>
-      </div>
-      {(issues.length > 0 || trail.length > 1) && (
-        <div className="flex flex-col gap-1 @2xl:col-span-4">
-          {issues.map((found) => (
-            <span
-              key={`${found.code}-${found.target}`}
-              className={cn(
-                'text-xs',
-                found.severity === MappingIssueSeverity.ERROR
-                  ? 'text-destructive'
-                  : 'text-warning-700',
-              )}
-              data-testid="mapping-issue"
-            >
-              {mappingIssueText.describe(found)}
-            </span>
-          ))}
-          {trail.length > 1 && (
-            <span className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-              {trail.map((step, index) => (
-                <span key={`${step.label}-${index}`} className="flex gap-1">
-                  <span>{step.label}</span>
-                  <span className="font-mono">{previewText(step.value)}</span>
-                  {index < trail.length - 1 && <span>→</span>}
-                </span>
-              ))}
-            </span>
-          )}
-        </div>
-      )}
-      <LookupHints transforms={transforms} tables={tables} />
-    </div>
-  );
-}
+export type { SourceInputParams } from './mapping-rows';
 
-function LookupHints({
-  transforms,
-  tables,
-}: {
-  transforms: MappingTransform[];
-  tables: TableOption[];
-}) {
-  const used = transforms
-    .filter(
-      (transform) =>
-        transform.type === MappingTransformType.LOOKUP &&
-        transform.arg !== undefined,
-    )
-    .flatMap((transform) =>
-      tables.filter((table) => table.id === transform.arg),
-    );
-  if (used.length === 0) {
-    return null;
-  }
-  return (
-    <div className="flex flex-col gap-0.5 text-xs text-muted-foreground @2xl:col-span-4">
-      {used.map((table) => (
-        <span key={table.id} className="flex flex-wrap items-center gap-1">
-          {t('{name}: {count} rows, when a value is missing: {behavior}', {
-            name: table.name,
-            count: table.rowCount ?? 0,
-            behavior: missingLabel(table.missingBehavior),
-          })}
-          <a
-            className="text-primary underline"
-            href={authenticationSession.appendProjectRoutePrefix(
-              `/mapping-tables?id=${table.id}`,
-            )}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t('Open mapping table')}
-          </a>
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function missingLabel(behavior: MappingMissingBehavior | undefined): string {
-  switch (behavior) {
-    case MappingMissingBehavior.DEFAULT:
-      return t('Use a default value');
-    case MappingMissingBehavior.PASSTHROUGH:
-      return t('Keep the original value');
-    default:
-      return t('Fail the step');
-  }
-}
-
-function buildEntries(spec: MappingSpec): Entry[] {
-  const schemaFields = spec.destination?.fields ?? [];
-  const named = schemaFields.map<Entry>((field) => ({
-    key: `field-${field.name}`,
-    field,
-    row: spec.fields.find((row) => row.target.trim() === field.name) ?? null,
-  }));
-  const extras = spec.fields
-    .filter(
-      (row) =>
-        spec.destination === undefined ||
-        !schemaFields.some((field) => field.name === row.target.trim()),
-    )
-    .map<Entry>((row) => ({ key: `row-${row.id}`, field: null, row }));
-  return [...named, ...extras];
-}
-
-function hasSource(row: MappingRow): boolean {
-  const hasText = (candidate: unknown) =>
-    typeof candidate === 'string'
-      ? candidate.trim().length > 0
-      : candidate !== undefined && candidate !== null;
-  return (
-    hasText(row.source) ||
-    hasText(row.constant) ||
-    row.each !== undefined ||
-    row.transforms.some(
-      (transform) =>
-        transform.type === MappingTransformType.DEFAULT &&
-        (transform.arg ?? '').trim().length > 0,
-    )
-  );
-}
-
-function eachRowsFor(itemFields: MappingTargetItemField[]): MappingItemRow[] {
-  return itemFields.length > 0
-    ? itemFields.map((field) => ({
-        id: generateId(),
-        target: field.name,
-        itemPath: '',
-        transforms: [],
-      }))
-    : [{ id: generateId(), target: '', itemPath: '', transforms: [] }];
-}
-
-function trailOf({
-  row,
-  sampleData,
-  tableData,
-}: {
-  row: MappingRow | null;
-  sampleData: Record<string, unknown>;
-  tableData: MappingTableData[];
-}): TrailStep[] {
-  if (row === null || row.each !== undefined || row.transforms.length === 0) {
-    return [];
-  }
-  const start = templatePreview.resolveTemplate({
-    template: row.source,
-    sampleData,
-  });
-  if (start === undefined || start === '') {
-    return [];
-  }
-  return row.transforms.reduce<TrailStep[]>(
-    (steps, transform) => {
-      const last = steps[steps.length - 1];
-      if (last === undefined || last.failed) {
-        return steps;
-      }
-      const result = dataMapping.applyTransform({
-        value: last.value,
-        transform,
-        tables: tableData,
-      });
-      return [
-        ...steps,
-        {
-          label: transformLabel(transform.type),
-          value: result.value,
-          failed: result.issue !== null,
-        },
-      ];
-    },
-    [{ label: t('Source'), value: start, failed: false }],
-  );
-}
-
-function EachEditor({
-  rows,
-  itemFields,
-  disabled,
-  tables,
-  onChange,
-}: {
-  rows: MappingItemRow[];
-  itemFields: MappingTargetItemField[];
-  disabled: boolean;
-  tables: TableOption[];
-  onChange: (rows: MappingItemRow[]) => void;
-}) {
-  const update = (id: string, patch: Partial<MappingItemRow>) =>
-    onChange(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
-  return (
-    <div className="flex flex-col gap-2 border-l-2 pl-3">
-      <span className="text-xs text-muted-foreground">
-        {t('For each item in the list')}
-      </span>
-      {rows.map((row) => {
-        const itemField = itemFields.find((field) => field.name === row.target);
-        return (
-          <div key={row.id} className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              {itemField ? (
-                <span className="flex w-full items-center gap-1 text-xs">
-                  <span className="font-mono">{itemField.name}</span>
-                  {itemField.required && (
-                    <span className="text-destructive">*</span>
-                  )}
-                  <Badge variant="outline" className="px-1 py-0 text-[10px]">
-                    {mappingIssueText.typeLabel(itemField.type)}
-                  </Badge>
-                </span>
-              ) : (
-                <Input
-                  className="h-8 font-mono text-xs"
-                  value={row.target}
-                  disabled={disabled}
-                  placeholder={t('Target field')}
-                  onChange={(event) =>
-                    update(row.id, { target: event.target.value })
-                  }
-                />
-              )}
-              <Input
-                className="h-8 font-mono text-xs"
-                value={row.itemPath ?? ''}
-                disabled={disabled}
-                placeholder={t('Item field, e.g. code')}
-                onChange={(event) =>
-                  update(row.id, { itemPath: event.target.value })
-                }
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={disabled}
-                aria-label={t('Delete')}
-                onClick={() =>
-                  onChange(rows.filter((candidate) => candidate.id !== row.id))
-                }
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-            <TransformChain
-              transforms={row.transforms}
-              disabled={disabled}
-              tables={tables}
-              onChange={(transforms) => update(row.id, { transforms })}
-            />
-          </div>
-        );
-      })}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="self-start"
-        disabled={disabled}
-        onClick={() =>
-          onChange([
-            ...rows,
-            { id: generateId(), target: '', itemPath: '', transforms: [] },
-          ])
-        }
-      >
-        <Plus className="size-4 mr-1" />
-        {t('Add item field')}
-      </Button>
-    </div>
-  );
-}
-
-function TransformChain({
-  transforms,
-  disabled,
-  tables,
-  onChange,
-}: {
-  transforms: MappingTransform[];
-  disabled: boolean;
-  tables: TableOption[];
-  onChange: (transforms: MappingTransform[]) => void;
-}) {
-  const update = (index: number, patch: Partial<MappingTransform>) =>
-    onChange(
-      transforms.map((transform, current) =>
-        current === index ? { ...transform, ...patch } : transform,
-      ),
-    );
-  const move = (index: number, offset: number) => {
-    const target = index + offset;
-    if (target < 0 || target >= transforms.length) {
-      return;
-    }
-    onChange(
-      transforms.map((transform, current) =>
-        current === index
-          ? transforms[target]
-          : current === target
-          ? transforms[index]
-          : transform,
-      ),
-    );
-  };
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {transforms.map((transform, index) => (
-        <div
-          key={`${transform.type}-${index}`}
-          className="flex items-center gap-1 rounded-md border px-1.5 py-0.5"
-        >
-          <Badge variant="outline" className="border-0 px-0">
-            {transformLabel(transform.type)}
-          </Badge>
-          {transform.type === MappingTransformType.LOOKUP ? (
-            <Select
-              value={transform.arg}
-              disabled={disabled}
-              onValueChange={(arg) => update(index, { arg })}
-            >
-              <SelectTrigger className="h-6 w-32 text-xs">
-                <SelectValue placeholder={t('Mapping table')} />
-              </SelectTrigger>
-              <SelectContent>
-                {tables.map((table) => (
-                  <SelectItem key={table.id} value={table.id}>
-                    {table.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : TRANSFORMS_WITH_ARG.includes(transform.type) ? (
-            <Input
-              className="h-6 w-24 text-xs"
-              value={transform.arg ?? ''}
-              disabled={disabled}
-              placeholder={argPlaceholder(transform.type)}
-              onChange={(event) => update(index, { arg: event.target.value })}
-            />
-          ) : null}
-          <button
-            type="button"
-            className="text-muted-foreground disabled:opacity-50"
-            disabled={disabled}
-            aria-label={t('Move up')}
-            onClick={() => move(index, -1)}
-          >
-            <ArrowUp className="size-3" />
-          </button>
-          <button
-            type="button"
-            className="text-muted-foreground disabled:opacity-50"
-            disabled={disabled}
-            aria-label={t('Move down')}
-            onClick={() => move(index, 1)}
-          >
-            <ArrowDown className="size-3" />
-          </button>
-          <button
-            type="button"
-            className="text-muted-foreground disabled:opacity-50"
-            disabled={disabled}
-            aria-label={t('Delete')}
-            onClick={() =>
-              onChange(transforms.filter((_, current) => current !== index))
-            }
-          >
-            <X className="size-3" />
-          </button>
-        </div>
-      ))}
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 text-xs"
-            disabled={disabled}
-          >
-            <Plus className="size-3 mr-1" />
-            {t('Transform')}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {Object.values(MappingTransformType).map((type) => (
-            <DropdownMenuItem
-              key={type}
-              onSelect={() =>
-                onChange([...transforms, { type, arg: defaultArg(type) }])
-              }
-            >
-              {transformLabel(type)}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-}
-
-function transformLabel(type: MappingTransformType): string {
-  switch (type) {
-    case MappingTransformType.TRIM:
-      return t('Trim spaces');
-    case MappingTransformType.NUMBER:
-      return t('To number');
-    case MappingTransformType.STRING:
-      return t('To text');
-    case MappingTransformType.DATE:
-      return t('Date format');
-    case MappingTransformType.DEFAULT:
-      return t('Default when empty');
-    case MappingTransformType.LOOKUP:
-      return t('Look up mapping table');
-    case MappingTransformType.ROUND:
-      return t('Round');
-    case MappingTransformType.UPPER:
-      return t('Upper case');
-    case MappingTransformType.LOWER:
-      return t('Lower case');
-    case MappingTransformType.SPLIT:
-      return t('Split into list');
-  }
-}
-
-function argPlaceholder(type: MappingTransformType): string {
-  switch (type) {
-    case MappingTransformType.DATE:
-      return 'YYYY-MM-DD';
-    case MappingTransformType.DEFAULT:
-      return t('Default value');
-    case MappingTransformType.ROUND:
-      return '2';
-    case MappingTransformType.SPLIT:
-      return ',';
-    default:
-      return '';
-  }
-}
-
-function defaultArg(type: MappingTransformType): string | undefined {
-  switch (type) {
-    case MappingTransformType.DATE:
-      return 'YYYY-MM-DD';
-    case MappingTransformType.ROUND:
-      return '2';
-    case MappingTransformType.SPLIT:
-      return ',';
-    default:
-      return undefined;
-  }
-}
-
-function parseSpec(value: unknown): MappingSpec {
-  const parsed = MappingSpec.safeParse(
-    typeof value === 'string' ? safeJson(value) : value,
-  );
-  return parsed.success ? parsed.data : { fields: [] };
-}
-
-function safeJson(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
-
-function previewText(value: unknown): string {
-  if (value === undefined) {
-    return t('No sample value yet');
-  }
-  return typeof value === 'string' ? value : JSON.stringify(value);
-}
-
-const TRANSFORMS_WITH_ARG = [
-  MappingTransformType.DATE,
-  MappingTransformType.DEFAULT,
-  MappingTransformType.ROUND,
-  MappingTransformType.SPLIT,
-];
-
-const NO_TARGET = 'none';
-
-type TableOption = {
-  id: string;
-  name: string;
-  rowCount?: number;
-  missingBehavior?: MappingMissingBehavior;
-};
-
-type Entry = {
-  key: string;
-  field: MappingTargetField | null;
-  row: MappingRow | null;
-};
-
-type TrailStep = {
-  label: string;
-  value: unknown;
-  failed: boolean;
-};
-
-export type SourceInputParams = {
-  value: string;
-  disabled: boolean;
-  onChange: (value: string) => void;
+export type AddTargetSlotParams = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreated: (destination: MappingTarget) => void;
 };

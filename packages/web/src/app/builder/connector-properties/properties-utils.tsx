@@ -30,10 +30,8 @@ import CustomProperty from './custom-property';
 import { DateRangeProperty } from './date-range-property';
 import { DynamicProperties } from './dynamic-connector-property';
 import { DynamicDropdownConnectorProperty } from './dynamic-dropdown-connector-property';
-import {
-  MAPPING_EDITOR_TARGET,
-  MappingEditorProperty,
-} from './mapping-editor-property';
+import { MappingEditorProperty } from './mapping-editor-property';
+import { MAPPING_EDITOR_TARGET } from './mapping-editor-target';
 import { NumberStepper } from './number-stepper';
 import { RichTextProperty } from './rich-text-property';
 import { StaticDropdownCards } from './static-dropdown-cards';

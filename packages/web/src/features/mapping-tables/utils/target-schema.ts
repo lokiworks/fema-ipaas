@@ -27,6 +27,71 @@ function fromAction({
   };
 }
 
+function fromModelAction({
+  model,
+  actionName,
+}: {
+  model: TargetModel;
+  actionName: string;
+}): MappingTarget | null {
+  const action = model.actions[actionName];
+  if (action === undefined) {
+    return null;
+  }
+  const label = `${model.displayName} · ${action.displayName}`;
+  return fromAction({
+    connectorName: model.name,
+    actionName,
+    displayName: label,
+    props: Object.fromEntries(
+      Object.entries(action.props).map(([name, prop]) => [
+        name,
+        {
+          displayName: prop.displayName,
+          required: prop.required,
+          type: prop.type,
+          options: optionsOf({ type: prop.type, prop }),
+        },
+      ]),
+    ),
+  });
+}
+
+function optionsOf({
+  type,
+  prop,
+}: {
+  type: PropertyType;
+  prop: unknown;
+}): { options: { label: string; value: unknown }[] } | undefined {
+  if (
+    type !== PropertyType.STATIC_DROPDOWN ||
+    typeof prop !== 'object' ||
+    prop === null
+  ) {
+    return undefined;
+  }
+  const holder = Reflect.get(prop, 'options');
+  const list =
+    typeof holder === 'object' && holder !== null
+      ? Reflect.get(holder, 'options')
+      : undefined;
+  return Array.isArray(list)
+    ? {
+        options: list.flatMap((option) =>
+          typeof option === 'object' && option !== null
+            ? [
+                {
+                  label: String(Reflect.get(option, 'label')),
+                  value: Reflect.get(option, 'value'),
+                },
+              ]
+            : [],
+        ),
+      }
+    : undefined;
+}
+
 function fieldOf({
   name,
   prop,
@@ -116,6 +181,7 @@ const SKIPPED_TYPES: PropertyType[] = [
 
 export const targetSchema = {
   fromAction,
+  fromModelAction,
 };
 
 export type ActionProp = {
@@ -123,6 +189,21 @@ export type ActionProp = {
   required: boolean;
   type: PropertyType;
   options?: { options: { label: string; value: unknown }[] };
+};
+
+export type TargetModel = {
+  name: string;
+  displayName: string;
+  actions: Record<
+    string,
+    {
+      displayName: string;
+      props: Record<
+        string,
+        { displayName: string; required: boolean; type: PropertyType }
+      >;
+    }
+  >;
 };
 
 export type TargetOption = {

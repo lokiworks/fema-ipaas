@@ -43,6 +43,49 @@ function useReferences(id: string | null) {
   });
 }
 
+function useTableCoverage(id: string | null) {
+  return useQuery({
+    queryKey: [MAPPING_TABLES_KEY, 'coverage', 'table', id],
+    queryFn: () => mappingTablesApi.coverageOfTable(id!),
+    enabled: !!id,
+  });
+}
+
+function useWorkflowCoverage({
+  projectId,
+  workflowId,
+  enabled,
+}: {
+  projectId: string | null;
+  workflowId: string | null;
+  enabled: boolean;
+}) {
+  return useQuery({
+    queryKey: [MAPPING_TABLES_KEY, 'coverage', 'workflow', workflowId],
+    queryFn: () =>
+      mappingTablesApi.coverageOfWorkflow({
+        projectId: projectId!,
+        workflowId: workflowId!,
+      }),
+    enabled: enabled && !!projectId && !!workflowId,
+  });
+}
+
+function useAddRows() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: mappingTablesApi.addRows,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [MAPPING_TABLES_KEY] });
+      toast.success(t('Added to the mapping table'));
+    },
+    onError: (error) =>
+      toast.error(
+        api.extractServerErrorMessage(error, t('Something went wrong')),
+      ),
+  });
+}
+
 function useSaveMappingTable() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -89,6 +132,9 @@ export const mappingTablesHooks = {
   useMappingTable,
   useMappingTablesData,
   useReferences,
+  useTableCoverage,
+  useWorkflowCoverage,
+  useAddRows,
   useSaveMappingTable,
   useDeleteMappingTable,
 };

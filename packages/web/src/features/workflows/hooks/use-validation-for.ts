@@ -28,6 +28,8 @@ import {
   ConnectionSpec,
   ConnectorSpec,
   ConnectorSpecStatus,
+  ConnectorSpecStatus,
+  MappingCoverageFinding,
   DebugRunEvidence,
   OperationSpec,
   ValidationResult,
@@ -39,6 +41,7 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 export function useValidationFor(
   trigger: WorkflowTrigger,
+  mappingCoverage: Record<string, MappingCoverageFinding[]> | null = null,
   debugVerification: DebugRunEvidence | null = null,
 ): WorkflowValidationState {
   const { i18n } = useTranslation();
@@ -143,6 +146,7 @@ export function useValidationFor(
         mcpServers,
         mappingTableIds,
         variableNames,
+        mappingCoverage,
         debugVerification,
       }),
     [
@@ -152,6 +156,7 @@ export function useValidationFor(
       mcpServers,
       mappingTableIds,
       variableNames,
+      mappingCoverage,
       debugVerification,
     ],
   );

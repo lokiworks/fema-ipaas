@@ -6,6 +6,7 @@ import {
   dataMapping,
   isNil,
   MappingIssueCode,
+  MappingMissingBehavior,
   MappingSpec,
 } from '@fema-ipaas/core-utils';
 import {
@@ -302,6 +303,7 @@ function structureIssues({
         }),
         ...agentIssues({ step, context }),
         ...mappingIssues({ step, context }),
+        ...mappingCoverageIssues({ step, context }),
       ];
     case WorkflowActionType.ROUTER:
       return routerIssues({ step });
@@ -651,6 +653,32 @@ function mappingIssues({
     ...missingTables,
     ...mappingSpecIssues({ step, fields: step.settings.input }),
   ];
+}
+
+function mappingCoverageIssues({
+  step,
+  context,
+}: {
+  step: WorkflowAction;
+  context: ValidationContext;
+}): ValidationIssue[] {
+  return (context.mappingCoverage?.[step.name] ?? [])
+    .filter((finding) => finding.uncovered.length > 0)
+    .map((finding) =>
+      issue({
+        step,
+        code: ValidationCode.MAPPING_COVERAGE_LOW,
+        tab: ValidationTab.INPUT,
+        severity: ValidationSeverity.WARNING,
+        params: {
+          table: finding.tableName,
+          rate: String(finding.hitPercent ?? 0),
+          count: String(finding.uncovered.length),
+          values: finding.uncovered.slice(0, 3).join(', '),
+          behavior: finding.behavior,
+        },
+      }),
+    );
 }
 
 function mappingSpecIssues({
@@ -1016,6 +1044,7 @@ export enum ValidationCode {
   AI_PENDING_REVIEW = 'AI_PENDING_REVIEW',
   WRITE_NOT_TESTED = 'WRITE_NOT_TESTED',
   WRITE_NOT_REACHED = 'WRITE_NOT_REACHED',
+  MAPPING_COVERAGE_LOW = 'MAPPING_COVERAGE_LOW',
 }
 
 const AGENT_PROBLEM_CODES: Record<AgentMcpServerProblemCode, ValidationCode> = {
@@ -1063,11 +1092,19 @@ export type ValidationContext = {
   connections: Record<string, ConnectionSpec | undefined> | null;
   mappingTableIds: string[] | null;
   variableNames: string[] | null;
+  mappingCoverage?: Record<string, MappingCoverageFinding[]> | null;
   debugVerification?: DebugRunEvidence | null;
 };
 
 export type DebugRunEvidence = {
   executedStepNames: string[];
+};
+
+export type MappingCoverageFinding = {
+  tableName: string;
+  uncovered: string[];
+  hitPercent: number | null;
+  behavior: MappingMissingBehavior;
 };
 
 export type ValidationIssue = {

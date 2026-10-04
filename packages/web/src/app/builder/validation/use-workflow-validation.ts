@@ -8,12 +8,19 @@ import {
   WorkflowValidationState,
 } from '@/features/workflows/hooks/use-validation-for';
 
+import { useMappingCoverageFindings } from './use-mapping-coverage';
+
 export function useWorkflowValidation(): WorkflowValidationState {
   const trigger = useBuilderStateContext(
     (state) => state.workflowVersion.trigger,
   );
   const debugVerification = useDebugEvidence();
-  const validation = useValidationFor(trigger, debugVerification.evidence);
+  const mappingCoverage = useMappingCoverageFindings();
+  const validation = useValidationFor(
+    trigger,
+    debugVerification.evidence,
+    mappingCoverage,
+  );
   return {
     ...validation,
     isLoading: validation.isLoading || debugVerification.isChecking,

@@ -38,6 +38,8 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ImportMode,
   ImportRowStatus,
+  MappingCoveragePanel,
+  mappingCoverageUtils,
   mappingCsv,
   mappingTablesHooks,
 } from '@/features/mapping-tables';
@@ -434,6 +436,12 @@ function MappingTableEditor({
         </CardContent>
       </Card>
 
+      <MappingTableCoverageCard
+        table={table}
+        canWrite={canWrite}
+        dirty={dirty}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>{t('Used by')}</CardTitle>
@@ -471,6 +479,58 @@ function MappingTableEditor({
         onApply={setRows}
       />
     </div>
+  );
+}
+
+function MappingTableCoverageCard({
+  table,
+  canWrite,
+  dirty,
+}: {
+  table: MappingTable;
+  canWrite: boolean;
+  dirty: boolean;
+}) {
+  const { data: sources, isLoading } = mappingTablesHooks.useTableCoverage(
+    table.id,
+  );
+  const {
+    mutate: addRows,
+    variables,
+    isPending,
+  } = mappingTablesHooks.useAddRows();
+  const entries = mappingCoverageUtils.fromRuns(sources ?? []);
+  const pendingKey =
+    isPending && variables ? `${table.id}:${variables.rows[0]?.k ?? ''}` : null;
+  return (
+    <Card data-testid="mapping-table-coverage">
+      <CardHeader>
+        <CardTitle>{t('Coverage')}</CardTitle>
+        <CardDescription>
+          {t(
+            'How many of the values that recent runs looked up in this table have a row. Values without a row are listed so you can add them.',
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">{t('Loading...')}</p>
+        ) : (
+          <MappingCoveragePanel
+            entries={entries}
+            valueLabelOf={() => table.valueLabel}
+            canWrite={canWrite}
+            addDisabledReason={
+              dirty ? t('Save or discard your edits first') : undefined
+            }
+            pendingKey={pendingKey}
+            onAdd={({ key, value }) =>
+              addRows({ id: table.id, rows: [{ k: key, v: value }] })
+            }
+          />
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

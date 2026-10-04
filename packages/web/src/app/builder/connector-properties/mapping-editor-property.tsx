@@ -1,5 +1,9 @@
-import { PropertyType } from '@fema-ipaas/connector-sdk';
-import { isNil, LocalesEnum, MappingSpec } from '@fema-ipaas/core-utils';
+import {
+  isNil,
+  LocalesEnum,
+  MappingSpec,
+  Permission,
+} from '@fema-ipaas/core-utils';
 import {
   workflowConnectorUtil,
   WorkflowActionType,
@@ -10,10 +14,19 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { DataSelector } from '@/app/builder/data-selector';
 import { connectorsApi } from '@/features/connectors';
-import { MappingEditor, targetSchema } from '@/features/mapping-tables';
+import {
+  MappingEditor,
+  mappingTablesHooks,
+  targetSchema,
+} from '@/features/mapping-tables';
 import { TargetOption } from '@/features/mapping-tables/utils/target-schema';
+import { useAuthorization } from '@/hooks/authorization-hooks';
+import { authenticationSession } from '@/lib/authentication-session';
 
+import { MAPPING_EDITOR_TARGET } from './mapping-editor-target';
+import { MappingWriteStepDialog } from './mapping-write-step-dialog';
 import { TextInputWithMentions } from './text-input-with-mentions';
 
 export function MappingEditorProperty({
@@ -26,7 +39,21 @@ export function MappingEditorProperty({
   disabled: boolean;
 }) {
   const sampleData = useBuilderStateContext((state) => state.outputSampleData);
+  const [workflowId, stepName] = useBuilderStateContext((state) => [
+    state.workflow.id,
+    state.selectedStep,
+  ]);
   const targetOptions = useTargetOptions();
+  const { checkAccess } = useAuthorization();
+  const { data: coverage } = mappingTablesHooks.useWorkflowCoverage({
+    projectId: authenticationSession.getProjectId(),
+    workflowId,
+    enabled: true,
+  });
+  const runCoverage = useMemo(
+    () => (coverage ?? []).filter((source) => source.stepName === stepName),
+    [coverage, stepName],
+  );
   return (
     <MappingEditor
       value={value}
@@ -34,6 +61,12 @@ export function MappingEditorProperty({
       disabled={disabled}
       sampleData={sampleData}
       targetOptions={targetOptions}
+      runCoverage={runCoverage}
+      canEditTables={checkAccess(Permission.WRITE_WORKFLOW)}
+      renderSourcePanel={() => (
+        <DataSelector parentHeight={0} parentWidth={0} embedded />
+      )}
+      renderAddTarget={(params) => <MappingWriteStepDialog {...params} />}
       renderSourceInput={({
         value: source,
         disabled: inputDisabled,
@@ -84,26 +117,18 @@ function useTargetOptions(): TargetOption[] {
           .filter(([, action]) =>
             WRITE_CLASSIFICATIONS.includes(action.classification ?? ''),
           )
-          .map(([actionName, action]) => ({
-            key: `${model.name}/${actionName}`,
-            label: `${model.displayName} · ${action.displayName}`,
-            target: targetSchema.fromAction({
-              connectorName: model.name,
-              actionName,
-              displayName: `${model.displayName} · ${action.displayName}`,
-              props: Object.fromEntries(
-                Object.entries(action.props).map(([name, prop]) => [
-                  name,
+          .flatMap(([actionName, action]) => {
+            const target = targetSchema.fromModelAction({ model, actionName });
+            return target === null
+              ? []
+              : [
                   {
-                    displayName: prop.displayName,
-                    required: prop.required,
-                    type: prop.type,
-                    options: optionsOf({ type: prop.type, prop }),
+                    key: `${model.name}/${actionName}`,
+                    label: `${model.displayName} · ${action.displayName}`,
+                    target,
                   },
-                ]),
-              ),
-            }),
-          }));
+                ];
+          });
       }),
     [signature],
   );
@@ -111,41 +136,6 @@ function useTargetOptions(): TargetOption[] {
 
 function localeOf(language: string): LocalesEnum | undefined {
   return Object.values(LocalesEnum).find((locale) => locale === language);
-}
-
-function optionsOf({
-  type,
-  prop,
-}: {
-  type: PropertyType;
-  prop: unknown;
-}): { options: { label: string; value: unknown }[] } | undefined {
-  if (
-    type !== PropertyType.STATIC_DROPDOWN ||
-    typeof prop !== 'object' ||
-    prop === null
-  ) {
-    return undefined;
-  }
-  const holder = Reflect.get(prop, 'options');
-  const list =
-    typeof holder === 'object' && holder !== null
-      ? Reflect.get(holder, 'options')
-      : undefined;
-  return Array.isArray(list)
-    ? {
-        options: list.flatMap((option) =>
-          typeof option === 'object' && option !== null
-            ? [
-                {
-                  label: String(Reflect.get(option, 'label')),
-                  value: Reflect.get(option, 'value'),
-                },
-              ]
-            : [],
-        ),
-      }
-    : undefined;
 }
 
 function connectorRefsOf(
@@ -170,9 +160,3 @@ function connectorRefsOf(
 }
 
 const WRITE_CLASSIFICATIONS: string[] = ['WRITE', 'DESTRUCTIVE'];
-
-export const MAPPING_EDITOR_TARGET = {
-  connectorName: '@fema-ipaas/connector-data-mapper',
-  actionName: 'map_fields',
-  propertyName: 'mapping',
-};

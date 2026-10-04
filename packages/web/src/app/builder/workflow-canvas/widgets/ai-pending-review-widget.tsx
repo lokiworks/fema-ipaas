@@ -19,6 +19,9 @@ export function AiPendingReviewWidget() {
       state.selectStepByName,
       state.readonly,
     ]);
+  const aiGenerated = useBuilderStateContext(
+    (state) => state.workflow.metadata?.['aiGenerated'] === true,
+  );
   const pending = useMemo(
     () =>
       workflowStructureUtil
@@ -46,10 +49,15 @@ export function AiPendingReviewWidget() {
       <div className="flex items-center gap-2 text-sm">
         <Sparkles className="size-4 text-primary" />
         <span>
-          {t(
-            '{count, plural, =1 {1 AI-generated step to confirm} other {# AI-generated steps to confirm}}',
-            { count: pending.length },
-          )}
+          {aiGenerated
+            ? t(
+                '{count, plural, =1 {1 AI-generated step to confirm} other {# AI-generated steps to confirm}}',
+                { count: pending.length },
+              )
+            : t(
+                '{count, plural, =1 {1 added step to confirm} other {# added steps to confirm}}',
+                { count: pending.length },
+              )}
         </span>
       </div>
       <Button variant="ghost" size="sm" onClick={checkNext}>

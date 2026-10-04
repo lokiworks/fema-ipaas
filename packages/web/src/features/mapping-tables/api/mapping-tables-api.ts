@@ -1,6 +1,8 @@
+import { MappingCoverageSource } from '@fema-ipaas/core-utils';
 import {
   MappingTable,
   MappingTableReference,
+  MappingTableRow,
   MappingTableSummary,
   UpsertMappingTableRequestBody,
 } from '@fema-ipaas/shared';
@@ -25,6 +27,32 @@ export const mappingTablesApi = {
   },
   delete(id: string): Promise<void> {
     return api.delete<void>(`/v1/mapping-tables/${id}`);
+  },
+  coverageOfTable(id: string): Promise<MappingCoverageSource[]> {
+    return api.get<MappingCoverageSource[]>(
+      `/v1/mapping-tables/${id}/coverage`,
+    );
+  },
+  coverageOfWorkflow({
+    projectId,
+    workflowId,
+  }: {
+    projectId: string;
+    workflowId: string;
+  }): Promise<MappingCoverageSource[]> {
+    return api.get<MappingCoverageSource[]>('/v1/mapping-tables/coverage', {
+      projectId,
+      workflowId,
+    });
+  },
+  addRows({
+    id,
+    rows,
+  }: {
+    id: string;
+    rows: MappingTableRow[];
+  }): Promise<MappingTable> {
+    return api.post<MappingTable>(`/v1/mapping-tables/${id}/rows`, { rows });
   },
   references(id: string): Promise<MappingTableReference[]> {
     return api.get<MappingTableReference[]>(

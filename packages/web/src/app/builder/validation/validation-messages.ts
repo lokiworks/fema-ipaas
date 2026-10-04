@@ -2,6 +2,7 @@ import {
   MappingIssue,
   MappingIssueCode,
   MappingIssueSeverity,
+  MappingMissingBehavior,
 } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 
@@ -65,6 +66,16 @@ const MESSAGES: Record<
     t('Target field {field} is mapped more than once', params),
   [ValidationCode.MAPPING_PROBLEM]: (params) =>
     mappingIssueText.describe(toMappingIssue(params)),
+  [ValidationCode.MAPPING_COVERAGE_LOW]: (params) =>
+    params['behavior'] === MappingMissingBehavior.ERROR
+      ? t(
+          'Mapping table {table} has no row for {count} values seen in recent runs or the sample ({values}). Runs that reach them will fail until the rows are added.',
+          params,
+        )
+      : t(
+          'Mapping table {table} has no row for {count} values seen in recent runs or the sample ({values}). Runs that reach them use the fallback set on the table.',
+          params,
+        ),
   [ValidationCode.CRON_INVALID]: () => t('The Cron expression is invalid'),
   [ValidationCode.SCHEDULE_INTERVAL_INVALID]: () =>
     t('The interval must be greater than 0'),
@@ -103,7 +114,7 @@ const MESSAGES: Record<
   [ValidationCode.VARIABLE_MISSING]: (params) =>
     t('Project config {name} does not exist', params),
   [ValidationCode.AI_PENDING_REVIEW]: () =>
-    t('AI-generated step not confirmed. Open it, check it, then confirm it.'),
+    t('Step not confirmed. Open it, check it, then confirm it.'),
   [ValidationCode.WRITE_NOT_TESTED]: (params) =>
     t(
       '{step} writes data and has not been tested since it was last edited',

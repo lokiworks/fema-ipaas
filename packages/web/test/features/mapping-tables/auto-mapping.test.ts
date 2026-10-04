@@ -51,6 +51,23 @@ describe('autoMapping.flattenSources', () => {
   });
 });
 
+describe('autoMapping.flattenSources transport noise', () => {
+  it('leaves out webhook headers and the raw body so they are never suggested', () => {
+    const flattened = autoMapping.flattenSources({
+      sampleData: {
+        trigger: {
+          headers: { 'sec-ch-ua-mobile': '?0' },
+          rawBody: '{"mobile":"1"}',
+          body: { mobile: '138' },
+        },
+      },
+    });
+    expect(flattened.map((source) => source.path)).toEqual([
+      'trigger.body.mobile',
+    ]);
+  });
+});
+
 describe('autoMapping.suggestByName', () => {
   it('scores exact, synonym and similar names like the design says', () => {
     const suggestions = autoMapping.suggestByName({

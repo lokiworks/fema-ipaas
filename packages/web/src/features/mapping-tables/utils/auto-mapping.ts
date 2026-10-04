@@ -18,7 +18,9 @@ function flattenSources({
   sampleData: Record<string, unknown>;
 }): MappingSource[] {
   return Object.entries(sampleData)
-    .flatMap(([stepName, value]) => walk({ value, path: stepName, depth: 0 }))
+    .flatMap(([stepName, value]) =>
+      walk({ value: withoutTransportNoise(value), path: stepName, depth: 0 }),
+    )
     .slice(0, MAX_SOURCES);
 }
 
@@ -147,6 +149,14 @@ function walk({
   return [{ path, sample: sampleText(value), valueType: valueTypeOf(value) }];
 }
 
+function withoutTransportNoise(value: unknown): unknown {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? Object.fromEntries(
+        Object.entries(value).filter(([key]) => !TRANSPORT_KEYS.includes(key)),
+      )
+    : value;
+}
+
 function valueTypeOf(value: unknown): MappingSource['valueType'] {
   if (typeof value === 'string') {
     return 'string';
@@ -216,6 +226,7 @@ const EXACT = 0.95;
 const SYNONYM = 0.88;
 const SIMILAR = 0.55;
 const MAX_SOURCES = 300;
+const TRANSPORT_KEYS = ['headers', 'rawBody'];
 const MAX_DEPTH = 6;
 const MAX_SAMPLE = 120;
 const SYNONYMS: string[][] = [

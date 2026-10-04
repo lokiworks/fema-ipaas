@@ -257,6 +257,7 @@ async function aiSuggest() {
   await page.getByRole('button', { name: 'AI 自动映射' }).click()
   const dialog = page.getByRole('dialog')
   await dialog.getByText('依据').first().waitFor()
+  await dialog.getByText(/没有模型连接/).waitFor()
   const text = await dialog.innerText()
   assert(!/\d+\s*%/.test(text), `AI 建议不应显示置信度：${text.slice(0, 200)}`)
   const boxes = dialog.getByRole('checkbox')
@@ -423,16 +424,17 @@ async function runtimeFailures() {
 }
 
 async function publishRefusedForBrokenMapping() {
+  const source = await api('GET', `/workflows/${state.workflowId}?projectId=${session.projectId}`)
   const created = await api('POST', '/workflows', { displayName: `缺映射的流程 ${RUN}`, projectId: session.projectId })
-  const target = { connectorName: '@fema-ipaas/connector-feishu', actionName: 'provision_user', displayName: '飞书 · 开通员工账号', fields: [{ name: 'name', label: '姓名', type: 'STRING', required: true }, { name: 'mobile', label: '手机号', type: 'STRING', required: true }] }
+  const destination = { connectorName: '@fema-ipaas/connector-feishu', actionName: 'provision_user', displayName: '飞书 · 开通员工账号', fields: [{ name: 'name', label: '姓名', type: 'STRING', required: true }, { name: 'mobile', label: '手机号', type: 'STRING', required: true }] }
+  const { nextAction: _unused, ...trigger } = source.version.trigger
   await api('POST', `/workflows/${created.id}?projectId=${session.projectId}`, {
     type: 'IMPORT_WORKFLOW',
     request: {
-      displayName: `缺映射的流程 ${RUN}`, schemaVersion: null, notes: null,
+      displayName: `缺映射的流程 ${RUN}`, schemaVersion: source.version.schemaVersion, notes: [],
       trigger: {
-        name: 'trigger', type: 'CONNECTOR_TRIGGER', valid: true, displayName: 'Webhook',
-        settings: { connectorName: '@fema-ipaas/connector-webhook', connectorVersion: '~0.1.42', triggerName: 'catch_webhook', input: { authType: 'none', authFields: {} }, propertySettings: {} },
-        nextAction: { name: 'step_1', type: 'CONNECTOR', valid: true, displayName: '字段映射', settings: { connectorName: '@fema-ipaas/connector-data-mapper', connectorVersion: '0.4.0', actionName: 'map_fields', propertySettings: {}, errorHandlingOptions: {}, input: { mapping: { destination: target, fields: [{ id: 'a', target: 'name', source: '张三', transforms: [] }] }, failOnError: true } } },
+        ...trigger,
+        nextAction: { name: 'step_1', type: 'CONNECTOR', valid: true, skip: false, displayName: '字段映射', lastUpdatedDate: new Date().toISOString(), settings: { connectorName: '@fema-ipaas/connector-data-mapper', connectorVersion: '0.4.0', actionName: 'map_fields', propertySettings: {}, errorHandlingOptions: {}, input: { mapping: { destination, fields: [{ id: 'a', target: 'name', source: '张三', transforms: [] }] }, failOnError: true } } },
       },
     },
   })
@@ -444,12 +446,12 @@ async function publishRefusedForBrokenMapping() {
     refusal = error.message
   }
   assert(refusal.includes('手机号') && refusal.includes('还没有映射来源'), `发布应被拒绝并指出缺手机号：${refusal}`)
+  state.brokenWorkflowId = created.id
   await page.goto(`${WEB_URL}/projects/${session.projectId}/workflows/${created.id}`, { waitUntil: 'domcontentloaded' })
   await page.getByText('2. 字段映射').first().click()
   await page.getByText('入参', { exact: true }).first().click()
-  await expectText(page.getByTestId('mapping-issue'), /手机号 还没有映射来源|手机号.*还没有映射来源/, '编辑器里同样标出缺手机号')
+  await expectText(page.getByTestId('mapping-issue'), /手机号 还没有映射来源/, '编辑器里同样标出缺手机号')
   await shot('10-refused-flow')
-  state.brokenWorkflowId = created.id
   return refusal.slice(0, 120)
 }
 
@@ -467,14 +469,19 @@ async function narrowWindow() {
 }
 
 async function darkMode() {
-  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.evaluate(() => localStorage.setItem('fema.theme', 'dark'))
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.getByText('2. 字段映射').first().click()
+  await page.getByText('入参', { exact: true }).first().click()
+  await page.getByTestId('mapping-summary').waitFor()
   await page.waitForTimeout(1500)
   await shot('12-dark')
-  const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
-  const channels = background.match(/\d+/g)?.map(Number) ?? [255, 255, 255]
-  assert(channels[0] + channels[1] + channels[2] < 300, `深色模式下背景仍是浅色：${background}`)
-  await page.emulateMedia({ colorScheme: 'light' })
-  return background
+  const dark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
+  const background = await page.evaluate(() => getComputedStyle(document.querySelector('[data-testid^="mapping-row-"]') ?? document.body).backgroundColor)
+  const text = await page.evaluate(() => getComputedStyle(document.querySelector('[data-testid="mapping-summary"]')).color)
+  await page.evaluate(() => localStorage.setItem('fema.theme', 'light'))
+  assert(dark, '切到深色后根节点没有 dark 类')
+  return { background, text }
 }
 
 async function keyboardOrder() {

@@ -1,5 +1,5 @@
 import { PropertyType } from '@fema-ipaas/connector-sdk';
-import { isNil, MappingSpec } from '@fema-ipaas/core-utils';
+import { isNil, LocalesEnum, MappingSpec } from '@fema-ipaas/core-utils';
 import {
   workflowConnectorUtil,
   WorkflowActionType,
@@ -62,7 +62,7 @@ function useTargetOptions(): TargetOption[] {
         connectorsApi.get({
           name: ref.name,
           version: ref.version,
-          locale: undefined,
+          locale: localeOf(i18n.language),
         }),
       staleTime: Infinity,
     })),
@@ -107,6 +107,10 @@ function useTargetOptions(): TargetOption[] {
       }),
     [signature],
   );
+}
+
+function localeOf(language: string): LocalesEnum | undefined {
+  return Object.values(LocalesEnum).find((locale) => locale === language);
 }
 
 function optionsOf({

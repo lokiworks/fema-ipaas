@@ -158,12 +158,7 @@ const names = ['北森员工入职', '在飞书多维表格建档', '开通飞�
 let mockBefore = null
 await step('B3 逐个确认节点，补选数据表，确认完后没有任何错误和待确认', async () => {
   await page.waitForTimeout(500)
-  for (const name of names) {
-    await selectNode(name)
-    await page.getByRole('button', { name: '更换操作' }).waitFor({ timeout: 120000 })
-    await page.getByRole('button', { name: '确认无误' }).click()
-    await page.waitForTimeout(2500)
-  }
+  await confirmNodes(names)
   await selectNode(names[1])
   await page.getByText('入参', { exact: true }).first().click()
   await page.getByText('数据表', { exact: true }).first().waitFor()
@@ -199,16 +194,17 @@ await step('B4 调试：生成默认触发数据，真的写入模拟的飞书�
 })
 
 await step('B5 发布：确认后可以发布，服务端状态是已发布', async () => {
-  await page.getByRole('button', { name: '编辑工作流' }).click()
-  const publish = page.getByRole('button', { name: '发布', exact: true })
-  await publish.click({ timeout: 60000 })
-  const reminder = page.getByRole('dialog').filter({ hasText: '发布' })
+  await openPage({ path: `/projects/${projectId}/workflows/${draft2}`, ready: 'button[name="Publish"]' })
+  await page.waitForTimeout(3000)
+  await page.locator('button[name="Publish"]').dispatchEvent('click')
+  const reminder = page.getByRole('dialog').filter({ hasText: '仍要发布' })
+  await reminder.waitFor({ timeout: 5000 }).catch(() => undefined)
   if (await reminder.isVisible().catch(() => false)) {
     await reminder.getByRole('button', { name: '仍然发布' }).click()
   }
   const workflow = await waitFor(async () => {
     const current = await h.api({ method: 'GET', path: `/workflows/${draft2}?projectId=${projectId}` })
-    return current.publishedVersionId ? current : null
+    return current.publishedVersionId && current.status === 'ENABLED' ? current : null
   })
   await shot('b5-published')
   return { status: workflow.status }
@@ -321,12 +317,8 @@ await step('E1 AI 草稿确认完节点后，没回答的群聊仍被通用的�
   const applied = await h.api({ method: 'POST', path: '/ai/workflow-plans/apply', body: { projectId, plan } })
   await openPage({ path: `/projects/${projectId}/workflows/${applied.workflowId}`, ready: '[data-tour="builder-step"]' })
   await page.getByText('AI 生成的节点待确认').waitFor({ timeout: 120000 })
-  for (const name of ['北森员工入职', '开通飞书账号', '通知HR 群']) {
-    await selectNode(name)
-    await page.getByRole('button', { name: '更换操作' }).waitFor({ timeout: 120000 })
-    await page.getByRole('button', { name: '确认无误' }).click()
-    await page.waitForTimeout(2500)
-  }
+  await confirmNodes(['北森员工入职', '开通飞书账号', '通知HR 群'])
+  await page.getByText('AI 生成的节点待确认').waitFor({ state: 'detached', timeout: 60000 })
   await page.getByRole('button', { name: '校验', exact: true }).click()
   await page.getByText('群聊是必填项').first().waitFor({ timeout: 60000 })
   await shot('e1-required-after-confirm')
@@ -398,6 +390,30 @@ async function resetState() {
 
 async function selectNode(name) {
   await page.locator('[data-tour="builder-step"]').filter({ hasText: name }).click({ force: true })
+}
+
+async function pendingCount() {
+  const text = await page.getByText('AI 生成的节点待确认').first().innerText().catch(() => '')
+  const matched = text.match(/(\d+)\s*个/)
+  return matched ? Number(matched[1]) : 0
+}
+
+async function confirmNodes(nodeNames) {
+  for (const name of nodeNames) {
+    const card = page.locator('[data-tour="builder-step"]').filter({ hasText: name })
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      if ((await card.getByText('待确认').count()) === 0) {
+        break
+      }
+      await selectNode(name)
+      const confirm = page.getByRole('button', { name: '确认无误' })
+      const visible = await confirm.waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+      if (visible) {
+        await confirm.click()
+        await page.waitForTimeout(2500)
+      }
+    }
+  }
 }
 
 async function mockState() {

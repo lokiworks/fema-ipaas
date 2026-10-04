@@ -28,6 +28,7 @@ import {
   ConnectionSpec,
   ConnectorSpec,
   ConnectorSpecStatus,
+  DebugRunEvidence,
   OperationSpec,
   ValidationResult,
   WriteStep,
@@ -38,6 +39,7 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 export function useValidationFor(
   trigger: WorkflowTrigger,
+  debugVerification: DebugRunEvidence | null = null,
 ): WorkflowValidationState {
   const { i18n } = useTranslation();
   const projectId = authenticationSession.getProjectId() ?? '';
@@ -141,6 +143,7 @@ export function useValidationFor(
         mcpServers,
         mappingTableIds,
         variableNames,
+        debugVerification,
       }),
     [
       trigger,
@@ -149,6 +152,7 @@ export function useValidationFor(
       mcpServers,
       mappingTableIds,
       variableNames,
+      debugVerification,
     ],
   );
 

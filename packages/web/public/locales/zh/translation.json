@@ -5486,5 +5486,8 @@
   "MCP server {server} was deleted or is not available in this project": "MCP 服务器「{server}」已被删除，或在当前项目里不可用",
   "MCP server {server} cannot be reached": "MCP 服务器「{server}」现在连不上",
   "Allowed tool {tool} no longer exists on the selected servers": "允许的工具「{tool}」在选的服务器上已经不存在",
-  "Server removed": "已删除"
+  "Server removed": "已删除",
+  "{step} writes data, but the last successful debug run did not reach it": "「{step}」会写入数据，但最近一次调试通过的运行没有执行到它",
+  "Debug passed. The draft is editable again.": "调试通过，草稿可以继续编辑",
+  "View debug records": "查看调试记录"
 }

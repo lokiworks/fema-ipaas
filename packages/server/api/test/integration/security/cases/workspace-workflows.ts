@@ -127,6 +127,14 @@ export const workspaceWorkflowCases: MatrixCase[] = [
             return { request: { method: 'GET', url: `/v1/workflows/${workflow.id}/versions` } }
         },
     },
+    {
+        id: 'GET /v1/workflows/:workflowId/versions/:versionId/debug-verification',
+        access: { type: 'project', permission: Permission.READ_WORKFLOW },
+        prepare: async ({ world, scope }) => {
+            const workflow = await seed.workflow({ world, scope })
+            return { request: { method: 'GET', url: `/v1/workflows/${workflow.id}/versions/${workflow.versionId}/debug-verification` } }
+        },
+    },
 ]
 
 type WorkflowRow = {

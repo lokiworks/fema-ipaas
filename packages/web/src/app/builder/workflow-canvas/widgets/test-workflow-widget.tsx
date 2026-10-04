@@ -1,38 +1,24 @@
-import { isNil, assertNotNullOrUndefined } from '@fema-ipaas/core-utils';
-import {
-  WorkflowTriggerType,
-  Permission,
-  UpdateRunProgressRequest,
-} from '@fema-ipaas/shared';
+import { isNil } from '@fema-ipaas/core-utils';
+import { WorkflowTriggerType, Permission } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { EditWorkflowOrViewDraftButton } from '@/app/builder/builder-header/workflow-status/view-draft-or-edit-workflow-button';
-import {
-  useBuilderStateContext,
-  useBuilderStore,
-} from '@/app/builder/builder-hooks';
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { useDebugRunProgress } from '@/app/builder/debug/use-debug-run-progress';
 import { connectorSelectorUtils } from '@/features/connectors';
-import { executionUtils } from '@/features/executions';
 import { workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { AboveTriggerButton } from './above-trigger-button';
 
 const TestWorkflowWidget = () => {
-  const [
-    workflowVersion,
-    readonly,
-    hideTestWidget,
-    setRun,
-    publishedVersionId,
-  ] = useBuilderStateContext((state) => [
-    state.workflowVersion,
-    state.readonly,
-    state.hideTestWidget,
-    state.setRun,
-    state.workflow.publishedVersionId,
-  ]);
-  const builderStore = useBuilderStore();
+  const [workflowVersion, readonly, hideTestWidget, publishedVersionId] =
+    useBuilderStateContext((state) => [
+      state.workflowVersion,
+      state.readonly,
+      state.hideTestWidget,
+      state.workflow.publishedVersionId,
+    ]);
 
   const { checkAccess } = useAuthorization();
   const userHasPermissionToRun = checkAccess(Permission.WRITE_RUN);
@@ -46,25 +32,12 @@ const TestWorkflowWidget = () => {
     triggerName: workflowVersion.trigger.settings.triggerName,
   });
 
+  const progress = useDebugRunProgress({ returnsToEditing: !isManualTrigger });
   const { mutate: runWorkflow, isPending: isTestingWorkflow } =
     workflowHooks.useTestWorkflowOrStartManualTrigger({
       workflowVersionId: workflowVersion.id,
       isForManualTrigger: isManualTrigger,
-      onUpdateRun: (response: UpdateRunProgressRequest) => {
-        assertNotNullOrUndefined(response.execution, 'execution');
-        const currentRun = builderStore.getState().run;
-        const previousSteps = currentRun?.steps ?? {};
-        const startTime = response.execution.startTime ?? currentRun?.startTime;
-        const steps = isNil(response.step)
-          ? previousSteps
-          : executionUtils.updateRunSteps(
-              previousSteps,
-              response.step.name,
-              response.step.path,
-              response.step.output,
-            );
-        setRun({ ...response.execution, startTime, steps }, workflowVersion);
-      },
+      onUpdateRun: progress.onUpdateRun,
     });
 
   if (!workflowVersion.valid) {
@@ -98,6 +71,7 @@ const TestWorkflowWidget = () => {
   return (
     <AboveTriggerButton
       onClick={() => {
+        progress.rememberSelection();
         runWorkflow();
       }}
       text={isManualTrigger ? t('Run Workflow') : t('Test Workflow')}

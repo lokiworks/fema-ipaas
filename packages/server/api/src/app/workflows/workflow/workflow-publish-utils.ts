@@ -1,5 +1,5 @@
 import { ConnectorMetadataModel, PropertyType } from '@fema-ipaas/connector-sdk'
-import { AgentMcpServerInfo, ApplicationError, dataMapping, ErrorCode, isNil, MappingIssueCode, MappingIssueSeverity, MappingSpec, ProjectId, TenantId } from '@fema-ipaas/core-utils'
+import { AgentMcpServerInfo, ApplicationError, dataMapping, ErrorCode, isNil, LocalesEnum, MappingIssueCode, MappingIssueSeverity, MappingSpec, ProjectId, TenantId, tryCatch } from '@fema-ipaas/core-utils'
 import { connectionAccessUtils, WorkflowActionType, workflowConnectorUtil, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import deepEqual from 'deep-equal'
 import { FastifyBaseLogger } from 'fastify'
@@ -58,7 +58,7 @@ async function assertPublishable({ version, projectId, tenantId, log, checkConne
 async function loadValidationContext({ version, projectId, tenantId, log, checkConnections }: { version: WorkflowVersion, projectId: ProjectId, tenantId: TenantId, log: FastifyBaseLogger, checkConnections: boolean }): Promise<PublishValidationContext> {
     const refs = connectorRefsOf(version)
     const loaded = await Promise.all(refs.map(async (ref) => {
-        const model = await connectorMetadataService(log).get({ name: ref.name, version: ref.version, projectId, tenantId })
+        const { data: model } = await tryCatch(() => connectorMetadataService(log).getOrThrow({ name: ref.name, version: ref.version, projectId, tenantId, locale: LocalesEnum.CHINESE_SIMPLIFIED }))
         return [ref.name, isNil(model) ? MISSING_CONNECTOR : specOf(model)] satisfies [string, ConnectorSpec]
     }))
     const connectionIds = checkConnections ? await loadConnectionIds({ projectId, tenantId }) : null

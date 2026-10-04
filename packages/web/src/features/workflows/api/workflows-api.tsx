@@ -11,6 +11,7 @@ import {
   PopulatedWorkflow,
   SharedTemplate,
   CountWorkflowsRequest,
+  DebugVerification,
 } from '@fema-ipaas/shared';
 
 import { unsavedChangesToast } from '@/components/ui/sonner';
@@ -55,6 +56,17 @@ export const workflowsApi = {
     return api.get<SeekPage<WorkflowVersion>>(
       `/v1/workflows/${workflowId}/versions`,
       request,
+    );
+  },
+  getDebugVerification({
+    workflowId,
+    versionId,
+  }: {
+    workflowId: string;
+    versionId: string;
+  }): Promise<DebugVerification> {
+    return api.get<DebugVerification>(
+      `/v1/workflows/${workflowId}/versions/${versionId}/debug-verification`,
     );
   },
   delete(workflowId: string) {

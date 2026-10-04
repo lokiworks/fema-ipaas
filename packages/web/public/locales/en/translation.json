@@ -5486,5 +5486,8 @@
   "MCP server {server} was deleted or is not available in this project": "MCP server {server} was deleted or is not available in this project",
   "MCP server {server} cannot be reached": "MCP server {server} cannot be reached",
   "Allowed tool {tool} no longer exists on the selected servers": "Allowed tool {tool} no longer exists on the selected servers",
-  "Server removed": "Server removed"
+  "Server removed": "Server removed",
+  "{step} writes data, but the last successful debug run did not reach it": "{step} writes data, but the last successful debug run did not reach it",
+  "Debug passed. The draft is editable again.": "Debug passed. The draft is editable again.",
+  "View debug records": "View debug records"
 }

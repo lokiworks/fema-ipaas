@@ -109,4 +109,9 @@ const MESSAGES: Record<
       '{step} writes data and has not been tested since it was last edited',
       params,
     ),
+  [ValidationCode.WRITE_NOT_REACHED]: (params) =>
+    t(
+      '{step} writes data, but the last successful debug run did not reach it',
+      params,
+    ),
 };

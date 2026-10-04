@@ -588,6 +588,33 @@ describe('untested write steps', () => {
   it('ignores steps that only read or have no classification', () => {
     expect(codes(ctx(writeStep(), feishuSpec))).toEqual([]);
   });
+
+  it('stays quiet when a successful debug run executed the write step', () => {
+    expect(
+      codes({
+        ...ctx(writeStep(), feishuWriteSpec),
+        debugVerification: { executedStepNames: ['trigger', 'step_1'] },
+      }),
+    ).toEqual([]);
+  });
+
+  it('says the debug run did not reach a write step it skipped', () => {
+    expect(
+      codes({
+        ...ctx(writeStep(), feishuWriteSpec),
+        debugVerification: { executedStepNames: ['trigger'] },
+      }),
+    ).toEqual([ValidationCode.WRITE_NOT_REACHED]);
+  });
+
+  it('warns again once there is no debug run that came after the last edit', () => {
+    expect(
+      codes({
+        ...ctx(writeStep(), feishuWriteSpec),
+        debugVerification: null,
+      }),
+    ).toEqual([ValidationCode.WRITE_NOT_TESTED]);
+  });
 });
 
 describe('workflowValidator.writeSteps', () => {

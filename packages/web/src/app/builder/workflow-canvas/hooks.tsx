@@ -4,6 +4,7 @@ import {
   WebsocketClientEvent,
   RunEnvironment,
   isExecutionStateTerminal,
+  workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useReactFlow } from '@xyflow/react';
@@ -19,7 +20,7 @@ import { executionsApi, executionUtils } from '@/features/executions';
 import { workflowsApi } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
-import { useBuilderStateContext } from '../builder-hooks';
+import { useBuilderStateContext, useBuilderStore } from '../builder-hooks';
 import { textMentionUtils } from '../connector-properties/text-input-with-mentions/text-input-utils';
 
 import { workflowCanvasUtils } from './utils/workflow-canvas-utils';
@@ -105,6 +106,7 @@ export const useSwitchToDraft = () => {
       state.setWorkflow,
     ]);
   const socket = useSocket();
+  const builderStore = useBuilderStore();
   const { checkAccess } = useAuthorization();
   const userHasPermissionToEditWorkflow = checkAccess(
     Permission.WRITE_WORKFLOW,
@@ -117,9 +119,23 @@ export const useSwitchToDraft = () => {
         return workflow;
       },
       onSuccess: (workflow) => {
+        const { selectedStep, selectStepByName } = builderStore.getState();
+        const keptStep =
+          !isNil(selectedStep) &&
+          !isNil(
+            workflowStructureUtil.getStep(
+              selectedStep,
+              workflow.version.trigger,
+            ),
+          )
+            ? selectedStep
+            : null;
         setWorkflow(workflow);
-        setVersion(workflow.version);
+        setVersion(workflow.version, isNil(keptStep));
         clearRun(userHasPermissionToEditWorkflow);
+        if (!isNil(keptStep)) {
+          selectStepByName(keptStep, { fromAutoFocus: true });
+        }
         socket.removeAllListeners(WebsocketClientEvent.UPDATE_RUN_PROGRESS);
       },
       // surface the failure instead of silently keeping a stale draft, which

@@ -234,6 +234,7 @@ GET /v1/workflows | PROJECT | USER,SERVICE | WORKFLOW:READ | QUERY:projectId
 GET /v1/workflows/:id | PROJECT | USER,SERVICE | WORKFLOW:READ | TABLE:workflow.id@PARAM/id
 GET /v1/workflows/:id/template | PROJECT | USER,SERVICE | WORKFLOW:READ | TABLE:workflow.id@PARAM/id
 GET /v1/workflows/:workflowId/versions | PROJECT | USER | - | TABLE:workflow.id@PARAM/workflowId
+GET /v1/workflows/:workflowId/versions/:versionId/debug-verification | PROJECT | USER | WORKFLOW:READ | TABLE:workflow.id@PARAM/workflowId
 GET /v1/workflows/count | PROJECT | USER,SERVICE | WORKFLOW:READ | QUERY:projectId
 OPTIONS * | NONE | - | - | -
 OPTIONS /ingest | NONE | - | - | -

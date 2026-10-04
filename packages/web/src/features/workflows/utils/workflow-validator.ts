@@ -238,17 +238,24 @@ function untestedWriteIssues({
   ) {
     return [];
   }
-  return isTestedAfterLastEdit(step)
-    ? []
-    : [
-        issue({
-          step,
-          code: ValidationCode.WRITE_NOT_TESTED,
-          tab: ValidationTab.OUTPUT,
-          severity: ValidationSeverity.WARNING,
-          params: { step: step.displayName },
-        }),
-      ];
+  if (isTestedAfterLastEdit(step)) {
+    return [];
+  }
+  const debug = context.debugVerification;
+  if (!isNil(debug) && debug.executedStepNames.includes(step.name)) {
+    return [];
+  }
+  return [
+    issue({
+      step,
+      code: isNil(debug)
+        ? ValidationCode.WRITE_NOT_TESTED
+        : ValidationCode.WRITE_NOT_REACHED,
+      tab: ValidationTab.OUTPUT,
+      severity: ValidationSeverity.WARNING,
+      params: { step: step.displayName },
+    }),
+  ];
 }
 
 function isTestedAfterLastEdit(step: WorkflowAction): boolean {
@@ -1008,6 +1015,7 @@ export enum ValidationCode {
   VARIABLE_MISSING = 'VARIABLE_MISSING',
   AI_PENDING_REVIEW = 'AI_PENDING_REVIEW',
   WRITE_NOT_TESTED = 'WRITE_NOT_TESTED',
+  WRITE_NOT_REACHED = 'WRITE_NOT_REACHED',
 }
 
 const AGENT_PROBLEM_CODES: Record<AgentMcpServerProblemCode, ValidationCode> = {
@@ -1055,6 +1063,11 @@ export type ValidationContext = {
   connections: Record<string, ConnectionSpec | undefined> | null;
   mappingTableIds: string[] | null;
   variableNames: string[] | null;
+  debugVerification?: DebugRunEvidence | null;
+};
+
+export type DebugRunEvidence = {
+  executedStepNames: string[];
 };
 
 export type ValidationIssue = {

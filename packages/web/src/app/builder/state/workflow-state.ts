@@ -33,6 +33,7 @@ export type WorkflowState = {
   outputSampleData: Record<string, unknown | undefined>;
   inputSampleData: Record<string, unknown | undefined>;
   saving: boolean;
+  lastSavedAt: number;
   renameWorkflowClientSide: (newName: string) => void;
   moveToFolderClientSide: (folderId: string) => void;
   applyOperation: (
@@ -172,6 +173,7 @@ export const createWorkflowState = (
       }));
     },
     saving: false,
+    lastSavedAt: 0,
     outputSampleData: initialState.outputSampleData,
     inputSampleData: initialState.inputSampleData,
     workflow: initialState.workflow,
@@ -308,6 +310,7 @@ export const createWorkflowState = (
                   state: serverWorkflowVersion.state,
                 },
                 saving: workflowUpdatesQueue.size() !== 0,
+                lastSavedAt: Date.now(),
               };
             });
             onSuccess?.();

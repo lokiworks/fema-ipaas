@@ -87,7 +87,8 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
   const firstWarning = stepIssues.find(
     (issue) =>
       issue.severity === ValidationSeverity.WARNING &&
-      issue.code !== ValidationCode.WRITE_NOT_TESTED,
+      issue.code !== ValidationCode.WRITE_NOT_TESTED &&
+      issue.code !== ValidationCode.WRITE_NOT_REACHED,
   );
   const draftStatusConfig: Record<
     DraftStepStatus,

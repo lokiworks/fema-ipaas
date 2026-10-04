@@ -1,4 +1,4 @@
-import { CoverageObservation, dataMapping, isNil, MappingSpec, mappingCoverage, MappingCoverageSource, MappingTableData, ProjectId, TableCoverage } from '@fema-ipaas/core-utils'
+import { CoverageObservation, dataMapping, isNil, mappingCoverage, MappingCoverageSource, MappingSpec, MappingTableData, ProjectId, TableCoverage } from '@fema-ipaas/core-utils'
 import { workflowStructureUtil } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { IsNull } from 'typeorm'

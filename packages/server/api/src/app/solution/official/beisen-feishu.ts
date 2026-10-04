@@ -2,7 +2,7 @@ import { MappingMissingBehavior } from '@fema-ipaas/core-utils'
 import { SolutionConfigType, SolutionPackage, SolutionWorkflow } from '@fema-ipaas/shared'
 import type { OfficialSolution } from '../official-solutions'
 import { solutionPackageUtils } from '../solution-package-utils'
-import { BEISEN, BEISEN_AUTH, BEISEN_VERSION, beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep } from './official-solution-builders'
+import { beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep } from './official-solution-builders'
 
 function buildBeisenFeishuSolution(): OfficialSolution {
     const workflows = [onboardWorkflow(), transferWorkflow(), leaveWorkflow()]

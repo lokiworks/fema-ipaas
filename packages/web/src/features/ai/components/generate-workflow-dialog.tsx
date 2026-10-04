@@ -8,7 +8,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { ListChecks, Plug, Sparkles, WandSparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -175,6 +175,21 @@ function GenerateWorkflowForm({
     form.handleSubmit((values) =>
       requestPlan({ values, answers: [], withModel: true }),
     )();
+
+  const submitRef = useRef(submitPlan);
+  submitRef.current = submitPlan;
+  const autoPlanned = useRef(false);
+  useEffect(() => {
+    if (
+      !autoPlanned.current &&
+      (initialPrompt ?? '').trim().length > 0 &&
+      !models.isLoading &&
+      projectId !== ''
+    ) {
+      autoPlanned.current = true;
+      submitRef.current();
+    }
+  }, [initialPrompt, models.isLoading, projectId]);
 
   const createDraft = (current: WorkflowPlan) =>
     apply(

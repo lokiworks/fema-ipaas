@@ -5285,5 +5285,10 @@
   "Change history": "Change history",
   "No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.": "No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.",
   "(empty)": "(empty)",
-  "This version has not been run in the test environment yet.": "This version has not been run in the test environment yet."
+  "This version has not been run in the test environment yet.": "This version has not been run in the test environment yet.",
+  "Model error (HTTP {status}): {reason}": "Model error (HTTP {status}): {reason}",
+  "Could not reach the model: {reason}": "Could not reach the model: {reason}",
+  "The model did not return a usable plan. Try describing the workflow in more detail.": "The model did not return a usable plan. Try describing the workflow in more detail.",
+  "The suggested trigger is not available. Try naming the system that starts the workflow.": "The suggested trigger is not available. Try naming the system that starts the workflow.",
+  "Model connection not found in this project": "Model connection not found in this project"
 }

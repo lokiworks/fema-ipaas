@@ -84,6 +84,7 @@ export function NewWorkflowDialog({
   projectId,
   folderId,
   pickProject = false,
+  onSwitchToAi,
 }: NewWorkflowDialogProps) {
   const [aiTarget, setAiTarget] = useState<string | null>(null);
   return (
@@ -97,6 +98,10 @@ export function NewWorkflowDialog({
             pickProject={pickProject}
             onOpenChange={onOpenChange}
             onSwitchToAi={(target) => {
+              if (onSwitchToAi) {
+                onSwitchToAi(target);
+                return;
+              }
               onOpenChange(false);
               setAiTarget(target);
             }}
@@ -579,4 +584,5 @@ export type NewWorkflowDialogProps = {
   projectId?: string;
   folderId?: string;
   pickProject?: boolean;
+  onSwitchToAi?: (projectId: string) => void;
 };

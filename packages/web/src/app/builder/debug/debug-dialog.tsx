@@ -13,7 +13,7 @@ import {
   TriangleAlert,
   WandSparkles,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -129,6 +129,18 @@ function DebugForm({
     defaultValues: defaultValues(outputSampleData[trigger.name]),
   });
   const environment = form.watch('environment');
+  const hasSavedSample = outputSampleData[trigger.name] !== undefined;
+  useEffect(() => {
+    if (
+      !hasSavedSample &&
+      connectorSample !== undefined &&
+      !form.formState.isDirty
+    ) {
+      form.setValue('payload', stringify(connectorSample), {
+        shouldValidate: true,
+      });
+    }
+  }, [connectorSample, hasSavedSample, form]);
 
   const submit = (values: DebugValues) => {
     onStart({

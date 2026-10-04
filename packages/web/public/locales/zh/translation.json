@@ -5285,5 +5285,10 @@
   "Change history": "变更记录",
   "No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.": "还没有变更。发布到测试、推广、批准、驳回和回滚都会记录在这里。",
   "(empty)": "（空）",
-  "This version has not been run in the test environment yet.": "这个版本还没有在测试环境运行过。"
+  "This version has not been run in the test environment yet.": "这个版本还没有在测试环境运行过。",
+  "Model error (HTTP {status}): {reason}": "模型返回错误（HTTP {status}）：{reason}",
+  "Could not reach the model: {reason}": "连不上模型：{reason}",
+  "The model did not return a usable plan. Try describing the workflow in more detail.": "模型没有给出可用的规划。请把要做的事描述得更具体一些。",
+  "The suggested trigger is not available. Try naming the system that starts the workflow.": "模型建议的触发器在这个实例里不可用。请写明由哪个系统触发工作流。",
+  "Model connection not found in this project": "这个项目里找不到这个模型连接"
 }

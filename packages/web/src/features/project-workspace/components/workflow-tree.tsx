@@ -584,6 +584,7 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
           onOpenChange={(open) => !open && close()}
           projectId={projectId}
           folderId={dialog.folderId}
+          onSwitchToAi={() => setDialog({ kind: 'ai' })}
         />
       )}
       {dialog?.kind === 'ai' && (

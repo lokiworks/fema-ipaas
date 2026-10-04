@@ -102,7 +102,7 @@ function connectionRows(plan: WorkflowPlan): ConnectionRow[] {
     .map((step) => ({
       connectorName: step.connectorName,
       connectorDisplayName: step.connectorDisplayName,
-      connectionDisplayName: step.connectionDisplayName,
+      connectionDisplayName: step.connectionDisplayName ?? null,
     }));
   return rows.filter(
     (row, index) =>

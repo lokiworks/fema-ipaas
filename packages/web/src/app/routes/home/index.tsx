@@ -107,6 +107,7 @@ export function HomePage() {
           open
           onOpenChange={(open) => !open && close()}
           projectId={project.id}
+          onSwitchToAi={() => setDialog('ai')}
         />
       )}
       {dialog === 'ai' && (

@@ -242,6 +242,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
       </div>
 
       <IssueReplayDialog
+        workflowName={issue.workflowDisplayName ?? null}
         issueId={issue.id}
         open={replayOpen}
         onOpenChange={setReplayOpen}

@@ -9,11 +9,13 @@ import {
     ReplayCategory,
     ReplayCheckResult,
     WorkflowRetryStrategy,
+    WorkflowVersionState,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { In } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
+import { databaseConnection } from '../database/database-connection'
 import { mappingTableService } from '../mapping-table/mapping-table.service'
 import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
@@ -44,7 +46,8 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
         })
         const verdicts = issueReplayUtils.chainVerdicts({ candidates: executions, chain })
         const now = new Date()
-        const items = executions.map((execution) => issueReplayUtils.classify({
+        const versionNumbers = await versionNumbersOf({ versionIds: [...new Set(executions.map((execution) => execution.workflowVersionId))] })
+        const classified = executions.map((execution) => issueReplayUtils.classify({
             execution,
             verdict: verdicts.get(execution.id) ?? ChainVerdict.TARGET,
             workflowExists: workflowUpdatedAt.has(execution.workflowId),
@@ -57,6 +60,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             rejectedByTarget: issueUtils.isRejectedByTargetHttpStatus(issue.errorCode),
             blockedUntil: issueUtils.activeBlockedUntil({ message: execution.failedStep?.message, now }),
         }))
+        const items = classified.map((item) => ({ ...item, versionNumber: versionNumbers.get(item.workflowVersionId) ?? null }))
         return { items }
     },
 
@@ -96,12 +100,31 @@ async function readConnectionState({ externalId, projectId }: { externalId: stri
     return connection.status === ConnectionStatus.ACTIVE ? ReplayConnectionState.HEALTHY : ReplayConnectionState.BROKEN
 }
 
+async function versionNumbersOf({ versionIds }: { versionIds: string[] }): Promise<Map<string, number>> {
+    if (versionIds.length === 0) {
+        return new Map()
+    }
+    const rows: VersionNumberRow[] = await databaseConnection().query(VERSION_NUMBERS_SQL, [versionIds, WorkflowVersionState.LOCKED])
+    return new Map(rows.filter((row) => !isNil(row.number)).map((row) => [row.id, Number(row.number)]))
+}
+
 function isAfterFailure({ changedAt, execution }: { changedAt: string | undefined, execution: { finishTime?: string | null, created: string } }): boolean {
     return !isNil(changedAt) && dayjsUtil(changedAt).isAfter(execution.finishTime ?? execution.created)
 }
 
+const VERSION_NUMBERS_SQL = `SELECT v.id AS id,
+    CASE WHEN v.state = $2 THEN (
+        SELECT COUNT(*) FROM workflow_version v2 WHERE v2."workflowId" = v."workflowId" AND v2.state = $2 AND v2.created <= v.created
+    )::int ELSE NULL END AS "number"
+FROM workflow_version v
+WHERE v.id = ANY($1)`
 const MAX_REPLAY_CANDIDATES = 500
 const REPLAY_CONCURRENCY = 3
+
+type VersionNumberRow = {
+    id: string
+    number: number | null
+}
 
 type IssueRef = {
     id: string

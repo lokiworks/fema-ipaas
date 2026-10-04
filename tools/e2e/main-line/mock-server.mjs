@@ -10,6 +10,7 @@ const state = {
   createCalls: 0,
   messages: [],
   provisionFailure: null,
+  messageFailure: null,
   beisenMode: null,
   timeWindowRequests: [],
 }
@@ -109,6 +110,9 @@ const ROUTES = {
   },
   'GET /feishu/open-apis/im/v1/chats': () => ok({ code: 0, msg: 'success', data: { items: [{ chat_id: HR_CHAT_ID, name: 'HR 通知群' }] } }),
   'POST /feishu/open-apis/im/v1/messages': ({ body, headers }) => {
+    if (state.messageFailure) {
+      return { status: 400, payload: { code: state.messageFailure.code, msg: state.messageFailure.msg } }
+    }
     const message = { message_id: `om_${state.messages.length + 1}`, chat_id: body.receive_id, msg_type: body.msg_type, content: body.content, create_time: String(Date.now()), app_id: String(headers.authorization ?? '').split(':')[1] ?? null }
     state.messages.push(message)
     return ok({ code: 0, msg: 'success', data: message })
@@ -132,8 +136,14 @@ const ROUTES = {
     return ok({ beisenMode: state.beisenMode })
   },
   'POST /__admin/feishu-failure': ({ body }) => {
-    state.provisionFailure = body.code ? { code: body.code, msg: body.msg ?? 'mock failure' } : null
-    return ok({ provisionFailure: state.provisionFailure })
+    const failure = body.code ? { code: body.code, msg: body.msg ?? 'mock failure' } : null
+    if (body.target === 'messages') {
+      state.messageFailure = failure
+    }
+    else {
+      state.provisionFailure = failure
+    }
+    return ok({ provisionFailure: state.provisionFailure, messageFailure: state.messageFailure })
   },
   'GET /__admin/state': () => ok({
     feishuUsers: [...state.feishuUsers.values()],
@@ -141,6 +151,7 @@ const ROUTES = {
     createCalls: state.createCalls,
     messages: state.messages,
     provisionFailure: state.provisionFailure,
+    messageFailure: state.messageFailure,
   }),
 }
 

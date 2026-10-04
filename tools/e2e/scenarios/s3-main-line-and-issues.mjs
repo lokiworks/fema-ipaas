@@ -15,6 +15,8 @@ const SHOTS = process.env.E2E_SHOTS ?? `${STATE_DIR}/shots`
 const HR_CHAT_ID = 'oc_hr_notice'
 const IT_CHAT_ID = 'oc_it_desk'
 const FROM_STAGE = process.env.E2E_FROM ?? ''
+const BATCH_SIZE = Number(process.env.E2E_BATCH_SIZE ?? 22)
+const UNMAPPED_DEPARTMENT = process.env.E2E_UNMAPPED ?? '20399'
 const RECEIVER_PORT = Number(process.env.E2E_RECEIVER_PORT ?? 19000 + Number(SLOT))
 
 mkdirSync(SHOTS, { recursive: true })
@@ -43,6 +45,7 @@ async function main() {
     ['events', stageEvents],
     ['search', stageSearch],
     ['alerts', stageAlerts],
+    ['failA', stageMissingMapping],
   ]
   let started = FROM_STAGE === ''
   for (const [name, run] of stages) {
@@ -267,6 +270,146 @@ async function stageAlerts() {
     await shot('alert-policy-saved')
     return 'ok'
   })
+}
+
+async function stageMissingMapping() {
+  const { page } = ctx
+  const batch = Number(process.env.E2E_BATCH ?? Date.now() % 100000)
+  const people = Array.from({ length: BATCH_SIZE }, (_, index) => personOf({ number: batch * 100 + index, department: UNMAPPED_DEPARTMENT }))
+  const issueBefore = await findIssue({ stepName: 'map_department' })
+  const countBefore = issueBefore?.occurrences ?? 0
+  ctx.webhooks.length = 0
+  await mock({ method: 'POST', path: '/__admin/feishu-failure', body: {} })
+  await check(`失败路径 A：${BATCH_SIZE} 个新员工的部门不在映射表里，聚合成一个问题`, async () => {
+    await injectEmployees({ records: people.map((person) => person.record) })
+    const issue = await waitFor({
+      probe: async () => {
+        const found = await findIssue({ stepName: 'map_department' })
+        return found && found.occurrences >= countBefore + BATCH_SIZE ? found : null
+      },
+      timeoutMs: 420000,
+    })
+    const open = await listIssues({ view: 'OPEN' })
+    const sameCause = open.filter((item) => item.stepName === 'map_department')
+    assert(sameCause.length === 1, `同一原因应当只有一个问题，实际 ${sameCause.length} 个`)
+    ctx.issueA = issue
+    return { issueId: issue.id, occurrences: issue.occurrences, title: issue.title.slice(0, 60) }
+  })
+  await check('失败路径 A：同一原因只告警一次（22 次失败 → 1 条告警送达）', async () => {
+    await sleep(15000)
+    const alerts = ctx.webhooks.filter((hook) => hook.title !== '告警渠道测试')
+    const tooMany = issueBefore ? alerts.length > 1 : alerts.length !== 1
+    assert(!tooMany, `这批失败应当只告警一次，实际 ${alerts.length} 条：${JSON.stringify(alerts).slice(0, 300)}`)
+    return { alerts: alerts.length, sample: alerts[0]?.title ?? null }
+  })
+  await check('失败路径 A：触发器去重——同一员工的重复事件不会再跑一次', async () => {
+    const issue = await findIssue({ stepName: 'map_department' })
+    const before = issue.occurrences
+    const duplicated = people.slice(0, 3).map((person) => person.record)
+    await injectEmployees({ records: duplicated })
+    await sleep(150000)
+    const after = await findIssue({ stepName: 'map_department' })
+    assert(after.occurrences === before, `重复事件被当成新运行：${before} -> ${after.occurrences}`)
+    const deduped = await api({ method: 'GET', path: `/deduped-events?projectId=${ctx.session.projectId}&limit=50` })
+    const keys = deduped.data.map((event) => JSON.stringify(event))
+    assert(people.slice(0, 3).every((person) => keys.some((key) => key.includes(person.jobNumber))), `去重记录里找不到这三个工号：${keys.length} 条`)
+    return { occurrences: after.occurrences, dedupedEvents: deduped.data.length }
+  })
+  await check('问题详情：写明根因和谁能修，修复动作可直接点（打开映射表、从失败节点重跑）', async () => {
+    await openIssueDetail({ issue: ctx.issueA })
+    const body = await page.locator('body').innerText()
+    assert(body.includes('根因分析'), '没有根因分析')
+    assert(!body.includes('置信度'), '不应显示置信度')
+    const owner = await page.getByTestId('issue-fix-owner').innerText()
+    assert(owner.includes('映射表负责人'), `谁能修写的是：${owner}`)
+    assert(await page.getByRole('button', { name: '打开映射表' }).isVisible(), '缺少「打开映射表」按钮')
+    assert(/\d+ 次失败 → \d+ 条告警/.test(body), '概况里没有写明聚合后的告警数')
+    await shot('issue-a-detail')
+    return owner
+  })
+  await check('修复：点「打开映射表」补上缺的部门，保存成功', async () => {
+    await page.getByRole('button', { name: '打开映射表' }).click()
+    await page.getByText('北森部门到飞书部门').first().click()
+    await page.getByPlaceholder('新的键').fill(UNMAPPED_DEPARTMENT)
+    await page.getByPlaceholder('新的值').fill('od-sales')
+    const add = page.getByRole('button', { name: '添加' })
+    if (await add.isEnabled()) {
+      await add.click()
+      await page.getByRole('button', { name: '保存修改' }).click()
+      await page.getByText('映射表已保存').waitFor({ timeout: 60000 })
+    }
+    return 'ok'
+  })
+  await check('重试前确认：对话框写明用哪个版本、哪些写步骤会执行或跳过，勾选整体重跑才需要确认重复写入', async () => {
+    await openIssueDetail({ issue: ctx.issueA })
+    await page.getByRole('button', { name: '批量重跑失败的运行' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByTestId('rerun-preview').waitFor({ timeout: 60000 })
+    await dialog.getByText(/沿用这些运行当时的版本 v\d+/).waitFor({ timeout: 60000 })
+    await dialog.getByText(/会再次调用并写入：.*开通飞书账号/).waitFor({ timeout: 60000 })
+    const text = await dialog.innerText()
+    assert(text.includes('通知 HR 群'), '预览里没有写出通知步骤')
+    await shot('issue-a-replay-dialog')
+    await dialog.getByText('用最新版本整体重跑').click()
+    await dialog.getByText(/最新发布的版本 v\d+/).waitFor({ timeout: 60000 })
+    const confirm = dialog.getByRole('button', { name: /^重跑 \d+ 次运行/ })
+    assert(await confirm.isDisabled(), '整体重跑在没确认重复写入前不该能点')
+    await shot('issue-a-replay-dialog-whole')
+    await dialog.getByText('从失败节点重跑').first().click()
+    assert(await confirm.isEnabled(), '从失败节点重跑应当可以直接确认')
+    return 'ok'
+  })
+  await check(`批量重跑：${BATCH_SIZE} 条从失败节点继续，账号各开通一次、HR 群各通知一次，问题自动已解决`, async () => {
+    await page.getByRole('dialog').getByRole('button', { name: /^重跑 \d+ 次运行/ }).click()
+    const mobiles = people.map((person) => person.mobile)
+    await waitFor({
+      probe: async () => {
+        const state = await mockState()
+        return mobiles.every((mobile) => state.feishuUsers.some((user) => user.mobile === mobile)) ? state : null
+      },
+      timeoutMs: 420000,
+    })
+    await sleep(10000)
+    const state = await mockState()
+    const accounts = state.feishuUsers.filter((user) => mobiles.includes(user.mobile))
+    assert(accounts.length === BATCH_SIZE, `账号数 ${accounts.length}`)
+    assert(accounts.every((user) => user.department_ids[0] === 'od-sales'), '部门不是映射后的 od-sales')
+    const notices = state.messages.filter((message) => people.some((person) => message.content.includes(person.jobNumber)))
+    assert(notices.length === BATCH_SIZE, `HR 群通知 ${notices.length} 条，应当每人一条`)
+    const resolved = await waitFor({
+      probe: async () => {
+        const issue = await findIssue({ stepName: 'map_department', view: 'ALL' })
+        return issue?.status === 'RESOLVED' ? issue : null
+      },
+      timeoutMs: 180000,
+    })
+    return { accounts: accounts.length, notices: notices.length, issue: resolved.status }
+  })
+}
+
+async function findIssue({ stepName, view = 'OPEN' }) {
+  const issues = await listIssues({ view })
+  return issues.find((issue) => issue.stepName === stepName) ?? null
+}
+
+async function listIssues({ view }) {
+  const page = await api({ method: 'GET', path: `/issues?projectId=${ctx.session.projectId}&view=${view}&limit=100` })
+  return page.data
+}
+
+async function openIssueDetail({ issue }) {
+  await ctx.page.goto(`${WEB}/projects/${ctx.session.projectId}/issues/${issue.id}`)
+  await ctx.page.getByText('根因分析').waitFor({ timeout: 120000 })
+}
+
+function personOf({ number, department }) {
+  const jobNumber = `E${number}`
+  const mobile = `+86139${String(number).padStart(8, '0').slice(-8)}`
+  return {
+    jobNumber,
+    mobile,
+    record: person({ id: number, jobNumber, name: `测试${number}`, mobile: mobile.replace('+86', ''), department, status: '2', changeType: '1' }),
+  }
 }
 
 async function openRunLogs() {

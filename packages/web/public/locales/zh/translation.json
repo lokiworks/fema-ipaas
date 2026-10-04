@@ -5290,5 +5290,17 @@
   "Could not reach the model: {reason}": "连不上模型：{reason}",
   "The model did not return a usable plan. Try describing the workflow in more detail.": "模型没有给出可用的规划。请把要做的事描述得更具体一些。",
   "The suggested trigger is not available. Try naming the system that starts the workflow.": "模型建议的触发器在这个实例里不可用。请写明由哪个系统触发工作流。",
-  "Model connection not found in this project": "这个项目里找不到这个模型连接"
+  "Model connection not found in this project": "这个项目里找不到这个模型连接",
+  "What will happen when you rerun": "重试前先看清会发生什么",
+  "{count, plural, =1 {1 more group} other {# more groups}}": "还有 {count} 组",
+  "{name}: {count, plural, =1 {1 run} other {# runs}}": "{name}：{count} 条运行",
+  "No step that writes data is involved.": "不涉及写入数据的步骤。",
+  "Will call and write again: {steps}": "会再次调用并写入：{steps}",
+  "Will not be called again, original results are kept: {steps}": "不会再次调用，沿用原结果：{steps}",
+  "Branches still decide which of these steps actually run.": "这些步骤实际是否执行，仍取决于分支条件。",
+  "Continues on the version these runs were on. Later published versions are not used.": "沿用这些运行当时的版本继续，之后发布的新版本不会生效。",
+  "Continues on v{version}, the version these runs were on. Later published versions are not used.": "沿用这些运行当时的版本 v{version} 继续，之后发布的新版本不会生效。",
+  "Restarts from the trigger on the latest published version.": "改用最新发布的版本，从触发器重新开始。",
+  "Restarts from the trigger on the latest published version v{version}.": "改用最新发布的版本 v{version}，从触发器重新开始。",
+  "I understand that steps which write data are called again and may create duplicates": "我知道会写入数据的步骤会被再次调用，可能产生重复数据"
 }

@@ -176,6 +176,10 @@ export type IssueReplayRequestBody = z.infer<typeof IssueReplayRequestBody>
 
 export const ReplayCheckItem = z.object({
     executionId: z.string(),
+    workflowId: z.string(),
+    workflowVersionId: z.string(),
+    versionNumber: z.number().nullable(),
+    failedStepName: z.string().nullable(),
     category: z.enum(ReplayCategory),
     reason: z.enum(ReplayReason),
     connectionExternalId: z.string().nullable(),

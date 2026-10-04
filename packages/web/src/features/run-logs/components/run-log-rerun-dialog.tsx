@@ -7,6 +7,7 @@ import { t } from 'i18next';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +24,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+import { rerunPreviewUtils } from '../utils/rerun-preview-utils';
 import { runLogUiUtils } from '../utils/run-log-ui-utils';
+
+import { RerunPreview } from './rerun-preview';
 
 export function RunLogRerunDialog({
   rows,
@@ -88,6 +92,18 @@ function RerunChoice({
     return reason === null ? [] : [reason];
   });
   const reasons = [...new Set(blocked)];
+  const [acknowledged, setAcknowledged] = useState(false);
+  const needsAcknowledgement =
+    strategy === WorkflowRetryStrategy.ON_LATEST_VERSION;
+  const groups = rerunPreviewUtils.groupRuns({
+    runs: eligible.map((row) => ({
+      workflowId: row.workflowId,
+      workflowName: row.workflowDisplayName,
+      workflowVersionId: row.workflowVersionId,
+      versionNumber: row.versionNumber,
+      failedStepName: row.failedStep?.name ?? null,
+    })),
+  });
   return (
     <>
       <DialogHeader>
@@ -104,13 +120,14 @@ function RerunChoice({
       </DialogHeader>
       <RadioGroup
         value={strategy}
-        onValueChange={(value) =>
+        onValueChange={(value) => {
+          setAcknowledged(false);
           setStrategy(
             value === WorkflowRetryStrategy.ON_LATEST_VERSION
               ? WorkflowRetryStrategy.ON_LATEST_VERSION
               : WorkflowRetryStrategy.FROM_FAILED_STEP,
-          )
-        }
+          );
+        }}
         className="flex flex-col gap-3"
       >
         <label className="flex items-start gap-3">
@@ -159,6 +176,18 @@ function RerunChoice({
           ))}
         </div>
       )}
+      <RerunPreview groups={groups} strategy={strategy} />
+      {needsAcknowledgement && eligible.length > 0 && (
+        <label className="flex items-start gap-2 text-sm">
+          <Checkbox
+            checked={acknowledged}
+            onCheckedChange={(value) => setAcknowledged(value === true)}
+          />
+          {t(
+            'I understand that steps which write data are called again and may create duplicates',
+          )}
+        </label>
+      )}
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
           {t('Cancel')}
@@ -169,7 +198,10 @@ function RerunChoice({
               <Button
                 type="button"
                 loading={pending}
-                disabled={eligible.length === 0}
+                disabled={
+                  eligible.length === 0 ||
+                  (needsAcknowledgement && !acknowledged)
+                }
                 onClick={() =>
                   onConfirm({
                     executionIds: eligible.map((row) => row.id),

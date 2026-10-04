@@ -5290,5 +5290,17 @@
   "Could not reach the model: {reason}": "Could not reach the model: {reason}",
   "The model did not return a usable plan. Try describing the workflow in more detail.": "The model did not return a usable plan. Try describing the workflow in more detail.",
   "The suggested trigger is not available. Try naming the system that starts the workflow.": "The suggested trigger is not available. Try naming the system that starts the workflow.",
-  "Model connection not found in this project": "Model connection not found in this project"
+  "Model connection not found in this project": "Model connection not found in this project",
+  "What will happen when you rerun": "What will happen when you rerun",
+  "{count, plural, =1 {1 more group} other {# more groups}}": "{count, plural, =1 {1 more group} other {# more groups}}",
+  "{name}: {count, plural, =1 {1 run} other {# runs}}": "{name}: {count, plural, =1 {1 run} other {# runs}}",
+  "No step that writes data is involved.": "No step that writes data is involved.",
+  "Will call and write again: {steps}": "Will call and write again: {steps}",
+  "Will not be called again, original results are kept: {steps}": "Will not be called again, original results are kept: {steps}",
+  "Branches still decide which of these steps actually run.": "Branches still decide which of these steps actually run.",
+  "Continues on the version these runs were on. Later published versions are not used.": "Continues on the version these runs were on. Later published versions are not used.",
+  "Continues on v{version}, the version these runs were on. Later published versions are not used.": "Continues on v{version}, the version these runs were on. Later published versions are not used.",
+  "Restarts from the trigger on the latest published version.": "Restarts from the trigger on the latest published version.",
+  "Restarts from the trigger on the latest published version v{version}.": "Restarts from the trigger on the latest published version v{version}.",
+  "I understand that steps which write data are called again and may create duplicates": "I understand that steps which write data are called again and may create duplicates"
 }

@@ -19,16 +19,20 @@ import {
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RerunPreview } from '@/features/run-logs/components/rerun-preview';
+import { rerunPreviewUtils } from '@/features/run-logs/utils/rerun-preview-utils';
 
 import { issuesHooks } from '../hooks/issues-hooks';
 import { issueUiUtils } from '../utils/issue-ui-utils';
 
 export function IssueReplayDialog({
   issueId,
+  workflowName,
   open,
   onOpenChange,
 }: {
   issueId: string;
+  workflowName: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -53,6 +57,27 @@ export function IssueReplayDialog({
     replayableCount +
     (includeDataProblems ? dataProblemCount : 0) -
     expiredCount;
+  const [acknowledged, setAcknowledged] = useState(false);
+  const needsAcknowledgement =
+    strategy === WorkflowRetryStrategy.ON_LATEST_VERSION;
+  const previewGroups = rerunPreviewUtils.groupRuns({
+    runs: [
+      ...groups[ReplayCategory.REPLAYABLE],
+      ...(includeDataProblems ? groups[ReplayCategory.DATA_PROBLEM] : []),
+    ]
+      .filter(
+        (item) =>
+          strategy !== WorkflowRetryStrategy.FROM_FAILED_STEP ||
+          !item.rawDataExpired,
+      )
+      .map((item) => ({
+        workflowId: item.workflowId,
+        workflowName,
+        workflowVersionId: item.workflowVersionId,
+        versionNumber: item.versionNumber,
+        failedStepName: item.failedStepName,
+      })),
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -68,13 +93,14 @@ export function IssueReplayDialog({
         <div className="flex flex-col gap-4">
           <RadioGroup
             value={strategy}
-            onValueChange={(value) =>
+            onValueChange={(value) => {
+              setAcknowledged(false);
               setStrategy(
                 value === WorkflowRetryStrategy.ON_LATEST_VERSION
                   ? WorkflowRetryStrategy.ON_LATEST_VERSION
                   : WorkflowRetryStrategy.FROM_FAILED_STEP,
-              )
-            }
+              );
+            }}
             className="grid grid-cols-2 gap-3"
           >
             <Label className="flex items-start gap-2 rounded-md border p-3 cursor-pointer">
@@ -163,13 +189,31 @@ export function IssueReplayDialog({
               )}
             </div>
           )}
+          {open && !isLoading && (
+            <RerunPreview groups={previewGroups} strategy={strategy} />
+          )}
+          {needsAcknowledgement && toRun > 0 && (
+            <label className="flex items-start gap-2 text-sm">
+              <Checkbox
+                checked={acknowledged}
+                onCheckedChange={(value) => setAcknowledged(value === true)}
+              />
+              {t(
+                'I understand that steps which write data are called again and may create duplicates',
+              )}
+            </label>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('Cancel')}
           </Button>
           <Button
-            disabled={toRun === 0 || isPending}
+            disabled={
+              toRun === 0 ||
+              isPending ||
+              (needsAcknowledgement && !acknowledged)
+            }
             loading={isPending}
             onClick={() =>
               replay(

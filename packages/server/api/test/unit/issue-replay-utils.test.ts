@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ChainVerdict, issueReplayUtils, ReplayConnectionState } from '../../src/app/issue/issue-replay-utils'
 
 const base = {
-    execution: { id: 'e1', status: ExecutionStatus.FAILED, logsFileId: 'f', displayLogsFileId: 'f' },
+    execution: { id: 'e1', workflowId: 'w1', workflowVersionId: 'v1', failedStep: { name: 'map_department' }, status: ExecutionStatus.FAILED, logsFileId: 'f', displayLogsFileId: 'f' },
     verdict: ChainVerdict.TARGET,
     workflowExists: true,
     workflowChangedAfterFailure: false,
@@ -16,6 +16,13 @@ const base = {
 }
 
 describe('issueReplayUtils.classify', () => {
+    it('tells the caller which workflow, version and step the run failed on', () => {
+        const result = issueReplayUtils.classify(base)
+        expect(result.workflowId).toBe('w1')
+        expect(result.workflowVersionId).toBe('v1')
+        expect(result.failedStepName).toBe('map_department')
+    })
+
     it('does not call a data problem fixed just because the workflow was edited', () => {
         const result = issueReplayUtils.classify({ ...base, rejectedByTarget: true, workflowChangedAfterFailure: true })
         expect(result.category).toBe(ReplayCategory.DATA_PROBLEM)

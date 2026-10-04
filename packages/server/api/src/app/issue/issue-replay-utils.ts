@@ -27,6 +27,9 @@ function chainVerdicts({ candidates, chain }: ChainVerdictsParams): Map<string, 
 function classify({ execution, verdict, workflowExists, connectionState, connectionExternalId, transient, authorization, rejectedByTarget, workflowChangedAfterFailure, mappingTableChangedAfterFailure, blockedUntil = null }: ClassifyParams): ClassifiedReplay {
     const item = (category: ReplayCategory, reason: ReplayReason): ClassifiedReplay => ({
         executionId: execution.id,
+        workflowId: execution.workflowId,
+        workflowVersionId: execution.workflowVersionId,
+        failedStepName: execution.failedStep?.name ?? null,
         category,
         reason,
         connectionExternalId,
@@ -108,6 +111,9 @@ type ChainVerdictsParams = {
 type ClassifyParams = {
     execution: {
         id: string
+        workflowId: string
+        workflowVersionId: string
+        failedStep?: { name: string } | null
         status: ExecutionStatus
         logsFileId?: string | null
         displayLogsFileId?: string | null
@@ -126,6 +132,9 @@ type ClassifyParams = {
 
 type ClassifiedReplay = {
     executionId: string
+    workflowId: string
+    workflowVersionId: string
+    failedStepName: string | null
     category: ReplayCategory
     reason: ReplayReason
     connectionExternalId: string | null

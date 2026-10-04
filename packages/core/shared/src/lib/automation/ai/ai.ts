@@ -84,16 +84,24 @@ export const WorkflowPlanStep = z.object({
     input: z.record(z.string(), z.unknown()),
     requiresConnection: z.boolean(),
     connectionExternalId: Nullable(z.string()),
+    connectionDisplayName: Nullable(z.string()),
 })
 export type WorkflowPlanStep = z.infer<typeof WorkflowPlanStep>
+
+export enum WorkflowPlanSource {
+    MODEL = 'MODEL',
+    RULES = 'RULES',
+}
 
 export const WorkflowPlan = z.object({
     displayName: z.string(),
     summary: z.string(),
+    source: z.enum(WorkflowPlanSource),
     trigger: WorkflowPlanStep,
     steps: z.array(WorkflowPlanStep),
     questions: z.array(z.string()),
     warnings: z.array(z.string()),
+    unavailableSystems: z.array(z.string()),
     omittedSteps: z.number(),
 })
 export type WorkflowPlan = z.infer<typeof WorkflowPlan>
@@ -106,7 +114,7 @@ export type PlanAnswer = z.infer<typeof PlanAnswer>
 
 export const GenerateWorkflowPlanRequestBody = z.object({
     projectId: z.string(),
-    modelConnectionExternalId: z.string().min(1, formErrors.required),
+    modelConnectionExternalId: z.string().min(1, formErrors.required).optional(),
     prompt: z.string().trim().min(1, formErrors.required).max(AI_PROMPT_MAX_LENGTH, 'aiPromptTooLong'),
     answers: z.array(PlanAnswer).max(10).optional(),
 })

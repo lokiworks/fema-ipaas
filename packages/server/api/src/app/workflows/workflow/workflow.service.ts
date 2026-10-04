@@ -494,6 +494,9 @@ export const workflowService = (log: FastifyBaseLogger) => ({
             workflowId: id,
             versionId,
         })
+        if (workflowVersionToPublish.state !== WorkflowVersionState.LOCKED) {
+            workflowPublishUtils.assertNoPendingReview({ version: workflowVersionToPublish })
+        }
 
         if (workflowToUpdate.status === WorkflowStatus.ENABLED && !isNil(workflowToUpdate.publishedVersionId)) {
             await triggerSourceService(log).disable({

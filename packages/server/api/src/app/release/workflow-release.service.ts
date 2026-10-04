@@ -39,6 +39,7 @@ import { variableRepo } from '../variable/variable.service'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowExecutionCache } from '../workflows/workflow/workflow-execution-cache'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
+import { workflowPublishUtils } from '../workflows/workflow/workflow-publish-utils'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { connectionReplacementRepo } from './connection-replacement.service'
@@ -324,6 +325,7 @@ async function lockVersion({ workflowId, versionId, projectId, tenantId, userId,
     if (version.state === WorkflowVersionState.LOCKED) {
         return version
     }
+    workflowPublishUtils.assertNoPendingReview({ version })
     return workflowVersionService(log).applyOperation({
         userId,
         projectId,

@@ -21,6 +21,7 @@ import {
     WorkflowOperationRequest,
     WorkflowOperationType,
     WorkflowPlan,
+    WorkflowPlanSource,
     WorkflowPlanStep,
     WorkflowTriggerType,
 } from '@fema-ipaas/shared'
@@ -29,17 +30,25 @@ import { ArrayContains } from 'typeorm'
 import { z } from 'zod'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { connectorMetadataService } from '../connectors/metadata/connector-metadata-service'
+import { mappingTableService } from '../mapping-table/mapping-table.service'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { aiModelService } from './ai-model.service'
-import { aiReferences } from './ai-references'
+import { aiPlanSteps, ConnectionRef, MAX_NAME_LENGTH, StepDraft } from './ai-plan-steps'
+import { aiRulePlanner } from './ai-rule-plan'
+import { aiSystems } from './ai-systems'
 
 export const aiPlanService = (log: FastifyBaseLogger) => ({
     async generate({ request, tenantId, userId }: { request: GenerateWorkflowPlanRequestBody, tenantId: TenantId, userId: UserId }): Promise<WorkflowPlan> {
-        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, userId, externalId: request.modelConnectionExternalId })
         const [catalog, connections] = await Promise.all([
             loadCatalog({ log, projectId: request.projectId, tenantId }),
             loadConnections({ projectId: request.projectId }),
         ])
+        const unavailableSystems = aiSystems.unavailable({ prompt: request.prompt, catalog })
+        if (isNil(request.modelConnectionExternalId)) {
+            const mappingTables = await mappingTableService(log).list({ projectId: request.projectId })
+            return aiRulePlanner.plan({ prompt: request.prompt, answers: request.answers ?? [], catalog, connections, mappingTables, unavailableSystems })
+        }
+        const config = await aiModelService(log).resolveConfig({ projectId: request.projectId, tenantId, userId, externalId: request.modelConnectionExternalId })
         const response = await aiModelService(log).call({
             params: {
                 config,
@@ -54,11 +63,12 @@ export const aiPlanService = (log: FastifyBaseLogger) => ({
         if (isNil(draft)) {
             throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'The model did not return a usable plan. Try describing the workflow in more detail.' } })
         }
-        return toPlan({ draft, catalog, connections })
+        return toPlan({ draft, catalog, connections, unavailableSystems })
     },
 
     async apply({ request, tenantId, userId }: { request: ApplyWorkflowPlanRequestBody, tenantId: TenantId, userId: UserId }): Promise<{ workflowId: string }> {
-        const { plan, projectId } = request
+        const { projectId } = request
+        const plan = await withProjectConnections({ plan: request.plan, projectId })
         const versions = await resolveVersions({ log, projectId, tenantId, plan })
         const workflow = await workflowService(log).create({
             projectId,
@@ -99,7 +109,7 @@ async function loadConnections({ projectId }: { projectId: ProjectId }): Promise
         where: { projectIds: ArrayContains([projectId]), status: ConnectionStatus.ACTIVE },
         select: ['externalId', 'connectorName', 'displayName'],
     })
-    return connections.map((connection) => ({ externalId: connection.externalId, connectorName: connection.connectorName }))
+    return connections.map((connection) => ({ externalId: connection.externalId, connectorName: connection.connectorName, displayName: connection.displayName }))
 }
 
 async function resolveVersions({ log, projectId, tenantId, plan }: { log: FastifyBaseLogger, projectId: ProjectId, tenantId: TenantId, plan: WorkflowPlan }): Promise<Map<string, string>> {
@@ -161,42 +171,31 @@ function parseDraft(text: string): PlanDraft | null {
     return parsed.success ? parsed.data : null
 }
 
-function toPlan({ draft, catalog, connections }: { draft: PlanDraft, catalog: ConnectorMetadataModelSummary[], connections: ConnectionRef[] }): WorkflowPlan {
-    const trigger = resolveStep({ step: draft.trigger, catalog, connections, kind: 'trigger' })
-    const steps = draft.steps.map((step) => resolveStep({ step, catalog, connections, kind: 'action' }))
-    const resolved = steps.flatMap((step) => (isNil(step) ? [] : [step]))
-    if (isNil(trigger)) {
+function toPlan({ draft, catalog, connections, unavailableSystems }: { draft: PlanDraft, catalog: ConnectorMetadataModelSummary[], connections: ConnectionRef[], unavailableSystems: string[] }): WorkflowPlan {
+    const assembled = aiPlanSteps.assemble({ trigger: draft.trigger, steps: draft.steps, catalog, connections })
+    if (isNil(assembled.trigger)) {
         throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'The suggested trigger is not available. Try naming the system that starts the workflow.' } })
     }
     return {
         displayName: draft.displayName.slice(0, MAX_NAME_LENGTH),
         summary: draft.summary,
-        trigger,
-        steps: resolved,
+        source: WorkflowPlanSource.MODEL,
+        trigger: assembled.trigger,
+        steps: assembled.steps,
         questions: draft.questions.slice(0, MAX_QUESTIONS),
         warnings: [...new Set(draft.warnings)],
-        omittedSteps: steps.length - resolved.length,
+        unavailableSystems,
+        omittedSteps: assembled.omittedSteps,
     }
 }
 
-function resolveStep({ step, catalog, connections, kind }: { step: DraftStep, catalog: ConnectorMetadataModelSummary[], connections: ConnectionRef[], kind: 'trigger' | 'action' }): WorkflowPlanStep | null {
-    const connector = catalog.find((candidate) => candidate.name === step.connector)
-    const operations = kind === 'trigger' ? connector?.suggestedTriggers : connector?.suggestedActions
-    const operation = operations?.find((candidate) => candidate.name === step.name)
-    if (isNil(connector) || isNil(operation)) {
-        return null
+async function withProjectConnections({ plan, projectId }: { plan: WorkflowPlan, projectId: ProjectId }): Promise<WorkflowPlan> {
+    const allowed = new Map((await loadConnections({ projectId })).map((connection) => [connection.externalId, connection.displayName]))
+    const checked = (step: WorkflowPlanStep): WorkflowPlanStep => {
+        const displayName = isNil(step.connectionExternalId) ? undefined : allowed.get(step.connectionExternalId)
+        return { ...step, connectionExternalId: isNil(displayName) ? null : step.connectionExternalId, connectionDisplayName: displayName ?? null }
     }
-    const requiresConnection = !isNil(connector.auth)
-    return {
-        connectorName: connector.name,
-        connectorDisplayName: connector.displayName,
-        operationName: operation.name,
-        operationDisplayName: operation.displayName,
-        displayName: (step.displayName.trim().length > 0 ? step.displayName : operation.displayName).slice(0, MAX_NAME_LENGTH),
-        input: Object.fromEntries(Object.entries(step.input ?? {}).filter(([name]) => name !== 'auth' && name in operation.props).map(([name, value]) => [name, aiReferences.canonicalize(value)])),
-        requiresConnection,
-        connectionExternalId: requiresConnection ? connections.find((connection) => connection.connectorName === connector.name)?.externalId ?? null : null,
-    }
+    return { ...plan, trigger: checked(plan.trigger), steps: plan.steps.map(checked) }
 }
 
 function triggerOperation({ plan, versions }: { plan: WorkflowPlan, versions: Map<string, string> }): WorkflowOperationRequest {
@@ -288,7 +287,6 @@ export const aiCatalog = {
 const PLAN_MAX_TOKENS = 4096
 const CJK_PATTERN = /[\u4e00-\u9fff]/
 const DESCRIPTION_LIMIT = 140
-const MAX_NAME_LENGTH = 120
 const MAX_QUESTIONS = 3
 const NOTE_OFFSET_X = 420
 const NOTE_WIDTH = 320
@@ -299,8 +297,7 @@ const DraftStep = z.object({
     name: z.string(),
     displayName: z.string().default(''),
     input: z.record(z.string(), z.unknown()).optional(),
-})
-type DraftStep = z.infer<typeof DraftStep>
+}) satisfies z.ZodType<StepDraft>
 
 const PlanDraft = z.object({
     displayName: z.string().min(1),
@@ -311,8 +308,3 @@ const PlanDraft = z.object({
     warnings: z.array(z.string()).default([]),
 })
 type PlanDraft = z.infer<typeof PlanDraft>
-
-export type ConnectionRef = {
-    externalId: string
-    connectorName: string
-}

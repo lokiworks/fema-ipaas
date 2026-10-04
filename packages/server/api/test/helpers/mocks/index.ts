@@ -130,6 +130,8 @@ export const createMockTenant = (tenant?: Partial<Tenant>): Tenant => {
         googleAuthEnabled: tenant?.googleAuthEnabled ?? true,
         ssoDomain: tenant?.ssoDomain ?? null,
         ssoDomainVerification: tenant?.ssoDomainVerification ?? null,
+        passwordMinLength: tenant?.passwordMinLength ?? 10,
+        sessionDurationDays: tenant?.sessionDurationDays ?? 7,
     }
 }
 

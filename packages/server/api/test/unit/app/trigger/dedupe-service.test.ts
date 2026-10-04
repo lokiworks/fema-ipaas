@@ -1,4 +1,4 @@
-import { ScheduleOverlapPolicy } from '@fema-ipaas/shared'
+import { ExecutionStatus, RunEnvironment, ScheduleOverlapPolicy } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const fakeRedis = createFakeRedis()
@@ -139,10 +139,11 @@ const baseExecution = {
     projectId: 'p',
     workflowId: 'wf',
     workflowVersionId: 'v',
-    environment: 'PRODUCTION',
-    status: 'QUEUED',
+    environment: RunEnvironment.PRODUCTION,
+    status: ExecutionStatus.QUEUED,
     created: '',
     updated: '',
     tags: [],
     steps: {},
+    failParentOnFailure: false,
 }

@@ -17,7 +17,7 @@ afterAll(async () => {
     await teardownTestEnvironment()
 })
 
-function codeStep({ name, nextAction }: { name: string, nextAction?: ReturnType<typeof codeStep> }) {
+function codeStep({ name, nextAction }: { name: string, nextAction?: CodeStep }): CodeStep {
     return {
         type: WorkflowActionType.CODE,
         name,
@@ -26,7 +26,7 @@ function codeStep({ name, nextAction }: { name: string, nextAction?: ReturnType<
         lastUpdatedDate: dayjs().toISOString(),
         settings: { sourceCode: { code: 'export const code = async () => 1', packageJson: '{}' }, input: {}, errorHandlingOptions: {} },
         nextAction,
-    } as const
+    }
 }
 
 async function saveChain(ctx: TestContext): Promise<string> {
@@ -70,3 +70,17 @@ describe('Waiting for other steps', () => {
         expect(JSON.stringify(response.json())).toContain('step_1 waits for step_3')
     })
 })
+
+type CodeStep = {
+    type: WorkflowActionType.CODE
+    name: string
+    valid: boolean
+    displayName: string
+    lastUpdatedDate: string
+    settings: {
+        sourceCode: { code: string, packageJson: string }
+        input: Record<string, unknown>
+        errorHandlingOptions: Record<string, unknown>
+    }
+    nextAction?: CodeStep
+}

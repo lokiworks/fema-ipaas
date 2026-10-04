@@ -1,6 +1,5 @@
 import {
   EncryptionKeySource,
-  OptionalServiceKind,
   SystemOverview,
   UpdateCheckStatus,
 } from '@fema-ipaas/shared';
@@ -13,7 +12,6 @@ import { Link } from 'react-router-dom';
 import { CenteredPage } from '@/app/components/centered-page';
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -29,9 +27,15 @@ import {
   CheckRow,
   DeploymentKind,
   RunbookSteps,
+  ServiceCheck,
+  ServiceProblem,
+  ServiceStatusBadge,
+  serviceMeta,
+  systemApi,
   systemHooks,
   systemRunbook,
 } from '@/features/system';
+import { userHooks } from '@/hooks/user-hooks';
 
 export default function SystemPage() {
   const { data: overview, isLoading } = systemHooks.useOverview();
@@ -311,6 +315,7 @@ function UpgradeGuide({
 }
 
 function ServicesCard({ overview }: { overview: SystemOverview }) {
+  const { data: user } = userHooks.useCurrentUser();
   return (
     <Card>
       <CardHeader>
@@ -322,30 +327,37 @@ function ServicesCard({ overview }: { overview: SystemOverview }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col divide-y">
-        {overview.services.map((service) => {
-          const meta = SERVICE_META[service.kind];
-          return (
-            <div key={service.kind} className="flex flex-col gap-1 py-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{meta.name()}</span>
-                <Badge variant={service.enabled ? 'success' : 'outline'}>
-                  {service.enabled ? t('Enabled') : t('Not configured')}
-                </Badge>
-                {service.detail && (
-                  <span className="truncate text-xs text-muted-foreground">
-                    {service.detail}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {service.enabled ? meta.enabled() : meta.disabled()}
+        {overview.services.map((service) => (
+          <div key={service.kind} className="flex flex-col gap-2 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {serviceMeta.name({ kind: service.kind })}
               </span>
-              <span className="font-mono text-xs text-muted-foreground">
-                {meta.variables}
-              </span>
+              <ServiceStatusBadge service={service} />
+              {service.detail && (
+                <span className="truncate text-xs text-muted-foreground">
+                  {service.detail}
+                </span>
+              )}
             </div>
-          );
-        })}
+            <span className="text-xs text-muted-foreground">
+              {service.enabled
+                ? serviceMeta.whenEnabled({ kind: service.kind })
+                : serviceMeta.whenDisabled({ kind: service.kind })}
+            </span>
+            {service.problem && <ServiceProblem problem={service.problem} />}
+            {service.enabled && (
+              <ServiceCheck
+                kind={service.kind}
+                check={systemApi.checkService}
+                testRecipient={user?.email}
+              />
+            )}
+            <span className="font-mono text-xs text-muted-foreground">
+              {serviceMeta.variables({ kind: service.kind })}
+            </span>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );
@@ -406,56 +418,9 @@ function preUpgradeChecks({
   ];
 }
 
-const SERVICE_META: Record<OptionalServiceKind, ServiceMeta> = {
-  [OptionalServiceKind.SMTP]: {
-    name: () => t('Email (SMTP)'),
-    enabled: () =>
-      t('Used for email alerts, invitations and password reset emails.'),
-    disabled: () =>
-      t(
-        'Email alert channels and invitation emails are unavailable. Share sign-in links by hand; admins reset passwords.',
-      ),
-    variables:
-      'FEMA_SMTP_HOST · FEMA_SMTP_PORT · FEMA_SMTP_USERNAME · FEMA_SMTP_PASSWORD · FEMA_SMTP_SENDER_EMAIL',
-  },
-  [OptionalServiceKind.OBJECT_STORAGE]: {
-    name: () => t('Object storage'),
-    enabled: () =>
-      t(
-        'Run files and logs are written to the bucket. Existing files are not moved.',
-      ),
-    disabled: () =>
-      t(
-        'Files are stored in the database. Fine for one app instance; several app instances should share object storage.',
-      ),
-    variables:
-      'FEMA_FILE_STORAGE_LOCATION=S3 · FEMA_S3_ENDPOINT · FEMA_S3_BUCKET · FEMA_S3_ACCESS_KEY_ID · FEMA_S3_SECRET_ACCESS_KEY',
-  },
-  [OptionalServiceKind.CONNECTOR_REGISTRY]: {
-    name: () => t('Connector registry'),
-    enabled: () => t('Connectors can be installed and updated online.'),
-    disabled: () =>
-      t('Only the connectors built into the image are available.'),
-    variables: 'FEMA_CONNECTOR_REGISTRY_URL',
-  },
-  [OptionalServiceKind.TEMPLATE_REGISTRY]: {
-    name: () => t('Template registry'),
-    enabled: () => t('The template gallery loads templates from this source.'),
-    disabled: () => t('The template gallery is empty.'),
-    variables: 'FEMA_TEMPLATES_SOURCE_URL',
-  },
-};
-
 type PreUpgradeCheck = {
   id: string;
   level: CheckLevel;
   title: string;
   text: string;
-};
-
-type ServiceMeta = {
-  name: () => string;
-  enabled: () => string;
-  disabled: () => string;
-  variables: string;
 };

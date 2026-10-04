@@ -1,5 +1,8 @@
 import {
   DiagnosticsBundle,
+  OptionalServiceKind,
+  ServiceCheckRequest,
+  ServiceCheckResult,
   SetupChecklist,
   SetupStatus,
   SystemOverview,
@@ -16,6 +19,18 @@ export const systemApi = {
   },
   getSetupChecklist(): Promise<SetupChecklist> {
     return api.get<SetupChecklist>('/v1/health/setup-checklist');
+  },
+  checkSetupService({
+    kind,
+  }: {
+    kind: OptionalServiceKind;
+  }): Promise<ServiceCheckResult> {
+    return api.post<ServiceCheckResult>('/v1/health/setup/service-check', {
+      kind,
+    });
+  },
+  checkService(request: ServiceCheckRequest): Promise<ServiceCheckResult> {
+    return api.post<ServiceCheckResult>('/v1/health/services/check', request);
   },
   getDiagnosticsBundle(): Promise<DiagnosticsBundle> {
     return api.get<DiagnosticsBundle>('/v1/health/diagnostics-bundle');

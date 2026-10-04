@@ -5,6 +5,7 @@ import { AcceptInvitation } from '@/features/invitations';
 import { ChangePasswordPage } from './change-password';
 import { CreateTenantPage } from './create-tenant';
 import { ResetPasswordPage } from './forget-password';
+import { SetupPage } from './setup';
 import { SignInPage } from './sign-in';
 import { SignUpPage } from './sign-up';
 
@@ -38,6 +39,14 @@ export const authRoutes = [
     element: (
       <PageTitle title="Verify Email">
         <VerifyEmail />
+      </PageTitle>
+    ),
+  },
+  {
+    path: '/setup',
+    element: (
+      <PageTitle title="Setup wizard">
+        <SetupPage />
       </PageTitle>
     ),
   },

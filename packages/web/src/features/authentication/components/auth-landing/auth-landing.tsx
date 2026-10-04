@@ -1,10 +1,11 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import { FlagId } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 
 import { useTheme } from '@/components/providers/theme-provider';
-import { InstallChecksPanel } from '@/features/system';
+import { SetupWizard } from '@/features/setup-wizard';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
@@ -20,7 +21,10 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
   const { data: userCreated } = flagsHooks.useFlag<boolean>(
     FlagId.USER_CREATED,
   );
-  const firstUser = userCreated !== true;
+  const location = useLocation();
+  const [showWizard] = useState(
+    () => userCreated !== true && !authenticationSession.isOnboarding(),
+  );
 
   useEffect(() => {
     setForceLightMode(true);
@@ -37,20 +41,32 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
     return null;
   }
 
+  if (showWizard && location.pathname !== SETUP_PATH) {
+    return <Navigate to={`${SETUP_PATH}${location.search}`} replace />;
+  }
+
+  if (!showWizard && location.pathname === SETUP_PATH) {
+    return <Navigate to={`/sign-in${location.search}`} replace />;
+  }
+
   return (
     <div className="grid min-h-dvh w-full grid-cols-1 bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <BrandPanel />
       <main className="flex flex-col items-center justify-center gap-4 overflow-y-auto p-4 lg:flex-row lg:items-start lg:justify-start lg:p-16">
-        <section
-          role="dialog"
-          aria-label={t('Sign in or create your account')}
-          className="w-full max-w-[400px] overflow-hidden rounded-2xl border bg-background shadow-sm"
-        >
-          <AuthDrawerBody initialMode={initialMode} />
-        </section>
-        {firstUser && (
-          <section className="max-h-[90dvh] w-full max-w-[400px] overflow-y-auto rounded-2xl border bg-background">
-            <InstallChecksPanel />
+        {showWizard ? (
+          <section
+            aria-label={t('Setup wizard')}
+            className="w-full max-w-[680px]"
+          >
+            <SetupWizard />
+          </section>
+        ) : (
+          <section
+            role="dialog"
+            aria-label={t('Sign in or create your account')}
+            className="w-full max-w-[400px] overflow-hidden rounded-2xl border bg-background shadow-sm"
+          >
+            <AuthDrawerBody initialMode={initialMode} />
           </section>
         )}
       </main>
@@ -89,6 +105,8 @@ function BrandPanel() {
     </aside>
   );
 }
+
+const SETUP_PATH = '/setup';
 
 type AuthLandingProps = {
   initialMode: AuthMode;

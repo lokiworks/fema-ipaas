@@ -129,11 +129,12 @@ function DebugForm({
     defaultValues: defaultValues(outputSampleData[trigger.name]),
   });
   const environment = form.watch('environment');
-  const hasSavedSample = outputSampleData[trigger.name] !== undefined;
+  const savedSample = outputSampleData[trigger.name];
+  const hasSavedSample = hasContent(savedSample);
   useEffect(() => {
     if (
       !hasSavedSample &&
-      connectorSample !== undefined &&
+      hasContent(connectorSample) &&
       !form.formState.isDirty
     ) {
       form.setValue('payload', stringify(connectorSample), {
@@ -177,9 +178,9 @@ function DebugForm({
                         form.setValue(
                           'payload',
                           stringify(
-                            outputSampleData[trigger.name] ??
-                              connectorSample ??
-                              {},
+                            hasSavedSample
+                              ? savedSample
+                              : connectorSample ?? {},
                           ),
                           { shouldValidate: true },
                         )
@@ -377,6 +378,13 @@ function defaultValues(sample: unknown): DebugValues {
     payload: stringify(sample ?? {}),
     environment: RunEnvironment.TESTING,
   };
+}
+
+function hasContent(value: unknown): boolean {
+  if (isNil(value)) {
+    return false;
+  }
+  return typeof value !== 'object' || Object.keys(value).length > 0;
 }
 
 function stringify(value: unknown): string {

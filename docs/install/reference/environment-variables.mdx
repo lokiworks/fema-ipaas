@@ -60,7 +60,7 @@ protect connections and tokens, and telemetry.
 
 | Variable | Description | Default |
 |---|---|---|
-| ❗ `FEMA_FRONTEND_URL` | The public URL used to build redirect URLs and webhook URLs. It must be reachable by third parties for webhooks and app triggers to work. | `None` |
+| `FEMA_FRONTEND_URL` | The public URL used to build redirect URLs and webhook URLs. It must be reachable by third parties for webhooks and app triggers to work. | `http://localhost:<FEMA_PORT>` |
 | ❗ `FEMA_ENCRYPTION_KEY` | 32-character (16-byte) hexadecimal key used to encrypt connections. Generate one with `openssl rand -hex 16`. | `None` |
 | ❗ `FEMA_JWT_SECRET` | 32-character hexadecimal key used to sign JWT tokens. Generate one with `openssl rand -hex 32`. | `None` |
 | `FEMA_CONFIG_PATH` | Path where the PGLite database and local settings are stored. | `~/.fema` |
@@ -73,8 +73,10 @@ protect connections and tokens, and telemetry.
 accessible to third parties so they can send data.
 </Warning>
 
-The default URL is the machine's IP address. If that address isn't reachable
-from the internet, set `FEMA_FRONTEND_URL` explicitly. For local development you
+When it is not set, the platform starts with `http://localhost:<FEMA_PORT>`, which
+is enough to try it out on the machine it runs on. Open it from any other address
+and the setup wizard warns that the address you used differs from the configured
+one. Set `FEMA_FRONTEND_URL` explicitly before real use. For local development you
 can expose the frontend port (4200) with a tunneling service such as
 [ngrok](https://ngrok.com/).
 

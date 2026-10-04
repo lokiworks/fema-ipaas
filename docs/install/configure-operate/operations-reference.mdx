@@ -34,7 +34,7 @@ Everything is listed in [Environment Variables](/install/reference/environment-v
 
 | Variable | Why it matters | Default |
 |---|---|---|
-| `FEMA_FRONTEND_URL` | Builds invitation links, webhook URLs and the OAuth2 redirect `<FEMA_FRONTEND_URL>/redirect`. Open the platform at this exact address when you authorize a connection | none, required |
+| `FEMA_FRONTEND_URL` | Builds invitation links, webhook URLs and the OAuth2 redirect `<FEMA_FRONTEND_URL>/redirect`. Open the platform at this exact address when you authorize a connection | `http://localhost:<FEMA_PORT>` |
 | `FEMA_SMTP_HOST`, `FEMA_SMTP_PORT` | Without them, invitations are handed over as a copyable link, the **Email** alert channel is unavailable and the weekly digest is not sent | none |
 | `FEMA_SSRF_ALLOW_LIST` | An alert **Webhook** channel or any outbound call to a private address is blocked unless the address is listed here | none |
 | `FEMA_TRIGGER_DEFAULT_POLL_INTERVAL` | Minutes between checks for polling triggers such as the Beisen one | `5` |

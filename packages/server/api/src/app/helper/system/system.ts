@@ -175,7 +175,15 @@ export const system = {
 }
 
 const getEnvVarOrReturnDefaultValue = (prop: SystemProp): string | undefined => {
-    return environmentVariables.getEnvironment(prop) ?? aliasValue(prop) ?? systemPropDefaultValues[prop]
+    return environmentVariables.getEnvironment(prop) ?? aliasValue(prop) ?? systemPropDefaultValues[prop] ?? derivedDefaultValue(prop)
+}
+
+function derivedDefaultValue(prop: SystemProp): string | undefined {
+    if (prop !== AppSystemProp.FRONTEND_URL) {
+        return undefined
+    }
+    const port = environmentVariables.getEnvironment(AppSystemProp.PORT) ?? systemPropDefaultValues[AppSystemProp.PORT]
+    return `http://localhost:${port}`
 }
 
 function aliasValue(prop: SystemProp): string | undefined {

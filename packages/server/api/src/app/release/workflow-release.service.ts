@@ -403,7 +403,7 @@ async function lockVersion({ workflowId, versionId, projectId, tenantId, userId,
     if (version.state === WorkflowVersionState.LOCKED) {
         return version
     }
-    workflowPublishUtils.assertNoPendingReview({ version })
+    await workflowPublishUtils.assertPublishable({ version, projectId, tenantId, log, checkConnections: false })
     return workflowVersionService(log).applyOperation({
         userId,
         projectId,

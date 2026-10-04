@@ -1,8 +1,13 @@
-import { ApplicationError, dataMapping, ErrorCode, MappingIssueCode, MappingIssueSeverity, MappingSpec, ProjectId } from '@fema-ipaas/core-utils'
-import { WorkflowActionType, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
+import { ConnectorMetadataModel, PropertyType } from '@fema-ipaas/connector-sdk'
+import { ApplicationError, dataMapping, ErrorCode, isNil, MappingIssueCode, MappingIssueSeverity, MappingSpec, ProjectId, TenantId } from '@fema-ipaas/core-utils'
+import { WorkflowActionType, workflowConnectorUtil, workflowStructureUtil, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import deepEqual from 'deep-equal'
 import { FastifyBaseLogger } from 'fastify'
+import { ArrayContains } from 'typeorm'
+import { connectionsRepo } from '../../connection/connection-service/connection-service'
+import { connectorMetadataService } from '../../connectors/metadata/connector-metadata-service'
 import { mappingTableService } from '../../mapping-table/mapping-table.service'
+import { ConnectorSpec, ConnectorSpecStatus, OperationSpec, PublishValidationContext, workflowPublishValidator } from './workflow-publish-validator'
 
 function isSameTrigger({ published, toPublish }: IsSameTriggerParams): boolean {
     return published.type === WorkflowTriggerType.CONNECTOR
@@ -25,6 +30,75 @@ function assertNoPendingReview({ version }: { version: WorkflowVersion }): void 
 }
 
 async function assertMappingsValid({ version, projectId, log }: { version: WorkflowVersion, projectId: ProjectId, log: FastifyBaseLogger }): Promise<void> {
+    const problems = await mappingProblems({ version, projectId, log })
+    if (problems.length > 0) {
+        throw new ApplicationError({
+            code: ErrorCode.VALIDATION,
+            params: { message: `字段映射还有问题，修好后才能发布。${problems.join('；')}` },
+        })
+    }
+}
+
+async function assertPublishable({ version, projectId, tenantId, log, checkConnections }: AssertPublishableParams): Promise<void> {
+    assertNoPendingReview({ version })
+    const [context, mappings] = await Promise.all([
+        loadValidationContext({ version, projectId, tenantId, log, checkConnections }),
+        mappingProblems({ version, projectId, log }),
+    ])
+    const problems = workflowPublishValidator.find({ version, context })
+    if (problems.length === 0 && mappings.length === 0) {
+        return
+    }
+    const base = problems.length > 0 ? workflowPublishValidator.describe(problems) : '流程还不能发布，修好后才能发布'
+    throw new ApplicationError({
+        code: ErrorCode.VALIDATION,
+        params: { message: mappings.length > 0 ? `${base}。字段映射还有问题：${mappings.join('；')}` : base },
+    })
+}
+
+async function loadValidationContext({ version, projectId, tenantId, log, checkConnections }: { version: WorkflowVersion, projectId: ProjectId, tenantId: TenantId, log: FastifyBaseLogger, checkConnections: boolean }): Promise<PublishValidationContext> {
+    const refs = connectorRefsOf(version)
+    const loaded = await Promise.all(refs.map(async (ref) => {
+        const model = await connectorMetadataService(log).get({ name: ref.name, version: ref.version, projectId, tenantId })
+        return [ref.name, isNil(model) ? MISSING_CONNECTOR : specOf(model)] satisfies [string, ConnectorSpec]
+    }))
+    const connectionIds = checkConnections ? await loadConnectionIds({ projectId }) : null
+    return { connectors: Object.fromEntries(loaded), connectionIds }
+}
+
+async function loadConnectionIds({ projectId }: { projectId: ProjectId }): Promise<Set<string>> {
+    const connections = await connectionsRepo().find({ where: { projectIds: ArrayContains([projectId]) }, select: ['externalId'] })
+    return new Set(connections.map((connection) => connection.externalId))
+}
+
+function connectorRefsOf(version: WorkflowVersion): { name: string, version: string }[] {
+    const refs = workflowStructureUtil.getAllSteps(version.trigger).flatMap((step) =>
+        step.type === WorkflowActionType.CONNECTOR || step.type === WorkflowTriggerType.CONNECTOR
+            ? [{ name: step.settings.connectorName, version: workflowConnectorUtil.getExactVersion(step.settings.connectorVersion) }]
+            : [],
+    )
+    return [...new Map(refs.map((ref) => [`${ref.name}@${ref.version}`, ref])).values()]
+}
+
+function specOf(model: ConnectorMetadataModel): ConnectorSpec {
+    return {
+        status: ConnectorSpecStatus.LOADED,
+        requiresAuth: !isNil(model.auth),
+        actions: operationsOf(model.actions),
+        triggers: operationsOf(model.triggers),
+    }
+}
+
+function operationsOf(operations: Record<string, RawOperation>): Record<string, OperationSpec> {
+    return Object.fromEntries(Object.entries(operations).map(([name, operation]) => [name, {
+        requiresAuth: operation.requireAuth !== false,
+        props: Object.entries(operation.props)
+            .filter(([, prop]) => !IGNORED_PROP_TYPES.includes(prop.type))
+            .map(([propName, prop]) => ({ name: propName, displayName: prop.displayName, required: prop.required })),
+    }]))
+}
+
+async function mappingProblems({ version, projectId, log }: { version: WorkflowVersion, projectId: ProjectId, log: FastifyBaseLogger }): Promise<string[]> {
     const mappingSteps = workflowStructureUtil.getAllSteps(version.trigger).flatMap((step) => {
         if (step.type !== WorkflowActionType.CONNECTOR || step.settings.connectorName !== DATA_MAPPER_CONNECTOR || step.settings.actionName !== MAP_FIELDS_ACTION || step.skip === true) {
             return []
@@ -33,19 +107,13 @@ async function assertMappingsValid({ version, projectId, log }: { version: Workf
         return parsed.success ? [{ displayName: step.displayName, spec: parsed.data }] : []
     })
     if (mappingSteps.length === 0) {
-        return
+        return []
     }
     const knownTables = new Set((await mappingTableService(log).list({ projectId })).map((table) => table.id))
-    const problems = mappingSteps.flatMap(({ displayName, spec }) => [
+    return mappingSteps.flatMap(({ displayName, spec }) => [
         ...dataMapping.blockingIssues(dataMapping.validateSpec(spec)).map((found) => `${displayName}：${describeMappingIssue(found)}`),
         ...dataMapping.lookupTableIds(spec).filter((id) => !knownTables.has(id)).map(() => `${displayName}：${dataMapping.describeIssue({ code: MappingIssueCode.LOOKUP_TABLE_NOT_FOUND, rowId: null, target: '', severity: MAPPING_ERROR, params: {} })}`),
     ])
-    if (problems.length > 0) {
-        throw new ApplicationError({
-            code: ErrorCode.VALIDATION,
-            params: { message: `字段映射还有问题，修好后才能发布。${problems.join('；')}` },
-        })
-    }
 }
 
 function describeMappingIssue(found: Parameters<typeof dataMapping.describeIssue>[0]): string {
@@ -59,10 +127,25 @@ function readMapping(input: unknown): unknown {
 const DATA_MAPPER_CONNECTOR = '@fema-ipaas/connector-data-mapper'
 const MAP_FIELDS_ACTION = 'map_fields'
 const MAPPING_ERROR = MappingIssueSeverity.ERROR
+const MISSING_CONNECTOR: ConnectorSpec = { status: ConnectorSpecStatus.MISSING }
+const IGNORED_PROP_TYPES: PropertyType[] = [PropertyType.MARKDOWN, PropertyType.DYNAMIC, PropertyType.CHECKBOX]
 
-export const workflowPublishUtils = { isSameTrigger, assertNoPendingReview, assertMappingsValid }
+export const workflowPublishUtils = { isSameTrigger, assertNoPendingReview, assertMappingsValid, assertPublishable }
 
 type IsSameTriggerParams = {
     published: WorkflowVersion['trigger']
     toPublish: WorkflowVersion['trigger']
+}
+
+type AssertPublishableParams = {
+    version: WorkflowVersion
+    projectId: ProjectId
+    tenantId: TenantId
+    log: FastifyBaseLogger
+    checkConnections: boolean
+}
+
+type RawOperation = {
+    requireAuth?: boolean | undefined
+    props: Record<string, { displayName: string, required: boolean, type: PropertyType }>
 }

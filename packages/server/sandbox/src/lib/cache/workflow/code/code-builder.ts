@@ -6,6 +6,7 @@ import { cryptoUtils, fileSystemUtils, type Logger, wideEvent } from '@fema-ipaa
 import { ExecutionMode } from '@fema-ipaas/shared'
 import { CodeArtifact, SandboxSettings } from '../../../types'
 import { bunRunner } from '../../../utils/bun-runner'
+import { fileLock } from '../../../utils/file-lock'
 import { cacheState } from '../../cache-state'
 import { codeCache } from './code-cache'
 import { packageDependencies } from './package-dependencies'
@@ -51,79 +52,84 @@ export const codeBuilder = (log: Logger, getSettings: () => SandboxSettings) => 
         const codePath = codeCache(codesFolderPath).stepDir({ workflowVersionId, stepName: name })
         log.debug({ sourceCode, name, codePath }, 'Processing code step')
 
-        const currentHash = await cryptoUtils.hashObject(sourceCode)
-        const compiledStepPath = codeCache(codesFolderPath).compiledStepPath({ workflowVersionId, stepName: name })
-        const cache = cacheState(codePath)
-        let buildStatus: CodeBuildStatus = 'success'
-        const { cacheHit } = await cache.getOrSetCache({
-            key: codePath,
-            cacheMiss: (value: string) => {
-                return value !== currentHash || !existsSync(compiledStepPath)
-            },
-            installFn: async () => {
-                const { code, packageJson } = sourceCode
-
-                const codeNeedCleanUp = await fileSystemUtils.fileExists(codePath)
-                if (codeNeedCleanUp) {
-                    await rm(codePath, { recursive: true })
-                }
-
-                await fileSystemUtils.threadSafeMkdir(codePath)
-
-                const installError = await wideEvent.timed({
-                    name: 'codeDeps',
-                    fn: async () => {
-                        const { error } = await tryCatch(() => installDependencies({
-                            path: codePath,
-                            packageJson: getPackageJson(packageJson, getSettings),
-                        }, log))
-                        if (error) {
-                            log.info({ codePath, error }, 'Dependency installation error')
-                        }
-                        else {
-                            log.info({ path: codePath }, 'Installed dependencies')
-                        }
-                        return error
+        return fileLock.runExclusive({
+            lockPath: `${codePath}.lock`,
+            fn: async () => {
+                const currentHash = await cryptoUtils.hashObject(sourceCode)
+                const compiledStepPath = codeCache(codesFolderPath).compiledStepPath({ workflowVersionId, stepName: name })
+                const cache = cacheState(codePath)
+                let buildStatus: CodeBuildStatus = 'success'
+                const { cacheHit } = await cache.getOrSetCache({
+                    key: codePath,
+                    cacheMiss: (value: string) => {
+                        return value !== currentHash || !existsSync(compiledStepPath)
                     },
-                })
+                    installFn: async () => {
+                        const { code, packageJson } = sourceCode
 
-                if (installError) {
-                    await handleInstallError({ codePath, error: installError })
-                    await tryCatch(() => rm(path.join(codePath, 'node_modules'), { recursive: true }))
-                    buildStatus = 'install-failed'
-                    return currentHash
-                }
+                        const codeNeedCleanUp = await fileSystemUtils.fileExists(codePath)
+                        if (codeNeedCleanUp) {
+                            await rm(codePath, { recursive: true })
+                        }
 
-                const compileError = await wideEvent.timed({
-                    name: 'codeCompile',
-                    fn: async () => {
-                        const { error } = await tryCatch(() => compileCode({
-                            path: codePath,
-                            code,
-                        }, log))
-                        if (error) {
-                            log.info({ codePath, error }, 'Compilation error')
-                            await handleCompilationError({ codePath, error })
+                        await fileSystemUtils.threadSafeMkdir(codePath)
+
+                        const installError = await wideEvent.timed({
+                            name: 'codeDeps',
+                            fn: async () => {
+                                const { error } = await tryCatch(() => installDependencies({
+                                    path: codePath,
+                                    packageJson: getPackageJson(packageJson, getSettings),
+                                }, log))
+                                if (error) {
+                                    log.info({ codePath, error }, 'Dependency installation error')
+                                }
+                                else {
+                                    log.info({ path: codePath }, 'Installed dependencies')
+                                }
+                                return error
+                            },
+                        })
+
+                        if (installError) {
+                            await handleInstallError({ codePath, error: installError })
+                            await tryCatch(() => rm(path.join(codePath, 'node_modules'), { recursive: true }))
+                            buildStatus = 'install-failed'
+                            return currentHash
                         }
-                        else {
-                            log.info({ codePath }, 'Compilation success')
+
+                        const compileError = await wideEvent.timed({
+                            name: 'codeCompile',
+                            fn: async () => {
+                                const { error } = await tryCatch(() => compileCode({
+                                    path: codePath,
+                                    code,
+                                }, log))
+                                if (error) {
+                                    log.info({ codePath, error }, 'Compilation error')
+                                    await handleCompilationError({ codePath, error })
+                                }
+                                else {
+                                    log.info({ codePath }, 'Compilation success')
+                                }
+                                return error
+                            },
+                        })
+                        if (compileError) {
+                            buildStatus = 'compile-failed'
                         }
-                        return error
+
+                        // node_modules is no longer needed after esbuild bundles everything into index.js
+                        await tryCatch(() => rm(path.join(codePath, 'node_modules'), { recursive: true }))
+                        return currentHash
                     },
+                    // A transient bun install failure must self-heal: never cache the throwing stub, so the
+                    // next build re-runs install. Deterministic compile errors stay cached. See GIT-1608.
+                    skipSave: () => buildStatus === 'install-failed',
                 })
-                if (compileError) {
-                    buildStatus = 'compile-failed'
-                }
-
-                // node_modules is no longer needed after esbuild bundles everything into index.js
-                await tryCatch(() => rm(path.join(codePath, 'node_modules'), { recursive: true }))
-                return currentHash
+                return cacheHit ? 'success' : buildStatus
             },
-            // A transient bun install failure must self-heal: never cache the throwing stub, so the
-            // next build re-runs install. Deterministic compile errors stay cached. See GIT-1608.
-            skipSave: () => buildStatus === 'install-failed',
         })
-        return cacheHit ? 'success' : buildStatus
     },
 })
 

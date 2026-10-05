@@ -17,7 +17,7 @@ for pidfile in worker.pid api.pid; do
     kill $(cat "${STATE_DIR}/${pidfile}") 2>/dev/null || true
   fi
 done
-stop_port $((3100 + SLOT))
+stop_port "${PROD_API_PORT:-$((3100 + SLOT))}"
 for _ in $(seq 1 120); do
   alive=0
   for pid in $(cat "${STATE_DIR}/worker.pid" "${STATE_DIR}/api.pid" 2>/dev/null); do

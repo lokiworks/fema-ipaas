@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SLOT="${1:?usage: start-prod-stack.sh <slot 1-9>}"
-API_PORT=$((3100 + SLOT))
+API_PORT="${PROD_API_PORT:-$((3100 + SLOT))}"
 MOCK_PORT=$((18900 + SLOT))
 PG_PORT=$((55440 + SLOT))
 REDIS_PORT=$((56440 + SLOT))

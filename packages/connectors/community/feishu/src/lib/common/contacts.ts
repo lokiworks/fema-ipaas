@@ -77,7 +77,7 @@ async function setUserSuspended({ auth, input }: SetUserSuspendedParams): Promis
 
 async function provisionUser({ auth, input }: ProvisionUserParams): Promise<ProvisionUserResult> {
   const mobile = normalizeMobile(input.mobile);
-  const existing = await lookupUser({ auth, mobile, email: input.email, includeResigned: true });
+  const existing = await lookupUser({ auth, mobile, email: input.email, includeResigned: false });
   if (existing) {
     return reuseExisting({ existing, mobile });
   }
@@ -124,11 +124,15 @@ async function recoverFromDuplicate({ auth, error, mobile, email }: RecoverParam
   if (code === undefined || !ALREADY_EXISTS_CODES.includes(code)) {
     throw error;
   }
-  const existing = await lookupUser({ auth, mobile, email, includeResigned: true });
-  if (!existing) {
-    throw error;
+  const active = await lookupUser({ auth, mobile, email, includeResigned: false });
+  if (active) {
+    return reuseExisting({ existing: active, mobile });
   }
-  return reuseExisting({ existing, mobile });
+  const resigned = await lookupUser({ auth, mobile, email, includeResigned: true });
+  if (resigned?.isResigned) {
+    return reuseExisting({ existing: resigned, mobile });
+  }
+  throw error;
 }
 
 function reuseExisting({ existing, mobile }: { existing: LookupResult; mobile: string }): ProvisionUserResult {

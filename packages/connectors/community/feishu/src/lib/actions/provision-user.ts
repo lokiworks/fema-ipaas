@@ -14,7 +14,7 @@ export const provisionUser = createAction({
   classification: 'WRITE',
   aiMetadata: {
     description:
-      'Onboard an employee into the Feishu/Lark contact directory under a given department. Safe to repeat: it first looks the mobile and email up, and when a user already holds either it returns that user with created=false and matched_by, changing nothing; a lost race on the create call is resolved the same way, and the create call carries an idempotency token built from the whole request. An account that has resigned is reported as an error instead of being reused. Needs the "Update contacts" and "Obtain user ID via email or mobile number" permissions, and the target department must be inside the app\'s contact scope (the root department needs the all-members scope).',
+      'Onboard an employee into the Feishu/Lark contact directory under a given department. Safe to repeat: it first looks the mobile and email up, and when a user already holds either it returns that user with created=false and matched_by, changing nothing; a lost race on the create call is resolved the same way, and the create call carries an idempotency token built from the whole request. When the create call is blocked by a resigned account, that is reported as an error instead of the account being reused. Needs the "Update contacts" and "Obtain user ID via email or mobile number" permissions, and the target department must be inside the app\'s contact scope (the root department needs the all-members scope).',
     idempotent: true,
   },
   props: {

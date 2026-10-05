@@ -63,7 +63,7 @@ describe('provisionUser reuses an account that already exists', () => {
     vi.resetAllMocks();
   });
 
-  it('looks the mobile up in both spellings, and the email, including resigned members', async () => {
+  it('looks the mobile up in both spellings, and the email', async () => {
     route((request) =>
       request.url.endsWith('/batch_get_id') ? reply({ code: 0, data: { user_list: [] } }) : reply({ code: 0, data: { user: { open_id: 'ou_new' } } }),
     );
@@ -72,7 +72,7 @@ describe('provisionUser reuses an account that already exists', () => {
 
     const lookup = apiCalls()[0];
     expect(lookup.url).toMatch(/\/contact\/v3\/users\/batch_get_id$/);
-    expect(lookup.body).toEqual({ mobiles: ['13800000000', '+8613800000000'], emails: ['zs@example.com'], include_resigned: true });
+    expect(lookup.body).toEqual({ mobiles: ['13800000000', '+8613800000000'], emails: ['zs@example.com'], include_resigned: false });
   });
 
   it('reports which key matched and whether the account is suspended', async () => {
@@ -103,11 +103,28 @@ describe('provisionUser reuses an account that already exists', () => {
     expect(result).toMatchObject({ created: false, open_id: 'ou_mail', matched_by: 'email' });
   });
 
-  it('refuses to reuse an account that has resigned and says who has to fix it', async () => {
-    route(() => reply({ code: 0, data: { user_list: [{ mobile: '13800000000', user_id: 'ou_gone', status: { is_resigned: true } }] } }));
+  it('names the resigned account when the create call is blocked by it, instead of reusing it', async () => {
+    route((request) => {
+      if (request.url.endsWith('/batch_get_id')) {
+        const resignedVisible = (request.body as { include_resigned: boolean }).include_resigned;
+        return reply({ code: 0, data: { user_list: resignedVisible ? [{ mobile: '13800000000', user_id: 'ou_gone', status: { is_resigned: true } }] : [] } });
+      }
+      return failWith({ status: 400, code: 41001, msg: 'mobile has already exist error' });
+    });
 
     await expect(feishuContacts.provisionUser({ auth: authFor('cli_a4'), input })).rejects.toThrowError(/resigned.*Feishu error 42006/);
-    expect(apiCalls()).toHaveLength(1);
+  });
+
+  it('keeps the create error when the holder cannot be shown to be resigned', async () => {
+    route((request) => {
+      if (request.url.endsWith('/batch_get_id')) {
+        const withResigned = (request.body as { include_resigned: boolean }).include_resigned;
+        return reply({ code: 0, data: { user_list: withResigned ? [{ mobile: '13800000000', user_id: 'ou_x' }] : [] } });
+      }
+      return failWith({ status: 400, code: 41001, msg: 'mobile has already exist error' });
+    });
+
+    await expect(feishuContacts.provisionUser({ auth: authFor('cli_a5'), input })).rejects.toThrowError(/Feishu error 41001/);
   });
 
   it.each([

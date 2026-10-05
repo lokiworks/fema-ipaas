@@ -34,10 +34,11 @@ async function obtainTenantAccessToken({
       method: HttpMethod.POST,
       url: `${baseUrl}/open-apis/auth/v3/tenant_access_token/internal`,
       body: { app_id: appId, app_secret: appSecret },
+      timeout: REQUEST_TIMEOUT_MS,
     }),
   );
   if (error) {
-    throw fromHttpError(error);
+    throw isAborted(error) ? timeoutError({ method: HttpMethod.POST, path: '/open-apis/auth/v3/tenant_access_token/internal' }) : fromHttpError(error);
   }
   if (response.body.code !== 0) {
     throw feishuError(response.body.code, response.body.msg);
@@ -100,15 +101,27 @@ async function requestOnce<T>({
       authentication: { type: AuthenticationType.BEARER_TOKEN, token },
       ...(body ? { body } : {}),
       ...(queryParams ? { queryParams } : {}),
+      timeout: REQUEST_TIMEOUT_MS,
     }),
   );
   if (error) {
-    throw fromHttpError(error);
+    throw isAborted(error) ? timeoutError({ method, path }) : fromHttpError(error);
   }
   if (response.body.code !== 0) {
     throw feishuError(response.body.code, response.body.msg, rateLimitResetSeconds(response.headers ?? {}));
   }
   return response.body.data;
+}
+
+function isAborted(error: Error): boolean {
+  return error.name === 'AbortError' || error.name === 'TimeoutError';
+}
+
+function timeoutError({ method, path }: { method: HttpMethod; path: string }): Error {
+  const seconds = REQUEST_TIMEOUT_MS / MS_PER_SECOND;
+  return method === HttpMethod.GET
+    ? new Error(`Feishu did not answer ${path} within ${seconds} seconds`)
+    : new Error(`Feishu did not answer ${method} ${path} within ${seconds} seconds, the change may or may not have been applied, read the account back before writing again`);
 }
 
 function baseUrlFor(domain: string | undefined): string {
@@ -175,6 +188,8 @@ function describeError(code: number, message: string): string {
 }
 
 const TOKEN_EXPIRY_MARGIN_SECONDS = 300;
+
+const REQUEST_TIMEOUT_MS = 30_000;
 
 const MIN_TOKEN_LIFETIME_SECONDS = 60;
 

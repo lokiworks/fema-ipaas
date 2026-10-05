@@ -72,6 +72,7 @@ async function obtainAccessToken({ appKey, appSecret }: TokenParams): Promise<st
       app_key: appKey,
       app_secret: appSecret,
     },
+    timeout: REQUEST_TIMEOUT_MS,
   });
   assertNoGatewayError({ body: response.body, rejectsCredentials: true });
   const token = response.body.access_token;
@@ -121,9 +122,13 @@ async function requestOnce<T>({ auth, method, path, body, queryParams }: CallApi
       authentication: { type: AuthenticationType.BEARER_TOKEN, token },
       ...(body ? { body } : {}),
       ...(queryParams ? { queryParams } : {}),
+      timeout: REQUEST_TIMEOUT_MS,
     }),
   );
   if (error) {
+    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+      throw new Error(`Beisen did not answer ${path} within ${REQUEST_TIMEOUT_MS / MS_PER_SECOND} seconds`);
+    }
     if (isRateLimited(error)) {
       throw rateLimitError({ retryAfterSeconds: retryAfterSecondsOf(error) });
     }
@@ -235,6 +240,8 @@ const BEIJING_UTC_OFFSET_MS = 8 * 60 * 60 * 1000;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const MS_PER_SECOND = 1000;
+
+const REQUEST_TIMEOUT_MS = 30_000;
 
 function isRateLimitMessage(message: string): boolean {
   return message.toLowerCase().includes('rate limit exceeded');

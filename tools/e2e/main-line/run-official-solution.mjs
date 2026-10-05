@@ -109,7 +109,7 @@ await check('向北森发出的请求符合文档：新路径、业务修改时�
   assert(bodies.length > 0, '没有任何时间窗请求')
   assert(bodies.every((body) => body.timeWindowQueryType === 2 && body.serviceType?.[0] === 0 && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$/.test(body.startTime)), `请求里有不符合文档的字段：${JSON.stringify(bodies[0])}`)
   const scopes = new Set(bodies.map((body) => JSON.stringify(body.empStatus)))
-  assert(scopes.has('[8]') && scopes.has('[1,2,3]') && scopes.has('[2,3]'), `三种状态范围没有都出现：${[...scopes]}`)
+  assert(scopes.has('[8]') && scopes.has('[1,2,3,7]') && scopes.has('[2,3,7]'), `三种状态范围没有都出现：${[...scopes]}`)
   return [...scopes]
 })
 

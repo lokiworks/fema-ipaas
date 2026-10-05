@@ -122,7 +122,8 @@
                {
                   "group": "Guides",
                   "pages": [
-                     "workflows/guides/beisen-to-feishu-people-sync"
+                     "workflows/guides/beisen-to-feishu-people-sync",
+                     "workflows/guides/real-tenant-acceptance"
                   ]
                },
                {

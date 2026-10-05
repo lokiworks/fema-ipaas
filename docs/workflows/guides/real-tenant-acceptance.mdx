@@ -1,0 +1,175 @@
+---
+title: "Accept Beisen and Feishu with Real Tenants"
+icon: "clipboard-check"
+description: "A ten-minute script that checks the Feishu and Beisen connectors against your real organizations before you turn the people sync on"
+---
+
+The connectors for Feishu and Beisen were written from the vendors' public documentation and tested against mock servers. This guide runs them once against your own Feishu organization and Beisen tenant, so that a wrong permission, a missing department in the contact scope or a blocked IP address shows up in ten minutes instead of on the first real hire.
+
+<Warning>
+**Not yet verified in a real environment.** The script, the permission lists and the error explanations on this page were checked against the vendors' documentation and against the mock servers in this repository only. No real Feishu or Beisen tenant has been used so far. Treat the first real run as the verification, and send back anything that disagrees with this page.
+</Warning>
+
+## What the script does
+
+`tools/e2e/main-line/run-real.mjs` calls the same connector code the workflows use, one step at a time, and prints for every step whether it passed, which API it called, how long it took and, when it failed, the most likely cause.
+
+| Step | Calls | Writes? |
+|---|---|---|
+| Feishu: get a token | `POST /auth/v3/tenant_access_token/internal` | No |
+| Feishu: read the contact scope | `GET /contact/v3/scopes` | No |
+| Feishu: list sub-departments, list members of the test department, look the test mobile up | `GET …/departments/:id/children`, `GET …/users/find_by_department`, `POST …/users/batch_get_id` | No |
+| Feishu: create the test account, repeat to prove it is found instead of duplicated, read it back | `POST …/users`, `GET …/users/:id` | **Yes, one account** |
+| Feishu: suspend the test account, repeat | `PATCH …/users/:id` with `is_frozen` | **Yes**, never a delete |
+| Feishu: one test message to a test group, then the same again with the same dedupe key | `POST /im/v1/messages` | **Yes, one message** |
+| Feishu: one Bitable record, read back (optional) | `POST …/records`, `POST …/records/search` | **Yes, one row** |
+| Beisen: get a token | `POST /token` | No |
+| Beisen: employees changed in the last 24 hours | `…/Employee/GetByTimeWindow` | No |
+| Beisen: organization children, roster of the root organization, one employee by email (optional) | `…/Organization/GetSubOrganizations`, `…/Employee/GetEmployeeOfOrganization`, `…/Employee/GetUserIDByEmail` | No |
+
+Rules the script keeps:
+
+- **Without a confirmation variable it never writes.** Everything above marked "Yes" is skipped, and the summary says so.
+- **It never deletes anything.** The test account is suspended and left in place.
+- **It only suspends an account whose name starts with the test prefix** (default `FEMA验收-`). If the test mobile number already belongs to a real employee, the script refuses to touch it.
+- **It never prints personal data.** Beisen results are counts and field counts only.
+
+## What you need
+
+| Item | Notes |
+|---|---|
+| This repository, with the connectors built | `npx turbo run build --filter=@fema-ipaas/connector-feishu --filter=@fema-ipaas/connector-beisen`, Node 20 or later |
+| A Feishu custom app | Created in a **test organization**, or a test department of the real one. A free, unverified organization is fine for this check; it is limited to 100 members and +86 mobile numbers |
+| A test department in Feishu | Ideally empty, inside the contact scope of the app |
+| A mobile number you control | The new account receives an invitation by SMS. It must not belong to anyone else in the organization |
+| A test group with the app's bot in it | Only needed for the message step |
+| A Beisen connector | Key and Secret, with the interfaces listed below |
+
+## Permissions to switch on
+
+### Feishu
+
+In the [Feishu Open Platform](https://open.feishu.cn/app), on **Permissions & Scopes**:
+
+| Permission | Needed by |
+|---|---|
+| `contact:contact` | Create, update, suspend and resume accounts |
+| `contact:user.id:readonly` | Find an account by mobile number or email, and the check before every provisioning |
+| `contact:contact:readonly_as_app` (or `contact:contact.base:readonly`) | Get Employee, List Department Members, List Sub-Departments, the permission scope |
+| `im:message:send_as_bot` | Send messages. The app must also have the **Bot** feature switched on |
+| `im:chat:readonly` | The group picker that lists the chats the bot is in |
+| `bitable:app` (or `base:record:create`) | Bitable steps. Also add the app as an editor of the Bitable itself |
+
+Then:
+
+1. **Data permissions, contact permission scope.** Include the test department. The scope covers its sub-departments. Anything touching the company root needs **All members**. A department outside the scope fails with `40004`, a member outside it with `41050`.
+2. **Security Settings.** If the app has an IP allowlist, add the outbound IP of the machine that runs the script and of the platform server. A blocked address fails every call with `99991401`.
+3. **Version Management & Release.** Create a version and publish it. A Feishu administrator has to approve it, and again after every change of scopes or contact scope. To message individuals, the **availability scope** must include them.
+
+### Beisen
+
+In Beisen iTalent, an administrator opens **Enterprise Settings → Authorization Management** and gives the setup account the **Open application connection** role. With that account, in the Beisen Open Platform admin console, create a connector under **My Connectors** and add these interfaces:
+
+| Interface | Needed by |
+|---|---|
+| `Employee/GetByTimeWindow` | Employee Changed trigger, Search Changed Employees |
+| `Employee/GetEmployeeOfOrganization` | List Employees Of An Organization |
+| `Employee/GetServiceInfoByIds`, `Employee/GetUserIDByEmail` | Get Employment Records, Find Employee By Email |
+| `Organization/GetSubOrganizations`, `Organization/GetSubOrganizationTrees` | Get Sub Organizations |
+| `RecruitOnBoarding/GetStaffInfos` | Get Onboarding Staff |
+| `Applicant/GetApplicantIds`, `Applicant/GetResume` | Find Applicant, Get Applicant Resume |
+
+For the employee interfaces tick **both** objects, **Employee Information** and **Employment Record**, or Beisen answers with a permission error. If your tenant restricts callers, add the outbound IP to the connector's **OpenAPI trusted IPs**.
+
+<Info>
+The Beisen menu names come from Beisen's help documentation, which needs a Beisen community login, and the token flow from a third-party description of it. Ask your Beisen consultant if a name does not match.
+</Info>
+
+## Run it
+
+Set the credentials in your shell. Do not write them into a file in the repository.
+
+```bash
+export FEMA_REAL_FEISHU_APP_ID=cli_xxxxxxxxxxxxxxxx
+export FEMA_REAL_FEISHU_APP_SECRET=...
+export FEMA_REAL_FEISHU_TEST_DEPARTMENT_ID=od-xxxxxxxx
+export FEMA_REAL_FEISHU_TEST_MOBILE=13800000000
+export FEMA_REAL_FEISHU_TEST_CHAT_ID=oc_xxxxxxxx
+
+export FEMA_REAL_BEISEN_APP_KEY=...
+export FEMA_REAL_BEISEN_APP_SECRET=...
+export FEMA_REAL_BEISEN_ROOT_OID=900100000
+```
+
+First a read-only run. It touches nothing:
+
+```bash
+node tools/e2e/main-line/run-real.mjs
+```
+
+Fix whatever failed, then allow the writes and run it again:
+
+```bash
+export FEMA_REAL_CONFIRM_WRITE=create-test-account-and-send-test-message
+node tools/e2e/main-line/run-real.mjs
+```
+
+The exit code is 0 when no step failed, 1 when one did, 2 when the connectors are not built.
+
+### All variables
+
+| Variable | Meaning |
+|---|---|
+| `FEMA_REAL_FEISHU_APP_ID`, `FEMA_REAL_FEISHU_APP_SECRET` | The custom app credentials |
+| `FEMA_REAL_FEISHU_DOMAIN` | `lark` for the international edition, otherwise Feishu |
+| `FEMA_REAL_FEISHU_TEST_DEPARTMENT_ID` | The test department, an `od-` ID or the custom ID. The company root `0` is refused unless `FEMA_REAL_ALLOW_ROOT=yes` |
+| `FEMA_REAL_FEISHU_TEST_MOBILE` | Receives the invitation. A number outside mainland China also needs `FEMA_REAL_FEISHU_TEST_EMAIL` |
+| `FEMA_REAL_FEISHU_TEST_CHAT_ID` | The test group for the message step |
+| `FEMA_REAL_FEISHU_BITABLE_APP_TOKEN`, `_TABLE_ID`, `_TEXT_FIELD` | Optional, all three together: one row is added to a text column and read back |
+| `FEMA_REAL_BEISEN_APP_KEY`, `FEMA_REAL_BEISEN_APP_SECRET` | The connector Key and Secret |
+| `FEMA_REAL_BEISEN_ROOT_OID` | The root organization, 900 followed by your tenant ID. Without it the roster step is skipped |
+| `FEMA_REAL_BEISEN_TEST_EMAIL` | Optional, one employee email to look up |
+| `FEMA_REAL_CONFIRM_WRITE` | Must be exactly `create-test-account-and-send-test-message` to allow the write steps |
+| `FEMA_REAL_TEST_PREFIX` | Name prefix of the test account, default `FEMA验收-` |
+| `FEMA_REAL_ONLY` | `feishu` or `beisen` to run one side only |
+
+## When a step fails
+
+| What you see | Most likely cause | Who fixes it |
+|---|---|---|
+| `99991672`, with a scope name in `[...]` | The app lacks that permission | Feishu developer: add it, create a version, publish; administrator approves |
+| `40004` or `41050` | Department or member outside the contact scope | Feishu developer or administrator: extend the contact scope, republish |
+| `41017` or `44035` | The department ID does not exist, or its ID type is wrong (an `od-` prefix means `open_department_id`) | Whoever set the variable |
+| `99991401` | The machine's IP is not on the app's allowlist | Feishu developer |
+| `10015`, `10003`, `10014` | Wrong App Secret, wrong App ID, app disabled | Feishu developer |
+| `99991403` | Free-edition monthly API quota used up | Feishu administrator, or wait for the first of next month |
+| `41001`, `41002`, `41003` | The test mobile or email already belongs to an account the app cannot see | Pick another number, or have the old account cancelled |
+| `44019`, `44020` | An unverified organization with a non-+86 number, or a number outside China without an email | Use a +86 number, or verify the organization |
+| `230002`, `230013`, `230006` | Bot not in the group, recipient outside the availability scope, bot feature off | Feishu developer |
+| Beisen `HTTP 401`, or a Key or Secret message | Wrong Key or Secret, or the caller IP is not trusted | Beisen administrator |
+| Beisen `(Beisen code 417)` | A parameter was rejected, for the organization steps usually the OId | Read the message, check the OId |
+| Beisen `HTTP 429` | The tenant hit the rate limit; Beisen refuses it until 00:00 the next day (Beijing time) | Wait; poll less often |
+| A permission or `403` message from Beisen | The interface is not granted, or only one of the two employee objects is ticked | Beisen administrator |
+| `ENOTFOUND`, `ECONNREFUSED`, `ETIMEDOUT` | This machine cannot reach the platform | Network, proxy, firewall |
+
+## What this does not prove
+
+The script exercises the connectors, not the workflows. After it passes, still do the [test employee check](/workflows/guides/beisen-to-feishu-people-sync#check-it-with-a-test-employee) of the people sync guide: change a test employee in Beisen and watch the workflow follow. That covers the parts only a real tenant can show, namely how quickly Beisen makes a change visible to the time window query, which time zone it reads the window in, and whether the department mapping table is complete.
+
+## Try the script without a tenant
+
+To see the flow without credentials, start the mock server and point the script at it. This proves only that the script works; the summary says `Verified against the real platforms: NOTHING (mock mode)`.
+
+```bash
+MOCK_PORT=18904 node tools/e2e/main-line/mock-server.mjs &
+FEMA_REAL_FEISHU_APP_ID=cli_mock FEMA_REAL_FEISHU_APP_SECRET=s \
+FEMA_REAL_FEISHU_BASE_URL=http://127.0.0.1:18904/feishu \
+FEMA_REAL_BEISEN_APP_KEY=k FEMA_REAL_BEISEN_APP_SECRET=s \
+FEMA_REAL_BEISEN_BASE_URL=http://127.0.0.1:18904/beisen \
+FEMA_REAL_MOCK_ADMIN_URL=http://127.0.0.1:18904 \
+FEMA_REAL_FEISHU_TEST_DEPARTMENT_ID=od-rd FEMA_REAL_FEISHU_TEST_MOBILE=13900001111 \
+FEMA_REAL_FEISHU_TEST_CHAT_ID=oc_hr_notice FEMA_REAL_BEISEN_ROOT_OID=900100000 \
+node tools/e2e/main-line/run-real.mjs
+```
+
+`node tools/e2e/main-line/check-official-fidelity.mjs` checks that the mock server behaves as the vendors' documentation says, for example the error codes, the string business code of Beisen and the one second limit on suspending.

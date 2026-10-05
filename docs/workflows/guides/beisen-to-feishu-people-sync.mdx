@@ -45,9 +45,11 @@ The Beisen steps are taken from Beisen's own help documentation, which needs a B
    - `im:message:send_as_bot`, to post to the HR and IT groups
    - `contact:user.id:readonly`, to find accounts by mobile number or email
    - `contact:contact`, to open, change and suspend accounts
+   - `contact:contact:readonly_as_app`, to read an account back after a step and to list members and departments for reconciliation
 3. **Set the contact scope** (通讯录权限范围). Add every department that appears in your mapping table. The scope covers a department's sub-departments too. Opening accounts directly under the root department needs the scope **All members**. A department outside the scope fails with error 40004 (department not in scope) or 41050 (member not in scope).
-4. **Publish the app.** On **Version Management & Release** (版本管理与发布), create a version and publish it. A Feishu administrator has to approve it before the permissions take effect, and again every time you change the contact scope.
-5. **Add the app's bot to the HR group and the IT group.** A bot can only post into groups it belongs to.
+4. **Check the IP allowlist.** If the app has one under **Security Settings**, add the outbound IP of the server that runs this platform, or every call fails with error 99991401.
+5. **Publish the app.** On **Version Management & Release** (版本管理与发布), create a version and publish it. A Feishu administrator has to approve it before the permissions take effect, and again every time you change the contact scope.
+6. **Add the app's bot to the HR group and the IT group.** A bot can only post into groups it belongs to.
 
 <Warning>
 Opening a Feishu account sends the person an invitation by SMS or email straight away, and the account stays *inactive* until they accept. There is no way to switch the invitation off. Test with a real person who expects it.
@@ -94,7 +96,7 @@ Until a department has a row, the step that needs it fails with a clear message.
 
 - **From real employees.** In the new-hire workflow, open the trigger and run its test. The output lists employees whose records changed in the last 24 hours, each with `recordInfo.oIdDepartment`. Match that number with the employee's department in Beisen. Repeat with employees of the departments you need.
 - **From Beisen.** Ask your Beisen administrator or implementation consultant for the list of departments with their OIds.
-- **From the connector.** **Get Sub Organizations** (获取下级组织) lists the organization units under an organization ID. The platform's checks have not exercised it against a real tenant, so confirm what it returns in a test run before relying on it.
+- **From the connector.** **Get Sub Organizations** (获取下级组织) lists the organization units under an organization's numeric OId; the company root is 900 followed by your Beisen tenant ID, for example 900100000. Tick **Include All Levels** for the whole tree. It has only been checked against Beisen's documentation, so confirm what it returns in a test run (see [Accept Beisen and Feishu with real tenants](/workflows/guides/real-tenant-acceptance)).
 
 ### Find the Feishu department ID
 

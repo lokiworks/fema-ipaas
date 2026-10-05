@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuContacts } from '../common/contacts';
 
 export const getUser = createAction({
@@ -9,6 +10,7 @@ export const getUser = createAction({
   displayName: 'Get Employee',
   description: 'Read the department, manager, job title and suspension state of a Feishu account',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.getUser,
   classification: 'READ',
   aiMetadata: {
     description:

@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { beisenAuth } from '../auth';
+import { beisenOutputSchemas } from '../output-schemas';
 import { STATUS_SCOPE_OPTIONS, StatusScope, beisenTimeWindow } from '../common/time-window';
 
 export const listOrganizationEmployees = createAction({
@@ -9,6 +10,7 @@ export const listOrganizationEmployees = createAction({
   displayName: 'List Employees Of An Organization',
   description: 'List every employee under a Beisen organization, for reconciling against the target system',
   audience: 'both',
+  outputSchema: beisenOutputSchemas.listOrganizationEmployees,
   classification: 'SEARCH',
   aiMetadata: {
     description:

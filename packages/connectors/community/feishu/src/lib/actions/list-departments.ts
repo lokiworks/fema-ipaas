@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuContacts } from '../common/contacts';
 
 export const listDepartments = createAction({
@@ -9,6 +10,7 @@ export const listDepartments = createAction({
   displayName: 'List Sub-Departments',
   description: 'List the departments below a department, to build the department mapping table',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.listDepartments,
   classification: 'SEARCH',
   aiMetadata: {
     description:

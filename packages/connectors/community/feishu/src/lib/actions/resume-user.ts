@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuContacts } from '../common/contacts';
 
 export const resumeUser = createAction({
@@ -9,6 +10,7 @@ export const resumeUser = createAction({
   displayName: 'Resume Employee Account',
   description: 'Lift the suspension of an employee account so they can sign in again',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.setSuspended,
   classification: 'WRITE',
   aiMetadata: {
     description:

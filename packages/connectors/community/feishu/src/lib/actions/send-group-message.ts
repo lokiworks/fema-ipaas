@@ -2,6 +2,7 @@ import { HttpMethod } from '@fema-ipaas/connector-common';
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuCommon } from '../common';
 import { feishuIdempotency } from '../common/idempotency';
 
@@ -11,6 +12,7 @@ export const sendGroupMessage = createAction({
   displayName: 'Send Group Message',
   description: 'Send a message to a Feishu group chat the bot has joined',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.sendMessage,
   classification: 'WRITE',
   aiMetadata: {
     description:

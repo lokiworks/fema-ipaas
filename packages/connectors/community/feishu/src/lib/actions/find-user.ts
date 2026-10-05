@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuContacts } from '../common/contacts';
 
 export const findUser = createAction({
@@ -9,6 +10,7 @@ export const findUser = createAction({
   displayName: 'Find User',
   description: 'Exchange a work email or mobile number for a Feishu open_id',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.findUser,
   classification: 'SEARCH',
   aiMetadata: {
     description:

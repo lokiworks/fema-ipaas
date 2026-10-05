@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuContacts } from '../common/contacts';
 
 export const updateUser = createAction({
@@ -9,6 +10,7 @@ export const updateUser = createAction({
   displayName: 'Update Employee',
   description: 'Change the department, manager, job title or name of a Feishu account',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.updateUser,
   classification: 'WRITE',
   aiMetadata: {
     description:

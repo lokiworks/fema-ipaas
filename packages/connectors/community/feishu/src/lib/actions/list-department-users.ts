@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuContacts } from '../common/contacts';
 
 export const listDepartmentUsers = createAction({
@@ -9,6 +10,7 @@ export const listDepartmentUsers = createAction({
   displayName: 'List Department Members',
   description: 'List the Feishu accounts in a department, for reconciling against the HR roster',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.listDepartmentUsers,
   classification: 'SEARCH',
   aiMetadata: {
     description:

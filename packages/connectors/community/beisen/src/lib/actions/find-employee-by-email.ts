@@ -2,6 +2,7 @@ import { HttpMethod } from '@fema-ipaas/connector-common';
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { beisenAuth } from '../auth';
+import { beisenOutputSchemas } from '../output-schemas';
 import { beisenCommon } from '../common';
 
 export const findEmployeeByEmail = createAction({
@@ -10,6 +11,7 @@ export const findEmployeeByEmail = createAction({
   displayName: 'Find Employee By Email',
   description: 'Exchange an employee email for the Beisen user ID',
   audience: 'both',
+  outputSchema: beisenOutputSchemas.findEmployeeByEmail,
   classification: 'SEARCH',
   aiMetadata: {
     description:

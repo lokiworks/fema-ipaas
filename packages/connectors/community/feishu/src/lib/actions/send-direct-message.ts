@@ -2,6 +2,7 @@ import { HttpMethod } from '@fema-ipaas/connector-common';
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuCommon } from '../common';
 import { feishuIdempotency } from '../common/idempotency';
 
@@ -11,6 +12,7 @@ export const sendDirectMessage = createAction({
   displayName: 'Send Direct Message',
   description: 'Send a one-to-one Feishu message addressed by email or user ID',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.sendMessage,
   classification: 'WRITE',
   aiMetadata: {
     description:

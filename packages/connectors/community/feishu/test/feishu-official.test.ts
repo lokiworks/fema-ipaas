@@ -427,3 +427,38 @@ describe('findUser action', () => {
     expect(result).toMatchObject({ found: false, open_id: null, is_frozen: null, is_resigned: null });
   });
 });
+
+describe('output schemas describe what the actions return', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  function keysOf(schema: { fields: { key: string }[] } | undefined): string[] {
+    return (schema?.fields ?? []).map((field) => field.key);
+  }
+
+  it('lists every field provision_user returns, for a created and for a reused account', async () => {
+    const { provisionUser } = await import('../src/lib/actions/provision-user');
+    route((request) =>
+      request.url.endsWith('/batch_get_id') ? reply({ code: 0, data: { user_list: [] } }) : reply({ code: 0, data: { user: { open_id: 'ou_new', user_id: 'u1', union_id: 'on_1' } } }),
+    );
+    const created = await feishuContacts.provisionUser({ auth: authFor('cli_s1'), input });
+    route(() => reply({ code: 0, data: { user_list: [{ mobile: '+8613800000000', user_id: 'ou_old', status: { is_frozen: false } }] } }));
+    const reused = await feishuContacts.provisionUser({ auth: authFor('cli_s1'), input });
+
+    const described = keysOf(provisionUser.outputSchema);
+    expect(Object.keys(created).filter((key) => !described.includes(key))).toEqual([]);
+    expect(Object.keys(reused).filter((key) => !described.includes(key))).toEqual([]);
+  });
+
+  it('lists every field get_user and suspend_user return', async () => {
+    const { getUser } = await import('../src/lib/actions/get-user');
+    const { suspendUser } = await import('../src/lib/actions/suspend-user');
+    route(() => reply({ code: 0, data: { user: { open_id: 'ou_1', status: { is_frozen: true } } } }));
+    const user = await feishuContacts.getUser({ auth: authFor('cli_s2'), input: { openId: 'ou_1' } });
+    const suspended = await feishuContacts.setUserSuspended({ auth: authFor('cli_s2'), input: { openId: 'ou_1', suspended: true } });
+
+    expect(Object.keys(user).filter((key) => !keysOf(getUser.outputSchema).includes(key))).toEqual([]);
+    expect(Object.keys(suspended).filter((key) => !keysOf(suspendUser.outputSchema).includes(key))).toEqual([]);
+  });
+});

@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { beisenAuth } from '../auth';
+import { beisenOutputSchemas } from '../output-schemas';
 import { QUERY_TYPE_OPTIONS, STATUS_SCOPE_OPTIONS, StatusScope, beisenTimeWindow } from '../common/time-window';
 
 export const searchChangedEmployees = createAction({
@@ -9,6 +10,7 @@ export const searchChangedEmployees = createAction({
   displayName: 'Search Changed Employees',
   description: 'Roll through employees whose records changed inside a time window',
   audience: 'both',
+  outputSchema: beisenOutputSchemas.searchChangedEmployees,
   classification: 'SEARCH',
   aiMetadata: {
     description:

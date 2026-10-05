@@ -1,6 +1,7 @@
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
+import { feishuOutputSchemas } from '../output-schemas';
 import { feishuContacts } from '../common/contacts';
 
 export const provisionUser = createAction({
@@ -9,6 +10,7 @@ export const provisionUser = createAction({
   displayName: 'Provision Employee Account',
   description: 'Create a Feishu account in a department, or return the existing one when the mobile or email is already in use',
   audience: 'both',
+  outputSchema: feishuOutputSchemas.provisionUser,
   classification: 'WRITE',
   aiMetadata: {
     description:

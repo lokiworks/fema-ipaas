@@ -2,6 +2,7 @@ import { HttpMethod } from '@fema-ipaas/connector-common';
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { beisenAuth } from '../auth';
+import { beisenOutputSchemas } from '../output-schemas';
 import { beisenCommon } from '../common';
 
 export const findApplicant = createAction({
@@ -10,6 +11,7 @@ export const findApplicant = createAction({
   displayName: 'Find Applicant',
   description: 'Find Beisen applicant IDs by email, mobile, ID number or candidate code',
   audience: 'both',
+  outputSchema: beisenOutputSchemas.findApplicant,
   classification: 'SEARCH',
   aiMetadata: {
     description:

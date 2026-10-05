@@ -11,6 +11,7 @@ import {
 } from '@fema-ipaas/connector-sdk';
 
 import { beisenAuth } from '../auth';
+import { beisenOutputSchemas } from '../output-schemas';
 import { beisenCommon } from '../common';
 import { beisenChangeWindow, type SeenRecords } from '../common/change-window';
 import {
@@ -63,6 +64,7 @@ export const employeeChanged = createTrigger({
   name: 'employee_changed',
   displayName: 'Employee Changed',
   description: 'Starts the workflow for every employee whose record changed since the last check',
+  outputSchema: beisenOutputSchemas.employeeRecord,
   classification: 'READ',
   aiMetadata: {
     description:

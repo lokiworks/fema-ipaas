@@ -92,3 +92,51 @@ describe('versionUtil.versionsAreCompatible', () => {
         expect(versionUtil.versionsAreCompatible({ versionA: '0.0.0', versionB: '0.0.0' })).toBe(false)
     })
 })
+
+describe('versionUtil.getLatestRelease', () => {
+    const getMock = vi.fn()
+
+    async function loadWithMockedNetwork(): Promise<typeof import('../src/version')['versionUtil']> {
+        vi.resetModules()
+        getMock.mockReset()
+        vi.doMock('../src/safe-http', () => ({ safeHttp: { axios: { get: getMock } } }))
+        const mod = await import('../src/version')
+        return mod.versionUtil
+    }
+
+    afterEach(() => {
+        vi.doUnmock('../src/safe-http')
+        vi.useRealTimers()
+    })
+
+    it('asks the network once for several callers at the same time', async () => {
+        const versionUtil = await loadWithMockedNetwork()
+        getMock.mockResolvedValue({ data: { version: '9.9.9' } })
+        const results = await Promise.all([versionUtil.getLatestRelease(), versionUtil.getLatestRelease(), versionUtil.getLatestRelease()])
+        expect(results).toEqual(['9.9.9', '9.9.9', '9.9.9'])
+        expect(getMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not make an offline installation wait for the network on every system page load', async () => {
+        const versionUtil = await loadWithMockedNetwork()
+        getMock.mockRejectedValue(new Error('connect ETIMEDOUT'))
+        expect(await versionUtil.getLatestRelease()).toBe('0.0.0')
+        expect(await versionUtil.getLatestRelease()).toBe('0.0.0')
+        expect(getMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('tries again once the failure has aged out, and keeps a success for an hour', async () => {
+        const versionUtil = await loadWithMockedNetwork()
+        vi.useFakeTimers()
+        getMock.mockRejectedValueOnce(new Error('offline')).mockResolvedValue({ data: { version: '1.0.1' } })
+        expect(await versionUtil.getLatestRelease()).toBe('0.0.0')
+        vi.advanceTimersByTime(11 * 60 * 1000)
+        expect(await versionUtil.getLatestRelease()).toBe('1.0.1')
+        vi.advanceTimersByTime(30 * 60 * 1000)
+        expect(await versionUtil.getLatestRelease()).toBe('1.0.1')
+        expect(getMock).toHaveBeenCalledTimes(2)
+        vi.advanceTimersByTime(31 * 60 * 1000)
+        await versionUtil.getLatestRelease()
+        expect(getMock).toHaveBeenCalledTimes(3)
+    })
+})

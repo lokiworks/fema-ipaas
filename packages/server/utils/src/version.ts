@@ -7,6 +7,25 @@ import { safeHttp } from './safe-http'
 const logger = loggerFactory.create()
 
 let cachedCurrentRelease: string | undefined
+let latestReleaseCache: { value: string, expiresAt: number } | undefined
+let latestReleaseInFlight: Promise<string> | undefined
+
+async function fetchLatestRelease(): Promise<string> {
+    try {
+        const response = await safeHttp.axios.get<PackageJson>(LATEST_RELEASE_MANIFEST_URL, {
+            timeout: 5000,
+        })
+        const version = response.data.version
+        const value = typeof version === 'string' ? version : UNKNOWN_VERSION
+        latestReleaseCache = { value, expiresAt: Date.now() + (value === UNKNOWN_VERSION ? LATEST_RELEASE_FAILURE_TTL_MS : LATEST_RELEASE_TTL_MS) }
+        return value
+    }
+    catch (ex) {
+        logger.warn({ err: ex }, 'could not read the latest release, reporting it as unknown')
+        latestReleaseCache = { value: UNKNOWN_VERSION, expiresAt: Date.now() + LATEST_RELEASE_FAILURE_TTL_MS }
+        return UNKNOWN_VERSION
+    }
+}
 
 function readCurrentRelease(): string {
     if (cachedCurrentRelease !== undefined) {
@@ -35,17 +54,16 @@ export const versionUtil = {
         return readCurrentRelease()
     },
     async getLatestRelease(): Promise<string> {
-        try {
-            const response = await safeHttp.axios.get<PackageJson>(LATEST_RELEASE_MANIFEST_URL, {
-                timeout: 5000,
-            })
-            const version = response.data.version
-            return typeof version === 'string' ? version : UNKNOWN_VERSION
+        if (latestReleaseCache !== undefined && latestReleaseCache.expiresAt > Date.now()) {
+            return latestReleaseCache.value
         }
-        catch (ex) {
-            logger.warn({ err: ex }, 'could not read the latest release, reporting it as unknown')
-            return UNKNOWN_VERSION
+        if (latestReleaseInFlight !== undefined) {
+            return latestReleaseInFlight
         }
+        latestReleaseInFlight = fetchLatestRelease().finally(() => {
+            latestReleaseInFlight = undefined
+        })
+        return latestReleaseInFlight
     },
     //could be null if the other is running on something older than 0.85.0
     versionsAreCompatible({ versionA, versionB }: { versionA: string | undefined, versionB: string | undefined }): boolean {
@@ -66,3 +84,5 @@ type PackageJson = {
 }
 
 const LATEST_RELEASE_MANIFEST_URL = 'https://raw.githubusercontent.com/lokiworks/fema-ipaas/main/package.json'
+const LATEST_RELEASE_TTL_MS = 60 * 60 * 1000
+const LATEST_RELEASE_FAILURE_TTL_MS = 10 * 60 * 1000

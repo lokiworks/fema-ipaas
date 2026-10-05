@@ -41,6 +41,18 @@ describe('official Beisen to Feishu solution', () => {
         expect(text).toContain('"filterColumn":"recordInfo.changeTypeOID"')
     })
 
+    it('runs one employee at a time on onboarding and transfer, and counts a return to an earlier department as a new event', () => {
+        const triggerOf = (key: string) => {
+            const workflow = pkg().workflows.find((candidate) => candidate.key === key)
+            const settings = workflow?.trigger.settings
+            return settings !== undefined && 'dedupe' in settings ? settings : undefined
+        }
+        expect(triggerOf('onboard')?.concurrency).toEqual({ maxConcurrentRuns: 0, orderKeyPath: '{{trigger.recordInfo.jobNumber}}' })
+        expect(triggerOf('transfer')?.concurrency).toEqual({ maxConcurrentRuns: 0, orderKeyPath: '{{trigger.recordInfo.jobNumber}}' })
+        expect(triggerOf('leave')?.concurrency).toEqual({ maxConcurrentRuns: 1 })
+        expect(triggerOf('transfer')?.dedupe?.keyPath).toContain('{{trigger.recordInfo.startDate}}')
+    })
+
     it('fills connections, chat ids and the mapping table when installed', () => {
         const items = pkg().config
         const tableIdByKey = new Map([['department', 'tbl_real']])

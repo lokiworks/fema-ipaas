@@ -41,8 +41,8 @@ function buildBeisenFeishuSolution(): OfficialSolution {
         name: '北森 → 飞书 人员同步',
         summary: '北森员工入职、调岗、离职后，自动在飞书开通账号、同步部门、暂停账号，并通知 HR 群和 IT 群。',
         category: 'HR',
-        version: '1.0',
-        notes: '首个版本：入职开通、调岗同步部门、离职暂停账号',
+        version: '1.1',
+        notes: '同一员工的变动按工号排队逐条处理；调岗去重键加上任职开始日，调回原部门不再被当成重复',
         publishedAt: '2026-10-03T00:00:00.000Z',
         package: pkg,
     }
@@ -55,6 +55,7 @@ function onboardWorkflow(): SolutionWorkflow {
         changeTypes: ['1', '2'],
         dedupeKey: '{{trigger.recordInfo.jobNumber}}',
         dedupeDays: 7,
+        orderKeyPath: EMPLOYEE_KEY,
         nextAction: connectorStep({
             name: 'map_department',
             displayName: '部门对照',
@@ -112,8 +113,9 @@ function transferWorkflow(): SolutionWorkflow {
         displayName: '北森员工调岗',
         statusScope: 'ACTIVE',
         changeTypes: ['7', '9'],
-        dedupeKey: '{{trigger.recordInfo.jobNumber}}-{{trigger.recordInfo.oIdDepartment}}',
+        dedupeKey: '{{trigger.recordInfo.jobNumber}}-{{trigger.recordInfo.oIdDepartment}}-{{trigger.recordInfo.startDate}}',
         dedupeDays: 30,
+        orderKeyPath: EMPLOYEE_KEY,
         nextAction: connectorStep({
             name: 'find_user',
             displayName: '按手机号找飞书账号',
@@ -205,6 +207,8 @@ function leaveWorkflow(): SolutionWorkflow {
     })
     return { key: 'leave', name: '员工离职暂停飞书账号', description: '北森离职生效后暂停飞书账号（数据保留、可恢复），并通知 IT 回收设备。', trigger, schemaVersion: null }
 }
+
+const EMPLOYEE_KEY = '{{trigger.recordInfo.jobNumber}}'
 
 const DEPARTMENT_TABLE = {
     id: 'mt_beisen_department',

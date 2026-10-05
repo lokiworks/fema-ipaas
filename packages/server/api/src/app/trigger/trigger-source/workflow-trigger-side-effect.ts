@@ -12,6 +12,7 @@ import { projectService } from '../../project/project-service'
 import { jobQueue, JobType } from '../../workers/job-queue/job-queue'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { appEventRoutingService } from '../app-event-routing/app-event-routing.service'
+import { pollCursorGuard } from '../poll-cursor-guard'
 import { triggerPollMarker } from '../trigger-poll-marker'
 
 const environment = system.getOrThrow<RuntimeEnvironment>(AppSystemProp.ENVIRONMENT)
@@ -117,6 +118,7 @@ export const workflowTriggerSideEffect = (log: FastifyBaseLogger) => {
                         workflowVersionId,
                     })
                     await triggerPollMarker.clear({ workflowId })
+                    await pollCursorGuard(log).discard({ projectId, workflowId })
                     break
                 case TriggerStrategy.MANUAL:
                     break

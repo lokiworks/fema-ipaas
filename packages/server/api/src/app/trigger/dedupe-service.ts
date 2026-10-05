@@ -24,6 +24,10 @@ export const dedupeService = {
         const redisConnection = await redisConnections.useExisting()
         await redisConnection.eval(BIND_SCRIPT, 1, claim.redisKey, executionId)
     },
+    releaseClaim: async ({ claim }: { claim: DedupeClaim }): Promise<void> => {
+        const redisConnection = await redisConnections.useExisting()
+        await redisConnection.eval(RELEASE_SCRIPT, 1, claim.redisKey, PENDING_MARKER)
+    },
 }
 
 export const dedupeKeyUtils = {
@@ -45,6 +49,10 @@ async function claimPayload({ workflowId, settings, payload }: ClaimPayloadParam
     const legacyExists = await redisConnection.exists(legacyRedisKeyOf({ workflowId, keyValue }))
     const claimed = legacyExists > 0 ? null : await redisConnection.set(redisKey, PENDING_MARKER, 'EX', settings.windowSeconds, 'NX')
     if (claimed === 'OK') {
+        return { kind: 'accepted', payload, claim: { redisKey, keyHash } }
+    }
+    const takenOver = legacyExists > 0 ? 0 : await redisConnection.eval(TAKE_OVER_SCRIPT, 1, redisKey, PENDING_MARKER, settings.windowSeconds * MS_PER_SECOND, STALE_PENDING_CLAIM_MS)
+    if (takenOver === 1) {
         return { kind: 'accepted', payload, claim: { redisKey, keyHash } }
     }
     const stored = await redisConnection.get(redisKey)
@@ -120,6 +128,29 @@ async function incrementInRedis(key: string, expireySeconds: number): Promise<nu
 
 const PENDING_MARKER = 'pending'
 const MAX_PREVIEW_LENGTH = 200
+const MS_PER_SECOND = 1000
+const STALE_PENDING_CLAIM_MS = 2 * 60 * 1000
+const RELEASE_SCRIPT = `
+if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+end
+return 0
+`
+const TAKE_OVER_SCRIPT = `
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then
+    return 0
+end
+local ttl = redis.call('PTTL', KEYS[1])
+if ttl < 0 then
+    return 0
+end
+local age = tonumber(ARGV[2]) - ttl
+if age < tonumber(ARGV[3]) then
+    return 0
+end
+redis.call('SET', KEYS[1], ARGV[1], 'PX', ARGV[2])
+return 1
+`
 const BIND_SCRIPT = `
 local ttl = redis.call('PTTL', KEYS[1])
 if ttl > 0 then

@@ -40,6 +40,43 @@ describe('dedupeService.claimWorkflowDedupe', () => {
         expect(fakeRedis.lastExpirySeconds()).toBe(HOUR)
     })
 
+    it('frees a claim whose run never started so the next fetch of the same event can start it', async () => {
+        const settings = { enabled: true, keyPath: 'id', windowSeconds: HOUR }
+        const first = await dedupeService.claimWorkflowDedupe({ workflowId: 'wf', settings, payloads: [{ id: 7 }] })
+        await dedupeService.releaseClaim({ claim: first.accepted[0].claim! })
+
+        const again = await dedupeService.claimWorkflowDedupe({ workflowId: 'wf', settings, payloads: [{ id: 7 }] })
+
+        expect(again.accepted).toHaveLength(1)
+        expect(again.duplicates).toHaveLength(0)
+    })
+
+    it('does not free a claim that already belongs to a started run', async () => {
+        const settings = { enabled: true, keyPath: 'id', windowSeconds: HOUR }
+        const first = await dedupeService.claimWorkflowDedupe({ workflowId: 'wf', settings, payloads: [{ id: 8 }] })
+        await dedupeService.bindFirstExecution({ claim: first.accepted[0].claim!, executionId: 'run-8' })
+        await dedupeService.releaseClaim({ claim: first.accepted[0].claim! })
+
+        const again = await dedupeService.claimWorkflowDedupe({ workflowId: 'wf', settings, payloads: [{ id: 8 }] })
+
+        expect(again.accepted).toHaveLength(0)
+        expect(again.duplicates[0].firstExecutionId).toBe('run-8')
+    })
+
+    it('takes over a claim that stayed pending long after its owner died, but not a fresh one', async () => {
+        const settings = { enabled: true, keyPath: 'id', windowSeconds: HOUR }
+        await dedupeService.claimWorkflowDedupe({ workflowId: 'wf', settings, payloads: [{ id: 9 }] })
+        fakeRedis.advance(30 * 1000)
+        const fresh = await dedupeService.claimWorkflowDedupe({ workflowId: 'wf', settings, payloads: [{ id: 9 }] })
+        expect(fresh.accepted).toHaveLength(0)
+
+        fakeRedis.advance(3 * 60 * 1000)
+        const stale = await dedupeService.claimWorkflowDedupe({ workflowId: 'wf', settings, payloads: [{ id: 9 }] })
+
+        expect(stale.accepted).toHaveLength(1)
+        expect(stale.duplicates).toHaveLength(0)
+    })
+
     it('keeps the same key separate per workflow and ignores events without a key', async () => {
         const settings = { enabled: true, keyPath: 'id', windowSeconds: HOUR }
         await dedupeService.claimWorkflowDedupe({ workflowId: 'wf-1', settings, payloads: [{ id: 1 }] })
@@ -124,8 +161,26 @@ function createFakeRedis() {
         async exists(key: string) {
             return live(key) ? 1 : 0
         },
-        async eval(_script: string, _keys: number, key: string, value: string) {
+        async eval(script: string, _keys: number, key: string, value: string, windowMs?: number, staleMs?: number) {
             const entry = live(key)
+            if (script.includes('DEL')) {
+                if (entry?.value === value) {
+                    values.delete(key)
+                    return 1
+                }
+                return 0
+            }
+            if (script.includes('tonumber(ARGV[2])')) {
+                if (entry?.value !== value) {
+                    return 0
+                }
+                const age = Number(windowMs) - (entry.expiresAt - now)
+                if (age < Number(staleMs)) {
+                    return 0
+                }
+                values.set(key, { value, expiresAt: now + Number(windowMs) })
+                return 1
+            }
             if (entry) {
                 values.set(key, { value, expiresAt: entry.expiresAt })
             }

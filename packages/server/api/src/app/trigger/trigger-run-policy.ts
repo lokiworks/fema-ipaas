@@ -2,6 +2,7 @@ import { isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ConnectorTriggerSettings, Execution, ExecutionStatus, RunConcurrencyTicket, RunEnvironment, ScheduleOverlapPolicy, scheduleUtils, triggerRunSettingsUtils, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import pLimit from 'p-limit'
 import { In, MoreThan } from 'typeorm'
 import { privacyService } from '../privacy/privacy.service'
 import { executionRepo } from '../workflows/execution/execution-service'
@@ -26,17 +27,29 @@ export const triggerRunPolicy = (log: FastifyBaseLogger) => ({
         }
         const { accepted, duplicates } = await dedupeService.claimWorkflowDedupe({ workflowId, settings: settings?.dedupe, payloads })
         const enqueuedAt = Date.now()
-        const started = await Promise.all(accepted.map(async ({ payload, claim }, index) => {
-            const execution = await startRun({
+        const startLimit = pLimit(START_RUN_CONCURRENCY)
+        const attempts = await Promise.allSettled(accepted.map(async ({ payload, claim }, index) => {
+            const execution = await startLimit(() => startRun({
                 payload,
                 concurrency: triggerRunPolicyUtils.ticketFor({ settings, payload, enqueuedAt: enqueuedAt + index }),
                 businessKey: triggerRunPolicyUtils.businessKeyOf({ settings, payload }),
+            })).catch(async (error: unknown) => {
+                if (!isNil(claim)) {
+                    await dedupeService.releaseClaim({ claim })
+                }
+                throw error
             })
             if (!isNil(claim)) {
                 await dedupeService.bindFirstExecution({ claim, executionId: execution.id })
             }
             return { execution, claim }
         }))
+        const failedAttempt = attempts.find((attempt) => attempt.status === 'rejected')
+        if (!isNil(failedAttempt)) {
+            log.error({ workflow: { id: workflowId }, accepted: accepted.length, started: attempts.filter((attempt) => attempt.status === 'fulfilled').length, error: String(failedAttempt.reason) }, '[triggerRunPolicy#startRuns] Some events could not be started, their dedupe claims were released so the next attempt can start them')
+            throw failedAttempt.reason
+        }
+        const started = attempts.flatMap((attempt) => (attempt.status === 'fulfilled' ? [attempt.value] : []))
         if (duplicates.length > 0 && !isNil(settings?.dedupe)) {
             const retention = await privacyService(log).get({ tenantId })
             await dedupedEventService(log).record({
@@ -84,6 +97,7 @@ async function scheduleSkipReason({ settings, workflowId, tenantId, log }: Sched
     return null
 }
 
+const START_RUN_CONCURRENCY = 5
 const UNFINISHED_STATUSES = [ExecutionStatus.QUEUED, ExecutionStatus.RUNNING, ExecutionStatus.PAUSED]
 const OVERLAP_LOOKBACK_HOURS = 24
 

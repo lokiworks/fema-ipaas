@@ -1,6 +1,6 @@
 import { WorkflowTrigger } from '@fema-ipaas/shared'
 
-function beisenTrigger({ displayName, statusScope, changeTypes, dedupeKey, dedupeDays, serial, nextAction }: BeisenTriggerParams): WorkflowTrigger {
+function beisenTrigger({ displayName, statusScope, changeTypes, dedupeKey, dedupeDays, serial, orderKeyPath, nextAction }: BeisenTriggerParams): WorkflowTrigger {
     return WorkflowTrigger.parse({
         name: 'trigger',
         type: 'CONNECTOR_TRIGGER',
@@ -20,10 +20,17 @@ function beisenTrigger({ displayName, statusScope, changeTypes, dedupeKey, dedup
             },
             propertySettings: {},
             dedupe: { enabled: true, keyPath: dedupeKey, windowSeconds: dedupeDays * 24 * 60 * 60 },
-            ...(serial ? { concurrency: { maxConcurrentRuns: 1 } } : {}),
+            ...concurrencyOf({ serial, orderKeyPath }),
         },
         nextAction,
     })
+}
+
+function concurrencyOf({ serial, orderKeyPath }: { serial?: boolean, orderKeyPath?: string }): Record<string, unknown> {
+    if (serial) {
+        return { concurrency: { maxConcurrentRuns: 1 } }
+    }
+    return orderKeyPath === undefined ? {} : { concurrency: { maxConcurrentRuns: 0, orderKeyPath } }
 }
 
 function connectorStep({ name, displayName, connectorName, connectorVersion, actionName, input, retry, nextAction }: ConnectorStepParams): Record<string, unknown> {
@@ -84,6 +91,7 @@ type BeisenTriggerParams = {
     dedupeKey: string
     dedupeDays: number
     serial?: boolean
+    orderKeyPath?: string
     nextAction: Record<string, unknown>
 }
 

@@ -1,9 +1,10 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { ConsumeJobRequest, ConsumeJobResponse, EngineResponseStatus, JobData, RunEnvironment } from '@fema-ipaas/shared'
+import { ConsumeJobRequest, ConsumeJobResponse, EngineResponseStatus, JobData, RunEnvironment, WorkerJobType } from '@fema-ipaas/shared'
 import { Worker as BullMQWorker, Job, UnrecoverableError } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../../authentication/lib/access-token-manager'
 import { redisConnections } from '../../database/redis-connections'
+import { pollCursorGuard } from '../../trigger/poll-cursor-guard'
 import { engineResponseWatcher } from '../engine-response-watcher'
 import { QueueName } from '../job'
 import { jobMigrations } from '../migrations/job-data-migrations'
@@ -140,6 +141,14 @@ async function tryDequeue(worker: BullMQWorker, queueName: string, log: FastifyB
             await job.changePriority({ priority: interceptorResult.priority })
         }
         return tryDequeue(worker, queueName, log)  // retry getNextJob instead of returning null
+    }
+
+    const parsedJobData = parseResult.data
+    if (parsedJobData.jobType === WorkerJobType.EXECUTE_POLLING) {
+        const { error: guardError } = await tryCatch(() => pollCursorGuard(log).begin({ projectId: parsedJobData.projectId, workflowId: parsedJobData.workflowId, jobId }))
+        if (guardError) {
+            log.error({ job: { id: jobId }, error: String(guardError) }, '[jobBroker#tryDequeue] Could not protect the polling cursor, this poll runs without rollback')
+        }
     }
 
     const engineToken = await accessTokenManager(log).generateEngineToken({
@@ -293,6 +302,12 @@ export const jobBroker = (log: FastifyBaseLogger) => ({
         jobAssignmentTracker.clear({ jobId: input.jobId, queueName: input.queueName })
 
         const failed = input.status === EngineResponseStatus.INTERNAL_ERROR || !isNil(error)
+        if (jobData.jobType === WorkerJobType.EXECUTE_POLLING) {
+            const { error: guardError } = await tryCatch(() => pollCursorGuard(log).settle({ projectId: jobData.projectId, workflowId: jobData.workflowId, jobId: input.jobId, failed }))
+            if (guardError) {
+                log.error({ job: { id: input.jobId }, error: String(guardError) }, '[jobBroker] Could not settle the polling cursor')
+            }
+        }
         for (const interceptor of interceptors) {
             const { error: interceptorError } = await tryCatch(() => interceptor.onJobFinished({ jobId: input.jobId, jobData, failed, log }))
             if (interceptorError) {

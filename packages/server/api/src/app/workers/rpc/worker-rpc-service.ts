@@ -14,6 +14,7 @@ import { AppSystemProp } from '../../helper/system/system-props'
 import { projectService } from '../../project/project-service'
 import { reliabilityEventService } from '../../reliability/reliability-event.service'
 import { dedupeService } from '../../trigger/dedupe-service'
+import { pollCursorGuard } from '../../trigger/poll-cursor-guard'
 import { triggerEventService } from '../../trigger/trigger-events/trigger-event.service'
 import { triggerPollMarker } from '../../trigger/trigger-poll-marker'
 import { triggerRunIssues } from '../../trigger/trigger-run/trigger-run-issues'
@@ -112,6 +113,10 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
             }
 
             const tenantId = await projectService(log).getTenantId(projectId)
+            const guardsPoll = environment === RunEnvironment.PRODUCTION && isNil(httpRequestId) && isNil(parentRunId)
+            if (guardsPoll) {
+                await pollCursorGuard(log).markSubmitting({ projectId, workflowId: workflowVersion.workflowId })
+            }
             const connectorDeduped = await dedupeService.filterUniquePayloads(workflowVersionId, payloads)
             const pollGap = environment === RunEnvironment.PRODUCTION ? await triggerPollMarker.gapOf({ workflowId: workflowVersion.workflowId }) : null
             const started = await triggerRunPolicy(log).startRuns({
@@ -144,6 +149,9 @@ export function createHandlers(log: FastifyBaseLogger, assignment: WorkerGroupAs
                     executionIds: started.map((execution) => execution.id),
                     gapSeconds: pollGap.gapSeconds,
                 })
+            }
+            if (guardsPoll) {
+                await pollCursorGuard(log).commit({ projectId, workflowId: workflowVersion.workflowId })
             }
             return started
         },

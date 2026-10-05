@@ -72,6 +72,9 @@ export const enrichWideEventWithError = (error: unknown): void => {
         if (statusCode >= StatusCodes.INTERNAL_SERVER_ERROR) {
             wideErrorFields.stack = error.stack
         }
+        else {
+            markClientError({ error, statusCode })
+        }
         wideEvent.set({ error: wideErrorFields })
         return
     }
@@ -93,7 +96,17 @@ export const enrichWideEventWithError = (error: unknown): void => {
     if (statusCode >= StatusCodes.INTERNAL_SERVER_ERROR.valueOf() && error instanceof Error) {
         wideErrorFields.stack = error.stack
     }
+    else if (error instanceof Error) {
+        markClientError({ error, statusCode })
+    }
     wideEvent.set({ error: wideErrorFields })
+}
+
+function markClientError({ error, statusCode }: { error: Error, statusCode: number }): void {
+    wideEvent.current()?.setLevel('info')
+    if (!hasStatusCode(error)) {
+        Object.defineProperty(error, 'statusCode', { value: statusCode, enumerable: false, configurable: true })
+    }
 }
 
 function hasStatusCode(error: unknown): error is { statusCode: number } {

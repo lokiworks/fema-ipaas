@@ -1,7 +1,10 @@
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
+import { wideEvent } from '@fema-ipaas/server-utils'
 import { FastifyError, FastifyReply, FastifyRequest } from 'fastify'
 import { describe, expect, it, vi } from 'vitest'
-import { errorHandler } from '../../../../src/app/helper/error-handler'
+import { enrichWideEventWithError, errorHandler } from '../../../../src/app/helper/error-handler'
+
+type RequestLoggerOf = Parameters<typeof wideEvent.run>[0]['logger']
 
 type Captured = {
     statusCode: number | undefined
@@ -58,5 +61,39 @@ describe('errorHandler', () => {
         const captured = await handle({ error: new ApplicationError({ code: ErrorCode.ENTITY_NOT_FOUND, params: { message: 'x' } }) })
         expect(captured.statusCode).toBe(404)
         expect(captured.body).toEqual({ code: ErrorCode.ENTITY_NOT_FOUND, params: { message: 'x' } })
+    })
+})
+
+describe('enrichWideEventWithError', () => {
+    function enrich({ error }: { error: unknown }): { levels: string[], sets: Record<string, unknown>[] } {
+        const levels: string[] = []
+        const sets: Record<string, unknown>[] = []
+        const logger = {
+            setLevel: (level: string) => levels.push(level),
+            set: (fields: Record<string, unknown>) => sets.push(fields),
+        }
+        wideEvent.run({ logger: logger as unknown as RequestLoggerOf, fn: () => enrichWideEventWithError(error) })
+        return { levels, sets }
+    }
+
+    it('logs a client mistake as info with its real status instead of an error with status 500', () => {
+        const error = new ApplicationError({ code: ErrorCode.ENTITY_NOT_FOUND, params: { message: 'x' } })
+        const { levels } = enrich({ error })
+        expect(levels).toEqual(['info'])
+        expect(Reflect.get(error, 'statusCode')).toBe(404)
+    })
+
+    it('keeps validation errors that already carry a status at info', () => {
+        const error = Object.assign(new Error('bad'), { statusCode: 400, code: 'FST_ERR_VALIDATION' })
+        expect(enrich({ error }).levels).toEqual(['info'])
+        expect(Reflect.get(error, 'statusCode')).toBe(400)
+    })
+
+    it('leaves an unexpected failure at error level with its stack', () => {
+        const error = new Error('boom')
+        const { levels, sets } = enrich({ error })
+        expect(levels).toEqual([])
+        expect(Reflect.get(error, 'statusCode')).toBeUndefined()
+        expect(JSON.stringify(sets)).toContain('stack')
     })
 })

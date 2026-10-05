@@ -12,6 +12,7 @@ import {
 
 import { beisenAuth } from '../auth';
 import { beisenCommon } from '../common';
+import { beisenChangeWindow, type SeenRecords } from '../common/change-window';
 import {
   QUERY_TYPE_OPTIONS,
   STATUS_SCOPE_OPTIONS,
@@ -30,9 +31,10 @@ const polling: Polling<
   }
 > = {
   strategy: DedupeStrategy.TIMEBASED,
-  items: async ({ auth, propsValue, lastFetchEpochMS }) => {
+  items: async ({ auth, store, propsValue, lastFetchEpochMS }) => {
     const stopMs = Date.now();
-    const startMs = lastFetchEpochMS === 0 ? stopMs - INITIAL_LOOKBACK_MS : lastFetchEpochMS;
+    const enabledAtEpochMS = (await store.get<number>(ENABLED_AT_KEY)) ?? undefined;
+    const startMs = beisenChangeWindow.startFor({ lastFetchEpochMS, enabledAtEpochMS, initialLookbackMs: INITIAL_LOOKBACK_MS });
     const fetched = await beisenTimeWindow.drain({
       auth,
       scope: toScope(propsValue.statusScope),
@@ -46,7 +48,13 @@ const polling: Polling<
       column: propsValue.filterColumn,
       values: toStringList(propsValue.filterValues),
     });
-    return records.map((record) => ({ epochMilliSeconds: stopMs, data: record }));
+    if (lastFetchEpochMS === 0) {
+      return records.map((record) => ({ epochMilliSeconds: stopMs, data: record }));
+    }
+    const seen = (await store.get<SeenRecords>(SEEN_KEY)) ?? {};
+    const result = beisenChangeWindow.dedupe({ records, seen, stopMs, startMs });
+    await store.put(SEEN_KEY, result.seen);
+    return result.fresh.map((record) => ({ epochMilliSeconds: stopMs, data: record }));
   },
 };
 
@@ -126,7 +134,13 @@ export const employeeChanged = createTrigger({
     return pollingHelper.test(polling, context);
   },
   async onEnable(context) {
+    const hadLastPoll = (await context.store.get<number>(LAST_POLL_KEY)) != null;
     await pollingHelper.onEnable(polling, context);
+    if (context.isRepublish && hadLastPoll) {
+      return;
+    }
+    await context.store.put(ENABLED_AT_KEY, await context.store.get<number>(LAST_POLL_KEY));
+    await context.store.put(SEEN_KEY, {});
   },
   async onDisable(context) {
     await pollingHelper.onDisable(polling, context);
@@ -154,3 +168,9 @@ function toStringList(values: unknown[] | undefined): string[] {
 const DEFAULT_TIMEZONE = 'Asia/Shanghai';
 
 const INITIAL_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+
+const LAST_POLL_KEY = 'lastPoll';
+
+const ENABLED_AT_KEY = 'enabledAt';
+
+const SEEN_KEY = 'seenRecords';

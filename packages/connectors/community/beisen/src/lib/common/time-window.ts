@@ -45,17 +45,17 @@ function requestBody({ startTime, stopTime, scope, queryType, capacity, scrollId
   };
 }
 
-async function fetchPage({ auth, body }: { auth: BeisenAuthValue; body: Record<string, unknown> }): Promise<TimeWindowPage> {
+async function fetchPage({ auth, body, path }: { auth: BeisenAuthValue; body: Record<string, unknown>; path?: string }): Promise<TimeWindowPage> {
   const response = await beisenCommon.callApi<TimeWindowResponse>({
     auth,
     method: HttpMethod.POST,
-    path: TIME_WINDOW_PATH,
+    path: path ?? TIME_WINDOW_PATH,
     body,
   });
-  if (response.code !== undefined && response.code !== SUCCESS_CODE) {
-    throw new Error(`${response.message ?? 'Beisen rejected the request'} (Beisen code ${response.code})`);
+  if (response.code !== undefined && !beisenCommon.isSuccessCode(response.code)) {
+    throw beisenCommon.businessError({ code: response.code, message: response.message });
   }
-  return { records: response.data ?? [], scrollId: response.scrollId };
+  return { records: response.data ?? [], scrollId: response.scrollId ?? undefined, isLastData: response.isLastData === true };
 }
 
 async function drain({ auth, scope, queryType, startMs, stopMs, timeZone, columns }: DrainParams): Promise<Record<string, unknown>[]> {
@@ -78,7 +78,7 @@ async function drainWindow({ auth, scope, queryType, window, timeZone, columns }
       body: requestBody({ startTime, stopTime, scope, queryType, capacity: PAGE_SIZE, scrollId, columns }),
     });
     collected.push(...result.records);
-    if (result.records.length === 0 || !result.scrollId) {
+    if (result.records.length === 0 || !result.scrollId || result.isLastData) {
       return collected;
     }
     scrollId = result.scrollId;
@@ -88,13 +88,40 @@ async function drainWindow({ auth, scope, queryType, window, timeZone, columns }
   );
 }
 
+async function scrollAll({ auth, path, body, maxItems }: ScrollAllParams): Promise<Record<string, unknown>[]> {
+  const collected: Record<string, unknown>[] = [];
+  let scrollId: string | undefined = undefined;
+  for (let page = 0; page < MAX_PAGES_PER_WINDOW; page++) {
+    const result: TimeWindowPage = await fetchPage({
+      auth,
+      path,
+      body: { ...body, capacity: PAGE_SIZE, ...(scrollId ? { scrollId } : {}) },
+    });
+    collected.push(...result.records);
+    if (collected.length >= maxItems) {
+      return collected.slice(0, maxItems);
+    }
+    if (result.records.length === 0 || !result.scrollId || result.isLastData) {
+      return collected;
+    }
+    scrollId = result.scrollId;
+  }
+  return collected;
+}
+
 export const beisenTimeWindow = {
   segments,
   formatTimestamp,
   requestBody,
   fetchPage,
   drain,
+  scrollAll,
+  scopePreset,
 };
+
+function scopePreset({ scope }: { scope: StatusScope }): Record<string, unknown> {
+  return SCOPE_PRESETS[scope];
+}
 
 export const TIME_WINDOW_PATH = '/TenantBaseExternal/api/v5/Employee/GetByTimeWindow';
 
@@ -111,9 +138,9 @@ export const QUERY_TYPE_OPTIONS = [
 ];
 
 const SCOPE_PRESETS: Record<StatusScope, Record<string, unknown>> = {
-  ACTIVE: { empStatus: [2, 3], employType: [0, 2], approvalStatuses: [4], isGetLatestRecord: false },
+  ACTIVE: { empStatus: [2, 3, 7], employType: [0, 2], approvalStatuses: [4], isGetLatestRecord: false },
   LEFT: { empStatus: [8], employType: [0, 2], approvalStatuses: [4], isGetLatestRecord: false },
-  ONBOARDING: { empStatus: [1, 2, 3], employType: [0, 2], approvalStatuses: [4], isGetLatestRecord: true },
+  ONBOARDING: { empStatus: [1, 2, 3, 7], employType: [0, 2], approvalStatuses: [4], isGetLatestRecord: true },
   ALL: { withDisabled: true, employType: [0, 2], approvalStatuses: [4], isGetLatestRecord: false },
 };
 
@@ -122,8 +149,6 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_SEGMENT_MS = 89 * DAY_MS;
 
 const MAIN_SERVICE_TYPE = 0;
-
-const SUCCESS_CODE = 200;
 
 const PAGE_SIZE = 300;
 
@@ -134,14 +159,15 @@ export type StatusScope = 'ACTIVE' | 'LEFT' | 'ONBOARDING' | 'ALL';
 export type TimeSegment = { startMs: number; stopMs: number };
 
 type TimeWindowResponse = {
-  code?: number;
+  code?: number | string;
   message?: string;
   total?: number;
-  scrollId?: string;
+  scrollId?: string | null;
+  isLastData?: boolean | null;
   data?: Record<string, unknown>[];
 };
 
-type TimeWindowPage = { records: Record<string, unknown>[]; scrollId: string | undefined };
+type TimeWindowPage = { records: Record<string, unknown>[]; scrollId: string | undefined; isLastData: boolean };
 
 type RequestBodyParams = {
   startTime: string;
@@ -151,6 +177,13 @@ type RequestBodyParams = {
   capacity: number;
   scrollId?: string | undefined;
   columns?: string[] | undefined;
+};
+
+type ScrollAllParams = {
+  auth: BeisenAuthValue;
+  path: string;
+  body: Record<string, unknown>;
+  maxItems: number;
 };
 
 type DrainParams = {

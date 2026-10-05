@@ -2,10 +2,12 @@ import { ConnectorCategory, createConnector } from '@fema-ipaas/connector-sdk';
 
 import { beisenAuth } from './lib/auth';
 import { findApplicant } from './lib/actions/find-applicant';
+import { findEmployeeByEmail } from './lib/actions/find-employee-by-email';
 import { getApplicantResume } from './lib/actions/get-applicant-resume';
 import { getEmploymentRecords } from './lib/actions/get-employment-records';
 import { getOnboardingStaff } from './lib/actions/get-onboarding-staff';
 import { getSubOrganizations } from './lib/actions/get-sub-organizations';
+import { listOrganizationEmployees } from './lib/actions/list-organization-employees';
 import { searchChangedEmployees } from './lib/actions/search-changed-employees';
 import { employeeChanged } from './lib/triggers/employee-changed';
 
@@ -25,6 +27,8 @@ export const beisen = createConnector({
     findApplicant,
     getApplicantResume,
     getOnboardingStaff,
+    listOrganizationEmployees,
+    findEmployeeByEmail,
   ],
   triggers: [employeeChanged],
 });

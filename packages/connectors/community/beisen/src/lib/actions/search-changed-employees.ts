@@ -70,7 +70,7 @@ export const searchChangedEmployees = createAction({
       records: page.records,
       count: page.records.length,
       scroll_id: page.scrollId ?? null,
-      has_more: page.records.length > 0 && Boolean(page.scrollId),
+      has_more: page.records.length > 0 && Boolean(page.scrollId) && !page.isLastData,
     };
   },
 });

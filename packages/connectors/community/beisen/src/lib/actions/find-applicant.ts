@@ -38,7 +38,7 @@ export const findApplicant = createAction({
   },
   async run(context) {
     const { email, mobile, certificateNumber, candidateId } = context.propsValue;
-    const applicantIds = await beisenCommon.callBusinessApi<string[]>({
+    const found = await beisenCommon.callBusinessApi<string[]>({
       auth: context.auth,
       method: HttpMethod.POST,
       path: '/RecruitV6/api/v1/Applicant/GetApplicantIds',
@@ -49,6 +49,7 @@ export const findApplicant = createAction({
         ...(candidateId ? { candidateId } : {}),
       },
     });
+    const applicantIds = found ?? [];
     return {
       applicant_ids: applicantIds,
       count: applicantIds.length,

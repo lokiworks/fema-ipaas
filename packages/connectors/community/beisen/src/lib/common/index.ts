@@ -17,6 +17,9 @@ export const beisenCommon = {
   obtainAccessToken,
   callApi,
   callBusinessApi,
+  isSuccessCode,
+  businessError,
+  chunk,
   filterByColumn,
   readPath,
   nextBeijingMidnight,
@@ -133,15 +136,32 @@ async function requestOnce<T>({ auth, method, path, body, queryParams }: CallApi
   return response.body;
 }
 
-async function callBusinessApi<T>(params: CallApiParams): Promise<T> {
+async function callBusinessApi<T>(params: CallApiParams): Promise<T | null> {
   const body = await callApi<BusinessEnvelope<T>>(params);
-  if (body.data === undefined || body.data === null) {
-    const message = body.message ?? 'Beisen returned no data for this request';
-    throw new Error(
-      body.code === undefined ? message : `${message} (Beisen code ${body.code})`,
-    );
+  if (body.code !== undefined && !isSuccessCode(body.code)) {
+    throw businessError({ code: body.code, message: body.message });
+  }
+  if (body.data === undefined) {
+    if (body.code === undefined) {
+      throw businessError({ code: undefined, message: body.message ?? 'Beisen returned no data for this request' });
+    }
+    return null;
   }
   return body.data;
+}
+
+function isSuccessCode(code: unknown): boolean {
+  const numeric = Number(code);
+  return Number.isFinite(numeric) && numeric < FIRST_ERROR_CODE;
+}
+
+function businessError({ code, message }: { code: unknown; message: string | undefined }): Error {
+  const text = message && message.length > 0 ? message : 'Beisen rejected the request';
+  return new Error(code === undefined || code === null ? text : `${text} (Beisen code ${String(code)})`);
+}
+
+function chunk<Item>({ items, size }: { items: Item[]; size: number }): Item[][] {
+  return Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, (index + 1) * size));
 }
 
 function isRateLimited(error: Error): error is HttpError {
@@ -204,6 +224,8 @@ function assertNoGatewayError({ body, rejectsCredentials }: { body: Partial<Gate
   throw rejectsCredentials ? new CredentialRejectedError(message) : new Error(message);
 }
 
+const FIRST_ERROR_CODE = 400;
+
 const HTTP_TOO_MANY_REQUESTS = 429;
 
 const HTTP_UNAUTHORIZED = 401;
@@ -240,7 +262,7 @@ type GatewayError = {
   error_code: string;
 };
 
-type BusinessEnvelope<T> = { data?: T; code?: number; message?: string };
+type BusinessEnvelope<T> = { data?: T | null; code?: number | string; message?: string };
 
 type CallApiParams = {
   auth: BeisenAuthValue;

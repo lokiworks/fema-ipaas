@@ -59,11 +59,11 @@ describe('beisenTimeWindow.formatTimestamp', () => {
 describe('beisenTimeWindow.requestBody', () => {
   const base = { startTime: '2026-10-01T00:00:00', stopTime: '2026-10-02T00:00:00', queryType: 2, capacity: 300 };
 
-  it('limits active employees to trial and regular, effective main records', () => {
+  it('limits active employees to trial, regular and re-employed retirees, effective main records', () => {
     expect(beisenTimeWindow.requestBody({ ...base, scope: 'ACTIVE' })).toMatchObject({
       timeWindowQueryType: 2,
       serviceType: [0],
-      empStatus: [2, 3],
+      empStatus: [2, 3, 7],
       approvalStatuses: [4],
       isGetLatestRecord: false,
       capacity: 300,
@@ -75,7 +75,7 @@ describe('beisenTimeWindow.requestBody', () => {
   });
 
   it('reads the latest main record for pending onboarding, which may not be effective yet', () => {
-    expect(beisenTimeWindow.requestBody({ ...base, scope: 'ONBOARDING' })).toMatchObject({ empStatus: [1, 2, 3], isGetLatestRecord: true });
+    expect(beisenTimeWindow.requestBody({ ...base, scope: 'ONBOARDING' })).toMatchObject({ empStatus: [1, 2, 3, 7], isGetLatestRecord: true });
   });
 
   it('includes departed employees for every status without listing statuses', () => {

@@ -50,12 +50,12 @@ const polling: Polling<
       values: toStringList(propsValue.filterValues),
     });
     if (lastFetchEpochMS === 0) {
-      return records.map((record) => ({ epochMilliSeconds: stopMs, data: record }));
+      return beisenChangeWindow.sortByChangeTime({ records }).map((record) => ({ epochMilliSeconds: stopMs, data: record }));
     }
     const seen = (await store.get<SeenRecords>(SEEN_KEY)) ?? {};
     const result = beisenChangeWindow.dedupe({ records, seen, stopMs, startMs });
     await store.put(SEEN_KEY, result.seen);
-    return result.fresh.map((record) => ({ epochMilliSeconds: stopMs, data: record }));
+    return beisenChangeWindow.sortByChangeTime({ records: result.fresh }).map((record) => ({ epochMilliSeconds: stopMs, data: record }));
   },
 };
 

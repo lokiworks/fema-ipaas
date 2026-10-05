@@ -67,6 +67,15 @@ describe('official Beisen to Feishu solution', () => {
         expect(onboard).not.toContain('only_when_created')
     })
 
+    it('uses only store scopes the Store connector accepts, a wrong value only fails when the first employee arrives', () => {
+        const scopes = pkg().workflows.flatMap((workflow) => workflowStructureUtil.getAllSteps(workflow.trigger).flatMap((step) => {
+            const input = step.settings?.input
+            return step.settings?.connectorName === '@fema-ipaas/connector-store' && input !== undefined ? [input.store_scope] : []
+        }))
+        expect(scopes.length).toBeGreaterThan(0)
+        scopes.forEach((scope) => expect(['COLLECTION', 'WORKFLOW', 'RUN']).toContain(scope))
+    })
+
     it('fills connections, chat ids and the mapping table when installed', () => {
         const items = pkg().config
         const tableIdByKey = new Map([['department', 'tbl_real']])

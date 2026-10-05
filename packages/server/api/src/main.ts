@@ -6,6 +6,7 @@ import { initializeDatabase } from './app/database'
 import { distributedLock } from './app/database/redis-connections'
 import { system } from './app/helper/system/system'
 import { AppSystemProp } from './app/helper/system/system-props'
+import { validateSecretsOnStartup } from './app/helper/system-validator'
 import { setupServer } from './app/server'
 
 const start = async (app: FastifyInstance): Promise<void> => {
@@ -55,6 +56,7 @@ function setupTimeZone(): void {
 const main = async (): Promise<void> => {
     setupTimeZone()
     if (system.isApp()) {
+        validateSecretsOnStartup()
         await distributedLock(system.globalLogger()).runExclusive({
             key: 'database-migration-lock',
             timeoutInSeconds: dayjs.duration(10, 'minutes').asSeconds(),

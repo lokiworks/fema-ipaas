@@ -8,6 +8,7 @@ import { s3Helper } from '../file/s3-helper'
 import { limitValueParsers } from '../limits/limit-value-parsers'
 import { encryptUtils } from './encryption'
 import { jwtUtils } from './jwt-utils'
+import { secretStrength } from './secret-strength'
 import { system } from './system/system'
 import { AppSystemProp, ContainerType, SystemProp } from './system/system-props'
 
@@ -321,5 +322,23 @@ export const validateEnvPropsOnStartup = async (log: FastifyBaseLogger): Promise
             docUrl: 'https://github.com/lokiworks/fema-ipaas/docs/install/configuration/environment-variables',
         }))
     }
+}
 
+export const validateSecretsOnStartup = (): void => {
+    const environment = system.get(AppSystemProp.ENVIRONMENT)
+    const usesExternalDatabase = system.get(AppSystemProp.DB_TYPE) === DatabaseType.POSTGRES
+    if (environment !== RuntimeEnvironment.PRODUCTION || !usesExternalDatabase) {
+        return
+    }
+    const problems = secretStrength.assess({
+        jwtSecret: system.get(AppSystemProp.JWT_SECRET),
+        encryptionKey: system.get(AppSystemProp.ENCRYPTION_KEY),
+    })
+    if (problems.length > 0) {
+        throw new Error(JSON.stringify({
+            message: 'Weak secrets are not accepted with an external PostgreSQL in production. Generate them with `openssl rand -hex 32` (FEMA_JWT_SECRET) and `openssl rand -hex 16` (FEMA_ENCRYPTION_KEY).',
+            problems,
+            docUrl: 'https://github.com/lokiworks/fema-ipaas/docs/install/reference/environment-variables',
+        }))
+    }
 }

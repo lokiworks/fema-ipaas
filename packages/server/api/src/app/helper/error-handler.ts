@@ -19,16 +19,44 @@ export const errorHandler = async (
         })
     }
     else {
-        if (
-            !error.statusCode ||
-      error.statusCode === StatusCodes.INTERNAL_SERVER_ERROR.valueOf()
-        ) {
+        const publicError = publicErrorOf({ error })
+        if (publicError.statusCode === StatusCodes.INTERNAL_SERVER_ERROR.valueOf()) {
             exceptionHandler.handle(error, request.log)
         }
         await reply
-            .status(error.statusCode ?? StatusCodes.INTERNAL_SERVER_ERROR)
-            .send(error)
+            .status(publicError.statusCode)
+            .send(publicError.body ?? error)
     }
+}
+
+function publicErrorOf({ error }: { error: FastifyError }): PublicError {
+    if (isDatabaseDataException({ error })) {
+        return {
+            statusCode: StatusCodes.BAD_REQUEST,
+            body: {
+                statusCode: StatusCodes.BAD_REQUEST,
+                code: 'INVALID_REQUEST_VALUE',
+                error: 'Bad Request',
+                message: 'The request contains a value the server cannot process',
+            },
+        }
+    }
+    const statusCode = error.statusCode ?? StatusCodes.INTERNAL_SERVER_ERROR
+    if (statusCode === StatusCodes.INTERNAL_SERVER_ERROR.valueOf()) {
+        return {
+            statusCode,
+            body: {
+                statusCode,
+                error: 'Internal Server Error',
+                message: 'Internal server error',
+            },
+        }
+    }
+    return { statusCode }
+}
+
+function isDatabaseDataException({ error }: { error: FastifyError }): boolean {
+    return typeof error.code === 'string' && /^22[0-9A-Z]{3}$/.test(error.code) && error.statusCode === undefined
 }
 
 // Runs from an onError hook registered BEFORE the evlog fastify plugin, so the
@@ -96,6 +124,11 @@ const statusCodeMap: Partial<Record<ErrorCode, StatusCodes>> = {
     [ErrorCode.INVITATION_ONLY_SIGN_UP]: StatusCodes.FORBIDDEN,
     [ErrorCode.AUTHENTICATION]: StatusCodes.UNAUTHORIZED,
     [ErrorCode.EXECUTION_RETRY_OUTSIDE_RETENTION]: StatusCodes.GONE,
+}
+
+type PublicError = {
+    statusCode: number
+    body?: Record<string, unknown>
 }
 
 type WideErrorFields = {

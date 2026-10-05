@@ -66,9 +66,9 @@ export const executePollingJob: JobHandler<PollingJobData, FireAndForgetJobResul
             return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK, logs: result.logs }
         }
         catch (e) {
-            ctx.log.error({ error: String(e) }, 'Polling trigger failed, will retry on next scheduled cycle')
+            ctx.log.error({ error: String(e) }, 'Polling trigger failed, its trigger state is rolled back so the next cycle fetches the same events again')
             await recordTriggerRun({ apiClient: ctx.apiClient, log: ctx.log, workflowVersion, tenantId: data.tenantId, status: EngineResponseStatus.INTERNAL_ERROR, projectId: data.projectId, failureMessage: String(e) })
-            return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.OK }
+            return { kind: JobResultKind.FIRE_AND_FORGET, status: EngineResponseStatus.INTERNAL_ERROR }
         }
     },
 }

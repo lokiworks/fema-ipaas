@@ -1,14 +1,15 @@
 ---
-title: "Sign-in Rules"
-description: "Control who can sign in to a tenant, and how"
+title: "Sign-in Rules and Single Sign-On"
+description: "Control who can sign in to a tenant, and connect it to your company identity provider"
 icon: 'key'
 ---
 
 ## Overview
 
-Each tenant decides how people are allowed to authenticate: which email domains are accepted, and
-whether email-and-password login is available at all. Both settings live on the tenant, so a tenant
-admin can change them without an operator touching environment variables.
+Each tenant decides how people are allowed to authenticate: which email domains are accepted, whether
+email-and-password login is available, and which company identity providers (OIDC, Feishu) employees
+can sign in with. All of it lives on the tenant, so a tenant admin can change it without an operator
+touching environment variables.
 
 Navigate to **Tenant Settings** → **Security** → **Authentication** to configure them.
 
@@ -33,21 +34,131 @@ inherit: `acme.com` does not admit `someone@mail.acme.com`, and a lookalike like
 
 ## Email and password login
 
-Turn **Allowed Email Login** off to stop accepting email-and-password credentials for the tenant.
-Existing sessions are unaffected; new sign-ins through the password form are refused with
-`EMAIL_AUTH_DISABLED`.
+Turn **Email and password** off to stop accepting passwords for the tenant. Existing sessions end only
+when the user is disabled or the session length runs out; new sign-ins through the password form (and
+through email codes) are refused with `EMAIL_AUTH_DISABLED`. The check runs before the password is
+verified, so a disabled password form cannot be used to guess passwords either.
 
 <Warning>
-Turning email login off leaves a tenant with no interactive sign-in method, because this build ships
-no federated identity provider. Only do it for a tenant whose users are provisioned and driven through
-the API.
+You cannot turn password sign-in off until at least one single sign-on method is switched on **and**
+has passed its test sign-in. This keeps an administrator from locking everyone out with a
+misconfigured provider. While password sign-in is off, the provider cannot be switched off or
+reconfigured in a way that needs a new test; turn passwords back on first.
 </Warning>
+
+## Single sign-on with OIDC
+
+OIDC works with Keycloak, Okta, Azure AD / Entra ID, Authing, Casdoor and any provider that publishes
+`/.well-known/openid-configuration`.
+
+<Steps>
+  <Step title="Register the platform at your provider">
+    Create a confidential client (authorization code flow). Register the **Redirect URI** shown in the
+    configuration dialog, which is your `FEMA_FRONTEND_URL` followed by `/api/v1/authn/sso/callback`.
+  </Step>
+  <Step title="Fill in the dialog">
+    Go to **Tenant Settings → Security → Sign-in and security → OIDC → Configure**. Enter the issuer URL,
+    client ID and client secret. Saving checks the provider's discovery document, and the issuer must
+    match what the provider reports exactly (Auth0 style issuers end in a slash).
+  </Step>
+  <Step title="Test the sign-in">
+    Click **Test sign-in** and sign in at the provider **with your own account**. The email it returns
+    has to be yours. Only then can you turn the method on.
+  </Step>
+  <Step title="Turn it on">
+    The sign-in page now shows **Sign in with company account** (the button name is configurable).
+  </Step>
+</Steps>
+
+What the platform checks on every sign-in, and rejects with a readable reason (nothing is created):
+
+| Check | Rejected as |
+|---|---|
+| `state` is unknown, altered or was already used; the callback arrives in another browser | `STATE_INVALID`, `STATE_REPLAYED`, `BROWSER_MISMATCH` |
+| The provider refuses the client secret or the authorization code (expired, reused) | `CLIENT_REJECTED`, `CODE_REJECTED` |
+| ID token signature, issuer, audience, nonce, expiry, algorithm (only asymmetric ones are accepted) | `TOKEN_INVALID`, `ISSUER_MISMATCH` |
+| Email missing, or not verified (`email_verified`) while verification is required | `EMAIL_MISSING`, `EMAIL_NOT_VERIFIED` |
+| Email domain not on the provider's allowed list, or not allowed by the tenant's allowed domains | `DOMAIN_NOT_ALLOWED` |
+| Account disabled by an administrator | `USER_DISABLED` |
+| No account and automatic creation is off, and the person was not invited | `USER_NOT_PROVISIONED` |
+
+Every rejection is written to **Audit log** as *Sign-in failed* with the reason; successful single
+sign-on sign-ins are recorded with the method, and configuration changes as *Single sign-on settings
+changed* (never with a secret).
+
+### Accounts and roles
+
+- **First sign-in** creates the account in the tenant, with the personal project, and optionally adds it
+  to a default project with a role you choose. Turn **Create accounts on first sign-in** off to allow
+  only people who are already members or invited.
+- **Role mapping** reads a claim of the ID token (for example `groups`, or a nested path such as
+  `realm_access.roles`) and gives the highest role among the matching rules, otherwise the default
+  role. By default the role is decided once, when the account is created. **Update the role on every
+  sign-in** lets the provider stay the source of truth; the tenant owner is never changed.
+- Azure AD does not send `email_verified`; turn **Require a verified email** off and set the email
+  claim to `email` or `preferred_username`.
+- Leaving the company: disable the person at the provider **and** in **Users**. Disabling in Users ends
+  their session immediately (even a token that is still valid); the provider cannot do that for you.
+  Select several people and use **Disable selected** for a wave of departures, and transfer their
+  workflows and connections first (removing a user asks who takes them over).
+
+### Session length
+
+The session lasts the tenant's **Session length** (1, 7 or 30 days), the same as password sessions.
+
+## Single sign-on with Feishu
+
+Create a self-built Feishu app, turn on web login with the redirect URI shown in the dialog, and grant
+the permission to read the user's email (without it Feishu returns no address and the sign-in is
+rejected with `EMAIL_MISSING`). Enter the App ID and App Secret, pick Feishu (China) or Lark
+(international), and **fill in the enterprise key (`tenant_key`)** so that only people of your Feishu
+enterprise can sign in. The rest (test sign-in, allowed domains, account creation, default project)
+works as for OIDC; Feishu has no group claim, so everyone gets the default role and you promote people
+in **Users**.
+
+Feishu does not publish an OIDC discovery document, so use this dedicated option rather than the OIDC
+one.
+
+## Allowed domains
+
+Restrict authentication to a list of email domains, `acme.com`, `acme.co.uk`, so only addresses at
+your organisation can sign in or accept an invitation. It applies to sign-up, password sign-in, email
+codes and single sign-on alike; an address outside the list is rejected with `DOMAIN_NOT_ALLOWED`
+before any account is created.
+
+The list and the enforcement switch are two separate fields. While enforcement is **off**, the list is
+ignored and every address is accepted.
+
+<Warning>
+Enforcement **on** with an empty list rejects everyone, including you. Add your own domain before
+turning enforcement on.
+</Warning>
+
+Matching is exact on the part after `@`, trimmed and lower-cased on both sides. Subdomains do not
+inherit: `acme.com` does not admit `someone@mail.acme.com`, and a lookalike like
+`someone@acme.com.evil.com` is rejected.
+
+## Password policy and sessions
+
+**Minimum password length** (8 to 64, default 10) is checked when a password is chosen or reset.
+**Session length** (1, 7 or 30 days) applies to sessions started after you save. Resetting a password
+(by the user or an administrator) ends all that person's sessions.
 
 ## What this build does not include
 
-There is no SAML, no Google or GitHub sign-in, and no identity-provider discovery by domain. The
-tenant record still carries a `federatedAuthProviders` column from upstream, and the API rejects any
-attempt to write a SAML configuration into it with *"SAML SSO is not available in this build"*.
+- SAML 2.0, WeCom and DingTalk sign-in: the settings page lists them as *Not available*. Use OIDC if
+  your provider offers it (most do), or Feishu for Feishu workspaces.
+- Google or GitHub sign-in, and identity-provider discovery by email domain. A tenant has one OIDC
+  provider and one Feishu app.
+- Choosing the tenant by domain: on an instance with several tenants, single sign-on is offered for
+  the oldest tenant only, like the password form.
+- SCIM provisioning. Accounts are created at first sign-in; removal is done in **Users**.
 
-The OIDC endpoints the server exposes (`/v1/worker/...` and the discovery document at the domain root)
-authenticate **workers**, not people — they are part of the execution tier, not a sign-in method.
+The OIDC endpoints the server exposes under `/v1/worker/...` and the discovery document at the domain
+root authenticate **workers**, not people.
+
+## Environment notes
+
+Calls to your provider go through the server's SSRF filter. If the provider lives on a private or
+loopback address, list it in `FEMA_SSRF_ALLOW_LIST`. The sign-in cookie is scoped to
+`/api/v1/authn/sso`, so a reverse proxy has to keep that path.

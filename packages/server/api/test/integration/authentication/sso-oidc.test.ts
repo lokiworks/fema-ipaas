@@ -356,6 +356,8 @@ describe('OIDC single sign-on', () => {
         })
 
         it('refuses to save a configuration whose issuer differs from what the provider reports', async () => {
+            const first = await ctx.post('/v1/tenant-access/sso/oidc', oidcBody({ autoCreateUsers: true }))
+            expect(first.statusCode).toBe(200)
             idp.setDiscoveryIssuer('https://somewhere-else.example.com')
 
             const response = await ctx.post('/v1/tenant-access/sso/oidc', oidcBody({ autoCreateUsers: true }))
@@ -637,7 +639,9 @@ async function createMember({ status = UserStatus.ACTIVE }: { status?: UserStatu
 }
 
 async function tokenFor({ userId }: { userId: string }): Promise<string> {
-    return generateMockToken({ id: userId, type: PrincipalType.USER, tenant: { id: ctx.tenant.id } })
+    const user = await db.findOneBy<{ identityId: string }>('user', { id: userId })
+    const identity = await db.findOneBy<{ tokenVersion: string }>('user_identity', { id: user?.identityId ?? '' })
+    return generateMockToken({ id: userId, type: PrincipalType.USER, tenant: { id: ctx.tenant.id }, tokenVersion: identity?.tokenVersion })
 }
 
 async function identityByEmail(email: string): Promise<{ provider: string, verified: boolean } | null> {

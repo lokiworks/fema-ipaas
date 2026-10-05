@@ -7,9 +7,9 @@ import jwt, { Algorithm } from 'jsonwebtoken'
 import { z } from 'zod'
 import { SsoLoginError } from './sso-errors'
 
-async function discover({ issuer }: DiscoverParams): Promise<OidcDiscovery> {
+async function discover({ issuer, forceRefresh = false }: DiscoverParams): Promise<OidcDiscovery> {
     const cached = discoveryCache.get(issuer)
-    if (!isNil(cached) && cached.expiresAt > Date.now()) {
+    if (!forceRefresh && !isNil(cached) && cached.expiresAt > Date.now()) {
         return cached.discovery
     }
     const url = `${issuer.replace(/\/+$/, '')}/.well-known/openid-configuration`
@@ -296,6 +296,7 @@ type Jwk = z.infer<typeof Jwk>
 
 type DiscoverParams = {
     issuer: string
+    forceRefresh?: boolean
 }
 
 type BuildAuthorizationUrlParams = {

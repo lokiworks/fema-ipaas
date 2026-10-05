@@ -234,7 +234,7 @@ async function persist({ tenant, next }: PersistParams): Promise<void> {
 
 async function assertDiscoverable({ issuer }: { issuer: string }): Promise<void> {
     try {
-        await oidcClient.discover({ issuer })
+        await oidcClient.discover({ issuer, forceRefresh: true })
     }
     catch (error) {
         if (isSsoLoginError(error)) {

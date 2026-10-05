@@ -6,46 +6,41 @@ icon: 'user'
 
 FEMA Integration Platform utilizes Role-Based Access Control (RBAC) for managing permissions within projects. Each project consists of multiple workflows and users, with each user assigned specific roles that define their actions within the project.
 
-## Default Roles
+## Project roles
 
-FEMA Integration Platform comes with four standard roles out of the box. The table below shows the permissions for each role:
+There are four fixed roles. A person's role is set per project, in **Project → Members**; the tenant
+owner and tenant administrators can always open a project. Each role includes everything the role
+before it can do.
 
-| Permission | Admin | Editor | Operator | Viewer |
-|------------|:-----:|:------:|:--------:|:------:|
+| Permission | Admin | Developer | Operator | Viewer |
+|------------|:-----:|:---------:|:--------:|:------:|
 | **Workflows** |||||
-| View Workflows | ✓ | ✓ | ✓ | ✓ |
-| Edit Workflows | ✓ | ✓ | | |
-| Publish / Toggle Workflows | ✓ | ✓ | ✓ | |
-| **Runs** |||||
-| View Runs | ✓ | ✓ | ✓ | ✓ |
-| Retry Runs | ✓ | ✓ | ✓ | |
+| View workflows, runs, issues, folders, variables | ✓ | ✓ | ✓ | ✓ |
+| Switch a workflow on or off | ✓ | ✓ | ✓ | |
+| Edit workflows, folders and variables | ✓ | ✓ | | |
+| Publish and delete workflows | ✓ | ✓ | | |
+| **Runs and issues** |||||
+| Retry and rerun runs, replay and handle issues | ✓ | ✓ | ✓ | |
 | **Connections** |||||
-| View Connections | ✓ | ✓ | ✓ | ✓ |
-| Edit Connections | ✓ | ✓ | ✓ | |
+| View connections | ✓ | ✓ | ✓ | ✓ |
+| Edit connections (for example reauthorise an expired one) | ✓ | ✓ | ✓ | |
+| **Releases, MCP services, connector development** |||||
+| Request and manage releases, MCP services, connector development | ✓ | ✓ | | |
 | **Team** |||||
-| View Project Members | ✓ | ✓ | ✓ | ✓ |
-| Add/Remove Project Members | ✓ | | | |
-| **Git Sync**    |      |        |      |      |
-| Configure Git Repo      | ✓    |        |      |      |
-| Pull Workflows from Git     | ✓    |        |      |      |
-| Push Workflows to Git       | ✓    |        |      |      |
+| View project members | ✓ | ✓ | ✓ | ✓ |
+| Add and remove project members, invite, edit the project | ✓ | | | |
+| View the audit log of the project | ✓ | | | |
 
-## Custom Roles
+**Operator** is the on-call role: it can keep production running (switch workflows, retry runs,
+replay and handle issues, reauthorise connections) but cannot change what a workflow does.
 
-If the default roles don't fit your needs, you can create custom roles with specific permissions.
+These are fixed roles in the product; there are no custom roles and no Git sync. The permission lists
+are pinned by tests, so a change to a role shows up in review.
 
-<Steps>
-  <Step title="Navigate to Project Roles">
-    Go to **Tenant Admin** → **Security** → **Project Roles**
-  </Step>
-  <Step title="Create a New Role">
-    Click **Create Role** and give it a name
-  </Step>
-  <Step title="Configure Permissions">
-    Select the specific permissions you want to grant to this role
-  </Step>
-</Steps>
+## Tenant roles
 
-<Tip>
-Custom roles are useful when you need fine-grained control, such as allowing users to view and retry runs without being able to edit workflows.
-</Tip>
+Separately from project roles, a person has a tenant role: **Owner** (the person who created the
+tenant), **Admin** (manages users, sign-in rules, workers and everything under *Tenant Settings*),
+**Operator** (sees every project but cannot administer the tenant) and **Member** (sees the projects
+they belong to). Module permissions (connector development, MCP services) are granted per person in
+**Users**.

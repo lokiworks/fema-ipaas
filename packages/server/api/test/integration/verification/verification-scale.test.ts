@@ -130,6 +130,26 @@ describe('Reading back more people than one page holds', () => {
         expect(waits[waits.length - 1]).toBeLessThanOrEqual(1100)
     })
 
+    it('reads several accounts at the same time, so a slow answer from the connected system does not cap the whole pass at one read per answer', async () => {
+        const ctx = await createTestContext(app!)
+        const { workflowId, versionId } = await seedWorkflow({ ctx, actionName: 'provision_user' })
+        await seedRuns({ ctx, workflowId, versionId, people: peopleOf({ count: 40, prefix: 'C' }), minutesAgo: 5 })
+        const inFlight = { now: 0, peak: 0 }
+        readBack.mockImplementation(async () => {
+            inFlight.now += 1
+            inFlight.peak = Math.max(inFlight.peak, inFlight.now)
+            await new Promise((resolve) => setTimeout(resolve, 15))
+            inFlight.now -= 1
+            return { status: ActionRunStatus.SUCCEEDED, output: { department_ids: ['od-rd'] }, errorMessage: null, neverStarted: false, durationMs: 15 }
+        })
+
+        const result = await verify(ctx)
+
+        expect(result).toMatchObject({ checked: 40, matched: 40, mismatched: 0 })
+        expect(inFlight.peak).toBeGreaterThan(1)
+        expect(inFlight.peak).toBeLessThanOrEqual(8)
+    })
+
     it('still skips an older write when the later write to the same account sits on an earlier page', async () => {
         const ctx = await createTestContext(app!)
         const onboard = await seedWorkflow({ ctx, actionName: 'provision_user' })

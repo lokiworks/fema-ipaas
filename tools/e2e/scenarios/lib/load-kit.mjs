@@ -55,9 +55,9 @@ async function api({ method, path, body }) {
   return response.body
 }
 
-async function apiRaw({ method, path, body }) {
+async function apiRaw({ method, path, body, timeoutMs }) {
   const startedAt = Date.now()
-  const response = await fetchJson({ method, url: `${API}${path}`, body, token: session.token })
+  const response = await fetchJson({ method, url: `${API}${path}`, body, token: session.token, ...(timeoutMs === undefined ? {} : { timeoutMs }) })
   return { ...response, ms: Date.now() - startedAt }
 }
 

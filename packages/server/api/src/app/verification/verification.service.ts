@@ -142,11 +142,13 @@ function pacerOf({ readsPerSecond, sleep }: { readsPerSecond: number, sleep: (ms
     const gapMs = 1000 / readsPerSecond
     const state = { nextAt: 0 }
     return async () => {
-        const waitMs = state.nextAt - Date.now()
+        const now = Date.now()
+        const startAt = Math.max(now, state.nextAt)
+        state.nextAt = startAt + gapMs
+        const waitMs = startAt - now
         if (waitMs > 0) {
             await sleep(waitMs)
         }
-        state.nextAt = Math.max(Date.now(), state.nextAt) + gapMs
     }
 }
 
@@ -217,10 +219,10 @@ function supersede({ plans, seen }: { plans: Plan[], seen: Set<string> }): Plan[
 }
 
 async function executePlans({ deps, tenantId, projectId, plans, pace }: ExecutePlansParams): Promise<CheckOutcome[]> {
-    return plans.reduce<Promise<CheckOutcome[]>>(async (accPromise, plan) => {
-        const acc = await accPromise
+    const limit = pLimit(CONNECTOR_READ_CONCURRENCY)
+    return Promise.all(plans.map((plan) => limit(async (): Promise<CheckOutcome> => {
         if (plan.skipped !== undefined || isNil(plan.stepOutput) || isNil(plan.readInput)) {
-            return [...acc, { ...plan.base, kind: OutcomeKind.SKIPPED, detail: plan.skipped ?? 'nothing to read back' }]
+            return { ...plan.base, kind: OutcomeKind.SKIPPED, detail: plan.skipped ?? 'nothing to read back' }
         }
         await pace()
         const read = await deps.runConnectorAction({
@@ -231,14 +233,14 @@ async function executePlans({ deps, tenantId, projectId, plans, pace }: ExecuteP
             input: { ...plan.readInput, auth: plan.target.auth },
         })
         if (read.status !== ActionRunStatus.SUCCEEDED) {
-            return [...acc, { ...plan.base, kind: OutcomeKind.UNREADABLE, detail: readableFailure(read.errorMessage) }]
+            return { ...plan.base, kind: OutcomeKind.UNREADABLE, detail: readableFailure(read.errorMessage) }
         }
         const judgement = plan.target.rule.judge({ input: plan.stepOutput.input, output: plan.stepOutput.output, actual: read.output })
         if (isNil(judgement)) {
-            return [...acc, { ...plan.base, kind: OutcomeKind.SKIPPED, detail: 'nothing to compare' }]
+            return { ...plan.base, kind: OutcomeKind.SKIPPED, detail: 'nothing to compare' }
         }
-        return [...acc, { ...plan.base, kind: judgement.ok ? OutcomeKind.MATCHED : OutcomeKind.MISMATCHED, detail: judgement.detail }]
-    }, Promise.resolve([]))
+        return { ...plan.base, kind: judgement.ok ? OutcomeKind.MATCHED : OutcomeKind.MISMATCHED, detail: judgement.detail }
+    })))
 }
 
 async function recordOutcomes({ log, projectId, outcomes, versions }: RecordOutcomesParams): Promise<string[]> {
@@ -297,6 +299,7 @@ const PROJECTS_WITH_CANDIDATES_SQL = `SELECT project.id AS "projectId" FROM proj
 const CANDIDATE_PAGE = 200
 const MAX_CANDIDATES = 50000
 const READ_STEPS_CONCURRENCY = 10
+const CONNECTOR_READ_CONCURRENCY = 8
 const MAX_PROBLEMS_LISTED = 20
 
 enum OutcomeKind {

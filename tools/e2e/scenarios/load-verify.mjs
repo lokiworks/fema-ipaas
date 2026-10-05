@@ -23,6 +23,8 @@ const projectId = kit.session().projectId
 const client = new Client({ host: '127.0.0.1', port: loadStack.paths.PG_PORT, user: 'fema', password: 'fema', database: 'fema' })
 await client.connect()
 
+await client.query(`delete from execution where id like 'vrun%'`)
+await client.query(`delete from file where id like 'vlog%'`)
 const template = await loadTemplate()
 process.stdout.write(`模板运行 ${template.execution.id} 日志 ${template.logsFile.id} 步骤 ${Object.keys(template.steps).join(',')}\n`)
 
@@ -34,7 +36,7 @@ process.stdout.write(`造运行记录 ${seeded.length} 条，耗时 ${Math.round
 
 const sampler = kit.startSampler({ names: ['api'], intervalMs: 1000 })
 const startedAt = Date.now()
-const response = await kit.apiRaw({ method: 'POST', path: '/verification/run', body: { projectId, sinceHours: 24 } })
+const response = await kit.apiRaw({ method: 'POST', path: '/verification/run', body: { projectId, sinceHours: 24 }, timeoutMs: 4 * 60 * 60 * 1000 })
 const durationSeconds = Math.round((Date.now() - startedAt) / 1000)
 const resources = sampler.stop()
 const result = response.body
@@ -64,7 +66,7 @@ summary()
 await client.end()
 
 async function loadTemplate() {
-  const row = await client.query(`select e.id, e."workflowId", e."workflowVersionId", e."logsFileId" from execution e where e.status = 'SUCCEEDED' and e."logsFileId" is not null and e."businessKey" is not null and e.environment = 'PRODUCTION' order by e.created desc limit 1`)
+  const row = await client.query(`select e.id, e."workflowId", e."workflowVersionId", e."logsFileId" from execution e where e.id not like 'vrun%' and e.status = 'SUCCEEDED' and e."logsFileId" is not null and e."businessKey" is not null and e.environment = 'PRODUCTION' order by e.created desc limit 1`)
   assert(row.rows.length === 1, '库里没有可当模板的成功运行，先跑一次 load-scale.mjs')
   const [execution] = row.rows
   const file = await client.query(`select id, "projectId", "tenantId", data, location, "fileName", size, metadata, type, compression from file where id = $1`, [execution.logsFileId])

@@ -42,7 +42,7 @@ function buildBeisenFeishuSolution(): OfficialSolution {
         summary: '北森员工入职、调岗、离职后，自动在飞书开通账号、同步部门、暂停账号，并通知 HR 群和 IT 群。',
         category: 'HR',
         version: '1.1',
-        notes: '同一员工的变动按工号排队逐条处理；调岗去重键加上任职开始日，调回原部门不再被当成重复；HR 群和 IT 群的通知先查记录、发完再记下，运行被打断后重跑不会漏发也不会重发',
+        notes: '同一员工的变动按工号排队逐条处理；调岗去重键加上任职开始日，调回原部门不再被当成重复；HR 群和 IT 群的通知先查记录、发完再记下，消息本身再带去重键（飞书一小时内丢弃同一个键的重复消息），运行被打断后重跑不会漏发，一小时内也不会重发',
         publishedAt: '2026-10-03T00:00:00.000Z',
         package: pkg,
     }
@@ -106,6 +106,7 @@ function onboardWorkflow(): SolutionWorkflow {
                                 chatId: '',
                                 messageType: 'text',
                                 content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）的飞书账号已开通`,
+                                dedupeKey: ONBOARD_NOTIFIED_KEY,
                             },
                             nextAction: connectorStep({
                                 name: 'mark_notified',
@@ -228,6 +229,7 @@ function leaveWorkflow(): SolutionWorkflow {
                                     chatId: '',
                                     messageType: 'text',
                                     content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）已离职，飞书账号已暂停，请回收设备`,
+                                    dedupeKey: LEAVE_NOTIFIED_KEY,
                                 },
                                 nextAction: connectorStep({
                                     name: 'mark_notified',

@@ -67,6 +67,12 @@ describe('official Beisen to Feishu solution', () => {
         expect(onboard).not.toContain('only_when_created')
     })
 
+    it('gives both notices a dedupe key so Feishu itself drops a repeat sent within the hour', () => {
+        const text = JSON.stringify(pkg().workflows)
+        expect(text).toContain('"dedupeKey":"onboard-notified:')
+        expect(text).toContain('"dedupeKey":"leave-notified:')
+    })
+
     it('uses only store scopes the Store connector accepts, a wrong value only fails when the first employee arrives', () => {
         const scopes = pkg().workflows.flatMap((workflow) => workflowStructureUtil.getAllSteps(workflow.trigger).flatMap((step) => {
             const input = step.settings?.input

@@ -1,4 +1,4 @@
-import { LoginMethod, TenantModule, TenantRole } from '@fema-ipaas/shared'
+import { LoginMethod, SsoRegion, TenantModule, TenantRole } from '@fema-ipaas/shared'
 import { tenantAccessUtils } from '../../../../src/app/tenant-access/tenant-access.utils'
 
 describe('tenant access utils', () => {
@@ -65,15 +65,27 @@ describe('tenant access utils', () => {
     })
 
     describe('login methods', () => {
-        it('lists every method in the fixed order and only email and password is available', () => {
+        it('lists every method in the fixed order and only email, OIDC and Feishu are available', () => {
             const methods = tenantAccessUtils.loginMethods({ emailAuthEnabled: true })
             expect(methods.map((method) => method.method)).toEqual([LoginMethod.EMAIL_PASSWORD, LoginMethod.OIDC, LoginMethod.SAML, LoginMethod.FEISHU, LoginMethod.WECOM, LoginMethod.DINGTALK])
-            expect(methods.filter((method) => method.available).map((method) => method.method)).toEqual([LoginMethod.EMAIL_PASSWORD])
+            expect(methods.filter((method) => method.available).map((method) => method.method)).toEqual([LoginMethod.EMAIL_PASSWORD, LoginMethod.OIDC, LoginMethod.FEISHU])
             expect(tenantAccessUtils.countEnabledLoginMethods(methods)).toBe(1)
         })
 
-        it('counts zero enabled methods when email and password is turned off', () => {
+        it('counts zero enabled methods when email and password is turned off and nothing else is configured', () => {
             expect(tenantAccessUtils.countEnabledLoginMethods(tenantAccessUtils.loginMethods({ emailAuthEnabled: false }))).toBe(0)
+        })
+
+        it('reports configured and enabled single sign-on providers', () => {
+            const stored = { enabled: true, displayName: '', allowedDomains: [], autoCreateUsers: true, defaultRole: TenantRole.MEMBER, roleMapping: null, defaultProject: null, verifiedAt: null, lastLoginAt: null }
+            const secret = { iv: 'a', data: 'b' }
+            const methods = tenantAccessUtils.loginMethods({
+                emailAuthEnabled: false,
+                providers: { saml: null, oidc: { ...stored, issuer: 'https://idp.test', clientId: 'c', clientSecret: secret, scopes: 'openid', emailClaim: 'email', requireVerifiedEmail: true }, feishu: { ...stored, enabled: false, appId: 'a', appSecret: secret, region: SsoRegion.FEISHU, allowedEnterpriseKey: null } },
+            })
+            expect(methods.find((method) => method.method === LoginMethod.OIDC)).toEqual({ method: LoginMethod.OIDC, available: true, configured: true, enabled: true })
+            expect(methods.find((method) => method.method === LoginMethod.FEISHU)).toEqual({ method: LoginMethod.FEISHU, available: true, configured: true, enabled: false })
+            expect(tenantAccessUtils.countEnabledLoginMethods(methods)).toBe(1)
         })
     })
 

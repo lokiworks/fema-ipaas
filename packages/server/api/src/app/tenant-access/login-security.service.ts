@@ -2,14 +2,15 @@ import { ApplicationError, ErrorCode, isMultipartFile, isNil } from '@fema-ipaas
 import { LoginSecuritySettings, TENANT_BRANDING_LIMITS, UpdateLoginSecurityRequestBody } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { emailService } from '../helper/email/email-service'
-import { tenantRepo } from '../tenant/tenant.service'
+import { ssoConfigUtils } from '../sso/sso-config.service'
+import { tenantRepo, tenantService } from '../tenant/tenant.service'
 import { tenantAccessUtils } from './tenant-access.utils'
 
 export const loginSecurityService = (log: FastifyBaseLogger) => ({
     async get({ tenantId }: TenantParams): Promise<LoginSecuritySettings> {
-        const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
+        const tenant = await tenantService(log).getOneWithFederatedAuthOrThrow(tenantId)
         return {
-            methods: tenantAccessUtils.loginMethods({ emailAuthEnabled: tenant.emailAuthEnabled }),
+            methods: tenantAccessUtils.loginMethods({ emailAuthEnabled: tenant.emailAuthEnabled, providers: tenant.federatedAuthProviders }),
             passwordMinLength: tenant.passwordMinLength,
             sessionDurationDays: tenant.sessionDurationDays,
             emailDelivery: emailService(log).isConfigured(),
@@ -18,7 +19,7 @@ export const loginSecurityService = (log: FastifyBaseLogger) => ({
 
     async update({ tenantId, request }: UpdateParams): Promise<LoginSecuritySettings> {
         if (request.emailAuthEnabled === false) {
-            assertAnotherMethodStaysEnabled({ emailAuthEnabled: false })
+            await assertAnotherMethodStaysEnabled({ log, tenantId })
         }
         await tenantRepo().update({ id: tenantId }, {
             ...(isNil(request.emailAuthEnabled) ? {} : { emailAuthEnabled: request.emailAuthEnabled }),
@@ -29,12 +30,13 @@ export const loginSecurityService = (log: FastifyBaseLogger) => ({
     },
 })
 
-function assertAnotherMethodStaysEnabled({ emailAuthEnabled }: { emailAuthEnabled: boolean }): void {
-    const methods = tenantAccessUtils.loginMethods({ emailAuthEnabled })
-    if (tenantAccessUtils.countEnabledLoginMethods(methods) === 0) {
+async function assertAnotherMethodStaysEnabled({ log, tenantId }: { log: FastifyBaseLogger, tenantId: string }): Promise<void> {
+    const tenant = await tenantService(log).getOneWithFederatedAuthOrThrow(tenantId)
+    const methods = tenantAccessUtils.loginMethods({ emailAuthEnabled: false, providers: tenant.federatedAuthProviders })
+    if (tenantAccessUtils.countEnabledLoginMethods(methods) === 0 || !ssoConfigUtils.hasVerifiedEnabled(tenant.federatedAuthProviders)) {
         throw new ApplicationError({
             code: ErrorCode.VALIDATION,
-            params: { message: 'At least one sign-in method must stay enabled' },
+            params: { message: 'Turn on a single sign-in method and pass its test sign-in before turning off password sign-in' },
         })
     }
 }

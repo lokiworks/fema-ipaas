@@ -40,6 +40,7 @@ import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { issueRepo } from '../issue/issue.service'
 import { projectRepo } from '../project/project-repo'
+import { ssoConfigService } from '../sso/sso-config.service'
 import { tenantRepo } from '../tenant/tenant.service'
 import { userRepo } from '../user/user-service'
 import { machineService } from '../workers/machine/machine-service'
@@ -83,15 +84,14 @@ export const systemOverviewService = (log: FastifyBaseLogger) => ({
     },
 
     async getSetupChecklist({ tenantId }: { tenantId: string }): Promise<SetupChecklist> {
-        const [tenant, users, channels] = await Promise.all([
-            tenantRepo().findOneByOrFail({ id: tenantId }),
+        const [loginMethodsConfigured, users, channels] = await Promise.all([
+            ssoConfigService(log).hasVerifiedEnabledProvider({ tenantId }),
             userRepo().countBy({ tenantId }),
             notificationChannelRepo().countBy({ tenantId }),
         ])
-        const providers: unknown = tenant.federatedAuthProviders
         return {
             membersInvited: users > 1,
-            loginMethodsConfigured: typeof providers === 'object' && !isNil(providers) && Object.values(providers).some((provider) => !isNil(provider)),
+            loginMethodsConfigured,
             alertChannelsConfigured: channels > 0,
             smtpEnabled: mailSender(log).isConfigured(),
             encryptionKeyFromFile: encryptionKeySource() === EncryptionKeySource.GENERATED_FILE,

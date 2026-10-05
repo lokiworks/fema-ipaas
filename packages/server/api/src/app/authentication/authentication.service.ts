@@ -85,6 +85,9 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
 
     },
     async signInWithPassword(params: SignInWithPasswordParams): Promise<AuthenticationResponse> {
+        if (!isNil(params.predefinedTenantId)) {
+            await assertTenantAcceptsPasswordSignIn({ tenantId: params.predefinedTenantId, email: params.email, log })
+        }
         const identity = await userIdentityService(log).verifyIdentityPassword(params)
         const tenantId = isNil(params.predefinedTenantId) ? await getPreferredTenantId(identity.id, log) : params.predefinedTenantId
 
@@ -177,6 +180,11 @@ export const authenticationService = (log: FastifyBaseLogger) => ({
     },
 })
 
+async function assertTenantAcceptsPasswordSignIn({ tenantId, email, log }: AssertTenantAcceptsPasswordParams): Promise<void> {
+    await authenticationUtils(log).assertEmailAuthIsEnabled({ tenantId, provider: UserIdentityProvider.EMAIL })
+    await authenticationUtils(log).assertDomainIsAllowed({ email, tenantId })
+}
+
 async function assertUserCanSwitchToTenant(tenant: TenantWithoutSensitiveData | undefined): Promise<void> {
     if (isNil(tenant)) {
         throw new ApplicationError({
@@ -221,6 +229,12 @@ async function getPreferredTenantId(_identityId: string, _log: FastifyBaseLogger
 }
 
 
+
+type AssertTenantAcceptsPasswordParams = {
+    tenantId: string
+    email: string
+    log: FastifyBaseLogger
+}
 
 type ResolvePreferredTenantIdParams = {
     identityId: string

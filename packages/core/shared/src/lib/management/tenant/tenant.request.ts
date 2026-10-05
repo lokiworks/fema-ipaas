@@ -1,6 +1,6 @@
 import { EntityId, Nullable, OptionalArrayFromQuery, OptionalBooleanFromQuery, SAFE_STRING_PATTERN, tryCatchSync, UploadedFile } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
-import { FederatedAuthnProviderConfig } from '../../core/federated-authn'
+import { FederatedAuthnProviderUpdate } from '../../core/federated-authn'
 import { ConnectorSelectorConfig, TenantThemeColors } from './tenant.model'
 
 export const MAX_EMBED_ORIGIN_LENGTH = 300
@@ -55,7 +55,7 @@ export const UpdateTenantRequestBody = z.object({
     logoIcon: z.optional(UploadedFile),
     fullLogo: z.optional(UploadedFile),
     favIcon: z.optional(UploadedFile),
-    federatedAuthProviders: FederatedAuthnProviderConfig.optional(),
+    federatedAuthProviders: FederatedAuthnProviderUpdate.optional(),
     cloudAuthEnabled: OptionalBooleanFromQuery,
     googleAuthEnabled: OptionalBooleanFromQuery,
     emailAuthEnabled: OptionalBooleanFromQuery,

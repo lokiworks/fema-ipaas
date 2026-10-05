@@ -10,6 +10,40 @@ const tenantAdminRead = (id: string, url: string): MatrixCase => ({
     prepare: async () => ({ request: { method: 'GET', url } }),
 })
 
+function ssoOidcBody(): Record<string, unknown> {
+    return {
+        enabled: false,
+        displayName: '',
+        allowedDomains: [],
+        autoCreateUsers: true,
+        defaultRole: TenantRole.MEMBER,
+        roleMapping: null,
+        defaultProject: null,
+        issuer: 'http://127.0.0.1:1',
+        clientId: 'matrix-client',
+        clientSecret: 'matrix-secret',
+        scopes: 'openid email',
+        emailClaim: 'email',
+        requireVerifiedEmail: true,
+    }
+}
+
+function ssoFeishuBody(): Record<string, unknown> {
+    return {
+        enabled: false,
+        displayName: '',
+        allowedDomains: [],
+        autoCreateUsers: true,
+        defaultRole: TenantRole.MEMBER,
+        roleMapping: null,
+        defaultProject: null,
+        appId: 'cli_matrix',
+        appSecret: 'matrix-secret',
+        region: 'FEISHU',
+        allowedEnterpriseKey: null,
+    }
+}
+
 export const identityTenantCases: MatrixCase[] = [
     {
         id: 'GET /v1/tenants',
@@ -217,6 +251,37 @@ export const identityTenantCases: MatrixCase[] = [
             const request = await db.findOneBy<{ status: ModuleAccessRequestStatus }>('module_access_request', { id: String(prepared.state?.requestId) })
             expect(request?.status).toBe(ModuleAccessRequestStatus.PENDING)
         },
+    },
+    tenantAdminRead('GET /v1/tenant-access/sso', '/v1/tenant-access/sso'),
+    {
+        id: 'POST /v1/tenant-access/sso/oidc',
+        label: 'the unreachable provider makes the allowed admins fail validation (409), which still proves they passed authorisation',
+        access: { type: 'tenantAdminSelf' },
+        expectOk: [200, 409],
+        prepare: async () => ({ request: { method: 'POST', url: '/v1/tenant-access/sso/oidc', body: ssoOidcBody() } }),
+        afterDenied: async ({ world }) => {
+            const tenant = await db.findOneBy<{ federatedAuthProviders: { oidc?: unknown } | null }>('tenant', { id: world.scopes.A.tenant.id })
+            expect(tenant?.federatedAuthProviders?.oidc ?? null).toBeNull()
+        },
+    },
+    {
+        id: 'POST /v1/tenant-access/sso/feishu',
+        access: { type: 'tenantAdminSelf' },
+        prepare: async () => ({ request: { method: 'POST', url: '/v1/tenant-access/sso/feishu', body: ssoFeishuBody() } }),
+    },
+    {
+        id: 'POST /v1/tenant-access/sso/:provider/enabled',
+        label: 'turning a provider on before its test sign-in is refused with 409 for the allowed admins',
+        access: { type: 'tenantAdminSelf' },
+        expectOk: [200, 409],
+        prepare: async () => ({ request: { method: 'POST', url: '/v1/tenant-access/sso/OIDC/enabled', body: { enabled: true } } }),
+    },
+    {
+        id: 'POST /v1/tenant-access/sso/:provider/test',
+        label: 'without a configured provider the allowed admins get 409',
+        access: { type: 'tenantAdminSelf' },
+        expectOk: [200, 409],
+        prepare: async () => ({ request: { method: 'POST', url: '/v1/tenant-access/sso/OIDC/test' } }),
     },
     {
         id: 'POST /v1/tenant-access/login-security',

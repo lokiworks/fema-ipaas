@@ -16,6 +16,7 @@ import { userService } from '../user/user-service'
 import { authenticationService } from './authentication.service'
 import { turnstile } from './lib/turnstile'
 import { passwordlessAuthService } from './passwordless-auth.service'
+import { signInAudit } from './sign-in-audit'
 
 export const authenticationController: FastifyPluginAsyncZod = async (
     app,
@@ -58,6 +59,9 @@ export const authenticationController: FastifyPluginAsyncZod = async (
             email: request.body.email,
             password: request.body.password,
             predefinedTenantId,
+        }).catch((error: unknown) => {
+            signInAudit.recordFailure({ request, tenantId: predefinedTenantId, email: request.body.email, method: 'password', error })
+            throw error
         })
 
         if (!isNil(response.tenantId)) {
@@ -68,7 +72,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
             }, {
                 action: ApplicationEventName.USER_SIGNED_IN,
-                data: {},
+                data: { method: 'password' },
             })
             rejectedPromiseHandler(telemetry(request.log).trackUser(response.id, {
                 name: TelemetryEventName.SIGNED_IN,
@@ -99,6 +103,9 @@ export const authenticationController: FastifyPluginAsyncZod = async (
             email: request.body.email,
             code: request.body.code,
             tenantId: tenantId ?? null,
+        }).catch((error: unknown) => {
+            signInAudit.recordFailure({ request, tenantId, email: request.body.email, method: 'email code', error })
+            throw error
         })
 
         if (!isNil(response.tenantId)) {
@@ -109,7 +116,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
                 ip: networkUtils.extractClientRealIp(request, system.get(AppSystemProp.CLIENT_REAL_IP_HEADER)),
             }, {
                 action: ApplicationEventName.USER_SIGNED_IN,
-                data: {},
+                data: { method: 'code' },
             })
             rejectedPromiseHandler(telemetry(request.log).trackUser(response.id, {
                 name: TelemetryEventName.SIGNED_IN,

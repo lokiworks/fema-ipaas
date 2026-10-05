@@ -37,6 +37,7 @@ export enum ApplicationEventName {
     VARIABLE_VALUE_REVEALED = 'variable.value.revealed',
     USER_SIGNED_UP = 'user.signed.up',
     USER_SIGNED_IN = 'user.signed.in',
+    USER_SIGN_IN_FAILED = 'user.sign.in.failed',
     USER_PASSWORD_RESET = 'user.password.reset',
     USER_EMAIL_VERIFIED = 'user.email.verified',
     CONNECTOR_PUBLISHED = 'connector.published',
@@ -61,6 +62,7 @@ export enum ApplicationEventName {
     MODULE_ACCESS_SETTINGS_UPDATED = 'tenant.module.settings.updated',
     RESOURCES_OWNERSHIP_TRANSFERRED = 'tenant.resources.transferred',
     LOGIN_SETTINGS_UPDATED = 'tenant.login.settings.updated',
+    SSO_SETTINGS_UPDATED = 'tenant.sso.settings.updated',
     WORKER_STATE_CHANGED = 'tenant.worker.state.changed',
     AUDIT_LOG_EXPORTED = 'tenant.audit.exported',
     PROJECT_LIMITS_UPDATED = 'tenant.project.limits.updated',
@@ -416,6 +418,8 @@ export type MemberRemovedEvent = z.infer<typeof MemberRemovedEvent>
 
 const AuthenticationEventData = z.object({
     user: UserMeta.optional(),
+    method: z.enum(['password', 'code', 'sso']).optional(),
+    provider: z.string().optional(),
 })
 
 export const AuthenticationEvent = z.object({
@@ -628,6 +632,8 @@ export const TenantAdminEvent = z.object({
         z.literal(ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED),
         z.literal(ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED),
         z.literal(ApplicationEventName.LOGIN_SETTINGS_UPDATED),
+        z.literal(ApplicationEventName.SSO_SETTINGS_UPDATED),
+        z.literal(ApplicationEventName.USER_SIGN_IN_FAILED),
         z.literal(ApplicationEventName.WORKER_STATE_CHANGED),
         z.literal(ApplicationEventName.AUDIT_LOG_EXPORTED),
         z.literal(ApplicationEventName.PROJECT_LIMITS_UPDATED),
@@ -801,7 +807,7 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.PERSONAL_DATA_ERASURE:
             return `Personal data erasure for ${event.data.request.valueHint}: ${event.data.phase.toLowerCase()} (${event.data.matchedRuns} runs)`
         case ApplicationEventName.USER_SIGNED_IN:
-            return `User ${event.userEmail} signed in`
+            return event.data.method === 'sso' ? `User ${event.userEmail} signed in with ${event.data.provider ?? 'SSO'}` : `User ${event.userEmail} signed in`
         case ApplicationEventName.USER_PASSWORD_RESET:
             return `User ${event.userEmail} reset password`
         case ApplicationEventName.USER_EMAIL_VERIFIED:
@@ -822,6 +828,8 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED:
         case ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED:
         case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
+        case ApplicationEventName.SSO_SETTINGS_UPDATED:
+        case ApplicationEventName.USER_SIGN_IN_FAILED:
         case ApplicationEventName.WORKER_STATE_CHANGED:
         case ApplicationEventName.AUDIT_LOG_EXPORTED:
         case ApplicationEventName.PROJECT_LIMITS_UPDATED:

@@ -72,7 +72,7 @@ export const tenantController: FastifyPluginAsyncZod = async (app) => {
         const tenantId = req.principal.tenant.id
         tenantSettingsGuards.assertBrandingAssetsWithinLimit([req.body.logoIcon, req.body.fullLogo, req.body.favIcon])
         if (req.body.emailAuthEnabled === false) {
-            tenantSettingsGuards.assertAnotherMethodStaysEnabled({ emailAuthEnabled: false })
+            await tenantSettingsGuards.assertAnotherMethodStaysEnabled({ log: req.log, tenantId })
         }
 
         const [logoIconUrl, fullLogoUrl, favIconUrl] = await Promise.all([

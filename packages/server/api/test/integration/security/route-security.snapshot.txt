@@ -67,6 +67,9 @@ GET /v1/alerts/records | TENANT_ADMIN | USER | - | -
 GET /v1/alerts/records/stats | TENANT_ADMIN | USER | - | -
 GET /v1/app-events/:connectorUrl | PUBLIC | - | - | -
 GET /v1/audit-events | TENANT_ADMIN | USER,SERVICE | - | -
+GET /v1/authn/sso/callback | PUBLIC | - | - | -
+GET /v1/authn/sso/providers | PUBLIC | - | - | -
+GET /v1/authn/sso/start | PUBLIC | - | - | -
 GET /v1/backups | TENANT_ADMIN | USER | - | -
 GET /v1/backups/:id/restore-precheck | TENANT_ADMIN | USER | - | -
 GET /v1/backups/overview | TENANT_ADMIN | USER | - | -
@@ -196,6 +199,7 @@ GET /v1/tenant-access/members | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-access/module-settings | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-access/requests | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-access/resources | TENANT_ADMIN | USER | - | -
+GET /v1/tenant-access/sso | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-connections | TENANT_ADMIN | USER,SERVICE | - | -
 GET /v1/tenant-connections/owners | TENANT_ADMIN | USER,SERVICE | - | -
 GET /v1/tenants | TENANT_ANY_MEMBER | USER | - | -
@@ -293,6 +297,7 @@ POST /v1/authentication/sign-up | PUBLIC | - | - | -
 POST /v1/authentication/switch-tenant | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/authn/local/reset-password | PUBLIC | - | - | -
 POST /v1/authn/local/verify-email | PUBLIC | - | - | -
+POST /v1/authn/sso/exchange | PUBLIC | - | - | -
 POST /v1/backups | TENANT_ADMIN | USER | - | -
 POST /v1/backups/settings | TENANT_ADMIN | USER | - | -
 POST /v1/connection-replacements | PROJECT | USER | PROJECT:UPDATE | BODY:projectId
@@ -431,6 +436,10 @@ POST /v1/tenant-access/module-settings | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/requests/:id/approve | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/requests/:id/reject | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/resources/transfer | TENANT_ADMIN | USER | - | -
+POST /v1/tenant-access/sso/:provider/enabled | TENANT_ADMIN | USER | - | -
+POST /v1/tenant-access/sso/:provider/test | TENANT_ADMIN | USER | - | -
+POST /v1/tenant-access/sso/feishu | TENANT_ADMIN | USER | - | -
+POST /v1/tenant-access/sso/oidc | TENANT_ADMIN | USER | - | -
 POST /v1/tenants | UNSCOPED | ONBOARDING,USER | - | -
 POST /v1/tenants/:id | TENANT_ADMIN | USER | - | -
 POST /v1/test-trigger | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId

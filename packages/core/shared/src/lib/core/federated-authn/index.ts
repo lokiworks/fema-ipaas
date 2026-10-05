@@ -1,8 +1,10 @@
 import { Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { ThirdPartyAuthnProviderEnum } from './authn-provider-name'
+import { StoredFeishuSso, StoredOidcSso } from './sso-config'
 
 export * from './authn-provider-name'
+export * from './sso-config'
 
 export const federatedAuthnLoginResponse = z.object({
     loginUrl: z.string(),
@@ -33,8 +35,15 @@ export type SAMLAuthnProviderConfig = z.infer<typeof SAMLAuthnProviderConfig>
 
 export const FederatedAuthnProviderConfig = z.object({
     saml: Nullable(SAMLAuthnProviderConfig),
+    oidc: Nullable(StoredOidcSso),
+    feishu: Nullable(StoredFeishuSso),
 })
 export type FederatedAuthnProviderConfig = z.infer<typeof FederatedAuthnProviderConfig>
+
+export const FederatedAuthnProviderUpdate = z.object({
+    saml: Nullable(SAMLAuthnProviderConfig),
+})
+export type FederatedAuthnProviderUpdate = z.infer<typeof FederatedAuthnProviderUpdate>
 
 export const FederatedAuthnProviderConfigWithoutSensitiveData = z.object({
     saml: Nullable(z.object({})),

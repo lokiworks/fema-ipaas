@@ -1,6 +1,6 @@
 import { randomInt } from 'node:crypto'
 import { isNil } from '@fema-ipaas/core-utils'
-import { ASSIGNABLE_TENANT_MODULES, LOGIN_METHOD_ORDER, LoginMethod, LoginMethodStatus, TENANT_ACCESS_LIMITS, TenantModule, TenantRole } from '@fema-ipaas/shared'
+import { ASSIGNABLE_TENANT_MODULES, FederatedAuthnProviderConfig, LOGIN_METHOD_ORDER, LoginMethod, LoginMethodStatus, TENANT_ACCESS_LIMITS, TenantModule, TenantRole } from '@fema-ipaas/shared'
 
 function emailDomain(email: string): string | null {
     const at = email.lastIndexOf('@')
@@ -54,14 +54,17 @@ function temporaryPasswordLength(passwordMinLength: number): number {
     return Math.max(TENANT_ACCESS_LIMITS.temporaryPasswordLength, passwordMinLength)
 }
 
-function loginMethods({ emailAuthEnabled }: LoginMethodsParams): LoginMethodStatus[] {
+function loginMethods({ emailAuthEnabled, providers }: LoginMethodsParams): LoginMethodStatus[] {
     return LOGIN_METHOD_ORDER.map((method) => {
-        const available = method === LoginMethod.EMAIL_PASSWORD
-        return {
-            method,
-            available,
-            configured: available,
-            enabled: available && emailAuthEnabled,
+        switch (method) {
+            case LoginMethod.EMAIL_PASSWORD:
+                return { method, available: true, configured: true, enabled: emailAuthEnabled }
+            case LoginMethod.OIDC:
+                return { method, available: true, configured: !isNil(providers?.oidc), enabled: providers?.oidc?.enabled === true }
+            case LoginMethod.FEISHU:
+                return { method, available: true, configured: !isNil(providers?.feishu), enabled: providers?.feishu?.enabled === true }
+            default:
+                return { method, available: false, configured: false, enabled: false }
         }
     })
 }
@@ -111,4 +114,5 @@ type HasModuleParams = EffectiveModulesParams & {
 
 type LoginMethodsParams = {
     emailAuthEnabled: boolean
+    providers?: FederatedAuthnProviderConfig | null
 }

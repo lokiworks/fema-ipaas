@@ -7,6 +7,8 @@ export enum UserIdentityProvider {
     GOOGLE = 'GOOGLE',
     SAML = 'SAML',
     JWT = 'JWT',
+    OIDC = 'OIDC',
+    FEISHU = 'FEISHU',
 }
 export const UserIdentity = z.object({
     ...BaseModelSchema,

@@ -204,7 +204,14 @@ async function runFeishuWrites({ auth, shared }) {
 
   const carriesPrefix = readBack.status === 'PASS' && typeof state.user?.name === 'string' && state.user.name.startsWith(config.prefix)
   if (!carriesPrefix) {
-    skip({ id: 'feishu.suspend', title: 'Suspend the test account (write)', reason: `refusing to suspend ${state.openId}: its name does not start with ${config.prefix}, so it may be a real employee. Pick another test mobile.` })
+    const unreadable = readBack.status === 'PASS' && (state.user?.name ?? null) === null
+    skip({
+      id: 'feishu.suspend',
+      title: 'Suspend the test account (write)',
+      reason: unreadable
+        ? `refusing to suspend ${state.openId}: its name could not be read back, the app probably lacks a read permission such as contact:contact:readonly_as_app`
+        : `refusing to suspend ${state.openId}: its name does not start with ${config.prefix}, so it may be a real employee. Pick another test mobile.`,
+    })
   }
   else {
     await step({

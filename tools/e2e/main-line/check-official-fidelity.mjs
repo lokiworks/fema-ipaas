@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -296,6 +296,73 @@ check('beisen roster by organization: root includes every unit below, a unit inc
   assert.equal(own.payload.total, 3)
   const missing = await beisen({ route: '/Employee/GetEmployeeOfOrganization', body: { orgId: 1 } })
   assert.equal(missing.payload.code, '417')
+})
+
+function runReal(extra = {}) {
+  const result = spawnSync('node', [path.join(here, 'run-real.mjs')], {
+    encoding: 'utf8',
+    env: {
+      PATH: process.env.PATH,
+      FEMA_REAL_FEISHU_APP_ID: 'cli_real',
+      FEMA_REAL_FEISHU_APP_SECRET: 's',
+      FEMA_REAL_FEISHU_BASE_URL: feishuBase,
+      FEMA_REAL_FEISHU_TEST_DEPARTMENT_ID: 'od-rd',
+      FEMA_REAL_FEISHU_TEST_MOBILE: '13900001111',
+      FEMA_REAL_FEISHU_TEST_CHAT_ID: 'oc_hr_notice',
+      FEMA_REAL_ONLY: 'feishu',
+      ...extra,
+    },
+  })
+  return { output: `${result.stdout}${result.stderr}`, status: result.status }
+}
+
+check('run-real: without the confirmation variable it reads only, creates nothing and says it verified nothing real', async () => {
+  const { output, status } = runReal()
+  assert.equal(status, 0)
+  assert.match(output, /\[SKIP\] feishu\.writes/)
+  assert.match(output, /Writes: OFF/)
+  assert.match(output, /Verified against the real platforms: NOTHING \(mock mode\)/)
+  assert.equal((await http({ url: `${base}/__admin/official-users` })).payload.users.length, 0)
+})
+
+check('run-real: with the confirmation it creates and suspends exactly one prefixed test account and posts one message', async () => {
+  const { output, status } = runReal({ FEMA_REAL_CONFIRM_WRITE: 'create-test-account-and-send-test-message' })
+  assert.equal(status, 0)
+  const users = (await http({ url: `${base}/__admin/official-users` })).payload.users
+  assert.deepEqual(users.map((user) => [user.name, user.is_frozen]), [['FEMA验收-验收账号', true]])
+  assert.match(output, /\[PASS\] feishu\.provision-repeat/)
+  assert.match(output, /\[PASS\] feishu\.suspend /)
+  const state = (await http({ url: `${base}/__admin/state` })).payload
+  assert.equal(state.messages.length, 1)
+})
+
+check('run-real: it refuses to suspend an account that is not named with the test prefix, so a real employee is never touched', async () => {
+  await seedUser({ mobile: '13900001111', name: '真实员工', department_ids: ['od-rd'] })
+  const { output, status } = runReal({ FEMA_REAL_CONFIRM_WRITE: 'create-test-account-and-send-test-message' })
+  const users = (await http({ url: `${base}/__admin/official-users` })).payload.users
+  assert.equal(users.length, 1)
+  assert.equal(users[0].is_frozen, false)
+  assert.match(output, /refusing to suspend/)
+  assert.equal(status, 0)
+})
+
+check('run-real: a missing permission fails the step, names the permission and exits non-zero', async () => {
+  await admin('/__admin/feishu-official', { missingScopes: ['contact:contact'] })
+  const { output, status } = runReal({ FEMA_REAL_CONFIRM_WRITE: 'create-test-account-and-send-test-message' })
+  assert.equal(status, 1)
+  assert.match(output, /\[FAIL\] feishu\.provision/)
+  assert.match(output, /lacks a permission \(contact:contact\)/)
+})
+
+check('run-real: a wrong App Secret, a blocked IP and a used-up quota are each named', async () => {
+  const wrongSecret = runReal({ FEMA_REAL_FEISHU_APP_SECRET: 'wrong' })
+  assert.match(wrongSecret.output, /App Secret is wrong/)
+  await admin('/__admin/feishu-official', { ipDenied: true })
+  const blocked = runReal({ FEMA_REAL_FEISHU_APP_ID: 'cli_ip' })
+  assert.match(blocked.output, /IP allowlist/)
+  await admin('/__admin/feishu-official', { ipDenied: false, quotaExhausted: true })
+  const quota = runReal({ FEMA_REAL_FEISHU_APP_ID: 'cli_quota', FEMA_REAL_FEISHU_TEST_CHAT_ID: 'oc_hr_notice', FEMA_REAL_CONFIRM_WRITE: 'create-test-account-and-send-test-message' })
+  assert.match(quota.output, /monthly API quota is used up/)
 })
 
 const require = createRequire(import.meta.url)

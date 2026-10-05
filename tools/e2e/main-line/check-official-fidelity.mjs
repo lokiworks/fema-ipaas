@@ -270,6 +270,18 @@ check('beisen time window: a change is not visible until the index catches up', 
   assert.deepEqual([early.payload.data.length, late.payload.data.length], [0, 1])
 })
 
+check('beisen time window: every record carries its modification times, so a second edit of the same employee is a different record', async () => {
+  await admin('/__admin/employees', { records: [employee(1)] })
+  const first = await beisen({ route: '/Employee/GetByTimeWindow', body: window() })
+  await sleep(1200)
+  await admin('/__admin/employees', { records: [employee(1)] })
+  const second = await beisen({ route: '/Employee/GetByTimeWindow', body: window() })
+  const stamp = (response, index) => response.payload.data[index].recordInfo.businessModifiedTime
+  assert.match(stamp(first, 0), /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/)
+  assert.equal(second.payload.data.length, 2)
+  assert.notEqual(stamp(second, 0), stamp(second, 1))
+})
+
 check('beisen organization and lookup endpoints use the documented field names and errors', async () => {
   await admin('/__admin/employees', { records: [employee(1), employee(2, { recordInfo: { userID: 2, jobNumber: 'E2', oIdDepartment: 20302, employeeStatus: '2', approvalStatus: 4 } })] })
   const children = await beisen({ route: '/Organization/GetSubOrganizations', body: { oId: 900100000, isWithDisable: false, isWithSelf: false } })
@@ -430,6 +442,24 @@ check('connector beisen trigger does not lose a change that became visible late,
   assert.deepEqual(second.map((record) => record.employeeInfo.userID), [1])
   const third = await employeeChanged.run(context)
   assert.deepEqual(third, [])
+})
+
+check('connector beisen trigger reports a second edit of the same employee, and still nothing twice', async () => {
+  process.env.FEMA_BEISEN_BASE_URL = beisenBase
+  const { employeeChanged } = require(path.join(beisenDist, 'lib/triggers/employee-changed.js'))
+  const data = new Map()
+  const store = { get: async (key) => (data.has(key) ? data.get(key) : null), put: async (key, value) => { data.set(key, value); return value }, delete: async (key) => { data.delete(key) } }
+  const context = { auth: { type: 'CUSTOM_AUTH', props: { appKey: 'k', appSecret: 's' } }, store, files: {}, isRepublish: false, propsValue: { statusScope: 'ACTIVE', queryType: 2, timezone: 'Asia/Shanghai' } }
+  await employeeChanged.onEnable(context)
+  data.set('lastPoll', Date.now() - 60_000)
+  data.set('enabledAt', Date.now() - 60_000)
+  await admin('/__admin/employees', { records: [employee(1)] })
+  assert.equal((await employeeChanged.run(context)).length, 1)
+  assert.equal((await employeeChanged.run(context)).length, 0)
+  await sleep(1200)
+  await admin('/__admin/employees', { records: [employee(1)] })
+  assert.equal((await employeeChanged.run(context)).length, 1)
+  assert.equal((await employeeChanged.run(context)).length, 0)
 })
 
 async function main() {

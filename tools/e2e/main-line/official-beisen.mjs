@@ -1,4 +1,5 @@
 const DAY_MS = 24 * 60 * 60 * 1000
+const BEIJING_OFFSET_MS = 8 * 60 * 60 * 1000
 const MAX_CAPACITY = 300
 const MAX_IDS = 300
 const MAX_SCROLL_SESSIONS = 2000
@@ -111,9 +112,21 @@ export function createBeisenOfficial({ state, kit }) {
     return Date.now() - employee.changedAt >= (employee.visibleDelayMs ?? official.indexLagMs)
   }
 
+  function stampText({ epochMs }) {
+    return new Date(epochMs + BEIJING_OFFSET_MS).toISOString().slice(0, 19).replace('T', ' ')
+  }
+
   function outputRecord({ employee }) {
     const { changedAt, systemOnly, visibleDelayMs, ...record } = employee
-    return { originalId: null, ...record }
+    const modifiedTime = stampText({ epochMs: changedAt })
+    const businessModifiedTime = stampText({ epochMs: systemOnly === true ? changedAt - DAY_MS : changedAt })
+    const stamps = { modifiedTime, businessModifiedTime }
+    return {
+      originalId: null,
+      ...record,
+      employeeInfo: { ...stamps, ...record.employeeInfo },
+      recordInfo: { ...stamps, ...record.recordInfo },
+    }
   }
 
   function timeWindow({ body, headers }) {

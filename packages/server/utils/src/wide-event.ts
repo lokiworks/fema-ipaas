@@ -7,6 +7,10 @@ function run<T>({ logger, fn }: { logger: RequestLogger, fn: () => T }): T {
     return als.run(logger, fn)
 }
 
+function detached<T>({ fn }: { fn: () => T }): T {
+    return als.exit(fn)
+}
+
 function set(fields: Record<string, unknown>): void {
     als.getStore()?.set(fields)
 }
@@ -48,6 +52,7 @@ function current(): RequestLogger | undefined {
 
 export const wideEvent = {
     run,
+    detached,
     set,
     error,
     timed,

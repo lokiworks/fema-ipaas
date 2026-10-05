@@ -2,7 +2,7 @@ import { createReadStream, existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { ApplicationError, ErrorCode, generateId, isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { versionUtil } from '@fema-ipaas/server-utils'
+import { versionUtil, wideEvent } from '@fema-ipaas/server-utils'
 import {
     BACKUP_DEFAULT_SETTINGS,
     BackupCounts,
@@ -200,7 +200,7 @@ export const backupService = (log: FastifyBaseLogger) => ({
         if (record.status === BackupStatus.FAILED) {
             return record
         }
-        const execution = execute({ log: system.globalLogger(), record })
+        const execution = wideEvent.detached({ fn: () => execute({ log: system.globalLogger(), record }) })
         if (trigger === BackupTrigger.SCHEDULED) {
             await execution
         }

@@ -193,3 +193,20 @@ describe('wideEvent', () => {
         captured.restore()
     })
 })
+
+describe('wideEvent.detached', () => {
+    it('runs work outside the request, so background logs do not land on a wide event that was already emitted', () => {
+        const logger = makeMockLogger()
+        const seen = wideEvent.run({ logger, fn: () => wideEvent.detached({ fn: () => wideEvent.current() }) })
+        expect(seen).toBeUndefined()
+    })
+
+    it('keeps the request logger for the code that called it', () => {
+        const logger = makeMockLogger()
+        const seen = wideEvent.run({ logger, fn: () => {
+            wideEvent.detached({ fn: () => undefined })
+            return wideEvent.current()
+        } })
+        expect(seen).toBe(logger)
+    })
+})

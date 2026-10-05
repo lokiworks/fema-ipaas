@@ -2,7 +2,6 @@ import { isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ConnectorTriggerSettings, Execution, ExecutionStatus, RunConcurrencyTicket, RunEnvironment, ScheduleOverlapPolicy, scheduleUtils, triggerRunSettingsUtils, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
-import pLimit from 'p-limit'
 import { In, MoreThan } from 'typeorm'
 import { privacyService } from '../privacy/privacy.service'
 import { executionRepo } from '../workflows/execution/execution-service'
@@ -27,13 +26,12 @@ export const triggerRunPolicy = (log: FastifyBaseLogger) => ({
         }
         const { accepted, duplicates } = await dedupeService.claimWorkflowDedupe({ workflowId, settings: settings?.dedupe, payloads })
         const enqueuedAt = Date.now()
-        const startLimit = pLimit(START_RUN_CONCURRENCY)
         const attempts = await Promise.allSettled(accepted.map(async ({ payload, claim }, index) => {
-            const execution = await startLimit(() => startRun({
+            const execution = await startRun({
                 payload,
                 concurrency: triggerRunPolicyUtils.ticketFor({ settings, payload, enqueuedAt: enqueuedAt + index }),
                 businessKey: triggerRunPolicyUtils.businessKeyOf({ settings, payload }),
-            })).catch(async (error: unknown) => {
+            }).catch(async (error: unknown) => {
                 if (!isNil(claim)) {
                     await dedupeService.releaseClaim({ claim })
                 }
@@ -97,7 +95,6 @@ async function scheduleSkipReason({ settings, workflowId, tenantId, log }: Sched
     return null
 }
 
-const START_RUN_CONCURRENCY = 5
 const UNFINISHED_STATUSES = [ExecutionStatus.QUEUED, ExecutionStatus.RUNNING, ExecutionStatus.PAUSED]
 const OVERLAP_LOOKBACK_HOURS = 24
 

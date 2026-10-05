@@ -1,5 +1,6 @@
 import { QueryRunner } from 'typeorm'
 import { Migration } from '../../../../src/app/database/migration'
+import { getMigrations } from '../../../../src/app/database/postgres-connection'
 import { identifyCandidatesByManifest, identifyReleaseCandidates, verifyDatabaseState } from '../../../../src/app/database/rollback-migrations'
 
 function createMockMigration(overrides: Partial<Migration> & { name: string }): new () => Migration {
@@ -187,5 +188,25 @@ describe('verifyDatabaseState', () => {
         await expect(
             verifyDatabaseState(mockDataSource as unknown as Parameters<typeof verifyDatabaseState>[0], candidates),
         ).rejects.toThrow('Migration order mismatch')
+    })
+})
+
+
+describe('migration order', () => {
+    it('lists the migrations in the order TypeORM runs them, so a rollback undoes them newest first', () => {
+        const timestamps = getMigrations().map((MigrationClass) => Number(/(\d{13})$/.exec(new MigrationClass().name ?? '')?.[1]))
+        expect(timestamps.every((timestamp) => Number.isFinite(timestamp))).toBe(true)
+        expect(timestamps).toEqual([...timestamps].sort((left, right) => left - right))
+    })
+
+    it('undoes by timestamp even when the list is not in timestamp order', () => {
+        const migrations = [
+            createMockMigration({ name: 'CreateB1790961100000', release: '0.89.0', breaking: false }),
+            createMockMigration({ name: 'CreateD1791010000000', release: '0.89.0', breaking: false }),
+            createMockMigration({ name: 'CreateC1791000000000', release: '0.89.0', breaking: false }),
+        ]
+
+        expect(identifyReleaseCandidates(migrations, '0.88.3').map((migration) => migration.name)).toEqual(['CreateD1791010000000', 'CreateC1791000000000', 'CreateB1790961100000'])
+        expect(identifyCandidatesByManifest(migrations, []).map((migration) => migration.name)).toEqual(['CreateD1791010000000', 'CreateC1791000000000', 'CreateB1790961100000'])
     })
 })

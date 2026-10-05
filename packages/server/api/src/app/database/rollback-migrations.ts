@@ -55,7 +55,7 @@ export function identifyReleaseCandidates(
         return semver.gt(m.release, targetVersion)
     })
 
-    return candidates.reverse()
+    return newestFirst(candidates)
 }
 
 export function identifyCandidatesByManifest(
@@ -65,7 +65,25 @@ export function identifyCandidatesByManifest(
     const targetSet = new Set(targetMigrationNames)
     const instances = migrationClasses.map(M => new M())
     const candidates = instances.filter(m => m.name && !targetSet.has(m.name))
-    return candidates.reverse()
+    return newestFirst(candidates)
+}
+
+const MIGRATION_TIMESTAMP_PATTERN = /(\d{13})$/
+
+function timestampOf(migration: Migration): number | null {
+    const match = MIGRATION_TIMESTAMP_PATTERN.exec(migration.name ?? '')
+    return match === null ? null : Number(match[1])
+}
+
+function newestFirst(migrations: Migration[]): Migration[] {
+    const timestamps = migrations.map(timestampOf)
+    if (timestamps.some((timestamp) => timestamp === null)) {
+        return [...migrations].reverse()
+    }
+    return migrations
+        .map((migration, index) => ({ migration, index, timestamp: timestampOf(migration) ?? 0 }))
+        .sort((left, right) => right.timestamp - left.timestamp || right.index - left.index)
+        .map((entry) => entry.migration)
 }
 
 async function executeRollback(params: {

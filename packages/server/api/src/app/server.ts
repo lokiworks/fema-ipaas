@@ -140,9 +140,11 @@ async function setupBaseApp(): Promise<FastifyInstance> {
     const executionLogSizeLimit = system.getNumberOrThrow(AppSystemProp.MAX_EXECUTION_LOG_SIZE_MB)
     const app = fastify({
         disableRequestLogging: true,
-        querystringParser: (str) => qs.parse(str, { arrayLimit: 1000 }),
         loggerInstance: system.globalLogger(),
-        ignoreTrailingSlash: true,
+        routerOptions: {
+            querystringParser: (str) => qs.parse(str, { arrayLimit: 1000 }),
+            ignoreTrailingSlash: true,
+        },
         pluginTimeout: 120000,
         bodyLimit: Math.max(fileSizeLimit + 4, executionLogSizeLimit + 4, 25) * 1024 * 1024,
         genReqId: () => {

@@ -34,6 +34,7 @@ export const JOB_PRIORITY = {
     lowest: 6,
 }
 
+const POLLING_PRIORITY: keyof typeof JOB_PRIORITY = 'high'
 const TESTING_EXECUTE_WORKFLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'high'
 const ASYNC_EXECUTE_WORKFLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'medium'
 const SYNC_EXECUTE_WORKFLOW_PRIORITY: keyof typeof JOB_PRIORITY = 'high'
@@ -51,6 +52,7 @@ function getExecuteWorkflowPriority(environment: RunEnvironment, workerHandlerId
 export function getDefaultJobPriority(job: JobData): keyof typeof JOB_PRIORITY {
     switch (job.jobType) {
         case WorkerJobType.EXECUTE_POLLING:
+            return POLLING_PRIORITY
         case WorkerJobType.RENEW_WEBHOOK:
             return 'veryLow'
         case WorkerJobType.EXECUTE_WEBHOOK:

@@ -18,18 +18,70 @@ const state = {
   beisenRules: [],
   failuresServed: 0,
   timeWindowRequests: [],
+  usersByOpenId: new Map(),
+  usersByEmail: new Map(),
+  createAttemptsByMobile: new Map(),
+  rejectedDuplicateCreates: 0,
+  replayedCreates: 0,
+  faults: [],
+  faultsServed: 0,
+  latencyMs: { feishu: 0, beisen: 0 },
+  beisenQuirks: { duplicateRate: 0, shuffle: false },
+  requestCounts: {},
+  inflight: 0,
+  inflightMax: 0,
+  beisenPages: { withData: 0, empty: 0 },
 }
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://localhost:${port}`)
   const body = await readJson(req)
   const route = `${req.method} ${url.pathname}`
+  const userMatch = url.pathname.match(/^\/feishu\/open-apis\/contact\/v3\/users\/([^/]+)$/)
+  const openId = userMatch ? decodeURIComponent(userMatch[1]) : null
   const handler = feishuOfficial.dynamicHandlerFor({ method: req.method ?? 'GET', pathname: url.pathname }) ?? ROUTES[route]
   if (!handler) {
     return send(res, 404, { error: 'not_found', path: url.pathname })
   }
-  const { status, payload, headers = {} } = handler({ body, query: url.searchParams, headers: req.headers })
-  return send(res, status, payload, headers)
+  const admin = url.pathname.startsWith('/__admin/')
+  const target = url.pathname.startsWith('/beisen/') ? 'beisen' : url.pathname.startsWith('/feishu/') ? 'feishu' : 'admin'
+  if (!admin) {
+    state.requestCounts[`${target}:${routeKeyOf({ route, openId })}`] = (state.requestCounts[`${target}:${routeKeyOf({ route, openId })}`] ?? 0) + 1
+    state.inflight += 1
+    state.inflightMax = Math.max(state.inflightMax, state.inflight)
+  }
+  try {
+    const latency = state.latencyMs[target] ?? 0
+    if (latency > 0) {
+      await sleep(latency)
+    }
+    const fault = admin ? null : pickFault({ target, method: req.method ?? 'GET', pathname: url.pathname })
+    if (fault?.mode === 'drop') {
+      if (fault.apply) {
+        handler({ body, query: url.searchParams, headers: req.headers })
+      }
+      return req.socket.destroy()
+    }
+    if (fault?.mode === 'status') {
+      return send(res, fault.status, fault.payload, faultHeaders({ fault }))
+    }
+    if (fault?.mode === 'delay') {
+      await sleep(fault.delayMs)
+    }
+    const { status, payload, headers = {} } = handler({ body, query: url.searchParams, headers: req.headers })
+    if (fault?.mode === 'apply_then_delay') {
+      await sleep(fault.delayMs)
+    }
+    if (fault?.mode === 'apply_then_status') {
+      return send(res, fault.status, fault.payload, faultHeaders({ fault }))
+    }
+    return send(res, status, payload, headers)
+  }
+  finally {
+    if (!admin) {
+      state.inflight -= 1
+    }
+  }
 })
 
 const ROUTES = {
@@ -40,13 +92,72 @@ const ROUTES = {
     return ok({ access_token: `${BEISEN_TOKEN}:${body.app_key}`, expires_in: 7200, token_type: 'bearer' })
   },
   'POST /__admin/employees': ({ body }) => {
-    const changedAt = Date.now()
+    const changedAt = Date.now() + Number(body.changedAtOffsetSeconds ?? 0) * 1000
     const records = (body.records ?? []).map((record) => ({ ...record, changedAt }))
     state.employees.push(...records)
-    return ok({ added: records.length })
+    return ok({ added: records.length, total: state.employees.length })
   },
+  'POST /__admin/feishu-seed-users': ({ body }) => {
+    const users = (body.users ?? []).map((input) => registerUser({ input }))
+    return ok({ seeded: users.length, total: state.feishuUsers.size })
+  },
+  'POST /__admin/departments': ({ body }) => {
+    ;(body.ids ?? []).forEach((id) => state.departments.add(id))
+    return ok({ departments: state.departments.size })
+  },
+  'POST /__admin/faults': ({ body }) => {
+    state.faults = (body.rules ?? []).map((rule, index) => normalizeFault({ rule, index }))
+    return ok({ faults: state.faults.length })
+  },
+  'POST /__admin/latency': ({ body }) => {
+    state.latencyMs = { feishu: Number(body.feishu ?? 0), beisen: Number(body.beisen ?? 0) }
+    return ok({ latencyMs: state.latencyMs })
+  },
+  'POST /__admin/beisen-quirks': ({ body }) => {
+    state.beisenQuirks = { duplicateRate: Number(body.duplicateRate ?? 0), shuffle: body.shuffle === true }
+    return ok({ beisenQuirks: state.beisenQuirks })
+  },
+  'POST /__admin/reset': () => {
+    state.employees = []
+    state.feishuUsers = new Map()
+    state.usersByOpenId = new Map()
+    state.usersByEmail = new Map()
+    state.createdByClientToken = new Map()
+    state.createAttemptsByMobile = new Map()
+    state.createCalls = 0
+    state.rejectedDuplicateCreates = 0
+    state.replayedCreates = 0
+    state.messages = []
+    state.bitableRecords = []
+    state.provisionFailure = null
+    state.messageFailure = null
+    state.beisenRules = []
+    state.failuresServed = 0
+    state.timeWindowRequests = []
+    state.faults = []
+    state.faultsServed = 0
+    state.latencyMs = { feishu: 0, beisen: 0 }
+    state.beisenQuirks = { duplicateRate: 0, shuffle: false }
+    state.requestCounts = {}
+    state.inflightMax = 0
+    state.beisenPages = { withData: 0, empty: 0 }
+    feishuOfficial.reset()
+    beisenOfficial.reset()
+    return ok({ reset: true })
+  },
+  'POST /__admin/reset-counters': () => {
+    state.requestCounts = {}
+    state.inflightMax = 0
+    state.faultsServed = 0
+    state.faults.forEach((fault) => {
+      fault.served = 0
+    })
+    return ok({ reset: true })
+  },
+  'GET /__admin/summary': () => ok(summaryOf()),
+  'GET /__admin/users': () => ok({ users: [...state.feishuUsers.values()].map(({ mobile, open_id, department_ids, employee_no, is_frozen, name }) => ({ mobile, open_id, department_ids, employee_no, is_frozen: is_frozen === true, name })) }),
   'POST /__admin/feishu-user': ({ body }) => {
-    const user = [...state.feishuUsers.values()].find((candidate) => candidate.mobile === body.mobile)
+    const user = state.feishuUsers.get(body.mobile)
     if (!user) {
       return { status: 404, payload: { error: 'no such user' } }
     }
@@ -69,7 +180,7 @@ const ROUTES = {
   },
   'GET /__admin/state': () => ok({
     feishuUsers: [...state.feishuUsers.values()],
-    timeWindowRequests: state.timeWindowRequests,
+    timeWindowRequests: state.timeWindowRequests.length > 200 ? state.timeWindowRequests.slice(-200) : state.timeWindowRequests,
     createCalls: state.createCalls,
     messages: state.messages,
     bitableRecords: state.bitableRecords,
@@ -77,6 +188,134 @@ const ROUTES = {
     messageFailure: state.messageFailure,
     failuresServed: state.failuresServed,
   }),
+}
+
+function summaryOf() {
+  const users = [...state.feishuUsers.values()]
+  const byDepartment = {}
+  users.forEach((user) => {
+    const key = (user.department_ids ?? []).join(',')
+    byDepartment[key] = (byDepartment[key] ?? 0) + 1
+  })
+  const messagesByText = new Map()
+  state.messages.forEach((message) => {
+    messagesByText.set(message.content, (messagesByText.get(message.content) ?? 0) + 1)
+  })
+  const employeeNos = new Map()
+  users.forEach((user) => {
+    if (user.employee_no) {
+      employeeNos.set(user.employee_no, (employeeNos.get(user.employee_no) ?? 0) + 1)
+    }
+  })
+  return {
+    users: users.length,
+    frozen: users.filter((user) => user.is_frozen === true).length,
+    byDepartment,
+    createCalls: state.createCalls,
+    createAttemptsOverOne: [...state.createAttemptsByMobile.values()].filter((count) => count > 1).length,
+    createAttemptsExtra: [...state.createAttemptsByMobile.values()].reduce((sum, count) => sum + Math.max(count - 1, 0), 0),
+    rejectedDuplicateCreates: state.rejectedDuplicateCreates,
+    replayedCreates: state.replayedCreates,
+    duplicateEmployeeNos: [...employeeNos.values()].filter((count) => count > 1).length,
+    messages: state.messages.length,
+    duplicateMessages: [...messagesByText.values()].filter((count) => count > 1).length,
+    duplicateMessageExtra: [...messagesByText.values()].reduce((sum, count) => sum + Math.max(count - 1, 0), 0),
+    employees: state.employees.length,
+    requestCounts: state.requestCounts,
+    inflightMax: state.inflightMax,
+    beisenPages: state.beisenPages,
+    faultsServed: state.faultsServed,
+    failuresServed: state.failuresServed,
+    faults: state.faults.map(({ id, served, remaining }) => ({ id, served, remaining })),
+  }
+}
+
+function registerUser({ input }) {
+  const sequence = state.feishuUsers.size + 1
+  const user = {
+    open_id: `ou_${sequence}`,
+    user_id: `u${sequence}`,
+    union_id: `on_${sequence}`,
+    name: input.name,
+    mobile: input.mobile,
+    email: input.email ?? null,
+    employee_no: input.employee_no ?? null,
+    department_ids: input.department_ids ?? [],
+    is_frozen: input.is_frozen === true,
+    is_resigned: input.is_resigned === true,
+    is_tenant_manager: input.is_tenant_manager === true,
+  }
+  state.feishuUsers.set(user.mobile, user)
+  state.usersByOpenId.set(user.open_id, user)
+  if (user.email) {
+    state.usersByEmail.set(user.email, user)
+  }
+  return user
+}
+
+function normalizeFault({ rule, index }) {
+  const status = Number(rule.status ?? 500)
+  return {
+    id: rule.id ?? `fault-${index + 1}`,
+    target: rule.target ?? 'feishu',
+    method: rule.method ?? null,
+    path: rule.path ? new RegExp(rule.path) : null,
+    mode: rule.mode ?? 'status',
+    status,
+    payload: rule.payload ?? (status === 429 ? { code: 99991400, msg: 'request trigger frequency limit' } : { code: status, msg: 'mock server error' }),
+    delayMs: Number(rule.delayMs ?? 0),
+    probability: Number(rule.probability ?? 1),
+    remaining: rule.times === undefined || rule.times === null ? null : Number(rule.times),
+    skip: Number(rule.skip ?? 0),
+    apply: rule.apply === true,
+    resetSeconds: rule.resetSeconds ?? null,
+    served: 0,
+    seen: 0,
+  }
+}
+
+function pickFault({ target, method, pathname }) {
+  const fault = state.faults.find((candidate) => {
+    if (candidate.target !== target || (candidate.method && candidate.method !== method) || (candidate.path && !candidate.path.test(pathname))) {
+      return false
+    }
+    if (candidate.remaining !== null && candidate.remaining <= 0) {
+      return false
+    }
+    candidate.seen += 1
+    if (candidate.seen <= candidate.skip) {
+      return false
+    }
+    return Math.random() < candidate.probability
+  })
+  if (!fault) {
+    return null
+  }
+  fault.served += 1
+  state.faultsServed += 1
+  if (fault.remaining !== null) {
+    fault.remaining -= 1
+  }
+  return fault
+}
+
+function faultHeaders({ fault }) {
+  return fault.resetSeconds === null ? {} : { 'x-ogw-ratelimit-reset': String(fault.resetSeconds), 'retry-after': String(fault.resetSeconds) }
+}
+
+function quirkPage({ page }) {
+  const { duplicateRate, shuffle } = state.beisenQuirks
+  const extras = duplicateRate > 0 ? page.filter(() => Math.random() < duplicateRate) : []
+  const combined = [...page, ...extras]
+  return shuffle ? combined.map((item) => ({ item, key: Math.random() })).sort((a, b) => a.key - b.key).map(({ item }) => item) : combined
+}
+
+function routeKeyOf({ route, openId }) {
+  return openId ? route.replace(openId, ':id') : route
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function beisenRuleFor({ appKey, empStatus }) {

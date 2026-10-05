@@ -2,7 +2,7 @@ import { MappingMissingBehavior } from '@fema-ipaas/core-utils'
 import { SolutionConfigType, SolutionPackage, SolutionWorkflow } from '@fema-ipaas/shared'
 import type { OfficialSolution } from '../official-solutions'
 import { solutionPackageUtils } from '../solution-package-utils'
-import { beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep } from './official-solution-builders'
+import { beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep, STORE, STORE_VERSION } from './official-solution-builders'
 
 function buildBeisenFeishuSolution(): OfficialSolution {
     const workflows = [onboardWorkflow(), transferWorkflow(), leaveWorkflow()]
@@ -42,7 +42,7 @@ function buildBeisenFeishuSolution(): OfficialSolution {
         summary: '北森员工入职、调岗、离职后，自动在飞书开通账号、同步部门、暂停账号，并通知 HR 群和 IT 群。',
         category: 'HR',
         version: '1.1',
-        notes: '同一员工的变动按工号排队逐条处理；调岗去重键加上任职开始日，调回原部门不再被当成重复',
+        notes: '同一员工的变动按工号排队逐条处理；调岗去重键加上任职开始日，调回原部门不再被当成重复；HR 群和 IT 群的通知先查记录、发完再记下，运行被打断后重跑不会漏发也不会重发',
         publishedAt: '2026-10-03T00:00:00.000Z',
         package: pkg,
     }
@@ -82,24 +82,40 @@ function onboardWorkflow(): SolutionWorkflow {
                     email: ref('employeeInfo', 'workEmail'),
                     employeeNo: ref('recordInfo', 'jobNumber'),
                 },
-                nextAction: routerStep({
-                    name: 'only_when_created',
-                    displayName: '只在新开通时通知',
-                    condition: { operator: 'BOOLEAN_IS_TRUE', firstValue: '{{provision[\'output\'][\'created\']}}' },
-                    branchName: '新开通',
-                    fallbackName: '账号已存在',
-                    child: connectorStep({
-                        name: 'notify_hr',
-                        displayName: '通知 HR 群',
-                        connectorName: FEISHU,
-                        connectorVersion: FEISHU_VERSION,
-                        actionName: 'send_group_message',
-                        input: {
-                            auth: FEISHU_AUTH,
-                            chatId: '',
-                            messageType: 'text',
-                            content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）的飞书账号已开通`,
-                        },
+                nextAction: connectorStep({
+                    name: 'check_notified',
+                    displayName: '查是否已通知过',
+                    connectorName: STORE,
+                    connectorVersion: STORE_VERSION,
+                    actionName: 'get',
+                    input: { key: ONBOARD_NOTIFIED_KEY, store_scope: 'PROJECT' },
+                    nextAction: routerStep({
+                        name: 'only_when_not_notified',
+                        displayName: '没通知过才通知',
+                        condition: { operator: 'DOES_NOT_EXIST', firstValue: '{{check_notified[\'output\']}}' },
+                        branchName: '还没通知',
+                        fallbackName: '已通知过',
+                        child: connectorStep({
+                            name: 'notify_hr',
+                            displayName: '通知 HR 群',
+                            connectorName: FEISHU,
+                            connectorVersion: FEISHU_VERSION,
+                            actionName: 'send_group_message',
+                            input: {
+                                auth: FEISHU_AUTH,
+                                chatId: '',
+                                messageType: 'text',
+                                content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）的飞书账号已开通`,
+                            },
+                            nextAction: connectorStep({
+                                name: 'mark_notified',
+                                displayName: '记下已通知',
+                                connectorName: STORE,
+                                connectorVersion: STORE_VERSION,
+                                actionName: 'put',
+                                input: { key: ONBOARD_NOTIFIED_KEY, value: 'sent', store_scope: 'PROJECT' },
+                            }),
+                        }),
                     }),
                 }),
             }),
@@ -189,17 +205,40 @@ function leaveWorkflow(): SolutionWorkflow {
                     retry: true,
                     input: { auth: FEISHU_AUTH, openId: '{{find_user[\'output\'][\'open_id\']}}' },
                     nextAction: connectorStep({
-                        name: 'notify_it',
-                        displayName: '通知 IT 回收设备',
-                        connectorName: FEISHU,
-                        connectorVersion: FEISHU_VERSION,
-                        actionName: 'send_group_message',
-                        input: {
-                            auth: FEISHU_AUTH,
-                            chatId: '',
-                            messageType: 'text',
-                            content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）已离职，飞书账号已暂停，请回收设备`,
-                        },
+                        name: 'check_notified',
+                        displayName: '查是否已通知过',
+                        connectorName: STORE,
+                        connectorVersion: STORE_VERSION,
+                        actionName: 'get',
+                        input: { key: LEAVE_NOTIFIED_KEY, store_scope: 'PROJECT' },
+                        nextAction: routerStep({
+                            name: 'only_when_not_notified',
+                            displayName: '没通知过才通知',
+                            condition: { operator: 'DOES_NOT_EXIST', firstValue: '{{check_notified[\'output\']}}' },
+                            branchName: '还没通知',
+                            fallbackName: '已通知过',
+                            child: connectorStep({
+                                name: 'notify_it',
+                                displayName: '通知 IT 回收设备',
+                                connectorName: FEISHU,
+                                connectorVersion: FEISHU_VERSION,
+                                actionName: 'send_group_message',
+                                input: {
+                                    auth: FEISHU_AUTH,
+                                    chatId: '',
+                                    messageType: 'text',
+                                    content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）已离职，飞书账号已暂停，请回收设备`,
+                                },
+                                nextAction: connectorStep({
+                                    name: 'mark_notified',
+                                    displayName: '记下已通知',
+                                    connectorName: STORE,
+                                    connectorVersion: STORE_VERSION,
+                                    actionName: 'put',
+                                    input: { key: LEAVE_NOTIFIED_KEY, value: 'sent', store_scope: 'PROJECT' },
+                                }),
+                            }),
+                        }),
                     }),
                 }),
             }),
@@ -209,6 +248,10 @@ function leaveWorkflow(): SolutionWorkflow {
 }
 
 const EMPLOYEE_KEY = '{{trigger.recordInfo.jobNumber}}'
+
+const ONBOARD_NOTIFIED_KEY = `onboard-notified:${ref('recordInfo', 'jobNumber')}:${ref('recordInfo', 'startDate')}`
+
+const LEAVE_NOTIFIED_KEY = `leave-notified:${ref('recordInfo', 'jobNumber')}:${ref('recordInfo', 'lastWorkDate')}`
 
 const DEPARTMENT_TABLE = {
     id: 'mt_beisen_department',

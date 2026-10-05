@@ -53,6 +53,20 @@ describe('official Beisen to Feishu solution', () => {
         expect(triggerOf('transfer')?.dedupe?.keyPath).toContain('{{trigger.recordInfo.startDate}}')
     })
 
+    it('records that a notice was sent right after sending it and checks the record first, so a run that was cut off and started again neither skips nor repeats the notice', () => {
+        const stepsOf = (key: string) => {
+            const workflow = pkg().workflows.find((candidate) => candidate.key === key)
+            return workflow === undefined ? [] : workflowStructureUtil.getAllSteps(workflow.trigger).map((step) => step.name)
+        }
+        const onboard = stepsOf('onboard')
+        const leave = stepsOf('leave')
+        expect(onboard.indexOf('check_notified')).toBeLessThan(onboard.indexOf('notify_hr'))
+        expect(onboard.indexOf('notify_hr')).toBeLessThan(onboard.indexOf('mark_notified'))
+        expect(leave.indexOf('check_notified')).toBeLessThan(leave.indexOf('notify_it'))
+        expect(leave.indexOf('notify_it')).toBeLessThan(leave.indexOf('mark_notified'))
+        expect(onboard).not.toContain('only_when_created')
+    })
+
     it('fills connections, chat ids and the mapping table when installed', () => {
         const items = pkg().config
         const tableIdByKey = new Map([['department', 'tbl_real']])

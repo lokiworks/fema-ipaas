@@ -23,6 +23,7 @@ async function offloadPayload(
     payload: unknown,
     projectId: string,
     tenantId: string,
+    metadata?: Record<string, string>,
 ): Promise<JobPayload> {
     const fileId = generateId()
     const data = Buffer.from(JSON.stringify(payload), 'utf8')
@@ -34,6 +35,7 @@ async function offloadPayload(
         size: data.length,
         type: FileType.WEBHOOK_PAYLOAD,
         compression: FileCompression.NONE,
+        ...(metadata === undefined ? {} : { metadata }),
     })
     log.info({ fileId, size: data.length }, '[payloadOffloader] Payload offloaded to file storage')
     return { type: 'ref', fileId }

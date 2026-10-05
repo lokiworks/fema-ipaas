@@ -80,6 +80,7 @@ import { verificationModule } from './verification/verification.module'
 import { webhookModule } from './webhooks/webhook-module'
 import { engineResponseWatcher } from './workers/engine-response-watcher'
 import { workerCapacity } from './workers/machine/worker-capacity'
+import { redisStateGuard } from './workers/redis-state-guard'
 import { migrateQueuesAndRunConsumers, workerModule } from './workers/worker-module'
 import { executionModule } from './workflows/execution/execution-module'
 import { folderModule } from './workflows/folder/folder.module'
@@ -272,6 +273,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
 
     app.addHook('onClose', async () => {
         app.log.info('Shutting down')
+        redisStateGuard(app.log).stop()
         await systemJobsSchedule(app.log).close()
         await redisConnections.destroy()
         await distributedLock(app.log).destroy()
@@ -304,6 +306,9 @@ export async function appPostBoot(app: FastifyInstance): Promise<void> {
     assertReleaseReadable(app.log)
     systemSnapshot.start({ log: app.log })
     await migrateQueuesAndRunConsumers(app)
+    if (!(system.getBoolean(AppSystemProp.IS_CANARY_APP) ?? false)) {
+        redisStateGuard(app.log).start()
+    }
     app.log.info('Queues migrated and consumers run')
     if (environment === RuntimeEnvironment.DEVELOPMENT) {
         app.log.warn(

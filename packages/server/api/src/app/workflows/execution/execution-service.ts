@@ -739,8 +739,11 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
     })
 
     let jobPayload: JobPayload = { type: 'inline', value: null }
-    if (!isNil(params.payload) && isNil(params.workerHandlerId)) {
-        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.execution.projectId, params.tenantId)
+    if (!isNil(params.payloadFileId)) {
+        jobPayload = { type: 'ref', fileId: params.payloadFileId }
+    }
+    else if (!isNil(params.payload) && isNil(params.workerHandlerId)) {
+        jobPayload = await payloadOffloader.offloadPayload(log, params.payload, params.execution.projectId, params.tenantId, { executionId: params.execution.id })
     }
     else if (!isNil(params.payload)) {
         jobPayload = await payloadOffloader.maybeOffloadPayload(log, params.payload, params.execution.projectId, params.tenantId)
@@ -928,6 +931,7 @@ type AddToQueueParamsCommon = {
     execution: Execution
     tenantId: TenantId
     payload?: unknown
+    payloadFileId?: string
     workerHandlerId: string | undefined
     httpRequestId: string | undefined
     streamStepProgress: StreamStepProgress

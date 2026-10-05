@@ -108,6 +108,7 @@ export type SystemJobSchedule = {
     init(): Promise<void>
     startWorker(): Promise<void>
     upsertJob<T extends SystemJobName>(params: UpsertJobParams<T>): Promise<void>
+    replayRepeatedJobs(): Promise<number>
     getJob<T extends SystemJobName>(jobId: string): Promise<Job<SystemJobData<T>> | undefined>
     close(): Promise<void>
 }

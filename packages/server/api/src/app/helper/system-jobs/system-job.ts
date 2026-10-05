@@ -14,6 +14,7 @@ const SYSTEM_JOB_QUEUE = 'system-job-queue'
 
 export let systemJobsQueue: Queue<SystemJobData, unknown, SystemJobName>
 let systemJobWorker: Worker<SystemJobData, unknown, SystemJobName>
+const registeredRepeatedJobs = new Map<string, RegisteredRepeatedJob>()
 
 export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule => ({
     async init(): Promise<void> {
@@ -70,6 +71,7 @@ export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule =>
     async upsertJob({ job, schedule, customConfig }): Promise<void> {
         log.info({ jobName: job.name }, '[systemJob#upsertJob] Upserting job')
         if (schedule.type === 'repeated') {
+            registeredRepeatedJobs.set(job.name, { name: job.name, data: job.data, cron: schedule.cron, customConfig })
             const schedulers = await systemJobsQueue.getJobSchedulers()
             const legacySchedulers = schedulers.filter(scheduler => scheduler.name === job.name && (scheduler.id ?? scheduler.key) !== job.name)
             for (const scheduler of legacySchedulers) {
@@ -90,6 +92,12 @@ export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule =>
         }
     },
 
+    async replayRepeatedJobs(): Promise<number> {
+        const jobs = [...registeredRepeatedJobs.values()]
+        await Promise.all(jobs.map((job) => systemJobsQueue.upsertJobScheduler(job.name, { pattern: job.cron, tz: 'UTC' }, { name: job.name, data: job.data, opts: job.customConfig })))
+        return jobs.length
+    },
+
     async getJob<T extends SystemJobName>(jobId: string) {
         return await systemJobsQueue.getJob(jobId) as Job<SystemJobData<T>> | undefined
     },
@@ -105,6 +113,13 @@ export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule =>
         ])
     },
 })
+
+type RegisteredRepeatedJob = {
+    name: SystemJobName
+    data: SystemJobData
+    cron: string
+    customConfig: JobsOptions | undefined
+}
 
 async function removeDeprecatedJobs(log: FastifyBaseLogger): Promise<void> {
     const deprecatedJobs = [

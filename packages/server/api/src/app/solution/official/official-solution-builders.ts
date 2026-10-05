@@ -77,6 +77,8 @@ function ref(section: 'employeeInfo' | 'recordInfo', field: string): string {
 export const BEISEN = '@fema-ipaas/connector-beisen'
 export const FEISHU = '@fema-ipaas/connector-feishu'
 export const DATA_MAPPER = '@fema-ipaas/connector-data-mapper'
+export const STORE = '@fema-ipaas/connector-store'
+export const STORE_VERSION = '~0.6.0'
 export const BEISEN_VERSION = '~0.3.0'
 export const FEISHU_VERSION = '~0.4.0'
 export const BEISEN_AUTH = '{{connections[\'beisen-connection\']}}'

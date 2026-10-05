@@ -14,11 +14,22 @@ stop_port() {
 
 for pidfile in worker.pid api.pid; do
   if [ -f "${STATE_DIR}/${pidfile}" ]; then
-    kill "$(cat "${STATE_DIR}/${pidfile}")" 2>/dev/null || true
+    kill $(cat "${STATE_DIR}/${pidfile}") 2>/dev/null || true
   fi
 done
 stop_port $((3100 + SLOT))
-stop_port $((18900 + SLOT))
+for _ in $(seq 1 120); do
+  alive=0
+  for pid in $(cat "${STATE_DIR}/worker.pid" "${STATE_DIR}/api.pid" 2>/dev/null); do
+    if kill -0 "${pid}" 2>/dev/null; then
+      alive=1
+    fi
+  done
+  if [ "${alive}" = "0" ]; then
+    break
+  fi
+  sleep 1
+done
 
 if [ "${2:-}" = "--deps" ]; then
   export LC_ALL="${LC_ALL:-en_US.UTF-8}"
@@ -26,4 +37,5 @@ if [ "${2:-}" = "--deps" ]; then
     pg_ctl -D "${STATE_DIR}/pg" -m fast stop >/dev/null 2>&1 || true
   fi
   stop_port $((56440 + SLOT))
+  stop_port $((18900 + SLOT))
 fi

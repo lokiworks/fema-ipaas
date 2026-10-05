@@ -53,7 +53,7 @@ await check('安装向导：装好之后公开的 setup 接口不再泄露数据
 })
 
 await check('管理接口：未登录访问系统健康、组件、诊断、概览一律被拒绝', async () => {
-  const paths = ['/health/system', '/health/components', '/health/diagnostics', '/health/overview', '/health/diagnostics-bundle', '/health/run-metrics', '/health/queue-metrics', '/audit-events', '/users', '/projects']
+  const paths = ['/health/system', '/health/components', '/health/diagnostics', '/health/overview', '/health/diagnostics-bundle', '/health/run-metrics?createdAfter=2026-01-01T00:00:00.000Z&createdBefore=2026-12-01T00:00:00.000Z', '/health/queue-metrics?createdAfter=2026-01-01T00:00:00.000Z&createdBefore=2026-12-01T00:00:00.000Z', '/audit-events', '/users', '/projects']
   const statuses = await Promise.all(paths.map(async (item) => ({ item, status: (await http({ method: 'GET', path: item })).status })))
   const open = statuses.filter((entry) => ![401, 403].includes(entry.status))
   assert(open.length === 0, `未登录可访问：${JSON.stringify(open)}`)
@@ -122,7 +122,8 @@ await check('令牌：alg=none、被篡改、用错误密钥签发的令牌都�
   const claims = JSON.parse(Buffer.from(payload, 'base64url').toString())
   const none = `${Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url')}.${payload}.`
   const tampered = `${header}.${Buffer.from(JSON.stringify({ ...claims, id: 'someoneelse0123456789' })).toString('base64url')}.${session.token.split('.')[2]}`
-  const wrongKey = jwt.sign(claims, 'not-the-real-secret-not-the-real-secret', { algorithm: 'HS256', keyid: '1', issuer: 'fema' })
+  const { iss, exp, iat, ...unsignedClaims } = claims
+  const wrongKey = jwt.sign(unsignedClaims, 'not-the-real-secret-not-the-real-secret', { algorithm: 'HS256', keyid: '1', issuer: 'fema', expiresIn: 600 })
   const statuses = []
   for (const token of [none, tampered, wrongKey, 'garbage']) {
     const response = await http({ method: 'GET', path: '/projects', token, headers: { 'x-real-ip': probeIp() } })

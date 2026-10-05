@@ -1,6 +1,7 @@
 import { ExecutionStatus, FileCompression, FileType, RunEnvironment, WorkflowStatus, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
+import { databaseConnection } from '../../../src/app/database/database-connection'
 import { redisConnections } from '../../../src/app/database/redis-connections'
 import { fileService } from '../../../src/app/file/file.service'
 import { jobBroker } from '../../../src/app/workers/job-queue/job-broker'
@@ -23,6 +24,24 @@ afterAll(async () => {
     await jobBroker(app.log).close()
     await teardownTestEnvironment()
 })
+
+async function seedRunningRun({ updatedMinutesAgo }: { updatedMinutesAgo: number }): Promise<string> {
+    const { mockProject } = await mockAndSaveBasicSetup()
+    const workflow = createMockWorkflow({ projectId: mockProject.id, status: WorkflowStatus.ENABLED })
+    await db.save('workflow', workflow)
+    const version = createMockWorkflowVersion({ workflowId: workflow.id, state: WorkflowVersionState.LOCKED, valid: true })
+    await db.save('workflow_version', version)
+    const execution = createMockExecution({
+        projectId: mockProject.id,
+        workflowId: workflow.id,
+        workflowVersionId: version.id,
+        status: ExecutionStatus.RUNNING,
+        environment: RunEnvironment.PRODUCTION,
+    })
+    await db.save('execution', execution)
+    await databaseConnection().query('update execution set updated = $2 where id = $1', [execution.id, dayjs().subtract(updatedMinutesAgo, 'minute').toISOString()])
+    return execution.id
+}
 
 async function seedQueuedRun({ withPayload }: { withPayload: boolean }): Promise<{ executionId: string, payloadFileId: string | null }> {
     const { mockTenant, mockProject } = await mockAndSaveBasicSetup()
@@ -59,6 +78,29 @@ async function wipeRedis(): Promise<void> {
     const redis = await redisConnections.useExisting()
     await redis.flushdb()
 }
+
+describe('redisStateGuard#sweep', () => {
+    it('puts a queued run that has been without a job for minutes back in the queue even though Redis never lost its marker', async () => {
+        const { executionId } = await seedQueuedRun({ withPayload: true })
+        const tenMinutesAgo = dayjs().subtract(10, 'minute').toISOString()
+        await databaseConnection().query('update execution set created = $2 where id = $1', [executionId, tenMinutesAgo])
+        await databaseConnection().query('update file set created = $2 where metadata ->> \'executionId\' = $1', [executionId, tenMinutesAgo])
+
+        const report = await redisStateGuard(app.log).sweep()
+
+        expect(report.requeued).toBeGreaterThanOrEqual(1)
+        expect(await jobQueue(app.log).getSharedQueue().getJob(executionId)).toBeDefined()
+    })
+
+    it('ends a run that has been running far beyond the run limit with no job behind it', async () => {
+        const executionId = await seedRunningRun({ updatedMinutesAgo: 60 })
+
+        const report = await redisStateGuard(app.log).sweep()
+
+        expect(report.failed).toBeGreaterThanOrEqual(1)
+        expect(executionId).toBeTruthy()
+    })
+})
 
 describe('redisStateGuard', () => {
     it('does nothing while Redis still has its queue marker', async () => {

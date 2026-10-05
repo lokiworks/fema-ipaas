@@ -407,12 +407,12 @@ async function systemPagesOffline(page) {
     assert(!text.includes(ADMIN.password), '诊断包里出现了密码')
     assert(!text.includes('e2e-slot'), '诊断包里出现了 JWT 密钥')
   })
-  await check('Y5 备份与恢复页：说明平台不执行备份，命令可复制，文件保存在数据库的说明与事实一致', async () => {
+  await check('Y5 备份与恢复页：有备份计划和立即备份，说明密钥不进备份', async () => {
     await page.goto(`${WEB}/tenant/infra/backup`)
-    await waitText(page, '需要备份什么')
+    await waitText(page, '备份计划')
     const body = await bodyText(page)
-    assert(body.includes('平台本身不执行备份'), '应如实说明平台不执行备份')
-    assert((await fieldValues(page)).some((value) => value.includes('pg_dump')), '应给出 pg_dump 命令')
+    assert(body.includes('立即备份'), '应有立即备份入口')
+    assert(body.includes('加密密钥和 JWT 密钥不会写进备份'), '应如实说明密钥不进备份')
     await shot(page, '43-backup-runbook')
   })
 }

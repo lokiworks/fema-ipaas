@@ -127,6 +127,9 @@ async function stageConnections() {
     await openConnectionWizard({ app: '飞书' })
     await fillConnectionForm({ values: { 'App ID': 'cli_mock', 'App Secret': 'mock-secret' } })
     await submitConnectionForm({ expect: 'saved' })
+    await ctx.page
+      .waitForFunction(() => document.body.innerText.includes('北森') && document.body.innerText.includes('飞书'), undefined, { timeout: 20000 })
+      .catch(() => undefined)
     const body = await ctx.page.locator('body').innerText()
     assert(body.includes('北森') && body.includes('飞书'), '连接列表里缺少连接')
     await shot('conn-list')

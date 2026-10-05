@@ -67,6 +67,24 @@ describe('v8IsolateCodeSandbox', () => {
             const source = 'module.exports = { code: async () => process.env }'
             await expect(runWithSource(source)).rejects.toThrow(/process/)
         })
+
+        // --- resource limits ---
+
+        it('stops code that exceeds the memory limit and says so', async () => {
+            const source = 'module.exports = { code: async () => { const chunks = []; for (;;) { chunks.push(\'x\'.repeat(1024 * 1024)) } } }'
+            await expect(runWithSource(source)).rejects.toThrow(/more than 128 MB of memory/)
+        })
+
+        it('stops a busy loop once a step timeout is configured', async () => {
+            process.env.FEMA_STEP_TIMEOUT_SECONDS = '1'
+            try {
+                const source = 'module.exports = { code: async () => { for (;;) { } } }'
+                await expect(runWithSource(source)).rejects.toThrow(/longer than 1 seconds/)
+            }
+            finally {
+                delete process.env.FEMA_STEP_TIMEOUT_SECONDS
+            }
+        })
     })
 
 })

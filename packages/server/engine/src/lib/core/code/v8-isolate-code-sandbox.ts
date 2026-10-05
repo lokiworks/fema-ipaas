@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { readFile } from 'node:fs/promises'
 import { CodeSandbox } from '../../core/code/code-sandbox-common'
+import { runLimits } from '../../helper/run-limits'
 
 const ONE_HUNDRED_TWENTY_EIGHT_MEGABYTES = 128
 
@@ -21,6 +22,7 @@ export const v8IsolateCodeSandbox: CodeSandbox = {
     async runCodeModule({ codeFilePath, inputs }) {
         const ivm = getIvm()
         const isolate = new ivm.Isolate({ memoryLimit: ONE_HUNDRED_TWENTY_EIGHT_MEGABYTES })
+        const timeoutMs = runLimits.stepTimeoutMs()
 
         try {
             const isolateContext = await initIsolateContext({
@@ -36,10 +38,14 @@ export const v8IsolateCodeSandbox: CodeSandbox = {
                 isolate,
                 isolateContext,
                 code: wrapCjsModule(source),
+                timeoutMs,
             })
         }
+        catch (error) {
+            throw explainIsolateError({ error, isolate, timeoutMs })
+        }
         finally {
-            isolate.dispose()
+            disposeIsolate({ isolate })
         }
     },
 
@@ -89,7 +95,7 @@ export const v8IsolateCodeSandbox: CodeSandbox = {
                     globalSets.set(key, newSet)
                     await newSet
                 },
-                dispose: () => isolate.dispose(),
+                dispose: () => disposeIsolate({ isolate }),
             }
         }
         catch (error) {
@@ -109,15 +115,40 @@ const initIsolateContext = async ({ isolate, codeContext }: InitContextParams): 
     return isolateContext
 }
 
-const executeIsolate = async ({ isolate, isolateContext, code }: ExecuteIsolateParams): Promise<unknown> => {
+const executeIsolate = async ({ isolate, isolateContext, code, timeoutMs }: ExecuteIsolateParams): Promise<unknown> => {
     const isolateScript = await isolate.compileScript(code)
 
     const outRef = await isolateScript.run(isolateContext, {
         reference: true,
         promise: true,
+        ...(timeoutMs === null || timeoutMs === undefined ? {} : { timeout: timeoutMs }),
     })
 
     return outRef.copy()
+}
+
+const disposeIsolate = ({ isolate }: { isolate: any }): void => {
+    if (!isolate.isDisposed) {
+        isolate.dispose()
+    }
+}
+
+const messageOf = ({ error }: { error: unknown }): string => {
+    if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') {
+        return error.message
+    }
+    return ''
+}
+
+const explainIsolateError = ({ error, isolate, timeoutMs }: ExplainIsolateErrorParams): unknown => {
+    const message = messageOf({ error })
+    if (isolate.isDisposed || /Isolate (was|is already) disposed/.test(message)) {
+        return new Error(`The Code step used more than ${ONE_HUNDRED_TWENTY_EIGHT_MEGABYTES} MB of memory and was stopped`)
+    }
+    if (message.includes('timed out') && timeoutMs !== null && timeoutMs !== undefined) {
+        return runLimits.stepTimeoutError(timeoutMs)
+    }
+    return error
 }
 
 // Wrap CJS source so `exports`/`module` are defined but `require` is NOT,
@@ -141,4 +172,11 @@ type ExecuteIsolateParams = {
     isolate: any
     isolateContext: unknown
     code: string
+    timeoutMs?: number | null
+}
+
+type ExplainIsolateErrorParams = {
+    error: unknown
+    isolate: any
+    timeoutMs: number | null
 }

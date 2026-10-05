@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import { networkInterfaces } from 'node:os'
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -15,11 +16,16 @@ export const env = {
   externalPort: 18977,
   llmPort: 18978,
   externalToken: 'e2e-secret-token',
-  lanHost: process.env.S7_LAN_HOST ?? '192.168.68.100',
+  lanHost: process.env.S7_LAN_HOST ?? lanAddress(),
   defaultAllowList: '203.0.113.9',
   email: 'dev@ap.com',
   password: '12345678',
   root,
+}
+
+function lanAddress() {
+  const addresses = Object.values(networkInterfaces()).flat().filter((entry) => entry && entry.family === 'IPv4' && !entry.internal)
+  return addresses[0]?.address ?? '127.0.0.1'
 }
 
 mkdirSync(env.shots, { recursive: true })

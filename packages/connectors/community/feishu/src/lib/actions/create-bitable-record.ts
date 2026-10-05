@@ -4,6 +4,7 @@ import { Property, createAction } from '@fema-ipaas/connector-sdk';
 import { feishuAuth } from '../auth';
 import { bitableProps } from '../bitable-props';
 import { feishuCommon } from '../common';
+import { feishuIdempotency } from '../common/idempotency';
 
 export const createBitableRecord = createAction({
   auth: feishuAuth,
@@ -14,7 +15,7 @@ export const createBitableRecord = createAction({
   classification: 'WRITE',
   aiMetadata: {
     description:
-      'Append one record to a Feishu/Lark Bitable data table. Pick this to log an event, capture a form submission, or accumulate rows a team will review in Bitable. Field names must match the table column names exactly and the app needs bitable:app permission; every call inserts a new row, so retries duplicate.',
+      'Append one record to a Feishu/Lark Bitable data table. Pick this to log an event, capture a form submission, or accumulate rows a team will review in Bitable. Field names must match the table column names exactly and the app needs bitable:app permission; every call inserts a new row unless a Dedupe Key is given, in which case repeats of the same key are applied once. The app must also be added to the Bitable as a collaborator that can edit it.',
     idempotent: false,
   },
   props: {
@@ -26,13 +27,20 @@ export const createBitableRecord = createAction({
         'Keys are the column names of the data table and values are what to write. Use millisecond timestamps for date columns and arrays for multi-select columns.',
       required: true,
     }),
+    dedupeKey: Property.ShortText({
+      displayName: 'Dedupe Key',
+      description:
+        'Optional. Calls with the same key add the row only once, so a retried step does not duplicate it. Use something unique to this row, for example the employee number plus the event.',
+      required: false,
+    }),
   },
   async run(context) {
-    const { appToken, tableId, fields } = context.propsValue;
+    const { appToken, tableId, fields, dedupeKey } = context.propsValue;
     const data = await feishuCommon.callApi<CreateRecordResponse>({
       auth: context.auth,
       method: HttpMethod.POST,
       path: `/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records`,
+      ...(dedupeKey ? { queryParams: { client_token: feishuIdempotency.uuidFrom({ seed: `${appToken}:${tableId}:${dedupeKey}` }) } } : {}),
       body: { fields },
     });
     return { record_id: data.record.record_id, ...data.record.fields };

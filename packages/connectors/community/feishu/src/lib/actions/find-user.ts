@@ -1,8 +1,7 @@
-import { HttpMethod } from '@fema-ipaas/connector-common';
 import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
-import { feishuCommon } from '../common';
+import { feishuContacts } from '../common/contacts';
 
 export const findUser = createAction({
   auth: feishuAuth,
@@ -13,7 +12,7 @@ export const findUser = createAction({
   classification: 'SEARCH',
   aiMetadata: {
     description:
-      'Look up a Feishu/Lark user by work email or mobile number and return their open_id and user_id. Pick this when a later step needs a user identifier but you only hold an email or phone number. Requires the contact:user.id:readonly permission, and returns an empty result rather than failing when nobody matches.',
+      'Look up a Feishu/Lark user by email or mobile number and return their open_id plus whether the account is suspended or resigned. Pick this when a later step needs a user identifier but you only hold an email or phone number, or to check whether an account already exists before provisioning. Requires the contact:user.id:readonly permission, only sees members inside the app contact scope, cannot look up an enterprise mailbox, and returns found=false rather than failing when nobody matches. Resigned members are skipped unless asked for.',
     idempotent: true,
   },
   props: {
@@ -30,29 +29,31 @@ export const findUser = createAction({
     }),
     value: Property.ShortText({
       displayName: 'Email or Mobile',
-      description: 'Mobile numbers need the country code, for example +8613800000000.',
+      description: 'An 11-digit mainland number is fine as it is; other mobile numbers need the country code, for example +85260000000.',
       required: true,
+    }),
+    includeResigned: Property.Checkbox({
+      displayName: 'Include Resigned Members',
+      description: 'Also return members who have resigned. Off by default, as Feishu does.',
+      required: false,
+      defaultValue: false,
     }),
   },
   async run(context) {
-    const { lookupBy, value } = context.propsValue;
-    const data = await feishuCommon.callApi<BatchGetIdResponse>({
+    const { lookupBy, value, includeResigned } = context.propsValue;
+    const match = await feishuContacts.lookupUser({
       auth: context.auth,
-      method: HttpMethod.POST,
-      path: '/open-apis/contact/v3/users/batch_get_id',
-      queryParams: { user_id_type: 'open_id' },
-      body: lookupBy === 'email' ? { emails: [value] } : { mobiles: [value] },
+      mobile: lookupBy === 'mobile' ? value : undefined,
+      email: lookupBy === 'email' ? value : undefined,
+      includeResigned: includeResigned === true,
     });
-    const match = (data.user_list ?? []).find((user) => user.user_id);
     return {
-      found: Boolean(match),
-      open_id: match?.user_id ?? null,
+      found: match !== null,
+      open_id: match?.openId ?? null,
       email: match?.email ?? null,
       mobile: match?.mobile ?? null,
+      is_frozen: match?.isFrozen ?? null,
+      is_resigned: match ? match.isResigned : null,
     };
   },
 });
-
-type BatchGetIdResponse = {
-  user_list?: { user_id?: string; email?: string; mobile?: string }[];
-};

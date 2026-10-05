@@ -37,6 +37,24 @@ describe('failureText.localize', () => {
     ).toBe('Sync · Step 1: 运行超时，这一步还没有跑完');
   });
 
+  it('translates the Feishu hints for quota, IP allowlist and duplicate accounts', () => {
+    expect(
+      failureText.localize(
+        "HTTP 429: quota — this month's API call quota of the Feishu free edition is used up, an administrator has to upgrade the edition, retrying will not help (Feishu error 99991403)",
+      ),
+    ).toContain('飞书基础免费版本月的接口调用额度已用完');
+    expect(
+      failureText.localize(
+        'HTTP 403: denied — the app has an IP allowlist and this server is not on it, add the server egress IP in the Open Platform security settings (Feishu error 99991401)',
+      ),
+    ).toContain('应用开了 IP 白名单');
+    expect(
+      failureText.localize(
+        'dup — this mobile number already belongs to another Feishu account (Feishu error 41001)',
+      ),
+    ).toContain('这个手机号已经属于另一个飞书账号');
+  });
+
   it('translates the plain HTTP reason phrases', () => {
     expect(failureText.localize('A · B: Bad Gateway')).toBe(
       'A · B: 对方系统的网关连不上后端（Bad Gateway）',

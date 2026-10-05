@@ -59,6 +59,36 @@ describe('connectorErrorGuideUtils.guideFor', () => {
     expect(availability).toContain('检查可用范围');
   });
 
+  it('tells who has to act for the Feishu failures an enterprise meets on the first day', () => {
+    const guide = (message: string) =>
+      connectorErrorGuideUtils.guideFor({
+        connectorName: '@fema-ipaas/connector-feishu',
+        message,
+      });
+    expect(guide('IP not allowed (Feishu error 99991401)')).toContain(
+      '检查 IP 白名单',
+    );
+    expect(guide('HTTP 429: quota used up (Feishu error 99991403)')).toContain(
+      '飞书管理员升级版本',
+    );
+    expect(guide('mobile exists (Feishu error 41001)')).toContain(
+      '这个手机号或邮箱在飞书里属于谁',
+    );
+    expect(guide('no dept (Feishu error 41017)')).toContain('检查部门对照表');
+    expect(guide('only +86 (Feishu error 44019)')).toContain(
+      '检查人事系统里这位员工的手机号和邮箱',
+    );
+  });
+
+  it('points a Beisen parameter rejection at the step settings', () => {
+    expect(
+      connectorErrorGuideUtils.guideFor({
+        connectorName: '@fema-ipaas/connector-beisen',
+        message: 'OId必须大于等于0 (Beisen code 417)',
+      }),
+    ).toContain('检查步骤的设置');
+  });
+
   it('has no guide for a connector that did not register one', () => {
     expect(
       connectorErrorGuideUtils.guideFor({

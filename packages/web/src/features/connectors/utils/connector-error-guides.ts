@@ -36,6 +36,13 @@ const CONNECTOR_ERROR_GUIDES: ConnectorErrorGuide[] = [
             'Check how often the workflows poll Beisen: the whole tenant shares one daily quota, so lower the polling frequency or the history replayed.',
           ),
       },
+      {
+        pattern: /Beisen code 417/i,
+        guide: () =>
+          t(
+            'Check the step settings: Beisen rejected the request parameters, and the message says which one.',
+          ),
+      },
     ],
     fallback: () =>
       t(
@@ -45,6 +52,42 @@ const CONNECTOR_ERROR_GUIDES: ConnectorErrorGuide[] = [
   {
     connector: 'feishu',
     rules: [
+      {
+        pattern: /99991401|IP allowlist/i,
+        guide: () =>
+          t(
+            'Check the IP allowlist: add the outbound IP address of this server to the app security settings in the Feishu Open Platform.',
+          ),
+      },
+      {
+        pattern: /99991403|API call quota/i,
+        guide: () =>
+          t(
+            'The Feishu free edition limits the API calls of custom apps per month: ask a Feishu administrator to upgrade the edition, or wait for the first of next month. Messages count toward the limit, contact calls do not.',
+          ),
+      },
+      {
+        pattern: /4100[123]\b|41053|already belongs|already exists/i,
+        guide: () =>
+          t(
+            'Check who holds this mobile number or email in Feishu: an administrator may have to cancel or remove the old account, or the holder may sit outside the contact scope of the app.',
+          ),
+      },
+      {
+        pattern: /40015|41017|44035|department does not exist/i,
+        guide: () =>
+          t(
+            'Check the department mapping table: the mapped department no longer exists in Feishu, so correct the mapping or recreate the department.',
+          ),
+      },
+      {
+        pattern:
+          /4100[45]\b|4401[89]|44020|mobile number format|unverified Feishu/i,
+        guide: () =>
+          t(
+            'Check the mobile number and email of the employee in the HR system: Feishu rejected their format or region.',
+          ),
+      },
       {
         pattern:
           /9999166[34]|app secret|app_secret|app_id|app id|credentials are not valid/i,

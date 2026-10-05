@@ -120,4 +120,128 @@ const HINT_KEYS = [
       'that Bitable or data table does not exist, check the App Token and data table',
     key: 'failureHintTableMissing',
   },
+  {
+    english:
+      'the App Secret is wrong, copy it again from Credentials & Basic Info in the Open Platform',
+    key: 'failureHintWrongSecret',
+  },
+  {
+    english:
+      'the app is disabled or not installed in this organization, check the app status in the Open Platform',
+    key: 'failureHintAppDisabled',
+  },
+  {
+    english:
+      'the app has an IP allowlist and this server is not on it, add the server egress IP in the Open Platform security settings',
+    key: 'failureHintIpDenied',
+  },
+  {
+    english:
+      "this month's API call quota of the Feishu free edition is used up, an administrator has to upgrade the edition, retrying will not help",
+    key: 'failureHintMonthlyQuota',
+  },
+  {
+    english:
+      'Bitable is still processing another change to this table, retry in a few seconds',
+    key: 'failureHintBitableBusy',
+  },
+  {
+    english:
+      'the department does not exist in Feishu, check the department ID or the department mapping table',
+    key: 'failureHintDepartmentMissing',
+  },
+  {
+    english: 'this mobile number already belongs to another Feishu account',
+    key: 'failureHintMobileExists',
+  },
+  {
+    english: 'this email already belongs to another Feishu account',
+    key: 'failureHintEmailExists',
+  },
+  {
+    english: 'this member already exists in Feishu',
+    key: 'failureHintMemberExists',
+  },
+  {
+    english:
+      'the mobile number and the email belong to two different Feishu accounts, use another contact or have one account cancelled',
+    key: 'failureHintContactConflict',
+  },
+  {
+    english:
+      'the mobile number format is not valid, use 11 digits or a +country code number',
+    key: 'failureHintMobileInvalid',
+  },
+  {
+    english: 'the email format is not valid',
+    key: 'failureHintEmailInvalid',
+  },
+  {
+    english:
+      'a mobile number is required, and outside mainland China an email is required as well',
+    key: 'failureHintContactRequired',
+  },
+  {
+    english:
+      'an unverified Feishu organization only accepts mainland China (+86) mobile numbers until it passes verification',
+    key: 'failureHintUnverifiedMobile',
+  },
+  {
+    english: 'Lark does not accept +86 mobile numbers',
+    key: 'failureHintLarkMobile',
+  },
+  {
+    english: 'this employee number is already used by another Feishu member',
+    key: 'failureHintEmployeeNoExists',
+  },
+  {
+    english:
+      'the member or seat limit of this Feishu organization is reached, clean up members or upgrade the edition',
+    key: 'failureHintSeatLimit',
+  },
+  {
+    english: 'the member has already resigned in Feishu and can not be changed',
+    key: 'failureHintResigned',
+  },
+  {
+    english:
+      'the member has not joined Feishu yet or has left it, so the account can not be changed',
+    key: 'failureHintMemberNotJoined',
+  },
+  {
+    english: 'the creator of the Feishu organization cannot be suspended',
+    key: 'failureHintFounderFrozen',
+  },
+  {
+    english:
+      'the receiver ID or a request parameter is invalid, check the receiver and the message content',
+    key: 'failureHintReceiverInvalid',
+  },
+  {
+    english:
+      'the bot ability is not switched on for the app, enable it in the Open Platform and republish the app',
+    key: 'failureHintBotDisabled',
+  },
+  {
+    english:
+      'the recipient is outside the availability scope of the app or has left, add them to the app availability scope and republish the app',
+    key: 'failureHintAvailability',
+  },
+  {
+    english: 'the recipient has resigned, so no message can be sent',
+    key: 'failureHintRecipientResigned',
+  },
+  {
+    english: 'the group chat has been dissolved, pick another chat',
+    key: 'failureHintChatDissolved',
+  },
+  {
+    english:
+      'a column name does not exist in the data table, copy it exactly from the table header',
+    key: 'failureHintFieldMissing',
+  },
+  {
+    english: 'a value does not fit the type of its Bitable column',
+    key: 'failureHintFieldType',
+  },
 ];

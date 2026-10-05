@@ -12,7 +12,7 @@ export const resumeUser = createAction({
   classification: 'WRITE',
   aiMetadata: {
     description:
-      'Resume a suspended Feishu/Lark member by clearing is_frozen: they can sign in again and see everything from the suspension period. Safe to repeat. Use it to undo a suspension that was applied by mistake or when an employee returns. Feishu limits this to one call per second. Needs the "Update contacts" permission.',
+      'Resume a suspended Feishu/Lark member by sending is_frozen=false to the update-user endpoint: they can sign in again and see everything from the suspension period. The result reads the account back, so confirmed=true means Feishu now reports is_frozen as asked. Safe to repeat. Use it to undo a suspension that was applied by mistake or when an employee returns. Feishu limits this to one call per second. Needs the "Update contacts" permission, and the member must be inside the app\'s contact scope.',
     idempotent: true,
   },
   props: {

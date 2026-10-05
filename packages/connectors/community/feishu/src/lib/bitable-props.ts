@@ -1,4 +1,3 @@
-import { HttpMethod } from '@fema-ipaas/connector-common';
 import { Property } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from './auth';
@@ -25,13 +24,13 @@ export const bitableProps = {
       if (typeof appToken !== 'string' || appToken.length === 0) {
         return { disabled: true, options: [], placeholder: 'Fill in the App Token first' };
       }
-      const data = await feishuCommon.callApi<TableListResponse>({
+      const items = await feishuCommon.collectPages<{ table_id: string; name: string }>({
         auth,
-        method: HttpMethod.GET,
         path: `/open-apis/bitable/v1/apps/${appToken}/tables`,
-        queryParams: { page_size: '100' },
+        queryParams: {},
+        pageSize: 100,
+        maxItems: 500,
       });
-      const items = data.items ?? [];
       if (items.length === 0) {
         return { disabled: true, options: [], placeholder: 'This Bitable has no data tables' };
       }
@@ -42,5 +41,3 @@ export const bitableProps = {
     },
   }),
 };
-
-type TableListResponse = { items?: { table_id: string; name: string }[] };

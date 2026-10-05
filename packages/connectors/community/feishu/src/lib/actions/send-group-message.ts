@@ -3,6 +3,7 @@ import { Property, createAction } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
 import { feishuCommon } from '../common';
+import { feishuIdempotency } from '../common/idempotency';
 
 export const sendGroupMessage = createAction({
   auth: feishuAuth,
@@ -13,7 +14,7 @@ export const sendGroupMessage = createAction({
   classification: 'WRITE',
   aiMetadata: {
     description:
-      'Send a message to a Feishu/Lark group chat the bot has been added to. Pick this for team notifications, alerts and digests that a whole group should see; use Send Direct Message instead when one specific person should receive it. The bot must already be a member of the target chat, and every call posts a new message, so retries duplicate.',
+      'Send a message to a Feishu/Lark group chat the bot has been added to. Pick this for team notifications, alerts and digests that a whole group should see; use Send Direct Message instead when one specific person should receive it. The bot must already be a member of the target chat, and every call posts a new message unless a Dedupe Key is given, in which case Feishu drops repeats of the same key for one hour.',
     idempotent: false,
   },
   props: {
@@ -27,13 +28,13 @@ export const sendGroupMessage = createAction({
         if (!auth) {
           return { disabled: true, options: [], placeholder: 'Connect your Feishu app first' };
         }
-        const data = await feishuCommon.callApi<ChatListResponse>({
+        const items = await feishuCommon.collectPages<{ chat_id: string; name: string }>({
           auth,
-          method: HttpMethod.GET,
           path: '/open-apis/im/v1/chats',
-          queryParams: { page_size: '100' },
+          queryParams: {},
+          pageSize: 100,
+          maxItems: 500,
         });
-        const items = data.items ?? [];
         if (items.length === 0) {
           return { disabled: true, options: [], placeholder: 'The bot has not joined any group chat yet' };
         }
@@ -60,9 +61,15 @@ export const sendGroupMessage = createAction({
         'For plain text, write the message body. For a message card, paste the Feishu card JSON produced by the card builder.',
       required: true,
     }),
+    dedupeKey: Property.ShortText({
+      displayName: 'Dedupe Key',
+      description:
+        'Optional. Calls with the same key send at most one message within one hour, so a retried step does not post twice. Use something unique to this message, for example the employee number plus the event.',
+      required: false,
+    }),
   },
   async run(context) {
-    const { chatId, messageType, content } = context.propsValue;
+    const { chatId, messageType, content, dedupeKey } = context.propsValue;
     const data = await feishuCommon.callApi<SendMessageResponse>({
       auth: context.auth,
       method: HttpMethod.POST,
@@ -72,6 +79,7 @@ export const sendGroupMessage = createAction({
         receive_id: chatId,
         msg_type: messageType,
         content: buildContent(messageType, content),
+        ...spreadUuid(dedupeKey),
       },
     });
     return {
@@ -90,11 +98,14 @@ function buildContent(messageType: string, content: string): string {
   return content;
 }
 
-type ChatListResponse = { items?: { chat_id: string; name: string }[] };
-
 type SendMessageResponse = {
   message_id: string;
   chat_id: string;
   msg_type: string;
   create_time: string;
 };
+
+function spreadUuid(dedupeKey: string | undefined): { uuid?: string } {
+  const uuid = feishuIdempotency.messageUuidFrom({ key: dedupeKey });
+  return uuid ? { uuid } : {};
+}

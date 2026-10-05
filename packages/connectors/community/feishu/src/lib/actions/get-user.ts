@@ -12,7 +12,7 @@ export const getUser = createAction({
   classification: 'READ',
   aiMetadata: {
     description:
-      'Read one Feishu/Lark member by open_id and return their departments, manager, job title and whether the account is suspended or resigned. Pick this to check what Feishu really holds after a provisioning, transfer or suspension step, or to branch on the current state of an account. It only reads, and needs the permission to read contact user information.',
+      'Read one Feishu/Lark member by open_id and return their departments, manager, job title, employee number, mobile, email and whether the account is suspended or resigned (mobile, email and employee number only come back when the app has the matching field permissions). Pick this to check what Feishu really holds after a provisioning, transfer or suspension step, or to branch on the current state of an account. It only reads, needs the permission to read contact user information, and fails with error 41050 for a member outside the app contact scope.',
     idempotent: true,
   },
   props: {

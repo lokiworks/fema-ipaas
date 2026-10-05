@@ -8,11 +8,14 @@ import { blockedUntilMarker, tryCatch, type ConnectionValueForAuthProperty } fro
 
 import type { feishuAuth } from '../auth';
 import { FEISHU_DOMAIN } from '../constants';
+import { feishuErrorTable } from './error-table';
 
 export const feishuCommon = {
   obtainTenantAccessToken,
   callApi,
+  collectPages,
   describeError,
+  errorCodeOf,
 };
 
 async function obtainTenantAccessToken({
@@ -26,16 +29,21 @@ async function obtainTenantAccessToken({
   if (cached && cached.expiresAt > Date.now()) {
     return cached.token;
   }
-  const response = await httpClient.sendRequest<TenantAccessTokenResponse>({
-    method: HttpMethod.POST,
-    url: `${baseUrl}/open-apis/auth/v3/tenant_access_token/internal`,
-    body: { app_id: appId, app_secret: appSecret },
-  });
+  const { data: response, error } = await tryCatch(() =>
+    httpClient.sendRequest<TenantAccessTokenResponse>({
+      method: HttpMethod.POST,
+      url: `${baseUrl}/open-apis/auth/v3/tenant_access_token/internal`,
+      body: { app_id: appId, app_secret: appSecret },
+    }),
+  );
+  if (error) {
+    throw fromHttpError(error);
+  }
   if (response.body.code !== 0) {
-    throw new Error(describeError(response.body.code, response.body.msg));
+    throw feishuError(response.body.code, response.body.msg);
   }
   const expiresAt =
-    Date.now() + (response.body.expire - TOKEN_EXPIRY_MARGIN_SECONDS) * 1000;
+    Date.now() + Math.max(response.body.expire - TOKEN_EXPIRY_MARGIN_SECONDS, MIN_TOKEN_LIFETIME_SECONDS) * MS_PER_SECOND;
   tokenCache.set(cacheKey, {
     token: response.body.tenant_access_token,
     expiresAt,
@@ -53,6 +61,28 @@ async function callApi<T>(params: CallApiParams): Promise<T> {
   }
   tokenCache.delete(tokenCacheKey(params.auth.props));
   return requestOnce<T>(params);
+}
+
+async function collectPages<Item>({ auth, path, queryParams, pageSize, maxItems }: CollectPagesParams): Promise<Item[]> {
+  const collected: Item[] = [];
+  let pageToken: string | undefined = undefined;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const result: PageResponse<Item> = await callApi<PageResponse<Item>>({
+      auth,
+      method: HttpMethod.GET,
+      path,
+      queryParams: { ...queryParams, page_size: String(pageSize), ...(pageToken ? { page_token: pageToken } : {}) },
+    });
+    collected.push(...(result.items ?? []));
+    if (collected.length >= maxItems) {
+      return collected.slice(0, maxItems);
+    }
+    if (!result.has_more || !result.page_token) {
+      return collected;
+    }
+    pageToken = result.page_token;
+  }
+  return collected;
 }
 
 async function requestOnce<T>({
@@ -76,7 +106,7 @@ async function requestOnce<T>({
     throw fromHttpError(error);
   }
   if (response.body.code !== 0) {
-    throw feishuError(response.body.code, response.body.msg);
+    throw feishuError(response.body.code, response.body.msg, rateLimitResetSeconds(response.headers ?? {}));
   }
   return response.body.data;
 }
@@ -90,23 +120,45 @@ function fromHttpError(error: Error): Error {
     return error;
   }
   const body = error.response.body;
-  return isFeishuErrorBody(body) ? feishuError(body.code, body.msg, rateLimitResetSeconds(error)) : error;
+  const resetSeconds = rateLimitResetSeconds(error.responseHeaders);
+  if (isFeishuErrorBody(body)) {
+    return feishuError(body.code, body.msg, resetSeconds);
+  }
+  if (error.response.status === HTTP_TOO_MANY_REQUESTS) {
+    return feishuError(GATEWAY_RATE_LIMIT_CODE, 'request trigger frequency limit', resetSeconds);
+  }
+  return error;
 }
 
-function rateLimitResetSeconds(error: HttpError): number | undefined {
-  const raw = error.responseHeaders[RATE_LIMIT_RESET_HEADER];
+function rateLimitResetSeconds(headers: Record<string, string | string[] | undefined>): number | undefined {
+  const raw = headers[RATE_LIMIT_RESET_HEADER];
   const seconds = Number(Array.isArray(raw) ? raw[0] : raw);
   return Number.isFinite(seconds) && seconds >= 0 ? seconds : undefined;
 }
 
 function feishuError(code: number, message: string, resetSeconds?: number): Error {
-  const status = HTTP_STATUS_BY_CODE[code];
+  const rule = feishuErrorTable.ruleFor({ code });
   const described = describeError(code, message);
-  const plain = status ? `HTTP ${status}: ${described}` : described;
-  const text = status === HTTP_TOO_MANY_REQUESTS
-    ? blockedUntilMarker.attach({ message: plain, until: new Date(Date.now() + (resetSeconds ?? DEFAULT_RATE_LIMIT_WAIT_SECONDS) * MS_PER_SECOND) })
-    : plain;
-  return TOKEN_REJECTED_CODES.includes(code) ? new TokenRejectedError(text) : new Error(text);
+  const plain = rule?.status ? `HTTP ${rule.status}: ${described}` : described;
+  if (rule?.kind === 'RATE_LIMIT') {
+    return new Error(
+      blockedUntilMarker.attach({
+        message: plain,
+        until: new Date(Date.now() + (resetSeconds ?? DEFAULT_RATE_LIMIT_WAIT_SECONDS) * MS_PER_SECOND),
+      }),
+    );
+  }
+  if (rule?.kind === 'MONTHLY_QUOTA') {
+    return new Error(
+      blockedUntilMarker.attach({ message: plain, until: feishuErrorTable.nextMonthStartInBeijing({ now: new Date() }) }),
+    );
+  }
+  return rule?.kind === 'TOKEN_REJECTED' ? new TokenRejectedError(plain) : new Error(plain);
+}
+
+function errorCodeOf(error: Error): number | undefined {
+  const match = FEISHU_CODE_PATTERN.exec(error.message);
+  return match ? Number(match[1]) : undefined;
 }
 
 function tokenCacheKey({ domain, appId, appSecret }: TokenParams): string {
@@ -118,13 +170,17 @@ function isFeishuErrorBody(body: unknown): body is { code: number; msg: string }
 }
 
 function describeError(code: number, message: string): string {
-  const hint = ERROR_HINTS[code];
+  const hint = feishuErrorTable.ruleFor({ code })?.hint;
   return hint ? `${message} — ${hint} (Feishu error ${code})` : `${message} (Feishu error ${code})`;
 }
 
 const TOKEN_EXPIRY_MARGIN_SECONDS = 300;
 
+const MIN_TOKEN_LIFETIME_SECONDS = 60;
+
 const HTTP_TOO_MANY_REQUESTS = 429;
+
+const GATEWAY_RATE_LIMIT_CODE = 99991400;
 
 const RATE_LIMIT_RESET_HEADER = 'x-ogw-ratelimit-reset';
 
@@ -132,36 +188,13 @@ const DEFAULT_RATE_LIMIT_WAIT_SECONDS = 1;
 
 const MS_PER_SECOND = 1000;
 
+const MAX_PAGES = 400;
+
+const FEISHU_CODE_PATTERN = /\(Feishu error (\d+)\)/;
+
 const tokenCache = new Map<string, { token: string; expiresAt: number }>();
 
 class TokenRejectedError extends Error {}
-
-const TOKEN_REJECTED_CODES = [99991663, 99991664];
-
-const HTTP_STATUS_BY_CODE: Record<number, number> = {
-  99991663: 401,
-  99991664: 401,
-  99991672: 403,
-  99991400: 429,
-  44025: 429,
-  230002: 403,
-  40004: 403,
-  41050: 403,
-};
-
-const ERROR_HINTS: Record<number, string> = {
-  99991663: 'the app credentials are not valid, check the App ID and App Secret',
-  99991664: 'the tenant access token expired, retry the step',
-  99991400: 'the app is calling this endpoint too fast, slow down and retry',
-  40004: 'the department is outside the contact scope of the app, add it to the app permission scope in the Open Platform and republish the app',
-  41050: 'the member is outside the contact scope of the app, add the member or their department to the app permission scope in the Open Platform and republish the app',
-  44025: 'Feishu is still processing another change to the contact directory, retry in a few seconds',
-  99991672: 'the app is missing the permission this endpoint needs, grant it in the Open Platform and republish the app',
-  230001: 'the recipient does not exist, check the email or user ID',
-  230002: 'the bot is not in that chat, add the app to the chat first',
-  1254005: 'that Bitable record does not exist',
-  1254404: 'that Bitable or data table does not exist, check the App Token and data table',
-};
 
 export type FeishuAuthValue = ConnectionValueForAuthProperty<typeof feishuAuth>;
 
@@ -180,10 +213,20 @@ type TenantAccessTokenResponse = {
 
 type FeishuEnvelope<T> = { code: number; msg: string; data: T };
 
+type PageResponse<Item> = { items?: Item[]; has_more?: boolean; page_token?: string };
+
 type CallApiParams = {
   auth: FeishuAuthValue;
   method: HttpMethod;
   path: string;
   body?: unknown;
   queryParams?: Record<string, string>;
+};
+
+type CollectPagesParams = {
+  auth: FeishuAuthValue;
+  path: string;
+  queryParams: Record<string, string>;
+  pageSize: number;
+  maxItems: number;
 };

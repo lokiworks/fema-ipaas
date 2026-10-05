@@ -56,7 +56,7 @@ describe('feishuContacts.provisionUser', () => {
 
     const result = await feishuContacts.provisionUser({ auth, input });
 
-    expect(result).toEqual({ created: false, open_id: 'ou_existing', mobile: '+8613800000000' });
+    expect(result).toEqual({ created: false, open_id: 'ou_existing', mobile: '+8613800000000', matched_by: 'mobile', is_frozen: null });
     expect(createCalls()).toHaveLength(0);
   });
 
@@ -105,10 +105,17 @@ function memberCalls(method: string) {
   return sendRequest.mock.calls.map(([request]) => request).filter((request) => request.method === method && request.url.includes('/contact/v3/users/ou_1'));
 }
 
-function routeMemberRequests() {
-  sendRequest.mockImplementation(async ({ url }: { url: string }) => {
+function routeMemberRequests({ frozenAfterPatch }: { frozenAfterPatch?: boolean } = {}) {
+  let frozen = false;
+  sendRequest.mockImplementation(async ({ url, method, body }: { url: string; method: string; body?: { is_frozen?: boolean } }) => {
     if (url.endsWith('/tenant_access_token/internal')) {
       return reply({ code: 0, msg: 'ok', tenant_access_token: 't-1', expire: 7200 });
+    }
+    if (method === 'PATCH' && body?.is_frozen !== undefined) {
+      frozen = frozenAfterPatch ?? body.is_frozen;
+    }
+    if (method === 'GET') {
+      return reply({ code: 0, msg: 'ok', data: { user: { open_id: 'ou_1', status: { is_frozen: frozen } } } });
     }
     return reply({ code: 0, msg: 'ok', data: {} });
   });
@@ -152,9 +159,30 @@ describe('feishuContacts.setUserSuspended', () => {
 
     const [call] = memberCalls('PATCH');
     expect(call.queryParams).toEqual({ user_id_type: 'open_id' });
-    expect(call.body).toEqual({ status: { is_frozen: true } });
+    expect(call.body).toEqual({ is_frozen: true });
     expect(memberCalls('DELETE')).toHaveLength(0);
-    expect(result).toEqual({ open_id: 'ou_1', suspended: true });
+    expect(result).toEqual({ open_id: 'ou_1', suspended: true, is_frozen: true, confirmed: true });
+  });
+
+  it('reports confirmed=false when Feishu still shows the account as active after the call', async () => {
+    routeMemberRequests({ frozenAfterPatch: false });
+
+    const result = await feishuContacts.setUserSuspended({ auth, input: { openId: 'ou_1', suspended: true } });
+
+    expect(result).toEqual({ open_id: 'ou_1', suspended: true, is_frozen: false, confirmed: false });
+  });
+
+  it('still succeeds when the read back is refused for lack of a read permission', async () => {
+    sendRequest.mockImplementation(async ({ url, method }: { url: string; method: string }) => {
+      if (url.endsWith('/tenant_access_token/internal')) {
+        return reply({ code: 0, msg: 'ok', tenant_access_token: 't-1', expire: 7200 });
+      }
+      return method === 'GET' ? reply({ code: 99991672, msg: 'Access denied' }) : reply({ code: 0, msg: 'ok', data: {} });
+    });
+
+    const result = await feishuContacts.setUserSuspended({ auth, input: { openId: 'ou_1', suspended: true } });
+
+    expect(result).toEqual({ open_id: 'ou_1', suspended: true, is_frozen: null, confirmed: null });
   });
 
   it('resumes the account by clearing is_frozen', async () => {
@@ -162,7 +190,7 @@ describe('feishuContacts.setUserSuspended', () => {
 
     await feishuContacts.setUserSuspended({ auth, input: { openId: 'ou_1', suspended: false } });
 
-    expect(memberCalls('PATCH')[0].body).toEqual({ status: { is_frozen: false } });
+    expect(memberCalls('PATCH')[0].body).toEqual({ is_frozen: false });
   });
 });
 
@@ -240,7 +268,7 @@ describe('feishu retryable errors', () => {
 
     const result = await feishuContacts.setUserSuspended({ auth: expiringAuth, input: { openId: 'ou_1', suspended: true } });
 
-    expect(result).toEqual({ open_id: 'ou_1', suspended: true });
+    expect(result).toMatchObject({ open_id: 'ou_1', suspended: true });
     expect(memberCalls('PATCH')).toHaveLength(2);
   });
 

@@ -88,6 +88,8 @@ Also outstanding: add `packages/server/worker` to CI's test filter — `worker.t
 
 #### Polling starves first when the fleet loses capacity
 
+**本分叉已把 `EXECUTE_POLLING` 提到 `high` = 2**（`getDefaultJobPriority`），高于异步运行的 3；`RENEW_WEBHOOK` 仍是 `veryLow`。原因：北森到飞书的入职、离职靠轮询，运行一积压轮询就轮不到，实测 2000 人入职季里两个触发器连续 11 分钟没轮询，新的离职要等积压清完才被取到。下面是上游 `veryLow` 时的现象和排查方法，读 `RENEW_WEBHOOK` 和排查老部署时仍然适用。
+
 `EXECUTE_POLLING` and `RENEW_WEBHOOK` are `veryLow` = **priority 5** (`packages/core/execution/src/lib/workers/job-data.ts:51`); webhooks and async workflows are 3, sync workflows and chat agents 2, user-interaction jobs 1. BullMQ pops the lowest score first, so when worker capacity drops, schedule and polling triggers are the first thing to go silent while everything else still looks fine. That makes "my `*/1` schedule workflow isn't triggering" the *earliest* symptom of a partial fleet wedge, long before anyone calls it an outage. Seen 2026-07-27: 484 containers up but `active:103` against a healthy ~408, the priority-5 lane holding 13,190 jobs with 5,318 of them 15–30 min overdue; one customer's poll job moved rank 8803 → 7319 in 8 minutes, i.e. ~20–75 min per poll on a one-minute cron.
 
 **Reading the lanes:** BullMQ scores are `priority * 2^32 + counter`, so `ZCOUNT bull:workerJobs:prioritized <p>*2^32 <p+1>*2^32-1` gives each lane's depth. A huge `prioritized` total is not by itself the signal — check *which* lane. Then take a repeat job's `ZRANK` twice a few minutes apart; that drift is the lane's true drain rate, far below the queue's overall completion rate because higher priorities keep cutting in. Lateness for a repeat job comes from the scheduled millis in its id (`repeat:<workflowVersionId>:<millis>`), not the `timestamp` field, which is when the scheduler produced it — 24h early for a daily cron. Redis is DigitalOcean-managed and its cert does not verify from the DevOps box, so the working invocation is `docker exec redis redis-cli --tls --insecure -h <FEMA_REDIS_HOST> -p 25061 --user default -a <pw>`, with creds read off any `fema-app_*` container's env. Workers carry no Redis env at all — they reach the queue only through the app over Socket.IO.
@@ -99,6 +101,11 @@ Three things that look like bugs and aren't:
 - **`SANDBOX_CODE_ONLY` 只改代码步骤，连接器照常跑。** 连接器在引擎的子进程里，网络、文件和原生模块都可用（实测 HTTP 与 PostgreSQL 连接器通过）；代码步骤在 `isolated-vm` 隔离区里，只有 JS 内建对象：`console`（无输出）、`JSON`、`Date`、`Math`、`Intl`、`Promise`；`require`、`process`、`Buffer`、`fetch`、`URL`、`URLSearchParams`、`TextEncoder`、`atob`、`btoa`、`crypto`、`structuredClone`、`setTimeout` 都不存在。超过 128 MB 报「使用超过 128 MB 内存被停止」，同步死循环只有配了 `FEMA_STEP_TIMEOUT` 才会被终止（默认只剩 600 秒的运行超时）。
 - **`isolated-vm` 不在应用的依赖里解析，而是靠引擎子进程的祖先目录或 `NODE_PATH=/usr/src/node_modules` 找到。** 镜像把它装在 `/usr/src/node_modules`；本机复现时缺了它，每个代码步骤都报 `Cannot find module 'isolated-vm'`，而连接器步骤照常成功，容易误判成别的问题。
 - **多个工作节点共用一个缓存目录时，代码步骤的构建靠目录旁的文件锁（`sandbox/utils/file-lock.ts`）互斥，`memoryLock` 只管进程内。** compose 把同一个 `./cache` 挂给全部 worker 副本，helm 默认也是同一个 PVC；发布带代码步骤的工作流时每个节点都预热编译，没有文件锁时同一步骤目录被「删掉重建加编译」互相踩，编译读不到 tsconfig，报错的桩还被缓存下来，该步骤此后每次都失败（实测 12 个新工作流里坏 1 到 3 个）。锁是 `mkdir` 原子创建的目录，持有者每 2 秒续期，20 秒不续期算死亡可被接管；拿到锁后重新看缓存，别人编好就直接用。
+
+### 可靠性（本机实测，真实 Postgres 和 Redis）
+- **worker 被强杀或 API 崩溃，在途的运行会从头整个重跑，不是接着跑。** 任务退回队列（或 BullMQ 重试，退避 8 分钟），引擎重新执行整条流程；同一个步骤的写操作必须能重复执行，也不能用「这次新建了账号」这类只在第一次成立的判断决定后面的步骤。官方北森到飞书方案的通知因此改成先查后记（见 solutions 页）。
+- **Redis 丢数据由 `workers/redis-state-guard.ts` 兜底。** API 每 10 秒查一次队列迁移标记（`worker_jobs_version`），标记没了就重跑队列迁移（补回轮询和续期任务）、重放登记过的定时系统任务（`systemJobsSchedule.replayRepeatedJobs`），再把丢了任务的排队运行从库里的载荷文件（`WEBHOOK_PAYLOAD`，元数据带执行号）按原执行号重新入队，没有载荷的标记失败。此前 Redis 清空后 70 个事件只处理了 12 个，轮询调度也一起没了，直到有人重启 API。每 5 分钟还会清扫没有任务的排队和运行中记录（运行中要超过运行时限加 3 分钟）。运行中被丢任务的运行不重放，只标失败，因为不知道已经写了什么。
+- **飞书、北森请求带 30 秒超时。** 连接器的 HTTP 客户端默认不限时，对方不回时会占着 worker 位置直到整个运行超时（默认 600 秒）。写操作超时的报错写明「可能已生效」，开通账号本来就先读回再创建。
 
 ### Key files
 Entry point: `worker`, the exported lifecycle object in `worker.ts`; `worker.start(...)` is wired up in the worker process main.

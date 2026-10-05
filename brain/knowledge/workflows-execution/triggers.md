@@ -33,6 +33,10 @@ Triggers define how and when a workflow starts. The module handles registration,
 - **`*/X` cron is not "every X minutes"** — it means "minutes divisible by X", so it double-fires at :00 and :X for X > 30 and gaps unevenly when X doesn't divide 60. Use `INTERVAL`/`intervalMs` for a rolling interval; reserve cron for wall-clock schedules. This bit the default poll schedule until GIT-1632.
 - **Trigger health** (`triggerRunStats`): Redis key `trigger_run:{platformId}:{connectorName}:{date}:{status}`, 14-day retention, shown in Platform Admin (Cloud).
 
+- **轮询游标做成了事务（`trigger/poll-cursor-guard.ts`）。** 引擎先把 `lastPoll` 等触发器状态写进库，worker 再把事件交给 API 建运行；原来 API 或 worker 在这几百毫秒里挂掉，这批事件就永远取不回来（实测 300 个事件全丢，没有运行也没有问题）。现在 `tryDequeue` 取到轮询任务时把该工作流的全部触发器存储（`workflow_<id>/` 前缀的所有键，北森的 `seenRecords` 也在里面）整份快照进 `poll-snapshot/<workflowId>`，`submitPayloads` 开头标「交接中」，运行建完才删快照；任务失败、交接没完成、或崩溃留下的快照（同一任务被重新派发，或超过 3 分钟）会在下一次轮询前整体回滚，事件重新取一遍。语义是至少一次：交接成功但没来得及提交时这批事件会再出现，靠触发器的去重设置挡。恢复要等到卡住的任务被重新派发，实测约 3 分钟。停用触发器时丢快照，重新启用从自己的游标起。
+- **轮询任务优先级是 high，高于异步运行的 medium**（`getDefaultJobPriority`）。原来是 veryLow，运行一积压轮询就轮不到（实测 2000 人入职季里两个触发器连续 11 分钟没轮询，新的入职和离职要等积压清完才被取到，还把 1980 个正常事件记成了「宕机后补上」）。
+- **去重占位只在运行启动成功后保留。** `claimWorkflowDedupe` 先占位再启动运行，启动失败的占位由 `startRuns` 立刻释放（`releaseClaim`），崩溃遗留、超过 2 分钟还是 `pending` 的占位下一次可以接管，不会再把重新取到的事件当成重复吞掉。
+
 ### Editions
 All four strategies available in CE/EE/Cloud. Cloud additionally surfaces trigger health stats in Platform Admin.
 

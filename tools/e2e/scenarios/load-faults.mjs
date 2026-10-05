@@ -213,7 +213,7 @@ async function beisenQuirks() {
 }
 
 async function concurrency() {
-  const base = 7000
+  const base = Number(process.env.LOAD_BASE ?? 7000)
   await check('f 同一员工连续调岗 A→B→C、A→B→A：最终部门与北森最后一条一致', async () => {
     const hires = rangeOf({ first: base, count: 20 })
     await kit.inject({ records: hires.map((n) => kit.hireOf({ n, departmentIndex: 0 })) })

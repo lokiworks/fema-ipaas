@@ -94,3 +94,26 @@ describe('networkUtils request URL derivation', () => {
         expect(baseUrl).toBe('https://example.com')
     })
 })
+
+describe('networkUtils.extractClientRealIp', () => {
+    function requestWith({ headers, ip }: { headers: Record<string, string>, ip: string }): FastifyRequest {
+        return { headers, ip } as unknown as FastifyRequest
+    }
+
+    it('uses the configured proxy header when the proxy sets it', () => {
+        expect(networkUtils.extractClientRealIp(requestWith({ headers: { 'x-real-ip': '203.0.113.7' }, ip: '10.0.0.2' }), 'x-real-ip')).toBe('203.0.113.7')
+    })
+
+    it('falls back to the socket address when no proxy sets the header, so clients do not share one key', () => {
+        expect(networkUtils.extractClientRealIp(requestWith({ headers: {}, ip: '198.51.100.20' }), 'x-real-ip')).toBe('198.51.100.20')
+        expect(networkUtils.extractClientRealIp(requestWith({ headers: { 'x-real-ip': '' }, ip: '198.51.100.20' }), 'x-real-ip')).toBe('198.51.100.20')
+    })
+
+    it('uses the first address of a forwarded list', () => {
+        expect(networkUtils.extractClientRealIp(requestWith({ headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.2' }, ip: '10.0.0.2' }), 'X-Forwarded-For')).toBe('203.0.113.7')
+    })
+
+    it('uses the socket address when no header is configured', () => {
+        expect(networkUtils.extractClientRealIp(requestWith({ headers: { 'x-real-ip': '203.0.113.7' }, ip: '198.51.100.20' }), undefined)).toBe('198.51.100.20')
+    })
+})

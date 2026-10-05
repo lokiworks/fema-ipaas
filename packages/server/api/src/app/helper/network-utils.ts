@@ -63,7 +63,8 @@ const extractClientRealIp = (request: FastifyRequest, clientIpHeader: string | u
     if (isNil(clientIpHeader)) {
         return request.ip
     }
-    return request.headers[clientIpHeader] as string
+    const forwarded = firstForwardedValue(request.headers[clientIpHeader.toLowerCase()])
+    return isNil(forwarded) || forwarded === '' ? request.ip : forwarded
 }
 
 const clientIp = (request: FastifyRequest): string => {

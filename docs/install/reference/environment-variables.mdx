@@ -126,7 +126,7 @@ inspecting jobs.
 | `FEMA_REDIS_SENTINEL_ROLE` | Role to connect to, either `master` or `slave`. | `None` |
 | `FEMA_REDIS_FAILED_JOB_RETENTION_DAYS` | Days to retain failed jobs in Redis. | `30` |
 | `FEMA_REDIS_FAILED_JOB_RETENTION_MAX_COUNT` | Maximum number of failed jobs to retain in Redis. | `100000` |
-| `FEMA_QUEUE_UI_ENABLED` | Enable the queue UI (Redis only). | `true` |
+| `FEMA_QUEUE_UI_ENABLED` | Enable the queue UI (Redis only). It is off unless you set this to `true`, and then the username and password below are required. | `false` |
 | `FEMA_QUEUE_UI_USERNAME` | Username for the queue UI. Required when `FEMA_QUEUE_UI_ENABLED` is `true`. | `None` |
 | `FEMA_QUEUE_UI_PASSWORD` | Password for the queue UI. Required when `FEMA_QUEUE_UI_ENABLED` is `true`. | `None` |
 

@@ -8,6 +8,54 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Weak secrets are refused when production uses an external PostgreSQL
+
+With `FEMA_ENVIRONMENT=prod` (the default) and `FEMA_DB_TYPE=POSTGRES`, the app now
+checks `FEMA_JWT_SECRET` and `FEMA_ENCRYPTION_KEY` before it touches the database and
+refuses to start when:
+
+- `FEMA_JWT_SECRET` has fewer than 32 characters, or
+- either value is a placeholder: fewer than 10 different characters, or one short
+  block repeated, such as `0123456789abcdef0123456789abcdef`.
+
+Keys made by `sh tools/deploy.sh` (`openssl rand -hex 32` and `openssl rand -hex 16`) pass.
+The embedded PGLite database and non-production environments are not checked.
+
+**When is action necessary?**
+
+If the app exits at startup with `Weak secrets are not accepted`, replace the value it
+lists. A new `FEMA_JWT_SECRET` signs everyone out, and workers need a new
+`FEMA_WORKER_TOKEN` signed with it (the `docker-entrypoint.sh` of an all-in-one container
+does this itself). A new `FEMA_ENCRYPTION_KEY` must not replace the old one outright, or
+saved connection credentials can no longer be read: move the old key to
+`FEMA_RETIRED_ENCRYPTION_KEYS` and put the new one in `FEMA_ENCRYPTION_KEY`.
+
+#### Login rate limits count by client address when no proxy sets the header
+
+The rate limiter and the audit log read the client address from the header named by
+`FEMA_CLIENT_REAL_IP_HEADER` (`x-real-ip` by default). When the header was missing,
+for example with the compose file exposing port 8080 directly, every client shared one
+counter, so 50 failed sign-ins in a minute from anyone blocked everyone, and audit
+events had no source address. A missing or empty header now falls back to the address
+of the connection.
+
+**When is action necessary?**
+
+No. Behind a reverse proxy, keep the proxy setting the header itself and overwriting
+any value the client sent; the header is trusted as given.
+
+#### Server errors no longer carry database messages
+
+An unexpected server error (HTTP 500) now answers with a generic message; the detail
+stays in the server log. A value the database cannot store, such as
+`limit=99999999999999999999` or `createdAfter=notadate`, answers HTTP 400 with the code
+`INVALID_REQUEST_VALUE` instead of a 500 that quoted the database error. Validation
+errors (400) keep their message.
+
+**When is action necessary?**
+
+If a script parses the text of a 500 response, read the server log instead.
+
 #### Release change history is stored permanently
 
 The Change history tab of Test and production used to read the audit log, which is

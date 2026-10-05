@@ -44,6 +44,7 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { authMutations } from '@/features/authentication/hooks/auth-hooks';
+import { ssoHooks } from '@/features/authentication/hooks/sso-hooks';
 import { captchaUtils } from '@/features/authentication/utils/captcha-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { HttpError, api } from '@/lib/api';
@@ -55,6 +56,7 @@ import { cn } from '@/lib/utils';
 import { CheckEmailNote } from '../check-email-note';
 import { SignInForm } from '../sign-in-form';
 import { SignUpForm } from '../sign-up-form';
+import { SsoErrorNote, SsoLoginOptions } from '../sso-login-options';
 
 import { TurnstileWidget, useTurnstileSiteKey } from './turnstile-widget';
 
@@ -209,6 +211,8 @@ function AuthStep({
   const effectiveMode: AuthMode = firstUser ? 'signup' : mode;
   const emailAuthEnabled = emailAuthEnabledFlag ?? true;
   const passwordlessAvailable = usePasswordlessAvailable();
+  const { data: ssoData } = ssoHooks.useProviders();
+  const ssoProviders = ssoData?.providers ?? [];
 
   // The confirmation is a beat, not a screen: hold it just long enough to read
   // as "that worked" before the name question replaces it.
@@ -247,6 +251,15 @@ function AuthStep({
 
   // Email sign-in is the only way in, so turning it off leaves nobody a way in.
   // Say so, rather than showing an empty panel.
+  if (!emailAuthEnabled && ssoProviders.length > 0) {
+    return (
+      <DrawerShell>
+        <Heading title={t('Welcome back')} />
+        <SsoLoginOptions providers={ssoProviders} withDivider={false} />
+      </DrawerShell>
+    );
+  }
+
   if (!emailAuthEnabled) {
     return (
       <DrawerShell>
@@ -272,6 +285,7 @@ function AuthStep({
               : t('Welcome back')
           }
         />
+        <SsoLoginOptions providers={ssoProviders} withDivider />
         {effectiveMode === 'signup' ? (
           <SignUpForm
             showCheckYourEmailNote={checkEmailNote}
@@ -341,6 +355,7 @@ function AuthStep({
       <h1 className={cn(AUTH_TITLE_CLASS, 'mb-6')}>
         {t('Dream big. Automate the rest.')}
       </h1>
+      <SsoLoginOptions providers={ssoProviders} withDivider />
       <EmailStep
         invitedEmail={invitedEmail}
         captchaToken={captchaToken}
@@ -846,6 +861,7 @@ function DrawerShell({ children }: { children: React.ReactNode }) {
           {welcomeText}
         </p>
       )}
+      <SsoErrorNote />
       {children}
     </div>
   );

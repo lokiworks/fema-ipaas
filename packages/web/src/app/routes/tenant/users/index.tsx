@@ -14,6 +14,7 @@ import { SearchInput } from '@/components/custom/search-input';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +56,9 @@ import { ResetPasswordDialog } from './reset-password-dialog';
 export default function UsersPage() {
   const { data, isLoading, refetch } = tenantAccessHooks.useMembers();
   const { mutate: setEnabled } = tenantAccessHooks.useSetEnabled();
+  const bulk = tenantAccessHooks.useBulkSetEnabled();
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const { mutate: revokeInvitation } = tenantUserMutations.useDeleteInvitation({
     onSuccess: () => refetch(),
   });
@@ -76,6 +80,25 @@ export default function UsersPage() {
           .toLowerCase()
           .includes(query)),
   );
+
+  const selectable = visible.filter(
+    (member) =>
+      member.kind === 'USER' &&
+      member.status === TenantMemberStatus.ACTIVE &&
+      !member.isOwner &&
+      member.id !== currentUserId,
+  );
+  const selectedVisible = selectable.filter((member) =>
+    selected.includes(member.id),
+  );
+  const allSelected =
+    selectable.length > 0 && selectedVisible.length === selectable.length;
+  const toggleAll = (checked: boolean): void =>
+    setSelected(checked ? selectable.map((member) => member.id) : []);
+  const toggleOne = ({ id, checked }: { id: string; checked: boolean }): void =>
+    setSelected((current) =>
+      checked ? [...current, id] : current.filter((value) => value !== id),
+    );
 
   return (
     <CenteredPage
@@ -135,12 +158,56 @@ export default function UsersPage() {
           />
         </div>
       </div>
+      {selectedVisible.length > 0 && (
+        <div
+          className="mb-3 flex flex-wrap items-center gap-3 rounded-md border bg-muted/40 px-3 py-2 text-sm"
+          data-testid="bulk-bar"
+        >
+          <span>
+            {t('{count} users selected', { count: selectedVisible.length })}
+          </span>
+          <ConfirmationDeleteDialog
+            open={bulkOpen}
+            onOpenChange={setBulkOpen}
+            title={t('Disable the selected users')}
+            message={t(
+              'They are signed out right away and cannot sign in again until you enable them. Their workflows and connections stay where they are, so transfer them first if someone else should take over.',
+            )}
+            entityName={t('{count} users', { count: selectedVisible.length })}
+            buttonText={t('Disable')}
+            isDanger
+            mutationFn={async () => {
+              await bulk.mutateAsync({
+                userIds: selectedVisible.map((member) => member.id),
+                enabled: false,
+              });
+              setSelected([]);
+            }}
+          >
+            <Button size="sm" variant="outline" data-testid="bulk-disable">
+              {t('Disable selected')}
+            </Button>
+          </ConfirmationDeleteDialog>
+          <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+            {t('Clear selection')}
+          </Button>
+        </div>
+      )}
       {isLoading ? (
         <Skeleton className="h-64 w-full" />
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  aria-label={t('Select all')}
+                  checked={allSelected}
+                  disabled={selectable.length === 0}
+                  onCheckedChange={(checked) => toggleAll(checked === true)}
+                  data-testid="select-all-users"
+                />
+              </TableHead>
               <TableHead>{t('User')}</TableHead>
               <TableHead className="w-28">{t('Status')}</TableHead>
               <TableHead className="w-28">{t('Platform role')}</TableHead>
@@ -152,13 +219,26 @@ export default function UsersPage() {
           <TableBody>
             {visible.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
+                <TableCell colSpan={7} className="text-muted-foreground">
                   {t('No users match these filters')}
                 </TableCell>
               </TableRow>
             )}
             {visible.map((member) => (
               <TableRow key={`${member.kind}-${member.id}`}>
+                <TableCell>
+                  <Checkbox
+                    aria-label={t('Select {name}', {
+                      name: tenantAccessUtils.memberDisplayName(member),
+                    })}
+                    checked={selected.includes(member.id)}
+                    disabled={!selectable.some((item) => item.id === member.id)}
+                    onCheckedChange={(checked) =>
+                      toggleOne({ id: member.id, checked: checked === true })
+                    }
+                    data-testid={`select-user-${member.email}`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex min-w-0 flex-col gap-0.5">
                     <div className="flex min-w-0 items-center gap-1.5">

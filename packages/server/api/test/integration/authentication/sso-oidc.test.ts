@@ -403,6 +403,21 @@ describe('OIDC single sign-on', () => {
             expect(raw[0]?.federatedAuthProviders.oidc.clientSecret.data).toEqual(expect.any(String))
         })
 
+        it('re-encrypts the client secret when the encryption key is rotated, and sign-in keeps working', async () => {
+            await configureAndEnable({ autoCreateUsers: true })
+            await databaseConnection().query('update tenant set "federatedAuthProviders" = jsonb_set("federatedAuthProviders", \'{oidc,clientSecret,keyId}\', \'"deadbeef"\') where id = $1', [ctx.tenant.id])
+
+            const rotation = await ctx.post('/v1/encryption/rotate', {})
+
+            expect(rotation.statusCode).toBe(200)
+            expect(rotation.json().ssoSecrets.rotated).toBe(1)
+            const raw = await databaseConnection().query<{ keyId: string | null }[]>('select "federatedAuthProviders" -> \'oidc\' -> \'clientSecret\' ->> \'keyId\' as "keyId" from tenant where id = $1', [ctx.tenant.id])
+            expect(raw[0]?.keyId).not.toBe('deadbeef')
+            const email = freshEmail()
+            addIdpUser({ email })
+            expect((await signIn({ email })).error).toBeNull()
+        })
+
         it('refuses to turn a provider on before a test sign-in succeeded', async () => {
             await saveOidc({ autoCreateUsers: true, enabled: false })
 

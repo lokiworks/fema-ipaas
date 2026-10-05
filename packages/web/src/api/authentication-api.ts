@@ -7,6 +7,7 @@ import {
   AuthenticationResponse,
   SignInRequest,
   SignUpRequest,
+  SsoPublicProvidersResponse,
   SwitchTenantRequest,
   UserIdentity,
   VerifyEmailCodeRequest,
@@ -50,6 +51,14 @@ export const authenticationApi = {
   },
   verifyEmail(request: VerifyEmailRequestBody) {
     return api.post<UserIdentity>('/v1/authn/local/verify-email', request);
+  },
+  ssoProviders() {
+    return api.get<SsoPublicProvidersResponse>('/v1/authn/sso/providers');
+  },
+  ssoExchange(ticket: string) {
+    return api.post<AuthenticationResponse>('/v1/authn/sso/exchange', {
+      ticket,
+    });
   },
   switchTenant(request: SwitchTenantRequest) {
     return api.post<AuthenticationResponse>(

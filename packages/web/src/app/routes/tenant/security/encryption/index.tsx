@@ -36,8 +36,14 @@ const EncryptionPage = () => {
     mutationFn: () => api.post<RotationReport>('/v1/encryption/rotate', {}),
     onSuccess: (report) => {
       queryClient.invalidateQueries({ queryKey: tenantAccessKeys.encryption });
-      const rotated = report.connections.rotated + report.variables.rotated;
-      const failed = report.connections.failed + report.variables.failed;
+      const rotated =
+        report.connections.rotated +
+        report.variables.rotated +
+        report.ssoSecrets.rotated;
+      const failed =
+        report.connections.failed +
+        report.variables.failed +
+        report.ssoSecrets.failed;
       if (failed > 0) {
         toast.error(t('rotationFinishedWithFailures', { rotated, failed }));
         return;
@@ -227,6 +233,7 @@ type TableRotationReport = {
 type RotationReport = {
   connections: TableRotationReport;
   variables: TableRotationReport;
+  ssoSecrets: TableRotationReport;
 };
 
 export { EncryptionPage };

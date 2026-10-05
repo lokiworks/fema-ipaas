@@ -15,10 +15,15 @@ import {
   ModuleAccessSettings,
   MyModuleAccess,
   ResetMemberPasswordResponse,
+  SsoProvider,
+  SsoSettings,
+  SsoTestStartResponse,
   TenantMember,
   TransferResourcesRequestBody,
   TransferResourcesResponse,
+  UpdateFeishuSsoRequestBody,
   UpdateLoginSecurityRequestBody,
+  UpdateOidcSsoRequestBody,
   UpdateModuleAccessSettingsRequestBody,
   UpdateTenantMemberAccessRequestBody,
   WorkerFleet,
@@ -169,5 +174,30 @@ export const tenantAccessApi = {
   },
   recordAuditExport(rows: number): Promise<void> {
     return api.post<void>('/v1/audit-events/exports', { rows });
+  },
+  getSsoSettings(): Promise<SsoSettings> {
+    return api.get<SsoSettings>('/v1/tenant-access/sso');
+  },
+  saveOidcSso(request: UpdateOidcSsoRequestBody): Promise<SsoSettings> {
+    return api.post<SsoSettings>('/v1/tenant-access/sso/oidc', request);
+  },
+  saveFeishuSso(request: UpdateFeishuSsoRequestBody): Promise<SsoSettings> {
+    return api.post<SsoSettings>('/v1/tenant-access/sso/feishu', request);
+  },
+  setSsoEnabled({
+    provider,
+    enabled,
+  }: {
+    provider: SsoProvider;
+    enabled: boolean;
+  }): Promise<SsoSettings> {
+    return api.post<SsoSettings>(`/v1/tenant-access/sso/${provider}/enabled`, {
+      enabled,
+    });
+  },
+  startSsoTest(provider: SsoProvider): Promise<SsoTestStartResponse> {
+    return api.post<SsoTestStartResponse>(
+      `/v1/tenant-access/sso/${provider}/test`,
+    );
   },
 };

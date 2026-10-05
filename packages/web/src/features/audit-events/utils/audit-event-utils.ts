@@ -248,7 +248,9 @@ function summarize(event: ApplicationEvent): string {
         count: event.data.matchedRuns,
       });
     case ApplicationEventName.USER_SIGNED_IN:
-      return t('auditUserSignedIn', { user: event.userEmail });
+      return event.data.method === 'sso'
+        ? t('auditUserSignedInSso', { user: event.userEmail })
+        : t('auditUserSignedIn', { user: event.userEmail });
     case ApplicationEventName.USER_PASSWORD_RESET:
       return t('auditUserPasswordReset', { user: event.userEmail });
     case ApplicationEventName.USER_EMAIL_VERIFIED:
@@ -330,6 +332,8 @@ function summarize(event: ApplicationEvent): string {
     case ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED:
     case ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED:
     case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
+    case ApplicationEventName.SSO_SETTINGS_UPDATED:
+    case ApplicationEventName.USER_SIGN_IN_FAILED:
     case ApplicationEventName.WORKER_STATE_CHANGED:
     case ApplicationEventName.AUDIT_LOG_EXPORTED:
     case ApplicationEventName.PROJECT_LIMITS_UPDATED:
@@ -395,6 +399,7 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('Personal data erasure'),
   [ApplicationEventName.USER_SIGNED_UP]: () => t('User signed up'),
   [ApplicationEventName.USER_SIGNED_IN]: () => t('User signed in'),
+  [ApplicationEventName.USER_SIGN_IN_FAILED]: () => t('Sign-in failed'),
   [ApplicationEventName.USER_PASSWORD_RESET]: () => t('Password reset'),
   [ApplicationEventName.USER_EMAIL_VERIFIED]: () => t('Email verified'),
   [ApplicationEventName.CONNECTOR_PUBLISHED]: () => t('Connector published'),
@@ -432,6 +437,8 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('Resource ownership transferred'),
   [ApplicationEventName.LOGIN_SETTINGS_UPDATED]: () =>
     t('Sign-in settings changed'),
+  [ApplicationEventName.SSO_SETTINGS_UPDATED]: () =>
+    t('Single sign-on settings changed'),
   [ApplicationEventName.WORKER_STATE_CHANGED]: () => t('Worker changed'),
   [ApplicationEventName.AUDIT_LOG_EXPORTED]: () => t('Audit log exported'),
   [ApplicationEventName.PROJECT_LIMITS_UPDATED]: () =>

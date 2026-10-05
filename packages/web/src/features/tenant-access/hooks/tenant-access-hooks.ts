@@ -2,8 +2,11 @@ import {
   AddTenantUsersRequestBody,
   ListOwnedResourcesRequestQuery,
   ModuleAccessRequestStatus,
+  SsoProvider,
   TransferResourcesRequestBody,
+  UpdateFeishuSsoRequestBody,
   UpdateLoginSecurityRequestBody,
+  UpdateOidcSsoRequestBody,
   UpdateModuleAccessSettingsRequestBody,
   UpdateTenantMemberAccessRequestBody,
 } from '@fema-ipaas/shared';
@@ -66,6 +69,43 @@ function useSetEnabled() {
     onSuccess: (_member, variables) => {
       queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
       toast.success(variables.enabled ? t('User enabled') : t('User disabled'));
+    },
+    onError: showError,
+  });
+}
+
+function useBulkSetEnabled() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userIds,
+      enabled,
+    }: {
+      userIds: string[];
+      enabled: boolean;
+    }) => {
+      const results = await Promise.allSettled(
+        userIds.map((userId) =>
+          tenantAccessApi.setEnabled({ userId, enabled }),
+        ),
+      );
+      const done = results.filter(
+        (result) => result.status === 'fulfilled',
+      ).length;
+      return { done, failed: results.length - done, enabled };
+    },
+    onSuccess: ({ done, failed, enabled }) => {
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
+      if (done > 0) {
+        toast.success(
+          enabled
+            ? t('Enabled {count} users', { count: done })
+            : t('Disabled {count} users', { count: done }),
+        );
+      }
+      if (failed > 0) {
+        toast.error(t('{count} users could not be changed', { count: failed }));
+      }
     },
     onError: showError,
   });
@@ -215,6 +255,75 @@ function useUpdateLoginSecurity() {
   });
 }
 
+function useSsoSettings() {
+  return useQuery({
+    queryKey: tenantAccessKeys.sso,
+    queryFn: () => tenantAccessApi.getSsoSettings(),
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
+  });
+}
+
+function useSaveOidcSso({ onSaved }: { onSaved?: () => void } = {}) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: UpdateOidcSsoRequestBody) =>
+      tenantAccessApi.saveOidcSso(request),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(tenantAccessKeys.sso, settings);
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.loginSecurity,
+      });
+      toast.success(t('Saved'));
+      onSaved?.();
+    },
+    onError: showError,
+  });
+}
+
+function useSaveFeishuSso({ onSaved }: { onSaved?: () => void } = {}) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: UpdateFeishuSsoRequestBody) =>
+      tenantAccessApi.saveFeishuSso(request),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(tenantAccessKeys.sso, settings);
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.loginSecurity,
+      });
+      toast.success(t('Saved'));
+      onSaved?.();
+    },
+    onError: showError,
+  });
+}
+
+function useSetSsoEnabled() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (params: { provider: SsoProvider; enabled: boolean }) =>
+      tenantAccessApi.setSsoEnabled(params),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(tenantAccessKeys.sso, settings);
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.loginSecurity,
+      });
+      toast.success(t('Saved'));
+    },
+    onError: showError,
+  });
+}
+
+function useStartSsoTest() {
+  return useMutation({
+    mutationFn: (provider: SsoProvider) =>
+      tenantAccessApi.startSsoTest(provider),
+    onSuccess: ({ url }) => {
+      window.location.assign(url);
+    },
+    onError: showError,
+  });
+}
+
 function useMyAccess() {
   return useQuery({
     queryKey: tenantAccessKeys.me,
@@ -305,6 +414,7 @@ export const tenantAccessKeys = {
   moduleSettings: ['tenant-access', 'module-settings'],
   requestsRoot: ['tenant-access', 'requests'],
   loginSecurity: ['tenant-access', 'login-security'],
+  sso: ['tenant-access', 'sso'],
   me: ['tenant-access', 'me'],
   workerFleet: ['tenant-access', 'worker-fleet'],
   componentHealth: ['tenant-access', 'component-health'],
@@ -316,6 +426,7 @@ export const tenantAccessHooks = {
   useInviteMembers,
   useUpdateAccess,
   useSetEnabled,
+  useBulkSetEnabled,
   useResetPassword,
   useRemoveMember,
   useResources,
@@ -328,6 +439,11 @@ export const tenantAccessHooks = {
   useDecideRequest,
   useLoginSecurity,
   useUpdateLoginSecurity,
+  useSsoSettings,
+  useSaveOidcSso,
+  useSaveFeishuSso,
+  useSetSsoEnabled,
+  useStartSsoTest,
   useMyAccess,
   useRequestModule,
   useWorkerFleet,

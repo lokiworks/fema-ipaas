@@ -13,3 +13,7 @@ export {
   passwordRules,
   passwordValidation,
 } from './utils/password-validation-utils';
+export { SsoComplete } from './components/sso-complete';
+export { SsoLoginOptions, SsoErrorNote } from './components/sso-login-options';
+export { ssoHooks } from './hooks/sso-hooks';
+export { ssoUtils } from './utils/sso-utils';

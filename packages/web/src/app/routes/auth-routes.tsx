@@ -1,5 +1,5 @@
 import { PageTitle } from '@/app/components/page-title';
-import { VerifyEmail } from '@/features/authentication';
+import { SsoComplete, VerifyEmail } from '@/features/authentication';
 import { AcceptInvitation } from '@/features/invitations';
 
 import { ChangePasswordPage } from './change-password';
@@ -31,6 +31,14 @@ export const authRoutes = [
     element: (
       <PageTitle title="Sign In">
         <SignInPage />
+      </PageTitle>
+    ),
+  },
+  {
+    path: '/sso/complete',
+    element: (
+      <PageTitle title="Sign In">
+        <SsoComplete />
       </PageTitle>
     ),
   },

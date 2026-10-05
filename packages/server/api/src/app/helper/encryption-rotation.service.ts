@@ -1,6 +1,7 @@
 import { isNil } from '@fema-ipaas/core-utils'
 import { FastifyBaseLogger } from 'fastify'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
+import { ssoConfigService } from '../sso/sso-config.service'
 import { variableRepo } from '../variable/variable.service'
 import { EncryptedObject, encryptUtils } from './encryption'
 
@@ -24,7 +25,8 @@ export const encryptionRotationService = (log: FastifyBaseLogger) => ({
                 await variableRepo().update(row.id, { value: row.value })
             },
         })
-        return { connections, variables }
+        const ssoSecrets = await ssoConfigService(log).rotateSecrets()
+        return { connections, variables, ssoSecrets }
     },
 })
 
@@ -71,4 +73,5 @@ export type TableRotationReport = {
 export type RotationReport = {
     connections: TableRotationReport
     variables: TableRotationReport
+    ssoSecrets: TableRotationReport
 }

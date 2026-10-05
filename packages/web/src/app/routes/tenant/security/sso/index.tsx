@@ -2,16 +2,28 @@ import {
   LoginMethod,
   LoginMethodStatus,
   LoginSecuritySettings,
+  SsoProvider,
+  SsoSettings,
   TENANT_ACCESS_LIMITS,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
-import { Earth, KeyRound, MailIcon, ShieldCheck } from 'lucide-react';
+import {
+  Earth,
+  KeyRound,
+  MailIcon,
+  MessageCircle,
+  ShieldCheck,
+  TriangleAlert,
+} from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 
 import { CenteredPage } from '@/app/components/centered-page';
 import { AllowedDomainDialog } from '@/app/routes/tenant/security/sso/allowed-domain';
+import { SsoProviderDialog } from '@/app/routes/tenant/security/sso/sso-provider-dialog';
 import {
   Item,
   ItemActions,
@@ -53,12 +65,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ssoUtils } from '@/features/authentication';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 import { tenantHooks } from '@/hooks/tenant-hooks';
+import { formatUtils } from '@/lib/format-utils';
 
 const AuthenticationPage = () => {
   const { tenant, refetch } = tenantHooks.useCurrentTenant();
   const { data: settings, isLoading } = tenantAccessHooks.useLoginSecurity();
+  const { data: sso } = tenantAccessHooks.useSsoSettings();
 
   return (
     <CenteredPage
@@ -72,11 +87,13 @@ const AuthenticationPage = () => {
         <Skeleton className="h-96 w-full" />
       ) : (
         <div className="flex flex-col gap-6">
+          <SsoTestResult />
           <div className="flex flex-col gap-3">
             {settings.methods.map((method) => (
               <LoginMethodRow
                 key={method.method}
                 method={method}
+                sso={sso ?? null}
                 enabledCount={
                   settings.methods.filter((candidate) => candidate.enabled)
                     .length
@@ -117,25 +134,85 @@ const AuthenticationPage = () => {
   );
 };
 
+function SsoTestResult() {
+  const [params, setParams] = useSearchParams();
+  const result = params.get('ssoTest');
+  if (result === null) {
+    return null;
+  }
+  const passed = result === 'ok';
+  const dismiss = (): void => {
+    const next = new URLSearchParams(params);
+    next.delete('ssoTest');
+    next.delete('provider');
+    setParams(next, { replace: true });
+  };
+  return (
+    <div
+      role="alert"
+      data-testid="sso-test-result"
+      data-result={result}
+      className={
+        passed
+          ? 'flex items-start gap-2 rounded-md border border-success/50 bg-success-100/10 px-3 py-2 text-sm text-success-700 dark:text-success-300'
+          : 'flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive'
+      }
+    >
+      {!passed && <TriangleAlert className="mt-0.5 size-4 shrink-0" />}
+      <span className="flex-1">
+        {passed
+          ? t('The test sign-in passed. You can turn this method on now.')
+          : ssoUtils.errorMessage(result)}
+      </span>
+      <button
+        type="button"
+        onClick={dismiss}
+        className="text-xs underline underline-offset-2"
+      >
+        {t('Dismiss')}
+      </button>
+    </div>
+  );
+}
+
 function LoginMethodRow({
   method,
   enabledCount,
+  sso,
 }: {
   method: LoginMethodStatus;
   enabledCount: number;
+  sso: SsoSettings | null;
 }) {
   const { mutate: update, isPending } =
     tenantAccessHooks.useUpdateLoginSecurity();
+  const setSsoEnabled = tenantAccessHooks.useSetSsoEnabled();
+  const startTest = tenantAccessHooks.useStartSsoTest();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const provider = ssoProviderOf(method.method);
+  const config = ssoConfigOf({ provider, sso });
+  const verified = config?.verifiedAt ?? null;
   const lastEnabled = method.enabled && enabledCount === 1;
+  const passwordWouldLockOut =
+    method.method === LoginMethod.EMAIL_PASSWORD &&
+    method.enabled &&
+    !hasVerifiedEnabledSso(sso);
   const blockedReason = !method.available
     ? t('This build has no sign-in integration for this method yet')
     : !method.configured
     ? t('Configure this method before turning it on')
+    : provider !== null && !method.enabled && verified === null
+    ? t('Run a successful test sign-in before turning this method on')
+    : passwordWouldLockOut
+    ? t(
+        'Turn on a single sign-on method and pass its test sign-in before turning password sign-in off',
+      )
     : lastEnabled
     ? t('At least one sign-in method must stay on')
     : null;
+  const busy = isPending || setSsoEnabled.isPending;
   return (
-    <Item variant="outline">
+    <Item variant="outline" data-testid={`login-method-${method.method}`}>
       <ItemMedia variant="icon">{methodIcon(method.method)}</ItemMedia>
       <ItemContent>
         <ItemTitle>
@@ -149,19 +226,63 @@ function LoginMethodRow({
           )}
         </ItemTitle>
         <ItemDescription>{methodDescription(method.method)}</ItemDescription>
+        {provider !== null && config !== null && (
+          <ItemDescription data-testid={`sso-status-${provider}`}>
+            {ssoStatusLine({
+              verifiedAt: verified,
+              lastLoginAt: config.lastLoginAt ?? null,
+            })}
+          </ItemDescription>
+        )}
       </ItemContent>
       <ItemActions>
+        {provider !== null && (
+          <>
+            {config !== null && (
+              <Button
+                size="sm"
+                variant="outline"
+                loading={startTest.isPending}
+                onClick={() => startTest.mutate(provider)}
+                data-testid={`sso-test-${provider}`}
+              >
+                {t('Test sign-in')}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="basic"
+              onClick={() => setDialogOpen(true)}
+              data-testid={`sso-configure-${provider}`}
+            >
+              {config === null ? t('Configure') : t('Edit')}
+            </Button>
+            {sso !== null && dialogOpen && (
+              <SsoProviderDialog
+                provider={provider}
+                settings={sso}
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+              />
+            )}
+          </>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
               <Switch
                 aria-label={tenantAccessUtils.loginMethodLabel(method.method)}
                 checked={method.enabled}
-                disabled={blockedReason !== null || isPending}
-                onCheckedChange={(checked) =>
-                  method.method === LoginMethod.EMAIL_PASSWORD &&
-                  update({ emailAuthEnabled: checked })
-                }
+                disabled={blockedReason !== null || busy}
+                onCheckedChange={(checked) => {
+                  if (method.method === LoginMethod.EMAIL_PASSWORD) {
+                    update({ emailAuthEnabled: checked });
+                    return;
+                  }
+                  if (provider !== null) {
+                    setSsoEnabled.mutate({ provider, enabled: checked });
+                  }
+                }}
               />
             </span>
           </TooltipTrigger>
@@ -170,6 +291,57 @@ function LoginMethodRow({
       </ItemActions>
     </Item>
   );
+}
+
+function ssoProviderOf(method: LoginMethod): SsoProvider | null {
+  if (method === LoginMethod.OIDC) {
+    return SsoProvider.OIDC;
+  }
+  return method === LoginMethod.FEISHU ? SsoProvider.FEISHU : null;
+}
+
+function ssoConfigOf({
+  provider,
+  sso,
+}: {
+  provider: SsoProvider | null;
+  sso: SsoSettings | null;
+}) {
+  if (provider === null || sso === null) {
+    return null;
+  }
+  return (provider === SsoProvider.OIDC ? sso.oidc : sso.feishu) ?? null;
+}
+
+function hasVerifiedEnabledSso(sso: SsoSettings | null): boolean {
+  if (sso === null) {
+    return false;
+  }
+  return [sso.oidc, sso.feishu].some(
+    (config) =>
+      config?.enabled === true && (config.verifiedAt ?? null) !== null,
+  );
+}
+
+function ssoStatusLine({
+  verifiedAt,
+  lastLoginAt,
+}: {
+  verifiedAt: Date | string | null;
+  lastLoginAt: Date | string | null;
+}): string {
+  const tested =
+    verifiedAt === null
+      ? t('Not tested yet. Run a test sign-in before turning it on.')
+      : t('Test sign-in passed on {date}', {
+          date: formatUtils.formatDateWithTime(new Date(verifiedAt), false),
+        });
+  if (lastLoginAt === null) {
+    return tested;
+  }
+  return `${tested} ${t('Last sign-in {date}', {
+    date: formatUtils.formatDateWithTime(new Date(lastLoginAt), false),
+  })}`;
 }
 
 function PolicyForm({ settings }: { settings: LoginSecuritySettings }) {
@@ -282,6 +454,8 @@ function methodIcon(method: LoginMethod) {
       return <MailIcon />;
     case LoginMethod.OIDC:
       return <KeyRound />;
+    case LoginMethod.FEISHU:
+      return <MessageCircle />;
     default:
       return <ShieldCheck />;
   }
@@ -296,7 +470,7 @@ function methodDescription(method: LoginMethod): string {
     case LoginMethod.SAML:
       return t('Identity providers that speak SAML');
     case LoginMethod.FEISHU:
-      return t('Scan with Feishu or sign in inside the Feishu client');
+      return t('Employees sign in with their Feishu account');
     case LoginMethod.WECOM:
       return t('Scan with WeCom or sign in inside WeCom');
     case LoginMethod.DINGTALK:

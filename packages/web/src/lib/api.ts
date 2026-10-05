@@ -33,6 +33,7 @@ const disallowedRoutes = [
   '/v1/authn/local/verify-email',
   '/v1/authn/federated/login',
   '/v1/authn/federated/claim',
+  '/v1/authn/sso',
   '/v1/otp',
   '/v1/human-input',
   '/v1/authn/local/reset-password',

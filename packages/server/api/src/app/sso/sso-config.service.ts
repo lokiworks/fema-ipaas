@@ -180,27 +180,37 @@ export const ssoConfigService = (log: FastifyBaseLogger) => ({
         return hasVerifiedEnabled(tenant.federatedAuthProviders)
     },
 
-    async rotateSecrets(): Promise<number> {
+    async rotateSecrets(): Promise<SecretRotationReport> {
         const tenants = await tenantRepo().createQueryBuilder('tenant').addSelect('tenant.federatedAuthProviders').getMany()
-        let rotated = 0
+        const report: SecretRotationReport = { scanned: 0, rotated: 0, failed: 0 }
         for (const tenant of tenants) {
             const providers = tenant.federatedAuthProviders
-            const oidcSecret = await rotateSecret(providers.oidc?.clientSecret)
-            const feishuSecret = await rotateSecret(providers.feishu?.appSecret)
-            if (isNil(oidcSecret) && isNil(feishuSecret)) {
+            if (isNil(providers.oidc) && isNil(providers.feishu)) {
                 continue
             }
-            await persist({
-                tenant,
-                next: {
-                    ...providers,
-                    ...(isNil(providers.oidc) || isNil(oidcSecret) ? {} : { oidc: { ...providers.oidc, clientSecret: oidcSecret } }),
-                    ...(isNil(providers.feishu) || isNil(feishuSecret) ? {} : { feishu: { ...providers.feishu, appSecret: feishuSecret } }),
-                },
-            })
-            rotated += 1
+            report.scanned += 1
+            try {
+                const oidcSecret = await rotateSecret(providers.oidc?.clientSecret)
+                const feishuSecret = await rotateSecret(providers.feishu?.appSecret)
+                if (isNil(oidcSecret) && isNil(feishuSecret)) {
+                    continue
+                }
+                await persist({
+                    tenant,
+                    next: {
+                        ...providers,
+                        ...(isNil(providers.oidc) || isNil(oidcSecret) ? {} : { oidc: { ...providers.oidc, clientSecret: oidcSecret } }),
+                        ...(isNil(providers.feishu) || isNil(feishuSecret) ? {} : { feishu: { ...providers.feishu, appSecret: feishuSecret } }),
+                    },
+                })
+                report.rotated += 1
+            }
+            catch (error) {
+                report.failed += 1
+                log.error({ error, tenant: { id: tenant.id } }, 'failed to rotate encryption key for single sign-on secrets')
+            }
         }
-        return rotated
+        return report
     },
 })
 
@@ -352,6 +362,12 @@ export type RuntimeOidc = {
 export type RuntimeFeishu = {
     stored: StoredFeishuSso
     appSecret: string
+}
+
+export type SecretRotationReport = {
+    scanned: number
+    rotated: number
+    failed: number
 }
 
 export type SaveResult = {

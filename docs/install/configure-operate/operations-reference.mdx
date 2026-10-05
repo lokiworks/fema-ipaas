@@ -46,7 +46,7 @@ Everything is listed in [Environment Variables](/install/reference/environment-v
 | `FEMA_DEFAULT_LANGUAGE` | Language of names the server generates, such as the first tenant and project. `zh` or `en` | `zh` |
 | `FEMA_BEISEN_BASE_URL`, `FEMA_FEISHU_BASE_URL` | Point the connectors at a private gateway or a test double instead of `https://openapi.italent.cn` and the region chosen in the connection. The Feishu variable wins over the region. The connectors run in a sandbox, so also list both names in `FEMA_SANDBOX_PROPAGATED_ENV_VARS` | Beisen: `https://openapi.italent.cn` |
 | `FEMA_CONNECTOR_REGISTRY_URL`, `FEMA_DEV_CONNECTORS` | The Beisen and Feishu connectors are built into the image. Do not set `FEMA_DEV_CONNECTORS` in production, or only the listed connectors load | none |
-| `FEMA_EXECUTION_MODE` | Built-in connectors, including Beisen and Feishu, run in `UNSANDBOXED` and `SANDBOX_CODE_ONLY`. The isolate modes do not carry them yet | `UNSANDBOXED` |
+| `FEMA_EXECUTION_MODE` | Built-in connectors, including Beisen and Feishu, run in `UNSANDBOXED` and `SANDBOX_CODE_ONLY`. The isolate modes do not carry them yet | `SANDBOX_CODE_ONLY` |
 
 <Note>
 There is no setting for the daily read-back verification, for the official solution in the solution library, or for the alert history kept after a policy is deleted. They are always on.

@@ -30,7 +30,7 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.CONNECTORS_SYNC_MODE]: ConnectorSyncMode.OFFICIAL_AUTO,
     [AppSystemProp.USE_CDN_FOR_BUNDLES]: 'false',
     [AppSystemProp.ENVIRONMENT]: 'prod',
-    [AppSystemProp.EXECUTION_MODE]: ExecutionMode.UNSANDBOXED,
+    [AppSystemProp.EXECUTION_MODE]: ExecutionMode.SANDBOX_CODE_ONLY,
     [AppSystemProp.WEBHOOK_TIMEOUT_SECONDS]: '30',
     [AppSystemProp.LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS]: 'false',
     [AppSystemProp.DEFAULT_LANGUAGE]: LocalesEnum.CHINESE_SIMPLIFIED,

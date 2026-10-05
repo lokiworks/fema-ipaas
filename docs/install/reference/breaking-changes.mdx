@@ -8,6 +8,21 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Code steps run in an isolate by default
+
+`FEMA_EXECUTION_MODE` used to default to `UNSANDBOXED`, where a Code step is ordinary Node
+code in the worker process and can read its environment variables, secrets and files. The
+default is now `SANDBOX_CODE_ONLY`. Connectors, including HTTP, PostgreSQL, Beisen and Feishu,
+behave as before, because they run in the engine process and not in the isolate. Only Code
+steps change: they have no `fetch`, `URL`, `Buffer`, `require` or `setTimeout`, are limited to
+128 MB of memory, and a loop that never ends is stopped by `FEMA_STEP_TIMEOUT`.
+
+**When is action necessary?**
+
+If a Code step uses one of those globals, rewrite it with an HTTP step or another connector
+action. If every person who can edit a workflow is trusted with the worker's secrets and you
+need the old behaviour, set `FEMA_EXECUTION_MODE=UNSANDBOXED` on the app and the workers.
+
 #### Client mistakes are logged as `info`, and `FEMA_STEP_TIMEOUT` also stops Code steps
 
 Every request that ended in an error used to be written to the server log at `error` level, and an application error that answers with a 4xx status was recorded with `status: 500`. Wrong passwords, a mistyped connection secret or a page the user may not open therefore fired every alert that watches `level=error`. Errors that answer with a 4xx status are now logged at `info` with their real status; failures that answer with 5xx stay at `error`.

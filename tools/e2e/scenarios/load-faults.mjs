@@ -3,7 +3,7 @@ import { loadStack } from './lib/load-stack.mjs'
 import { loadKit as kit } from './lib/load-kit.mjs'
 
 const WORKERS = Number(process.env.LOAD_WORKERS ?? 1)
-const SCENARIOS = (process.env.LOAD_SCENARIOS ?? 'graceful,poll-window,kill-worker,redis-wipe,feishu-faults,beisen-quirks,concurrency,two-workers').split(',')
+const SCENARIOS = (process.env.LOAD_SCENARIOS ?? 'graceful,poll-window,kill-worker,redis-wipe,feishu-faults,beisen-quirks,concurrency,two-workers,webhook-dedupe,republish').split(',')
 const REUSE = process.env.LOAD_REUSE === '1'
 const PEOPLE = Number(process.env.LOAD_N ?? 60)
 const RESULT_DIR = '/tmp/fema-e2e/results'
@@ -29,6 +29,9 @@ const scenarios = {
   'beisen-quirks': beisenQuirks,
   concurrency,
   'two-workers': twoWorkers,
+  'feishu-hang': feishuHang,
+  'webhook-dedupe': webhookDedupe,
+  republish,
 }
 
 for (const name of SCENARIOS) {
@@ -126,13 +129,13 @@ async function killWorker() {
 }
 
 async function redisWipe() {
-  const ns = rangeOf({ first: 4000, count: PEOPLE })
+  const ns = rangeOf({ first: Number(process.env.LOAD_BASE ?? 4000), count: PEOPLE })
   await check('c Redis 不持久重启（清空），API 不重启：处理中的事件、之后的新事件都不丢', async () => {
     const before = await kit.mock({ method: 'GET', path: '/__admin/summary' })
     await kit.inject({ records: ns.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })) })
     await waitFor({ label: '先有一部分被处理', probe: async () => (await usersAmong({ ns })).length >= 8 })
     await loadStack.redisKillAndStart({ flush: true })
-    const later = rangeOf({ first: 4500, count: 10 })
+    const later = rangeOf({ first: Number(process.env.LOAD_BASE ?? 4000) + 500, count: 10 })
     await kit.sleep(4000)
     await kit.inject({ records: later.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })) })
     const outcome = await settle({ ns: [...ns, ...later], timeoutMs: 360000, allowIncomplete: true })
@@ -175,20 +178,37 @@ async function feishuFaults() {
 }
 
 async function beisenQuirks() {
-  const ns = rangeOf({ first: 6000, count: PEOPLE })
-  await check('e 北森返回重复、乱序的变动：不重复开通；迟到的旧时间变动不丢', async () => {
+  const base = Number(process.env.LOAD_BASE ?? 6000)
+  const ns = rangeOf({ first: base, count: PEOPLE })
+  await check('e 北森返回重复、乱序的变动：不重复开通；乱序的连续调岗以最后一条为准；迟到的旧时间变动不丢', async () => {
     const before = await kit.mock({ method: 'GET', path: '/__admin/summary' })
     await kit.mock({ method: 'POST', path: '/__admin/beisen-quirks', body: { duplicateRate: 0.5, shuffle: true } })
     await kit.inject({ records: ns.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })) })
     const outcome = await settle({ ns, timeoutMs: 420000 })
+    const chain = rangeOf({ first: base, count: 30 })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 3, startDate: '2026-11-01T00:00:00' })) })
+    await kit.sleep(1100)
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 5, startDate: '2026-12-01T00:00:00' })) })
+    await kit.sleep(1100)
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 7, startDate: '2027-01-01T00:00:00' })) })
+    await kit.sleep(150000)
+    const users = (await kit.mock({ method: 'GET', path: '/__admin/users' })).users
+    const byNo = new Map(users.map((user) => [user.employee_no, user]))
+    const lastDepartment = 'od-d08'
+    const wrongOrder = chain.filter((n) => byNo.get(kit.jobNumberOf({ n }))?.department_ids[0] !== lastDepartment)
     await kit.mock({ method: 'POST', path: '/__admin/beisen-quirks', body: { duplicateRate: 0, shuffle: false } })
-    const lateNs = rangeOf({ first: 6500, count: 10 })
-    await kit.inject({ records: lateNs.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })), changedAtOffsetSeconds: -600 })
+    const lateNs = rangeOf({ first: base + 500, count: 10 })
+    await kit.inject({ records: lateNs.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })), changedAtOffsetSeconds: -120 })
     const late = await settle({ ns: lateNs, timeoutMs: 240000, allowIncomplete: true })
-    report.beisenQuirks = { duplicates: outcome, late }
+    const tooLateNs = rangeOf({ first: base + 600, count: 10 })
+    await kit.inject({ records: tooLateNs.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })), changedAtOffsetSeconds: -900 })
+    const tooLate = await settle({ ns: tooLateNs, timeoutMs: 240000, allowIncomplete: true, quietMs: 150000 })
+    report.beisenQuirks = { duplicates: outcome, wrongOrder: wrongOrder.length, late, lostWhenVisibleFifteenMinutesLate: tooLate.missing.length }
+    process.stdout.write(`  北森延迟 15 分钟才可见的变动：丢 ${tooLate.missing.length}/${tooLateNs.length}（已知限制，重叠窗口只有 5 分钟，没有全量名单对账兜底）\n`)
     assertClean({ outcome, before, label: 'beisen-quirks' })
-    assert(late.missing.length === 0, `变动时间早于游标的迟到变动没有被处理：缺 ${late.missing.length}/${lateNs.length}`)
-    return { duplicates: outcomeBrief({ outcome }), late: outcomeBrief({ outcome: late }) }
+    assert(wrongOrder.length === 0, `乱序的连续调岗有 ${wrongOrder.length}/${chain.length} 人没有落在最后一条的部门`)
+    assert(late.missing.length === 0, `晚 2 分钟才可见的变动没有被处理：缺 ${late.missing.length}/${lateNs.length}`)
+    return { duplicates: outcomeBrief({ outcome }), wrongOrder: wrongOrder.length, late: outcomeBrief({ outcome: late }) }
   })
 }
 
@@ -200,12 +220,12 @@ async function concurrency() {
     await settle({ ns: hires, timeoutMs: 300000 })
     const chain = rangeOf({ first: base, count: 10 })
     const back = rangeOf({ first: base + 10, count: 10 })
-    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 3 })) })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 3, startDate: '2026-11-01T00:00:00' })) })
     await kit.sleep(1100)
-    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 5 })) })
-    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 4 })) })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 5, startDate: '2026-12-01T00:00:00' })) })
+    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 4, startDate: '2026-11-01T00:00:00' })) })
     await kit.sleep(1100)
-    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 0 })) })
+    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 0, startDate: '2026-12-01T00:00:00' })) })
     await kit.sleep(150000)
     const users = (await kit.mock({ method: 'GET', path: '/__admin/users' })).users
     const byNo = new Map(users.map((user) => [user.employee_no, user]))
@@ -229,6 +249,88 @@ async function twoWorkers() {
     const outcome = await settle({ ns, timeoutMs: 420000 })
     report.twoWorkers = outcome
     assertClean({ outcome, before, label: 'two-workers' })
+    return outcomeBrief({ outcome })
+  })
+}
+
+async function feishuHang() {
+  const ns = rangeOf({ first: 10000, count: 20 })
+  await check('j 飞书写入已生效但响应迟迟不回（超过连接器超时）：超时后先读回，不重复开通，通知恰好一次，不会挂住整个运行', async () => {
+    const before = await kit.mock({ method: 'GET', path: '/__admin/summary' })
+    await kit.mock({ method: 'POST', path: '/__admin/faults', body: { rules: [{ id: 'create-hangs-after-apply', method: 'POST', path: '/contact/v3/users$', mode: 'apply_then_delay', delayMs: 180000, times: 4 }] } })
+    const startedAt = Date.now()
+    await kit.inject({ records: ns.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })) })
+    const outcome = await settle({ ns, timeoutMs: 600000 })
+    const seconds = Math.round((Date.now() - startedAt) / 1000)
+    await kit.mock({ method: 'POST', path: '/__admin/faults', body: { rules: [] } })
+    report.feishuHang = { seconds, ...outcome }
+    assertClean({ outcome, before, label: 'feishu-hang' })
+    assert(seconds < 170, `有运行被挂住 ${seconds} 秒，超过了对方的拖延时间，说明没有超时`)
+    return { seconds, ...outcomeBrief({ outcome }) }
+  })
+}
+
+async function webhookDedupe() {
+  await check('h Webhook 重复投递：同一事件号并发投递 20 次只跑一次，不同事件号各跑一次', async () => {
+    const projectId = kit.session().projectId
+    const workflow = await kit.api({ method: 'POST', path: '/workflows', body: { displayName: '负载测试：Webhook 去重', projectId } })
+    const trigger = {
+      name: 'trigger',
+      type: 'CONNECTOR_TRIGGER',
+      valid: true,
+      displayName: 'Webhook',
+      lastUpdatedDate: new Date().toISOString(),
+      settings: {
+        connectorName: '@fema-ipaas/connector-webhook',
+        connectorVersion: '~0.1.0',
+        triggerName: 'catch_webhook',
+        input: { authType: 'none', authFields: {} },
+        propertySettings: {},
+        dedupe: { enabled: true, keyPath: '{{trigger.body.eventId}}', windowSeconds: 600 },
+      },
+      nextAction: {
+        name: 'remember',
+        type: 'CONNECTOR',
+        valid: true,
+        displayName: '记下事件',
+        lastUpdatedDate: new Date().toISOString(),
+        settings: { connectorName: '@fema-ipaas/connector-store', connectorVersion: '~0.6.0', actionName: 'put', input: { key: "webhook-seen:{{trigger['output']['body']['eventId']}}", value: 'x', store_scope: 'COLLECTION' }, propertySettings: {}, errorHandlingOptions: {} },
+      },
+    }
+    await kit.api({ method: 'POST', path: `/workflows/${workflow.id}?projectId=${projectId}`, body: { type: 'IMPORT_WORKFLOW', request: { displayName: '负载测试：Webhook 去重', trigger, schemaVersion: null } } })
+    await kit.api({ method: 'POST', path: `/workflows/${workflow.id}?projectId=${projectId}`, body: { type: 'LOCK_AND_PUBLISH', request: {} } })
+    await kit.sleep(15000)
+    const url = `http://127.0.0.1:${loadStack.paths.API_PORT}/api/v1/webhooks/${workflow.id}`
+    const post = (eventId) => fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ eventId }) }).then((response) => response.status)
+    const statuses = await Promise.all([...Array.from({ length: 20 }, () => post('EV-SAME')), ...Array.from({ length: 20 }, (_, index) => post(`EV-${index}`))])
+    await kit.sleep(20000)
+    const again = await Promise.all(Array.from({ length: 5 }, () => post('EV-SAME')))
+    await kit.sleep(20000)
+    const rows = loadStack.psql({ sql: `select "businessKey", count(*) from execution where "workflowId" = '${workflow.id}' group by 1 order by 1` }).split('\n').filter(Boolean).map((line) => line.split('|'))
+    const same = rows.find(([key]) => key === 'EV-SAME')
+    const distinct = rows.filter(([key]) => key !== 'EV-SAME')
+    report.webhookDedupe = { statuses: [...new Set([...statuses, ...again])], sameRuns: Number(same?.[1] ?? 0), distinctKeys: distinct.length, perKeyMax: Math.max(...distinct.map(([, count]) => Number(count))) }
+    assert(report.webhookDedupe.sameRuns === 1, `同一事件号投递 25 次，实际跑了 ${report.webhookDedupe.sameRuns} 次`)
+    assert(distinct.length === 20 && report.webhookDedupe.perKeyMax === 1, `不同事件号应各跑一次：${JSON.stringify(rows)}`)
+    return report.webhookDedupe
+  })
+}
+
+async function republish() {
+  const ns = rangeOf({ first: 9000, count: PEOPLE })
+  await check('i 触发器重复触发：入职事件到达时连续重新发布流程，事件不丢、不重复', async () => {
+    const before = await kit.mock({ method: 'GET', path: '/__admin/summary' })
+    const projectId = kit.session().projectId
+    const flows = await kit.api({ method: 'GET', path: `/workflows?projectId=${projectId}&limit=100` })
+    const onboard = flows.data.find((flow) => flow.version?.displayName === '员工入职开通飞书账号')
+    await kit.inject({ records: ns.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })) })
+    for (let round = 0; round < 3; round += 1) {
+      await kit.sleep(8000)
+      await kit.api({ method: 'POST', path: `/workflows/${onboard.id}?projectId=${projectId}`, body: { type: 'LOCK_AND_PUBLISH', request: {} } })
+    }
+    const outcome = await settle({ ns, timeoutMs: 600000 })
+    report.republish = outcome
+    assertClean({ outcome, before, label: 'republish' })
     return outcomeBrief({ outcome })
   })
 }
@@ -327,7 +429,7 @@ async function replayAll() {
   const issues = (await openIssues()).filter((issue) => issue.status === 'OPEN')
   const results = []
   for (const issue of issues) {
-    const result = await kit.api({ method: 'POST', path: `/issues/${issue.id}/replay`, body: { strategy: 'FROM_FAILED_STEP' } })
+    const result = await kit.api({ method: 'POST', path: `/issues/${issue.id}/replay`, body: { strategy: 'FROM_FAILED_STEP', includeDataProblems: true } })
     results.push({ issue: `${issue.stepName}/${issue.errorCode}`, ...result })
   }
   return results

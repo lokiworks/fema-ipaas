@@ -164,10 +164,10 @@ function mobileOf({ n }) {
   return `13${String(700000000 + n).padStart(9, '0')}`
 }
 
-function person({ id, jobNumber, name, mobile, department, status, changeType }) {
+function person({ id, jobNumber, name, mobile, department, status, changeType, startDate = '2026-10-08T00:00:00' }) {
   return {
     employeeInfo: { userID: id, name, mobilePhone: mobile, workEmail: `${jobNumber.toLowerCase()}@example.com`, objectId: `00000000-0000-0000-0000-${String(id).padStart(12, '0')}` },
-    recordInfo: { userID: id, jobNumber, oIdDepartment: department, employeeStatus: status, changeTypeOID: changeType, approvalStatus: 4, startDate: '2026-10-08T00:00:00', lastWorkDate: status === '8' ? '2026-10-02T00:00:00' : null },
+    recordInfo: { userID: id, jobNumber, oIdDepartment: department, employeeStatus: status, changeTypeOID: changeType, approvalStatus: 4, startDate, lastWorkDate: status === '8' ? '2026-10-02T00:00:00' : null },
   }
 }
 
@@ -175,8 +175,8 @@ function hireOf({ n, departmentIndex }) {
   return person({ id: 100000 + n, jobNumber: jobNumberOf({ n }), name: `员工${n}`, mobile: mobileOf({ n }), department: departmentOid({ index: departmentIndex }), status: '2', changeType: '1' })
 }
 
-function transferOf({ n, departmentIndex }) {
-  return person({ id: 100000 + n, jobNumber: jobNumberOf({ n }), name: `员工${n}`, mobile: mobileOf({ n }), department: departmentOid({ index: departmentIndex }), status: '3', changeType: '7' })
+function transferOf({ n, departmentIndex, startDate }) {
+  return person({ id: 100000 + n, jobNumber: jobNumberOf({ n }), name: `员工${n}`, mobile: mobileOf({ n }), department: departmentOid({ index: departmentIndex }), status: '3', changeType: '7', startDate })
 }
 
 function leaveOf({ n, departmentIndex }) {

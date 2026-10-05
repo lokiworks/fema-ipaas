@@ -88,6 +88,13 @@ await check('部门与北森最终记录一致', async () => {
   assert(verdict.wrongDepartment === 0 && verdict.missing === 0, `部门错 ${verdict.wrongDepartment}，缺账号 ${verdict.missing}，样例 ${JSON.stringify(verdict.samples)}`)
   return verdict
 })
+await check('运行监控的计数与数据库里的实际一致，没有把积压误记成宕机补事件', async () => {
+  const monitor = await kit.api({ method: 'GET', path: `/run-monitor/summary?range=24h&timezone=UTC&projectIds=${kit.session().projectId}` })
+  assert(monitor.stats.runs === progress.total, `监控显示 ${monitor.stats.runs} 个运行，数据库里 ${progress.total} 个`)
+  assert(monitor.stats.succeeded === progress.succeeded, `监控显示成功 ${monitor.stats.succeeded}，数据库里 ${progress.succeeded}`)
+  assert(monitor.handled.caughtUpEvents === 0, `没有宕机，监控却记了 ${monitor.handled.caughtUpEvents} 个宕机后补上的事件`)
+  return { runs: monitor.stats.runs, caughtUpEvents: monitor.handled.caughtUpEvents, duplicateEvents: monitor.handled.duplicateEvents }
+})
 await check('没有失败的运行、没有未处理的问题', async () => {
   assert(progress.failed === 0 && progress.openIssues === 0, `失败 ${progress.failed}，未处理问题 ${progress.openIssues}`)
   return { failed: progress.failed, issues: progress.issues }

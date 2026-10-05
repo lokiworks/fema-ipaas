@@ -66,6 +66,12 @@ Release 0.89.0 adds these migrations:
 | `AddExecutionIndexesConcurrently` | no | Builds four indexes on `execution` (`idx_execution_issue_id`, `idx_run_raw_state_purge`, `idx_execution_rerun_of_execution_id`, `idx_execution_verification_candidates`). Runs **outside a transaction** with `CREATE INDEX CONCURRENTLY` so writes are not blocked |
 | `AddSolutions`, `AddSolutionInstallWorkflowKeys` | no | Create `solution`, `solution_version` and `solution_install`, and add `solution_install."workflowKeys"` |
 | `KeepAlertRecordsAfterPolicyDeletion` | **yes** | Removes the foreign key from `alert_record` to `alert_policy`, so deleting a policy keeps its alert history. Reverting it deletes the history rows of policies that no longer exist |
+| `AddBackups`, `AddServiceSettings` | no | Create `backup_record`, `backup_settings` and `service_setting` |
+| `AddReleaseChanges` | no | Creates `release_change` and copies the release events that are still in the audit log |
+| `SnapshotAgentApprovalWorkflowName` | no | Adds `agent_approval."workflowDisplayName"` and `invalidReason`, fills the name from the workflow, and marks pending approvals of deleted workflows or runs as invalidated |
+| `AddIssueWorkflows`, `AddRunReliabilityEvents` | no | Create `issue_workflow` and `run_reliability_event` |
+| `AddPersonalDataHashes` | no | Adds `execution."searchHashes"` (default empty) and four columns on `data_erasure_request` |
+| `AddExecutionSearchHashesIndex` | no | Builds a GIN index on `execution."searchHashes"`. Runs **outside a transaction** with `CREATE INDEX CONCURRENTLY` |
 
 ### Indexes on a large `execution` table
 
@@ -83,7 +89,7 @@ Embedded PGLite builds the index without `CONCURRENTLY`.
 
 ### Rolling back
 
-`npm run rollback -- --to 0.88.3` reverts every migration of 0.89.0. Two of them are flagged breaking, so the command asks you to repeat it with `--force`. Take a backup first, see [Rollback](/install/configure-operate/rollback). Reverting is a data-loss operation: it drops everything that 0.89.0 created, among others issues and alerts, mapping tables, the business keys of runs and the solution tables with every install record. Restoring the backup is usually the safer way back.
+`npm run rollback -- --to 0.88.3` reverts every migration of 0.89.0. Two of them are flagged breaking, so the command asks you to repeat it with `--force`. To go back to the previous image instead, give the command that image's migration manifest (`--manifest`). Take a backup first, see [Rollback](/install/configure-operate/rollback). Reverting is a data-loss operation: it drops everything that 0.89.0 created, among others issues and alerts, mapping tables, the business keys of runs and the solution tables with every install record. Restoring the backup is usually the safer way back.
 
 ## When something breaks
 

@@ -96,6 +96,9 @@ Three things that look like bugs and aren't:
 - **Republishing does not help.** It correctly removes the old scheduler and arms a new one keyed by the new `workflowVersionId`, but the new job joins the back of the same starved lane.
 - **Removing a scheduler does not remove its already-enqueued job.** The outstanding `repeat:<oldVersionId>:<millis>` stays in `prioritized` and fires once against a soft-deleted `trigger_source`.
 - **Priority-6 sludge.** `RATE_LIMIT_PRIORITY` is `lowest` = 6, so rate-limited `EXECUTE_WORKFLOW` jobs re-enter *behind* the polling lane and never drain while polling is chronically backed up. The 2026-07-27 pile held jobs going back 19 days. Anything demoted to priority 6 on a queue with a standing priority-5 backlog is silently dropped.
+- **`SANDBOX_CODE_ONLY` 只改代码步骤，连接器照常跑。** 连接器在引擎的子进程里，网络、文件和原生模块都可用（实测 HTTP 与 PostgreSQL 连接器通过）；代码步骤在 `isolated-vm` 隔离区里，只有 JS 内建对象：`console`（无输出）、`JSON`、`Date`、`Math`、`Intl`、`Promise`；`require`、`process`、`Buffer`、`fetch`、`URL`、`URLSearchParams`、`TextEncoder`、`atob`、`btoa`、`crypto`、`structuredClone`、`setTimeout` 都不存在。超过 128 MB 报「使用超过 128 MB 内存被停止」，同步死循环只有配了 `FEMA_STEP_TIMEOUT` 才会被终止（默认只剩 600 秒的运行超时）。
+- **`isolated-vm` 不在应用的依赖里解析，而是靠引擎子进程的祖先目录或 `NODE_PATH=/usr/src/node_modules` 找到。** 镜像把它装在 `/usr/src/node_modules`；本机复现时缺了它，每个代码步骤都报 `Cannot find module 'isolated-vm'`，而连接器步骤照常成功，容易误判成别的问题。
+- **多个工作节点共用一个缓存目录时，代码步骤的构建靠目录旁的文件锁（`sandbox/utils/file-lock.ts`）互斥，`memoryLock` 只管进程内。** compose 把同一个 `./cache` 挂给全部 worker 副本，helm 默认也是同一个 PVC；发布带代码步骤的工作流时每个节点都预热编译，没有文件锁时同一步骤目录被「删掉重建加编译」互相踩，编译读不到 tsconfig，报错的桩还被缓存下来，该步骤此后每次都失败（实测 12 个新工作流里坏 1 到 3 个）。锁是 `mkdir` 原子创建的目录，持有者每 2 秒续期，20 秒不续期算死亡可被接管；拿到锁后重新看缓存，别人编好就直接用。
 
 ### Key files
 Entry point: `worker`, the exported lifecycle object in `worker.ts`; `worker.start(...)` is wired up in the worker process main.

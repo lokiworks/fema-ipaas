@@ -74,6 +74,27 @@ services:
 docker compose up -d
 ```
 
+## Rolling back to the previous image (migration manifest)
+
+`--to <version>` undoes every migration whose `release` is newer than the version you give. Use it only when the target version is a real release boundary. Migrations added since the fork baseline are all tagged `0.89.0`, so `--to 0.88.3` lists all of them (22 at the time of writing), stops at the two that are marked breaking and changes nothing unless you add `--force`.
+
+To go back exactly one image, give the command the list of migrations the older image knows. Every image ships it in `packages/server/api/dist/src/migration-manifest.json`:
+
+```bash
+MANIFEST=$(docker run --rm --entrypoint cat \
+  lokiworks/fema-ipaas:0.77.0 packages/server/api/dist/src/migration-manifest.json)
+
+docker run --rm --env-file .env --entrypoint npm \
+  lokiworks/fema-ipaas:0.78.0 \
+  run rollback -- --manifest "$MANIFEST"
+```
+
+The command undoes, newest first, the migrations that are in the database but not in the manifest, and then you switch the image as in Step 3. Before it undoes anything it checks that those migrations are exactly the latest ones recorded in the database, and stops with `Migration order mismatch` if they are not.
+
+<Note>
+Checked on a PostgreSQL 16 database that held a sample project: upgrading from the build before the backup, release change, reliability and service settings migrations to the current build added 8 migrations, kept every row, and the manifest rollback removed the 8 migrations and their tables and columns again, with the workflows, runs and connections still readable by the older build. The Docker commands above were not run in a container; the `npm run rollback` step was run with `node` directly.
+</Note>
+
 ## Restoring From Backup
 
 If you took a backup and prefer to restore from it:

@@ -34,6 +34,7 @@ The **FEMA Integration Platform engineering brain**: how the system works, and *
 - **Cloud Deployment Paths** — canary → prod, the `cloud-hotfix` override, and the breaking-migration gate that blocks both
 - **CI PR Review Hygiene** — draft-first Greptile review, the per-area PR size gate, and the workflow conventions reviewers keep re-litigating
 - **E2E Tests & Monitors** — the one Playwright suite behind CI, the Checkly monitors that run it against production Cloud, and the BetterStack script the repo pushes on merge
+- **生产形态验证** — 本机没有 Docker 时怎样复现镜像的运行方式（构建产物、非 dev、沙箱执行、真实 Postgres 与 Redis），以及升级回滚、安全基线、多工作节点的验证脚本
 - **Architecture Spine** — the load-bearing structure of the codebase, and the gotchas that come with it: request-body `.max()` as data loss, TypeORM soft-delete across a canary window, and canary not proxying websockets
 
 **重新生成基线迁移** — 本仓库只有一个迁移，领域重命名后整体重生成，见 *regenerate-the-baseline-migration*。

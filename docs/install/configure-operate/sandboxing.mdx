@@ -21,3 +21,7 @@ Set the mode with the `FEMA_EXECUTION_MODE` environment variable. The table belo
 <Note>
 Want the reasoning behind each mode — how `fork()`/V8 isolation and kernel-namespace isolation actually work, and their security trade-offs? See [Sandboxing](../architecture/sandboxing) in the Architecture section.
 </Note>
+
+<Note>
+What a Code step can and cannot do in `SANDBOX_CODE_ONLY` (no `fetch`, `Buffer`, `URL`, timers or `require`; 128 MB; `FEMA_STEP_TIMEOUT`) is listed in the [Production Checklist](./production-checklist#before-you-start).
+</Note>

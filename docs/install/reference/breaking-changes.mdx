@@ -8,6 +8,16 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Client mistakes are logged as `info`, and `FEMA_STEP_TIMEOUT` also stops Code steps
+
+Every request that ended in an error used to be written to the server log at `error` level, and an application error that answers with a 4xx status was recorded with `status: 500`. Wrong passwords, a mistyped connection secret or a page the user may not open therefore fired every alert that watches `level=error`. Errors that answer with a 4xx status are now logged at `info` with their real status; failures that answer with 5xx stay at `error`.
+
+In `SANDBOX_CODE_ONLY` and `SANDBOX_CODE_AND_PROCESS`, a Code step that loops forever is now ended by `FEMA_STEP_TIMEOUT` (it already ended connector steps), and a Code step that uses more than 128 MB fails with `The Code step used more than 128 MB of memory and was stopped` instead of `Isolate is already disposed`.
+
+**When is action necessary?**
+
+If you alert on `level=error` and counted on user mistakes appearing there, query `status >= 400` instead.
+
 #### Weak secrets are refused when production uses an external PostgreSQL
 
 With `FEMA_ENVIRONMENT=prod` (the default) and `FEMA_DB_TYPE=POSTGRES`, the app now

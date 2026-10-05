@@ -1,0 +1,134 @@
+---
+title: "Production Checklist"
+description: "What to decide, set and check before and after the first production start, and what has and has not been verified"
+icon: "list-check"
+---
+
+Use this page the day you deploy. [Production Setup](./production-setup) says how to size the fleet; this page lists the decisions and checks that keep an enterprise installation from failing in the first week. Each item says how to check it. The last section lists what has **not** been verified, so you can test it yourself.
+
+<Note>
+**How it was checked.** The built artifacts (not the development server) were started through `docker-entrypoint.sh` with `FEMA_ENVIRONMENT=prod`: an app process and separate worker processes, a real PostgreSQL 16 and a real Redis 8, `FEMA_EXECUTION_MODE=SANDBOX_CODE_ONLY`, and the built web app served by the app. A second run used the one-process shape with nothing set except the port (embedded database, in-memory Redis, `WORKER_AND_APP`). The Docker images themselves were not built or run for this list, and Node was 22 where the image uses 24. The scripts are `tools/e2e/scenarios/prod-*.mjs`; `tools/e2e/stack/start-prod-stack.sh` starts the same shapes.
+</Note>
+
+## Before you start
+
+<Steps>
+<Step title="Generate the secrets, and keep a copy">
+`sh tools/deploy.sh` writes `.env` with random values. By hand, use `openssl rand -hex 32` for `FEMA_JWT_SECRET` and `openssl rand -hex 16` for `FEMA_ENCRYPTION_KEY`.
+
+With `FEMA_ENVIRONMENT=prod` (the default) and an external PostgreSQL, the app refuses to start when `FEMA_JWT_SECRET` has fewer than 32 characters or either secret is a placeholder such as `0123456789abcdef0123456789abcdef`. The message names the variable. The embedded PGLite database is not checked.
+
+Keep the encryption key outside the server. Saved connection credentials are encrypted with it and backups do not contain it, so a lost key means every connection has to be created again. To rotate it, put the old value in `FEMA_RETIRED_ENCRYPTION_KEYS` and the new one in `FEMA_ENCRYPTION_KEY`.
+
+With the embedded database and in-memory Redis you may set neither: the platform creates both secrets once, keeps them in `FEMA_CONFIG_PATH/settings.json`, and reuses them after a restart, so sign-ins survive. Back that file up with the database.
+</Step>
+<Step title="Choose the execution mode on purpose">
+The default is `UNSANDBOXED`: Code steps run as ordinary Node code next to the worker, so anyone who can edit a workflow can read what the worker process can read. For an installation where several teams build workflows, set `FEMA_EXECUTION_MODE=SANDBOX_CODE_ONLY` on the workers. See [Sandboxing](./sandboxing).
+
+In `SANDBOX_CODE_ONLY` the connectors, including Beisen, Feishu, HTTP and PostgreSQL, behave as before, because they run in the engine process and not in the isolate. Only **Code steps** change. Checked on a build in this mode:
+
+| In a Code step | Result |
+|---|---|
+| Arrays, strings, JSON, `Date`, `Math`, regular expressions, `Intl`, `Promise`, `async` and `await` | Work |
+| `console` | Exists and does nothing visible; `console.log` does not fail the step |
+| `require`, `process`, `Buffer`, `fetch`, `URL`, `URLSearchParams`, `TextEncoder`, `TextDecoder`, `atob`, `btoa`, `crypto`, `structuredClone`, `setTimeout` | Not defined. Using one fails the step with `... is not defined` |
+| npm packages | Not available (the editor knows: `ALLOW_NPM_PACKAGES_IN_CODE_STEP` is `false`) |
+| Using more than 128 MB | The step fails with `The Code step used more than 128 MB of memory and was stopped`. The worker keeps running |
+| An endless synchronous loop | Ended after `FEMA_STEP_TIMEOUT` seconds when you set it. Without it, only the run timeout (`FEMA_WORKFLOW_TIMEOUT_SECONDS`, 600 seconds by default) ends the run, as a timeout, and that worker is busy until then. The worker is usable again afterwards. Set `FEMA_STEP_TIMEOUT` |
+
+To call an HTTP API or work with bytes, use the **HTTP** connector or the text and data helper connectors instead of a Code step.
+
+`SANDBOX_PROCESS` and `SANDBOX_CODE_AND_PROCESS` need a Linux container with `CAP_SYS_ADMIN` and were not tried (see the end of this page).
+</Step>
+<Step title="Set the public address, and make sure workers can reach the app">
+`FEMA_FRONTEND_URL` is the address people type and the address third parties call for webhooks. A worker container reaches the app **only** through this URL (`FEMA_FRONTEND_URL` + `/api`). So `http://localhost:8080` in a `.env` that is shared with a worker container points the worker at itself. Use an address that resolves from inside the worker container, or override it on the worker service.
+
+Check: **System and upgrades** lists the online workers, and the install wizard warns when none is online.
+</Step>
+<Step title="Put a reverse proxy in front and let it set the client address">
+Rate limits and the audit log use the client address from the header named by `FEMA_CLIENT_REAL_IP_HEADER` (`x-real-ip` by default). Let the proxy set that header and **overwrite** any value the client sent, because the header is trusted as given. Without a proxy the address of the connection is used.
+
+Terminate TLS at the proxy. The app always answers with `Strict-Transport-Security`, `X-Content-Type-Options: nosniff` and `Content-Security-Policy: frame-ancestors 'self'`.
+
+Without signing in, a caller can read only `GET /api/v1/health`, `GET /api/v1/flags` (appearance, limits, version), the OpenAPI document at `GET /api/v1/docs`, `GET /api/v1/health/setup` (only `initialized` once an administrator exists), and the webhook endpoints `/api/v1/webhooks/<workflow id>`, which accept calls by design. System pages, health details, diagnostics, audit events and the queue dashboard need an administrator token, or are off. Block `/api/v1/docs` at the proxy if you do not want the schema public.
+
+The API answers every origin (`Access-Control-Allow-Origin: *`) but sends no cookies and no credentials header: sign-in returns a bearer token, so a page on another site cannot act as a signed-in user.
+</Step>
+<Step title="Create the first administrator before the address is reachable by others">
+A new instance opens the install wizard, and whoever opens it first creates the administrator and the organization. Do this from the machine that deploys, then share the address. After that, `POST /v1/authentication/sign-up` answers `403 INVITATION_ONLY_SIGN_UP`, and the public setup status no longer shows database or queue versions or paths. There is no seeded development account in production.
+</Step>
+<Step title="Workers may share one cache directory">
+Workers keep compiled Code steps and workflow bundles under `FEMA_CACHE_BASE_PATH` (`cache` next to the app). The compose file mounts one `./cache` into all worker replicas, and the Helm chart uses one volume claim by default. Before this release, several workers compiling the same new Code step at once deleted each other's files and left a cached compile error: that step then failed on every run until its source changed. Compiling a step now takes a lock file next to the step directory, so sharing one directory is safe. With three workers on one directory, 12 new Code step workflows published at once all ran, and 90 runs triggered at once all succeeded and were spread over the three workers.
+</Step>
+</Steps>
+
+## What you do not have to set
+
+Leave these unset on a first install. Each shows as **Not enabled** on the System page and in the wizard, with the consequence written next to it. None of them is an error.
+
+| Not set | What happens |
+|---|---|
+| `FEMA_SMTP_HOST`, `FEMA_SMTP_PORT` | Invitations are handed over as a copyable link, the Email alert channel is unavailable, the weekly digest is not sent |
+| `FEMA_S3_*` | Files and run data stay in the database (`FEMA_FILE_STORAGE_LOCATION=DB`) |
+| `FEMA_CONNECTOR_REGISTRY_URL`, `FEMA_TEMPLATES_SOURCE_URL` | The connectors built into the image are the only ones; connector sync is skipped and deletes nothing |
+| `FEMA_QUEUE_UI_ENABLED` | The queue dashboard is off |
+| `FEMA_TELEMETRY_ENABLED` | Nothing is sent. The telemetry calls in this build are empty, whatever the value |
+
+The update check is the one outbound call the app makes on its own, when someone opens a system page: it reads the latest version from GitHub. On a network without internet access the first system page after a start waits about 5 seconds for it; the answer, including the failure, is then kept for 10 minutes (an hour on success), so the other system pages open at once and the log gets one warning instead of one per page.
+
+## First start
+
+1. `GET /api/v1/health` answers `{"status":"Healthy"}`.
+2. Open the address. The wizard lists the database, Redis, encryption key, file storage, data directory and workers. Nothing should be red.
+3. On the first start of a version that adds migrations, the app waits for them before it listens. `AddExecutionSearchHashesIndex` builds an index on `execution` without blocking writes, so the start can take minutes on a large table (see [Operations Reference](./operations-reference#indexes-on-a-large-execution-table)).
+4. Read the startup log. In the checked builds a clean start prints no `error` line and one `warn`:
+
+| Line | Meaning | Action |
+|---|---|---|
+| `@fastify/reply-from might not behave as expected when used with @fastify/multipart` (warn) | Printed by a library when the app starts. Harmless | None |
+| `Connector registry is not configured, skipping connector sync` (info) | No registry; normal | None |
+| `Queue UI is disabled` (info) | Normal | None |
+| `[zombiePollingInterceptor] No active trigger source — discarding repeat job` (warn) | A polling job of a workflow that was disabled, republished or deleted, or left in Redis from before a database reset. The app drops it | None |
+
+Errors that answer with a 4xx status (wrong password, validation, no permission) are logged at `info` with their real status and a stack trace. A scanner hitting the public address makes the log grow, so cap log size in your log driver. Requests that fail with 5xx are logged at `error`.
+
+When the app and a worker start together in one container (`WORKER_AND_APP`), the worker waits for the app's health check before it starts, so the log has no connection errors from the first seconds. With separate containers the worker retries until the app answers and logs `Socket.IO connection error` meanwhile; that is expected.
+
+## Backups
+
+The default plan runs every night at 02:00 server time and keeps 7 files in `FEMA_CONFIG_PATH/backups`. Mount that directory on a volume (the compose file mounts `app_data`) or the backups disappear with the container. With a real PostgreSQL 16 and with the embedded database, a manual backup finished and the restore pre-check passed with no failed item. The image carries `pg_dump` 15, which reads PostgreSQL up to 15; for a newer server the backup feature shows as unavailable and the command-line backup still works.
+
+Backups do not contain `FEMA_ENCRYPTION_KEY` or `FEMA_JWT_SECRET`. Restoring without the key leaves the connections unreadable.
+
+## Upgrade and roll back
+
+1. Read [Breaking Changes](/install/reference/breaking-changes) for the version.
+2. Take a backup (the System page, or `pg_dump -Fc`).
+3. Start the new image. Migrations run on start, one per transaction.
+4. To go back: stop the app, run the rollback with the **manifest of the older image**, then start the older image. See [Rollback](./rollback#rolling-back-to-the-previous-image-migration-manifest). `--to <version>` is not the right tool between two builds of the same version, and without `--force` it refuses to undo migrations that are flagged breaking.
+
+Checked on a PostgreSQL 16 database: a build from before the backup, release-change, reliability-event and service-setting migrations was started and given data (three workflows, a mapping table, two connections and their runs). The current build then started on it, ran the 8 new migrations, kept every row, decrypted the old connections and ran the old workflows. The manifest rollback removed the 8 migrations, and the older build started on that database and kept working. Migrating forward again after a rollback worked.
+
+After the app restarts, polling triggers that were being checked when the old process stopped wait for their lock to expire before they run again, so allow a few minutes before the first poll. Events that happened while the app was down are picked up by the first poll.
+
+## Monitoring
+
+| Check | How |
+|---|---|
+| App is up | `GET /api/v1/health` |
+| Workers are online | System and upgrades page, `GET /api/v1/worker-machines` |
+| Queue depth, failures | `GET /api/v1/worker-machines/queue-metrics`, the run and issue pages |
+| Database or Redis restarts | The app and workers keep running and reconnect. Checked with a 10 second PostgreSQL stop and a 10 second Redis stop: `/health` answered 503 while the database was down, and new runs succeeded after both came back |
+| Stopping | The app exits within a second of `SIGTERM`. A worker first lets its running jobs end, which took about 18 seconds in one check, longer than the 10 seconds `docker compose stop` waits, so give worker containers a `stop_grace_period` of at least 30 seconds |
+
+## Not verified
+
+State these to your own change process; test them in a staging copy before relying on them.
+
+- The slim worker image (`Dockerfile.worker`, one bundled file): its bundle starts and connects to the app, but it carries no built-in connectors, so publishing a workflow that uses the Webhook trigger failed with `Connector not found for package`. Use the main image for workers.
+- The Docker images and the compose file: no container was built or started. That includes Node 24, the `isolated-vm` the image installs for the sandbox, `HEALTHCHECK`, and whether a worker container can reach `FEMA_FRONTEND_URL` with your `.env`.
+- `SANDBOX_PROCESS` and `SANDBOX_CODE_AND_PROCESS` (Linux, privileged container). The operations reference says built-in connectors do not run in these two modes.
+- PostgreSQL 14 (the compose image) and Redis 7.0 (the compose image); the checks ran on PostgreSQL 16 and Redis 8.
+- AI features and agents (`FEMA_AGENTS_ENABLED`), no model provider was configured. MCP steps use the same engine process as other connectors but were not run in this mode.
+- SMTP, S3, OAuth2 connections, SSO, the connector registry, Helm and the cloud templates.
+- TLS termination and the reverse proxy.

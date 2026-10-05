@@ -216,6 +216,7 @@
                   "group": "Configure & Operate",
                   "pages": [
                      "install/configure-operate/production-setup",
+                     "install/configure-operate/production-checklist",
                      {
                         "group": "Production Essentials",
                         "icon": "rocket",

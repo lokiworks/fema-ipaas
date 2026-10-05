@@ -34,8 +34,17 @@ await check('零配置：只设端口，全新实例的环境检查没有错误�
   assert(setup.ok && setup.body.initialized === false, `setup ${setup.status} ${setup.text.slice(0, 200)}`)
   const errors = setup.body.checks.filter((entry) => entry.level === 'ERROR')
   assert(errors.length === 0, `有错误项 ${JSON.stringify(errors)}`)
-  const workers = setup.body.checks.find((entry) => entry.kind === 'WORKERS')
-  assert(workers.level === 'OK' && Number(workers.detail) >= 1, `内嵌工作节点应在线 ${JSON.stringify(workers)}`)
+  const workers = await waitFor({
+    what: '内嵌工作节点上线',
+    timeoutMs: 60000,
+    stepMs: 1000,
+    probe: async () => {
+      const latest = await http({ method: 'GET', path: '/health/setup' })
+      const entry = latest.body.checks.find((check) => check.kind === 'WORKERS')
+      return entry.level === 'OK' && Number(entry.detail) >= 1 ? entry : null
+    },
+  })
+  assert(workers.level === 'OK', `内嵌工作节点应在线 ${JSON.stringify(workers)}`)
   assert(setup.body.services.length === 4 && setup.body.services.every((service) => service.enabled === false && service.problem === null), JSON.stringify(setup.body.services))
   return { checks: setup.body.checks.map((entry) => `${entry.kind}:${entry.level}`) }
 })

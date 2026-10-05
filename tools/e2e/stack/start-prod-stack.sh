@@ -180,7 +180,11 @@ if [ "${PROD_WORKER}" = "1" ]; then
         const jwt = require('jsonwebtoken');
         process.stdout.write(jwt.sign({ id: require('crypto').randomUUID(), type: 'WORKER' }, process.env.FEMA_JWT_SECRET, { expiresIn: '100y', keyid: '1', algorithm: 'HS256', issuer: 'fema' }));
       ")"
-      (cd "${PROD_WORKER_BUNDLE}" && FEMA_WORKER_TOKEN="${worker_token}" FEMA_PORT=$((3190 + SLOT + index * 100)) FEMA_CONTAINER_TYPE=WORKER nohup node worker.js >"${STATE_DIR}/worker${suffix}.log" 2>&1 & echo $! >>"${STATE_DIR}/worker.pid")
+      (
+        cd "${PROD_WORKER_BUNDLE}"
+        FEMA_WORKER_TOKEN="${worker_token}" FEMA_PORT=$((3190 + SLOT + index * 100)) FEMA_CONTAINER_TYPE=WORKER nohup node worker.js >"${STATE_DIR}/worker${suffix}.log" 2>&1 &
+        echo $! >>"${STATE_DIR}/worker.pid"
+      )
     else
       FEMA_PORT=$((3190 + SLOT + index * 100)) FEMA_CONTAINER_TYPE=WORKER nohup ./docker-entrypoint.sh >"${STATE_DIR}/worker${suffix}.log" 2>&1 &
       echo $! >>"${STATE_DIR}/worker.pid"

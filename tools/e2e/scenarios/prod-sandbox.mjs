@@ -8,6 +8,7 @@ const PG_PORT = Number(process.env.E2E_PG_PORT ?? 55441)
 const PG_DATABASE = process.env.E2E_PG_DATABASE ?? 'fema_prod'
 const PG_PASSWORD = process.env.E2E_PG_PASSWORD ?? 'femapw'
 const STEP_TIMEOUT_SECONDS = Number(process.env.E2E_STEP_TIMEOUT_SECONDS ?? 0)
+const RUN_TIMEOUT_SECONDS = Number(process.env.E2E_RUN_TIMEOUT_SECONDS ?? 0)
 const GLOBAL_NAMES = ['console', 'fetch', 'require', 'process', 'Buffer', 'URL', 'URLSearchParams', 'TextEncoder', 'TextDecoder', 'structuredClone', 'setTimeout', 'atob', 'btoa', 'Intl', 'crypto', 'Promise', 'JSON', 'Date', 'Math', 'BigInt']
 
 const session = await ensureAdmin()
@@ -192,6 +193,16 @@ if (flows) {
       const message = messageOf({ step: steps.step_1 })
       assert(message.includes(`longer than ${STEP_TIMEOUT_SECONDS} seconds`), `失败原因应写明超时，实际 ${message.slice(0, 200)}`)
       return { status: run.status, message: message.slice(0, 160) }
+    })
+  }
+
+  if (STEP_TIMEOUT_SECONDS === 0 && RUN_TIMEOUT_SECONDS > 0) {
+    await check(`代码步骤：没配 FEMA_STEP_TIMEOUT 时，同步死循环要等到运行超时（${RUN_TIMEOUT_SECONDS} 秒）才结束，之后工作节点恢复可用`, async () => {
+      const run = await runFlow({ session, workflowId: flows.spin, timeoutMs: (RUN_TIMEOUT_SECONDS + 120) * 1000 })
+      assert(['TIMEOUT', 'FAILED'].includes(run.status), `应超时或失败，实际 ${run.status}`)
+      const after = await runOf({ workflowId: flows.basic })
+      assert(after.run.status === 'SUCCEEDED', `死循环结束后同一个节点应恢复，实际 ${after.run.status}`)
+      return { status: run.status }
     })
   }
 

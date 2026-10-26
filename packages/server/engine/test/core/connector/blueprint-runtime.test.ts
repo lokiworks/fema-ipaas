@@ -53,6 +53,10 @@ function respond({ path, query, res }: { path: string, query: URLSearchParams, r
             return json(200, { code: 0, data: { id: 'T-1', title: 'VPN' } })
         case '/tickets':
             return json(201, { id: 'T-2' })
+        case '/lookup-existing':
+            return json(200, { items: counters['/unsafe-save'] ? [{ id: 'saved' }] : [] })
+        case '/unsafe-save':
+            return json(500, { message: 'Applied but response failed' })
         case '/business-error':
             return json(200, { code: 1001, message: 'quota exceeded' })
         case '/flaky':
@@ -244,3 +248,17 @@ type RecordedRequest = {
     headers: http.IncomingHttpHeaders
     body: string
 }
+
+it('looks up a previously applied write before retrying an ambiguous failure', async () => {
+    const input = blueprintFactory.input({ key: 'billNo', label: 'Bill number' })
+    const lookup = { ...blueprintFactory.operation({ key: 'lookup', name: 'Lookup', method: BlueprintHttpMethod.GET, path: '/lookup-existing', group: '' }), classification: 'READ', inputs: [input] }
+    const save = { ...blueprintFactory.operation({ key: 'save', name: 'Save', method: BlueprintHttpMethod.POST, path: '/unsafe-save', group: '' }), classification: 'WRITE', inputs: [input], reliability: { writeSafety: 'LOOKUP_BEFORE_WRITE', lookupKeys: ['billNo'] }, lookupBeforeWrite: { operationKey: 'lookup', matchPath: 'items' } }
+    const definition = ConnectorBlueprintDefinition.parse(definitionFor({ operations: [] }))
+    const parsed = ConnectorBlueprintDefinition.parse({ ...definition, operations: [lookup, save] })
+    const operation = parsed.operations[1]
+    await expect(blueprintActions.invoke({ definition: parsed, operation, values: { billNo: 'B1' }, authValue: undefined })).rejects.toThrow('failed with code 500')
+    expect(counters['/unsafe-save']).toBe(1)
+    const recovered = await blueprintActions.invoke({ definition: parsed, operation, values: { billNo: 'B1' }, authValue: undefined })
+    expect(recovered.body).toEqual({ items: [{ id: 'saved' }] })
+    expect(counters['/unsafe-save']).toBe(1)
+})

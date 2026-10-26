@@ -31,6 +31,7 @@ export const reliabilityEventService = (log: FastifyBaseLogger) => ({
                 connectorName: event.connectorName ?? null,
                 limitUnit: event.kind === ReliabilityEventKind.RATE_LIMIT_QUEUED ? rateLimitUnitUtils.of({ connectorName: event.connectorName }) : null,
                 errorCode: event.errorCode ?? null,
+                reason: event.reason ?? null,
                 waitSeconds: isNil(event.waitSeconds) ? null : Math.round(event.waitSeconds),
                 gapSeconds: null,
             }))
@@ -52,6 +53,7 @@ export const reliabilityEventService = (log: FastifyBaseLogger) => ({
             connectorName: null,
             limitUnit: null,
             errorCode: null,
+            reason: null,
             waitSeconds: null,
             gapSeconds: Math.round(gapSeconds),
         }))

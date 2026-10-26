@@ -1,6 +1,7 @@
 import { BaseModelSchema, MappingMissingBehavior, Nullable } from '@fema-ipaas/core-utils'
 import { Note, WorkflowTrigger } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
+import { ReconciliationRuleBody } from '../reconciliation/reconciliation'
 
 export const SOLUTION_PACKAGE_FORMAT = 'fema-solution'
 export const SOLUTION_PACKAGE_VERSION = 1
@@ -59,6 +60,7 @@ export const SolutionConfigItem = z.object({
     options: z.array(SolutionConfigOption),
     defaultValue: z.string(),
     hint: z.string().optional(),
+    required: z.boolean().optional(),
     affectsWorkflows: z.array(z.string()),
     patches: z.array(SolutionPatch),
 })
@@ -105,6 +107,9 @@ export const SolutionConnectionSlot = z.object({
 })
 export type SolutionConnectionSlot = z.infer<typeof SolutionConnectionSlot>
 
+export const SolutionReconciliationRule = ReconciliationRuleBody.omit({ projectId: true, workflowId: true }).extend({ key: z.string(), workflowKey: z.string() })
+export type SolutionReconciliationRule = z.infer<typeof SolutionReconciliationRule>
+
 export const SolutionPackage = z.object({
     format: z.literal(SOLUTION_PACKAGE_FORMAT),
     version: z.literal(SOLUTION_PACKAGE_VERSION),
@@ -113,6 +118,7 @@ export const SolutionPackage = z.object({
     mappingTables: z.array(SolutionMappingTable),
     config: z.array(SolutionConfigItem),
     checks: z.array(SolutionCheck),
+    reconciliationRules: z.array(SolutionReconciliationRule).default([]),
 })
 export type SolutionPackage = z.infer<typeof SolutionPackage>
 

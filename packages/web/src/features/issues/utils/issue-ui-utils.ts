@@ -1,4 +1,8 @@
-import { blockedUntilMarker, isNil } from '@fema-ipaas/core-utils';
+import {
+  blockedUntilMarker,
+  fixOwnerMarker,
+  isNil,
+} from '@fema-ipaas/core-utils';
 import {
   AlertRecordKind,
   IssueActivity,
@@ -91,6 +95,8 @@ function kindLabel(kind: IssueKind): string {
   switch (kind) {
     case IssueKind.CONNECTION:
       return t('Connection issue');
+    case IssueKind.RECONCILIATION:
+      return t('Reconciliation');
     case IssueKind.DRIFT:
       return t('Result mismatch');
     case IssueKind.TRIGGER:
@@ -206,6 +212,8 @@ function causeText({
 
 function ownerLabel(owner: IssueFixOwner): string {
   switch (owner) {
+    case IssueFixOwner.SOURCE_DATA_OWNER:
+      return t('The owner of the source data');
     case IssueFixOwner.MAPPING_OWNER:
       return t('The owner of the mapping table');
     case IssueFixOwner.CONNECTION_OWNER:
@@ -376,7 +384,7 @@ function showsActorInHeader(activity: Pick<IssueActivity, 'type'>): boolean {
 }
 
 function messageText(message: string): string {
-  return blockedUntilMarker.strip(message);
+  return fixOwnerMarker.strip(blockedUntilMarker.strip(message));
 }
 
 function blockedUntilText(blockedUntil: string | null | undefined): string {

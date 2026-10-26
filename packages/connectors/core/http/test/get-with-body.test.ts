@@ -210,7 +210,13 @@ describe('failsafe surfaces the real error, never TypeError', () => {
     expect(result).toMatchObject({ response: { status: 422 } });
   });
 
-  test('Send HTTP Request retry_all resends a full multipart body on every attempt', async () => {
+  test('does not retry an unsafe POST after the target returns 500', async () => {
+    status = 500;
+    await expect(runSendHttpRequest({ method: HttpMethod.POST, url: baseUrl, headers: {}, queryParams: {}, body_type: 'json', body: { data: { id: 'write-1' } }, failureMode: 'retry_all' })).rejects.toThrow();
+    expect(seen).toHaveLength(1);
+  });
+
+  test('Send HTTP Request retry_all with an idempotency key resends a full multipart body on every attempt', async () => {
     status = 500;
     await runSendHttpRequest({
       method: HttpMethod.POST,
@@ -229,6 +235,7 @@ describe('failsafe surfaces the real error, never TypeError', () => {
         ],
       },
       failureMode: 'retry_all',
+      idempotencyKey: 'test-multipart-1',
     }).catch(() => undefined);
 
     expect(seen).toHaveLength(3);

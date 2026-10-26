@@ -1,6 +1,6 @@
 import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { mysqlCommon, mysqlConnect, sanitizeColumnName, warningMarkdown } from '../common';
-import { mysqlAuth } from '../..';
+import { mysqlAuth } from '../auth';
 import { findRowsOutputSchema } from '../output-schemas';
 
 export default createAction({
@@ -8,9 +8,11 @@ export default createAction({
   name: 'find_rows',
   displayName: 'Find Rows',
   description: 'Reads rows from a table',
+  classification: 'SEARCH',
   audience: 'both',
   outputSchema: findRowsOutputSchema,
   aiMetadata: { description: 'Reads rows from a MySQL table that match a SQL WHERE condition, optionally limited to specific columns. Use to look up or filter records by arbitrary criteria. The condition is required and is interpolated raw into the query, so pass dynamic values through the args array (referenced as ? placeholders) to avoid SQL injection. Read-only and idempotent.', idempotent: true },
+  reliability: { rateLimits: [{ bucket: 'mysql-query', scope: 'APP', perSecond: 50 }] },
   props: {
     markdown: warningMarkdown,
     timezone: mysqlCommon.timezone,
@@ -32,6 +34,7 @@ export default createAction({
     }),
   },
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'mysql-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const columns = (context.propsValue.columns as string[]) || ['*'];
     const qsColumns = columns
       .map((c) => sanitizeColumnName(c))

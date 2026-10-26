@@ -14,6 +14,7 @@ export function createMockActionContext<
   return {
     executionType: ExecutionType.BEGIN,
     auth: undefined,
+    rateLimit: { acquire: async () => undefined },
     propsValue: params.propsValue,
     store: {
       put: async <T>(key: string, value: T) => value,
@@ -47,7 +48,7 @@ export function createMockActionContext<
       tools: async () => ({}),
     },
     run: {
-      id: 'test-run-id' as string,
+      id: 'test-run-id',
       stop: () => {
         return;
       },

@@ -1,9 +1,10 @@
+import { unsafeWrite500 } from './lib/unsafe-write-500.mjs'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { loadStack } from './lib/load-stack.mjs'
 import { loadKit as kit } from './lib/load-kit.mjs'
 
 const WORKERS = Number(process.env.LOAD_WORKERS ?? 1)
-const SCENARIOS = (process.env.LOAD_SCENARIOS ?? 'graceful,poll-window,kill-worker,redis-wipe,feishu-faults,beisen-quirks,concurrency,two-workers,webhook-dedupe,republish').split(',')
+const SCENARIOS = (process.env.LOAD_SCENARIOS ?? 'graceful,poll-window,kill-worker,redis-wipe,feishu-faults,beisen-quirks,concurrency,two-workers,webhook-dedupe,republish,unsafe-write-500').split(',')
 const REUSE = process.env.LOAD_REUSE === '1'
 const PEOPLE = Number(process.env.LOAD_N ?? 60)
 const RESULT_DIR = '/tmp/fema-e2e/results'
@@ -21,6 +22,7 @@ await kit.mock({ method: 'POST', path: '/__admin/latency', body: { feishu: 40, b
 await kit.sleep(REUSE ? 0 : 8000)
 
 const scenarios = {
+  'unsafe-write-500': unsafeWrite500,
   graceful,
   'poll-window': pollWindow,
   'kill-worker': killWorker,

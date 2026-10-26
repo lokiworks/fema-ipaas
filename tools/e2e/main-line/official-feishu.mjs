@@ -21,6 +21,12 @@ export function createFeishuOfficial({ state, kit }) {
   function createState() {
     return {
       tokenEpoch: 0,
+      approvals: new Map(),
+      subscriptions: new Set(),
+      departmentSequence: 0,
+      departmentsByToken: new Map(),
+      departmentWrites: 0,
+      departmentDeletes: 0,
       ipDenied: false,
       quotaExhausted: false,
       missingScopes: new Set(),
@@ -411,11 +417,59 @@ export function createFeishuOfficial({ state, kit }) {
       code: 0,
       msg: 'success',
       data: {
-        items: page.map((department) => ({ department_id: department.id, open_department_id: department.id, name: department.name, parent_department_id: department.parent, member_count: [...state.feishuUsers.values()].filter((user) => (user.department_ids ?? []).includes(department.id)).length, status: { is_deleted: false } })),
+        items: page.map((department) => publicDepartment({ department, query })),
         has_more: more,
         ...(more ? { page_token: `pt${offset + pageSize}` } : {}),
       },
     })
+  }
+
+  function resolveDepartment({ id, query }) {
+    if (id === '0') return { id: '0', customId: '0', name: 'Company', parent: '' }
+    return query.get('department_id_type') === 'department_id' ? [...official.departmentTree.values()].find((department) => (department.customId ?? department.id) === id) : official.departmentTree.get(id)
+  }
+
+  function publicDepartment({ department, query }) {
+    const parent = official.departmentTree.get(department.parent)
+    return { department_id: department.customId ?? department.id, open_department_id: department.id, name: department.name, parent_department_id: query.get('department_id_type') === 'department_id' ? parent?.customId ?? department.parent : department.parent, ...(department.order !== undefined ? { order: String(department.order) } : {}), status: { is_deleted: false } }
+  }
+
+  function getDepartment({ departmentId, query, headers }) {
+    const denied = gate({ headers, scope: 'contact:contact:readonly_as_app', counted: false })
+    if (denied) return denied
+    const department = resolveDepartment({ id: departmentId, query })
+    if (!department) return fail({ code: 40015, msg: 'department not exist' })
+    if (department.id !== '0' && !departmentInScope(department.id)) return fail({ status: 403, code: 40004, msg: 'no dept authority error' })
+    return kit.ok({ code: 0, msg: 'success', data: { department: publicDepartment({ department, query }) } })
+  }
+
+  function writeDepartment({ departmentId, body, query, headers }) {
+    const denied = gate({ headers, scope: 'contact:contact', counted: false })
+    if (denied) return denied
+    const creating = departmentId === undefined
+    const token = query.get('client_token')
+    if (creating && token && official.departmentsByToken.has(token)) return kit.ok({ code: 0, msg: 'success', data: { department: publicDepartment({ department: official.departmentsByToken.get(token), query }) } })
+    const existing = creating ? null : resolveDepartment({ id: departmentId, query })
+    if (!creating && !existing) return fail({ code: 40015, msg: 'department not exist' })
+    const parent = body.parent_department_id === undefined ? official.departmentTree.get(existing?.parent) ?? { id: '0' } : resolveDepartment({ id: body.parent_department_id, query })
+    if (!parent) return fail({ code: 40015, msg: 'parent department not exist' })
+    if (parent.id !== '0' && !departmentInScope(parent.id)) return fail({ status: 403, code: 40014, msg: 'no parent dept authority error' })
+    const name = body.name ?? existing?.name
+    if (typeof name !== 'string' || !name.length) return fail({ code: 40011, msg: 'invalid name' })
+    if (name.includes('/')) return fail({ code: 43029, msg: 'dept name not contain separator' })
+    if ([...official.departmentTree.values()].some((department) => department.id !== existing?.id && department.parent === parent.id && department.name === name)) return fail({ code: 43022, msg: 'department name duplicate' })
+    if (creating && body.department_id && [...official.departmentTree.values()].some((department) => (department.customId ?? department.id) === body.department_id)) return fail({ code: 43007, msg: 'department id already exists' })
+    let ancestor = parent
+    for (let depth = 0; ancestor && ancestor.id !== '0'; depth++) {
+      if (ancestor.id === existing?.id || depth >= 24) return fail({ code: 43019, msg: 'exceed dept max level' })
+      ancestor = official.departmentTree.get(ancestor.parent)
+    }
+    const department = { ...existing, id: existing?.id ?? `od-created-${++official.departmentSequence}`, customId: existing?.customId ?? body.department_id ?? existing?.id, name, parent: parent.id, ...(body.order !== undefined ? { order: String(body.order) } : {}) }
+    official.departmentTree.set(department.id, department)
+    state.departments.add(department.id)
+    official.departmentWrites++
+    if (creating && token) official.departmentsByToken.set(token, department)
+    return kit.ok({ code: 0, msg: 'success', data: { department: publicDepartment({ department, query }) } })
   }
 
   function childrenOf({ departmentId }) {
@@ -556,8 +610,33 @@ export function createFeishuOfficial({ state, kit }) {
     return kit.ok({ code: 0, msg: 'success', data: { items: page.map(({ record_id, fields }) => ({ record_id, fields })), has_more: more, total: rows.length, ...(more ? { page_token: `pt${offset + pageSize}` } : {}) } })
   }
 
+  function approvalList({ query, headers }) {
+    const denied = gate({ headers, scope: 'approval:approval', counted: true }); if (denied) return denied
+    const start = Number(query.get('start_time')); const end = Number(query.get('end_time')); const size = Number(query.get('page_size') ?? 100)
+    const offset = parsePageToken({ token: query.get('page_token') })
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start || end - start > 36000000 || !Number.isInteger(size) || size < 1 || size > 100 || offset === null) return fail({ code: 1390001, msg: 'invalid approval query' })
+    const rows = [...official.approvals.values()].filter((item) => item.approval_code === query.get('approval_code') && Number(item.start_time) >= start && Number(item.start_time) <= end).sort((a, b) => Number(a.start_time) - Number(b.start_time))
+    const more = offset + size < rows.length
+    return kit.ok({ code: 0, msg: 'success', data: { instance_code_list: rows.slice(offset, offset + size).map((item) => item.instance_code), has_more: more, ...(more ? { page_token: `pt${offset + size}` } : {}) } })
+  }
+
+  function approvalGet({ instanceCode, headers }) {
+    const denied = gate({ headers, scope: 'approval:approval', counted: true }); if (denied) return denied
+    const instance = official.approvals.get(instanceCode)
+    return instance ? kit.ok({ code: 0, msg: 'success', data: instance }) : fail({ code: 1390003, msg: 'instance not found' })
+  }
+
+  function bitableRecord({ method, recordId, appToken, tableId, body, headers }) {
+    const denied = gate({ headers, scope: 'bitable:app', counted: true }); if (denied) return denied
+    const record = state.bitableRecords.find((row) => row.record_id === recordId && row.appToken === appToken && row.tableId === tableId)
+    if (!record) return bitableFail({ code: 1254043, msg: 'RecordNotFound' })
+    if (method === 'PUT') { const invalid = invalidFields({ fields: body.fields }); if (invalid) return invalid; record.fields = { ...record.fields, ...body.fields } }
+    return kit.ok({ code: 0, msg: 'success', data: { record: { record_id: record.record_id, fields: record.fields } } })
+  }
+
   function adminRoutes() {
     return {
+      'POST /__admin/approvals': ({ body }) => { for (const item of body.instances ?? []) official.approvals.set(item.instance_code, { ...item, form: typeof item.form === 'string' ? item.form : JSON.stringify(item.form ?? []) }); return kit.ok({ count: official.approvals.size }) },
       'POST /__admin/feishu-official': ({ body }) => {
         if (body.expireToken === true) {
           official.tokenEpoch += 1
@@ -619,6 +698,8 @@ export function createFeishuOfficial({ state, kit }) {
       maxUsers: official.maxUsers,
       calls: official.calls,
       departments: [...official.departmentTree.values()],
+      departmentWrites: official.departmentWrites,
+      departmentDeletes: official.departmentDeletes,
     }
   }
 
@@ -637,6 +718,14 @@ export function createFeishuOfficial({ state, kit }) {
 
   function dynamicHandlerFor({ method, pathname }) {
     const path = pathname.startsWith('/feishu/open-apis') ? pathname.slice('/feishu/open-apis'.length) : null
+    if (path === '/approval/v4/instances' && method === 'GET') return approvalList
+    const approval = /^\/approval\/v4\/instances\/([^/]+)$/.exec(path)
+    if (approval && method === 'GET') return (request) => approvalGet({ ...request, instanceCode: decodeURIComponent(approval[1]) })
+    const subscription = /^\/approval\/v4\/approvals\/([^/]+)\/(subscribe|unsubscribe)$/.exec(path)
+    if (subscription && method === 'POST') return ({ headers }) => { const denied = gate({ headers, scope: 'approval:approval', counted: true }); if (denied) return denied; if (subscription[2] === 'subscribe') official.subscriptions.add(subscription[1]); else official.subscriptions.delete(subscription[1]); return kit.ok({ code: 0, msg: 'success', data: {} }) }
+    const record = /^\/bitable\/v1\/apps\/([^/]+)\/tables\/([^/]+)\/records\/([^/]+)$/.exec(path)
+    if (record && ['GET', 'PUT'].includes(method) && record[3] !== 'search') return (request) => bitableRecord({ ...request, method, appToken: record[1], tableId: record[2], recordId: record[3] })
+
     if (path === null) {
       return null
     }
@@ -650,6 +739,11 @@ export function createFeishuOfficial({ state, kit }) {
         return (request) => patchUser({ ...request, openId })
       }
     }
+    if (path === '/contact/v3/departments' && method === 'POST') return (request) => writeDepartment(request)
+    const department = /^\/contact\/v3\/departments\/([^/]+)$/.exec(path)
+    if (department && method === 'GET') return (request) => getDepartment({ ...request, departmentId: decodeURIComponent(department[1]) })
+    if (department && method === 'PATCH') return (request) => writeDepartment({ ...request, departmentId: decodeURIComponent(department[1]) })
+    if (department && method === 'DELETE') return () => { official.departmentDeletes++; return fail({ code: 43031, msg: 'department deletion is disabled in synchronization tests' }) }
     const children = /^\/contact\/v3\/departments\/([^/]+)\/children$/.exec(path)
     if (children && method === 'GET') {
       return (request) => departmentChildren({ ...request, departmentId: decodeURIComponent(children[1]) })
@@ -659,6 +753,7 @@ export function createFeishuOfficial({ state, kit }) {
       return (request) => bitableTables(request)
     }
     const records = /^\/bitable\/v1\/apps\/([^/]+)\/tables\/([^/]+)\/records(\/search)?$/.exec(path)
+    if (records && method === 'GET' && !records[3]) return (request) => bitableSearch({ ...request, body: {}, appToken: records[1], tableId: records[2] })
     if (records && method === 'POST') {
       return (request) => (records[3] ? bitableSearch : bitableCreate)({ ...request, appToken: records[1], tableId: records[2] })
     }

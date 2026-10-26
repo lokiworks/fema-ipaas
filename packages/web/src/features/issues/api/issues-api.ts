@@ -15,8 +15,9 @@ import {
   IssueWithSeverity,
   ListIssuesRequestQuery,
   ReplayCheckResult,
+  WorkflowRetryStrategy,
   RunVerificationRequestBody,
-  RunVerificationResult,
+  VerificationRun,
   UpdateIssueRequestBody,
 } from '@fema-ipaas/shared';
 
@@ -24,8 +25,19 @@ import { api } from '@/lib/api';
 import { timezoneUtils } from '@/lib/timezone-utils';
 
 export const issuesApi = {
-  verify(request: RunVerificationRequestBody): Promise<RunVerificationResult> {
-    return api.post<RunVerificationResult>('/v1/verification/run', request);
+  verify(request: RunVerificationRequestBody): Promise<{ runId: string }> {
+    return api.post<{ runId: string }>('/v1/verification/run', request);
+  },
+  verificationRun({
+    runId,
+    projectId,
+  }: {
+    runId: string;
+    projectId: string;
+  }): Promise<VerificationRun> {
+    return api.get<VerificationRun>(`/v1/verification/runs/${runId}`, {
+      projectId,
+    });
   },
   list(request: ListIssuesRequestQuery): Promise<SeekPage<IssueWithSeverity>> {
     return api.get<SeekPage<IssueWithSeverity>>('/v1/issues', {
@@ -81,8 +93,13 @@ export const issuesApi = {
   alerts(id: string): Promise<AlertRecord[]> {
     return api.get<AlertRecord[]>(`/v1/issues/${id}/alerts`);
   },
-  replayCheck(id: string): Promise<ReplayCheckResult> {
-    return api.post<ReplayCheckResult>(`/v1/issues/${id}/replay-check`, {});
+  replayCheck(
+    id: string,
+    strategy?: WorkflowRetryStrategy,
+  ): Promise<ReplayCheckResult> {
+    return api.post<ReplayCheckResult>(`/v1/issues/${id}/replay-check`, {
+      strategy,
+    });
   },
   replay(
     id: string,

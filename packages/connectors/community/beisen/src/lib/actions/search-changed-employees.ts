@@ -17,6 +17,7 @@ export const searchChangedEmployees = createAction({
       'Page through Beisen employees whose records changed between two timestamps, using the scroll cursor the API returns. Pick this to sync HR master data into another system incrementally rather than re-reading every employee. Beisen returns at most 300 rows per call, so keep passing the returned scroll_id back until has_more is false, within 10 seconds of each call; it never modifies Beisen data.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     startTime: Property.ShortText({
       displayName: 'Start Time',
@@ -58,6 +59,7 @@ export const searchChangedEmployees = createAction({
     const { startTime, stopTime, statusScope, queryType, columns, scrollId } = context.propsValue;
     const page = await beisenTimeWindow.fetchPage({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       body: beisenTimeWindow.requestBody({
         startTime,
         stopTime,

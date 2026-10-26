@@ -1,11 +1,10 @@
 import {
   ConnectionValueForAuthProperty,
-  ConnectorPropValueSchema,
   Property,
   StaticPropsValue,
 } from '@fema-ipaas/connector-sdk';
 import { Connection, createConnection } from 'promise-mysql';
-import { mysqlAuth } from '../..';
+import { mysqlAuth } from '../auth';
 import sqlstring from 'sqlstring';
 
 export const warningMarkdown = Property.MarkDown({

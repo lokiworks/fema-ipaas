@@ -1,9 +1,10 @@
 {
   "name": "@fema-ipaas/connector-beisen",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
+    "zod": "4.3.6",
     "@fema-ipaas/connector-common": "workspace:*",
     "@fema-ipaas/connector-sdk": "workspace:*",
     "@fema-ipaas/connector-types": "workspace:*",

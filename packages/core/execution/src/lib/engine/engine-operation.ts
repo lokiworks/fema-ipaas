@@ -206,6 +206,8 @@ type ExecuteTestOrRunTriggerResponse = {
 type ExecuteHandshakeTriggerResponse = {
     message?: string
     response?: {
+        continueToRun?: boolean
+        triggerPayload?: TriggerPayload
         status: number
         body?: unknown
         headers?: Record<string, string>

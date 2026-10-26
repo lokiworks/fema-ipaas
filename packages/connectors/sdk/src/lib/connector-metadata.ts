@@ -79,6 +79,33 @@ export const PropertyGroup = z.object({
 })
 export type PropertyGroup = z.infer<typeof PropertyGroup>
 
+export const WriteSafety = z.enum(['IDEMPOTENT', 'LOOKUP_BEFORE_WRITE', 'UNSAFE'])
+export type WriteSafety = z.infer<typeof WriteSafety>
+
+export const RateLimitScope = z.enum(['TENANT', 'APP', 'APP_ENDPOINT'])
+export type RateLimitScope = z.infer<typeof RateLimitScope>
+
+export const EnumeratedEntity = z.enum(['EMPLOYEE', 'DEPARTMENT', 'ACCOUNT', 'RECORD'])
+export type EnumeratedEntity = z.infer<typeof EnumeratedEntity>
+
+export const RateLimitDeclaration = z.object({
+  bucket: z.string().check(z.minLength(1)),
+  scope: RateLimitScope,
+  perSecond: z.number().check(z.positive()),
+})
+export type RateLimitDeclaration = z.infer<typeof RateLimitDeclaration>
+
+export const ActionReliability = z.object({
+  writeSafety: z.optional(WriteSafety),
+  lookupKeys: z.optional(z.array(z.string())),
+  readBack: z.optional(z.object({ actionName: z.string(), aspects: z.array(z.string()) })),
+  rateLimits: z.optional(z.array(RateLimitDeclaration)),
+  enumeration: z.optional(z.object({ entity: EnumeratedEntity, businessKeyPath: z.string() })),
+  dedupeKeyProp: z.optional(z.string()),
+  dedupeWindowSeconds: z.optional(z.number().check(z.positive())),
+})
+export type ActionReliability = z.infer<typeof ActionReliability>
+
 export const ActionBase = z.object({
   name: z.string(),
   displayName: z.string(),
@@ -91,6 +118,7 @@ export const ActionBase = z.object({
   audience: z.optional(Audience),
   aiMetadata: z.optional(AiMetadata),
   classification: z.optional(ActionClassification),
+  reliability: z.optional(ActionReliability),
 })
 
 export type ActionBase = {
@@ -105,6 +133,7 @@ export type ActionBase = {
   audience?: Audience;
   aiMetadata?: AiMetadata;
   classification?: ActionClassification;
+  reliability?: ActionReliability;
 }
 
 export const TriggerBase = z.object({
@@ -122,6 +151,7 @@ export const TriggerBase = z.object({
   outputSchema: z.optional(z.custom<OutputSchema>()),
   aiMetadata: z.optional(AiMetadata),
   classification: z.optional(ActionClassification),
+  reliability: z.optional(ActionReliability),
 })
 export type TriggerBase = Omit<ActionBase, 'audience'> & {
   type: TriggerStrategy;

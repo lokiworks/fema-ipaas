@@ -63,6 +63,7 @@ const ActionErrorHandlingForm = React.memo(
     hideContinueOnFailure,
     hideRetryOnFailure,
     disabled,
+    unsafeWrite,
   }: ActionErrorHandlingFormProps) => {
     const form = useFormContext();
     const watched: unknown = useWatch({
@@ -126,6 +127,14 @@ const ActionErrorHandlingForm = React.memo(
             )}
           </AlertDescription>
         </Alert>
+        {unsafeWrite && !hideRetryOnFailure && (
+          <Alert>
+            <ShieldAlert />
+            <AlertDescription>
+              {t('issues.retry.unsafeWriteHint')}
+            </AlertDescription>
+          </Alert>
+        )}
         {usesBranches && (
           <Alert variant="primary">
             <Split />
@@ -503,6 +512,7 @@ const OPERATORS = [
 ];
 
 type ActionErrorHandlingFormProps = {
+  unsafeWrite?: boolean;
   hideContinueOnFailure?: boolean;
   hideRetryOnFailure?: boolean;
   disabled: boolean;

@@ -19,6 +19,7 @@ export const sendGroupMessage = createAction({
       'Send a message to a Feishu/Lark group chat the bot has been added to. Pick this for team notifications, alerts and digests that a whole group should see; use Send Direct Message instead when one specific person should receive it. The bot must already be a member of the target chat, and every call posts a new message unless a Dedupe Key is given, in which case Feishu drops repeats of the same key for one hour.',
     idempotent: false,
   },
+  reliability: { writeSafety: 'UNSAFE', dedupeKeyProp: 'dedupeKey', dedupeWindowSeconds: 3600, rateLimits: [{ bucket: 'im-send', scope: 'APP', perSecond: 50 }] },
   props: {
     chatId: Property.Dropdown({
       displayName: 'Group Chat',
@@ -74,6 +75,7 @@ export const sendGroupMessage = createAction({
     const { chatId, messageType, content, dedupeKey } = context.propsValue;
     const data = await feishuCommon.callApi<SendMessageResponse>({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       method: HttpMethod.POST,
       path: '/open-apis/im/v1/messages',
       queryParams: { receive_id_type: 'chat_id' },

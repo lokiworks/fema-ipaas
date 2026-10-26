@@ -17,6 +17,7 @@ export const provisionUser = createAction({
       'Onboard an employee into the Feishu/Lark contact directory under a given department. Safe to repeat: it first looks the mobile and email up, and when a user already holds either it returns that user with created=false and matched_by, changing nothing; a lost race on the create call is resolved the same way, and the create call carries an idempotency token built from the whole request. When the create call is blocked by a resigned account, that is reported as an error instead of the account being reused. Needs the "Update contacts" and "Obtain user ID via email or mobile number" permissions, and the target department must be inside the app\'s contact scope (the root department needs the all-members scope).',
     idempotent: true,
   },
+  reliability: { writeSafety: 'LOOKUP_BEFORE_WRITE', lookupKeys: ['mobile', 'email'], readBack: { actionName: 'get_user', aspects: ['department'] }, rateLimits: [{ bucket: 'contact-write', scope: 'APP_ENDPOINT', perSecond: 1 }, { bucket: 'contact-read', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     name: Property.ShortText({
       displayName: 'Name',
@@ -64,6 +65,7 @@ export const provisionUser = createAction({
     const { name, mobile, departmentId, employeeType, email, employeeNo, jobTitle } = context.propsValue;
     return feishuContacts.provisionUser({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       input: { name, mobile, departmentId, employeeType, email, employeeNo, jobTitle },
     });
   },

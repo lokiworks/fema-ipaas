@@ -128,6 +128,17 @@ export const BlueprintOperation = z.object({
     request: z.nullable(BlueprintRequestConfig),
     sample: z.unknown(),
     statusOverride: z.nullable(BlueprintStatusConfig),
+    lookupBeforeWrite: z.optional(z.object({ operationKey: z.string(), matchPath: z.string() })),
+    classification: z.optional(z.enum(['READ', 'SEARCH', 'WRITE', 'DESTRUCTIVE'])),
+    reliability: z.optional(z.object({
+        writeSafety: z.optional(z.enum(['IDEMPOTENT', 'LOOKUP_BEFORE_WRITE', 'UNSAFE'])),
+        lookupKeys: z.optional(z.array(z.string())),
+        readBack: z.optional(z.object({ actionName: z.string(), aspects: z.array(z.string()) })),
+        rateLimits: z.optional(z.array(z.object({ bucket: z.string().check(z.minLength(1)), scope: z.enum(['TENANT', 'APP', 'APP_ENDPOINT']), perSecond: z.number().check(z.positive()) }))),
+        enumeration: z.optional(z.object({ entity: z.enum(['EMPLOYEE', 'DEPARTMENT', 'ACCOUNT', 'RECORD']), businessKeyPath: z.string() })),
+        dedupeKeyProp: z.optional(z.string()),
+        dedupeWindowSeconds: z.optional(z.number().check(z.positive())),
+    })),
 })
 
 export const BlueprintEndpoint = z.object({

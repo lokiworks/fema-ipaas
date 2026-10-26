@@ -12,6 +12,7 @@ export type ReliabilityEventRecord = BaseModel<string> & {
     stepName: string | null
     connectorName: string | null
     limitUnit: RateLimitUnit | null
+    reason: string | null
     errorCode: string | null
     waitSeconds: number | null
     gapSeconds: number | null
@@ -47,6 +48,7 @@ export const ReliabilityEventEntity = new EntitySchema<ReliabilityEventSchema>({
             type: String,
             nullable: true,
         },
+        reason: { type: String, nullable: true },
         errorCode: {
             type: String,
             nullable: true,

@@ -18,6 +18,7 @@ import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
 import { backupModule } from './backup/backup.module'
+import { restoreMaintenance } from './backup/maintenance'
 import { componentModule } from './components/component.module'
 import { connectionModule } from './connection/connection.module'
 import { tenantConnectionModule } from './connection/tenant-connection.module'
@@ -62,6 +63,7 @@ import { privacyModule } from './privacy/privacy.module'
 import { projectBackgroundJobs } from './project/project.jobs'
 import { projectModule } from './project/project.module'
 import { projectWorkspaceModule } from './project-workspace/project-workspace.module'
+import { reconciliationModule } from './reconciliation/reconciliation.module'
 import { releaseModule } from './release/release.module'
 import { runLogModule } from './run-logs/run-log.module'
 import { runMonitorModule } from './run-monitor/run-monitor.module'
@@ -92,6 +94,10 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
 
     app.addContentTypeParser('application/octet-stream', { parseAs: 'buffer' }, async (_request: FastifyRequest, payload: unknown) => {
         return payload as Buffer
+    })
+
+    app.addHook('onRequest', async (request, reply) => {
+        if (!request.url.includes('/health') && !request.url.includes('/engine/') && !request.url.includes('/worker-machines/') && await restoreMaintenance.active()) return reply.code(503).send({ message: 'system.restoreMaintenance' })
     })
 
     registerOpenApiSchemas()
@@ -208,6 +214,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(mappingTableModule)
     await app.register(solutionModule)
     await app.register(verificationModule)
+    await app.register(reconciliationModule)
     await app.register(projectWorkspaceModule)
     await app.register(dataStoreModule)
     await app.register(aiModule)

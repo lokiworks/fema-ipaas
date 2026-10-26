@@ -8,6 +8,33 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
+#### People synchronization solution 1.2 requires an organization workflow
+
+When upgrading the official Beisen → Feishu people solution, install and publish its
+organization synchronization solution first. Configure the source root organization
+and the callable organization workflow, then review and publish all four people
+workflows, including the repair workflow. The department mapping table is shared.
+Existing published workflows keep their behavior until the upgraded drafts are published.
+
 #### Code steps run in an isolate by default
 
 `FEMA_EXECUTION_MODE` used to default to `UNSANDBOXED`, where a Code step is ordinary Node
@@ -296,6 +323,25 @@ Run the migration; it renames in place and preserves all rows. Then update anyth
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 #### Encrypted payloads now carry a key id, enabling encryption key rotation
 
 Values encrypted at rest (connections, variables, OIDC keys) now store the id of the key that encrypted them. Rotation is supported end to end: set `FEMA_ENCRYPTION_KEY` to the new key, list the previous one in the new `FEMA_RETIRED_ENCRYPTION_KEYS` (comma separated, 32-char hex each), then call `POST /v1/encryption/rotate` as a tenant admin to re-encrypt existing rows.
@@ -563,6 +609,25 @@ Take a database backup before upgrading, see [Rollback](/install/configure-opera
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 #### Disposable email addresses can no longer sign up
 
 Sign-up now refuses addresses from throwaway providers such as `mailinator.com` and `guerrillamail.com`, on both the emailed-code workflow and the password form. Federated sign-in is unaffected, since those addresses come from an identity provider you already trust.
@@ -583,6 +648,25 @@ In the AI connector, picking the FEMA Integration Platform-provided AI now lists
 ## 0.86.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 #### Log fields are now grouped by entity
 Log fields are now grouped under the entity they belong to, so each thing has one name. A workflow run id is `execution.id` (it used to appear as `runId`, `executionId`, or a bare `id`), and other ids follow the same shape (`workflow.id`, `project.id`, `job.id`, …). Errors are logged under `error`. This only changes how logs look — nothing about the API, database, or workflows changes.
@@ -607,6 +691,25 @@ The up-front install is no longer needed because connector installs are now fast
 ## 0.85.4
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 #### Observability: OpenTelemetry replaced with evlog
 Logging moved from pino + OpenTelemetry to [evlog](https://evlog.dev). Logs are now one rich event per request/job instead of many small lines, so the JSON shape changed.
 
@@ -628,6 +731,25 @@ Previously if your worker was on a different version of your app server, the wor
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 #### Workflow Run Log Size Enforcement
 This is an important behavior change in how workflow run logs are stored and capped, but **no action is required** — the existing default (`FEMA_MAX_EXECUTION_LOG_SIZE_MB=50`) is preserved.
 
@@ -645,11 +767,49 @@ This is an important behavior change in how workflow run logs are stored and cap
 ## 0.83.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 When creating a project now, the platform owner email doesn't automatically get added to the alert recievers list of the project, you can manually assign it in the UI/API, when creating a project.
 
 ## 0.82.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 #### Connector Versions Are Now Pinned
 - Connector versions are no longer stored with wildcards (`~1.2.0`, `^1.2.0`). All connector steps now use exact versions (e.g. `1.2.0`).
@@ -678,6 +838,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 #### Infrastructure
 - A new environment variable `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` has been introduced to control the maximum allowed webhook payload size. The default is `25` MB. Webhooks exceeding this limit will be rejected with a `413 Request Too Long` response.
 - Nginx has been removed from the Docker image. Fastify now serves both the API and the React frontend directly. All API routes are now under the `/api` prefix natively. If you were using `/v1/health` as a health check endpoint (e.g. in Kubernetes probes or load balancer checks), update it to `/api/v1/health`.
@@ -701,6 +880,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.78.1
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 - The Platform `Operator` role can now edit all projects.
 
 ### Do you need to take action?
@@ -708,6 +906,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ## 0.78.0
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - The `usageCount` field has been removed from both the template API responses and the database—it's no longer available.
 - The Todos feature is now deprecated and will not be supported going forward.
@@ -719,6 +936,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ## 0.77.0
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - For Embed Plan users: the "Use a Template" dialog no longer appears when clicking the "New Workflow" button.
 - The `/workflow-templates` API endpoints have been removed and replaced by `/templates`.
@@ -733,6 +969,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.75.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 - When you navigate to a workflow run inside the builder the url will change to /runs, this is something embedding customers might need to consider in case they have a route guard that only allows users to navigate to /workflows.
 - In **development mode**, loading connector translations are now off by default. Set `FEMA_LOAD_TRANSLATIONS_FOR_DEV_CONNECTORS=true` to enable.
 
@@ -743,6 +998,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.74.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 - The default embedded database for development and lightweight deployments has changed from **SQLite3** to [**PGLite**](https://pglite.dev/) (embedded PostgreSQL).
 - The environment variable `FEMA_DB_TYPE=SQLITE3` is now deprecated and replaced with `FEMA_DB_TYPE=PGLITE`.
 - Existing SQLite databases will be automatically migrated to PGLite on first startup.
@@ -757,6 +1031,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.73.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 - Major change to MCP: [Read the announcement.](https://github.com/lokiworks/fema-ipaas/discussions/t/mcp-update-easier-faster-and-more-secure/11177)
 - If you have SMTP configured in the tenant admin, it's no longer supported—you need to use FEMA_SMTP_ [environment variables.](https://github.com/lokiworks/fema-ipaas/docs/install/reference/environment-variables#email-smtp)
 
@@ -767,6 +1060,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.71.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - In separate workers setup, now they have access to Redis.
 - `FEMA_EXECUTION_MODE` mode `SANDBOXED` is now deprecated and replaced with `SANDBOX_PROCESS`
@@ -780,6 +1092,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.70.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 - `FEMA_QUEUE_MODE` is now deprecated and replaced with `FEMA_REDIS_TYPE`
 - If you are using Sentinel Redis, you should add `FEMA_REDIS_TYPE` to `SENTINEL`
 
@@ -791,6 +1122,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.69.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 - `FEMA_WORKFLOW_WORKER_CONCURRENCY` and `FEMA_SCHEDULED_WORKER_CONCURRENCY` are now deprecated all jobs have single queue and replaced with `FEMA_WORKER_CONCURRENCY`
 
 ### When is action necessary?
@@ -801,6 +1151,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 - If you use embedding the embedding SDK, please upgrade to version 0.6.0, `embedding.dashboard.hideSidebar` used to hide the navbar above the workflows table in the dashboard now it relies on `embedding.dashboard.hideWorkflowsPageNavbar`
 
 
@@ -808,12 +1177,50 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 - MCP management is removed from the embedding SDK.
 
 
 ## 0.63.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - Replicate provider's text models have been removed.
 
@@ -824,6 +1231,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.46.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - The UI for "Array of Properties" inputs in the connectors has been updated, particularly affecting the "Dynamic Value" toggle functionality.
 
@@ -838,6 +1264,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 - Workers no longer rely on the `FEMA_WORKFLOW_WORKER_CONCURRENCY` and `FEMA_SCHEDULED_WORKER_CONCURRENCY` environment variables. These values are now retrieved from the app server.
 
 ### When is action necessary?
@@ -847,6 +1292,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.35.1
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - The 'name' attribute has been renamed to 'externalId' in the `Connection` entity.
 - The 'displayName' attribute has been added to the `Connection` entity.
@@ -858,11 +1322,49 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 - All branches are now converted to routers, and downgrade is not supported.
 
 ## 0.33.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - Files from actions or triggers are now stored in the database / S3 to support retries from certain steps, and the size of files from actions is now subject to the limit of `FEMA_MAX_FILE_SIZE_MB`.
 - Files in triggers were previously passed as base64 encoded strings; now they are passed as file paths in the database / S3. Paused workflows that have triggers from version 0.29.0 or earlier will no longer work.
@@ -875,6 +1377,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 
 ### What has changed?
 
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
+
 - `FEMA_SANDBOX_RUN_TIME_SECONDS` is now deprecated and replaced with `FEMA_WORKFLOW_TIMEOUT_SECONDS`
 - `FEMA_CODE_SANDBOX_TYPE` is now deprecated and replaced with new mode in `FEMA_EXECUTION_MODE`
 
@@ -886,6 +1407,25 @@ When creating a project now, the platform owner email doesn't automatically get 
 ## 0.28.0
 
 ### What has changed?
+
+#### Manual verification returns a job identifier
+
+`POST /v1/verification/run` now returns `{ runId }` immediately. Poll
+`GET /v1/verification/runs/:runId?projectId=<project>` until `status` is `SUCCEEDED`
+or `FAILED`; successful results are in `result`. Results expire after 24 hours.
+Clients that read verification counts directly from the POST response must switch to polling.
+
+#### Unsafe writes require confirmation before issue replay
+
+Automatic retries stop after an ambiguous failure of a write without declared idempotency
+or a valid deduplication window. Read back the target before replaying such a write.
+`POST /v1/issues/:id/replay-check` accepts the replay `strategy` and returns `writeSteps`
+for each execution. Include every unsafe step that will run in `confirmedUnsafeSteps`
+on the replay request, using `<executionId>:<stepName>` for each confirmation.
+The server recomputes the check before replaying and rejects missing confirmations.
+HTTP steps also apply this rule to their internal retries. APIs that support an
+`Idempotency-Key` header can use the new idempotency key property.
+
 
 - **Project Members:**
     - The `EXTERNAL_CUSTOMER` role has been deprecated and replaced with the `OPERATOR` role. Please check the permissions page for more details.

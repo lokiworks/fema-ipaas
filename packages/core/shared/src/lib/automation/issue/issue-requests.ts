@@ -66,6 +66,7 @@ export enum IssueInsightCause {
 
 export enum IssueFixOwner {
     MAPPING_OWNER = 'MAPPING_OWNER',
+    SOURCE_DATA_OWNER = 'SOURCE_DATA_OWNER',
     CONNECTION_OWNER = 'CONNECTION_OWNER',
     TARGET_ADMIN = 'TARGET_ADMIN',
     WORKFLOW_OWNER = 'WORKFLOW_OWNER',
@@ -171,6 +172,7 @@ export type IssueTrend = z.infer<typeof IssueTrend>
 export const IssueReplayRequestBody = z.object({
     strategy: z.enum(WorkflowRetryStrategy),
     includeDataProblems: z.boolean().optional(),
+    confirmedUnsafeSteps: z.array(z.string()).max(1000).optional(),
 })
 export type IssueReplayRequestBody = z.infer<typeof IssueReplayRequestBody>
 
@@ -184,6 +186,13 @@ export const ReplayCheckItem = z.object({
     reason: z.enum(ReplayReason),
     connectionExternalId: z.string().nullable(),
     rawDataExpired: z.boolean(),
+    writeSteps: z.array(z.object({
+        stepName: z.string(),
+        displayName: z.string(),
+        writeSafety: z.enum(['IDEMPOTENT', 'LOOKUP_BEFORE_WRITE', 'UNSAFE']),
+        willRun: z.boolean(),
+        needsConfirmation: z.boolean(),
+    })).default([]),
     blockedUntil: z.string().nullable().optional(),
 })
 export type ReplayCheckItem = z.infer<typeof ReplayCheckItem>
@@ -214,3 +223,10 @@ export const IssueInsight = z.object({
     fixes: z.array(IssueFix),
 })
 export type IssueInsight = z.infer<typeof IssueInsight>
+
+export const VerificationRun = z.object({
+    status: z.enum(['QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED']),
+    result: RunVerificationResult.nullable(),
+    error: z.string().nullable(),
+})
+export type VerificationRun = z.infer<typeof VerificationRun>

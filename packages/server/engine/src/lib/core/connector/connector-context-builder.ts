@@ -4,6 +4,7 @@ import { AUTHENTICATION_PROPERTY_NAME, EngineGenericError, InvalidCronExpression
 import { isValidCron } from 'cron-validator'
 import { retryFetch } from '../../api/retry-fetch'
 import { createFileUploader } from '../../connector-context/file-uploader'
+import { createRateLimitContext } from '../../connector-context/rate-limit'
 import { createContextStore } from '../../connector-context/store'
 import { createWorkflowsContext } from '../../connector-context/workflows'
 import { executionProgressReporter } from '../../helper/execution-progress-reporter'
@@ -38,6 +39,7 @@ async function buildActionContext({ connector, request, hooks, pending }: Action
 
     const context: ActionContext<ConnectorAuthProperty, InputPropertyMap> = {
         executionType: request.executionType,
+        rateLimit: createRateLimitContext({ runtime, declarations: action.reliability?.rateLimits ?? [], stepName }),
         resumePayload: request.resumePayload!,
         store: createContextStore({
             apiUrl: runtime.internalApiUrl,
@@ -110,6 +112,7 @@ async function buildTriggerContext({ connector, request, hooks }: TriggerParams)
         auth: propsValue[AUTHENTICATION_PROPERTY_NAME],
         propsValue,
         payload: request.payload ?? {},
+        rateLimit: createRateLimitContext({ runtime, declarations: trigger.reliability?.rateLimits ?? [], stepName, reportEvents: false }),
         run: { id: runtime.executionId },
         project: createProjectContext(runtime),
         server: {

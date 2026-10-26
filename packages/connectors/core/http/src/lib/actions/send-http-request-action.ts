@@ -29,11 +29,13 @@ export const httpSendRequestAction = createAction({
   audience: 'both',
   name: 'send_request',
   classification: 'WRITE',
+  reliability: { writeSafety: 'UNSAFE', dedupeKeyProp: 'idempotencyKey' },
   displayName: 'Send HTTP request',
   description: 'Send HTTP request',
   aiMetadata: { description: 'Sends an HTTP request to any URL with a chosen method, optional Basic or Bearer auth, an optional JSON, raw or multipart body, and can retry or continue the workflow on 4xx/5xx. Use it as the generic escape hatch for an API with no dedicated connector — prefer that app\'s own connector when one exists, and Parse URL to pull a URL apart without calling it. Requires an absolute URL and a method; not idempotent, since a call\'s effect follows the method and POST/PATCH-style calls mutate remote data.', idempotent: false },
   props: {
     method: httpMethodDropdown,
+    idempotencyKey: Property.ShortText({ displayName: 'Idempotency key', description: 'Sent as Idempotency-Key. Only use when the target API guarantees deduplication for this key.', required: false }),
     url: Property.ShortText({
       displayName: 'URL',
       required: true,
@@ -294,6 +296,8 @@ export const httpSendRequestAction = createAction({
 
     assertNotNullOrUndefined(method, 'Method');
     assertNotNullOrUndefined(url, 'URL');
+    const rawKey = context.propsValue.idempotencyKey?.trim();
+    const idempotencyKey = rawKey && !rawKey.includes('{{') ? rawKey : undefined;
 
     const request: HttpRequest = {
       method,
@@ -343,6 +347,9 @@ export const httpSendRequestAction = createAction({
         request.body = formData;
         request.headers = { ...(headers as HttpHeaders), ...formData.getHeaders() };
       }
+      if (idempotencyKey) {
+        request.headers = { ...Object.fromEntries(Object.entries(request.headers ?? {}).filter(([key]) => key.toLowerCase() !== 'idempotency-key')), 'Idempotency-Key': idempotencyKey };
+      }
       if (use_proxy) {
         const proxySettings = context.propsValue.proxy_settings;
         assertNotNullOrUndefined(proxySettings, 'Proxy Settings');
@@ -377,15 +384,18 @@ export const httpSendRequestAction = createAction({
       } catch (error) {
         attempts++;
         const status = error instanceof HttpError ? error.response.status : 0;
+        const retrySafe = Boolean(idempotencyKey) || ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(method);
+        const rejectedBeforeWrite = [400, 401, 403, 404, 409, 422, 429].includes(status);
+        const mayRetry = retrySafe || rejectedBeforeWrite;
 
         switch (failureMode) {
           case 'retry_all': {
-            if (attempts < 3) continue;
+            if (mayRetry && attempts < 3) continue;
             throw error;
           }
           case 'retry_5xx': {
             if (status >= 500 && status < 600) {
-              if (attempts < 3) continue;
+              if (mayRetry && attempts < 3) continue;
               throw error;
             }
             return toFailsafeOutput({ error, requestBody: request.body });
@@ -397,7 +407,7 @@ export const httpSendRequestAction = createAction({
             if (status >= 400 && status < 500) {
               return toFailsafeOutput({ error, requestBody: request.body });
             }
-            if (attempts < 3) continue;
+            if (mayRetry && attempts < 3) continue;
             throw error;
           case 'continue_none':
             throw error;

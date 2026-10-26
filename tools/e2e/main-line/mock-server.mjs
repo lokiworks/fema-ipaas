@@ -1,3 +1,4 @@
+import { createDirectoryOfficial } from './official-directory.mjs'
 import { createServer } from 'node:http'
 
 import { createBeisenOfficial } from './official-beisen.mjs'
@@ -44,7 +45,7 @@ const server = createServer(async (req, res) => {
     return send(res, 404, { error: 'not_found', path: url.pathname })
   }
   const admin = url.pathname.startsWith('/__admin/')
-  const target = url.pathname.startsWith('/beisen/') ? 'beisen' : url.pathname.startsWith('/feishu/') ? 'feishu' : 'admin'
+  const target = url.pathname.startsWith('/beisen/') ? 'beisen' : url.pathname.startsWith('/feishu/') ? 'feishu' : url.pathname.startsWith('/wecom/') ? 'wecom' : url.pathname.startsWith('/dingtalk/') ? 'dingtalk' : 'admin'
   if (!admin) {
     state.requestCounts[`${target}:${routeKeyOf({ route, openId })}`] = (state.requestCounts[`${target}:${routeKeyOf({ route, openId })}`] ?? 0) + 1
     state.inflight += 1
@@ -399,7 +400,7 @@ const HR_CHAT_ID = 'oc_hr_notice'
 const officialKit = { ok, takeFailure, quirkPage: typeof quirkPage === 'function' ? quirkPage : undefined, beisenRuleFor, statusAllowed, beisenTimeToEpoch, toSecond, BEISEN_TOKEN, HR_CHAT_ID }
 const feishuOfficial = createFeishuOfficial({ state, kit: officialKit })
 const beisenOfficial = createBeisenOfficial({ state, kit: officialKit })
-Object.assign(ROUTES, feishuOfficial.routes(), beisenOfficial.routes())
+Object.assign(ROUTES, feishuOfficial.routes(), beisenOfficial.routes(), createDirectoryOfficial({ target: 'wecom', kit: officialKit }).routes(), createDirectoryOfficial({ target: 'dingtalk', kit: officialKit }).routes())
 
 server.listen(port, () => {
   process.stdout.write(`mock beisen + feishu listening on http://127.0.0.1:${port}\n`)

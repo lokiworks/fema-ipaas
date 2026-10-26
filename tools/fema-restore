@@ -1,0 +1,3 @@
+#!/bin/sh
+set -eu
+exec node /usr/src/app/packages/server/api/dist/src/cli/restore.js "$@"

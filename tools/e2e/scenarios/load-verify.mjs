@@ -37,6 +37,13 @@ process.stdout.write(`造运行记录 ${seeded.length} 条，耗时 ${Math.round
 const sampler = kit.startSampler({ names: ['api'], intervalMs: 1000 })
 const startedAt = Date.now()
 const response = await kit.apiRaw({ method: 'POST', path: '/verification/run', body: { projectId, sinceHours: 24 }, timeoutMs: 4 * 60 * 60 * 1000 })
+if (response.status !== 200 || !response.body.runId) throw new Error(`Verification was not queued: ${JSON.stringify(response.body)}`)
+const completed = await kit.waitFor({ probe: async () => {
+  const result = await kit.api({ method: 'GET', path: `/verification/runs/${response.body.runId}?projectId=${projectId}` })
+  if (result.status === 'FAILED') throw new Error(result.error ?? 'Verification failed')
+  return result.status === 'SUCCEEDED' ? result.result : null
+}, timeoutMs: 4 * 60 * 60 * 1000, intervalMs: 3000 })
+response.body = completed
 const durationSeconds = Math.round((Date.now() - startedAt) / 1000)
 const resources = sampler.stop()
 const result = response.body

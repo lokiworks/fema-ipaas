@@ -18,6 +18,7 @@ export const findApplicant = createAction({
       'Look up Beisen applicant IDs from an email, mobile number, identity document number or candidate code. Pick this as the first step of any recruitment flow, since Get Applicant Resume needs an applicant ID. Every value you supply is combined with AND, and the result is an empty list when nobody matches.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     email: Property.ShortText({
       displayName: 'Email',
@@ -42,6 +43,7 @@ export const findApplicant = createAction({
     const { email, mobile, certificateNumber, candidateId } = context.propsValue;
     const found = await beisenCommon.callBusinessApi<string[]>({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       method: HttpMethod.POST,
       path: '/RecruitV6/api/v1/Applicant/GetApplicantIds',
       body: {

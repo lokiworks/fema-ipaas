@@ -36,6 +36,7 @@ const PG_VERSION_ENTRY = /(^|\/)PG_VERSION$/m
 
 export const backupEngine = {
     kind,
+    restore,
     fileExtension,
     inspect,
     dump,
@@ -91,6 +92,16 @@ async function dump({ destination }: { destination: string }): Promise<void> {
     }
 }
 
+async function restore({ file, destination }: { file: string, destination?: string }): Promise<void> {
+    if (kind() === BackupEngine.PG_DUMP) {
+        await run({ command: 'pg_restore', args: ['--clean', '--if-exists', '--no-owner', '--no-privileges', '--exit-on-error', '--single-transaction', '--dbname', connectionEnvironment()['PGDATABASE'], file], env: connectionEnvironment(), timeoutMs: COMMAND_TIMEOUT_MS })
+        return
+    }
+    if (!destination) throw new Error('PGlite restoration requires a staging directory')
+    await validateArchive(file)
+    await run({ command: 'tar', args: ['-xzf', file, '-C', destination, '--no-same-owner'], env: {}, timeoutMs: COMMAND_TIMEOUT_MS })
+}
+
 async function checksum({ file }: { file: string }): Promise<string> {
     const hash = createHash('sha256')
     await pipeline(createReadStream(file), hash)
@@ -123,7 +134,14 @@ function esmEntryOf({ specifier, file }: { specifier: string, file: string }): s
     return pathToFileURL(path.join(path.dirname(require.resolve(specifier)), file)).href
 }
 
+async function validateArchive(file: string): Promise<void> {
+    const listing = await run({ command: 'tar', args: ['-tzf', file], env: {}, timeoutMs: PROBE_TIMEOUT_MS })
+    const details = await run({ command: 'tar', args: ['-tvzf', file], env: {}, timeoutMs: PROBE_TIMEOUT_MS })
+    if (listing.split('\n').some((entry) => entry.split('/').includes('..')) || details.trim().split('\n').some((entry) => !['-', 'd'].includes(entry[0]))) throw new Error('Unsafe archive entry')
+}
+
 async function openArchivedDatabase({ file }: { file: string }): Promise<void> {
+    await validateArchive(file)
     const workdir = await fs.mkdtemp(path.join(os.tmpdir(), 'fema-backup-open-'))
     try {
         await run({ command: 'tar', args: ['-xzf', file, '-C', workdir], env: {}, timeoutMs: COMMAND_TIMEOUT_MS })

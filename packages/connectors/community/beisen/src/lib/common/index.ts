@@ -1,3 +1,4 @@
+import type { RateLimitContext } from '@fema-ipaas/connector-sdk';
 import {
   AuthenticationType,
   HttpError,
@@ -110,7 +111,8 @@ async function callApi<T>(params: CallApiParams): Promise<T> {
   return retried;
 }
 
-async function requestOnce<T>({ auth, method, path, body, queryParams }: CallApiParams): Promise<T> {
+async function requestOnce<T>({ auth, rateLimit, method, path, body, queryParams }: CallApiParams): Promise<T> {
+  await rateLimit?.acquire({ bucket: 'beisen-api', scopeKey: 'tenant' });
   const token = await obtainAccessToken({
     appKey: auth.props.appKey,
     appSecret: auth.props.appSecret,
@@ -273,6 +275,7 @@ type BusinessEnvelope<T> = { data?: T | null; code?: number | string; message?: 
 
 type CallApiParams = {
   auth: BeisenAuthValue;
+  rateLimit?: RateLimitContext;
   method: HttpMethod;
   path: string;
   body?: unknown;

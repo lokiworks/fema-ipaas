@@ -18,6 +18,7 @@ export const createBitableRecord = createAction({
       'Append one record to a Feishu/Lark Bitable data table. Pick this to log an event, capture a form submission, or accumulate rows a team will review in Bitable. Field names must match the table column names exactly and the app needs bitable:app permission; every call inserts a new row unless a Dedupe Key is given, in which case repeats of the same key are applied once. The app must also be added to the Bitable as a collaborator that can edit it.',
     idempotent: false,
   },
+  reliability: { writeSafety: 'UNSAFE', rateLimits: [{ bucket: 'bitable', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     appToken: bitableProps.appToken,
     tableId: bitableProps.tableId,
@@ -38,6 +39,7 @@ export const createBitableRecord = createAction({
     const { appToken, tableId, fields, dedupeKey } = context.propsValue;
     const data = await feishuCommon.callApi<CreateRecordResponse>({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       method: HttpMethod.POST,
       path: `/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records`,
       ...(dedupeKey ? { queryParams: { client_token: feishuIdempotency.uuidFrom({ seed: `${appToken}:${tableId}:${dedupeKey}` }) } } : {}),

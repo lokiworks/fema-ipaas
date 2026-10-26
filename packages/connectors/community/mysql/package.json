@@ -1,6 +1,6 @@
 {
   "name": "@fema-ipaas/connector-mysql",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "dependencies": {
@@ -14,10 +14,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.lib.json && cp package.json dist/ && mkdir -p dist/src/i18n && cp src/i18n/*.json dist/src/i18n/",
     "bundle": "node ../../../../dist/packages/cli/src/index.js connectors bundle",
-    "lint": "eslint 'src/**/*.ts'"
+    "lint": "eslint 'src/**/*.ts'",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/sqlstring": "2.3.2",
-    "tslib": "2.6.2"
+    "tslib": "2.6.2",
+    "vitest": "3.2.6"
   }
 }

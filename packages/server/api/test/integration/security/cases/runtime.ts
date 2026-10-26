@@ -1,3 +1,4 @@
+import { runtimeReconciliationCases } from './runtime-reconciliation'
 import { DomainModule, Review } from '../support/route-review'
 import { runtimeExecutionCases } from './runtime-executions'
 import { runtimeAlertAuditCases } from './runtime-infra'
@@ -12,6 +13,7 @@ export const runtimeDomain: DomainModule = {
     cases: [
         ...runtimeExecutionCases,
         ...runtimeRunCases,
+        ...runtimeReconciliationCases,
         ...runtimeIssueCases,
         ...runtimeTenantCases,
         ...runtimeAlertAuditCases,

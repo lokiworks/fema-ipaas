@@ -14,8 +14,9 @@ import { payloadOffloader } from '../workers/payload-offloader'
 import { executionService } from '../workflows/execution/execution-service'
 import { workflowExecutionCache } from '../workflows/workflow/workflow-execution-cache'
 import { workflowVersionRepo } from '../workflows/workflow-version/workflow-version.service'
-import { webhookHandshake } from './webhook-handshake'
+import { webhookHandshake, WebhookHandshakeResponse } from './webhook-handshake'
 import { webhookRunPolicy } from './webhook-run-policy'
+import { webhookSignature } from './webhook-signature'
 
 const WEBHOOK_TIMEOUT_MS = system.getNumberOrThrow(AppSystemProp.WEBHOOK_TIMEOUT_SECONDS) * 1000
 const MAX_PAYLOAD_SIZE_BYTES = system.getNumberOrThrow(AppSystemProp.MAX_WEBHOOK_PAYLOAD_SIZE_MB) * 1024 * 1024
@@ -108,10 +109,16 @@ export const webhookService = {
         })
         const workflowVersionIdToRun = await webhookService.getWorkflowVersionIdToRun(workflowVersionToRun, workflow)
         wideEvent.set({ workflowVersion: { id: workflowVersionIdToRun } })
+        const signatureVersion = await workflowVersionRepo().findOne({ where: { id: workflowVersionIdToRun, workflowId: workflow.id }, select: ['trigger'] })
+        if (signatureVersion && webhookSignature.requiresVerification(signatureVersion.trigger) && !webhookSignature.verify({ trigger: signatureVersion.trigger, payload: payload ?? await resolveData() })) {
+            return { status: StatusCodes.UNAUTHORIZED, body: { message: 'Invalid webhook signature' }, headers: { [webhookHeader]: webhookRequestId } }
+        }
+
 
         // Handshake pings can arrive both during the publish window (when workflow.status is still
         // DISABLED before the transaction completes) and after the workflow is ENABLED (third-party
         // re-verification). Checking before the DISABLED guard handles both cases.
+        let acknowledgement: WebhookHandshakeResponse | undefined
         if (!isNil(workflowExecutionResult.handshakeConfiguration)) {
             const response = await webhookHandshake.handleHandshakeRequest({
                 payload: (payload ?? await resolveData()) as TriggerPayload,
@@ -128,11 +135,8 @@ export const webhookService = {
                     webhookRequestId,
                 }, 'Handshake request completed')
                 wideEvent.set({ webhook: { handshake: true } })
-                return {
-                    status: response.status,
-                    body: response.body,
-                    headers: response.headers ?? {},
-                }
+                if (response.continueToRun && response.status >= 200 && response.status < 300) acknowledgement = response
+                else return { status: response.status, body: response.body, headers: response.headers ?? {} }
             }
         }
 
@@ -150,7 +154,7 @@ export const webhookService = {
 
         pinoLogger.info('Adding webhook job to queue')
 
-        const resolvedPayload = payload ?? await resolveData()
+        const resolvedPayload = acknowledgement?.triggerPayload ?? payload ?? await resolveData()
 
         const payloadSize = payloadOffloader.getPayloadSizeInBytes(resolvedPayload)
         if (payloadSize > MAX_PAYLOAD_SIZE_BYTES) {
@@ -165,9 +169,9 @@ export const webhookService = {
             }
         }
 
-        if (async) {
+        if (async || acknowledgement) {
             wideEvent.set({ webhook: { mode: 'async' } })
-            return handleAsync({
+            const queued = await handleAsync({
                 workflow,
                 saveSampleData,
                 tenantId: workflowExecutionResult.tenantId,
@@ -181,6 +185,7 @@ export const webhookService = {
                 parentRunId,
                 failParentOnFailure,
             })
+            return acknowledgement ? { status: acknowledgement.status, body: acknowledgement.body, headers: { ...queued.headers, ...acknowledgement.headers } } : queued
         }
 
         wideEvent.set({ webhook: { mode: 'sync' } })

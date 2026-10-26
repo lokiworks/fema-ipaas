@@ -122,7 +122,7 @@ function rollbackSteps({
       {
         id: 'stop',
         title: t('Stop the app and workers'),
-        command: 'kubectl -n fema scale deployment/fema --replicas=0',
+        command: 'kubectl -n fema scale deployment -l app.kubernetes.io/instance=fema --replicas=0',
       },
       {
         id: 'restore',
@@ -198,7 +198,7 @@ function restoreSteps({
 }: Omit<BackupContext, 'fileLocation'>): RunbookStep[] {
   const stop =
     kind === DeploymentKind.HELM
-      ? 'kubectl -n fema scale deployment/fema --replicas=0'
+      ? 'kubectl -n fema scale deployment -l app.kubernetes.io/instance=fema --replicas=0'
       : 'docker compose stop app worker';
   const start =
     kind === DeploymentKind.HELM
@@ -245,7 +245,6 @@ function restoreFromBackupSteps({
   kind,
   engine,
   directory,
-  dataDirectory,
   fileName,
   keyDiffers,
 }: RestoreFromBackupContext): RunbookStep[] {
@@ -258,7 +257,7 @@ function restoreFromBackupSteps({
       'Nothing may write to the database while it is being restored.',
     ),
     command: helm
-      ? 'kubectl -n fema scale deployment/fema --replicas=0'
+      ? 'kubectl -n fema scale deployment -l app.kubernetes.io/instance=fema --replicas=0'
       : 'docker compose stop app worker',
   };
   const start = {
@@ -278,61 +277,17 @@ function restoreFromBackupSteps({
       'Set FEMA_ENCRYPTION_KEY to the saved value, or list it in FEMA_RETIRED_ENCRYPTION_KEYS.',
     ),
   };
-  if (engine === BackupEngine.PGLITE) {
-    const replaceCommands = [
-      `mv ${dataDirectory}/pglite ${dataDirectory}/pglite.before-restore-$(date +%Y%m%d-%H%M%S)`,
-      `mkdir ${dataDirectory}/pglite`,
-      `tar -xzf ${file} -C ${dataDirectory}/pglite`,
-    ];
-    return [
-      helm ? stop : { ...stop, command: 'docker compose stop app' },
-      {
-        id: 'replace',
-        title: t('Replace the PGlite data directory with the backup'),
-        description: helm
-          ? t(
-              'Run these where the app data volume is mounted. The old data is kept next to it as pglite.before-restore-<time> until you delete it.',
-            )
-          : t(
-              'This runs in a one-off container that mounts the same data volume. The old data is kept next to it as pglite.before-restore-<time> until you delete it.',
-            ),
-        command: helm
-          ? replaceCommands.join('\n')
-          : `docker compose run --rm --no-deps --entrypoint sh app -c '${replaceCommands.join(
-              ' && ',
-            )}'`,
-      },
-      ...(keyDiffers ? [key] : []),
-      start,
-    ];
-  }
+  const quotedFile = `'${file.replaceAll("'", "'\"'\"'")}'`;
+  const restoreCommand = helm
+    ? `fema-restore ${quotedFile} --offline`
+    : `docker compose run --rm --no-deps app fema-restore ${quotedFile} --offline`;
   return [
-    {
-      id: 'copy',
-      title: t('Copy the backup file to where you run the restore'),
-      description: t(
-        'Skip this when {directory} is a mounted volume you can reach.',
-        {
-          directory,
-        },
-      ),
-      command: helm
-        ? `kubectl -n fema exec deployment/fema -- cat ${file} > ${fileName}`
-        : `docker compose cp app:${file} ./${fileName}`,
-    },
     stop,
-    {
-      id: 'restore',
-      title: t('Restore the database'),
-      description: t(
-        'Use a pg_restore that is the same major version as the database or newer.',
-      ),
-      command: helm
-        ? `pg_restore -d "$FEMA_POSTGRES_URL" --clean --if-exists --no-owner ${fileName}`
-        : `docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner' \\\n  < ./${fileName}`,
-    },
     ...(keyDiffers ? [key] : []),
+    { id: 'check', title: t('Run the restore precheck'), description: t('restore.commandPrecheck'), command: `${restoreCommand} --check` },
+    { id: 'restore', title: t('Restore the database'), description: t(engine === BackupEngine.PGLITE ? 'restore.commandPglite' : 'restore.commandPostgres'), command: restoreCommand },
     start,
+    { id: 'reconcile', title: t('restore.reconcileTitle'), description: t('restore.reconcileDescription') },
   ];
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@fema-ipaas/connector-data-mapper",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "zod": "4.3.6",
     "@fema-ipaas/connector-common": "workspace:*",
     "@fema-ipaas/connector-sdk": "workspace:*",
     "@fema-ipaas/connector-types": "workspace:*",

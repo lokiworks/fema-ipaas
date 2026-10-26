@@ -22,6 +22,7 @@ import {
     PrincipalType,
     ReplayCheckResult,
     UpdateIssueRequestBody,
+    WorkflowRetryStrategy,
 } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -116,7 +117,7 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/:id/replay-check', ReplayCheckRequest, async (request): Promise<ReplayCheckResult> => {
-        return issueReplayService(request.log).check({ id: request.params.id, projectId: request.projectId })
+        return issueReplayService(request.log).check({ id: request.params.id, projectId: request.projectId, strategy: request.body?.strategy })
     })
 
     app.post('/:id/replay', ReplayRequest, async (request): Promise<IssueReplayResult> => {
@@ -126,6 +127,7 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
             projectId: request.projectId,
             strategy: request.body.strategy,
             includeDataProblems: request.body.includeDataProblems ?? false,
+            confirmedUnsafeSteps: request.body.confirmedUnsafeSteps,
             actorId: request.principal.id,
         })
         applicationEvents(request.log).sendUserEvent(request, {
@@ -247,6 +249,7 @@ const ReplayCheckRequest = {
     schema: {
         tags: ['issues'],
         params: IdParams,
+        body: z.object({ strategy: z.enum(WorkflowRetryStrategy).optional() }).optional(),
         response: { [StatusCodes.OK]: ReplayCheckResult },
     },
 }

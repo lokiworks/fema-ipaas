@@ -14,6 +14,7 @@ export const runQuery = createAction({
     description: 'Executes an arbitrary SQL statement against the connected PostgreSQL database and returns the resulting rows. Use this to read, write, or otherwise operate on a Postgres database when no more specific tool fits. Always pass dynamic values via the args array with $1/$2 placeholders (never string-interpolate them) to avoid SQL injection. Not idempotent: the statement can be a mutation (INSERT/UPDATE/DELETE/DDL), so repeating the same call may change data or have side effects each time.',
     idempotent: false,
   },
+  reliability: { writeSafety: 'UNSAFE', rateLimits: [{ bucket: 'postgres-query', scope: 'APP', perSecond: 50 }] },
   props: {
     markdown: Property.MarkDown({
       value: `
@@ -52,6 +53,7 @@ export const runQuery = createAction({
     }),
   },
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'postgres-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const client = await pgClient(context.auth, context.propsValue.query_timeout, context.propsValue.application_name, context.propsValue.connection_timeout_ms);
     const { query } = context.propsValue;
     const queryWithMetadata = `

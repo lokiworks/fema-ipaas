@@ -4,6 +4,7 @@ export * from './lib';
 // on core-*/shared directly (enforced by the community-connector import boundary lint).
 export {
   isNil,
+  isObject,
   isEmpty,
   isString,
   isNotUndefined,
@@ -17,6 +18,7 @@ export {
   camelCase,
   startCase,
   tryCatch,
+  tryCatchSync,
   dataMapping,
   MappingSpec,
   MappingTransformType,
@@ -26,12 +28,19 @@ export {
   mcpWire,
   MCP_PROTOCOL_VERSION,
   blockedUntilMarker,
+  fixOwnerMarker,
+  FixOwner,
+  orgTreePlan,
   ssrfIpClassifier,
   SsrfAddressKind,
   agentToolPolicy,
 } from '@fema-ipaas/core-utils';
 export type {
   SeekPage,
+  SourceOrgNode,
+  TargetOrgNode,
+  OrgTreePlan,
+  OrgPlanOp,
   MappingTableData,
   LlmConfig,
   LlmContent,
@@ -71,6 +80,7 @@ export {
   FAIL_PARENT_ON_FAILURE_HEADER,
 } from '@fema-ipaas/connector-types';
 export type {
+  EnumerationPage,
   BasicAuthConnectionValue,
   CustomAuthConnectionValue,
   PopulatedWorkflowSummary,

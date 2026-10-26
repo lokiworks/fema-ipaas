@@ -18,6 +18,7 @@ export const findEmployeeByEmail = createAction({
       'Look up the Beisen user ID of an employee from their email address. Pick this to read an employee back from Beisen by a business key before comparing or writing to another system. The email is lowercased first as Beisen requires; employees whose record is pending approval, approved or effective are found, and found=false comes back when nobody has that email. It reads only.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     email: Property.ShortText({
       displayName: 'Email',
@@ -29,6 +30,7 @@ export const findEmployeeByEmail = createAction({
     const email = context.propsValue.email.trim().toLowerCase();
     const userId = await beisenCommon.callBusinessApi<number | string>({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       method: HttpMethod.POST,
       path: '/TenantBaseExternal/api/v5/Employee/GetUserIDByEmail',
       body: { email },

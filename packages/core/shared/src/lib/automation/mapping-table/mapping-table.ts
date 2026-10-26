@@ -67,3 +67,15 @@ export const ListMappingTablesRequestQuery = z.object({
     projectId: z.string(),
 })
 export type ListMappingTablesRequestQuery = z.infer<typeof ListMappingTablesRequestQuery>
+
+export const UpsertMappingRowsRequest = z.object({
+    rows: z.array(z.object({ key: z.string().trim().min(1, 'mappingKeyRequired').max(100, 'mappingKeyTooLong'), value: z.string().max(200, 'mappingValueTooLong') })).max(MAPPING_TABLE_MAX_ROWS, 'mappingTableTooManyRows'),
+    onConflict: z.enum(['KEEP', 'REPLACE']).default('KEEP'),
+})
+export type UpsertMappingRowsRequest = z.infer<typeof UpsertMappingRowsRequest>
+
+export const UpsertMappingRowsResult = z.object({
+    inserted: z.number(), replaced: z.number(),
+    conflicts: z.array(z.object({ key: z.string(), existing: z.string(), proposed: z.string() })),
+})
+export type UpsertMappingRowsResult = z.infer<typeof UpsertMappingRowsResult>

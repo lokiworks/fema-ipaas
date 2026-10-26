@@ -1,5 +1,5 @@
-import { blockedUntilMarker, isNil } from '@fema-ipaas/core-utils'
-import { errorHandlingUtils, ExecutionStatus, FailedStep } from '@fema-ipaas/workflow-core'
+import { blockedUntilMarker, fixOwnerMarker, isNil } from '@fema-ipaas/core-utils'
+import { errorHandlingUtils, ExecutionStatus, FailedStep, retrySafety } from '@fema-ipaas/workflow-core'
 import { Issue, IssueKind, IssueSeverity, IssueTitleCategory } from './issue'
 import { IssueFix, IssueFixKind, IssueFixOwner, IssueInsight, IssueInsightCause, ReplayReason } from './issue-requests'
 
@@ -13,9 +13,9 @@ export const issueUtils = {
     titleCategoryOfTitle,
     severityOf,
     insightOf,
-    isTransientHttpStatus,
-    isAuthorizationHttpStatus,
-    isRejectedByTargetHttpStatus,
+    isTransientHttpStatus: retrySafety.isTransientHttpStatus,
+    isAuthorizationHttpStatus: retrySafety.isAuthorizationHttpStatus,
+    isRejectedByTargetHttpStatus: retrySafety.isRejectedByTargetHttpStatus,
     isRepeatAttempt,
     activeBlockedUntil,
 }
@@ -78,7 +78,7 @@ function titleCategoryOf({ kind, errorCode, message }: TitleCategoryOfParams): I
     if (isMappingMiss({ message })) {
         return IssueTitleCategory.MAPPING_MISSING
     }
-    const status = httpStatusOf(errorCode)
+    const status = retrySafety.httpStatusOf(errorCode)
     if (!isNil(blockedUntilMarker.parse(message)) || status === 429 || status === 529) {
         return IssueTitleCategory.RATE_LIMITED
     }
@@ -88,7 +88,7 @@ function titleCategoryOf({ kind, errorCode, message }: TitleCategoryOfParams): I
     if (isNil(status)) {
         return kind === IssueKind.TRIGGER ? IssueTitleCategory.TRIGGER_FAILED : IssueTitleCategory.STEP_FAILED
     }
-    if (AUTHORIZATION_HTTP_STATUSES.includes(status)) {
+    if (retrySafety.isAuthorizationHttpStatus(`HTTP_${status}`)) {
         return IssueTitleCategory.ACCESS_DENIED
     }
     if (status === 404) {
@@ -122,7 +122,7 @@ function classifyDrift({ workflowId, stepName, message }: { workflowId: string, 
 }
 
 function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
-    if (issue.kind === IssueKind.CONNECTION || issue.kind === IssueKind.DRIFT || issue.occurrences >= HIGH_SEVERITY_OCCURRENCES) {
+    if (issue.kind === IssueKind.CONNECTION || (issue.kind === IssueKind.DRIFT || issue.kind === IssueKind.RECONCILIATION) || issue.occurrences >= HIGH_SEVERITY_OCCURRENCES) {
         return IssueSeverity.HIGH
     }
     if (issue.occurrences >= MEDIUM_SEVERITY_OCCURRENCES) {
@@ -131,11 +131,20 @@ function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
     return IssueSeverity.LOW
 }
 
-function insightOf({ issue, connectionHealthy, connectionMissing = false, now = new Date() }: InsightOfParams): IssueInsight {
+function insightOf(params: InsightOfParams): IssueInsight {
+    const insight = baseInsightOf(params)
+    const owner = fixOwnerMarker.parse(params.issue.message)
+    if (isNil(owner) || insight.cause === IssueInsightCause.BLOCKED_UNTIL || params.issue.kind === IssueKind.CONNECTION || (params.issue.kind === IssueKind.DRIFT || params.issue.kind === IssueKind.RECONCILIATION)) {
+        return insight
+    }
+    return { ...insight, owner: IssueFixOwner[owner], confidence: 0.9 }
+}
+
+function baseInsightOf({ issue, connectionHealthy, connectionMissing = false, now = new Date() }: InsightOfParams): IssueInsight {
     if (issue.kind === IssueKind.TRIGGER) {
         return triggerInsightOf({ issue, connectionHealthy, connectionMissing, now })
     }
-    if (issue.kind === IssueKind.DRIFT) {
+    if ((issue.kind === IssueKind.DRIFT || issue.kind === IssueKind.RECONCILIATION)) {
         return {
             cause: IssueInsightCause.RESULT_MISMATCH,
             owner: IssueFixOwner.WORKFLOW_OWNER,
@@ -163,7 +172,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
             cause: IssueInsightCause.BLOCKED_UNTIL,
             owner: IssueFixOwner.WAIT,
             confidence: 0.95,
-            httpStatus: httpStatusOf(issue.errorCode),
+            httpStatus: retrySafety.httpStatusOf(issue.errorCode),
             blockedUntil: blockedUntil.toISOString(),
             fixes: [fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: ReplayReason.BLOCKED_UNTIL }), fix({ kind: IssueFixKind.IGNORE })],
         }
@@ -186,7 +195,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
             fixes: [fix({ kind: IssueFixKind.OPEN_MAPPING_TABLES }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
         }
     }
-    const httpStatus = httpStatusOf(issue.errorCode)
+    const httpStatus = retrySafety.httpStatusOf(issue.errorCode)
     if (httpStatus === 429 || httpStatus === 529) {
         return {
             cause: IssueInsightCause.RATE_LIMITED,
@@ -223,7 +232,7 @@ function insightOf({ issue, connectionHealthy, connectionMissing = false, now = 
             fixes: [fix({ kind: IssueFixKind.OPEN_STEP_INPUT }), fix({ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP })],
         }
     }
-    if (AUTHORIZATION_HTTP_STATUSES.includes(httpStatus)) {
+    if (retrySafety.isAuthorizationHttpStatus(`HTTP_${httpStatus}`)) {
         return {
             cause: IssueInsightCause.ACCESS_DENIED,
             owner: IssueFixOwner.TARGET_ADMIN,
@@ -268,34 +277,8 @@ function activeBlockedUntil({ message, now }: { message: string | null | undefin
     return !isNil(until) && until.getTime() > now.getTime() ? until : null
 }
 
-function isTransientHttpStatus(errorCode: string | null | undefined): boolean {
-    const status = httpStatusOf(errorCode)
-    return !isNil(status) && TRANSIENT_HTTP_STATUSES.includes(status)
-}
-
-function isAuthorizationHttpStatus(errorCode: string | null | undefined): boolean {
-    const status = httpStatusOf(errorCode)
-    return !isNil(status) && AUTHORIZATION_HTTP_STATUSES.includes(status)
-}
-
-function isRejectedByTargetHttpStatus(errorCode: string | null | undefined): boolean {
-    const status = httpStatusOf(errorCode)
-    if (isNil(status) || status < 400 || status >= 500) {
-        return false
-    }
-    return !TRANSIENT_HTTP_STATUSES.includes(status) && !AUTHORIZATION_HTTP_STATUSES.includes(status)
-}
-
 function isRepeatAttempt({ execution, existingIssueId }: IsRepeatAttemptParams): boolean {
     return !isNil(execution.rerunOfExecutionId) || (execution.inPlaceRetryCount ?? 0) > 0 || execution.issueId === existingIssueId
-}
-
-function httpStatusOf(errorCode: string | null | undefined): number | null {
-    if (isNil(errorCode) || !errorCode.startsWith('HTTP_')) {
-        return null
-    }
-    const status = Number(errorCode.slice('HTTP_'.length))
-    return Number.isFinite(status) ? status : null
 }
 
 function fix({ kind, disabledReason }: { kind: IssueFixKind, disabledReason?: ReplayReason | null }): IssueFix {
@@ -311,8 +294,6 @@ const STEP_TIMEOUT_CODE = 'STEP_TIMEOUT'
 const RESULT_MISMATCH_CODE = 'RESULT_MISMATCH'
 const HIGH_SEVERITY_OCCURRENCES = 10
 const MEDIUM_SEVERITY_OCCURRENCES = 3
-const TRANSIENT_HTTP_STATUSES = [429, 502, 503, 504, 529]
-const AUTHORIZATION_HTTP_STATUSES = [401, 403]
 const SERVER_ERROR_MIN_STATUS = 500
 
 type ClassifyTriggerFailureParams = {

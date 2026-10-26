@@ -47,6 +47,8 @@ const systemPropDefaultValues: Partial<Record<SystemProp, string>> = {
     [AppSystemProp.WORKFLOW_TIMEOUT_SECONDS]: '600',
     [AppSystemProp.TRIGGER_TIMEOUT_SECONDS]: '60',
     [AppSystemProp.RUNS_METADATA_UPDATE_CONCURRENCY]: '2',
+    [AppSystemProp.RECONCILIATION_MAX_ITEMS]: '50000',
+    [AppSystemProp.RECONCILIATION_TIME_BUDGET_MINUTES]: '60',
     [AppSystemProp.VERIFICATION_READS_PER_SECOND]: '10',
     [AppSystemProp.VERIFICATION_TIME_BUDGET_MINUTES]: '60',
     [AppSystemProp.TRIGGER_HOOKS_TIMEOUT_SECONDS]: '180',

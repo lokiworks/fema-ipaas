@@ -22,14 +22,14 @@ function StaticDropdownCards({
             type="button"
             role="radio"
             aria-checked={selected}
-            disabled={disabled}
+            disabled={disabled || option.disabled}
             onClick={() => onChange(option.value)}
             className={cn(
               'flex min-w-32 flex-1 items-center gap-2.5 rounded-md border px-3 py-2.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50',
               selected
                 ? 'border-primary bg-primary/5'
                 : 'border-input bg-background hover:bg-muted/50',
-              disabled && 'pointer-events-none opacity-50',
+              (disabled || option.disabled) && 'pointer-events-none opacity-50',
             )}
           >
             {Icon && (

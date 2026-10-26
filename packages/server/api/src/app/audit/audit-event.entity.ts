@@ -26,6 +26,7 @@ export const AuditEventEntity = new EntitySchema<AuditEventRow>({
             type: String,
             nullable: true,
         },
+        eventKey: { type: String, nullable: true },
         action: {
             type: String,
             nullable: false,
@@ -36,6 +37,7 @@ export const AuditEventEntity = new EntitySchema<AuditEventRow>({
         },
     },
     indices: [
+        { name: 'idx_audit_event_event_key', columns: ['tenantId', 'eventKey'], unique: true, where: '"eventKey" IS NOT NULL' },
         {
             name: 'idx_audit_event_tenant_created',
             columns: ['tenantId', 'created'],
@@ -59,6 +61,7 @@ export type AuditEventRow = {
     userId: string | null
     userEmail: string | null
     ip: string | null
+    eventKey: string | null
     action: string
     data: AuditEventData
 }

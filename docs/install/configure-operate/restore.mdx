@@ -1,0 +1,33 @@
+---
+title: "Restore a backup"
+description: "Run a checked, offline database restore and reconcile external systems afterwards."
+---
+
+Stop every app instance and worker before restoring. Use the same image version or a newer compatible version, the same database configuration and mounted data volume, and the encryption key used by the backup. Keep the backup file and its adjacent `.manifest.json` together. Copy object storage separately; database backups do not include objects stored in S3.
+
+```bash
+docker compose stop app worker
+docker compose run --rm --no-deps app fema-restore /root/.fema/backups/BACKUP_FILE --offline --check
+docker compose run --rm --no-deps app fema-restore /root/.fema/backups/BACKUP_FILE --offline
+docker compose up -d app worker
+```
+
+Use the service names from your Compose file. A combined app and worker deployment only needs its combined service stopped. With Helm, scale app and worker deployments to zero and run the command in a one-off pod with the same secrets and volume. Do not mount a PGlite data directory into two active app containers.
+
+The command checks file size, SHA-256, archive readability, database engine, migrations, application version, encryption keys and available local disk space. A backup from a newer release is rejected. PostgreSQL restores refuse other connections to the target database. PGlite uses a shared volume lock; an uncleanly stopped process can leave that lock for up to two minutes.
+
+After prechecks, maintenance blocks new runs and job dispatch. PostgreSQL uses `pg_restore --clean --if-exists --single-transaction --exit-on-error`. PGlite unpacks into a staging directory, swaps directories and retains the previous database beside `pglite/`. The command runs migrations, reports before/after counts and clears maintenance only after success. Keep enough disk space for the backup, staging directory and retained database.
+
+A failed restore leaves maintenance enabled. Inspect the database and command output first. After recovering or restoring a consistent database, clear the flag with the same configuration and volume:
+
+```bash
+docker compose run --rm --no-deps app fema-restore --clear-maintenance
+```
+
+Start services only after the database is consistent. Retain the previous PGlite directory until you have checked the restored instance, then remove that directory manually.
+
+## Reconcile after recovery
+
+Polling checkpoints and notification records return to the backup time. External systems keep changes made afterwards. Stable business keys and lookup-before-write prevent duplicate accounts; messages and other unsafe writes can still need human review. Run each full reconciliation rule after startup, inspect duplicate-key differences, then repair missing or mismatched members. Do not automatically replay unsafe steps without checking their target result.
+
+Use Redis AOF `everysec`. For a database rollback, start with an empty, dedicated Redis database rather than restoring an older Redis snapshot; see [disaster recovery](/install/guarantees/disaster-recovery). Preserve the configuration directory and encryption keys independently from database backups.

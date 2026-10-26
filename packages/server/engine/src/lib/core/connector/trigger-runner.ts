@@ -1,6 +1,6 @@
 import { ConnectorPropertyMap, StaticPropsValue, TriggerStrategy } from '@fema-ipaas/connector-sdk'
 import { assertEqual, isNil, isObject } from '@fema-ipaas/core-utils'
-import { ConnectorTrigger, EngineGenericError, EngineHttpResponse, ExecuteTriggerResponse, PropertySettings, TriggerHookType, WorkflowTrigger } from '@fema-ipaas/shared'
+import { ConnectorTrigger, EngineGenericError, EngineHttpResponse, ExecuteTriggerResponse, PropertySettings, TriggerHookType, TriggerPayload, WorkflowTrigger } from '@fema-ipaas/shared'
 import { buildRuntime } from '../../handler/connector-executor'
 import { EngineConstants, ResolvedExecuteTriggerOperation } from '../../handler/context/engine-constants'
 import { WorkflowExecutorContext } from '../../handler/context/workflow-execution-context'
@@ -162,11 +162,13 @@ function toItems(value: unknown): unknown[] {
     return value
 }
 
-function toWebhookResponse(value: unknown): { status: number, body?: unknown, headers?: Record<string, string> } | undefined {
+function toWebhookResponse(value: unknown): { status: number, body?: unknown, headers?: Record<string, string>, continueToRun?: boolean, triggerPayload?: TriggerPayload } | undefined {
     if (!isObject(value)) {
         return undefined
     }
     return {
+        continueToRun: value.continueToRun === true,
+        triggerPayload: TriggerPayload.safeParse(value.triggerPayload).data,
         status: typeof value.status === 'number' ? value.status : 200,
         body: value.body,
         headers: EngineHttpResponse.shape.headers.safeParse(value.headers).data ?? {},

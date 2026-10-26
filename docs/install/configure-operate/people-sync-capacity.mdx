@@ -1,0 +1,14 @@
+---
+title: "People sync capacity"
+description: "Size a people sync deployment using workload and vendor quotas."
+---
+
+For up to 5,000 employees, start with one 4 vCPU / 8 GB host running an app and one worker. For 5,000–20,000 employees, separate PostgreSQL and provision an app plus two workers. These are starting configurations for a deployment test, not measured throughput guarantees. Configure Redis AOF `everysec`, persistent app data and monitored free disk space.
+
+The earlier local baseline, measured before proactive connector limits, processed about 1.3–2 runs per second. API peaks were 412–820 MB; the worker process tree used 1.3–1.6 GB; 2,640 runs occupied about 37 MB of database space. Those measurements do not predict the current people sync completion time.
+
+Current contact writes share a tenant/application bucket across workers. At one write per second, 2,000 account creations alone need at least 33 minutes; workflows that also update each account need at least 67 minutes, before reads, notices and retries. More workers cannot raise the provider's shared quota. Use measured endpoint limits from your own tenant before changing a declaration.
+
+Run organization sync before the onboarding batch. Keep the organization convergence workflow at concurrency one. The local mock regression covers a 300-department tree, a second run with zero new writes, rename/move/archive and the bulk archive gate. It does not establish real-tenant throughput.
+
+For acceptance, record source/target counts, elapsed time, API RSS, the whole worker process tree, queue wait time, rate-limit events and database size. Exercise late source visibility, duplicate events, ambiguous write failures, Redis restart and worker loss. Verify one terminal audit event per run, then run full reconciliation. The 10,000-to-10,000 scan and two-host deployment remain separate acceptance measurements.

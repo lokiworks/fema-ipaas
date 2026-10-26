@@ -1,4 +1,4 @@
-import { blockedUntilMarker } from '@fema-ipaas/core-utils'
+import { blockedUntilMarker, fixOwnerMarker } from '@fema-ipaas/core-utils'
 import {
     ExecutionStatus,
     IssueFixKind,
@@ -65,6 +65,20 @@ describe('issueUtils.severityOf', () => {
 })
 
 describe('issueUtils.insightOf', () => {
+    it('uses connector ownership without replacing the underlying cause', () => {
+        const message = fixOwnerMarker.attach({ message: 'HTTP 403: source data rejected', owner: 'SOURCE_DATA_OWNER' })
+        const insight = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_403', message }, connectionHealthy: true })
+        expect(insight.owner).toBe(IssueFixOwner.SOURCE_DATA_OWNER)
+        expect(insight.confidence).toBe(0.9)
+        expect(insight.cause).toBe(IssueInsightCause.ACCESS_DENIED)
+    })
+
+    it('keeps a blocked-until wait ahead of declared ownership', () => {
+        const message = fixOwnerMarker.attach({ message: blockedUntilMarker.attach({ message: 'HTTP 429', until: new Date('2030-01-01') }), owner: 'TARGET_ADMIN' })
+        const insight = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_429', message }, connectionHealthy: true, now: new Date('2026-01-01') })
+        expect(insight.owner).toBe(IssueFixOwner.WAIT)
+    })
+
     it('blocks replay until a broken connection is fixed', () => {
         const insight = issueUtils.insightOf({ issue: { kind: IssueKind.CONNECTION, errorCode: 'CONNECTION_EXPIRED' }, connectionHealthy: false })
         expect(insight.cause).toBe(IssueInsightCause.CONNECTION_AUTH)

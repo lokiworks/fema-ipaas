@@ -17,6 +17,7 @@ export const listDepartments = createAction({
       'List the sub-departments of a Feishu/Lark department, optionally the whole tree below it, with their open_department_id (the od- ID that provisioning accepts), custom department ID, name and parent. Pick this to fill a department mapping table from HR department codes to Feishu departments, or to check that a mapped department still exists. It only reads, and only sees departments inside the app contact scope (department 0, the company root, needs the all-members scope).',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'contact-read', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     parentDepartmentId: Property.ShortText({
       displayName: 'Parent Department ID',
@@ -41,6 +42,7 @@ export const listDepartments = createAction({
     const { parentDepartmentId, includeAllLevels, maxItems } = context.propsValue;
     const departments = await feishuContacts.listDepartments({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       input: {
         parentDepartmentId: parentDepartmentId.trim(),
         includeAllLevels: includeAllLevels !== false,

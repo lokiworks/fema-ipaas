@@ -15,8 +15,10 @@ export const getTables = createAction({
     description: 'Lists every base table in the connected PostgreSQL database, each with its schema and table name. Use to discover the schema before reading or writing rows. Takes no input; read-only and idempotent.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'postgres-query', scope: 'APP', perSecond: 50 }] },
   props: {},
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'postgres-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const client = await pgClient(context.auth);
     try {
       const tables = await postgresUtils.listTables(client);

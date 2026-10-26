@@ -96,7 +96,7 @@ const installBody = ({ ctx, acknowledgedChecks = [] }: { ctx: TestContext, ackno
     acknowledgedChecks,
 })
 
-const OFFICIAL_SOLUTION_IDS = ['official-beisen-bitable-roster', 'official-beisen-feishu']
+const OFFICIAL_SOLUTION_IDS = ['official-beisen-bitable-roster', 'official-beisen-dingtalk', 'official-beisen-dingtalk-org', 'official-beisen-feishu', 'official-beisen-feishu-org', 'official-beisen-wecom', 'official-beisen-wecom-org', 'official-feishu-approval-ledger']
 
 describe('Solutions API', () => {
     it('starts with only the official solutions in the library', async () => {

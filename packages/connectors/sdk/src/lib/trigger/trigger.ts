@@ -1,11 +1,11 @@
 import * as z from "zod/mini";
 import { OnStartContext, TestOrRunHookContext, TriggerHookContext } from '../context';
 import type { OutputSchema } from '../output-schema';
-import { ActionClassification, AiMetadata, PropertyGroup, TriggerBase } from '../connector-metadata';
+import { ActionClassification, ActionReliability, AiMetadata, PropertyGroup, TriggerBase } from '../connector-metadata';
 import { InputPropertyMap } from '../property';
 import { ExtractConnectorAuthPropertyTypeForMethods, ConnectorAuthProperty } from '../property/authentication';
 import { isNil } from '@fema-ipaas/core-utils';
-import { TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration, WebhookHandshakeStrategy } from '@fema-ipaas/connector-types';
+import { TriggerPayload, TriggerStrategy, TriggerTestStrategy, WebhookHandshakeConfiguration, WebhookHandshakeStrategy } from '@fema-ipaas/connector-types';
 export { TriggerStrategy }
 
 export const DEDUPE_KEY_PROPERTY = '_dedupe_key'
@@ -33,6 +33,8 @@ export const WebhookRenewConfiguration = z.union([
 export type WebhookRenewConfiguration = z.infer<typeof WebhookRenewConfiguration>
 
 export interface WebhookResponse {
+  continueToRun?: boolean,
+  triggerPayload?: TriggerPayload,
   status: number,
   body?: unknown,
   headers?: Record<string, string>
@@ -60,6 +62,7 @@ type BaseTriggerParams<
   outputSchema?: OutputSchema
   aiMetadata?: AiMetadata
   classification?: ActionClassification
+  reliability?: ActionReliability
 }
 
 type WebhookTriggerParams<
@@ -108,6 +111,7 @@ export class ITrigger<
     public readonly aiMetadata?: AiMetadata,
     public readonly classification?: ActionClassification,
     public readonly propertyGroups?: PropertyGroup[],
+    public readonly reliability?: ActionReliability,
   ) { }
 }
 
@@ -148,6 +152,7 @@ export const createTrigger = <
         params.aiMetadata,
         params.classification,
         params.propertyGroups,
+        params.reliability,
       )
     case TriggerStrategy.POLLING:
       return new ITrigger(
@@ -172,6 +177,7 @@ export const createTrigger = <
         params.aiMetadata,
         params.classification,
         params.propertyGroups,
+        params.reliability,
       )
     case TriggerStrategy.MANUAL:
       return new ITrigger(
@@ -196,6 +202,7 @@ export const createTrigger = <
         params.aiMetadata,
         params.classification,
         params.propertyGroups,
+        params.reliability,
       )
     case TriggerStrategy.APP_WEBHOOK:
       return new ITrigger(
@@ -220,6 +227,7 @@ export const createTrigger = <
         params.aiMetadata,
         params.classification,
         params.propertyGroups,
+        params.reliability,
       )
   }
 }

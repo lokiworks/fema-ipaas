@@ -2,6 +2,7 @@ import { isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { ApplicationEventName, FileType, PopulatedWorkflow, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowStatus, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { applicationEvents, MetaInformation } from '../../helper/application-events'
+import { reconciliationSideEffects } from '../../reconciliation/reconciliation-side-effects'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
 import { sampleDataService } from '../step-run/sample-data.service'
 
@@ -38,6 +39,7 @@ export const workflowSideEffects = (log: FastifyBaseLogger) => ({
     },
 
     async preDelete({ workflowToDelete }: PreDeleteParams): Promise<void> {
+        await reconciliationSideEffects(log).onWorkflowDeleted({ workflowId: workflowToDelete.id, projectId: workflowToDelete.projectId })
         if (
             workflowToDelete.status === WorkflowStatus.DISABLED ||
             isNil(workflowToDelete.publishedVersionId)

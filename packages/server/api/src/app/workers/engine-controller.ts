@@ -7,6 +7,8 @@ import { entitiesMustBeOwnedByCurrentProject } from '../authentication/authoriza
 import { connectorBundle } from '../connectors/connector-bundle'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { fileService } from '../file/file.service'
+import { workflowEmailController } from '../helper/email/workflow-email-controller'
+import { rateLimitController } from '../rate-limit/rate-limit-controller'
 import { engineRunCallbackService } from '../workflows/execution/engine-run-callback-service'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
@@ -14,6 +16,8 @@ import { workflowVersionService } from '../workflows/workflow-version/workflow-v
 export const workflowEngineWorker: FastifyPluginAsyncZod = async (app) => {
 
     app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
+    await app.register(rateLimitController)
+    await app.register(workflowEmailController)
 
     app.get('/populated-workflows', GetAllWorkflowsByProjectParams, async (request) => {
         return workflowService(request.log).list({

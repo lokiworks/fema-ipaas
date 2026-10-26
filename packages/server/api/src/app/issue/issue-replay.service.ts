@@ -1,29 +1,38 @@
-import { isNil, ProjectId, UserId } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, ProjectId, UserId } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import {
     ConnectionStatus,
+    errorHandlingUtils,
+    Execution,
     IssueActivityType,
     IssueKind,
     IssueReplayResult,
     issueUtils,
     ReplayCategory,
+    ReplayCheckItem,
     ReplayCheckResult,
+    retrySafety,
+    WorkflowActionType,
     WorkflowRetryStrategy,
+    workflowStructureUtil,
     WorkflowVersionState,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { In } from 'typeorm'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
+import { connectorMetadataService } from '../connectors/metadata/connector-metadata-service'
 import { databaseConnection } from '../database/database-connection'
 import { mappingTableService } from '../mapping-table/mapping-table.service'
+import { projectService } from '../project/project-service'
 import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
+import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { ChainVerdict, issueReplayUtils, ReplayConnectionState } from './issue-replay-utils'
 import { issueService } from './issue.service'
 
 export const issueReplayService = (log: FastifyBaseLogger) => ({
-    async check({ id, projectId }: IssueRef): Promise<ReplayCheckResult> {
+    async check({ id, projectId, strategy = WorkflowRetryStrategy.FROM_FAILED_STEP }: IssueRef & { strategy?: WorkflowRetryStrategy }): Promise<ReplayCheckResult> {
         const issue = await issueService(log).getOneOrThrow({ id, projectId })
         const executions = await executionRepo().find({
             where: { issueId: id, projectId },
@@ -60,7 +69,13 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             rejectedByTarget: issueUtils.isRejectedByTargetHttpStatus(issue.errorCode),
             blockedUntil: issueUtils.activeBlockedUntil({ message: execution.failedStep?.message, now }),
         }))
-        const items = classified.map((item) => ({ ...item, versionNumber: versionNumbers.get(item.workflowVersionId) ?? null }))
+        const tenantId = await projectService(log).getTenantId(projectId)
+        const limit = pLimit(REPLAY_CONCURRENCY)
+        const items = await Promise.all(classified.map((item, index) => limit(async () => ({
+            ...item,
+            versionNumber: versionNumbers.get(item.workflowVersionId) ?? null,
+            writeSteps: item.category === ReplayCategory.BLOCKED || item.category === ReplayCategory.NOT_NEEDED ? [] : await writeStepsFor({ execution: executions[index], strategy, projectId, tenantId, log }),
+        }))))
         return { items }
     },
 
@@ -69,11 +84,15 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
         return { healthy: state === ReplayConnectionState.HEALTHY, missing: state === ReplayConnectionState.MISSING }
     },
 
-    async replay({ id, projectId, strategy, includeDataProblems, actorId }: ReplayParams): Promise<IssueReplayResult> {
-        const { items } = await this.check({ id, projectId })
+    async replay({ id, projectId, strategy, includeDataProblems, confirmedUnsafeSteps = [], actorId }: ReplayParams): Promise<IssueReplayResult> {
+        const { items } = await this.check({ id, projectId, strategy })
         const selected = items
             .filter((item) => item.category === ReplayCategory.REPLAYABLE || (includeDataProblems && item.category === ReplayCategory.DATA_PROBLEM))
             .filter((item) => strategy !== WorkflowRetryStrategy.FROM_FAILED_STEP || !item.rawDataExpired)
+        const missingConfirmations = selected.flatMap((item) => item.writeSteps.filter((step) => step.needsConfirmation && !confirmedUnsafeSteps.includes(`${item.executionId}:${step.stepName}`)))
+        if (missingConfirmations.length > 0) {
+            throw new ApplicationError({ code: ErrorCode.UNSAFE_REPLAY_NOT_CONFIRMED, params: { message: 'issues.replay.unsafeStepsNotConfirmed' } })
+        }
         const limit = pLimit(REPLAY_CONCURRENCY)
         const results = await Promise.allSettled(selected.map((item) => limit(() => executionService(log).retry({
             executionId: item.executionId,
@@ -90,6 +109,45 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
         return { queued, skipped: items.length - queued }
     },
 })
+
+async function writeStepsFor({ execution, strategy, projectId, tenantId, log }: { execution: Execution, strategy: WorkflowRetryStrategy, projectId: string, tenantId: string, log: FastifyBaseLogger }): Promise<ReplayCheckItem['writeSteps']> {
+    const workflow = await workflowRepo().findOneBy({ id: execution.workflowId, projectId })
+    if (isNil(workflow)) {
+        return []
+    }
+    const version = strategy === WorkflowRetryStrategy.ON_LATEST_VERSION
+        ? await workflowVersionService(log).getLatestLockedVersionOrThrow(workflow.id)
+        : await workflowVersionService(log).getOneOrThrow(execution.workflowVersionId)
+    const steps = workflowStructureUtil.getAllSteps(version.trigger)
+    const failedIndex = steps.findIndex((step) => step.name === execution.failedStep?.name)
+    const writes = await Promise.all(steps.map(async (step, index): Promise<ReplayCheckItem['writeSteps']> => {
+        if (step.type !== WorkflowActionType.CONNECTOR) {
+            return []
+        }
+        const metadata = await connectorMetadataService(log).get({ name: step.settings.connectorName, version: step.settings.connectorVersion, tenantId, projectId })
+        const action = metadata?.actions[step.settings.actionName ?? '']
+        const isHttp = step.settings.connectorName === '@fema-ipaas/connector-http'
+        const method = typeof step.settings.input['method'] === 'string' ? step.settings.input['method'].toUpperCase() : ''
+        const literalKey = typeof step.settings.input['idempotencyKey'] === 'string' ? step.settings.input['idempotencyKey'].trim() : ''
+        const safeHttp = isHttp && (['PUT', 'DELETE'].includes(method) || literalKey.length > 0 && !literalKey.includes('{{'))
+        if (action?.classification === 'READ' || action?.classification === 'SEARCH' || isHttp && ['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+            return []
+        }
+        const writeSafety = safeHttp ? 'IDEMPOTENT' : action?.reliability?.writeSafety ?? 'UNSAFE'
+        const willRun = !step.skip && (strategy === WorkflowRetryStrategy.ON_LATEST_VERSION || failedIndex < 0 || index >= failedIndex)
+        const decision = retrySafety.decide({
+            classification: action?.classification,
+            writeSafety,
+            dedupeWindowSeconds: action?.reliability?.dedupeWindowSeconds,
+            firstAttemptAt: new Date(execution.startTime ?? execution.created).getTime(),
+            now: Date.now(),
+            errorCode: index === failedIndex ? errorHandlingUtils.classifyErrorMessage({ message: execution.failedStep?.message }).errorCode : undefined,
+            message: index === failedIndex ? execution.failedStep?.message : undefined,
+        })
+        return [{ stepName: step.name, displayName: step.displayName, writeSafety, willRun, needsConfirmation: willRun && !decision.allowed }]
+    }))
+    return writes.flat()
+}
 
 async function readConnectionState({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<ReplayConnectionState> {
     const connections = await connectionsRepo().find({ where: { externalId }, select: ['id', 'status', 'projectIds'] })
@@ -134,5 +192,6 @@ type IssueRef = {
 type ReplayParams = IssueRef & {
     strategy: WorkflowRetryStrategy
     includeDataProblems: boolean
+    confirmedUnsafeSteps?: string[]
     actorId: UserId
 }

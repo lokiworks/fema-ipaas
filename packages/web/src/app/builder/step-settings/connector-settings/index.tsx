@@ -212,6 +212,9 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
                 <ActionErrorHandlingForm
                   hideContinueOnFailure={hideContinueOnFailure}
                   hideRetryOnFailure={hideRetryOnFailure}
+                  unsafeWrite={
+                    selectedAction?.reliability?.writeSafety === 'UNSAFE'
+                  }
                   disabled={props.readonly}
                 />
               )}

@@ -14,6 +14,7 @@ export const loadKit = {
   apiRaw,
   mock,
   setupMainLine,
+  setupOrgSync,
   republishWorkflows,
   workflows,
   person,
@@ -89,7 +90,11 @@ async function setupMainLine({ departments = 20, hrChatId = 'oc_hr_notice', itCh
   await upsertConnection({ externalId: 'beisen-main', displayName: '北森', connectorName: '@fema-ipaas/connector-beisen', props: { appKey: 'mock-key', appSecret: 'mock-secret' } })
   await upsertConnection({ externalId: 'feishu-main', displayName: '飞书', connectorName: '@fema-ipaas/connector-feishu', props: { domain: 'https://open.feishu.cn', appId: 'cli_mock', appSecret: 'mock-secret' } })
   const connections = { '@fema-ipaas/connector-beisen': 'beisen-main', '@fema-ipaas/connector-feishu': 'feishu-main' }
-  const config = { hrChatId, itChatId }
+  const rootOrganizationId = '900100000'
+  await mock({ method: 'POST', path: '/__admin/beisen-official', body: { orgs: [{ oId: Number(rootOrganizationId), name: 'Load company', parent: 0 }, ...Array.from({ length: departments }, (_, index) => ({ oId: departmentOid({ index }), name: `Load department ${index + 1}`, parent: Number(rootOrganizationId) }))] } })
+  await mock({ method: 'POST', path: '/__admin/feishu-official', body: { departments: Array.from({ length: departments }, (_, index) => ({ id: departmentOpenId({ index }), name: `Load department ${index + 1}`, parent: '0' })) } })
+  const organization = await setupOrgSync({ connections, rootOrganizationId, itChatId })
+  const config = { hrChatId, itChatId, rootOrganizationId, orgWorkflow: organization.externalId }
   const checks = await api({ method: 'POST', path: `/solutions/${SOLUTION_ID}/checks`, body: { projectId: session.projectId, connections } })
   const manual = checks.results.filter((result) => result.kind === 'MANUAL').map((result) => result.key)
   const installed = await api({ method: 'POST', path: `/solutions/${SOLUTION_ID}/install`, body: { projectId: session.projectId, connections, config, acknowledgedChecks: manual } })
@@ -113,6 +118,17 @@ async function setupMainLine({ departments = 20, hrChatId = 'oc_hr_notice', itCh
     await republishWorkflows({ workflowIds })
   }
   return { workflowIds, tableId: table.id }
+}
+
+async function setupOrgSync({ connections, rootOrganizationId, itChatId, archiveParentId = '' }) {
+  const id = 'official-beisen-feishu-org'
+  const checks = await api({ method: 'POST', path: `/solutions/${id}/checks`, body: { projectId: session.projectId, connections } })
+  const installed = await api({ method: 'POST', path: `/solutions/${id}/install`, body: { projectId: session.projectId, connections, config: { rootOrganizationId, rootDepartmentId: '0', archiveParentId, itChatId }, acknowledgedChecks: checks.results.filter((check) => check.kind === 'MANUAL').map((check) => check.key) } })
+  const workflow = installed.workflows.find((candidate) => candidate.key === 'converge')
+  if (!workflow) throw new Error('Missing organization convergence workflow')
+  await api({ method: 'POST', path: `/workflows/${workflow.workflowId}?projectId=${session.projectId}`, body: { type: 'LOCK_AND_PUBLISH', request: {} } })
+  const flow = await api({ method: 'GET', path: `/workflows/${workflow.workflowId}?projectId=${session.projectId}` })
+  return { workflowId: workflow.workflowId, externalId: flow.externalId }
 }
 
 async function republishWorkflows({ workflowIds }) {

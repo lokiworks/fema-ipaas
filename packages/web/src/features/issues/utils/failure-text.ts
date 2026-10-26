@@ -56,6 +56,13 @@ const TAIL_KEYS = [
 ];
 
 const HINT_KEYS = [
+  { english: 'a department with this name already exists under the parent', key: 'failureHintDepartmentNameExists' },
+  { english: 'the department already exists', key: 'failureHintDepartmentExists' },
+  { english: 'the custom department ID is already in use', key: 'failureHintDepartmentIdExists' },
+  { english: 'the custom department ID must not start with od-, must not be 0 and must be at most 64 characters', key: 'failureHintDepartmentIdFormat' },
+  { english: 'the department tree exceeds 25 levels', key: 'failureHintDepartmentDepth' },
+  { english: 'department names must not contain a slash', key: 'failureHintDepartmentSlash' },
+
   {
     english: 'Beisen API rate limit exceeded.',
     key: 'failureHintBeisenRateLimited',

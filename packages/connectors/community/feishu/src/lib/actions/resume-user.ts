@@ -17,6 +17,7 @@ export const resumeUser = createAction({
       'Resume a suspended Feishu/Lark member by sending is_frozen=false to the update-user endpoint: they can sign in again and see everything from the suspension period. The result reads the account back, so confirmed=true means Feishu now reports is_frozen as asked. Safe to repeat. Use it to undo a suspension that was applied by mistake or when an employee returns. Feishu limits this to one call per second. Needs the "Update contacts" permission, and the member must be inside the app\'s contact scope.',
     idempotent: true,
   },
+  reliability: { writeSafety: 'IDEMPOTENT', readBack: { actionName: 'get_user', aspects: ['suspension'] }, rateLimits: [{ bucket: 'contact-write', scope: 'APP_ENDPOINT', perSecond: 1 }, { bucket: 'contact-read', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     openId: Property.ShortText({
       displayName: 'Member Open ID',
@@ -27,6 +28,7 @@ export const resumeUser = createAction({
   async run(context) {
     return feishuContacts.setUserSuspended({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       input: { openId: context.propsValue.openId, suspended: false },
     });
   },

@@ -236,6 +236,8 @@
                            "install/configure-operate/setup-opentelemetry",
                            "install/configure-operate/telemetry",
                            "install/configure-operate/operations-reference",
+                           "install/configure-operate/restore",
+                           "install/configure-operate/people-sync-capacity",
                            "install/configure-operate/rollback"
                         ]
                      }
@@ -334,7 +336,8 @@
                            "build-connectors/sharing-connectors/community",
                            "build-connectors/sharing-connectors/private"
                         ]
-                     }
+                     },
+                     "build-connectors/building-connectors/oa-erp"
                   ]
                },
                {

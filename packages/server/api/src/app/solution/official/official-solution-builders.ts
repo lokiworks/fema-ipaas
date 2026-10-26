@@ -1,3 +1,4 @@
+import { MappingMissingBehavior } from '@fema-ipaas/core-utils'
 import { WorkflowTrigger } from '@fema-ipaas/shared'
 
 function beisenTrigger({ displayName, statusScope, changeTypes, dedupeKey, dedupeDays, serial, orderKeyPath, nextAction }: BeisenTriggerParams): WorkflowTrigger {
@@ -79,12 +80,24 @@ export const FEISHU = '@fema-ipaas/connector-feishu'
 export const DATA_MAPPER = '@fema-ipaas/connector-data-mapper'
 export const STORE = '@fema-ipaas/connector-store'
 export const STORE_VERSION = '~0.6.0'
-export const BEISEN_VERSION = '~0.3.0'
-export const FEISHU_VERSION = '~0.4.0'
+export const BEISEN_VERSION = '~0.4.0'
+export const FEISHU_VERSION = '~0.5.0'
 export const BEISEN_AUTH = '{{connections[\'beisen-connection\']}}'
 export const FEISHU_AUTH = '{{connections[\'feishu-connection\']}}'
 export const STAMP = '2026-10-03T00:00:00.000Z'
 export const DEPARTMENT_OID = '{{trigger[\'output\'][\'recordInfo\'][\'oIdDepartment\']}}'
+
+export const DEPARTMENT_TABLE = {
+    id: 'mt_beisen_department',
+    key: 'department',
+    name: '北森部门到飞书部门',
+    description: '用北森任职部门的 OId 查飞书部门 ID',
+    keyLabel: '北森部门 OId',
+    valueLabel: '飞书部门 ID',
+    missingBehavior: MappingMissingBehavior.ERROR,
+    defaultValue: null,
+    rows: [],
+}
 
 type BeisenTriggerParams = {
     displayName: string

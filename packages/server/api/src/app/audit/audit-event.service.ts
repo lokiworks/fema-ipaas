@@ -1,4 +1,4 @@
-import { generateId, isNil, sanitizeObjectForPostgresql, SeekPage } from '@fema-ipaas/core-utils'
+import { generateId, isNil, isObject, sanitizeObjectForPostgresql, SeekPage, tryCatch } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
 import { ApplicationEventName, TENANT_ACCESS_LIMITS } from '@fema-ipaas/shared'
 
@@ -12,23 +12,19 @@ import { auditEventRepo } from './audit-event.repo'
 
 export const auditEventService = (log: FastifyBaseLogger) => ({
     async record(event: RecordableEvent): Promise<void> {
-        try {
+        const { error } = await tryCatch(async () => {
             const now = dayjsUtil().toISOString()
-            await auditEventRepo().insert(sanitizeObjectForPostgresql({
-                id: generateId(),
-                created: now,
-                updated: now,
-                tenantId: event.tenantId,
-                projectId: event.projectId ?? null,
-                projectDisplayName: event.projectDisplayName ?? null,
-                userId: event.userId ?? null,
-                userEmail: event.userEmail ?? null,
-                ip: event.ip ?? null,
-                action: event.action,
-                data: event.data,
-            }))
-        }
-        catch (error) {
+            const execution = isObject(event.data) ? event.data['execution'] : undefined
+            const eventKey = event.action === ApplicationEventName.EXECUTION_FINISHED && isObject(execution) && typeof execution['id'] === 'string'
+                ? `${event.action}:${execution['id']}` : null
+            await auditEventRepo().createQueryBuilder().insert().values(sanitizeObjectForPostgresql({
+                id: generateId(), created: now, updated: now, tenantId: event.tenantId,
+                projectId: event.projectId ?? null, projectDisplayName: event.projectDisplayName ?? null,
+                userId: event.userId ?? null, userEmail: event.userEmail ?? null, ip: event.ip ?? null,
+                action: event.action, eventKey, data: event.data,
+            })).orIgnore().execute()
+        })
+        if (error) {
             log.error({ error, action: event.action }, 'failed to record audit event')
         }
     },

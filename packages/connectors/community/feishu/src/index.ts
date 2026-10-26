@@ -1,3 +1,12 @@
+import { prepareApprovalLedger } from './lib/actions/prepare-approval-ledger';
+import { ledgerActions } from './lib/actions/ledger-records';
+import { approvalActions } from './lib/actions/approvals';
+import { approvalTriggers } from './lib/triggers/approvals';
+import { enumerateUsers } from './lib/actions/enumerate-users';
+import { enumerateDepartments } from './lib/actions/enumerate-departments';
+import { archiveDepartment } from './lib/actions/archive-department';
+import { upsertDepartment } from './lib/actions/upsert-department';
+import { getDepartment } from './lib/actions/get-department';
 import { ConnectorCategory, createConnector } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from './lib/auth';
@@ -23,7 +32,7 @@ export const feishu = createConnector({
   logoUrl: '/assets/connectors/feishu.svg',
   authors: ['lokiworks'],
   auth: feishuAuth,
-  actions: [
+  actions: [prepareApprovalLedger, ...approvalActions, ...ledgerActions,enumerateUsers, getDepartment, upsertDepartment, archiveDepartment, enumerateDepartments,
     sendGroupMessage,
     sendDirectMessage,
     findUser,
@@ -37,5 +46,5 @@ export const feishu = createConnector({
     createBitableRecord,
     searchBitableRecords,
   ],
-  triggers: [eventReceived],
+  triggers: [...approvalTriggers,eventReceived],
 });

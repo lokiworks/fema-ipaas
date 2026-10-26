@@ -1,0 +1,14 @@
+import { createAction, Property } from '@fema-ipaas/connector-sdk';
+import { feishuAuth } from '../auth';
+import { feishuApprovals } from '../common/approvals';
+
+function build() {
+  const read = createAction({ auth: feishuAuth, name: 'get_approval_instance', displayName: 'Get approval instance', description: 'Read current approval status and named form values; attachment URLs expire after twelve hours', classification: 'READ', reliability: { rateLimits: APPROVAL_LIMITS }, props: { instanceCode: Property.ShortText({ displayName: 'Instance code', required: true }) }, outputSchema: APPROVAL_SCHEMA, async run(context) { return feishuApprovals.get({ ...context.propsValue, auth: context.auth, rateLimit: context.rateLimit }); } });
+  const enumerate = createAction({ auth: feishuAuth, name: 'enumerate_approval_instances', displayName: 'Enumerate approval instances', description: 'Enumerate approvals created during a bounded lookback, using fixed ten-hour time windows', classification: 'SEARCH', reliability: { enumeration: { entity: 'RECORD', businessKeyPath: 'instance_code' }, rateLimits: APPROVAL_LIMITS }, props: { ...APPROVAL_SCAN_PROPS, pageToken: Property.ShortText({ displayName: 'Page token', required: false }), pageSize: Property.Number({ displayName: 'Page size', required: true, defaultValue: 100 }) }, outputSchema: { fields: [{ key: 'items', listItems: APPROVAL_SCHEMA.fields }, { key: 'nextPageToken' }] }, async run(context) { return feishuApprovals.enumerate({ ...context.propsValue, auth: context.auth, rateLimit: context.rateLimit }); } });
+  return [read, enumerate];
+}
+
+export const APPROVAL_LIMITS = [{ bucket: 'approval-list', scope: 'APP_ENDPOINT', perSecond: 1 }, { bucket: 'approval-read', scope: 'APP_ENDPOINT', perSecond: 15 }] satisfies { bucket: string; scope: 'APP_ENDPOINT'; perSecond: number }[];
+export const APPROVAL_SCAN_PROPS = { approvalCode: Property.ShortText({ displayName: 'Approval definition code', required: true }), lookbackDays: Property.Number({ displayName: 'Creation lookback days', required: true, defaultValue: 7 }), statuses: Property.StaticMultiSelectDropdown({ displayName: 'Statuses', required: false, defaultValue: ['APPROVED'], options: { options: ['PENDING', 'APPROVED', 'REJECTED', 'CANCELED', 'DELETED', 'REVERTED'].map((value) => ({ label: value, value })) } }) };
+export const APPROVAL_SCHEMA = { fields: [{ key: 'instance_code', label: 'Instance code' }, { key: 'serial_number', label: 'Approval number' }, { key: 'status', label: 'Current status' }, { key: 'open_id', label: 'Applicant Open ID' }, { key: 'department_id', label: 'Applicant department' }, { key: 'start_time', label: 'Created at (milliseconds)' }, { key: 'end_time', label: 'Completed at (milliseconds)' }, { key: 'form', label: 'Named form values' }, { key: 'task_list', label: 'Approval tasks' }] };
+export const approvalActions = build();

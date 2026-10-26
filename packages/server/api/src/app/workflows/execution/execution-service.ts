@@ -4,6 +4,7 @@ import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData,
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { ArrayContains, In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm'
+import { restoreMaintenance } from '../../backup/maintenance'
 import { connectionsRepo } from '../../connection/connection-service/connection-service'
 import { repoFactory } from '../../core/db/repo-factory'
 import { distributedLock } from '../../database/redis-connections'
@@ -295,8 +296,12 @@ export const executionService = (log: FastifyBaseLogger) => ({
         concurrency,
         rerunOfExecutionId,
         businessKey,
+        executionId,
     }: StartParams): Promise<Execution> {
-        const countsTowardQuota = environment === RunEnvironment.PRODUCTION && executionType === ExecutionType.BEGIN
+        await restoreMaintenance.assertAvailable()
+        const reserved = executionId ? await executionRepo().findOneBy({ id: executionId, projectId }) : null
+        if (reserved && (reserved.status !== ExecutionStatus.QUEUED || await jobQueue(log).hasExecutionJob({ executionId: reserved.id, projectId, tenantId }))) return reserved
+        const countsTowardQuota = !reserved && environment === RunEnvironment.PRODUCTION && executionType === ExecutionType.BEGIN
         const quota = countsTowardQuota ? await runQuota(log).admit({ projectId }) : null
         if (!isNil(quota) && !quota.allowed) {
             return runQuota(log).recordRejectedRun({ projectId, workflowId, workflowVersionId, parentRunId, failParentOnFailure, verdict: quota })
@@ -311,6 +316,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             environment,
             rerunOfExecutionId,
             businessKey,
+            executionId,
         }, log)
 
         wideEvent.set({
@@ -332,6 +338,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             httpRequestId,
             streamStepProgress,
             concurrency,
+            retainCompleted: Boolean(executionId),
         }, log)
 
         await executionSideEffects(log).onStart({ execution: newExecution, tenantId })
@@ -785,6 +792,7 @@ export async function addToQueue(params: AddToQueueParams, log: FastifyBaseLogge
         id: jobId,
         type: JobType.ONE_TIME,
         data,
+        retainCompleted: params.retainCompleted,
     })
     return params.execution
 }
@@ -856,7 +864,7 @@ async function readLogsFile(log: FastifyBaseLogger, logsFileId: string, projectI
 async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogger): Promise<Execution> {
     const now = new Date().toISOString()
     const execution: Execution = {
-        id: generateId(),
+        id: params.executionId ?? generateId(),
         projectId: params.projectId,
         workflowId: params.workflowId,
         workflowVersionId: params.workflowVersionId,
@@ -873,6 +881,7 @@ async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogg
         rerunOfExecutionId: params.rerunOfExecutionId,
         businessKey: params.businessKey,
     }
+    if (params.executionId) return executionRepo().save(execution)
     switch (params.environment) {
         case RunEnvironment.TESTING:
             return executionRepo().save(execution)
@@ -888,6 +897,7 @@ export function isOutsideRetentionWindow(createdTime: string, retentionDays: num
 }
 
 type CreateParams = {
+    executionId?: string
     projectId: ProjectId
     workflowVersionId: WorkflowVersionId
     triggeredBy?: string
@@ -928,6 +938,7 @@ type ResolveStepOutputParams = {
 }
 
 type AddToQueueParamsCommon = {
+    retainCompleted?: boolean
     execution: Execution
     tenantId: TenantId
     payload?: unknown
@@ -947,6 +958,7 @@ export type AddToQueueParams = AddToQueueParamsCommon & (
 
 
 type StartParams = {
+    executionId?: string
     workflowId: WorkflowId
     payload: unknown
     tenantId: TenantId

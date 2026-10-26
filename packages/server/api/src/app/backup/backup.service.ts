@@ -581,6 +581,7 @@ function megabytes({ bytes }: { bytes: number }): number {
 
 export const backupFiles = {
     directory: backupDirectory,
+    readManifest: async (file: string) => BackupManifest.parse(JSON.parse(await fs.readFile(manifestPathOf({ file }), 'utf8'))),
     manifestPathOf,
     diskUsage,
     countContents,

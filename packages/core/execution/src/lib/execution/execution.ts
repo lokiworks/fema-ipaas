@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ErrorCode } from '@fema-ipaas/core-utils'
 import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
-import { blockedUntilMarker, isNil, truncateString, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
+import { blockedUntilMarker, fixOwnerMarker, isNil, truncateString, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
 import { ExecutionState, RunInternalError } from './state/execution-output'
 import { ExecutionStatus } from './state/workflow-execution'
 
@@ -33,14 +33,17 @@ function shortenFailedStepMessage(message: string): string {
 
 function truncateKeepingBlockedUntil({ value, maxLength }: { value: string, maxLength: number }): string {
     const until = blockedUntilMarker.parse(value)
-    if (isNil(until)) {
-        return truncateString({ value, maxLength })
-    }
-    return blockedUntilMarker.attach({ message: truncateString({ value: blockedUntilMarker.strip(value), maxLength: maxLength - BLOCKED_UNTIL_MARKER_RESERVE }), until })
+    const owner = fixOwnerMarker.parse(value)
+    const reserve = (isNil(until) ? 0 : BLOCKED_UNTIL_MARKER_RESERVE) + (isNil(owner) ? 0 : FIX_OWNER_MARKER_RESERVE)
+    const plain = fixOwnerMarker.strip(blockedUntilMarker.strip(value))
+    const truncated = truncateString({ value: plain, maxLength: maxLength - reserve })
+    const withOwner = isNil(owner) ? truncated : fixOwnerMarker.attach({ message: truncated, owner })
+    return isNil(until) ? withOwner : blockedUntilMarker.attach({ message: withOwner, until })
 }
 
 const FRIENDLY_SUMMARY_MESSAGE_MAX_LENGTH = 400
 const BLOCKED_UNTIL_MARKER_RESERVE = 50
+const FIX_OWNER_MARKER_RESERVE = 40
 
 export const PARENT_RUN_ID_HEADER = 'ap-parent-run-id'
 export const FAIL_PARENT_ON_FAILURE_HEADER = 'ap-fail-parent-on-failure'

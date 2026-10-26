@@ -1,5 +1,6 @@
-import { isNil } from '@fema-ipaas/core-utils'
-import { CodeAction, ComponentAction, ConnectorAction, errorHandlingUtils, ErrorOutcome, ExecutionStatus, PendingReliabilityEvent, RATE_LIMIT_QUEUE, ReliabilityEventKind, reliabilityUtils, ResolvedErrorStrategy } from '@fema-ipaas/shared'
+import { isNil, isObject, tryCatch } from '@fema-ipaas/core-utils'
+import { CodeAction, ComponentAction, ConnectorAction, errorHandlingUtils, ErrorOutcome, ExecutionStatus, PendingReliabilityEvent, RATE_LIMIT_QUEUE, ReliabilityEventKind, reliabilityUtils, ResolvedErrorStrategy, RetryDecision, retrySafety, WorkflowActionType } from '@fema-ipaas/shared'
+import { connectorRunner } from '../core/connector/connector-runner'
 import { EngineConstants } from '../handler/context/engine-constants'
 import {  WorkflowExecutorContext } from '../handler/context/workflow-execution-context'
 
@@ -9,9 +10,10 @@ export async function runWithExponentialBackoff<T extends RetryableAction>(
     constants: EngineConstants,
     requestFunction: RequestFunction<T>,
 ): Promise<WorkflowExecutorContext> {
+    const firstAttemptAt = Date.now()
     const outcome = isNil(action.settings.errorHandlingOptions?.strategy)
-        ? await runWithLegacyRetry({ executionState, action, constants, requestFunction, attemptCount: 1, carried: [] })
-        : await runWithErrorStrategy({ executionState, action, constants, requestFunction, attempt: 1, carried: [] })
+        ? await runWithLegacyRetry({ executionState, action, constants, requestFunction, attemptCount: 1, carried: [], firstAttemptAt })
+        : await runWithErrorStrategy({ executionState, action, constants, requestFunction, attempt: 1, carried: [], firstAttemptAt })
     return outcome.state.withReliabilityEvents({
         events: outcome.events,
         stepName: action.name,
@@ -49,7 +51,7 @@ export function resolveFailedStepStrategy({ executionState, action }: { executio
     return errorHandlingUtils.resolveStrategy({ options: action.settings.errorHandlingOptions, errorCode })
 }
 
-async function runWithLegacyRetry<T extends RetryableAction>({ executionState, action, constants, requestFunction, attemptCount, carried }: RunWithLegacyRetryParams<T>): Promise<AttemptOutcome> {
+async function runWithLegacyRetry<T extends RetryableAction>({ executionState, action, constants, requestFunction, attemptCount, carried, firstAttemptAt }: RunWithLegacyRetryParams<T>): Promise<AttemptOutcome> {
     const attempt = await requestWithRateLimitQueue({ executionState, action, constants, requestFunction, waited: [] })
     const events = [...carried, ...attempt.events]
     const retryEnabled = action.settings.errorHandlingOptions?.retryOnFailure?.value
@@ -61,13 +63,17 @@ async function runWithLegacyRetry<T extends RetryableAction>({ executionState, a
     ) {
         return { state: attempt.state, events }
     }
+    const safety = await decisionOf({ state: attempt.state, action, constants, firstAttemptAt })
+    if (!safety.allowed) {
+        return { state: attempt.state, events: [...events, withheldEventOf({ state: attempt.state, action, reason: safety.reason })] }
+    }
     const backoffTime = Math.pow(constants.retryConstants.retryExponential, attemptCount) * constants.retryConstants.retryInterval
     const retry = retryEventOf({ state: attempt.state, action, waitMs: backoffTime })
     await new Promise(resolve => setTimeout(resolve, backoffTime))
-    return runWithLegacyRetry({ executionState, action, constants, requestFunction, attemptCount: attemptCount + 1, carried: [...events, retry] })
+    return runWithLegacyRetry({ executionState, action, constants, requestFunction, attemptCount: attemptCount + 1, carried: [...events, retry], firstAttemptAt })
 }
 
-async function runWithErrorStrategy<T extends RetryableAction>({ executionState, action, constants, requestFunction, attempt, carried }: RunWithErrorStrategyParams<T>): Promise<AttemptOutcome> {
+async function runWithErrorStrategy<T extends RetryableAction>({ executionState, action, constants, requestFunction, attempt, carried, firstAttemptAt }: RunWithErrorStrategyParams<T>): Promise<AttemptOutcome> {
     const result = await requestWithRateLimitQueue({ executionState, action, constants, requestFunction, waited: [] })
     const events = [...carried, ...result.events]
     if (!executionFailedWithRetryableError(result.state) || !isNil(constants.stepNameToTest)) {
@@ -77,9 +83,13 @@ async function runWithErrorStrategy<T extends RetryableAction>({ executionState,
     if (isNil(resolved?.retry) || attempt > resolved.retry.attempts) {
         return { state: result.state, events }
     }
+    const safety = await decisionOf({ state: result.state, action, constants, firstAttemptAt })
+    if (!safety.allowed) {
+        return { state: result.state, events: [...events, withheldEventOf({ state: result.state, action, reason: safety.reason })] }
+    }
     const retry = retryEventOf({ state: result.state, action, waitMs: resolved.retry.intervalSeconds * 1000 })
     await errorStrategyTiming.sleep(resolved.retry.intervalSeconds * 1000)
-    return runWithErrorStrategy({ executionState, action, constants, requestFunction, attempt: attempt + 1, carried: [...events, retry] })
+    return runWithErrorStrategy({ executionState, action, constants, requestFunction, attempt: attempt + 1, carried: [...events, retry], firstAttemptAt })
 }
 
 async function requestWithRateLimitQueue<T extends RetryableAction>({ executionState, action, constants, requestFunction, waited }: RequestWithRateLimitQueueParams<T>): Promise<AttemptOutcome> {
@@ -96,6 +106,35 @@ async function requestWithRateLimitQueue<T extends RetryableAction>({ executionS
     }
     await errorStrategyTiming.sleep(waitMs)
     return requestWithRateLimitQueue({ executionState, action, constants, requestFunction, waited: [...waited, event] })
+}
+
+async function decisionOf({ state, action, constants, firstAttemptAt }: { state: WorkflowExecutorContext, action: RetryableAction, constants: EngineConstants, firstAttemptAt: number }): Promise<RetryDecision> {
+    if (action.type !== WorkflowActionType.CONNECTOR) {
+        return { allowed: true, reason: 'IDEMPOTENT' }
+    }
+    const { data: description } = await tryCatch(() => connectorRunner.describe({ connectorName: action.settings.connectorName, connectorVersion: action.settings.connectorVersion, devConnectors: constants.devConnectors }))
+    const metadata = description?.metadata.actions[action.settings.actionName ?? '']
+    const reliability = metadata?.reliability
+    const input = state.getStepOutput(action.name)?.input
+    const dedupeKey = reliability?.dedupeKeyProp && isObject(input) ? input[reliability.dedupeKeyProp] : undefined
+    const boundedDedupe = typeof dedupeKey === 'string' && dedupeKey.trim().length > 0 && !dedupeKey.includes('{{') && !isNil(reliability?.dedupeWindowSeconds)
+    const method = isObject(input) && typeof input['method'] === 'string' ? input['method'].toUpperCase() : ''
+    const isHttp = action.settings.connectorName === '@fema-ipaas/connector-http'
+    const readOnlyHttp = isHttp && ['GET', 'HEAD', 'OPTIONS'].includes(method)
+    const idempotentHttp = isHttp && (['PUT', 'DELETE'].includes(method) || isObject(input) && typeof input['idempotencyKey'] === 'string' && input['idempotencyKey'].trim().length > 0 && !input['idempotencyKey'].includes('{{'))
+    return retrySafety.decide({
+        classification: readOnlyHttp ? 'READ' : metadata?.classification,
+        writeSafety: boundedDedupe || idempotentHttp ? 'IDEMPOTENT' : reliability?.dedupeKeyProp ? 'UNSAFE' : reliability?.writeSafety,
+        dedupeWindowSeconds: boundedDedupe ? reliability?.dedupeWindowSeconds : undefined,
+        firstAttemptAt,
+        now: Date.now(),
+        errorCode: classifiedCodeOf({ state, action }),
+        message: failureMessageOf({ state, action }),
+    })
+}
+
+function withheldEventOf({ state, action, reason }: { state: WorkflowExecutorContext, action: RetryableAction, reason: 'UNSAFE_OUTCOME_UNKNOWN' | 'DEDUPE_WINDOW_PASSED' }): PendingReliabilityEvent {
+    return { kind: ReliabilityEventKind.RETRY_WITHHELD, reason, errorCode: classifiedCodeOf({ state, action }), connectorName: connectorNameOf({ action }) }
 }
 
 function failureMessageOf({ state, action }: { state: WorkflowExecutorContext, action: RetryableAction }): string | undefined {
@@ -143,6 +182,7 @@ type RunWithErrorStrategyParams<T extends RetryableAction> = {
     constants: EngineConstants
     requestFunction: RequestFunction<T>
     attempt: number
+    firstAttemptAt: number
     carried: PendingReliabilityEvent[]
 }
 
@@ -152,6 +192,7 @@ type RunWithLegacyRetryParams<T extends RetryableAction> = {
     constants: EngineConstants
     requestFunction: RequestFunction<T>
     attemptCount: number
+    firstAttemptAt: number
     carried: PendingReliabilityEvent[]
 }
 

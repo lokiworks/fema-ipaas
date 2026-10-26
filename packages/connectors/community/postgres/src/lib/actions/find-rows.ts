@@ -15,6 +15,7 @@ export const findRows = createAction({
     description: 'Reads rows from a PostgreSQL table, optionally narrowed by a SQL WHERE condition and limited to specific columns. Use to look up or filter records by arbitrary criteria. Returns at most 100 rows unless limit is raised or cleared. The condition is interpolated raw into the query, so pass dynamic values through the args array and reference them as $1, $2 placeholders to avoid SQL injection. Read-only and idempotent.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'postgres-query', scope: 'APP', perSecond: 50 }] },
   props: {
     markdown: warningMarkdown,
     table: postgresCommon.table,
@@ -37,6 +38,7 @@ export const findRows = createAction({
     }),
   },
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'postgres-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const { table, condition, args, columns, limit } = context.propsValue;
 
     const selected = columns && columns.length > 0

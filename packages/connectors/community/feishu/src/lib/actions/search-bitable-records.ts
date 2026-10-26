@@ -1,5 +1,5 @@
 import { HttpMethod } from '@fema-ipaas/connector-common';
-import { Property, createAction } from '@fema-ipaas/connector-sdk';
+import { Property, createAction, type RateLimitContext } from '@fema-ipaas/connector-sdk';
 
 import { feishuAuth } from '../auth';
 import { bitableProps } from '../bitable-props';
@@ -17,6 +17,7 @@ export const searchBitableRecords = createAction({
       'Query rows from a Feishu/Lark Bitable data table, optionally filtered to one column matching one value, and return them as a flat list. Pick this to read reference data or to check whether a row already exists before writing one. It follows the page token until the requested number of records is reached or the table runs out, and never modifies the table.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'bitable', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     appToken: bitableProps.appToken,
     tableId: bitableProps.tableId,
@@ -41,6 +42,7 @@ export const searchBitableRecords = createAction({
     const { appToken, tableId, filterField, filterValue, pageSize } = context.propsValue;
     const records = await collectRecords({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       path: `/open-apis/bitable/v1/apps/${appToken}/tables/${tableId}/records/search`,
       body: buildFilter(filterField, filterValue),
       maxRecords: Math.min(Math.max(pageSize ?? DEFAULT_MAX_RECORDS, 1), MAX_RECORDS),
@@ -52,12 +54,13 @@ export const searchBitableRecords = createAction({
   },
 });
 
-async function collectRecords({ auth, path, body, maxRecords }: CollectRecordsParams): Promise<RecordItem[]> {
+async function collectRecords({ auth, rateLimit, path, body, maxRecords }: CollectRecordsParams): Promise<RecordItem[]> {
   const collected: RecordItem[] = [];
   let pageToken: string | undefined = undefined;
   for (let page = 0; page < MAX_PAGES; page++) {
     const data: SearchRecordsResponse = await feishuCommon.callApi<SearchRecordsResponse>({
       auth,
+      rateLimit,
       method: HttpMethod.POST,
       path,
       queryParams: {
@@ -105,6 +108,7 @@ type SearchRecordsResponse = {
 
 type CollectRecordsParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   path: string;
   body: Record<string, unknown>;
   maxRecords: number;

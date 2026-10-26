@@ -55,3 +55,5 @@ export * from './lib/engine-tools'
 export type { PopulatedWorkflowSummary } from './lib/workflows'
 
 export * from './lib/execution-contracts'
+
+export type { EnumerationPage } from './lib/enumeration'

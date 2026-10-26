@@ -16,6 +16,7 @@ export const getSubOrganizations = createAction({
       'List the child organization units beneath one Beisen organization, optionally the whole subtree below it, as a flat list. Pick this to mirror the company department tree into another system or to resolve a department OId from an employee record into a name. The organization is identified by its numeric OId; the company root OId is 900 followed by the tenant ID, for example 900100000. It reads only, returns an empty list when the organization has no children and fails with a parameter error when the OId does not exist.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     organizationId: Property.ShortText({
       displayName: 'Organization ID',
@@ -40,6 +41,7 @@ export const getSubOrganizations = createAction({
     const oId = parseOrganizationId({ value: organizationId });
     const organizations = await beisenCommon.callBusinessApi<unknown[]>({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       method: HttpMethod.POST,
       path: includeAllLevels ? TREES_PATH : CHILDREN_PATH,
       body: includeAllLevels

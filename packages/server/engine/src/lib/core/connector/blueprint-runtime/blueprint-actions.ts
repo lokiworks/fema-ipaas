@@ -1,4 +1,5 @@
-import { Action, ConnectorAuthProperty, createAction, DropdownState } from '@fema-ipaas/connector-sdk'
+import { createHash } from 'node:crypto'
+import { Action, ConnectorAuthProperty, createAction, DropdownState, RateLimitContext } from '@fema-ipaas/connector-sdk'
 import {
     BLUEPRINT_DEVKIT_ACTIONS,
     BlueprintAuthType,
@@ -18,6 +19,9 @@ export const blueprintActions = {
             name: operation.key,
             displayName: operation.name,
             description: operation.description.length > 0 ? operation.description : operation.name,
+            classification: operation.classification,
+            reliability: operation.reliability,
+            aiMetadata: { idempotent: operation.reliability?.writeSafety !== undefined && operation.reliability.writeSafety !== 'UNSAFE' },
             auth,
             requireAuth: !isNil(auth),
             props: blueprintProps.build({ inputs: operation.inputs, auth, loadOptions: optionsLoader({ definition }) }),
@@ -28,15 +32,25 @@ export const blueprintActions = {
             },
             run: async (context) => {
                 const values = blueprintProps.flatten(context.propsValue)
-                const result = await blueprintActions.invoke({ definition, operation, values, authValue: context.auth })
+                const result = await blueprintActions.invoke({ definition, operation, values, authValue: context.auth, rateLimit: context.rateLimit })
                 return result.body
             },
         })
     },
-    async exchange({ definition, operation, values, authValue }: InvokeParams): Promise<InvokeResult> {
+    async exchange({ definition, operation, values, authValue, rateLimit }: InvokeParams): Promise<InvokeResult> {
         const errors = blueprintProps.validate({ inputs: operation.inputs, values })
         if (errors.length > 0) {
             throw new BlueprintRequestError(errors.join('; '))
+        }
+        if (operation.reliability?.writeSafety === 'LOOKUP_BEFORE_WRITE') {
+            const lookup = operation.lookupBeforeWrite
+            const source = definition.operations.find((candidate) => candidate.key === lookup?.operationKey)
+            if (!lookup || !source || !['READ', 'SEARCH'].includes(source.classification ?? '') || source.key === operation.key || !operation.reliability.lookupKeys?.length) throw new BlueprintRequestError('Lookup-before-write requires a separate read operation and stable lookup inputs')
+            if (operation.reliability.lookupKeys.some((key) => values[key] === null || values[key] === undefined || String(values[key]).trim() === '')) throw new BlueprintRequestError('Lookup-before-write key is missing')
+            const found = await blueprintActions.invoke({ definition, operation: source, values, authValue, rateLimit })
+            const matches = blueprintTemplate.readPath({ source: found.body, path: lookup.matchPath })
+            if (Array.isArray(matches) && matches.length > 1) throw new BlueprintRequestError('Lookup-before-write found multiple records for the same business key')
+            if (Array.isArray(matches) ? matches.length === 1 : matches !== undefined && matches !== null && matches !== false && matches !== '') return found
         }
         const credential = await blueprintAuth.resolve({ definition, value: authValue })
         const request = blueprintTemplate.resolveRequest(operation)
@@ -48,6 +62,9 @@ export const blueprintActions = {
             vars: { input: values, settings: values, authInput: credential.authInput, authData: credential.authData },
         })
         const auth = blueprintAuth.active(definition)
+        for (const declaration of operation.reliability?.rateLimits ?? []) {
+            await rateLimit?.acquire({ bucket: declaration.bucket, scopeKey: declaration.scope === 'TENANT' ? 'tenant' : createHash('sha256').update(JSON.stringify(authValue) ?? '').digest('hex') })
+        }
         const result = await blueprintHttp.execute({
             request: built,
             credential,
@@ -55,6 +72,7 @@ export const blueprintActions = {
             status: operation.statusOverride ?? definition.status,
             timeoutSeconds: request.timeoutSeconds,
             followRedirect: request.followRedirect,
+            retrySafe: operation.classification === 'READ' || operation.classification === 'SEARCH' || operation.reliability?.writeSafety === 'IDEMPOTENT',
         })
         const tip = result.outcome.tip.length > 0 && result.outcome.tip !== result.outcome.message ? ` (${result.outcome.tip})` : ''
         return {
@@ -112,7 +130,7 @@ export const blueprintActions = {
             run: async (context) => {
                 const values = blueprintProps.flatten(context.propsValue)
                 try {
-                    const result = await blueprintActions.exchange({ definition, operation, values, authValue: context.auth })
+                    const result = await blueprintActions.exchange({ definition, operation, values, authValue: context.auth, rateLimit: context.rateLimit })
                     return { success: result.success, status: result.status, durationMs: result.durationMs, request: result.requestText, response: result.body, log: result.log, errorMessage: result.errorMessage }
                 }
                 catch (error) {
@@ -156,6 +174,7 @@ type InvokeParams = {
     operation: BlueprintOperation
     values: Record<string, unknown>
     authValue: unknown
+    rateLimit?: RateLimitContext
 }
 
 type InvokeResult = {

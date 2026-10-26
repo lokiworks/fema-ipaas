@@ -12,6 +12,7 @@ export enum IssueKind {
     STEP = 'STEP',
     CONNECTION = 'CONNECTION',
     DRIFT = 'DRIFT',
+    RECONCILIATION = 'RECONCILIATION',
     TRIGGER = 'TRIGGER',
 }
 

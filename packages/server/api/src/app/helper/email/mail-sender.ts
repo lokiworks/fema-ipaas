@@ -5,6 +5,7 @@ import { ServiceCheckFailure } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import Mustache from 'mustache'
 import nodemailer from 'nodemailer'
+import { Attachment } from 'nodemailer/lib/mailer'
 import { serviceFailure } from '../../health/service-failure'
 import { system } from '../system/system'
 import { AppSystemProp } from '../system/system-props'
@@ -140,6 +141,17 @@ export const mailSender = (log: FastifyBaseLogger) => ({
         return { ok: true, failure: null, reason: null }
     },
 
+    async sendWorkflow({ tenantName, to, cc, subject, text, html, attachments }: WorkflowMailParams): Promise<{ messageId: string }> {
+        const transport = buildTransport()
+        if (isNil(transport)) throw new Error('Platform mail service is not configured')
+        const { data, error } = await tryCatch(() => transport.sendMail({ from: senderAddress({ tenantName }), to, cc, subject, text, html, attachments, disableFileAccess: true, disableUrlAccess: true }))
+        transport.close()
+        recordDelivery({ ok: isNil(error), error })
+        if (error) throw error
+        if ((data.rejected?.length ?? 0) > 0) throw new Error('Some recipients were rejected. Review delivery before sending again.')
+        return { messageId: String(data.messageId) }
+    },
+
     async send({ to, subject, template, variables }: SendParams): Promise<void> {
         const transport = buildTransport()
         if (isNil(transport)) {
@@ -200,3 +212,5 @@ type SendParams = {
     template: string
     variables: MailTemplateVariables
 }
+
+type WorkflowMailParams = { tenantName: string, to: string[], cc: string[], subject: string, text?: string, html?: string, attachments: Attachment[] }

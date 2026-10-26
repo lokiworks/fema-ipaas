@@ -152,52 +152,25 @@ describe('systemRunbook.restoreFromBackupSteps', () => {
     keyDiffers: false,
   };
 
-  it('copies the dump out of the container, stops the services and runs pg_restore on Compose', () => {
-    const steps = systemRunbook.restoreFromBackupSteps({
-      ...context,
-      kind: DeploymentKind.COMPOSE,
-      engine: BackupEngine.PG_DUMP,
-    });
-    expect(steps.map((step) => step.id)).toEqual([
-      'copy',
-      'stop',
-      'restore',
-      'start',
-    ]);
-    expect(steps[0].command).toBe(
-      'docker compose cp app:/root/.fema/backups/fema-20261004-020000-abc123.dump ./fema-20261004-020000-abc123.dump',
-    );
-    expect(steps[2].command).toContain('pg_restore');
-    expect(steps[2].command).toContain('--clean --if-exists --no-owner');
+  it('stops services and runs the checked offline command on Compose', () => {
+    const steps = systemRunbook.restoreFromBackupSteps({ ...context, kind: DeploymentKind.COMPOSE, engine: BackupEngine.PG_DUMP });
+    expect(steps.map((step) => step.id)).toEqual(['stop', 'check', 'restore', 'start', 'reconcile']);
+    expect(steps[1].command).toContain('fema-restore');
+    expect(steps[1].command).toContain('--offline --check');
+    expect(steps[2].command).toContain("'/root/.fema/backups/fema-20261004-020000-abc123.dump' --offline");
   });
 
-  it('uses the database url on Helm', () => {
-    const steps = systemRunbook.restoreFromBackupSteps({
-      ...context,
-      kind: DeploymentKind.HELM,
-      engine: BackupEngine.PG_DUMP,
-    });
-    expect(steps.find((step) => step.id === 'restore')?.command).toContain(
-      '$FEMA_POSTGRES_URL',
-    );
+  it('runs the same checked command in a Helm maintenance pod', () => {
+    const steps = systemRunbook.restoreFromBackupSteps({ ...context, kind: DeploymentKind.HELM, engine: BackupEngine.PG_DUMP });
+    expect(steps[0].command).toContain('--replicas=0');
+    expect(steps.find((step) => step.id === 'restore')?.command).toContain('fema-restore');
   });
 
-  it('replaces the PGlite directory in a one-off container and keeps the old data aside', () => {
-    const steps = systemRunbook.restoreFromBackupSteps({
-      ...context,
-      fileName: 'fema-20261004-020000-abc123.pglite.tar.gz',
-      kind: DeploymentKind.COMPOSE,
-      engine: BackupEngine.PGLITE,
-    });
-    expect(steps[0].command).toBe('docker compose stop app');
-    const replace = steps.find((step) => step.id === 'replace');
-    expect(replace?.command).toContain('docker compose run --rm --no-deps');
-    expect(replace?.command).toContain(
-      'mv /root/.fema/pglite /root/.fema/pglite.before-restore-$(date +%Y%m%d-%H%M%S)',
-    );
-    expect(replace?.command).toContain(
-      'tar -xzf /root/.fema/backups/fema-20261004-020000-abc123.pglite.tar.gz -C /root/.fema/pglite',
-    );
+  it('uses the PGlite restore command instead of replacing a live directory', () => {
+    const steps = systemRunbook.restoreFromBackupSteps({ ...context, fileName: 'backup.pglite.tar.gz', kind: DeploymentKind.COMPOSE, engine: BackupEngine.PGLITE });
+    expect(steps[0].command).toBe('docker compose stop app worker');
+    expect(steps.find((step) => step.id === 'restore')?.command).toContain('backup.pglite.tar.gz');
+    expect(steps.find((step) => step.id === 'restore')?.command).toContain('--offline');
   });
 
   it('adds the key step only when the key differs', () => {

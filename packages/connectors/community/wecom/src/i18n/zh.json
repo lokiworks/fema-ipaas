@@ -1,0 +1,23 @@
+{
+  "WeCom": "企业微信",
+  "Corp ID": "企业 ID",
+  "Contact synchronization Secret": "通讯录同步 Secret",
+  "Application Secret": "自建应用 Secret",
+  "Agent ID": "应用 Agent ID",
+  "Get member": "读取成员",
+  "Find member": "查找成员",
+  "Provision member": "开通成员",
+  "Update member": "更新成员",
+  "Suspend member": "停用成员",
+  "Resume member": "恢复成员",
+  "Enumerate members": "全量列举成员",
+  "Get department": "读取部门",
+  "Create or update department": "创建或更新部门",
+  "Archive department": "归档部门",
+  "Enumerate departments": "全量列举部门",
+  "Send application message": "发送应用消息",
+  "Send group robot message": "发送群机器人消息",
+  "Contact changed": "通讯录变动",
+  "Callback Token": "回调 Token",
+  "EncodingAESKey": "回调 EncodingAESKey"
+}

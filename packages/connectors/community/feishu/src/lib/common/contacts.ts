@@ -1,3 +1,4 @@
+import type { RateLimitContext } from '@fema-ipaas/connector-sdk';
 import { HttpMethod } from '@fema-ipaas/connector-common';
 import { tryCatch } from '@fema-ipaas/connector-sdk';
 
@@ -18,13 +19,14 @@ export const feishuContacts = {
   mobileCandidates,
 };
 
-async function updateUser({ auth, input }: UpdateUserParams): Promise<UpdateUserResult> {
+async function updateUser({ auth, rateLimit, input }: UpdateUserParams): Promise<UpdateUserResult> {
   const body = updateUserBody(input);
   if (Object.keys(body).length === 0) {
     return { updated: false, open_id: input.openId, changed: [] };
   }
   await feishuCommon.callApi<unknown>({
     auth,
+    rateLimit,
     method: HttpMethod.PATCH,
     path: `/open-apis/contact/v3/users/${encodeURIComponent(input.openId)}`,
     queryParams: {
@@ -45,9 +47,10 @@ function updateUserBody(input: UpdateUserInput): Record<string, unknown> {
   };
 }
 
-async function getUser({ auth, input }: GetUserParams): Promise<GetUserResult> {
+async function getUser({ auth, rateLimit, input }: GetUserParams): Promise<GetUserResult> {
   const data = await feishuCommon.callApi<GetUserResponse>({
     auth,
+    rateLimit,
     method: HttpMethod.GET,
     path: `/open-apis/contact/v3/users/${encodeURIComponent(input.openId)}`,
     queryParams: {
@@ -58,15 +61,16 @@ async function getUser({ auth, input }: GetUserParams): Promise<GetUserResult> {
   return toUserResult({ user: data.user ?? {}, fallbackOpenId: input.openId });
 }
 
-async function setUserSuspended({ auth, input }: SetUserSuspendedParams): Promise<SetUserSuspendedResult> {
+async function setUserSuspended({ auth, rateLimit, input }: SetUserSuspendedParams): Promise<SetUserSuspendedResult> {
   await feishuCommon.callApi<unknown>({
     auth,
+    rateLimit,
     method: HttpMethod.PATCH,
     path: `/open-apis/contact/v3/users/${encodeURIComponent(input.openId)}`,
     queryParams: { user_id_type: 'open_id' },
     body: { is_frozen: input.suspended },
   });
-  const { data: readBack } = await tryCatch(() => getUser({ auth, input: { openId: input.openId } }));
+  const { data: readBack } = await tryCatch(() => getUser({ auth, rateLimit, input: { openId: input.openId } }));
   return {
     open_id: input.openId,
     suspended: input.suspended,
@@ -75,9 +79,9 @@ async function setUserSuspended({ auth, input }: SetUserSuspendedParams): Promis
   };
 }
 
-async function provisionUser({ auth, input }: ProvisionUserParams): Promise<ProvisionUserResult> {
+async function provisionUser({ auth, rateLimit, input }: ProvisionUserParams): Promise<ProvisionUserResult> {
   const mobile = normalizeMobile(input.mobile);
-  const existing = await lookupUser({ auth, mobile, email: input.email, includeResigned: false });
+  const existing = await lookupUser({ auth, rateLimit, mobile, email: input.email, includeResigned: false });
   if (existing) {
     return reuseExisting({ existing, mobile });
   }
@@ -85,6 +89,7 @@ async function provisionUser({ auth, input }: ProvisionUserParams): Promise<Prov
   const { data, error } = await tryCatch(() =>
     feishuCommon.callApi<CreateUserResponse>({
       auth,
+    rateLimit,
       method: HttpMethod.POST,
       path: '/open-apis/contact/v3/users',
       queryParams: {
@@ -96,7 +101,7 @@ async function provisionUser({ auth, input }: ProvisionUserParams): Promise<Prov
     }),
   );
   if (error) {
-    return recoverFromDuplicate({ auth, error, mobile, email: input.email });
+    return recoverFromDuplicate({ auth, rateLimit, error, mobile, email: input.email });
   }
   return {
     created: true,
@@ -119,16 +124,16 @@ function createUserBody(input: ProvisionUserInput): Record<string, unknown> {
   };
 }
 
-async function recoverFromDuplicate({ auth, error, mobile, email }: RecoverParams): Promise<ProvisionUserResult> {
+async function recoverFromDuplicate({ auth, rateLimit, error, mobile, email }: RecoverParams): Promise<ProvisionUserResult> {
   const code = feishuCommon.errorCodeOf(error);
   if (code === undefined || !ALREADY_EXISTS_CODES.includes(code)) {
     throw error;
   }
-  const active = await lookupUser({ auth, mobile, email, includeResigned: false });
+  const active = await lookupUser({ auth, rateLimit, mobile, email, includeResigned: false });
   if (active) {
     return reuseExisting({ existing: active, mobile });
   }
-  const resigned = await lookupUser({ auth, mobile, email, includeResigned: true });
+  const resigned = await lookupUser({ auth, rateLimit, mobile, email, includeResigned: true });
   if (resigned?.isResigned) {
     return reuseExisting({ existing: resigned, mobile });
   }
@@ -148,7 +153,7 @@ function reuseExisting({ existing, mobile }: { existing: LookupResult; mobile: s
   };
 }
 
-async function lookupUser({ auth, mobile, email, includeResigned }: LookupUserParams): Promise<LookupResult | null> {
+async function lookupUser({ auth, rateLimit, mobile, email, includeResigned }: LookupUserParams): Promise<LookupResult | null> {
   const mobiles = mobile ? mobileCandidates({ mobile }) : [];
   const emails = email ? [email] : [];
   if (mobiles.length === 0 && emails.length === 0) {
@@ -156,6 +161,7 @@ async function lookupUser({ auth, mobile, email, includeResigned }: LookupUserPa
   }
   const data = await feishuCommon.callApi<BatchGetIdResponse>({
     auth,
+    rateLimit,
     method: HttpMethod.POST,
     path: '/open-apis/contact/v3/users/batch_get_id',
     queryParams: { user_id_type: 'open_id' },
@@ -182,9 +188,9 @@ async function lookupUser({ auth, mobile, email, includeResigned }: LookupUserPa
   };
 }
 
-async function listDepartmentUsers({ auth, input }: ListDepartmentUsersParams): Promise<ListedUser[]> {
+async function listDepartmentUsers({ auth, rateLimit, input }: ListDepartmentUsersParams): Promise<ListedUser[]> {
   const departments = input.includeSubDepartments
-    ? [input.departmentId, ...(await listDepartments({ auth, input: { parentDepartmentId: input.departmentId, includeAllLevels: true, maxItems: MAX_DEPARTMENTS } })).map((department) => department.open_department_id)]
+    ? [input.departmentId, ...(await listDepartments({ auth, rateLimit, input: { parentDepartmentId: input.departmentId, includeAllLevels: true, maxItems: MAX_DEPARTMENTS } })).map((department) => department.open_department_id)]
     : [input.departmentId];
   const seen = new Set<string>();
   const users: ListedUser[] = [];
@@ -194,6 +200,7 @@ async function listDepartmentUsers({ auth, input }: ListDepartmentUsersParams): 
     }
     const items = await feishuCommon.collectPages<UserRecord>({
       auth,
+    rateLimit,
       path: '/open-apis/contact/v3/users/find_by_department',
       queryParams: {
         user_id_type: 'open_id',
@@ -214,9 +221,10 @@ async function listDepartmentUsers({ auth, input }: ListDepartmentUsersParams): 
   return users;
 }
 
-async function listDepartments({ auth, input }: ListDepartmentsParams): Promise<ListedDepartment[]> {
+async function listDepartments({ auth, rateLimit, input }: ListDepartmentsParams): Promise<ListedDepartment[]> {
   const items = await feishuCommon.collectPages<DepartmentRecord>({
     auth,
+    rateLimit,
     path: `/open-apis/contact/v3/departments/${encodeURIComponent(input.parentDepartmentId)}/children`,
     queryParams: {
       department_id_type: departmentIdType(input.parentDepartmentId),
@@ -396,6 +404,7 @@ type DepartmentRecord = {
 
 type GetUserParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   input: GetUserInput;
 };
 
@@ -403,21 +412,25 @@ type GetUserResponse = { user?: UserRecord };
 
 type UpdateUserParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   input: UpdateUserInput;
 };
 
 type SetUserSuspendedParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   input: SetUserSuspendedInput;
 };
 
 type ProvisionUserParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   input: ProvisionUserInput;
 };
 
 type LookupUserParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   mobile?: string | undefined;
   email?: string | undefined;
   includeResigned?: boolean | undefined;
@@ -425,6 +438,7 @@ type LookupUserParams = {
 
 type RecoverParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   error: Error;
   mobile: string;
   email?: string | undefined;
@@ -432,11 +446,13 @@ type RecoverParams = {
 
 type ListDepartmentUsersParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   input: { departmentId: string; includeSubDepartments: boolean; maxItems: number };
 };
 
 type ListDepartmentsParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   input: { parentDepartmentId: string; includeAllLevels: boolean; maxItems: number };
 };
 

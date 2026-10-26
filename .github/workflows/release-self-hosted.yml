@@ -84,8 +84,33 @@ jobs:
             linux/arm64
           push: true
           tags: |
-            lokiworks/fema-ipaas:${{ inputs.tag }}
-            ghcr.io/lokiworks/fema-ipaas:${{ inputs.tag }}
+            lokiworks/fema-ipaas:build-${{ github.run_id }}-${{ github.run_attempt }}
+            ghcr.io/lokiworks/fema-ipaas:build-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Check image size against the previous release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CANDIDATE: lokiworks/fema-ipaas:build-${{ github.run_id }}-${{ github.run_attempt }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          PREVIOUS_TAG=$(gh api "repos/$REPOSITORY/releases/latest" --jq .tag_name)
+          node tools/check-image-size.mjs "$CANDIDATE" "lokiworks/fema-ipaas:$PREVIOUS_TAG" | tee image-size.jsonl
+
+      - name: Record image sizes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-size
+          path: image-size.jsonl
+          if-no-files-found: ignore
+
+      - name: Promote checked image
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          CANDIDATE_TAG: build-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          docker buildx imagetools create --tag "lokiworks/fema-ipaas:$RELEASE_TAG" "lokiworks/fema-ipaas:$CANDIDATE_TAG"
+          docker buildx imagetools create --tag "ghcr.io/lokiworks/fema-ipaas:$RELEASE_TAG" "ghcr.io/lokiworks/fema-ipaas:$CANDIDATE_TAG"
 
       - name: Create git tag
         run: |

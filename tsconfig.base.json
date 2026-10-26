@@ -41,6 +41,9 @@
       "@fema-ipaas/connector-approval": [
         "packages/connectors/core/approval/src/index.ts"
       ],
+      "@fema-ipaas/connector-wecom": [
+        "packages/connectors/community/wecom/src/index.ts"
+      ],
       "@fema-ipaas/connector-beisen": [
         "packages/connectors/community/beisen/src/index.ts"
       ],
@@ -85,6 +88,12 @@
       ],
       "@fema-ipaas/connector-mysql": [
         "packages/connectors/community/mysql/src/index.ts"
+      ],
+      "@fema-ipaas/connector-email": [
+        "packages/connectors/core/email/src/index.ts"
+      ],
+      "@fema-ipaas/connector-org-sync": [
+        "packages/connectors/core/org-sync/src/index.ts"
       ],
       "@fema-ipaas/connector-postgres": [
         "packages/connectors/community/postgres/src/index.ts"
@@ -139,6 +148,9 @@
       ],
       "@fema-ipaas/components": [
         "packages/components/builtin/src/index.ts"
+      ],
+      "@fema-ipaas/connector-dingtalk": [
+        "packages/connectors/community/dingtalk/src/index.ts"
       ]
     },
     "resolveJsonModule": true

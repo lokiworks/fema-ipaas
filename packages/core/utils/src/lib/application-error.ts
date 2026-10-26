@@ -40,6 +40,7 @@ export type ApplicationErrorParams =
     | TestTriggerFailedErrorParams
     | TriggerUpdateStatusErrorParams
     | ValidationErrorParams
+    | UnsafeReplayNotConfirmedErrorParams
     | InvitationOnlySignUpParams
     | UserIsInActiveErrorParams
     | DomainIsNotAllowedErrorParams
@@ -322,6 +323,7 @@ export enum ErrorCode {
     TRIGGER_UPDATE_STATUS = 'TRIGGER_UPDATE_STATUS',
     USER_IS_INACTIVE = 'USER_IS_INACTIVE',
     VALIDATION = 'VALIDATION',
+    UNSAFE_REPLAY_NOT_CONFIRMED = 'UNSAFE_REPLAY_NOT_CONFIRMED',
     CONNECTOR_SYNC_NOT_SUPPORTED = 'CONNECTOR_SYNC_NOT_SUPPORTED',
     SANDBOX_LOG_SIZE_EXCEEDED = 'SANDBOX_LOG_SIZE_EXCEEDED',
     SECRET_MANAGER_CONNECTION_FAILED = 'SECRET_MANAGER_CONNECTION_FAILED',
@@ -330,3 +332,5 @@ export enum ErrorCode {
     RESUME_LOGS_FILE_MISSING = 'RESUME_LOGS_FILE_MISSING',
     GENERIC_ERROR = 'GENERIC_ERROR',
 }
+
+export type UnsafeReplayNotConfirmedErrorParams = BaseErrorParams<ErrorCode.UNSAFE_REPLAY_NOT_CONFIRMED, { message: string }>

@@ -3,6 +3,8 @@ import * as z from "zod/mini";
 
 export const DropdownOption = z.object({
     label: z.string(),
+    disabled: z.optional(z.boolean()),
+    requiredServerFlag: z.optional(z.string()),
     value: z.unknown(),
     description: z.optional(z.string()),
     icon: z.optional(z.string()),
@@ -10,6 +12,8 @@ export const DropdownOption = z.object({
 
 export type DropdownOption<T> = {
     label: string;
+    disabled?: boolean;
+    requiredServerFlag?: string;
     value: T;
     description?: string;
     icon?: string;

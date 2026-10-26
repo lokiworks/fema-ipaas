@@ -16,7 +16,7 @@ function resolveConfig({ items, provided }: { items: SolutionConfigItem[], provi
     const errors = items.flatMap((item): ConfigError[] => {
         const value = values[item.key] ?? ''
         if (item.type === SolutionConfigType.TEXT) {
-            return value.trim().length === 0 ? [{ key: item.key, message: 'required' }] : []
+            return item.required !== false && value.trim().length === 0 ? [{ key: item.key, message: 'required' }] : []
         }
         return item.options.some((option) => option.value === value) ? [] : [{ key: item.key, message: 'invalidOption' }]
     })

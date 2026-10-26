@@ -11,9 +11,10 @@ icon: 🧯
 **异常处理分支** — 复用 `continueOnFailureBranches`（`onSuccess` / `onFailure`），分支跑完后继续走 `nextAction`。
 
 ## Gotchas
+- 自动重试和问题重放都读取 SDK reliability：未声明或结果不确定的 UNSAFE 写入停止，记录 RETRY_WITHHELD；消息去重键还要处于厂商去重窗口内。重放接口重新计算每个将执行的写步骤，未逐项确认时返回 400。
 - **步骤撞上限流时先排队再重试，不管有没有配重试策略。** 连接器在失败信息里带 `[blocked-until=…]` 并且等待不超过 30 秒（`RATE_LIMIT_QUEUE.maxWaitMs`）时，引擎在 `requestWithRateLimitQueue` 里按这个时间等一等再调一次，最多 3 次，之后才算失败；等待超过 30 秒（北森当天封禁）、没有等待提示、单步测试都不排队。限流是对方在处理前拒绝的，所以重试写操作也不会重复。飞书连接器读 `x-ogw-ratelimit-reset` 头（没有就等 1 秒），北森读 `Retry-After`（没有仍是次日零点封禁）。
 - **排队和重试都记事件，随运行日志上传。** 引擎把每次排队（`RATE_LIMIT_QUEUED`）和每次策略重试（`AUTO_RETRY`）放进 `WorkflowExecutorContext.reliabilityEvents`，进度和结束时带在 `UploadRunLogsRequest.reliabilityEvents` 里，API 在 `uploadRunLog` 用 `eventKey` 幂等写进 `run_reliability_event`（先核对工作流属于这个项目）。事件键含运行、步骤、循环位置和时间，重复上传不会重复记，续跑也不会撞键。
-- **没有 `strategy` 字段就走老逻辑**：`continueOnFailure` / `retryOnFailure` 两个开关照旧生效（重试 4 次、2 秒起指数退避），老工作流行为不变。一旦写入 `strategy`，引擎只看新字段；前端保存时同步写 `continueOnFailure.value = usesBranches(...)`，画布和老代码据此显示分支。
+- **没有 `strategy` 字段就走老逻辑**：`continueOnFailure` / `retryOnFailure` 两个开关照旧生效（重试 4 次、2 秒起指数退避），老配置仍会经过写入安全判定。一旦写入 `strategy`，引擎只看新字段；前端保存时同步写 `continueOnFailure.value = usesBranches(...)`，画布和老代码据此显示分支。
 - **画布是否显示分支看 `errorHandlingUtils.usesBranches`**：默认策略或任一规则是「分支」类就显示。引擎在规则解析为「忽略」时走 `onSuccess` 分支，只有解析为「分支」时才走 `onFailure`。
 - **错误码按最后一次失败计算**：每次重试后重新匹配规则，重试次数取命中规则的设置；单步测试（`stepNameToTest`）不重试也不继续。
 - **AI 节点默认「重试后终止」只对新建节点生效**：默认值在前端 `connector-selector-utils` 创建节点时写入，已有节点没有 `strategy`，保持原样。

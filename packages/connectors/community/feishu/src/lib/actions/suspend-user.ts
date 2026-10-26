@@ -17,6 +17,7 @@ export const suspendUser = createAction({
       'Suspend a Feishu/Lark member by sending is_frozen=true to the update-user endpoint: they can no longer sign in, their documents, chats and calendars are kept, and the account can be resumed later. It does not delete anything and a suspended account still takes up a seat until an administrator offboards the member. The result reads the account back, so confirmed=true means Feishu now reports is_frozen as asked. Safe to repeat: suspending an already suspended member changes nothing. Feishu limits this to one call per second and rejects overlapping calls with error 44025, so let a retry run it again. The tenant creator cannot be suspended (error 44036). Needs the "Update contacts" permission, and the member must be inside the app\'s contact scope.',
     idempotent: true,
   },
+  reliability: { writeSafety: 'IDEMPOTENT', readBack: { actionName: 'get_user', aspects: ['suspension'] }, rateLimits: [{ bucket: 'contact-write', scope: 'APP_ENDPOINT', perSecond: 1 }, { bucket: 'contact-read', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     openId: Property.ShortText({
       displayName: 'Member Open ID',
@@ -27,6 +28,7 @@ export const suspendUser = createAction({
   async run(context) {
     return feishuContacts.setUserSuspended({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       input: { openId: context.propsValue.openId, suspended: true },
     });
   },

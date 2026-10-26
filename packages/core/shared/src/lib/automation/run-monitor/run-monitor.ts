@@ -122,6 +122,7 @@ export const RunMonitorHandled = z.object({
     rateLimitWaits: z.number(),
     rateLimitedRuns: z.number(),
     rateLimitSources: z.array(RunMonitorRateLimitSource),
+    withheldRetries: z.number().default(0),
     autoRetries: z.number(),
     retriedRuns: z.number(),
     caughtUpEvents: z.number(),

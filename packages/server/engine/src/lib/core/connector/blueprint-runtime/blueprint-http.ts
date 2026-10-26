@@ -2,7 +2,7 @@ import { createHash, createHmac, randomUUID } from 'node:crypto'
 import { BlueprintBodyType, BlueprintCredentialLocation, BlueprintSigningPlugin, blueprintStatus, BlueprintStatusConfig, BuiltRequest, isNil, StatusOutcome } from '@fema-ipaas/core-utils'
 
 export const blueprintHttp = {
-    async execute({ request, credential, plugin, status, timeoutSeconds, followRedirect }: ExecuteParams): Promise<BlueprintHttpResult> {
+    async execute({ request, credential, plugin, status, timeoutSeconds, followRedirect, retrySafe }: ExecuteParams): Promise<BlueprintHttpResult> {
         const attempts = Array.from({ length: MAX_ATTEMPTS }, (_value, index) => index)
         const started = Date.now()
         const log: string[] = []
@@ -12,7 +12,7 @@ export const blueprintHttp = {
                 await sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - 1))
             }
             last = await attemptOnce({ request, credential, plugin, status, timeoutSeconds, followRedirect, log })
-            if (!last.outcome.retry) {
+            if (!last.outcome.retry || !((retrySafe ?? ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'].includes(request.method)) || [400, 401, 403, 404, 409, 422, 429].includes(last.status))) {
                 break
             }
             log.push(`retrying after ${last.outcome.code}`)
@@ -232,6 +232,7 @@ type SendParams = PrepareParams & {
 
 type ExecuteParams = SendParams & {
     status: BlueprintStatusConfig
+    retrySafe?: boolean
 }
 
 type AttemptParams = ExecuteParams & {

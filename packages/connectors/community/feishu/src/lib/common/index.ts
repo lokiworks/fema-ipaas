@@ -1,10 +1,11 @@
+import type { RateLimitContext } from '@fema-ipaas/connector-sdk';
 import {
   AuthenticationType,
   HttpError,
   HttpMethod,
   httpClient,
 } from '@fema-ipaas/connector-common';
-import { blockedUntilMarker, tryCatch, type ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
+import { blockedUntilMarker, fixOwnerMarker, tryCatch, type ConnectionValueForAuthProperty } from '@fema-ipaas/connector-sdk';
 
 import type { feishuAuth } from '../auth';
 import { FEISHU_DOMAIN } from '../constants';
@@ -64,12 +65,13 @@ async function callApi<T>(params: CallApiParams): Promise<T> {
   return requestOnce<T>(params);
 }
 
-async function collectPages<Item>({ auth, path, queryParams, pageSize, maxItems }: CollectPagesParams): Promise<Item[]> {
+async function collectPages<Item>({ auth, rateLimit, path, queryParams, pageSize, maxItems }: CollectPagesParams): Promise<Item[]> {
   const collected: Item[] = [];
   let pageToken: string | undefined = undefined;
   for (let page = 0; page < MAX_PAGES; page++) {
     const result: PageResponse<Item> = await callApi<PageResponse<Item>>({
       auth,
+    rateLimit,
       method: HttpMethod.GET,
       path,
       queryParams: { ...queryParams, page_size: String(pageSize), ...(pageToken ? { page_token: pageToken } : {}) },
@@ -83,16 +85,22 @@ async function collectPages<Item>({ auth, path, queryParams, pageSize, maxItems 
     }
     pageToken = result.page_token;
   }
-  return collected;
+  throw new Error('Feishu pagination exceeded 400 pages; narrow the scope so no records are lost');
 }
 
 async function requestOnce<T>({
   auth,
+  rateLimit,
   method,
   path,
   body,
   queryParams,
 }: CallApiParams): Promise<T> {
+  const bucket = path.startsWith('/open-apis/approval/') ? (path === '/open-apis/approval/v4/instances' || path.endsWith('/subscribe') ? 'approval-list' : 'approval-read')
+    : path.startsWith('/open-apis/im/') ? 'im-send'
+    : path.startsWith('/open-apis/bitable/') ? 'bitable'
+    : method === HttpMethod.GET || path.endsWith('/batch_get_id') ? 'contact-read' : 'contact-write';
+  await rateLimit?.acquire({ bucket, scopeKey: auth.props.appId });
   const token = await obtainTenantAccessToken(auth.props);
   const { data: response, error } = await tryCatch(() =>
     httpClient.sendRequest<FeishuEnvelope<T>>({
@@ -152,7 +160,8 @@ function rateLimitResetSeconds(headers: Record<string, string | string[] | undef
 function feishuError(code: number, message: string, resetSeconds?: number): Error {
   const rule = feishuErrorTable.ruleFor({ code });
   const described = describeError(code, message);
-  const plain = rule?.status ? `HTTP ${rule.status}: ${described}` : described;
+  const statusMessage = rule?.status ? `HTTP ${rule.status}: ${described}` : described;
+  const plain = rule?.owner ? fixOwnerMarker.attach({ message: statusMessage, owner: rule.owner }) : statusMessage;
   if (rule?.kind === 'RATE_LIMIT') {
     return new Error(
       blockedUntilMarker.attach({
@@ -232,6 +241,7 @@ type PageResponse<Item> = { items?: Item[]; has_more?: boolean; page_token?: str
 
 type CallApiParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   method: HttpMethod;
   path: string;
   body?: unknown;
@@ -240,6 +250,7 @@ type CallApiParams = {
 
 type CollectPagesParams = {
   auth: FeishuAuthValue;
+  rateLimit?: RateLimitContext;
   path: string;
   queryParams: Record<string, string>;
   pageSize: number;

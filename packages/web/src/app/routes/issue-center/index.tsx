@@ -28,6 +28,7 @@ import {
   issuesHooks,
   issueUiUtils,
 } from '@/features/issues';
+import { ReconciliationSettings } from '@/features/reconciliation/reconciliation';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +37,11 @@ export function IssueCenterPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
   const tab =
-    requestedTab === ALERTS_TAB && isTenantAdmin ? ALERTS_TAB : ISSUES_TAB;
+    requestedTab === RECONCILIATION_TAB
+      ? RECONCILIATION_TAB
+      : requestedTab === ALERTS_TAB && isTenantAdmin
+      ? ALERTS_TAB
+      : ISSUES_TAB;
 
   return (
     <CenteredPage
@@ -54,12 +59,18 @@ export function IssueCenterPage() {
       >
         <TabsList>
           <TabsTrigger value={ISSUES_TAB}>{t('Unresolved issues')}</TabsTrigger>
+          <TabsTrigger value={RECONCILIATION_TAB}>
+            {t('Reconciliation rules')}
+          </TabsTrigger>
           {isTenantAdmin && (
             <TabsTrigger value={ALERTS_TAB}>{t('Alert settings')}</TabsTrigger>
           )}
         </TabsList>
         <TabsContent value={ISSUES_TAB}>
           <UnresolvedIssues />
+        </TabsContent>
+        <TabsContent value={RECONCILIATION_TAB}>
+          <ReconciliationSettings />
         </TabsContent>
         {isTenantAdmin && (
           <TabsContent value={ALERTS_TAB}>
@@ -238,3 +249,5 @@ function IssueTitle({ issue }: { issue: IssueOverviewItem }) {
 const ISSUES_TAB = 'issues';
 const ALERTS_TAB = 'alerts';
 const LATEST_LIMIT = 50;
+
+const RECONCILIATION_TAB = 'reconciliation';

@@ -1,6 +1,7 @@
 import {
   BatchUpdateIssuesRequestBody,
   IssueReplayRequestBody,
+  WorkflowRetryStrategy,
   RunVerificationResult,
   IssueTrendGranularity,
   ListIssuesRequestQuery,
@@ -13,6 +14,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { t } from 'i18next';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { internalErrorToast } from '@/components/ui/sonner';
@@ -157,11 +159,16 @@ function useAddNote(id: string) {
   });
 }
 
-function useReplayCheck(id: string, enabled: boolean) {
+function useReplayCheck(
+  id: string,
+  enabled: boolean,
+  strategy?: WorkflowRetryStrategy,
+) {
   return useQuery({
-    queryKey: [ISSUES_KEY, 'replay-check', id],
-    queryFn: () => issuesApi.replayCheck(id),
+    queryKey: [ISSUES_KEY, 'replay-check', id, strategy],
+    queryFn: () => issuesApi.replayCheck(id, strategy),
     enabled,
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
     staleTime: 0,
   });
 }
@@ -203,9 +210,27 @@ function verifyDescription(result: RunVerificationResult): string | undefined {
 
 function useVerify(projectId: string) {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: () => issuesApi.verify({ projectId }),
-    onSuccess: (result) => {
+  const [runId, setRunId] = useState<string | null>(null);
+  const query = useQuery({
+    queryKey: [ISSUES_KEY, 'verification', projectId, runId],
+    queryFn: () => issuesApi.verificationRun({ projectId, runId: runId ?? '' }),
+    enabled: runId !== null,
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
+    refetchInterval: (current) =>
+      ['SUCCEEDED', 'FAILED'].includes(current.state.data?.status ?? '') ||
+      current.state.status === 'error'
+        ? false
+        : 3000,
+  });
+  useEffect(() => {
+    if (query.error || query.data?.status === 'FAILED') {
+      setRunId(null);
+      if (query.data?.error) toast.error(t(query.data.error));
+      return;
+    }
+    if (query.data?.status === 'SUCCEEDED' && query.data.result) {
+      const result = query.data.result;
+      setRunId(null);
       void queryClient.invalidateQueries({ queryKey: [ISSUES_KEY] });
       if (result.checked === 0) {
         toast.info(
@@ -225,9 +250,14 @@ function useVerify(projectId: string) {
         ),
         { description: verifyDescription(result) },
       );
-    },
+    }
+  }, [query.data, query.error, queryClient]);
+  const mutation = useMutation({
+    mutationFn: () => issuesApi.verify({ projectId }),
+    onSuccess: ({ runId: startedRunId }) => setRunId(startedRunId),
     onError: () => internalErrorToast(),
   });
+  return { ...mutation, isPending: mutation.isPending || runId !== null };
 }
 
 const ISSUES_KEY = 'issues';

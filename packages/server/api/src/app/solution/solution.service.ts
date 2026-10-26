@@ -41,6 +41,7 @@ import { workflowVersionService } from '../workflows/workflow-version/workflow-v
 import { OFFICIAL_SOLUTIONS, OfficialSolution } from './official-solutions'
 import { solutionMappingCheck } from './solution-mapping-check'
 import { solutionPackageUtils } from './solution-package-utils'
+import { solutionReconciliation } from './solution-reconciliation'
 import {
     SolutionEntity,
     SolutionInstallEntity,
@@ -90,7 +91,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
             currentVersion: FIRST_VERSION,
             createdBy: userId,
         })
-        await solutionVersionRepo().insert({ id: generateId(), solutionId: id, version: FIRST_VERSION, notes: 'First version', package: built, publishedBy: userId })
+        await solutionVersionRepo().save({ id: generateId(), solutionId: id, version: FIRST_VERSION, notes: 'First version', package: built, publishedBy: userId })
         log.info({ solution: { id }, project: { id: request.projectId } }, '[solutionService#createFromProject] Solution created')
         return this.getDetail({ id, tenantId, userId })
     },
@@ -109,7 +110,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
         const manualChecks = current.checks.filter((check) => check.kind === SolutionCheckKind.MANUAL).map(({ label, detail, who }) => ({ label, detail, who }))
         const rebuilt = await buildFromProject({ log, tenantId, projectId: solution.sourceProjectId, workflowIds: sourceIds, manualChecks })
         const version = solutionUtils.nextVersion(solution.currentVersion)
-        await solutionVersionRepo().insert({ id: generateId(), solutionId: id, version, notes: request.notes, package: { ...rebuilt, config: current.config }, publishedBy: userId })
+        await solutionVersionRepo().save({ id: generateId(), solutionId: id, version, notes: request.notes, package: { ...rebuilt, config: current.config }, publishedBy: userId })
         await solutionRepo().update({ id }, { currentVersion: version })
         return this.getDetail({ id, tenantId, userId })
     },
@@ -218,6 +219,8 @@ async function applyUpgrade({ log, row, previous, next, tenantId, userId }: Appl
         const created = await transfer.createFromTrigger({ projectId: row.projectId, userId, tenantId, displayName: workflow.name, description: workflow.description, trigger, schemaVersion: workflow.schemaVersion, notes: workflow.notes })
         return [...acc, { key: workflow.key, workflowId: created.workflowId }]
     }, Promise.resolve([]))
+    await linkCreatedWorkflows({ workflows: outcomes, pkg: next, projectId: row.projectId, tenantId, userId, config, connections: row.connections, tableIdByKey, log })
+    await solutionReconciliation.install({ pkg: next, projectId: row.projectId, workflows: outcomes, connections: row.connections, config, tableIdByKey, log })
     const kept = known.filter((entry) => entry.exists && !next.workflows.some((workflow) => workflow.key === entry.key))
     const all = [...outcomes, ...kept.map(({ key, workflowId }) => ({ key, workflowId }))]
     return {
@@ -300,7 +303,24 @@ async function createResources({ log, pkg, projectId, tenantId, userId, connecti
         const created = await transfer.createFromTrigger({ projectId, userId, tenantId, displayName: workflow.name, description: workflow.description, trigger, schemaVersion: workflow.schemaVersion, notes: workflow.notes })
         return [...acc, { key: workflow.key, workflowId: created.workflowId, displayName: created.displayName }]
     }, Promise.resolve([]))
+    await linkCreatedWorkflows({ workflows, pkg, projectId, tenantId, userId, config, connections, tableIdByKey, log })
+    await solutionReconciliation.install({ pkg, projectId, workflows, connections, config, tableIdByKey, log })
     return { workflows, mappingTables: tables }
+}
+
+async function linkCreatedWorkflows({ workflows, pkg, projectId, tenantId, userId, config, connections, tableIdByKey, log }: { workflows: { key: string, workflowId: string }[], pkg: SolutionPackage, projectId: string, tenantId: string, userId: string, config: Record<string, string>, connections: Record<string, string>, tableIdByKey: Map<string, string>, log: FastifyBaseLogger }): Promise<void> {
+    const rows = await workflowRepo().find({ where: { projectId, id: In(workflows.map((item) => item.workflowId)) }, select: ['id', 'externalId'] })
+    const externalIds = new Map(rows.map((row) => [row.id, row.externalId]))
+    const externalIdByKey = new Map(workflows.flatMap((item) => {
+        const id = externalIds.get(item.workflowId); return id ? [[item.key, id]] : [] 
+    }))
+    for (const item of workflows) {
+        const workflow = pkg.workflows.find((candidate) => candidate.key === item.key)
+        if (!workflow || !JSON.stringify(workflow.trigger).includes('workflow:')) continue
+        const instantiated = solutionPackageUtils.instantiate({ workflow, items: pkg.config, config, connections, tableIdByKey })
+        const trigger = solutionPackageUtils.linkWorkflows({ trigger: instantiated, externalIdByKey })
+        await workflowTransferService(log).replaceDraft({ projectId, workflowId: item.workflowId, userId, tenantId, displayName: workflow.name, trigger, schemaVersion: workflow.schemaVersion, notes: workflow.notes })
+    }
 }
 
 async function ensureTables({ log, pkg, projectId, userId }: { log: FastifyBaseLogger, pkg: SolutionPackage, projectId: ProjectId, userId: UserId }): Promise<CreatedResources['mappingTables']> {
@@ -330,7 +350,7 @@ async function ensureTables({ log, pkg, projectId, userId }: { log: FastifyBaseL
 }
 
 function reusableTable({ table, existing }: { table: SolutionMappingTable, existing: { id: string, name: string, keyLabel: string, valueLabel: string }[] }): { id: string, name: string } | null {
-    return existing.find((candidate) => candidate.keyLabel === table.keyLabel && candidate.valueLabel === table.valueLabel) ?? null
+    return existing.find((candidate) => candidate.name === table.name && candidate.keyLabel === table.keyLabel && candidate.valueLabel === table.valueLabel) ?? null
 }
 
 function uniqueTableName({ base, taken }: { base: string, taken: string[] }): string {
@@ -383,7 +403,7 @@ async function assertInstallable({ pkg, request, tenantId }: { pkg: SolutionPack
         throw validation(`The package has field mapping problems: ${mappingProblems.join('; ')}`)
     }
     const results = await Promise.all(pkg.checks.map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
-    const blocking = results.filter((result) => result.blocking && result.status !== SolutionCheckStatus.PASS)
+    const blocking = results.filter((result) => result.blocking && result.status !== SolutionCheckStatus.PASS && !(result.status === SolutionCheckStatus.NEEDS_CONFIRM && request.acknowledgedChecks.includes(result.key)))
     if (blocking.length > 0) {
         throw validation(`These checks have to pass first: ${blocking.map((result) => result.label).join(', ')}`)
     }

@@ -17,6 +17,7 @@ export const findUser = createAction({
       'Look up a Feishu/Lark user by email or mobile number and return their open_id plus whether the account is suspended or resigned. Pick this when a later step needs a user identifier but you only hold an email or phone number, or to check whether an account already exists before provisioning. Requires the contact:user.id:readonly permission, only sees members inside the app contact scope, cannot look up an enterprise mailbox, and returns found=false rather than failing when nobody matches. Resigned members are skipped unless asked for.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'contact-read', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     lookupBy: Property.StaticDropdown({
       displayName: 'Look Up By',
@@ -45,6 +46,7 @@ export const findUser = createAction({
     const { lookupBy, value, includeResigned } = context.propsValue;
     const match = await feishuContacts.lookupUser({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       mobile: lookupBy === 'mobile' ? value : undefined,
       email: lookupBy === 'email' ? value : undefined,
       includeResigned: includeResigned === true,

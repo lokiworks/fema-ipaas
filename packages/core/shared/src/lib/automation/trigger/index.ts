@@ -11,6 +11,7 @@ export enum TriggerStrategy {
 }
 
 export enum WebhookHandshakeStrategy {
+    ALWAYS = 'ALWAYS',
     NONE = 'NONE',
     HEADER_PRESENT = 'HEADER_PRESENT',
     QUERY_PRESENT = 'QUERY_PRESENT',

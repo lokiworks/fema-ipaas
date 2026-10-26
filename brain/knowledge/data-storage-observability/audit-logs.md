@@ -4,7 +4,7 @@ icon: 📜
 
 # Audit Logs
 
-Records security-relevant actions for compliance and forensics, persisted to the `audit_event` table and queryable by platform admins. Enterprise/Cloud only, gated by `platform.plan.auditLogEnabled`.
+Records security-relevant actions for compliance and forensics, persisted to the `audit_event` table and queryable by platform admins. Available in the single edition, scoped by tenant and optional project filters.
 
 ### Entities & services
 - **ApplicationEvent**: discriminated union of all auditable types; **ApplicationEventName** is a 27-value enum (`workflow.created`, `workflow.published`, `user.signed.in`, `variable.value.revealed`, etc.).
@@ -16,6 +16,7 @@ Records security-relevant actions for compliance and forensics, persisted to the
 - `GET /v1/audit-events` (platformAdminOnly) returns `SeekPage<ApplicationEvent>` sorted by `created` desc. Filters: `action[]`, `projectId[]`, `userId`, `createdBefore/After`, cursor/limit.
 
 ### Gotchas
+- Execution completion is emitted only on a transition to a terminal state. Finish events also carry a derived event key; the partial unique index on tenantId + eventKey and conflict-ignore insert prevent repeated callbacks from duplicating the audit row. Other events keep a null key and remain repeatable.
 - Event capture is decoupled via the event bus — new auditable actions just emit onto `applicationEvents`.
 - **Emit from the service that performs the operation, not from each caller.** Controller-only emission is how #14591 happened: workflow events lived in `workflow.controller.ts`, so all 15 MCP workflow tools plus `connection.handler.ts`, `worker-rpc-service.ts`, `project-state-helper.ts` and `platform-teardown-jobs.ts` mutated workflows and audited nothing. Workflow *runs* never had that bug because `executionSideEffects` is called from `execution-service.ts`. Put the `*-side-effects.ts` hook call inside the service and default it on; where a bulk/system path genuinely wants silence (project release apply, platform teardown), give it an explicit `emitEvents: false` opt-out so the decision is reviewable instead of accidental. Request-derived `ip` is optional in the schema — pass it down from the controller as one optional param rather than keeping emission up there to preserve it.
 - The list endpoint sorts by `created DESC, id DESC` — `Paginator` appends the `id` tiebreaker itself (`withIdTiebreaker`), so the index has to cover **both** columns. `(platformId, created DESC)` alone leaves an Incremental Sort node on top; `(platformId, created DESC, id DESC)` is a plain index scan. Without either, Postgres reads every row for the platform (via the `platformId`-leading `action` index) and sorts the lot to return 11, so the page 500s on statement timeout (GIT-1705). Cloud prod, Aug 2026: `audit_event` is **362M rows / 475 GB**, one platform holding ~6.5M — plan cost 7.4M, and it never finishes. The table is never pruned (GIT-1574), so any new query shape here needs an index covering the sort, not just the filter.
@@ -26,8 +27,8 @@ Records security-relevant actions for compliance and forensics, persisted to the
 ### Key files
 Entry point: `auditLogService`, wired up in `auditEventModule` which calls `.setup()` and mounts the controller at `/v1/audit-events`.
 
-- `packages/server/api/src/app/ee/audit-logs/` — module, service, and TypeORM entity
-- `packages/core/shared/src/lib/ee/audit-events/` — event types, the `ApplicationEvent` union, `summarizeApplicationEvent()`, and `buildMockEvent()`
+- `packages/server/api/src/app/audit/` — module, service, and TypeORM entity
+- `packages/core/shared/src/lib/governance/audit-events/` — event types, the `ApplicationEvent` union, `summarizeApplicationEvent()`, and `buildMockEvent()`
 - `packages/web/src/features/platform-admin/api/audit-events-api.ts` — frontend API client
 - `packages/web/src/features/platform-admin/hooks/audit-log-hooks.ts` — React Query hooks
 - `packages/web/src/app/routes/platform/security/audit-logs/` — platform admin UI page

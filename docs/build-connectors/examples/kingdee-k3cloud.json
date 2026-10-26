@@ -1,0 +1,515 @@
+{
+  "displayName": "金蝶云星空（实施样例）",
+  "description": "登录、查单、先查后保存、提交、审核；须按本租户生成的 WebAPI 文档补齐单据字段。",
+  "iconColor": "#1677ff",
+  "helpUrl": "https://vip.kingdee.com/article/182645",
+  "baseUrl": "https://kingdee.example.com/k3cloud",
+  "auth": {
+    "type": "CLIENT_CREDENTIALS",
+    "enabled": true,
+    "name": "金蝶云星空登录",
+    "description": "Client ID: Kingdee username. Client Secret: Kingdee password. accountId: data center ID. Verify against your own tenant WebAPI documentation.",
+    "credentialLocation": "HEADER",
+    "credentialName": "kdservice-sessionid",
+    "credentialPrefix": "",
+    "authorizeUrl": "",
+    "tokenUrl": "",
+    "scope": "",
+    "pkce": false,
+    "fields": [
+      {
+        "key": "accountId",
+        "label": "账套 ID",
+        "control": "TEXT",
+        "required": true,
+        "options": []
+      }
+    ],
+    "tokenFlow": {
+      "enabled": true,
+      "method": "POST",
+      "url": "/Kingdee.BOS.WebApi.ServicesStub.AuthService.ValidateUser.common.kdsvc",
+      "config": "{\"body\":{\"acctID\":\"{{authInput.accountId}}\",\"username\":\"{{authInput.client_id}}\",\"password\":\"{{authInput.client_secret}}\",\"lcid\":2052}}",
+      "resultPath": "KDSVCSessionId"
+    },
+    "refreshFlow": {
+      "enabled": false,
+      "method": "POST",
+      "url": "/oauth/token",
+      "config": "{}",
+      "resultPath": "access_token"
+    },
+    "userFlow": {
+      "enabled": false,
+      "method": "GET",
+      "url": "/me",
+      "config": "{}",
+      "resultPath": "name"
+    },
+    "plugin": {
+      "enabled": false,
+      "code": "function beforeRequest(request, auth) {\n  return request;\n}\n"
+    }
+  },
+  "status": {
+    "codePath": "body.Result.ResponseStatus.IsSuccess",
+    "messagePath": "body.Result.ResponseStatus.Errors",
+    "unmatched": "FAIL",
+    "rules": [
+      {
+        "code": "true",
+        "success": true,
+        "retry": false,
+        "tip": ""
+      },
+      {
+        "code": "false",
+        "success": false,
+        "retry": false,
+        "tip": "Check the form, permissions and tenant-specific field requirements"
+      }
+    ]
+  },
+  "groups": [],
+  "operations": [
+    {
+      "key": "login",
+      "name": "验证登录",
+      "description": "",
+      "group": "",
+      "method": "POST",
+      "path": "/Kingdee.BOS.WebApi.ServicesStub.AuthService.ValidateUser.common.kdsvc",
+      "inputs": [],
+      "request": {
+        "headers": [
+          {
+            "key": "Cookie",
+            "value": "kdservice-sessionid={{authData.KDSVCSessionId}}"
+          }
+        ],
+        "query": [],
+        "bodyType": "JSON",
+        "body": "{\"acctID\":\"{{authInput.accountId}}\",\"username\":\"{{authInput.client_id}}\",\"password\":\"{{authInput.client_secret}}\",\"lcid\":2052}",
+        "form": [],
+        "timeoutSeconds": 30,
+        "followRedirect": false
+      },
+      "sample": {
+        "LoginResultType": 1
+      },
+      "statusOverride": {
+        "codePath": "body.LoginResultType",
+        "messagePath": "body.Message",
+        "unmatched": "FAIL",
+        "rules": [
+          {
+            "code": "1",
+            "success": true,
+            "retry": false,
+            "tip": ""
+          }
+        ]
+      },
+      "classification": "READ",
+      "reliability": {
+        "rateLimits": [
+          {
+            "bucket": "kingdee-api",
+            "scope": "APP",
+            "perSecond": 1
+          }
+        ]
+      }
+    },
+    {
+      "key": "query_by_number",
+      "name": "按单据编号查询",
+      "description": "",
+      "group": "",
+      "method": "POST",
+      "path": "/Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.ExecuteBillQuery.common.kdsvc",
+      "inputs": [
+        {
+          "key": "formId",
+          "label": "formId",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "",
+          "patternMessage": "",
+          "visibleIf": ""
+        },
+        {
+          "key": "billNo",
+          "label": "billNo",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "^[A-Za-z0-9_-]{1,80}$",
+          "patternMessage": "Use an alphanumeric bill number with underscores or hyphens",
+          "visibleIf": ""
+        }
+      ],
+      "request": {
+        "headers": [
+          {
+            "key": "Cookie",
+            "value": "kdservice-sessionid={{authData.KDSVCSessionId}}"
+          }
+        ],
+        "query": [],
+        "bodyType": "JSON",
+        "body": "{\"data\":{\"FormId\":\"{{input.formId}}\",\"FieldKeys\":\"FBillNo,FID\",\"FilterString\":\"FBillNo='{{input.billNo}}'\",\"OrderString\":\"FID ASC\",\"StartRow\":0,\"Limit\":2}}",
+        "form": [],
+        "timeoutSeconds": 30,
+        "followRedirect": false
+      },
+      "sample": [
+        [
+          "PO-001",
+          1001
+        ]
+      ],
+      "statusOverride": {
+        "codePath": "body.0.Result.ResponseStatus.IsSuccess",
+        "messagePath": "body.Result.ResponseStatus.Errors",
+        "unmatched": "FAIL",
+        "rules": [
+          {
+            "code": "true",
+            "success": true,
+            "retry": false,
+            "tip": ""
+          },
+          {
+            "code": "false",
+            "success": false,
+            "retry": false,
+            "tip": "Check the form, permissions and tenant-specific field requirements"
+          }
+        ]
+      },
+      "classification": "READ",
+      "reliability": {
+        "rateLimits": [
+          {
+            "bucket": "kingdee-api",
+            "scope": "APP",
+            "perSecond": 1
+          }
+        ]
+      }
+    },
+    {
+      "key": "save",
+      "name": "查重后保存采购订单",
+      "description": "",
+      "group": "",
+      "method": "POST",
+      "path": "/Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Save.common.kdsvc",
+      "inputs": [
+        {
+          "key": "formId",
+          "label": "formId",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "",
+          "patternMessage": "",
+          "visibleIf": ""
+        },
+        {
+          "key": "billNo",
+          "label": "billNo",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "^[A-Za-z0-9_-]{1,80}$",
+          "patternMessage": "Use an alphanumeric bill number with underscores or hyphens",
+          "visibleIf": ""
+        },
+        {
+          "key": "date",
+          "label": "date",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "",
+          "patternMessage": "",
+          "visibleIf": ""
+        },
+        {
+          "key": "supplierNumber",
+          "label": "supplierNumber",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "",
+          "patternMessage": "",
+          "visibleIf": ""
+        },
+        {
+          "key": "purchaseOrgNumber",
+          "label": "purchaseOrgNumber",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "",
+          "patternMessage": "",
+          "visibleIf": ""
+        }
+      ],
+      "request": {
+        "headers": [
+          {
+            "key": "Cookie",
+            "value": "kdservice-sessionid={{authData.KDSVCSessionId}}"
+          }
+        ],
+        "query": [],
+        "bodyType": "JSON",
+        "body": "{\"formid\":\"{{input.formId}}\",\"data\":{\"IsAutoSubmitAndAudit\":false,\"Model\":{\"FBillNo\":\"{{input.billNo}}\",\"FDate\":\"{{input.date}}\",\"FSupplierId\":{\"FNumber\":\"{{input.supplierNumber}}\"},\"FPurchaseOrgId\":{\"FNumber\":\"{{input.purchaseOrgNumber}}\"}}}}",
+        "form": [],
+        "timeoutSeconds": 30,
+        "followRedirect": false
+      },
+      "sample": {
+        "Result": {
+          "ResponseStatus": {
+            "IsSuccess": true
+          }
+        }
+      },
+      "statusOverride": null,
+      "lookupBeforeWrite": {
+        "operationKey": "query_by_number",
+        "matchPath": ""
+      },
+      "classification": "WRITE",
+      "reliability": {
+        "writeSafety": "LOOKUP_BEFORE_WRITE",
+        "lookupKeys": [
+          "formId",
+          "billNo"
+        ],
+        "readBack": {
+          "actionName": "query_by_number",
+          "aspects": [
+            "bill"
+          ]
+        },
+        "rateLimits": [
+          {
+            "bucket": "kingdee-api",
+            "scope": "APP",
+            "perSecond": 1
+          }
+        ]
+      }
+    },
+    {
+      "key": "submit",
+      "name": "提交单据",
+      "description": "",
+      "group": "",
+      "method": "POST",
+      "path": "/Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Submit.common.kdsvc",
+      "inputs": [
+        {
+          "key": "formId",
+          "label": "formId",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "",
+          "patternMessage": "",
+          "visibleIf": ""
+        },
+        {
+          "key": "billNo",
+          "label": "billNo",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "^[A-Za-z0-9_-]{1,80}$",
+          "patternMessage": "Use an alphanumeric bill number with underscores or hyphens",
+          "visibleIf": ""
+        }
+      ],
+      "request": {
+        "headers": [
+          {
+            "key": "Cookie",
+            "value": "kdservice-sessionid={{authData.KDSVCSessionId}}"
+          }
+        ],
+        "query": [],
+        "bodyType": "JSON",
+        "body": "{\"formid\":\"{{input.formId}}\",\"data\":{\"Numbers\":[\"{{input.billNo}}\"]}}",
+        "form": [],
+        "timeoutSeconds": 30,
+        "followRedirect": false
+      },
+      "sample": {
+        "Result": {
+          "ResponseStatus": {
+            "IsSuccess": true
+          }
+        }
+      },
+      "statusOverride": null,
+      "classification": "WRITE",
+      "reliability": {
+        "writeSafety": "UNSAFE",
+        "rateLimits": [
+          {
+            "bucket": "kingdee-api",
+            "scope": "APP",
+            "perSecond": 1
+          }
+        ]
+      }
+    },
+    {
+      "key": "audit",
+      "name": "审核单据",
+      "description": "",
+      "group": "",
+      "method": "POST",
+      "path": "/Kingdee.BOS.WebApi.ServicesStub.DynamicFormService.Audit.common.kdsvc",
+      "inputs": [
+        {
+          "key": "formId",
+          "label": "formId",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "",
+          "patternMessage": "",
+          "visibleIf": ""
+        },
+        {
+          "key": "billNo",
+          "label": "billNo",
+          "type": "STRING",
+          "control": "TEXT",
+          "required": true,
+          "hint": "",
+          "options": [],
+          "optionsSource": "STATIC",
+          "optionsOperation": null,
+          "optionsItemsPath": "",
+          "optionsLabelPath": "name",
+          "optionsValuePath": "id",
+          "pattern": "^[A-Za-z0-9_-]{1,80}$",
+          "patternMessage": "Use an alphanumeric bill number with underscores or hyphens",
+          "visibleIf": ""
+        }
+      ],
+      "request": {
+        "headers": [
+          {
+            "key": "Cookie",
+            "value": "kdservice-sessionid={{authData.KDSVCSessionId}}"
+          }
+        ],
+        "query": [],
+        "bodyType": "JSON",
+        "body": "{\"formid\":\"{{input.formId}}\",\"data\":{\"Numbers\":[\"{{input.billNo}}\"]}}",
+        "form": [],
+        "timeoutSeconds": 30,
+        "followRedirect": false
+      },
+      "sample": {
+        "Result": {
+          "ResponseStatus": {
+            "IsSuccess": true
+          }
+        }
+      },
+      "statusOverride": null,
+      "classification": "WRITE",
+      "reliability": {
+        "writeSafety": "UNSAFE",
+        "rateLimits": [
+          {
+            "bucket": "kingdee-api",
+            "scope": "APP",
+            "perSecond": 1
+          }
+        ]
+      }
+    }
+  ],
+  "triggers": []
+}

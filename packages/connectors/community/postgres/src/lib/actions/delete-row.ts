@@ -15,6 +15,7 @@ export const deleteRow = createAction({
     description: 'Deletes every row in a PostgreSQL table whose search column equals a given value, and returns how many rows were removed. Use to remove records matched by a single column. Enable Return Deleted Rows to also get the deleted rows back, but leave it off when the delete can match many rows. Idempotent: once the matching rows are gone, re-running with the same input deletes nothing further.',
     idempotent: true,
   },
+  reliability: { writeSafety: 'IDEMPOTENT', rateLimits: [{ bucket: 'postgres-query', scope: 'APP', perSecond: 50 }] },
   props: {
     table: postgresCommon.table,
     search_column: postgresCommon.column({
@@ -34,6 +35,7 @@ export const deleteRow = createAction({
     }),
   },
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'postgres-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const { table, search_column, search_value, return_rows } = context.propsValue;
     const query = `DELETE FROM ${postgresUtils.qualifiedName(table)} WHERE ${postgresUtils.quoteIdentifier(search_column)} = $1${return_rows ? ' RETURNING *' : ''}`;
 

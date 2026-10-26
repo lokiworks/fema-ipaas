@@ -17,6 +17,7 @@ export const listDepartmentUsers = createAction({
       'List every Feishu/Lark member who sits directly in a department, optionally including all sub-departments, with open_id, employee number, mobile, email, departments and whether the account is suspended or resigned. Pick this to reconcile Feishu against the HR roster, for example to find HR employees without an account or accounts without an HR employee. It follows the page token until the department is exhausted or the limit is hit, only reads, and only sees departments inside the app contact scope (the root department 0 needs the all-members scope). Mobile, email and employee number only come back when the app has the matching field permissions.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'contact-read', scope: 'APP_ENDPOINT', perSecond: 50 }] },
   props: {
     departmentId: Property.ShortText({
       displayName: 'Department ID',
@@ -40,6 +41,7 @@ export const listDepartmentUsers = createAction({
     const { departmentId, includeSubDepartments, maxItems } = context.propsValue;
     const members = await feishuContacts.listDepartmentUsers({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       input: {
         departmentId: departmentId.trim(),
         includeSubDepartments: includeSubDepartments !== false,

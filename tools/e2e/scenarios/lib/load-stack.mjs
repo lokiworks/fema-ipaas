@@ -15,7 +15,7 @@ const LOAD_DIR = path.join(STATE_DIR, 'load')
 const PID_FILE = path.join(LOAD_DIR, 'pids.json')
 const REDIS_BIN = process.env.E2E_REDIS_BIN ?? '/opt/homebrew/opt/redis/bin/redis-server'
 const REDIS_CLI = path.join(path.dirname(REDIS_BIN), 'redis-cli')
-const CONNECTORS = 'beisen,feishu,mysql,postgres,ai,connections,crypto,csv,data-mapper,data-summarizer,date-helper,file-helper,forms,http,manual-trigger,math-helper,mcp,schedule,store,subflows,tags,text-helper,webhook,xml'
+const CONNECTORS = 'beisen,feishu,mysql,postgres,ai,connections,crypto,csv,data-mapper,org-sync,email,wecom,dingtalk,data-summarizer,date-helper,file-helper,forms,http,manual-trigger,math-helper,mcp,schedule,store,subflows,tags,text-helper,webhook,xml'
 const JWT_SECRET = `e2e-slot-${SLOT}-secret`
 const SNAPSHOT_DIR = path.join(process.env.E2E_STATE_ROOT ?? '/tmp/fema-e2e', `snap-${SLOT}`)
 
@@ -103,7 +103,9 @@ function baseEnv() {
     FEMA_DEV_CONNECTORS: CONNECTORS,
     FEMA_BEISEN_BASE_URL: `http://127.0.0.1:${MOCK_PORT}/beisen`,
     FEMA_FEISHU_BASE_URL: `http://127.0.0.1:${MOCK_PORT}/feishu`,
-    FEMA_SANDBOX_PROPAGATED_ENV_VARS: 'FEMA_BEISEN_BASE_URL,FEMA_FEISHU_BASE_URL',
+    FEMA_WECOM_BASE_URL: `http://127.0.0.1:${MOCK_PORT}/wecom`,
+    FEMA_DINGTALK_BASE_URL: `http://127.0.0.1:${MOCK_PORT}/dingtalk`,
+    FEMA_SANDBOX_PROPAGATED_ENV_VARS: 'FEMA_BEISEN_BASE_URL,FEMA_FEISHU_BASE_URL,FEMA_WECOM_BASE_URL,FEMA_DINGTALK_BASE_URL',
     FEMA_SSRF_ALLOW_LIST: '127.0.0.1',
     FEMA_TRIGGER_DEFAULT_POLL_INTERVAL: process.env.FEMA_TRIGGER_DEFAULT_POLL_INTERVAL ?? '1',
     FEMA_DEV_API_PORT: String(API_PORT),

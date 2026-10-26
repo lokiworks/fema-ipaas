@@ -52,6 +52,7 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
                     priority: JOB_PRIORITY[getDefaultJobPriority(data)],
                     delay: params.delay,
                     jobId: params.id,
+                    ...(params.retainCompleted ? { removeOnComplete: false, removeOnFail: false } : {}),
                     ...isUserInteractionJob(data.jobType) ? {
                         attempts: 1,
                         removeOnComplete: { age: 300 },
@@ -110,6 +111,23 @@ export const jobQueue = (log: FastifyBaseLogger) => ({
         return !everDequeued
     },
 
+    async hasExecutionJob({ executionId, projectId, tenantId }: { executionId: string, projectId: string, tenantId: string }): Promise<boolean> {
+        const groupId = await projectWorkerGroupService(log).getProjectWorkerGroup({ projectId, tenantId })
+        const names = [...new Set([QueueName.WORKER_JOBS, ...(groupId ? [getProjectGroupQueueName(groupId)] : []), ...dedicatedWorkersQueues.keys()])]
+        for (const queueName of names) {
+            const job = await (await ensureQueueExists({ log, queueName })).getJob(executionId)
+            if (job) return true
+        }
+        return false
+    },
+    async removeCompletedExecutionJob({ executionId, projectId, tenantId }: { executionId: string, projectId: string, tenantId: string }): Promise<void> {
+        const groupId = await projectWorkerGroupService(log).getProjectWorkerGroup({ projectId, tenantId })
+        const names = [...new Set([QueueName.WORKER_JOBS, ...(groupId ? [getProjectGroupQueueName(groupId)] : []), ...dedicatedWorkersQueues.keys()])]
+        for (const queueName of names) {
+            const job = await (await ensureQueueExists({ log, queueName })).getJob(executionId)
+            if (job && (await job.isCompleted() || await job.isFailed())) await job.remove()
+        }
+    },
     async getOrCreateQueue({ queueName }: { queueName: string }): Promise<Queue> {
         return ensureQueueExists({ log, queueName })
     },
@@ -259,6 +277,6 @@ type BaseAddParams<JD extends Omit<JobData, 'engineToken'>, JT extends JobType> 
 type RepeatingJobAddParams = BaseAddParams<PollingJobData | RenewWebhookJobData, JobType.REPEATING> & {
     scheduleOptions: ScheduleOptions
 }
-type OneTimeJobAddParams = BaseAddParams<ExecuteWorkflowJobData | WebhookJobData | UserInteractionJobData, JobType.ONE_TIME>
+type OneTimeJobAddParams = BaseAddParams<ExecuteWorkflowJobData | WebhookJobData | UserInteractionJobData, JobType.ONE_TIME> & { retainCompleted?: boolean }
 
 export type AddJobParams<type extends JobType> = type extends JobType.REPEATING ? RepeatingJobAddParams : OneTimeJobAddParams

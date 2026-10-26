@@ -1,5 +1,9 @@
+import { enumerateEmployees } from './lib/actions/enumerate-employees';
+import { getEmployeeRecord } from './lib/actions/get-employee-record';
 import { ConnectorCategory, createConnector } from '@fema-ipaas/connector-sdk';
 
+import { enumerateOrganizations } from './lib/actions/enumerate-organizations';
+import { organizationChanged } from './lib/triggers/organization-changed';
 import { beisenAuth } from './lib/auth';
 import { findApplicant } from './lib/actions/find-applicant';
 import { findEmployeeByEmail } from './lib/actions/find-employee-by-email';
@@ -20,7 +24,7 @@ export const beisen = createConnector({
   logoUrl: '/assets/connectors/beisen.svg',
   authors: ['lokiworks'],
   auth: beisenAuth,
-  actions: [
+  actions: [enumerateEmployees, getEmployeeRecord, enumerateOrganizations,
     searchChangedEmployees,
     getEmploymentRecords,
     getSubOrganizations,
@@ -30,5 +34,5 @@ export const beisen = createConnector({
     listOrganizationEmployees,
     findEmployeeByEmail,
   ],
-  triggers: [employeeChanged],
+  triggers: [employeeChanged, organizationChanged],
 });

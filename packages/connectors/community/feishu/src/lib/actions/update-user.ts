@@ -17,6 +17,7 @@ export const updateUser = createAction({
       'Update an existing Feishu/Lark member in the contact directory: move them to another department, set their direct manager, job title or name. Only the fields you fill in are sent, so empty fields change nothing, and repeating the same call leaves the same result. Replacing the department replaces every department the member is in. Look the member up with Find User first when you only hold an email or mobile number. Needs the "Update contacts" permission, and the department must be inside the app\'s contact scope.',
     idempotent: true,
   },
+  reliability: { writeSafety: 'IDEMPOTENT', readBack: { actionName: 'get_user', aspects: ['department'] }, rateLimits: [{ bucket: 'contact-write', scope: 'APP_ENDPOINT', perSecond: 1 }] },
   props: {
     openId: Property.ShortText({
       displayName: 'Member Open ID',
@@ -46,6 +47,7 @@ export const updateUser = createAction({
     const { openId, departmentId, leaderOpenId, jobTitle, name } = context.propsValue;
     return feishuContacts.updateUser({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       input: { openId, departmentId, leaderOpenId, jobTitle, name },
     });
   },

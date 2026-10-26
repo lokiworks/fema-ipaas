@@ -186,8 +186,8 @@ function planRun({ execution, version, steps, businessKey }: PlanRunParams): Pla
         if (isNil(readInput)) {
             return { base, target, skipped: 'the run log does not hold what is needed to read the result back', finishedAt: finishedAtOf(execution) }
         }
-        const openId = readInput['openId']
-        const subject = typeof openId === 'string' ? `${target.connectorName}:${openId}:${target.rule.aspect}` : null
+        const openId = readInput['openId'] ?? readInput['userid'] ?? readInput['departmentId']
+        const subject = typeof openId === 'string' ? `${target.connectorName}:${target.auth}:${openId}:${target.rule.aspect}` : null
         return { base, target, stepOutput, readInput, subject, finishedAt: finishedAtOf(execution) }
     })
 }

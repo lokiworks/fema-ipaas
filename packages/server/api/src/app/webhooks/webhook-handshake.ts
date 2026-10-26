@@ -27,9 +27,9 @@ export const webhookHandshake = {
         }, logger)
 
         if (engineHelperResponse.status !== EngineResponseStatus.OK) {
-            return null
+            return handshakeConfiguration?.strategy === WebhookHandshakeStrategy.ALWAYS ? { status: 503, body: { message: 'Callback verification is temporarily unavailable' } } : null
         }
-        return engineHelperResponse.response?.response ?? null
+        return engineHelperResponse.response?.response ?? (handshakeConfiguration?.strategy === WebhookHandshakeStrategy.ALWAYS ? { status: 503, body: { message: 'Callback verification is temporarily unavailable' } } : null)
     },
     async getWebhookHandshakeConfiguration(params: GetWebhookHandshakeConfigurationParams): Promise<WebhookHandshakeConfiguration | null> {
         const { triggerSource, logger } = params
@@ -59,6 +59,9 @@ export function isHandshakeRequest(params: IsHandshakeRequestParams): boolean {
     const { strategy, paramName } = handshakeConfiguration
 
     switch (strategy) {
+        case WebhookHandshakeStrategy.ALWAYS:
+            return true
+
         case WebhookHandshakeStrategy.HEADER_PRESENT:
             return !isNil(paramName) && paramName.toLowerCase() in payload.headers
 
@@ -79,7 +82,9 @@ export function isHandshakeRequest(params: IsHandshakeRequestParams): boolean {
     }
 }
 
-type WebhookHandshakeResponse = {
+export type WebhookHandshakeResponse = {
+    continueToRun?: boolean
+    triggerPayload?: TriggerPayload
     status: number
     body?: unknown
     headers?: Record<string, string>

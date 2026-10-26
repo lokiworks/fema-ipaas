@@ -3,6 +3,7 @@ import { ConsumeJobRequest, ConsumeJobResponse, EngineResponseStatus, JobData, R
 import { Worker as BullMQWorker, Job, UnrecoverableError } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../../authentication/lib/access-token-manager'
+import { restoreMaintenance } from '../../backup/maintenance'
 import { redisConnections } from '../../database/redis-connections'
 import { pollCursorGuard } from '../../trigger/poll-cursor-guard'
 import { engineResponseWatcher } from '../engine-response-watcher'
@@ -84,6 +85,7 @@ function ensureDispatcher(queueName: string, worker: BullMQWorker, log: FastifyB
 }
 
 async function tryDequeue(worker: BullMQWorker, queueName: string, log: FastifyBaseLogger): Promise<ConsumeJobRequest | null> {
+    if (await restoreMaintenance.active()) return null
     const token = `token-${Date.now()}-${Math.random().toString(36).slice(2)}`
     const job = await worker.getNextJob(token)
     if (isNil(job)) {

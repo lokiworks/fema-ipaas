@@ -16,7 +16,6 @@ import { JsonEditor } from '@/components/custom/json-editor';
 import { Markdown } from '@/components/custom/markdown';
 import { MultiSelectConnectorProperty } from '@/components/custom/multi-select-connector-property';
 import { ReadMoreDescription } from '@/components/custom/read-more-description';
-import { SearchableSelect } from '@/components/custom/searchable-select';
 import { FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RequiredFieldAsterisk } from '@/components/ui/label';
@@ -25,6 +24,7 @@ import { Switch } from '@/components/ui/switch';
 import { AGENT_TOOLS_TARGET, AgentToolsProperty } from './agent-tools-property';
 import { ArrayConnectorProperty } from './array-property';
 import { AutoFormFieldWrapper } from './auto-form-field-wrapper';
+import { AvailableStaticDropdown } from './available-static-dropdown';
 import { BuilderJsonEditorWrapper } from './builder-json-wrapper';
 import CustomProperty from './custom-property';
 import { DateRangeProperty } from './date-range-property';
@@ -34,7 +34,6 @@ import { MappingEditorProperty } from './mapping-editor-property';
 import { MAPPING_EDITOR_TARGET } from './mapping-editor-target';
 import { NumberStepper } from './number-stepper';
 import { RichTextProperty } from './rich-text-property';
-import { StaticDropdownCards } from './static-dropdown-cards';
 import { TextInputWithMentions } from './text-input-with-mentions';
 
 export const selectGenericFormComponentForProperty = ({
@@ -224,25 +223,12 @@ export const selectGenericFormComponentForProperty = ({
           allowDynamicValues={allowDynamicValues}
           dynamicInputModeToggled={dynamicInputModeToggled}
         >
-          {property.display === 'cards' ? (
-            <StaticDropdownCards
-              options={property.options.options}
-              value={field.value}
-              onChange={field.onChange}
-              disabled={disabled}
-            ></StaticDropdownCards>
-          ) : (
-            <SearchableSelect
-              options={property.options.options}
-              onChange={field.onChange}
-              value={field.value}
-              disabled={disabled}
-              placeholder={
-                property.options.placeholder ?? t('Select an option')
-              }
-              showDeselect={!property.required}
-            ></SearchableSelect>
-          )}
+          <AvailableStaticDropdown
+            property={property}
+            value={field.value}
+            onChange={field.onChange}
+            disabled={disabled}
+          />
         </AutoFormFieldWrapper>
       );
     case PropertyType.JSON:

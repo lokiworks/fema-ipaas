@@ -1,42 +1,7 @@
-import {
-  ConnectorAuth,
-  Property,
-  createConnector,
-} from '@fema-ipaas/connector-sdk';
-import { ConnectorCategory } from '@fema-ipaas/connector-sdk';
+import { createConnector, ConnectorCategory } from '@fema-ipaas/connector-sdk';
+import { mysqlAuth } from './lib/auth';
 import actions from './lib/actions';
-
-export const mysqlAuth = ConnectorAuth.CustomAuth({
-  props: {
-    host: Property.ShortText({
-      displayName: 'Host',
-      required: true,
-      description: 'The hostname or address of the mysql server',
-    }),
-    port: Property.Number({
-      displayName: 'Port',
-      defaultValue: 3306,
-      description: 'The port to use for connecting to the mysql server',
-      required: true,
-    }),
-    user: Property.ShortText({
-      displayName: 'Username',
-      required: true,
-      description: 'The username to use for connecting to the mysql server',
-    }),
-    password: ConnectorAuth.SecretText({
-      displayName: 'Password',
-      description: 'The password to use to identify at the mysql server',
-      required: true,
-    }),
-    database: Property.ShortText({
-      displayName: 'Database',
-      description: 'The name of the database to use. Required if you are not using the "Execute Query" Action',
-      required: false,
-    }),
-  },
-  required: true,
-});
+import { newRow } from './lib/triggers/new-row';
 
 export const mysql = createConnector({
   displayName: 'MySQL',
@@ -48,5 +13,5 @@ export const mysql = createConnector({
   authors: ["JanHolger","kishanprmr","khaledmashaly","abuaboud"],
   auth: mysqlAuth,
   actions,
-  triggers: [],
+  triggers: [newRow],
 });

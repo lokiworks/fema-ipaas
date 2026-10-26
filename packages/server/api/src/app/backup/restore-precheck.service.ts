@@ -26,34 +26,18 @@ export const restorePrecheckService = (log: FastifyBaseLogger) => ({
         const record = await backupService(log).getOneOrThrow({ tenantId, id })
         const directory = backupFiles.directory()
         const file = isNil(record.fileName) ? null : path.join(directory, path.basename(record.fileName))
-        const [current, fileChecks, keyCheck] = await Promise.all([
-            backupFiles.countContents(),
-            checkFile({ record, file }),
-            checkEncryptionKey({ record }),
-        ])
-        const checks: RestoreCheck[] = [
-            ...fileChecks,
-            engineCheck({ record }),
-            versionCheck({ record }),
-            keyCheck,
-            targetCheck({ current }),
-            await spaceCheck({ record, directory }),
-        ]
-        return {
-            backupId: record.id,
-            checkedAt: new Date().toISOString(),
-            canRestore: record.status === BackupStatus.SUCCEEDED && !checks.some((check) => check.level === RestoreCheckLevel.ERROR),
-            checks,
-            overwrites: { current, backup: record.counts ?? null },
-            target: {
-                engine: record.engine,
-                directory,
-                fileName: record.fileName ?? null,
-                dataDirectory: path.resolve(system.getOrThrow(AppSystemProp.CONFIG_PATH)),
-            },
-        }
+        return inspect({ record, file, directory, current: await backupFiles.countContents() })
+
     },
 })
+
+async function inspect({ record, file, directory, current }: { record: BackupRecord, file: string | null, directory: string, current: RestorePrecheck['overwrites']['current'] }): Promise<RestorePrecheck> {
+    const [fileChecks, keyCheck] = await Promise.all([checkFile({ record, file }), checkEncryptionKey({ record })])
+    const checks = [...fileChecks, engineCheck({ record }), versionCheck({ record }), keyCheck, targetCheck({ current }), await spaceCheck({ record, directory })]
+    return { backupId: record.id, checkedAt: new Date().toISOString(), canRestore: record.status === BackupStatus.SUCCEEDED && !checks.some((check) => check.level === RestoreCheckLevel.ERROR), checks, overwrites: { current, backup: record.counts ?? null }, target: { engine: record.engine, directory, fileName: record.fileName ?? null, dataDirectory: path.resolve(system.getOrThrow(AppSystemProp.CONFIG_PATH)) } }
+}
+
+export const restorePrecheck = { inspect }
 
 async function checkFile({ record, file }: { record: BackupRecord, file: string | null }): Promise<RestoreCheck[]> {
     if (record.status !== BackupStatus.SUCCEEDED || isNil(file)) {

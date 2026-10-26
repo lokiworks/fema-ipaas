@@ -1,3 +1,4 @@
+import type { RateLimitContext } from '@fema-ipaas/connector-sdk';
 import { HttpMethod } from '@fema-ipaas/connector-common';
 
 import { beisenCommon, BeisenAuthValue } from './index';
@@ -45,9 +46,10 @@ function requestBody({ startTime, stopTime, scope, queryType, capacity, scrollId
   };
 }
 
-async function fetchPage({ auth, body, path }: { auth: BeisenAuthValue; body: Record<string, unknown>; path?: string }): Promise<TimeWindowPage> {
+async function fetchPage({ auth, rateLimit, body, path }: { auth: BeisenAuthValue; rateLimit?: RateLimitContext; body: Record<string, unknown>; path?: string }): Promise<TimeWindowPage> {
   const response = await beisenCommon.callApi<TimeWindowResponse>({
     auth,
+    rateLimit,
     method: HttpMethod.POST,
     path: path ?? TIME_WINDOW_PATH,
     body,
@@ -58,16 +60,16 @@ async function fetchPage({ auth, body, path }: { auth: BeisenAuthValue; body: Re
   return { records: response.data ?? [], scrollId: response.scrollId ?? undefined, isLastData: response.isLastData === true };
 }
 
-async function drain({ auth, scope, queryType, startMs, stopMs, timeZone, columns }: DrainParams): Promise<Record<string, unknown>[]> {
+async function drain({ auth, rateLimit, scope, queryType, startMs, stopMs, timeZone, columns }: DrainParams): Promise<Record<string, unknown>[]> {
   const windows = segments({ startMs, stopMs });
   return windows.reduce<Promise<Record<string, unknown>[]>>(async (accPromise, window) => {
     const acc = await accPromise;
-    const collected = await drainWindow({ auth, scope, queryType, window, timeZone, columns });
+    const collected = await drainWindow({ auth, rateLimit, scope, queryType, window, timeZone, columns });
     return [...acc, ...collected];
   }, Promise.resolve([]));
 }
 
-async function drainWindow({ auth, scope, queryType, window, timeZone, columns }: DrainWindowParams): Promise<Record<string, unknown>[]> {
+async function drainWindow({ auth, rateLimit, scope, queryType, window, timeZone, columns }: DrainWindowParams): Promise<Record<string, unknown>[]> {
   const startTime = formatTimestamp({ epochMs: window.startMs, timeZone });
   const stopTime = formatTimestamp({ epochMs: window.stopMs, timeZone });
   const collected: Record<string, unknown>[] = [];
@@ -75,6 +77,7 @@ async function drainWindow({ auth, scope, queryType, window, timeZone, columns }
   for (let page = 0; page < MAX_PAGES_PER_WINDOW; page++) {
     const result: TimeWindowPage = await fetchPage({
       auth,
+    rateLimit,
       body: requestBody({ startTime, stopTime, scope, queryType, capacity: PAGE_SIZE, scrollId, columns }),
     });
     collected.push(...result.records);
@@ -88,12 +91,13 @@ async function drainWindow({ auth, scope, queryType, window, timeZone, columns }
   );
 }
 
-async function scrollAll({ auth, path, body, maxItems }: ScrollAllParams): Promise<Record<string, unknown>[]> {
+async function scrollAll({ auth, rateLimit, path, body, maxItems }: ScrollAllParams): Promise<Record<string, unknown>[]> {
   const collected: Record<string, unknown>[] = [];
   let scrollId: string | undefined = undefined;
   for (let page = 0; page < MAX_PAGES_PER_WINDOW; page++) {
     const result: TimeWindowPage = await fetchPage({
       auth,
+    rateLimit,
       path,
       body: { ...body, capacity: PAGE_SIZE, ...(scrollId ? { scrollId } : {}) },
     });
@@ -181,6 +185,7 @@ type RequestBodyParams = {
 
 type ScrollAllParams = {
   auth: BeisenAuthValue;
+  rateLimit?: RateLimitContext;
   path: string;
   body: Record<string, unknown>;
   maxItems: number;
@@ -188,6 +193,7 @@ type ScrollAllParams = {
 
 type DrainParams = {
   auth: BeisenAuthValue;
+  rateLimit?: RateLimitContext;
   scope: StatusScope;
   queryType: number;
   startMs: number;
@@ -198,6 +204,7 @@ type DrainParams = {
 
 type DrainWindowParams = {
   auth: BeisenAuthValue;
+  rateLimit?: RateLimitContext;
   scope: StatusScope;
   queryType: number;
   window: TimeSegment;

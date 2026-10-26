@@ -1,11 +1,10 @@
-import { MappingMissingBehavior } from '@fema-ipaas/core-utils'
-import { SolutionConfigType, SolutionPackage, SolutionWorkflow } from '@fema-ipaas/shared'
+import { ReconciliationRuleBody, SolutionConfigType, SolutionPackage, SolutionWorkflow, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import type { OfficialSolution } from '../official-solutions'
 import { solutionPackageUtils } from '../solution-package-utils'
-import { beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep, STORE, STORE_VERSION } from './official-solution-builders'
+import { beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, DEPARTMENT_TABLE, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep, STORE, STORE_VERSION } from './official-solution-builders'
 
 function buildBeisenFeishuSolution(): OfficialSolution {
-    const workflows = [onboardWorkflow(), transferWorkflow(), leaveWorkflow()]
+    const workflows = [withDepartmentRecovery(onboardWorkflow()), withDepartmentRecovery(transferWorkflow()), leaveWorkflow(), repairWorkflow()]
     const built = solutionPackageUtils.buildPackage({
         workflows,
         tables: [DEPARTMENT_TABLE],
@@ -13,6 +12,7 @@ function buildBeisenFeishuSolution(): OfficialSolution {
     })
     const pkg: SolutionPackage = {
         ...built,
+        reconciliationRules: [peopleReconciliation()],
         config: [
             {
                 key: 'hrChatId',
@@ -21,8 +21,8 @@ function buildBeisenFeishuSolution(): OfficialSolution {
                 options: [],
                 defaultValue: '',
                 hint: '新员工的飞书账号开通后，在这个群里通知。群 ID 以 oc_ 开头，机器人必须已经在群里',
-                affectsWorkflows: ['onboard'],
-                patches: [{ workflowKey: 'onboard', stepName: 'notify_hr', inputKey: 'chatId' }],
+                affectsWorkflows: ['onboard', 'repair'],
+                patches: [{ workflowKey: 'onboard', stepName: 'notify_hr', inputKey: 'chatId' }, { workflowKey: 'repair', stepName: 'active_notify_hr', inputKey: 'chatId' }],
             },
             {
                 key: 'itChatId',
@@ -31,9 +31,11 @@ function buildBeisenFeishuSolution(): OfficialSolution {
                 options: [],
                 defaultValue: '',
                 hint: '员工离职、飞书账号暂停后，在这个群里提醒回收设备。机器人必须已经在群里',
-                affectsWorkflows: ['leave'],
-                patches: [{ workflowKey: 'leave', stepName: 'notify_it', inputKey: 'chatId' }],
+                affectsWorkflows: ['leave', 'repair'],
+                patches: [{ workflowKey: 'leave', stepName: 'notify_it', inputKey: 'chatId' }, { workflowKey: 'repair', stepName: 'left_notify_it', inputKey: 'chatId' }],
             },
+            { key: 'rootOrganizationId', label: '北森根组织 OId（全量对账）', type: SolutionConfigType.TEXT, options: [], defaultValue: '', affectsWorkflows: ['repair'], patches: [] },
+            { key: 'orgWorkflow', label: '组织整树收敛子流程的外部 ID', type: SolutionConfigType.TEXT, options: [], defaultValue: '', hint: '先安装并发布组织同步方案，再填写其收敛子流程的 externalId。缺部门对照时会等待它完成后重新查表。', affectsWorkflows: ['onboard', 'transfer', 'repair'], patches: [{ workflowKey: 'onboard', stepName: 'recover_department', inputKey: 'workflowId' }, { workflowKey: 'transfer', stepName: 'recover_department', inputKey: 'workflowId' }, { workflowKey: 'repair', stepName: 'active_recover_department', inputKey: 'workflowId' }] },
         ],
     }
     return {
@@ -41,7 +43,7 @@ function buildBeisenFeishuSolution(): OfficialSolution {
         name: '北森 → 飞书 人员同步',
         summary: '北森员工入职、调岗、离职后，自动在飞书开通账号、同步部门、暂停账号，并通知 HR 群和 IT 群。',
         category: 'HR',
-        version: '1.1',
+        version: '1.2',
         notes: '同一员工的变动按工号排队逐条处理；调岗去重键加上任职开始日，调回原部门不再被当成重复；HR 群和 IT 群的通知先查记录、发完再记下，消息本身再带去重键（飞书一小时内丢弃同一个键的重复消息），运行被打断后重跑不会漏发，一小时内也不会重发',
         publishedAt: '2026-10-03T00:00:00.000Z',
         package: pkg,
@@ -83,38 +85,41 @@ function onboardWorkflow(): SolutionWorkflow {
                     employeeNo: ref('recordInfo', 'jobNumber'),
                 },
                 nextAction: connectorStep({
-                    name: 'check_notified',
-                    displayName: '查是否已通知过',
-                    connectorName: STORE,
-                    connectorVersion: STORE_VERSION,
-                    actionName: 'get',
-                    input: { key: ONBOARD_NOTIFIED_KEY, store_scope: 'COLLECTION' },
-                    nextAction: routerStep({
-                        name: 'only_when_not_notified',
-                        displayName: '没通知过才通知',
-                        condition: { operator: 'DOES_NOT_EXIST', firstValue: '{{check_notified[\'output\']}}' },
-                        branchName: '还没通知',
-                        fallbackName: '已通知过',
-                        child: connectorStep({
-                            name: 'notify_hr',
-                            displayName: '通知 HR 群',
-                            connectorName: FEISHU,
-                            connectorVersion: FEISHU_VERSION,
-                            actionName: 'send_group_message',
-                            input: {
-                                auth: FEISHU_AUTH,
-                                chatId: '',
-                                messageType: 'text',
-                                content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）的飞书账号已开通`,
-                                dedupeKey: ONBOARD_NOTIFIED_KEY,
-                            },
-                            nextAction: connectorStep({
-                                name: 'mark_notified',
-                                displayName: '记下已通知',
-                                connectorName: STORE,
-                                connectorVersion: STORE_VERSION,
-                                actionName: 'put',
-                                input: { key: ONBOARD_NOTIFIED_KEY, value: 'sent', store_scope: 'COLLECTION' },
+                    name: 'ensure_department', displayName: '确认现有账号部门', connectorName: FEISHU, connectorVersion: FEISHU_VERSION, actionName: 'update_user', retry: true, input: { auth: FEISHU_AUTH, openId: '{{provision.output.open_id}}', departmentId: '{{map_department.output.departmentId}}' },
+                    nextAction: connectorStep({
+                        name: 'check_notified',
+                        displayName: '查是否已通知过',
+                        connectorName: STORE,
+                        connectorVersion: STORE_VERSION,
+                        actionName: 'get',
+                        input: { key: ONBOARD_NOTIFIED_KEY, store_scope: 'COLLECTION' },
+                        nextAction: routerStep({
+                            name: 'only_when_not_notified',
+                            displayName: '没通知过才通知',
+                            condition: { operator: 'DOES_NOT_EXIST', firstValue: '{{check_notified[\'output\']}}' },
+                            branchName: '还没通知',
+                            fallbackName: '已通知过',
+                            child: connectorStep({
+                                name: 'notify_hr',
+                                displayName: '通知 HR 群',
+                                connectorName: FEISHU,
+                                connectorVersion: FEISHU_VERSION,
+                                actionName: 'send_group_message',
+                                input: {
+                                    auth: FEISHU_AUTH,
+                                    chatId: '',
+                                    messageType: 'text',
+                                    content: `${ref('employeeInfo', 'name')}（工号 ${ref('recordInfo', 'jobNumber')}）的飞书账号已开通`,
+                                    dedupeKey: ONBOARD_NOTIFIED_KEY,
+                                },
+                                nextAction: connectorStep({
+                                    name: 'mark_notified',
+                                    displayName: '记下已通知',
+                                    connectorName: STORE,
+                                    connectorVersion: STORE_VERSION,
+                                    actionName: 'put',
+                                    input: { key: ONBOARD_NOTIFIED_KEY, value: 'sent', store_scope: 'COLLECTION' },
+                                }),
                             }),
                         }),
                     }),
@@ -249,23 +254,52 @@ function leaveWorkflow(): SolutionWorkflow {
     return { key: 'leave', name: '员工离职暂停飞书账号', description: '北森离职生效后暂停飞书账号（数据保留、可恢复），并通知 IT 回收设备。', trigger, schemaVersion: null }
 }
 
+function withDepartmentRecovery(workflow: SolutionWorkflow): SolutionWorkflow {
+    const original = workflow.trigger.nextAction
+    if (!original) return workflow
+    const call = connectorStep({ name: 'recover_department', displayName: '先收敛组织再查部门', connectorName: '@fema-ipaas/connector-subflows', connectorVersion: '~0.6.0', actionName: 'callWorkflow', input: { workflowId: '', mode: 'advanced', workflowProps: { payload: {} }, waitForResponse: true } })
+    const route = routerStep({ name: 'missing_department', displayName: '部门对照缺失时自动补齐组织', condition: { operator: 'BOOLEAN_IS_FALSE', firstValue: '{{lookup_department.output.found}}' }, branchName: '先同步组织', fallbackName: '对照已存在', child: call })
+    const lookup = connectorStep({ name: 'lookup_department', displayName: '先检查部门对照', connectorName: DATA_MAPPER, connectorVersion: '~0.5.0', actionName: 'get_mapping_value', input: { tableId: DEPARTMENT_TABLE.id, key: DEPARTMENT_OID }, nextAction: { ...route, nextAction: original } })
+    return { ...workflow, trigger: WorkflowTrigger.parse({ ...workflow.trigger, nextAction: lookup }) }
+}
+
+function repairWorkflow(): SolutionWorkflow {
+    const active = prefixedSteps({ workflow: withDepartmentRecovery(onboardWorkflow()), prefix: 'active_' })
+    const left = prefixedSteps({ workflow: leaveWorkflow(), prefix: 'left_' })
+    const route = routerStep({ name: 'current_status', displayName: '按最新人员状态处理', condition: { operator: 'TEXT_EXACTLY_MATCHES', firstValue: '{{trigger.output.recordInfo.employeeStatus}}', secondValue: '8', caseSensitive: true }, branchName: '离职暂停', fallbackName: '在职开通并同步部门', child: left })
+    const trigger = WorkflowTrigger.parse({ name: 'trigger', type: 'CONNECTOR_TRIGGER', displayName: '人员状态补齐', valid: true, lastUpdatedDate: '2026-10-27T00:00:00.000Z', settings: { connectorName: '@fema-ipaas/connector-subflows', connectorVersion: '~0.6.0', triggerName: 'callableWorkflow', input: { mode: 'advanced', exampleData: { sampleData: {} } }, propertySettings: {}, concurrency: { maxConcurrentRuns: 0, orderKeyPath: '{{trigger.recordInfo.jobNumber}}' } }, nextAction: { ...route, children: [left, active] } })
+    return { key: 'repair', name: '按当前人员状态补齐飞书账号', description: '对账补齐前已重新读取北森，按最新人员状态走相同的开通、部门、暂停和通知逻辑。', schemaVersion: null, trigger }
+}
+
+function prefixedSteps({ workflow, prefix }: { workflow: SolutionWorkflow, prefix: string }) {
+    const names = workflowStructureUtil.getAllSteps(workflow.trigger).filter((step) => step.name !== workflow.trigger.name).map((step) => step.name)
+    const rewritten = WorkflowTrigger.parse(replaceReferences({ value: workflow.trigger, names, prefix }))
+    const trigger = workflowStructureUtil.transferStep(rewritten, (step) => step.name === workflow.trigger.name ? step : { ...step, name: `${prefix}${step.name}` })
+    return WorkflowTrigger.parse(trigger).nextAction
+}
+
+function replaceReferences({ value, names, prefix }: { value: unknown, names: string[], prefix: string }): unknown {
+    if (typeof value === 'string') return names.reduce((text, name) => text.replaceAll(`{{${name}.`, `{{${prefix}${name}.`).replaceAll(`{{${name}[`, `{{${prefix}${name}[`), value)
+    if (Array.isArray(value)) return value.map((item: unknown) => replaceReferences({ value: item, names, prefix }))
+    if (typeof value === 'object' && value !== null) return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, replaceReferences({ value: item, names, prefix })]))
+    return value
+}
+
+function peopleReconciliation() {
+    const active = [{ path: 'recordInfo.employeeStatus', in: ['2', '3', '7'] }]
+    const left = [{ path: 'recordInfo.employeeStatus', in: ['8'] }]
+    const body = ReconciliationRuleBody.parse({ projectId: '', name: '北森人员状态与飞书账号', workflowId: '', source: { connectorName: '@fema-ipaas/connector-beisen', actionName: 'enumerate_employees', connectionExternalId: '', input: { rootOrganizationId: 'config:rootOrganizationId', recentDeparturesDays: 30 }, keyPath: 'recordInfo.jobNumber' }, target: { connectorName: FEISHU, actionName: 'enumerate_users', connectionExternalId: '', input: { rootDepartmentId: '0' }, keyPath: 'employee_no' }, expectations: [{ aspect: 'account', when: active, expect: { kind: 'EXISTS' } }, { aspect: 'department', when: active, expect: { kind: 'CONTAINS', sourcePath: 'recordInfo.oIdDepartment', targetPath: 'department_ids', mappingTableId: 'table:department' } }, { aspect: 'suspension', when: left, expect: { kind: 'FLAG', targetPath: 'is_frozen', value: true } }], repair: { readActionName: 'get_employee_record', keyInput: 'employeeNo' } })
+    const { projectId: _project, workflowId: _workflow, ...template } = body
+    return { ...template, key: 'people', workflowKey: 'repair' }
+}
+
 const EMPLOYEE_KEY = '{{trigger.recordInfo.jobNumber}}'
 
 const ONBOARD_NOTIFIED_KEY = `onboard-notified:${ref('recordInfo', 'jobNumber')}:${ref('recordInfo', 'startDate')}`
 
 const LEAVE_NOTIFIED_KEY = `leave-notified:${ref('recordInfo', 'jobNumber')}:${ref('recordInfo', 'lastWorkDate')}`
 
-const DEPARTMENT_TABLE = {
-    id: 'mt_beisen_department',
-    key: 'department',
-    name: '北森部门到飞书部门',
-    description: '用北森任职部门的 OId 查飞书部门 ID',
-    keyLabel: '北森部门 OId',
-    valueLabel: '飞书部门 ID',
-    missingBehavior: MappingMissingBehavior.ERROR,
-    defaultValue: null,
-    rows: [],
-}
+
 
 const MANUAL_CHECKS = [
     { label: '北森连接器已勾选「员工信息」和「任职记录」两个对象', detail: '缺一个，北森会返回权限异常。字段权限也要允许读到手机号、工号、部门和人员状态', who: '北森管理员' },

@@ -1,3 +1,4 @@
+import { OutboundIpNotice } from './outbound-ip-notice';
 import {
   getAuthPropertyForValue,
   ConnectorAuthProperty,
@@ -358,9 +359,10 @@ function ConnectionSettings({
       );
     case PropertyType.CUSTOM_AUTH:
       return (
-        <CustomAuthConnectionSettings
-          authProperty={selectedAuth.authProperty}
-        />
+        <>
+          {connector.name === '@fema-ipaas/connector-wecom' && <OutboundIpNotice />}
+          <CustomAuthConnectionSettings authProperty={selectedAuth.authProperty} />
+        </>
       );
     case PropertyType.OIDC:
       return (

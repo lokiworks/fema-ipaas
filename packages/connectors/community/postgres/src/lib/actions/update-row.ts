@@ -15,6 +15,7 @@ export const updateRow = createAction({
     description: 'Updates every row in a PostgreSQL table whose search column equals a given value, setting the supplied column-to-value pairs, and returns how many rows changed. Use to modify existing records matched by a single column. Enable Return Updated Rows to also get the rows themselves back, but leave it off when the update can match many rows. Idempotent: re-running with the same input writes the same values and has no additional effect.',
     idempotent: true,
   },
+  reliability: { writeSafety: 'IDEMPOTENT', rateLimits: [{ bucket: 'postgres-query', scope: 'APP', perSecond: 50 }] },
   props: {
     table: postgresCommon.table,
     values: Property.Object({
@@ -39,6 +40,7 @@ export const updateRow = createAction({
     }),
   },
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'postgres-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const { table, values, search_column, search_value, return_rows } = context.propsValue;
     const columns = Object.keys(values);
     if (columns.length === 0) {

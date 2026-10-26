@@ -26,6 +26,7 @@ type SelectOption<T> = {
   value: T;
   label: string;
   description?: string;
+  disabled?: boolean;
 };
 
 type SearchableSelectProps<T> = {
@@ -125,7 +126,7 @@ export const SearchableSelect = <T,>({
       return;
     }
     const option = options[optionIndex];
-    onChange(option.value);
+    if (!option.disabled) onChange(option.value);
   };
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
@@ -250,6 +251,7 @@ export const SearchableSelect = <T,>({
                     }
                     return (
                       <CommandItem
+                        disabled={option.disabled}
                         key={filterIndex}
                         value={String(filterIndex)}
                         onSelect={(currentValue) => {

@@ -31,6 +31,7 @@ import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectEntity } from '../project/project-entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
+import { ReconciliationDifferenceEntity, ReconciliationRuleEntity, ReconciliationRunEntity } from '../reconciliation/reconciliation.entity'
 import { ConnectionReplacementEntity, ReleaseChangeEntity, WorkflowReleaseEntity } from '../release/release.entity'
 import { ReliabilityEventEntity } from '../reliability/reliability-event.entity'
 import { RunMonitorViewEntity } from '../run-monitor/run-monitor-view.entity'
@@ -120,6 +121,9 @@ function getEntities(): EntitySchema<unknown>[] {
         BackupRecordEntity,
         BackupSettingsEntity,
         ServiceSettingEntity,
+        ReconciliationRuleEntity,
+        ReconciliationRunEntity,
+        ReconciliationDifferenceEntity,
     ]
 }
 

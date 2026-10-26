@@ -1,4 +1,4 @@
-import { ConnectionValueForAuthProperty, FilesService, ServerContext, Store } from '@fema-ipaas/connector-sdk';
+import { ConnectionValueForAuthProperty, FilesService, RateLimitContext, ServerContext, Store } from '@fema-ipaas/connector-sdk';
 import { isNil } from '@fema-ipaas/core-utils';
 
 
@@ -10,6 +10,7 @@ interface TimebasedPolling<AuthValue, PropsValue> {
     propsValue: PropsValue;
     lastFetchEpochMS: number;
     server?: ServerContext;
+    rateLimit?: RateLimitContext;
   }) => Promise<
     {
       epochMilliSeconds: number;
@@ -27,6 +28,7 @@ interface LastItemPolling<AuthValue extends ConnectionValueForAuthProperty<any>,
     propsValue: PropsValue;
     lastItemId: unknown;
     server?: ServerContext;
+    rateLimit?: RateLimitContext;
   }) => Promise<
     {
       id: unknown;
@@ -54,6 +56,7 @@ export const pollingHelper = {
       maxItemsToPoll,
       files,
       server,
+      rateLimit,
     }: {
       store: Store;
       auth: AuthValue;
@@ -61,6 +64,7 @@ export const pollingHelper = {
       files: FilesService;
       maxItemsToPoll?: number;
       server?: ServerContext;
+      rateLimit?: RateLimitContext;
     }
   ): Promise<unknown[]> {
     switch (polling.strategy) {
@@ -75,6 +79,7 @@ export const pollingHelper = {
           propsValue,
           lastFetchEpochMS: lastEpochMilliSeconds,
           server,
+      rateLimit,
         });
         const newLastEpochMilliSeconds = items.reduce(
           (acc, item) => Math.max(acc, item.epochMilliSeconds),
@@ -94,6 +99,7 @@ export const pollingHelper = {
           lastItemId,
           files,
           server,
+      rateLimit,
         });
 
         const lastItemIndex = items.findIndex((f) => f.id === lastItemId);
@@ -123,8 +129,9 @@ export const pollingHelper = {
       auth,
       propsValue,
       server,
+      rateLimit,
       isRepublish,
-    }: { store: Store; auth: AuthValue; propsValue: PropsValue; server?: ServerContext; isRepublish?: boolean }
+    }: { store: Store; auth: AuthValue; propsValue: PropsValue; server?: ServerContext; rateLimit?: RateLimitContext; isRepublish?: boolean }
   ): Promise<void> {
     switch (polling.strategy) {
       case DedupeStrategy.TIMEBASED: {
@@ -144,6 +151,7 @@ export const pollingHelper = {
           propsValue,
           lastItemId: null,
           server,
+      rateLimit,
         });
         const lastItemId = items?.[0]?.id;
         if (!isNil(lastItemId)) {
@@ -173,7 +181,8 @@ export const pollingHelper = {
       store,
       files,
       server,
-    }: { store: Store; auth: AuthValue; propsValue: PropsValue, files: FilesService; server?: ServerContext }
+      rateLimit,
+    }: { store: Store; auth: AuthValue; propsValue: PropsValue, files: FilesService; server?: ServerContext; rateLimit?: RateLimitContext }
   ): Promise<unknown[]> {
     let items = [];
     switch (polling.strategy) {
@@ -184,6 +193,7 @@ export const pollingHelper = {
           propsValue,
           lastFetchEpochMS: 0,
           server,
+      rateLimit,
         });
         break;
       }
@@ -195,6 +205,7 @@ export const pollingHelper = {
           lastItemId: null,
           files,
           server,
+      rateLimit,
         });
         break;
       }

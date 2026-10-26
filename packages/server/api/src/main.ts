@@ -2,7 +2,9 @@ import { evlogSetup } from '@fema-ipaas/server-utils'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { appPostBoot } from './app/app'
+import { restoreMaintenance } from './app/backup/maintenance'
 import { initializeDatabase } from './app/database'
+import { DatabaseType } from './app/database/database-type'
 import { distributedLock } from './app/database/redis-connections'
 import { system } from './app/helper/system/system'
 import { AppSystemProp } from './app/helper/system/system-props'
@@ -55,6 +57,8 @@ function setupTimeZone(): void {
 
 const main = async (): Promise<void> => {
     setupTimeZone()
+    await restoreMaintenance.assertAvailable()
+    const releaseDatabase = system.isApp() && system.get(AppSystemProp.DB_TYPE) === DatabaseType.PGLITE ? await restoreMaintenance.lockLocalDatabase() : undefined
     if (system.isApp()) {
         validateSecretsOnStartup()
         await distributedLock(system.globalLogger()).runExclusive({
@@ -64,6 +68,7 @@ const main = async (): Promise<void> => {
         })
     }
     const app = await setupServer()
+    if (releaseDatabase) app.addHook('onClose', releaseDatabase)
 
     process.on('SIGINT', async () => {
         await stop(app).catch((e) => system.globalLogger().error({ err: e }, '[main#stop] Failed to stop server'))

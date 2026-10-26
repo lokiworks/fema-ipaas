@@ -40,6 +40,7 @@ export type BaseContext<
     externalId: () => Promise<string | undefined>;
   };
   connections: ConnectionsManager;
+  rateLimit?: RateLimitContext;
 };
 
 
@@ -168,6 +169,7 @@ export type PropertyContext = {
   searchValue?: string;
   workflows: WorkflowsContext;
   connections: ConnectionsManager;
+  rateLimit?: RateLimitContext;
 };
 
 export type ServerContext = {
@@ -225,6 +227,7 @@ type BaseActionContext<
   ActionProps extends InputPropertyMap
 > = BaseContext<ConnectorAuth, ActionProps> & {
   executionType: ET;
+  rateLimit: RateLimitContext;
   tags: TagsManager;
   server: ServerContext;
   files: FilesService;
@@ -294,3 +297,6 @@ export enum StoreScope {
 export type SetScheduleRequest =
   | { cronExpression: string; timezone?: string }
   | { intervalMs: number };
+export type RateLimitContext = {
+  acquire: (params: { bucket: string; scopeKey: string }) => Promise<void>;
+};

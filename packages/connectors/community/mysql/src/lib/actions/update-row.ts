@@ -1,6 +1,6 @@
 import { createAction, Property } from '@fema-ipaas/connector-sdk';
 import { mysqlCommon, mysqlConnect, sanitizeColumnName } from '../common';
-import { mysqlAuth } from '../..';
+import { mysqlAuth } from '../auth';
 import { updateRowOutputSchema } from '../output-schemas';
 
 export default createAction({
@@ -8,9 +8,11 @@ export default createAction({
   name: 'update_row',
   displayName: 'Update Row',
   description: 'Updates one or more rows in a table',
+  classification: 'WRITE',
   audience: 'both',
   outputSchema: updateRowOutputSchema,
   aiMetadata: { description: 'Updates every row in a MySQL table whose search column equals a given value, setting the supplied column-to-value pairs. Use to modify existing records matched by a single column. Idempotent: re-running with the same input writes the same values and has no additional effect.', idempotent: true },
+  reliability: { writeSafety: 'IDEMPOTENT', rateLimits: [{ bucket: 'mysql-query', scope: 'APP', perSecond: 50 }] },
   props: {
     timezone: mysqlCommon.timezone,
     table: mysqlCommon.table(),
@@ -28,6 +30,7 @@ export default createAction({
     }),
   },
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'mysql-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const fields = Object.keys(context.propsValue.values);
     const qsValues = fields.map((f) => sanitizeColumnName(f) + '=?').join(',');
     const qs = `UPDATE ${sanitizeColumnName(context.propsValue.table)} SET ${qsValues} WHERE ${sanitizeColumnName(context.propsValue.search_column)}=?;`;

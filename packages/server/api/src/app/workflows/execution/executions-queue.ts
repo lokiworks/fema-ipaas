@@ -56,11 +56,11 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                             }
                             const runMetadata = await withMaskedFailedStep({ log, metadata: sanitizeObjectForPostgresql(rawRunMetadata) })
 
-                            const existingExecution = await executionRepo().findOneBy({ id: job.data.runId })
+                            const existingExecution = await executionRepo().findOneBy({ id: job.data.runId, projectId: runMetadata.projectId })
                             let savedExecution: Execution
                             if (!isNil(existingExecution)) {
                                 const timeline = buildTimeline({ existingExecution, runMetadata })
-                                await executionRepo().update(job.data.runId, {
+                                await executionRepo().update({ id: job.data.runId, projectId: runMetadata.projectId }, {
                                     ...spreadIfDefined('timeline', timeline),
                                     ...spreadIfDefined('projectId', runMetadata.projectId),
                                     ...spreadIfDefined('workflowId', runMetadata.workflowId),
@@ -79,7 +79,7 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                                     ...spreadIfDefined('updated', runMetadata.updated),
                                     ...spreadIfDefined('stepsCount', runMetadata.stepsCount),
                                 })
-                                const updatedExecution = await executionRepo().findOneBy({ id: job.data.runId })
+                                const updatedExecution = await executionRepo().findOneBy({ id: job.data.runId, projectId: runMetadata.projectId })
                                 if (isNil(updatedExecution)) {
                                     log.info({
                                         job: { id: job.id },
@@ -118,7 +118,11 @@ export const runsMetadataQueue = (log: FastifyBaseLogger) => ({
                             }
                             if (!isNil(runMetadata.finishTime)) {
                                 const tenantId = await projectService(log).getTenantId(savedExecution.projectId)
-                                await executionSideEffects(log).onFinish({ execution: savedExecution, tenantId })
+                                const newlyTerminal = isExecutionStateTerminal({ status: savedExecution.status, ignoreInternalError: true })
+                                    && (isNil(existingExecution) || isNil(existingExecution.finishTime) || !isExecutionStateTerminal({ status: existingExecution.status, ignoreInternalError: true }))
+                                if (newlyTerminal) {
+                                    await executionSideEffects(log).onFinish({ execution: savedExecution, tenantId })
+                                }
                                 const { error: indexError } = await tryCatch(() => runSearchIndexService(log).indexFromRawState({ execution: savedExecution }))
                                 if (indexError) {
                                     log.warn({ error: indexError, execution: { id: savedExecution.id } }, '[runsMetadataQueue#worker] Could not index the run for exact search')

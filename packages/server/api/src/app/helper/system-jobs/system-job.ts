@@ -3,6 +3,7 @@ import { dayjsDuration, dayjsUtil } from '@fema-ipaas/server-utils'
 import { Job, JobsOptions, Queue, Worker } from 'bullmq'
 import { Dayjs } from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
+import { restoreMaintenance } from '../../backup/maintenance'
 import { redisConnections } from '../../database/redis-connections'
 import { exceptionHandler } from '../exception-handler'
 import { SystemJobData, SystemJobName, SystemJobSchedule } from './common'
@@ -12,7 +13,7 @@ const FIFTEEN_MINUTES = dayjsDuration(15, 'minute').asMilliseconds()
 const ONE_MONTH = dayjsDuration(1, 'month').asSeconds()
 const SYSTEM_JOB_QUEUE = 'system-job-queue'
 
-export let systemJobsQueue: Queue<SystemJobData, unknown, SystemJobName>
+export let systemJobsQueue: Queue<SystemJobData, unknown>
 let systemJobWorker: Worker<SystemJobData, unknown, SystemJobName>
 const registeredRepeatedJobs = new Map<string, RegisteredRepeatedJob>()
 
@@ -46,6 +47,7 @@ export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule =>
         systemJobWorker = new Worker(
             SYSTEM_JOB_QUEUE,
             async (job) => {
+                await restoreMaintenance.assertAvailable()
                 log.debug({ jobName: job.name }, '[systemJob#worker] Executing job')
 
                 const jobHandler = systemJobHandlers.getJobHandler(job.name)
@@ -71,14 +73,14 @@ export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule =>
     async upsertJob({ job, schedule, customConfig }): Promise<void> {
         log.info({ jobName: job.name }, '[systemJob#upsertJob] Upserting job')
         if (schedule.type === 'repeated') {
-            registeredRepeatedJobs.set(job.name, { name: job.name, data: job.data, cron: schedule.cron, customConfig })
+            registeredRepeatedJobs.set(job.jobId, { id: job.jobId, name: job.name, data: job.data, cron: schedule.cron, customConfig })
             const schedulers = await systemJobsQueue.getJobSchedulers()
-            const legacySchedulers = schedulers.filter(scheduler => scheduler.name === job.name && (scheduler.id ?? scheduler.key) !== job.name)
+            const legacySchedulers = schedulers.filter(scheduler => job.jobId === job.name && scheduler.name === job.name && (scheduler.id ?? scheduler.key) !== job.name)
             for (const scheduler of legacySchedulers) {
                 log.info({ jobName: job.name, stalePattern: scheduler.pattern }, '[systemJob#upsertJob] Removing scheduler with a non-canonical key')
                 await systemJobsQueue.removeJobScheduler(scheduler.id ?? scheduler.key)
             }
-            await systemJobsQueue.upsertJobScheduler(job.name, { pattern: schedule.cron, tz: 'UTC' }, { name: job.name, data: job.data, opts: customConfig })
+            await systemJobsQueue.upsertJobScheduler(job.jobId, { pattern: schedule.cron, tz: 'UTC' }, { name: job.name, data: job.data, opts: customConfig })
             return
         }
         const existingJob = await getJobByNameAndJobId(job.name, job.jobId)
@@ -94,7 +96,7 @@ export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule =>
 
     async replayRepeatedJobs(): Promise<number> {
         const jobs = [...registeredRepeatedJobs.values()]
-        await Promise.all(jobs.map((job) => systemJobsQueue.upsertJobScheduler(job.name, { pattern: job.cron, tz: 'UTC' }, { name: job.name, data: job.data, opts: job.customConfig })))
+        await Promise.all(jobs.map((job) => systemJobsQueue.upsertJobScheduler(job.id, { pattern: job.cron, tz: 'UTC' }, { name: job.name, data: job.data, opts: job.customConfig })))
         return jobs.length
     },
 
@@ -115,6 +117,7 @@ export const systemJobsSchedule = (log: FastifyBaseLogger): SystemJobSchedule =>
 })
 
 type RegisteredRepeatedJob = {
+    id: string
     name: SystemJobName
     data: SystemJobData
     cron: string

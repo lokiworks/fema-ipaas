@@ -32,12 +32,13 @@ const polling: Polling<
   }
 > = {
   strategy: DedupeStrategy.TIMEBASED,
-  items: async ({ auth, store, propsValue, lastFetchEpochMS }) => {
+  items: async ({ auth, rateLimit, store, propsValue, lastFetchEpochMS }) => {
     const stopMs = Date.now();
     const enabledAtEpochMS = (await store.get<number>(ENABLED_AT_KEY)) ?? undefined;
     const startMs = beisenChangeWindow.startFor({ lastFetchEpochMS, enabledAtEpochMS, initialLookbackMs: INITIAL_LOOKBACK_MS });
     const fetched = await beisenTimeWindow.drain({
       auth,
+      rateLimit,
       scope: toScope(propsValue.statusScope),
       queryType: toQueryType(propsValue.queryType),
       startMs,
@@ -71,6 +72,7 @@ export const employeeChanged = createTrigger({
       'Start a workflow for each Beisen employee whose employee info or employment record changed since the previous check, one run per employee. Each run carries employeeInfo (name, mobile, email, userID) and recordInfo (job number, department OId, employee status, change type, last work date). Pick it to keep another system in step with Beisen as the HR source of truth; choose the status scope to separate onboarding, active and departed employees. It drains every scroll page and every 89-day segment, and it only reads.',
   },
   type: TriggerStrategy.POLLING,
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     statusScope: Property.StaticDropdown({
       displayName: 'Employee Status',

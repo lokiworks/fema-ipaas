@@ -222,6 +222,18 @@ export function createBeisenOfficial({ state, kit }) {
     return { oId: org.oId, name: org.name, pOIdOrgAdmin: org.parent, status: org.disabled === true ? 0 : 1, stdIsDeleted: false }
   }
 
+  function organizationChanges({ body, headers }) {
+    const denied = gate({ headers })
+    if (denied) return denied
+    const from = kit.beisenTimeToEpoch(body.startTime)
+    const to = kit.beisenTimeToEpoch(body.stopTime)
+    if (!Number.isFinite(from) || !Number.isFinite(to) || from >= to) return parameterError({ message: 'Invalid organization time window' })
+    const matched = [...official.orgs.values()].filter((org) => org.changedAt >= from && org.changedAt <= to)
+    const result = scrollPage({ matched, body, fingerprint: JSON.stringify(['organization', body.startTime, body.stopTime]) })
+    if (result.error) return result.error
+    return envelope({ data: result.page.map((org) => orgOutput({ org })), extra: { total: result.total, scrollId: result.nextScrollId, isLastData: result.last } })
+  }
+
   function subOrganizations({ body, headers }) {
     const denied = gate({ headers })
     if (denied) {
@@ -293,6 +305,7 @@ export function createBeisenOfficial({ state, kit }) {
       [`POST ${BEISEN_PREFIX}/Employee/GetUserIDByEmail`]: userIdByEmail,
       [`POST ${BEISEN_PREFIX}/Organization/GetSubOrganizations`]: subOrganizations,
       [`POST ${BEISEN_PREFIX}/Organization/GetSubOrganizationTrees`]: subOrganizationTrees,
+      [`POST ${BEISEN_PREFIX}/Organization/GetByTimeWindow`]: organizationChanges,
       'POST /__admin/beisen-official': ({ body }) => {
         if (body.scrollTtlMs !== undefined) {
           official.scrollTtlMs = Number(body.scrollTtlMs)
@@ -304,7 +317,7 @@ export function createBeisenOfficial({ state, kit }) {
           official.startInclusive = body.startInclusive === true
         }
         if (Array.isArray(body.orgs)) {
-          official.orgs = new Map(body.orgs.map((org) => [Number(org.oId), { oId: Number(org.oId), name: org.name ?? String(org.oId), parent: Number(org.parent ?? 0), disabled: org.disabled === true }]))
+          official.orgs = new Map(body.orgs.map((org) => [Number(org.oId), { oId: Number(org.oId), name: org.name ?? String(org.oId), parent: Number(org.parent ?? 0), disabled: org.disabled === true, changedAt: Date.now() }]))
         }
         return kit.ok(describe())
       },

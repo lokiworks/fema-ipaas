@@ -1,6 +1,5 @@
-import { assertNotNullOrUndefined, EntityId, MappingCoverageSource, MappingTableData, Permission } from '@fema-ipaas/core-utils'
+import { ApplicationError, EntityId, ErrorCode, MappingCoverageSource, MappingTableData, Permission } from '@fema-ipaas/core-utils'
 import {
-    EnginePrincipal,
     ListMappingTablesRequestQuery,
     MAPPING_TABLE_MAX_ROWS,
     MappingTable,
@@ -8,6 +7,8 @@ import {
     MappingTableRow,
     MappingTableSummary,
     PrincipalType,
+    UpsertMappingRowsRequest,
+    UpsertMappingRowsResult,
     UpsertMappingTableRequestBody,
 } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -61,9 +62,16 @@ export const mappingTableController: FastifyPluginAsyncZod = async (app) => {
 
 export const mappingTableWorkerController: FastifyPluginAsyncZod = async (app) => {
     app.get('/:id', WorkerGetRequest, async (request): Promise<MappingTableData> => {
-        const enginePrincipal = (request.principal as EnginePrincipal)
-        assertNotNullOrUndefined(enginePrincipal.projectId, 'projectId')
-        return mappingTableService(request.log).getForWorker({ id: request.params.id, projectId: enginePrincipal.projectId })
+        if (request.principal.type !== PrincipalType.ENGINE) {
+            throw new ApplicationError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Engine credentials required' } })
+        }
+        return mappingTableService(request.log).getForWorker({ id: request.params.id, projectId: request.principal.projectId })
+    })
+    app.post('/:id/rows', WorkerUpsertRowsRequest, async (request): Promise<UpsertMappingRowsResult> => {
+        if (request.principal.type !== PrincipalType.ENGINE) {
+            throw new ApplicationError({ code: ErrorCode.AUTHORIZATION, params: { message: 'Engine credentials required' } })
+        }
+        return mappingTableService(request.log).upsertRows({ id: request.params.id, projectId: request.principal.projectId, request: request.body })
     })
 }
 
@@ -116,4 +124,9 @@ const AddRowsRequest = {
 const WorkerGetRequest = {
     config: { security: securityAccess.engine() },
     schema: { params: IdParams },
+}
+
+const WorkerUpsertRowsRequest = {
+    config: { security: securityAccess.engine() },
+    schema: { params: IdParams, body: UpsertMappingRowsRequest, response: { 200: UpsertMappingRowsResult } },
 }

@@ -16,6 +16,7 @@ export const getEmploymentRecords = createAction({
       'Read the employment records — department, job, position, employment status — for a list of Beisen user IDs. Pick this after Search Changed Employees when you hold user IDs and need the job details behind them. It returns the effective main-post record of each person that is not deleted. Beisen accepts at most 300 IDs per call, so longer lists are split into several calls here; it never modifies Beisen data.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     userIds: Property.Array({
       displayName: 'User IDs',
@@ -30,6 +31,7 @@ export const getEmploymentRecords = createAction({
     for (const batch of batches) {
       const records = await beisenCommon.callBusinessApi<unknown[]>({
         auth: context.auth,
+      rateLimit: context.rateLimit,
         method: HttpMethod.POST,
         path: '/TenantBaseExternal/api/v5/Employee/GetServiceInfoByIds',
         body: { oIds: batch },

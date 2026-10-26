@@ -6,6 +6,8 @@ import {
     MappingTableReference,
     MappingTableRow,
     MappingTableSummary,
+    UpsertMappingRowsRequest,
+    UpsertMappingRowsResult,
     UpsertMappingTableRequestBody,
     workflowStructureUtil,
     WorkflowVersion,
@@ -13,6 +15,7 @@ import {
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { databaseConnection } from '../database/database-connection'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowVersionRepo, workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { MappingTableEntity, MappingTableSchema } from './mapping-table.entity'
@@ -49,14 +52,43 @@ export const mappingTableService = (log: FastifyBaseLogger) => ({
     },
 
     async addRows({ id, projectId, rows, actorId }: { id: string, projectId: ProjectId, rows: MappingTableRow[], actorId: UserId }): Promise<MappingTable> {
-        const table = await this.getOneOrThrow({ id, projectId })
-        const known = new Set(table.rows.map((row) => row.k))
-        const fresh = rows.map((row) => ({ k: row.k.trim(), v: row.v })).filter((row, index, all) => !known.has(row.k) && all.findIndex((other) => other.k === row.k) === index)
-        if (table.rows.length + fresh.length > MAPPING_TABLE_MAX_ROWS) {
-            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: `Mapping table can hold at most ${MAPPING_TABLE_MAX_ROWS} rows` } })
-        }
-        await mappingTableRepo().update({ id, projectId }, { rows: [...table.rows, ...fresh], updatedById: actorId })
+        await this.upsertRows({ id, projectId, actorId, request: { rows: rows.map((row) => ({ key: row.k, value: row.v })), onConflict: 'KEEP' } })
         return this.getOneOrThrow({ id, projectId })
+    },
+
+    async upsertRows({ id, projectId, request, actorId = null }: TableRef & { request: UpsertMappingRowsRequest, actorId?: UserId | null }): Promise<UpsertMappingRowsResult> {
+        return databaseConnection().transaction(async (manager) => {
+            const repo = manager.getRepository(MappingTableEntity)
+            const table = await repo.findOne({ where: { id, projectId }, lock: { mode: 'pessimistic_write' } })
+            if (isNil(table)) {
+                throw new ApplicationError({ code: ErrorCode.ENTITY_NOT_FOUND, params: { entityId: id, entityType: 'MappingTable' } })
+            }
+            const values = new Map(table.rows.map((row) => [row.k, row.v]))
+            const conflicts: UpsertMappingRowsResult['conflicts'] = []
+            let inserted = 0
+            let replaced = 0
+            for (const row of request.rows) {
+                const existing = values.get(row.key)
+                if (existing === undefined) {
+                    values.set(row.key, row.value)
+                    inserted++
+                }
+                else if (existing !== row.value) {
+                    if (request.onConflict === 'REPLACE') {
+                        values.set(row.key, row.value)
+                        replaced++
+                    }
+                    else {
+                        conflicts.push({ key: row.key, existing, proposed: row.value })
+                    }
+                }
+            }
+            if (values.size > MAPPING_TABLE_MAX_ROWS) {
+                throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'mappingTableTooManyRows' } })
+            }
+            await repo.update({ id, projectId }, { rows: [...values].map(([k, v]) => ({ k, v })), updatedById: actorId })
+            return { inserted, replaced, conflicts }
+        })
     },
 
     async delete({ id, projectId }: TableRef): Promise<void> {

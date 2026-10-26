@@ -18,6 +18,7 @@ import { workflowTransferUtils } from '../project-workspace/workflow-transfer-ut
 export const solutionPackageUtils = {
     buildPackage,
     instantiate,
+    linkWorkflows,
     connectorSlots,
     sanitizeTrigger,
 }
@@ -37,6 +38,7 @@ function buildPackage({ workflows, tables, manualChecks }: BuildPackageParams): 
         workflows: sanitized,
         mappingTables: tables.filter((table) => usedTableKeys.has(table.key)).map(({ id: _id, ...table }) => table),
         config: [],
+        reconciliationRules: [],
         checks: [
             ...slots.map((slot): SolutionCheck => ({
                 key: `connection:${slot.connectorName}`,
@@ -128,6 +130,10 @@ function instantiate({ workflow, items, config, connections, tableIdByKey }: Ins
         return { ...step, settings: { ...settings, input: withAuth } }
     })
     return workflowTransferUtils.asTrigger({ original: workflow.trigger, candidate: transformed })
+}
+
+function linkWorkflows({ trigger, externalIdByKey }: { trigger: WorkflowTrigger, externalIdByKey: Map<string, string> }): WorkflowTrigger {
+    return workflowTransferUtils.remapIds({ trigger, idMap: new Map([...externalIdByKey].map(([key, id]) => [`workflow:${key}`, id])) })
 }
 
 function wantsAuth(step: { settings?: unknown }): boolean {

@@ -198,6 +198,32 @@ export const issueService = (log: FastifyBaseLogger) => ({
         })
     },
 
+    async recordReconciliation({ projectId, ruleId, name, workflowId, openCount }: { projectId: string, ruleId: string, name: string, workflowId: string, openCount: number }): Promise<RecordFailureResult | null> {
+        return distributedLock(log).runExclusive({ key: `issue:${projectId}:recon:${ruleId}`, timeoutInSeconds: 15, fn: async () => {
+            const signature = `recon:${ruleId}`
+            const existing = await issueRepo().findOneBy({ signature, projectId })
+            const now = dayjsUtil().toISOString()
+            if (openCount === 0) {
+                if (existing && [IssueStatus.OPEN, IssueStatus.INVESTIGATING].includes(existing.status)) {
+                    await issueRepo().update({ id: existing.id, projectId }, { status: IssueStatus.RESOLVED, resolvedAt: now, resolvedById: null, reopened: false })
+                    await recordActivity({ issue: existing, type: IssueActivityType.STATUS_CHANGED, actorId: null, data: { from: existing.status, to: IssueStatus.RESOLVED, reason: 'RECONCILED' } })
+                }
+                return null
+            }
+            const reopening = existing?.status === IssueStatus.RESOLVED
+            if (!existing) {
+                const issue: Issue = { id: generateId(), created: now, updated: now, projectId, signature, kind: IssueKind.RECONCILIATION, workflowId, stepName: null, stepDisplayName: null, connectionExternalId: null, errorCode: 'RECONCILIATION_DIFFERENCE', title: name, message: `reconciliation:${ruleId}`, status: IssueStatus.OPEN, reopened: false, assigneeId: null, mutedUntil: null, occurrences: openCount, firstSeenAt: now, lastSeenAt: now, resolvedAt: null, resolvedById: null }
+                await issueRepo().insert(issue)
+                await recordActivity({ issue, type: IssueActivityType.FIRST_SEEN, actorId: null, data: { ruleId } })
+                return { issue, event: IssueRecordEvent.NEW, counted: true }
+            }
+            await issueRepo().update({ id: existing.id, projectId }, { occurrences: openCount, lastSeenAt: now, ...(reopening ? { status: IssueStatus.OPEN, reopened: true, resolvedAt: null, resolvedById: null } : {}) })
+            const issue = await getOneOrThrow({ id: existing.id, projectId })
+            if (reopening) await recordActivity({ issue, type: IssueActivityType.REOPENED, actorId: null, data: { ruleId } })
+            return { issue, event: reopening ? IssueRecordEvent.REOPENED : IssueRecordEvent.OCCURRED, counted: reopening }
+        } })
+    },
+
     async resolveDrift({ projectId, workflowId, stepName }: ResolveDriftParams): Promise<string | null> {
         const signature = issueUtils.classifyDrift({ workflowId, stepName, message: '' }).signature
         const open = await issueRepo().findOne({

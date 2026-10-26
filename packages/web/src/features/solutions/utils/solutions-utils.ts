@@ -110,10 +110,15 @@ function checkGate({
   acknowledged: string[];
 }): CheckGate {
   const failedBlocking = results.filter(
-    (result) => result.blocking && result.status !== SolutionCheckStatus.PASS,
+    (result) =>
+      result.blocking &&
+      result.status !== SolutionCheckStatus.PASS &&
+      result.status !== SolutionCheckStatus.NEEDS_CONFIRM,
   );
   const needsAcknowledgement = results.filter(
-    (result) => !result.blocking && result.status !== SolutionCheckStatus.PASS,
+    (result) =>
+      result.status === SolutionCheckStatus.NEEDS_CONFIRM ||
+      (!result.blocking && result.status !== SolutionCheckStatus.PASS),
   );
   const unacknowledged = needsAcknowledgement.filter(
     (result) => !acknowledged.includes(result.key),

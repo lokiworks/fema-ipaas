@@ -17,6 +17,7 @@ export const listOrganizationEmployees = createAction({
       'List all Beisen employees of one organization unit (optionally with every unit below it) with their employee info and main-post employment record, by following the scroll cursor to the end. Pick this to reconcile Beisen against another system, for example to find employees without a Feishu account. The status scope decides who counts: active, departed, upcoming or all. Use the company root OId (900 followed by the tenant ID) to read everyone. It reads only, and stops at the maximum you set, up to 50000 people.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     organizationId: Property.ShortText({
       displayName: 'Organization ID',
@@ -52,6 +53,7 @@ export const listOrganizationEmployees = createAction({
     const preset = beisenTimeWindow.scopePreset({ scope: toScope(statusScope) });
     const employees = await beisenTimeWindow.scrollAll({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       path: ORGANIZATION_EMPLOYEES_PATH,
       body: {
         orgOId,

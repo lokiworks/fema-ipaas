@@ -110,6 +110,7 @@ WORKDIR /usr/src/app
 # Copy static configuration files first (better layer caching)
 COPY --from=build /usr/src/app/packages/server/api/src/assets/default.cf /usr/local/etc/isolate
 COPY docker-entrypoint.sh .
+COPY --chmod=755 tools/fema-restore /usr/local/bin/fema-restore
 
 # Copy root config files needed for dependency resolution
 COPY --from=build /usr/src/app/package.json ./

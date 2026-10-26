@@ -19,6 +19,7 @@ export const sendDirectMessage = createAction({
       'Send a one-to-one Feishu/Lark message to a single person, addressed by work email or open_id. Pick this over Send Group Message when the message is meant for one individual, such as an approval request or a personal reminder. The recipient must belong to the same tenant as the app, and every call posts a new message unless a Dedupe Key is given, in which case Feishu drops repeats of the same key for one hour.',
     idempotent: false,
   },
+  reliability: { writeSafety: 'UNSAFE', dedupeKeyProp: 'dedupeKey', dedupeWindowSeconds: 3600, rateLimits: [{ bucket: 'im-send', scope: 'APP', perSecond: 50 }] },
   props: {
     receiveIdType: Property.StaticDropdown({
       displayName: 'Recipient Identifier',
@@ -65,6 +66,7 @@ export const sendDirectMessage = createAction({
     const { receiveIdType, receiveId, messageType, content, dedupeKey } = context.propsValue;
     const data = await feishuCommon.callApi<SendMessageResponse>({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       method: HttpMethod.POST,
       path: '/open-apis/im/v1/messages',
       queryParams: { receive_id_type: receiveIdType },

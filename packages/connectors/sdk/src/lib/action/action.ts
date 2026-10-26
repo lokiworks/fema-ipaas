@@ -1,7 +1,7 @@
 import * as z from "zod/mini";
 import { ActionContext } from '../context';
 import type { OutputSchema } from '../output-schema';
-import { ActionBase, Audience, AiMetadata, ActionClassification, PropertyGroup } from '../connector-metadata';
+import { ActionBase, ActionReliability, Audience, AiMetadata, ActionClassification, PropertyGroup } from '../connector-metadata';
 import { InputPropertyMap } from '../property';
 import { ExtractConnectorAuthPropertyTypeForMethods, ConnectorAuthProperty } from '../property/authentication';
 
@@ -41,6 +41,7 @@ type CreateActionParams<ConnectorAuth extends ConnectorAuthProperty | ConnectorA
   audience?: Audience
   aiMetadata?: AiMetadata
   classification?: ActionClassification
+  reliability?: ActionReliability
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,6 +60,7 @@ export class IAction<ConnectorAuth extends ConnectorAuthProperty | ConnectorAuth
     public readonly audience?: Audience,
     public readonly aiMetadata?: AiMetadata,
     public readonly classification?: ActionClassification,
+    public readonly reliability?: ActionReliability,
   ) { }
 }
 
@@ -96,5 +98,6 @@ export const createAction = <
     params.audience,
     params.aiMetadata,
     params.classification,
+    params.reliability,
   )
 }

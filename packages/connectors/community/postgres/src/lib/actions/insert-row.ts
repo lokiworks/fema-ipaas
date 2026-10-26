@@ -15,6 +15,7 @@ export const insertRow = createAction({
     description: 'Inserts a single row into a PostgreSQL table from a map of column names to values, and by default returns the inserted row as stored by the database (including defaults and generated ids). Use to add a record. Turn off Return Inserted Row when the connection only has INSERT permission, since returning the row also needs SELECT. Not idempotent: each call performs a fresh INSERT, so repeating it adds duplicate rows or errors on a unique-key collision.',
     idempotent: false,
   },
+  reliability: { writeSafety: 'UNSAFE', rateLimits: [{ bucket: 'postgres-query', scope: 'APP', perSecond: 50 }] },
   props: {
     table: postgresCommon.table,
     values: Property.Object({
@@ -30,6 +31,7 @@ export const insertRow = createAction({
     }),
   },
   async run(context) {
+    await context.rateLimit.acquire({ bucket: 'postgres-query', scopeKey: JSON.stringify([context.auth.props.host, context.auth.props.port, context.auth.props.database]) });
     const { table, values, return_row } = context.propsValue;
     const columns = Object.keys(values);
     if (columns.length === 0) {

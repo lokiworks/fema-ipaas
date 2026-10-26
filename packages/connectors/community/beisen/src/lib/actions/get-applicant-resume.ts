@@ -16,6 +16,7 @@ export const getApplicantResume = createAction({
       'Read one Beisen applicant standard resume, covering education, work experience, projects, certificates and attachments. Pick this after Find Applicant when a flow needs resume content, for example to file a candidate into another system. It reads only and needs the applicant ID rather than an email.',
     idempotent: true,
   },
+  reliability: { rateLimits: [{ bucket: 'beisen-api', scope: 'TENANT', perSecond: 50 }] },
   props: {
     applicantId: Property.ShortText({
       displayName: 'Applicant ID',
@@ -33,6 +34,7 @@ export const getApplicantResume = createAction({
     const { applicantId, shortLink } = context.propsValue;
     return beisenCommon.callBusinessApi<unknown>({
       auth: context.auth,
+      rateLimit: context.rateLimit,
       method: HttpMethod.GET,
       path: '/RecruitV6/api/v1/Applicant/GetResume',
       queryParams: {

@@ -1,0 +1,21 @@
+{
+  "Email": "邮件",
+  "Mail service": "邮件服务",
+  "Own SMTP server": "自有 SMTP 服务器",
+  "Platform mail service": "平台邮件服务",
+  "SMTP host": "SMTP 主机",
+  "SMTP port": "SMTP 端口",
+  "Implicit TLS (port 465)": "隐式 TLS（465 端口）",
+  "SMTP username": "SMTP 用户名",
+  "SMTP password": "SMTP 密码",
+  "Sender address": "发件人地址",
+  "Send email": "发送邮件",
+  "To": "收件人",
+  "Cc": "抄送",
+  "Subject": "主题",
+  "Plain text": "纯文本",
+  "HTML": "HTML",
+  "Attachments": "附件",
+  "File": "文件",
+  "Message ID": "邮件 ID"
+}

@@ -1,6 +1,7 @@
 import { Review } from '../support/route-review'
 
 export const integrationsReviews: Record<string, Review> = {
+    'GET /v1/connections/outbound-ip': { verdict: 'ok', note: 'Authenticated users can read the app server public egress address for trusted IP setup. The fixed HTTPS lookup is cached and exposes no connection, tenant or project records; failure returns null.' },
     'DELETE /v1/connections/:id': { verdict: 'ok', note: '服务层按 connectionAccessService 的 OWNER / EDIT / USE 权限与租户校验（assertCanManage / assertOwner / assertVisible / projectToActIn）；矩阵 integrations-connections 覆盖 9 种身份与跨范围 IDOR' },
     'DELETE /v1/connections/:id/shares/:userId': { verdict: 'ok', note: '服务层按 connectionAccessService 的 OWNER / EDIT / USE 权限与租户校验（assertCanManage / assertOwner / assertVisible / projectToActIn）；矩阵 integrations-connections 覆盖 9 种身份与跨范围 IDOR' },
     'GET /v1/connections/:id/detail': { verdict: 'ok', note: '服务层按 connectionAccessService 的 OWNER / EDIT / USE 权限与租户校验（assertCanManage / assertOwner / assertVisible / projectToActIn）；矩阵 integrations-connections 覆盖 9 种身份与跨范围 IDOR' },

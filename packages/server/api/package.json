@@ -4,6 +4,7 @@
   "private": true,
   "type": "commonjs",
   "dependencies": {
+    "cron-validator": "1.3.1",
     "@1password/sdk": "0.4.0",
     "@ai-sdk/amazon-bedrock": "5.0.38",
     "@ai-sdk/anthropic": "4.0.25",
@@ -110,7 +111,8 @@
     "typeorm": "0.3.31",
     "typeorm-pglite": "0.3.2",
     "unpdf": "1.4.0",
-    "zod": "4.3.6"
+    "zod": "4.3.6",
+    "proper-lockfile": "4.1.2"
   },
   "devDependencies": {
     "@faker-js/faker": "8.2.0",
@@ -133,11 +135,12 @@
     "sandbox-agent": "0.4.2",
     "tsconfig-paths": "4.2.0",
     "vitest": "3.2.6",
-    "webpack-ignore-dynamic-require": "1.0.0"
+    "webpack-ignore-dynamic-require": "1.0.0",
+    "@types/proper-lockfile": "4.1.4"
   },
   "scripts": {
     "build": "tsc -p tsconfig.app.json",
-    "check-migrations": "echo '🔍 Checking for schema changes...' && export $(cat .env.tests | xargs) && export FEMA_DEV_CONNECTORS='' && export FEMA_ENVIRONMENT=dev && ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json node_modules/typeorm/cli.js migration:run -d src/app/database/migration-data-source.ts > /dev/null 2>&1 && echo 'Checking for schema drift...' && ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json node_modules/typeorm/cli.js migration:generate -p -d src/app/database/migration-data-source.ts src/app/database/migration/postgres/check --dryrun --check || (echo '❌ ERROR: Schema changes detected without migration!' && exit 1) && echo '✅ No missing migrations detected'",
+    "check-migrations": "echo '\ud83d\udd0d Checking for schema changes...' && export $(cat .env.tests | xargs) && export FEMA_DEV_CONNECTORS='' && export FEMA_ENVIRONMENT=dev && ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json node_modules/typeorm/cli.js migration:run -d src/app/database/migration-data-source.ts > /dev/null 2>&1 && echo 'Checking for schema drift...' && ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json node_modules/typeorm/cli.js migration:generate -p -d src/app/database/migration-data-source.ts src/app/database/migration/postgres/check --dryrun --check || (echo '\u274c ERROR: Schema changes detected without migration!' && exit 1) && echo '\u2705 No missing migrations detected'",
     "db": "ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json node_modules/typeorm/cli.js",
     "db-migration": "export $(cat .env.tests | xargs) && export FEMA_DEV_CONNECTORS='' && export FEMA_ENVIRONMENT=dev && ts-node --transpile-only -r tsconfig-paths/register -P tsconfig.app.json node_modules/typeorm/cli.js migration:generate -p -d src/app/database/migration-data-source.ts",
     "build-e2e-connector-archive": "cd ../../.. && npx tsx packages/server/api/scripts/build-e2e-custom-echo.ts",

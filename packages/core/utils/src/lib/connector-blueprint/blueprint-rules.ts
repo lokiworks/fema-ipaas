@@ -393,7 +393,7 @@ export const blueprintProblems = {
             authActive && !authPublished ? issue({ code: BlueprintIssueCode.AUTH_NOT_PUBLISHED, section: BlueprintIssueSection.AUTH }) : null,
             statusProblem(definition.status) ? issue({ code: BlueprintIssueCode.STATUS_INVALID, section: BlueprintIssueSection.STATUS }) : null,
             ...definition.operations
-                .filter((operation) => blueprintProblems.operation({ operation, operationKeys }).length > 0)
+                .filter((operation) => blueprintProblems.operation({ operation, operationKeys }).length > 0 || reliabilityProblems({ operation, definition }))
                 .map((operation) => issue({ code: BlueprintIssueCode.OPERATION_INVALID, section: BlueprintIssueSection.OPERATION, key: operation.key, name: operation.name })),
             ...definition.triggers
                 .filter((trigger) => blueprintProblems.trigger({ trigger, operationKeys }).length > 0)
@@ -452,6 +452,20 @@ export const blueprintChanges = {
     changeIdOf({ kind, key }: { kind: BlueprintChangeKind, key: string }): string {
         return kind === BlueprintChangeKind.CONFIG ? CONFIG_CHANGE_ID : `${kind}:${key}`
     },
+}
+
+function reliabilityProblems({ operation, definition }: { operation: BlueprintOperation, definition: ConnectorBlueprintDefinition }): boolean {
+    const reliability = operation.reliability
+    if (!reliability) return false
+    const inputKeys = operation.inputs.map((input) => input.key)
+    if (reliability.lookupKeys?.some((key) => !inputKeys.includes(key)) || reliability.dedupeKeyProp && !inputKeys.includes(reliability.dedupeKeyProp)) return true
+    if (reliability.readBack && definition.operations.find((candidate) => candidate.key === reliability.readBack?.actionName)?.classification !== 'READ') return true
+    if (reliability.enumeration && (operation.classification !== 'SEARCH' || !['pageToken', 'pageSize'].every((key) => inputKeys.includes(key)))) return true
+    if (reliability.writeSafety === 'LOOKUP_BEFORE_WRITE') {
+        const source = definition.operations.find((candidate) => candidate.key === operation.lookupBeforeWrite?.operationKey)
+        if (!source || source.key === operation.key || !['READ', 'SEARCH'].includes(source.classification ?? '') || !reliability.lookupKeys?.length || reliability.lookupKeys.some((key) => !source.inputs.some((input) => input.key === key))) return true
+    }
+    return false
 }
 
 function flowStep({ enabled, method, url, config, resultPath }: BlueprintAuthFlowStep): BlueprintAuthFlowStep {

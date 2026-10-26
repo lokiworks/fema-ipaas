@@ -40,7 +40,14 @@ export function IssueReplayDialog({
     WorkflowRetryStrategy.FROM_FAILED_STEP,
   );
   const [includeDataProblems, setIncludeDataProblems] = useState(false);
-  const { data: check, isLoading } = issuesHooks.useReplayCheck(issueId, open);
+  const [confirmedUnsafeSteps, setConfirmedUnsafeSteps] = useState<string[]>(
+    [],
+  );
+  const { data: check, isLoading } = issuesHooks.useReplayCheck(
+    issueId,
+    open,
+    strategy,
+  );
   const { mutate: replay, isPending } = issuesHooks.useReplay(issueId);
 
   const groups = useMemo(() => groupByCategory(check?.items ?? []), [check]);
@@ -79,6 +86,30 @@ export function IssueReplayDialog({
       })),
   });
 
+  const writeSteps = (check?.items ?? [])
+    .filter(
+      (item) =>
+        item.category === ReplayCategory.REPLAYABLE ||
+        (includeDataProblems && item.category === ReplayCategory.DATA_PROBLEM),
+    )
+    .filter(
+      (item) =>
+        strategy !== WorkflowRetryStrategy.FROM_FAILED_STEP ||
+        !item.rawDataExpired,
+    )
+    .flatMap((item) =>
+      item.writeSteps
+        .filter((step) => step.willRun)
+        .map((step) => ({
+          ...step,
+          key: `${item.executionId}:${step.stepName}`,
+        })),
+    );
+  const unconfirmed = writeSteps.some(
+    (step) =>
+      step.needsConfirmation && !confirmedUnsafeSteps.includes(step.key),
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -95,6 +126,7 @@ export function IssueReplayDialog({
             value={strategy}
             onValueChange={(value) => {
               setAcknowledged(false);
+              setConfirmedUnsafeSteps([]);
               setStrategy(
                 value === WorkflowRetryStrategy.ON_LATEST_VERSION
                   ? WorkflowRetryStrategy.ON_LATEST_VERSION
@@ -192,6 +224,35 @@ export function IssueReplayDialog({
           {open && !isLoading && (
             <RerunPreview groups={previewGroups} strategy={strategy} />
           )}
+          {writeSteps.length > 0 && (
+            <div className="flex max-h-48 flex-col gap-2 overflow-y-auto rounded-md border p-3 text-sm">
+              <p className="font-medium">{t('Steps that will write data')}</p>
+              {writeSteps.map((step) => (
+                <label key={step.key} className="flex items-start gap-2">
+                  {step.needsConfirmation && (
+                    <Checkbox
+                      checked={confirmedUnsafeSteps.includes(step.key)}
+                      onCheckedChange={(checked) =>
+                        setConfirmedUnsafeSteps((current) =>
+                          checked === true
+                            ? [...current, step.key]
+                            : current.filter((key) => key !== step.key),
+                        )
+                      }
+                    />
+                  )}
+                  <span>
+                    {step.displayName}
+                    {step.needsConfirmation
+                      ? ` — ${t(
+                          'Running this step again may create duplicates.',
+                        )}`
+                      : ''}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
           {needsAcknowledgement && toRun > 0 && (
             <label className="flex items-start gap-2 text-sm">
               <Checkbox
@@ -212,12 +273,14 @@ export function IssueReplayDialog({
             disabled={
               toRun === 0 ||
               isPending ||
+              isLoading ||
+              unconfirmed ||
               (needsAcknowledgement && !acknowledged)
             }
             loading={isPending}
             onClick={() =>
               replay(
-                { strategy, includeDataProblems },
+                { strategy, includeDataProblems, confirmedUnsafeSteps },
                 { onSuccess: () => onOpenChange(false) },
               )
             }

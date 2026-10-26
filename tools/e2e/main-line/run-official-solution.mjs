@@ -21,14 +21,22 @@ await check('创建北森和飞书连接（保存时校验凭据）', async () =
 })
 
 const connections = { '@fema-ipaas/connector-beisen': 'beisen-main', '@fema-ipaas/connector-feishu': 'feishu-main' }
-const config = { hrChatId: HR_CHAT_ID, itChatId: IT_CHAT_ID }
+const rootOrganizationId = '900100000'
+await mock('POST', '/__admin/beisen-official', { orgs: [{ oId: Number(rootOrganizationId), name: 'E2E company', parent: 0 }, { oId: 20301, name: '研发部', parent: Number(rootOrganizationId) }, { oId: 20302, name: '人力资源部', parent: Number(rootOrganizationId) }] })
+const orgId = 'official-beisen-feishu-org'
+const orgChecks = await api('POST', `/solutions/${orgId}/checks`, { projectId: session.projectId, connections })
+const orgInstall = await api('POST', `/solutions/${orgId}/install`, { projectId: session.projectId, connections, config: { rootOrganizationId, rootDepartmentId: '0', itChatId: IT_CHAT_ID }, acknowledgedChecks: orgChecks.results.filter((check) => check.kind === 'MANUAL').map((check) => check.key) })
+const core = orgInstall.workflows.find((workflow) => workflow.key === 'converge')
+await api('POST', `/workflows/${core.workflowId}?projectId=${session.projectId}`, { type: 'LOCK_AND_PUBLISH', request: {} })
+const orgFlow = await api('GET', `/workflows/${core.workflowId}?projectId=${session.projectId}`)
+const config = { hrChatId: HR_CHAT_ID, itChatId: IT_CHAT_ID, rootOrganizationId, orgWorkflow: orgFlow.externalId }
 
 const installed = await check('官方方案出现在方案库，预览、检查、安装一路通', async () => {
   const solutions = await api('GET', '/solutions')
   const official = solutions.find((solution) => solution.id === SOLUTION_ID)
   assert(official, '方案库里没有官方方案')
   const preview = await api('POST', `/solutions/${SOLUTION_ID}/preview`, { projectId: session.projectId, connections, config })
-  assert(preview.workflows.length === 3 && preview.mappingTables.length === 1, `预览不对：${JSON.stringify(preview)}`)
+  assert(preview.workflows.length === 4 && preview.mappingTables.length === 1, `预览不对：${JSON.stringify(preview)}`)
   const checks = await api('POST', `/solutions/${SOLUTION_ID}/checks`, { projectId: session.projectId, connections })
   const blocking = checks.results.filter((result) => result.blocking && result.status !== 'PASS')
   assert(blocking.length === 0, `阻塞检查未通过：${JSON.stringify(blocking)}`)
@@ -41,7 +49,7 @@ if (!installed) {
   process.exit(1)
 }
 
-await check('填好部门对照并发布、启用三个工作流', async () => {
+await check('填好部门对照并发布、启用四个工作流', async () => {
   const table = await api('GET', `/mapping-tables/${installed.tables[0]}?projectId=${session.projectId}`)
   await api('POST', `/mapping-tables/${table.id}`, { projectId: session.projectId, name: table.name, description: table.description, keyLabel: table.keyLabel, valueLabel: table.valueLabel, missingBehavior: table.missingBehavior, defaultValue: table.defaultValue, rows: [{ k: '20301', v: 'od-rd' }, { k: '20302', v: 'od-hr' }] })
   for (const id of installed.workflows) {
@@ -118,7 +126,7 @@ await check('核对：离职的账号被人手工解除了冻结 → 问题中�
   const user = state.feishuUsers.find((item) => item.mobile === '+8613800000001')
   assert(user, '张三的账号不见了')
   await mock('POST', '/__admin/feishu-user', { mobile: '+8613800000001', set: { is_frozen: false } })
-  const summary = await api('POST', '/verification/run', { projectId: session.projectId })
+  const summary = await verifyResults()
   assert(summary.mismatched >= 1, `没有发现差异：${JSON.stringify(summary)}`)
   const overview = await api('GET', `/issues?projectId=${session.projectId}&view=OPEN&limit=50`)
   const drift = overview.data.find((issue) => issue.kind === 'DRIFT')
@@ -129,7 +137,7 @@ await check('核对：离职的账号被人手工解除了冻结 → 问题中�
 
 await check('核对：手工改回去之后再核对，差异问题自动关闭', async () => {
   await mock('POST', '/__admin/feishu-user', { mobile: '+8613800000001', set: { is_frozen: true } })
-  const summary = await api('POST', '/verification/run', { projectId: session.projectId })
+  const summary = await verifyResults()
   assert(summary.mismatched === 0, `仍有差异：${JSON.stringify(summary)}`)
   const resolved = await api('GET', `/issues?projectId=${session.projectId}&view=RESOLVED&limit=50`)
   assert(resolved.data.some((issue) => issue.kind === 'DRIFT'), '差异问题没有被关闭')
@@ -233,4 +241,9 @@ function printSummary() {
   const failed = results.filter((result) => !result.ok)
   process.stdout.write(`\n${results.length - failed.length}/${results.length} passed\n`)
   process.exitCode = failed.length === 0 ? 0 : 1
+}
+
+async function verifyResults() {
+  const { runId } = await api('POST', '/verification/run', { projectId: session.projectId })
+  return waitFor(async () => { const run = await api('GET', `/verification/runs/${runId}?projectId=${session.projectId}`); if (run.status === 'FAILED') throw new Error(run.error ?? 'Verification failed'); return run.status === 'SUCCEEDED' ? run.result : null })
 }

@@ -13,9 +13,9 @@ function pkg(): SolutionPackage {
 }
 
 describe('official Beisen to Feishu solution', () => {
-    it('is a valid package with the three workflows and one mapping table', () => {
+    it('is a valid package with employee event workflows and a current-state repair workflow and one mapping table', () => {
         const parsed = SolutionPackage.parse(pkg())
-        expect(parsed.workflows.map((workflow) => workflow.key)).toEqual(['onboard', 'transfer', 'leave'])
+        expect(parsed.workflows.map((workflow) => workflow.key)).toEqual(['onboard', 'transfer', 'leave', 'repair'])
         expect(parsed.mappingTables).toHaveLength(1)
         expect(parsed.mappingTables[0].rows).toEqual([])
     })
@@ -29,7 +29,7 @@ describe('official Beisen to Feishu solution', () => {
 
     it('asks for both group ids and has no default so nothing is posted to a wrong chat', () => {
         const items = pkg().config
-        expect(items.map((item) => item.key)).toEqual(['hrChatId', 'itChatId'])
+        expect(items.map((item) => item.key)).toEqual(['hrChatId', 'itChatId', 'rootOrganizationId', 'orgWorkflow'])
         expect(items.every((item) => item.defaultValue === '')).toBe(true)
     })
 
@@ -96,6 +96,22 @@ describe('official Beisen to Feishu solution', () => {
         expect(text).toContain('{{connections[\'beisen-real\']}}')
         expect(text).toContain('{{connections[\'feishu-real\']}}')
         const chatIds = instantiated.flatMap((trigger) => workflowStructureUtil.getAllSteps(trigger).map((step) => step.settings?.input?.chatId)).filter((value) => value !== undefined)
-        expect(chatIds.sort()).toEqual(['oc_hr', 'oc_it'])
+        expect([...new Set(chatIds)].sort()).toEqual(['oc_hr', 'oc_it'])
     })
+    it('recovers missing department bindings before mapping and repairs according to the latest source status', () => {
+        const onboarding = pkg().workflows.find((workflow) => workflow.key === 'onboard')
+        if (!onboarding) throw new Error('Missing onboard workflow')
+        const steps = workflowStructureUtil.getAllSteps(onboarding.trigger).map((step) => step.name)
+        expect(steps.indexOf('recover_department')).toBeLessThan(steps.indexOf('map_department'))
+        expect(steps.indexOf('ensure_department')).toBeGreaterThan(steps.indexOf('provision'))
+        const repair = pkg().workflows.find((workflow) => workflow.key === 'repair')
+        if (!repair) throw new Error('Missing repair workflow')
+        const repairSteps = workflowStructureUtil.getAllSteps(repair.trigger).map((step) => step.name)
+        expect(new Set(repairSteps).size).toBe(repairSteps.length)
+        expect(repairSteps).toContain('active_ensure_department')
+        expect(repairSteps).toContain('left_suspend')
+        expect(pkg().reconciliationRules[0]).toMatchObject({ workflowKey: 'repair', source: { keyPath: 'recordInfo.jobNumber' }, target: { keyPath: 'employee_no' }, repair: { readActionName: 'get_employee_record', keyInput: 'employeeNo' } })
+        expect(pkg().reconciliationRules[0].expectations.map((check) => check.expect.kind)).toEqual(['EXISTS', 'CONTAINS', 'FLAG'])
+    })
+
 })

@@ -96,7 +96,7 @@ export function MonitorHandledCard({
         <HandledItem
           testId="handled-retries"
           value={number(handled.autoRetries)}
-          label={t('Automatic retries')}
+          label={t('Safe retries')}
           description={t(
             '{retries, plural, =1 {A step was} other {# step attempts were}} retried by the error handling strategy of its node, across {runs, plural, =1 {1 run} other {# runs}}.',
             { retries: handled.autoRetries, runs: handled.retriedRuns },
@@ -107,6 +107,21 @@ export function MonitorHandledCard({
             handled.autoRetries === 0
               ? null
               : () => onOpenHandled(ReliabilityEventKind.AUTO_RETRY)
+          }
+        />
+        <HandledItem
+          testId="handled-retries-withheld"
+          value={number(handled.withheldRetries)}
+          label={t('Retries withheld to avoid duplicates')}
+          description={t(
+            'The result of a write was unclear, so the platform left it for you to check before trying again.',
+          )}
+          actionLabel={t('See these runs')}
+          disabledHint={null}
+          onAction={
+            handled.withheldRetries === 0
+              ? null
+              : () => onOpenHandled(ReliabilityEventKind.RETRY_WITHHELD)
           }
         />
         <HandledItem

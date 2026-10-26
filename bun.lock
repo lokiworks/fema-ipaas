@@ -129,7 +129,7 @@
     },
     "packages/connectors/common": {
       "name": "@fema-ipaas/connector-common",
-      "version": "0.13.0",
+      "version": "0.14.0",
       "dependencies": {
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -139,16 +139,33 @@
       },
       "devDependencies": {
         "tslib": "2.6.2",
+        "vitest": "3.2.6",
       },
     },
     "packages/connectors/community/beisen": {
       "name": "@fema-ipaas/connector-beisen",
-      "version": "0.1.3",
+      "version": "0.4.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/community/dingtalk": {
+      "name": "@fema-ipaas/connector-dingtalk",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -157,12 +174,13 @@
     },
     "packages/connectors/community/feishu": {
       "name": "@fema-ipaas/connector-feishu",
-      "version": "0.1.2",
+      "version": "0.5.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -171,7 +189,7 @@
     },
     "packages/connectors/community/mysql": {
       "name": "@fema-ipaas/connector-mysql",
-      "version": "0.2.7",
+      "version": "0.3.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -183,11 +201,12 @@
       "devDependencies": {
         "@types/sqlstring": "2.3.2",
         "tslib": "2.6.2",
+        "vitest": "3.2.6",
       },
     },
     "packages/connectors/community/postgres": {
       "name": "@fema-ipaas/connector-postgres",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -201,11 +220,27 @@
         "@types/pg": "8.16.0",
         "@types/pg-format": "1.0.5",
         "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/community/wecom": {
+      "name": "@fema-ipaas/connector-wecom",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "@fema-ipaas/connector-types": "workspace:*",
+        "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
       },
     },
     "packages/connectors/core/ai": {
       "name": "@fema-ipaas/connector-ai",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -250,7 +285,7 @@
     },
     "packages/connectors/core/csv": {
       "name": "@fema-ipaas/connector-csv",
-      "version": "0.4.21",
+      "version": "0.4.22",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -268,12 +303,13 @@
     },
     "packages/connectors/core/data-mapper": {
       "name": "@fema-ipaas/connector-data-mapper",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
       },
       "devDependencies": {
         "tslib": "2.6.2",
@@ -282,7 +318,7 @@
     },
     "packages/connectors/core/data-summarizer": {
       "name": "@fema-ipaas/connector-data-summarizer",
-      "version": "0.0.15",
+      "version": "0.0.16",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -310,9 +346,24 @@
         "vitest": "3.2.6",
       },
     },
+    "packages/connectors/core/email": {
+      "name": "@fema-ipaas/connector-email",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "nodemailer": "9.0.1",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "@types/nodemailer": "6.4.9",
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
     "packages/connectors/core/file-helper": {
       "name": "@fema-ipaas/connector-file-helper",
-      "version": "0.1.29",
+      "version": "0.1.30",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -345,7 +396,7 @@
     },
     "packages/connectors/core/http": {
       "name": "@fema-ipaas/connector-http",
-      "version": "0.11.19",
+      "version": "0.12.0",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -390,12 +441,24 @@
     },
     "packages/connectors/core/mcp": {
       "name": "@fema-ipaas/connector-mcp",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
+        "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "tslib": "2.6.2",
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/core/org-sync": {
+      "name": "@fema-ipaas/connector-org-sync",
+      "version": "0.1.0",
+      "dependencies": {
+        "@fema-ipaas/connector-sdk": "workspace:*",
         "zod": "4.3.6",
       },
       "devDependencies": {
@@ -435,7 +498,7 @@
     },
     "packages/connectors/core/subflows": {
       "name": "@fema-ipaas/connector-subflows",
-      "version": "0.6.3",
+      "version": "0.6.4",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -450,7 +513,7 @@
     },
     "packages/connectors/core/tags": {
       "name": "@fema-ipaas/connector-tags",
-      "version": "0.0.22",
+      "version": "0.0.23",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -463,7 +526,7 @@
     },
     "packages/connectors/core/text-helper": {
       "name": "@fema-ipaas/connector-text-helper",
-      "version": "0.6.5",
+      "version": "0.6.6",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -487,7 +550,7 @@
     },
     "packages/connectors/core/webhook": {
       "name": "@fema-ipaas/connector-webhook",
-      "version": "0.1.41",
+      "version": "0.1.42",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -501,7 +564,7 @@
     },
     "packages/connectors/core/xml": {
       "name": "@fema-ipaas/connector-xml",
-      "version": "0.1.20",
+      "version": "0.1.21",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -518,7 +581,7 @@
     },
     "packages/connectors/sdk": {
       "name": "@fema-ipaas/connector-sdk",
-      "version": "0.37.0",
+      "version": "0.39.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -534,7 +597,7 @@
     },
     "packages/core/connector-types": {
       "name": "@fema-ipaas/connector-types",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "dependencies": {
         "@fema-ipaas/core-utils": "workspace:*",
         "tslib": "2.6.2",
@@ -547,7 +610,7 @@
     },
     "packages/core/execution": {
       "name": "@fema-ipaas/workflow-core",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -579,7 +642,7 @@
     },
     "packages/core/shared": {
       "name": "@fema-ipaas/shared",
-      "version": "0.148.0",
+      "version": "0.163.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -604,7 +667,7 @@
     },
     "packages/core/utils": {
       "name": "@fema-ipaas/core-utils",
-      "version": "0.5.0",
+      "version": "0.7.0",
       "dependencies": {
         "deepmerge-ts": "7.1.0",
         "ipaddr.js": "2.3.0",
@@ -681,6 +744,7 @@
         "clear-module": "4.1.2",
         "cloudflare": "5.2.0",
         "content-disposition": "0.5.4",
+        "cron-validator": "1.3.1",
         "csv-parse": "5.6.0",
         "dayjs": "1.11.9",
         "decompress": "4.2.1",
@@ -712,6 +776,7 @@
         "p-limit": "2.3.0",
         "pg": "8.11.3",
         "posthog-node": "5.38.5",
+        "proper-lockfile": "4.1.2",
         "qs": "6.15.2",
         "redis-memory-server": "0.15.0",
         "redlock": "5.0.0-beta.2",
@@ -743,6 +808,7 @@
         "@types/node-cache": "4.2.5",
         "@types/node-cron": "3.0.11",
         "@types/nodemailer": "6.4.9",
+        "@types/proper-lockfile": "4.1.4",
         "@types/qs": "6.9.7",
         "@types/semver": "7.5.6",
         "@types/tinycolor2": "1.4.5",
@@ -1482,6 +1548,10 @@
 
     "@fema-ipaas/connector-date-helper": ["@fema-ipaas/connector-date-helper@workspace:packages/connectors/core/date-helper"],
 
+    "@fema-ipaas/connector-dingtalk": ["@fema-ipaas/connector-dingtalk@workspace:packages/connectors/community/dingtalk"],
+
+    "@fema-ipaas/connector-email": ["@fema-ipaas/connector-email@workspace:packages/connectors/core/email"],
+
     "@fema-ipaas/connector-feishu": ["@fema-ipaas/connector-feishu@workspace:packages/connectors/community/feishu"],
 
     "@fema-ipaas/connector-file-helper": ["@fema-ipaas/connector-file-helper@workspace:packages/connectors/core/file-helper"],
@@ -1497,6 +1567,8 @@
     "@fema-ipaas/connector-mcp": ["@fema-ipaas/connector-mcp@workspace:packages/connectors/core/mcp"],
 
     "@fema-ipaas/connector-mysql": ["@fema-ipaas/connector-mysql@workspace:packages/connectors/community/mysql"],
+
+    "@fema-ipaas/connector-org-sync": ["@fema-ipaas/connector-org-sync@workspace:packages/connectors/core/org-sync"],
 
     "@fema-ipaas/connector-postgres": ["@fema-ipaas/connector-postgres@workspace:packages/connectors/community/postgres"],
 
@@ -1515,6 +1587,8 @@
     "@fema-ipaas/connector-types": ["@fema-ipaas/connector-types@workspace:packages/core/connector-types"],
 
     "@fema-ipaas/connector-webhook": ["@fema-ipaas/connector-webhook@workspace:packages/connectors/core/webhook"],
+
+    "@fema-ipaas/connector-wecom": ["@fema-ipaas/connector-wecom@workspace:packages/connectors/community/wecom"],
 
     "@fema-ipaas/connector-xml": ["@fema-ipaas/connector-xml@workspace:packages/connectors/core/xml"],
 
@@ -2328,6 +2402,8 @@
 
     "@types/prismjs": ["@types/prismjs@1.26.6", "", {}, "sha512-vqlvI7qlMvcCBbVe0AKAb4f97//Hy0EBTaiW8AalRnG/xAN5zOiWWyrNqNXeq8+KAuvRewjCVY1+IPxk4RdNYw=="],
 
+    "@types/proper-lockfile": ["@types/proper-lockfile@4.1.4", "", { "dependencies": { "@types/retry": "*" } }, "sha512-uo2ABllncSqg9F1D4nugVl9v93RmjxF6LJzQLMLDdPaXCUIDPeOJ21Gbqi43xNKzBi/WQ0Q0dICqufzQbMjipQ=="],
+
     "@types/qs": ["@types/qs@6.9.7", "", {}, "sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw=="],
 
     "@types/range-parser": ["@types/range-parser@1.2.7", "", {}, "sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ=="],
@@ -2337,6 +2413,8 @@
     "@types/react-dom": ["@types/react-dom@19.2.3", "", { "peerDependencies": { "@types/react": "^19.2.0" } }, "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ=="],
 
     "@types/readable-stream": ["@types/readable-stream@4.0.23", "", { "dependencies": { "@types/node": "*" } }, "sha512-wwXrtQvbMHxCbBgjHaMGEmImFTQxxpfMOR/ZoQnXxB1woqkUbdLGFDgauo00Py9IudiaqSeiBiulSV9i6XIPig=="],
+
+    "@types/retry": ["@types/retry@0.12.5", "", {}, "sha512-3xSjTp3v03X/lSQLkczaN9UIEwJMoMCA1+Nb5HfbJEQWogdeQIyVtTvxPXDQjZ5zws8rFQfVfRdz03ARihPJgw=="],
 
     "@types/semver": ["@types/semver@7.5.6", "", {}, "sha512-dn1l8LaMea/IjDoHNd9J52uBbInB796CDffS6VdIxvqYCPSG0V0DzHp76GpaWnlhg88uYyPbXCDIowa86ybd5A=="],
 
@@ -4404,6 +4482,8 @@
 
     "prop-types": ["prop-types@15.8.1", "", { "dependencies": { "loose-envify": "^1.4.0", "object-assign": "^4.1.1", "react-is": "^16.13.1" } }, "sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg=="],
 
+    "proper-lockfile": ["proper-lockfile@4.1.2", "", { "dependencies": { "graceful-fs": "^4.2.4", "retry": "^0.12.0", "signal-exit": "^3.0.2" } }, "sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA=="],
+
     "property-information": ["property-information@7.1.0", "", {}, "sha512-TwEZ+X+yCJmYfL7TPUOcvBZ4QfoT5YenQiJuX//0th53DE6w0xxLEtfK3iyryQFddXuvkIk51EEgrJQ0WJkOmQ=="],
 
     "prosemirror-changeset": ["prosemirror-changeset@2.4.1", "", { "dependencies": { "prosemirror-transform": "^1.0.0" } }, "sha512-96WBLhOaYhJ+kPhLg3uW359Tz6I/MfcrQfL4EGv4SrcqKEMC1gmoGrXHecPE8eOwTVCJ4IwgfzM8fFad25wNfw=="],
@@ -6385,6 +6465,8 @@
     "playwright/fsevents": ["fsevents@2.3.2", "", { "os": "darwin" }, "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="],
 
     "prop-types/react-is": ["react-is@16.13.1", "", {}, "sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ=="],
+
+    "proper-lockfile/signal-exit": ["signal-exit@3.0.7", "", {}, "sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ=="],
 
     "proxy-addr/ipaddr.js": ["ipaddr.js@1.9.1", "", {}, "sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g=="],
 

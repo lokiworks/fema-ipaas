@@ -164,6 +164,7 @@ function platformEventCounts(rows: PlatformEventRow[]): Omit<RunMonitorHandled, 
         rateLimitSources: ofKind(ReliabilityEventKind.RATE_LIMIT_QUEUED)
             .map((row) => ({ connectorName: row.connectorName ?? '', unit: row.limitUnit ?? RateLimitUnit.UNDECLARED, count: Number(row.events) }))
             .sort((first, second) => second.count - first.count),
+        withheldRetries: events(ReliabilityEventKind.RETRY_WITHHELD),
         autoRetries: events(ReliabilityEventKind.AUTO_RETRY),
         retriedRuns: runs(ReliabilityEventKind.AUTO_RETRY),
         caughtUpEvents: events(ReliabilityEventKind.CATCH_UP),
@@ -330,7 +331,8 @@ const ACTIVE_LOOKBACK_MS = 30 * 24 * 60 * 60 * 1000
 const PEAK_LOOKBACK_MS = 24 * 60 * 60 * 1000
 const MAX_WORKFLOW_OPTIONS = 2000
 
-const EMPTY_HANDLED: RunMonitorHandled = { duplicateEvents: 0, mergedFailures: 0, mergedIssues: 0, rateLimitWaits: 0, rateLimitedRuns: 0, rateLimitSources: [], autoRetries: 0, retriedRuns: 0, caughtUpEvents: 0 }
+const EMPTY_HANDLED: RunMonitorHandled = {
+    withheldRetries: 0, duplicateEvents: 0, mergedFailures: 0, mergedIssues: 0, rateLimitWaits: 0, rateLimitedRuns: 0, rateLimitSources: [], autoRetries: 0, retriedRuns: 0, caughtUpEvents: 0 }
 
 const EMPTY_STATS: RunMonitorStats = {
     runs: 0,

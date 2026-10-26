@@ -51,6 +51,7 @@ import {
   issuesHooks,
   issueUiUtils,
 } from '@/features/issues';
+import { ReconciliationDifferences } from '@/features/reconciliation/reconciliation';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { notFoundError } from '@/lib/not-found-error';
@@ -215,10 +216,18 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             onReplay={() => setReplayOpen(true)}
             onIgnore={() => update({ status: IssueStatus.IGNORED })}
           />
+          {issue.kind === IssueKind.RECONCILIATION &&
+            issue.message.startsWith('reconciliation:') && (
+              <ReconciliationDifferences
+                projectId={issue.projectId}
+                ruleId={issue.message.slice('reconciliation:'.length)}
+              />
+            )}
           {issue.kind === IssueKind.TRIGGER && (
             <AffectedWorkflowsCard issueId={issue.id} />
           )}
           {issue.kind !== IssueKind.DRIFT &&
+            issue.kind !== IssueKind.RECONCILIATION &&
             issue.kind !== IssueKind.TRIGGER && (
               <>
                 <TrendCard issueId={issue.id} />

@@ -20,7 +20,9 @@ const remoteUrl = process.env.E2E_HOST_GATEWAY_URL ?? `http://host.lima.internal
 const mockUrl = process.env.E2E_MOCK_GATEWAY_URL ?? `http://host.lima.internal:${loadStack.paths.MOCK_PORT}`
 const jwtSecret = 'f391c07d856142b9a7436ed8c28a905fe01793ad4b6825cfa'
 const encryptionKey = '64af25e093bc4817d29f8c3ae056b471'
-const report = {}
+const resumeRestored = process.env.E2E_RESUME_RESTORED === '1'
+const savedReport = resumeRestored ? JSON.parse(readFileSync(path.join(resultDir, 'containers-progress.json'), 'utf8')) : null
+const report = savedReport ? { backup: savedReport.backup, final: savedReport.final, resumedAfterRestore: true } : {}
 const resume = process.env.E2E_RESUME_CONTAINERS === '1'
 let succeeded = false
 mkdirSync(stateDir, { recursive: true })
@@ -34,6 +36,7 @@ assert.equal(infoB.OSType, 'linux')
 const imageA = docker({ host: hostA, args: ['image', 'inspect', image, '--format', '{{.Id}}'] }).trim()
 const imageB = docker({ host: hostB, args: ['image', 'inspect', image, '--format', '{{.Id}}'] }).trim()
 assert.equal(imageA, imageB, 'Both hosts must run the same image')
+if (savedReport) assert.equal(imageA, savedReport.image, 'Restored drill must keep the validated image')
 const bootA = docker({ host: hostA, args: ['run', '--rm', '--entrypoint', 'cat', image, '/proc/sys/kernel/random/boot_id'] }).trim()
 const bootB = docker({ host: hostB, args: ['run', '--rm', '--entrypoint', 'cat', image, '/proc/sys/kernel/random/boot_id'] }).trim()
 assert.notEqual(bootA, bootB, 'Both Docker daemons share the same Linux kernel boot')
@@ -57,9 +60,14 @@ const a = { services: {
 }, volumes: { postgres_data: {}, redis_data: {}, app_data: {}, worker_cache: {} } }
 const b = { services: { worker: { image, environment: { ...common, FEMA_CONTAINER_TYPE: 'WORKER', FEMA_CACHE_BASE_PATH: '/usr/src/app/cache' }, extra_hosts: hostMap, volumes: ['worker_cache:/usr/src/app/cache'] } }, volumes: { worker_cache: {} } }
 for (const [name, value] of [['a', a], ['b', b]]) writeFileSync(path.join(stateDir, `${name}.json`), JSON.stringify(value, null, 2))
-if (!resume) loadStack.startMock()
+if (!resume && !resumeRestored) loadStack.startMock()
 try {
-  if (resume) {
+  if (resumeRestored) {
+    assert(loadStack.isAlive({ pid: loadStack.pidOf({ name: 'mock' }) }))
+    assert(report.backup?.probe && report.final?.users === 250)
+    await kit.connect()
+  }
+  else if (resume) {
     const previous = JSON.parse(readFileSync(path.join(resultDir, 'faults.json'), 'utf8'))
     assert.equal(previous.concurrency?.chainWrong, 0)
     assert.equal(previous.concurrency?.backWrong, 0)
@@ -84,25 +92,29 @@ try {
     await import('./load-faults.mjs')
     assert(!process.exitCode, 'Cross-host concurrency scenario failed')
   }
-  const { completed, final, probe } = await containerBackupDrill.run({ host: hostA, app: compose({ host: hostA, name: 'a', args: ['ps', '-q', 'app'] }).trim(), postgres: compose({ host: hostA, name: 'a', args: ['ps', '-q', 'postgres'] }).trim(), seeded: resume })
-  assert.equal(final.createAttemptsExtra, 0)
-  assert.equal(final.duplicateMessageExtra, 0)
-  assert.equal(kit.counts().failed, 0)
-  const logsA = compose({ host: hostA, name: 'a', args: ['logs', '--no-color', 'worker'] })
-  const logsB = compose({ host: hostB, name: 'b', args: ['logs', '--no-color', 'worker'] })
-  assert(logsA.includes('EXECUTE_WORKFLOW') && logsB.includes('EXECUTE_WORKFLOW'), 'Both hosts must execute workflows')
-  const precheck = await kit.api({ method: 'GET', path: `/backups/${completed.id}/restore-precheck` })
-  report.backup = { id: completed.id, fileName: completed.fileName, precheck, probe }
-  report.final = { users: final.users, messages: final.messages, duplicateAccounts: final.createAttemptsExtra, duplicateMessages: final.duplicateMessageExtra, counts: kit.counts() }
-  compose({ host: hostA, name: 'a', args: ['stop', 'worker', 'app'] })
-  compose({ host: hostB, name: 'b', args: ['stop', 'worker'] })
-  const backupFile = `/root/.fema/backups/${completed.fileName}`
-  const checked = compose({ host: hostA, name: 'a', args: ['run', '--rm', '--no-deps', 'app', 'fema-restore', backupFile, '--offline', '--check'] })
-  assert(checked.includes('precheck') || checked.includes('Precheck') || checked.includes('check'), checked)
-  const restored = compose({ host: hostA, name: 'a', args: ['run', '--rm', '--no-deps', 'app', 'fema-restore', backupFile, '--offline'] })
-  assert(restored.includes('Restore completed'), restored)
-  compose({ host: hostA, name: 'a', args: ['up', '-d'] })
-  compose({ host: hostB, name: 'b', args: ['up', '-d'] })
+  if (!resumeRestored) {
+    const { completed, final, probe } = await containerBackupDrill.run({ host: hostA, app: compose({ host: hostA, name: 'a', args: ['ps', '-q', 'app'] }).trim(), postgres: compose({ host: hostA, name: 'a', args: ['ps', '-q', 'postgres'] }).trim(), seeded: resume })
+    assert.equal(final.createAttemptsExtra, 0)
+    assert.equal(final.duplicateMessageExtra, 0)
+    assert.equal(kit.counts().failed, 0)
+    const logsA = compose({ host: hostA, name: 'a', args: ['logs', '--no-color', 'worker'] })
+    const logsB = compose({ host: hostB, name: 'b', args: ['logs', '--no-color', 'worker'] })
+    assert(logsA.includes('EXECUTE_WORKFLOW') && logsB.includes('EXECUTE_WORKFLOW'), 'Both hosts must execute workflows')
+    const precheck = await kit.api({ method: 'GET', path: `/backups/${completed.id}/restore-precheck` })
+    report.backup = { id: completed.id, fileName: completed.fileName, precheck, probe }
+    report.final = { users: final.users, messages: final.messages, duplicateAccounts: final.createAttemptsExtra, duplicateMessages: final.duplicateMessageExtra, counts: kit.counts() }
+    compose({ host: hostA, name: 'a', args: ['stop', 'worker', 'app'] })
+    compose({ host: hostB, name: 'b', args: ['stop', 'worker'] })
+    const backupFile = `/root/.fema/backups/${completed.fileName}`
+    const checked = compose({ host: hostA, name: 'a', args: ['run', '--rm', '--no-deps', 'app', 'fema-restore', backupFile, '--offline', '--check'] })
+    assert(checked.includes('precheck') || checked.includes('Precheck') || checked.includes('check'), checked)
+    const restored = compose({ host: hostA, name: 'a', args: ['run', '--rm', '--no-deps', 'app', 'fema-restore', backupFile, '--offline'] })
+    assert(restored.includes('Restore completed'), restored)
+    compose({ host: hostA, name: 'a', args: ['up', '-d'] })
+    compose({ host: hostB, name: 'b', args: ['up', '-d'] })
+  }
+  const restoredProbeRows = Number(docker({ host: hostA, args: ['exec', compose({ host: hostA, name: 'a', args: ['ps', '-q', 'postgres'] }).trim(), 'psql', '-qAt', '-U', 'fema', '-d', 'fema', '-c', `SELECT count(*) FROM e2e_backup_probe WHERE "projectId"='${kit.session().projectId}'`] }).trim())
+  assert.equal(restoredProbeRows, report.backup.probe.snapshotRows, 'Restore did not roll the committed-write probe back to the backup snapshot')
   await loadStack.waitApi()
   await kit.connect()
   await loadStack.waitWorkerOnline({ count: 2 })
@@ -118,12 +130,18 @@ try {
   } })
   assert.equal(reconciled.sourceCount, 250)
   assert.equal(reconciled.differenceCount, 0)
+  await kit.waitFor({ timeoutMs: 600000, intervalMs: 3000, probe: async () => {
+    const counts = kit.counts()
+    assert.equal(counts.failed, 0, 'Restored workflows failed')
+    return counts.unfinished === 0
+  } })
   const afterRestore = await kit.mock({ method: 'GET', path: '/__admin/summary' })
   assert.equal(afterRestore.users, 250)
   assert.equal(afterRestore.messages, 250)
   assert.equal(afterRestore.duplicateMessageExtra, 0)
   assert.equal(afterRestore.createAttemptsExtra, 0)
-  report.volume = { backupReadableFromNewContainer: true, actualPostgresRestore: true, sourceCount: reconciled.sourceCount, differences: reconciled.differenceCount, accounts: afterRestore.users, messages: afterRestore.messages }
+  report.volume = { backupReadableFromNewContainer: true, actualPostgresRestore: true, restoredProbeRows, restoredExecutions: kit.counts(), sourceCount: reconciled.sourceCount, differences: reconciled.differenceCount, accounts: afterRestore.users, messages: afterRestore.messages }
+  process.stdout.write(`PASS actual container restore: ${JSON.stringify(report.volume)}\n`)
   const people = Number(process.env.E2E_RECONCILIATION_SCALE_N ?? 10000)
   if (people > 0) report.reconciliationScale = await reconciliationScale.run({ host: hostA, container: compose({ host: hostA, name: 'a', args: ['ps', '-q', 'app'] }).trim(), people, resultDir })
   writeFileSync(path.join(resultDir, 'containers.json'), JSON.stringify(report, null, 2))

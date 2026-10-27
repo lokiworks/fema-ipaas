@@ -9,10 +9,13 @@ async function run({ host, app, postgres, seeded = false }) {
   assert(/^[\w-]+$/.test(projectId))
   sql({ host, postgres, query: 'CREATE TABLE e2e_backup_probe ("projectId" text NOT NULL, seq integer NOT NULL, at timestamptz NOT NULL DEFAULT clock_timestamp(), PRIMARY KEY ("projectId", seq))' })
   const writer = startWriter({ host, postgres, projectId })
+  let blocker
   let completed
   let starts
   try {
     await kit.waitFor({ timeoutMs: 30000, intervalMs: 50, probe: async () => Number(sql({ host, postgres, query: `SELECT count(*) FROM e2e_backup_probe WHERE "projectId"='${projectId}'` })) >= 5 })
+    blocker = startSql({ host, postgres, query: 'BEGIN; LOCK TABLE e2e_backup_probe IN ACCESS EXCLUSIVE MODE; SELECT pg_sleep(5); COMMIT;' })
+    await kit.waitFor({ timeoutMs: 30000, intervalMs: 50, probe: async () => Number(sql({ host, postgres, query: "SELECT count(*) FROM pg_locks WHERE relation='public.e2e_backup_probe'::regclass AND mode='AccessExclusiveLock' AND granted" })) === 1 })
     starts = await Promise.all(Array.from({ length: 2 }, () => kit.apiRaw({ method: 'POST', path: '/backups', body: { note: 'Two-host probe' } })))
     const accepted = starts.filter((response) => response.ok)
     assert.equal(accepted.length, 1, `Concurrent backups: ${JSON.stringify(starts.map(({ status, body }) => ({ status, body })))}`)
@@ -25,9 +28,10 @@ async function run({ host, app, postgres, seeded = false }) {
       if (row?.status === 'FAILED') throw new Error(row.error)
       return row?.status === 'SUCCEEDED' ? row : null
     } })
+    await blocker.finished
     await writer.finished
   }
-  finally { writer.stop(); await writer.finished.catch(() => undefined) }
+  finally { blocker?.stop(); writer.stop(); await Promise.allSettled([blocker?.finished, writer.finished]) }
   const dump = docker({ host, args: ['exec', app, 'pg_restore', '--data-only', '--table=e2e_backup_probe', '--file=-', `/root/.fema/backups/${completed.fileName}`] })
   const lines = dump.split('\n')
   const first = lines.findIndex((line) => line.startsWith('COPY public.e2e_backup_probe '))
@@ -54,11 +58,15 @@ async function waitForPeople({ count }) {
 }
 
 function startWriter({ host, postgres, projectId }) {
+  return startSql({ host, postgres, query: Array.from({ length: 500 }, (_, index) => `INSERT INTO e2e_backup_probe ("projectId", seq) VALUES ('${projectId}', ${index + 1});\nSELECT pg_sleep(0.02);`).join('\n') })
+}
+
+function startSql({ host, postgres, query }) {
   const child = spawn('docker', ['--host', host, 'exec', '-i', postgres, 'psql', '-q', '-U', 'fema', '-d', 'fema', '-v', 'ON_ERROR_STOP=1'], { stdio: ['pipe', 'ignore', 'pipe'] })
   let error = ''
   child.stderr.on('data', (chunk) => { error += chunk.toString() })
-  const finished = new Promise((resolve, reject) => { child.once('error', reject); child.stdin.once('error', reject); child.once('exit', (code) => code === 0 ? resolve() : reject(new Error(`Backup writer failed: ${error}`))) })
-  child.stdin.end(Array.from({ length: 500 }, (_, index) => `INSERT INTO e2e_backup_probe ("projectId", seq) VALUES ('${projectId}', ${index + 1});\nSELECT pg_sleep(0.02);`).join('\n'))
+  const finished = new Promise((resolve, reject) => { child.once('error', reject); child.stdin.once('error', reject); child.once('exit', (code) => code === 0 ? resolve() : reject(new Error(`Backup SQL failed: ${error}`))) })
+  child.stdin.end(query)
   return { finished, stop: () => { if (child.exitCode === null) child.kill('SIGTERM') } }
 }
 

@@ -1,11 +1,11 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { DefaultProjectRole, SolutionPackage, WorkflowActionType, WorkflowStatus, WorkflowTriggerType, WorkflowVersionState } from '@fema-ipaas/shared'
+import { ConnectionStatus, DefaultProjectRole, SolutionPackage, WorkflowActionType, WorkflowStatus, WorkflowTriggerType, WorkflowVersionState } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { db } from '../../helpers/db'
-import { createMockProject, createMockWorkflow, createMockWorkflowVersion } from '../../helpers/mocks'
+import { createMockConnection, createMockProject, createMockWorkflow, createMockWorkflowVersion } from '../../helpers/mocks'
 import { createMemberContext, createTestContext, TestContext } from '../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
@@ -104,6 +104,38 @@ describe('Solutions API', () => {
         const response = await ctx.get('/v1/solutions')
         expect(response.statusCode).toBe(StatusCodes.OK)
         expect(response.json().map((solution: { id: string }) => solution.id).sort()).toEqual(OFFICIAL_SOLUTION_IDS)
+    })
+
+    it('checks the selected project when another project has the same connection external ID', async () => {
+        const ctx = await createTestContext(app!)
+        const otherProject = createMockProject({ tenantId: ctx.tenant.id, ownerId: ctx.user.id })
+        await db.save('project', otherProject)
+        const externalId = 'shared-beisen-name'
+        await db.save('connection', createMockConnection({ tenantId: ctx.tenant.id, externalId, connectorName: '@fema-ipaas/connector-beisen', projectIds: [otherProject.id], status: ConnectionStatus.ERROR }, ctx.user.id))
+        const selected = createMockConnection({ tenantId: ctx.tenant.id, externalId, connectorName: '@fema-ipaas/connector-beisen', projectIds: [ctx.project.id] }, ctx.user.id)
+        await db.save('connection', selected)
+        const body = { projectId: ctx.project.id, connections: { '@fema-ipaas/connector-beisen': externalId } }
+
+        const active = await ctx.post('/v1/solutions/official-beisen-feishu/checks', body)
+        expect(active.statusCode).toBe(StatusCodes.OK)
+        expect(active.json().results).toContainEqual(expect.objectContaining({ key: 'connection:@fema-ipaas/connector-beisen', status: 'PASS' }))
+
+        await db.update('connection', selected.id, { status: ConnectionStatus.ERROR })
+        const broken = await ctx.post('/v1/solutions/official-beisen-feishu/checks', body)
+        expect(broken.json().results).toContainEqual(expect.objectContaining({ key: 'connection:@fema-ipaas/connector-beisen', status: 'FAIL', message: 'connectionNotWorking' }))
+    })
+
+    it('refuses a connection that is available only in another project', async () => {
+        const ctx = await createTestContext(app!)
+        const otherProject = createMockProject({ tenantId: ctx.tenant.id, ownerId: ctx.user.id })
+        await db.save('project', otherProject)
+        const externalId = 'other-project-beisen'
+        await db.save('connection', createMockConnection({ tenantId: ctx.tenant.id, externalId, connectorName: '@fema-ipaas/connector-beisen', projectIds: [otherProject.id] }, ctx.user.id))
+
+        const response = await ctx.post('/v1/solutions/official-beisen-feishu/checks', { projectId: ctx.project.id, connections: { '@fema-ipaas/connector-beisen': externalId } })
+
+        expect(response.statusCode).toBe(StatusCodes.OK)
+        expect(response.json().results).toContainEqual(expect.objectContaining({ key: 'connection:@fema-ipaas/connector-beisen', status: 'FAIL', message: 'connectionNotInProject' }))
     })
 
     it('refuses to package a workflow that was never published', async () => {

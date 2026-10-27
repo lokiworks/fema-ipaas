@@ -197,6 +197,9 @@ async function feishuFaults() {
 }
 
 async function beisenQuirks() {
+  const earlierStartDate = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 19)
+  const laterStartDate = new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 19)
+  const finalStartDate = new Date(Date.now() - 86400000).toISOString().slice(0, 19)
   const base = Number(process.env.LOAD_BASE ?? 6000)
   const ns = rangeOf({ first: base, count: PEOPLE })
   await check('e 北森返回重复、乱序的变动：不重复开通；乱序的连续调岗以最后一条为准；迟到的旧时间变动不丢', async () => {
@@ -205,11 +208,11 @@ async function beisenQuirks() {
     await kit.inject({ records: ns.map((n) => kit.hireOf({ n, departmentIndex: n % 20 })) })
     const outcome = await settle({ ns, timeoutMs: 420000 })
     const chain = rangeOf({ first: base, count: 30 })
-    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 3, startDate: '2026-11-01T00:00:00' })) })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 3, startDate: earlierStartDate })) })
     await kit.sleep(1100)
-    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 5, startDate: '2026-12-01T00:00:00' })) })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 5, startDate: laterStartDate })) })
     await kit.sleep(1100)
-    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 7, startDate: '2027-01-01T00:00:00' })) })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 7, startDate: finalStartDate })) })
     await kit.sleep(150000)
     const users = (await kit.mock({ method: 'GET', path: '/__admin/users' })).users
     const byNo = new Map(users.map((user) => [user.employee_no, user]))
@@ -262,18 +265,20 @@ async function scanReconciliation({ ruleId, projectId }) {
 
 async function concurrency() {
   const base = Number(process.env.LOAD_BASE ?? 7000)
+  const earlierStartDate = new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 19)
+  const laterStartDate = new Date(Date.now() - 86400000).toISOString().slice(0, 19)
   await check('f 同一员工连续调岗 A→B→C、A→B→A：最终部门与北森最后一条一致', async () => {
     const hires = rangeOf({ first: base, count: 20 })
     await kit.inject({ records: hires.map((n) => kit.hireOf({ n, departmentIndex: 0 })) })
     await settle({ ns: hires, timeoutMs: 300000 })
     const chain = rangeOf({ first: base, count: 10 })
     const back = rangeOf({ first: base + 10, count: 10 })
-    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 3, startDate: '2026-11-01T00:00:00' })) })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 3, startDate: earlierStartDate })) })
     await kit.sleep(1100)
-    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 5, startDate: '2026-12-01T00:00:00' })) })
-    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 4, startDate: '2026-11-01T00:00:00' })) })
+    await kit.inject({ records: chain.map((n) => kit.transferOf({ n, departmentIndex: 5, startDate: laterStartDate })) })
+    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 4, startDate: earlierStartDate })) })
     await kit.sleep(1100)
-    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 0, startDate: '2026-12-01T00:00:00' })) })
+    await kit.inject({ records: back.map((n) => kit.transferOf({ n, departmentIndex: 0, startDate: laterStartDate })) })
     await kit.sleep(150000)
     const users = (await kit.mock({ method: 'GET', path: '/__admin/users' })).users
     const byNo = new Map(users.map((user) => [user.employee_no, user]))

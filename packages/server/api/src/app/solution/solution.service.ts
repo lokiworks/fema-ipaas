@@ -28,6 +28,7 @@ import {
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
+import { connectionAvailability } from '../connection/connection-service/connection-availability'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { instanceLimits } from '../limits/instance-limits'
@@ -378,13 +379,13 @@ async function evaluateCheck({ check, projectId, tenantId, connections }: Evalua
     if (isNil(externalId)) {
         return { ...base, status: SolutionCheckStatus.FAIL, message: 'noConnectionSelected' }
     }
-    const connection = await connectionsRepo().findOne({ where: { tenantId, externalId }, select: ['id', 'status', 'scope', 'projectIds', 'preSelectForNewProjects'] })
+    const connection = await connectionsRepo().findOne({
+        where: connectionAvailability.whereAvailableIn({ projectId, where: { tenantId, externalId } }),
+        select: ['id', 'status'],
+    })
     if (isNil(connection)) {
-        return { ...base, status: SolutionCheckStatus.FAIL, message: 'connectionMissing' }
-    }
-    const availableHere = connection.scope === 'TENANT' ? connection.preSelectForNewProjects || connection.projectIds.includes(projectId) : connection.projectIds.includes(projectId)
-    if (!availableHere) {
-        return { ...base, status: SolutionCheckStatus.FAIL, message: 'connectionNotInProject' }
+        const existsInTenant = await connectionsRepo().existsBy({ tenantId, externalId })
+        return { ...base, status: SolutionCheckStatus.FAIL, message: existsInTenant ? 'connectionNotInProject' : 'connectionMissing' }
     }
     return connection.status === ConnectionStatus.ACTIVE
         ? { ...base, status: SolutionCheckStatus.PASS, message: null }

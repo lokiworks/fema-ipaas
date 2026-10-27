@@ -8,6 +8,13 @@ icon: "hammer"
 
 ### What has changed?
 
+#### Container database and cache defaults
+
+Containers without database or cache connection settings use PGlite and in-memory Redis.
+Configured PostgreSQL and Redis connection settings retain their external service defaults.
+Set `FEMA_DB_TYPE=POSTGRES` and `FEMA_REDIS_TYPE=STANDALONE` explicitly when upgrading an
+external PostgreSQL/Redis deployment. Persist `/root/.fema` when using the embedded database.
+
 #### Manual verification returns a job identifier
 
 `POST /v1/verification/run` now returns `{ runId }` immediately. Poll

@@ -468,7 +468,8 @@ const CLI_STEPS = [
   {
     icon: UploadIcon,
     title: () => t('Pack and publish'),
-    command: 'connectors-cli connectors pack\nconnectors-cli connectors publish',
+    command:
+      'connectors-cli connectors pack\nconnectors-cli connectors publish',
     description: () =>
       t(
         'Builds the bundle, writes the registry manifest, and uploads it to this instance.',

@@ -213,7 +213,8 @@ function AuthStep({
   const firstUser = userCreated !== true;
   const effectiveMode: AuthMode = firstUser ? 'signup' : mode;
   const emailAuthEnabled = emailAuthEnabledFlag ?? true;
-  const showModeSwitch = !firstUser && ((openSignUpFlag ?? true) || mode === 'signup');
+  const showModeSwitch =
+    !firstUser && ((openSignUpFlag ?? true) || mode === 'signup');
   const passwordlessAvailable = usePasswordlessAvailable();
   const { data: ssoData } = ssoHooks.useProviders();
   const ssoProviders = ssoData?.providers ?? [];

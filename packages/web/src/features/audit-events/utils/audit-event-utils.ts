@@ -506,9 +506,7 @@ function userLabel({
   if (email) {
     return email;
   }
-  return id.includes('@')
-    ? id
-    : t('deletedUserWithId', { id: shortId(id) });
+  return id.includes('@') ? id : t('deletedUserWithId', { id: shortId(id) });
 }
 
 function invitationRoleLabel(role: string | undefined): string {

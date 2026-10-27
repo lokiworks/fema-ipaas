@@ -13,7 +13,9 @@ export function MasterDetailLayout({
 }: MasterDetailLayoutProps) {
   return (
     <div className="flex w-full flex-col gap-4 xl:grid xl:grid-cols-[260px_minmax(0,1fr)]">
-      <div className={cn('flex flex-col gap-2', showDetail && 'hidden xl:flex')}>
+      <div
+        className={cn('flex flex-col gap-2', showDetail && 'hidden xl:flex')}
+      >
         {list}
       </div>
       <div

@@ -220,9 +220,7 @@ export default function OpenApiImportPage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <p className="text-xs text-muted-foreground">
-              {t(
-                'generatedFilesNextSteps',
-              )}
+              {t('generatedFilesNextSteps')}
             </p>
             {Object.entries(generated.files).map(([path, contents]) => (
               <div key={path} className="flex flex-col gap-1">

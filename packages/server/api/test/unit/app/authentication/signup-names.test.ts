@@ -71,10 +71,10 @@ describe('signupNames', () => {
 
     describe('tenantNameFromPerson', () => {
         it.each([
-            ['Ahmad', "Ahmad's Tenant"],
-            ['Ahmad Bin', "Ahmad's Tenant"],
-            ['Chris', "Chris's Tenant"],
-            ["Ahmad's", "Ahmad's Tenant"],
+            ['Ahmad', 'Ahmad\'s Tenant'],
+            ['Ahmad Bin', 'Ahmad\'s Tenant'],
+            ['Chris', 'Chris\'s Tenant'],
+            ['Ahmad\'s', 'Ahmad\'s Tenant'],
         ])('names the tenant from %s -> %s', (firstName, expected) => {
             expect(
                 signupNames.tenantNameFromPerson({ firstName, email: 'a.b@fema.local' }),
@@ -84,7 +84,7 @@ describe('signupNames', () => {
         it('falls back to the email local part when the person has no usable name', () => {
             expect(
                 signupNames.tenantNameFromPerson({ firstName: '', email: 'ahmad.tash@fema.local' }),
-            ).toBe("Ahmad's Tenant")
+            ).toBe('Ahmad\'s Tenant')
         })
 
         it('uses the whole fallback when neither the name nor the address yields a word', () => {
@@ -132,9 +132,9 @@ describe('signupNames', () => {
 
     describe('personalProjectName', () => {
         it.each([
-            ['Ahmad', "Ahmad's Project"],
-            ["Ahmad's", "Ahmad's Project"],
-            ["Ahmad's Tenant", "Ahmad's Project"],
+            ['Ahmad', 'Ahmad\'s Project'],
+            ['Ahmad\'s', 'Ahmad\'s Project'],
+            ['Ahmad\'s Tenant', 'Ahmad\'s Project'],
         ])('names the project from %s -> %s', (ownerName, expected) => {
             expect(signupNames.personalProjectName({ ownerName })).toBe(expected)
         })
@@ -142,7 +142,7 @@ describe('signupNames', () => {
         it.each([
             ['Ahmad', 'Ahmad 的项目'],
             ['Ahmad 的租户', 'Ahmad 的项目'],
-            ["Ahmad's Tenant", 'Ahmad 的项目'],
+            ['Ahmad\'s Tenant', 'Ahmad 的项目'],
         ])('names the project in Simplified Chinese from %s -> %s', (ownerName, expected) => {
             useLanguage(LocalesEnum.CHINESE_SIMPLIFIED)
 
@@ -161,7 +161,7 @@ describe('signupNames', () => {
         })
 
         it('keeps a name that merely ends in the suffix word intact', () => {
-            expect(signupNames.personalProjectName({ ownerName: ' Tenant' })).toBe("Tenant's Project")
+            expect(signupNames.personalProjectName({ ownerName: ' Tenant' })).toBe('Tenant\'s Project')
         })
     })
 

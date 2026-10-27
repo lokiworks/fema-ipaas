@@ -102,10 +102,7 @@ export const projectsTableColumns = (): ColumnDef<
     accessorKey: 'createdAt',
     size: 90,
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title={t('Created')}
-      />
+      <DataTableColumnHeader column={column} title={t('Created')} />
     ),
     cell: ({ row }) => {
       return (

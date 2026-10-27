@@ -2,7 +2,7 @@ import { ActionBase } from '@fema-ipaas/connector-sdk'
 import { ConnectorAudienceFilter, ConnectorCategory, ConnectorOrderBy, ConnectorSortBy, SuggestionType } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { ConnectorMetadataSchema } from '../connector-metadata-entity'
-import { connectorSearching } from './connector-searching'
+import { connectorSearching, OriginalConnectorText } from './connector-searching'
 import { connectorSorting } from './connector-sorting'
 
 export const connectorListUtils = (_log: FastifyBaseLogger) => ({
@@ -18,6 +18,7 @@ export const connectorListUtils = (_log: FastifyBaseLogger) => ({
             searchQuery: params.searchQuery,
             connectors: sortedConnectors,
             suggestionType: params.suggestionType,
+            originalTexts: params.originalTexts,
         })
     },
 })
@@ -50,6 +51,7 @@ export type SortAndSearchConnectorsParams = {
     orderBy?: ConnectorOrderBy
     connectors: ConnectorMetadataSchema[]
     suggestionType?: SuggestionType
+    originalTexts?: Record<string, OriginalConnectorText>
 }
 
 export * from './connector-cache-utils'

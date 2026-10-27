@@ -30,6 +30,7 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
             createdBefore: request.query.createdBefore,
             executionIds: request.query.executionIds,
             includeArchived: request.query.includeArchived,
+            excludeStepTests: request.query.excludeStepTests,
             environment: request.query.environment ?? RunEnvironment.PRODUCTION,
         })
     })

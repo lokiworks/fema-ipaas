@@ -87,10 +87,14 @@ export default function AuditLogPage() {
         new Set(
           (data?.data ?? [])
             .filter(auditEventUtils.needsWorkflowName)
-            .flatMap((event) => (event.projectId ? [event.projectId] : [])),
+            .flatMap((event) =>
+              event.projectId && projectNameById.has(event.projectId)
+                ? [event.projectId]
+                : [],
+            ),
         ),
       ),
-    [data?.data],
+    [data?.data, projectNameById],
   );
   const fetchedWorkflowNames = auditEventsHooks.useWorkflowNames({
     projectIds: projectIdsNeedingNames,
@@ -325,6 +329,10 @@ function AuditRow({
     userNames,
   });
   const projectLabel = projectLabelOf({ event, projectNameById });
+  const actorName =
+    (event.userId ? userNames[event.userId] : undefined) ??
+    event.userEmail ??
+    '—';
   const runId = auditEventUtils.runIdOf(event);
   const runPath =
     runId && event.projectId
@@ -336,9 +344,18 @@ function AuditRow({
         <FormattedDate date={new Date(event.created)} />
       </TableCell>
       <TableCell className="max-w-48">
-        <TextWithTooltip tooltipMessage={event.userEmail ?? ''}>
-          <p className="truncate">{event.userEmail ?? '—'}</p>
-        </TextWithTooltip>
+        {event.userEmail && event.userEmail !== actorName ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="truncate">{actorName}</p>
+            </TooltipTrigger>
+            <TooltipContent>{event.userEmail}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <TextWithTooltip tooltipMessage={actorName}>
+            <p className="truncate">{actorName}</p>
+          </TextWithTooltip>
+        )}
       </TableCell>
       <TableCell className="whitespace-nowrap">
         {auditEventUtils.actionLabel(event.action)}

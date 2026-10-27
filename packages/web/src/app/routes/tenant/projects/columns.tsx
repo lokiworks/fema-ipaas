@@ -1,7 +1,7 @@
 import { ProjectWithLimits, ProjectType } from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import { Lock, User, Tag, Users, Workflow, Clock, Link2 } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
 import { RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
@@ -15,9 +15,9 @@ export const projectsTableColumns = (): ColumnDef<
   >[] = [
     {
       accessorKey: 'displayName',
-      size: 270,
+      size: 170,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('Name')} icon={Tag} />
+        <DataTableColumnHeader column={column} title={t('Name')} />
       ),
       cell: ({ row }) => {
         const locked = false;
@@ -38,12 +38,11 @@ export const projectsTableColumns = (): ColumnDef<
     },
     {
       accessorKey: 'members',
-      size: 120,
+      size: 70,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
           title={t('Members')}
-          icon={Users}
           className="w-full"
         />
       ),
@@ -57,12 +56,11 @@ export const projectsTableColumns = (): ColumnDef<
     },
     {
       accessorKey: 'workflows',
-      size: 120,
+      size: 110,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
           title={t('Active Workflows')}
-          icon={Workflow}
           className="w-full"
         />
       ),
@@ -83,12 +81,11 @@ export const projectsTableColumns = (): ColumnDef<
 
   columns.push({
     accessorKey: 'globalConnectionsCount',
-    size: 135,
+    size: 100,
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title={t('Global Connections')}
-        icon={Link2}
         className="w-full"
       />
     ),
@@ -103,12 +100,11 @@ export const projectsTableColumns = (): ColumnDef<
 
   columns.push({
     accessorKey: 'createdAt',
-    size: 110,
+    size: 90,
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title={t('Created')}
-        icon={Clock}
       />
     ),
     cell: ({ row }) => {

@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import { RunEnvironment, isExecutionStateTerminal } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 
@@ -21,14 +22,17 @@ export function useHydrateDebugTestedSteps() {
       const page = await executionsApi.list({
         workflowId: [workflowId],
         projectId: authenticationSession.getProjectId()!,
-        limit: 1,
+        limit: LOOKBACK_RUNS,
         environment: RunEnvironment.TESTING,
+        excludeStepTests: true,
       });
-      const latest = page.data.find((run) =>
-        isExecutionStateTerminal({
-          status: run.status,
-          ignoreInternalError: false,
-        }),
+      const latest = page.data.find(
+        (run) =>
+          isNil(run.stepNameToTest) &&
+          isExecutionStateTerminal({
+            status: run.status,
+            ignoreInternalError: false,
+          }),
       );
       if (latest) {
         const [run, runVersion] = await Promise.all([
@@ -41,3 +45,5 @@ export function useHydrateDebugTestedSteps() {
     },
   });
 }
+
+const LOOKBACK_RUNS = 10;

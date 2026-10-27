@@ -109,6 +109,7 @@ function SingleEnvironmentPublishSection({
     isSaving,
   });
   const { mutate: publishBatch } = projectWorkspaceHooks.useBatchPublish();
+  const queryClient = useQueryClient();
   const publish = (description: string | undefined) => {
     setIsPublishing(true);
     publishBatch(
@@ -129,6 +130,9 @@ function SingleEnvironmentPublishSection({
           setWorkflow(updatedWorkflow);
           setVersion(updatedWorkflow.version);
           setIsPublishing(false);
+          void queryClient.invalidateQueries({
+            queryKey: ['workflow-versions', workflow.id],
+          });
           onPublishDialogOpenChange(false);
           toast.success(t('Published. The workflow is now running.'));
         },
@@ -136,7 +140,6 @@ function SingleEnvironmentPublishSection({
       },
     );
   };
-  const queryClient = useQueryClient();
   const { mutateAsync: overWriteDraftWithVersion } =
     workflowHooks.useOverWriteDraftWithVersion({
       onSuccess: (updatedWorkflow) => {

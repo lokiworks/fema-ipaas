@@ -3,7 +3,7 @@ import { zstdCompress as zstdCompressCallback } from 'node:zlib'
 import { setTimeout } from 'timers/promises'
 import { OutputContext } from '@fema-ipaas/connector-sdk'
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
-import { DEFAULT_MCP_DATA, EngineGenericError, EXECUTION_LOG_MANIFEST_V2, FileCompression, FileType, isExecutionStateTerminal, logRedaction, logSerializer, RunEnvironment, StepOutputStatus, StepRunResponse, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema-ipaas/shared'
+import { DEFAULT_MCP_DATA, EngineGenericError, EXECUTION_LOG_MANIFEST_V2, FileCompression, FileType, isExecutionStateTerminal, logRedaction, logSerializer, RunEnvironment, StepOutput, StepOutputStatus, StepRunResponse, UpdateRunProgressRequest, UploadRunLogsRequest } from '@fema-ipaas/shared'
 import { Mutex } from 'async-mutex'
 import dayjs from 'dayjs'
 import { engineFileApi } from '../api/engine-file-api'
@@ -11,6 +11,7 @@ import { engineRunApi } from '../api/engine-run-api'
 import { EngineConstants } from '../handler/context/engine-constants'
 import { WorkflowExecutorContext } from '../handler/context/workflow-execution-context'
 import { utils } from '../utils'
+import { singleStepTestSteps } from './single-step-test-steps'
 
 
 const zstdCompress = promisify(zstdCompressCallback)
@@ -102,14 +103,19 @@ export const executionProgressReporter = {
             const status = workflowExecutorContext.verdict.status
             const isTerminal = isExecutionStateTerminal({ status, ignoreInternalError: false })
 
+            const persistedSteps = singleStepTestSteps.onlyTestedStep({
+                steps: workflowExecutorContext.steps,
+                stepNameToTest: engineConstants.stepNameToTest,
+            })
+
             const serialized = await logSerializer.serialize({
                 executionState: {
-                    steps: workflowExecutorContext.steps,
+                    steps: persistedSteps,
                     tags: Array.from(workflowExecutorContext.tags),
                 },
             })
             const executionState = await zstdCompress(serialized)
-            const displayLogsFileId = await uploadDisplayLog({ engineConstants, workflowExecutorContext })
+            const displayLogsFileId = await uploadDisplayLog({ engineConstants, workflowExecutorContext, steps: persistedSteps })
 
             const logsFileId = engineConstants.logsFileId
             if (isNil(logsFileId)) {
@@ -228,12 +234,12 @@ const extractStepResponse = (params: ExtractStepResponse): StepRunResponse | und
     }
 }
 
-async function uploadDisplayLog({ engineConstants, workflowExecutorContext }: UploadDisplayLogParams): Promise<string | undefined> {
+async function uploadDisplayLog({ engineConstants, workflowExecutorContext, steps: persistedSteps }: UploadDisplayLogParams): Promise<string | undefined> {
     const privacy = engineConstants.logPrivacy
     if (isNil(privacy)) {
         return undefined
     }
-    const { steps } = logRedaction.redactSteps({ steps: JSON.parse(JSON.stringify(workflowExecutorContext.steps)), privacy })
+    const { steps } = logRedaction.redactSteps({ steps: JSON.parse(JSON.stringify(persistedSteps)), privacy })
     const serialized = Buffer.from(JSON.stringify({
         executionState: { steps, tags: Array.from(workflowExecutorContext.tags) },
         version: EXECUTION_LOG_MANIFEST_V2,
@@ -282,4 +288,5 @@ type ExtractStepResponse = {
 type UploadDisplayLogParams = {
     engineConstants: EngineConstants
     workflowExecutorContext: WorkflowExecutorContext
+    steps: Readonly<Record<string, StepOutput>>
 }

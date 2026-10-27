@@ -16,6 +16,7 @@ import { useMemo } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { componentLogoUrl, componentsHooks } from '@/features/components';
 import { ConnectorIcon, connectorsHooks } from '@/features/connectors';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
@@ -165,6 +166,10 @@ function StepRow({
   const summary = isNil(step.connectorName)
     ? undefined
     : summaryByName.get(step.connectorName);
+  const { data: components } = componentsHooks.useComponents();
+  const component = isNil(step.componentType)
+    ? undefined
+    : components?.find((candidate) => candidate.type === step.componentType);
   const StepIcon = STEP_KIND_ICONS[step.kind];
   const title =
     step.kind === TemplateStepKind.CONNECTOR
@@ -173,6 +178,8 @@ function StepRow({
   const subtitle =
     step.kind === TemplateStepKind.CONNECTOR
       ? step.displayName
+      : step.kind === TemplateStepKind.COMPONENT
+      ? t('Core Components')
       : t(STEP_KIND_LABELS[step.kind]);
   return (
     <div className="flex min-w-0 items-center gap-3">
@@ -187,6 +194,14 @@ function StepRow({
           border={true}
           displayName={summary?.displayName}
           logoUrl={summary?.logoUrl}
+          showTooltip={false}
+        />
+      ) : step.kind === TemplateStepKind.COMPONENT ? (
+        <ConnectorIcon
+          size="sm"
+          border={true}
+          displayName={step.displayName}
+          logoUrl={componentLogoUrl(component?.icon ?? '')}
           showTooltip={false}
         />
       ) : (

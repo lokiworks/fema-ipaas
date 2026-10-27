@@ -24,6 +24,7 @@ function useWorkflowNames({
         }));
       },
       staleTime: 60_000,
+      retry: false,
     })),
     combine: (results) =>
       Object.fromEntries(

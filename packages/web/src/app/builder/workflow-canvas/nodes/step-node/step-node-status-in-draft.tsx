@@ -9,6 +9,7 @@ import { t } from 'i18next';
 import { TriangleAlert } from 'lucide-react';
 import React, { useMemo } from 'react';
 
+import { useDraftChanged } from '@/app/builder/builder-header/use-draft-changed';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
 import { InvalidStepIcon } from '@/components/custom/alert-icon';
@@ -80,6 +81,13 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       step,
     ];
   });
+
+  const workflow = useBuilderStateContext((state) => state.workflow);
+  const draftChanged = useDraftChanged({
+    baselineVersionId: workflow.publishedVersionId,
+  });
+  const matchesLiveVersion =
+    !isNil(workflow.publishedVersionId) && draftChanged === false;
 
   const validation = useBuilderValidation();
   const stepIssues = workflowValidator.issuesForStep({
@@ -204,6 +212,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
   const shouldShowDraftStatusBadge =
     isInDraft &&
     !hasRun &&
+    !(matchesLiveVersion && LIVE_HIDDEN_STATUSES.includes(status)) &&
     stepType !== WorkflowTriggerType.EMPTY &&
     !isManualTrigger &&
     !isSkipped;
@@ -251,6 +260,12 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     </StepNodeBadgeContainer>
   );
 };
+
+const LIVE_HIDDEN_STATUSES: DraftStepStatus[] = [
+  'needs-test',
+  'untested',
+  'tested',
+];
 
 StepNodeStatusInDraft.displayName = 'StepNodeStatusInDraft';
 export { StepNodeStatusInDraft };

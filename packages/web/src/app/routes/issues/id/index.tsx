@@ -87,7 +87,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
   const canReplay = checkAccess(Permission.WRITE_RUN);
   const { assignable, nameOf } = issueMembersHooks.useIssueMembers();
   const { mutate: update } = issuesHooks.useUpdateIssue(issue.id);
-  const workflowStopped = issuesHooks.useWorkflowStopped(issue.workflowId);
+  const workflow = issuesHooks.useWorkflowAvailability(issue.workflowId);
   const [replayStrategy, setReplayStrategy] =
     useState<WorkflowRetryStrategy | null>(null);
   const muted =
@@ -237,7 +237,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
           <InsightCard
             issue={issue}
             canReplay={canReplay}
-            workflowStopped={workflowStopped}
+            workflow={workflow}
             canWrite={canWrite}
             onReplay={setReplayStrategy}
             onIgnore={() => update({ status: IssueStatus.IGNORED })}
@@ -260,7 +260,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
                 <AffectedRunsCard
                   issueId={issue.id}
                   canReplay={canReplay}
-                  workflowStopped={workflowStopped}
+                  workflow={workflow}
                   onReplay={setReplayStrategy}
                 />
               </>
@@ -272,7 +272,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
           />
         </div>
         <div className="flex flex-col gap-4">
-          <OverviewCard issue={issue} nameOf={nameOf} />
+          <OverviewCard issue={issue} workflow={workflow} nameOf={nameOf} />
           <AlertsCard
             issueId={issue.id}
             kind={issue.kind}
@@ -363,14 +363,14 @@ function IssueBanners({
 function InsightCard({
   issue,
   canReplay,
-  workflowStopped,
+  workflow,
   canWrite,
   onReplay,
   onIgnore,
 }: {
   issue: IssueWithSeverity;
   canReplay: boolean;
-  workflowStopped: boolean;
+  workflow: WorkflowAvailability;
   canWrite: boolean;
   onReplay: (strategy: WorkflowRetryStrategy) => void;
   onIgnore: () => void;
@@ -397,19 +397,19 @@ function InsightCard({
       },
       [IssueFixKind.OPEN_STEP_INPUT]: {
         run: openWorkflow,
-        allowed: !!issue.workflowId,
+        allowed: !!issue.workflowId && !workflow.deleted,
       },
       [IssueFixKind.OPEN_STEP_ERROR_HANDLING]: {
         run: openWorkflow,
-        allowed: !!issue.workflowId,
+        allowed: !!issue.workflowId && !workflow.deleted,
       },
       [IssueFixKind.REPLAY_FROM_FAILED_STEP]: {
         run: () => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP),
-        allowed: canReplay && !workflowStopped,
+        allowed: canReplay && !workflow.stopped && !workflow.deleted,
       },
       [IssueFixKind.REPLAY_FULL]: {
         run: () => onReplay(WorkflowRetryStrategy.ON_LATEST_VERSION),
-        allowed: canReplay && !workflowStopped,
+        allowed: canReplay && !workflow.stopped && !workflow.deleted,
       },
       [IssueFixKind.OPEN_RUN]: {
         run: () =>
@@ -478,9 +478,7 @@ function InsightCard({
                           fix.disabledReason,
                           insight.blockedUntil,
                         )
-                      : workflowStopped && REPLAY_FIXES.includes(fix.kind)
-                      ? t('The workflow is stopped. Start it before rerunning')
-                      : null
+                      : workflowBlockedReason({ kind: fix.kind, workflow })
                   }
                 >
                   <Button
@@ -514,6 +512,22 @@ function InsightCard({
       </CardContent>
     </Card>
   );
+}
+
+function workflowBlockedReason({
+  kind,
+  workflow,
+}: {
+  kind: IssueFixKind;
+  workflow: WorkflowAvailability;
+}): string | null {
+  if (workflow.deleted && WORKFLOW_BOUND_FIXES.includes(kind)) {
+    return t('The workflow was deleted');
+  }
+  if (workflow.stopped && REPLAY_FIXES.includes(kind)) {
+    return t('The workflow is stopped. Start it before rerunning');
+  }
+  return null;
 }
 
 function DisabledReasonTooltip({
@@ -640,12 +654,12 @@ function TrendCard({ issueId }: { issueId: string }) {
 function AffectedRunsCard({
   issueId,
   canReplay,
-  workflowStopped,
+  workflow,
   onReplay,
 }: {
   issueId: string;
   canReplay: boolean;
-  workflowStopped: boolean;
+  workflow: WorkflowAvailability;
   onReplay: (strategy: WorkflowRetryStrategy) => void;
 }) {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
@@ -659,16 +673,15 @@ function AffectedRunsCard({
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{t('Affected runs')}</CardTitle>
         <DisabledReasonTooltip
-          reason={
-            workflowStopped
-              ? t('The workflow is stopped. Start it before rerunning')
-              : null
-          }
+          reason={workflowBlockedReason({
+            kind: IssueFixKind.REPLAY_FROM_FAILED_STEP,
+            workflow,
+          })}
         >
           <Button
             size="sm"
             variant="outline"
-            disabled={!canReplay || workflowStopped}
+            disabled={!canReplay || workflow.stopped || workflow.deleted}
             onClick={() => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP)}
           >
             <RotateCcw className="size-4 mr-1" />
@@ -677,6 +690,11 @@ function AffectedRunsCard({
         </DisabledReasonTooltip>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
+        {page && page.data.length === 0 && (
+          <p className="py-2 text-sm text-muted-foreground">
+            {t('issueAffectedRunsEmpty')}
+          </p>
+        )}
         <ul className="flex flex-col divide-y">
           {(page?.data ?? []).map((execution) => {
             const { variant } = executionUtils.getStatusIcon(execution.status);
@@ -799,9 +817,11 @@ function ActivityCard({
 
 function OverviewCard({
   issue,
+  workflow,
   nameOf,
 }: {
   issue: IssueWithSeverity;
+  workflow: WorkflowAvailability;
   nameOf: (userId: string | null) => string;
 }) {
   const rows: [string, string][] = [
@@ -824,7 +844,11 @@ function OverviewCard({
           ],
         ]
       : []),
-    [t('Workflow'), issue.workflowDisplayName ?? '—'],
+    [
+      t('Workflow'),
+      issue.workflowDisplayName ??
+        (workflow.deleted ? t('The workflow was deleted') : '—'),
+    ],
     [t('Step'), issue.stepDisplayName ?? '—'],
     [
       t('Assignee'),
@@ -917,8 +941,15 @@ const REPLAY_FIXES: IssueFixKind[] = [
   IssueFixKind.REPLAY_FROM_FAILED_STEP,
   IssueFixKind.REPLAY_FULL,
 ];
+const WORKFLOW_BOUND_FIXES: IssueFixKind[] = [
+  ...REPLAY_FIXES,
+  IssueFixKind.OPEN_STEP_INPUT,
+  IssueFixKind.OPEN_STEP_ERROR_HANDLING,
+];
 const RUNS_PAGE_SIZE = 8;
 const RUN_SHORT_ID_LENGTH = 6;
 const NOTE_MAX_LENGTH = 500;
+
+type WorkflowAvailability = { stopped: boolean; deleted: boolean };
 
 export { IssueDetailPage };

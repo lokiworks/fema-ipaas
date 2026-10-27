@@ -11,11 +11,22 @@ function explain({ message }: { message: string }): ErrorExplanation | null {
   return { headline: rule.headline(), hint: rule.hint() };
 }
 
-export const errorExplanation = { explain };
+export const errorExplanation = {
+  explain,
+  timeoutPatterns: () => TIMEOUT_PATTERNS,
+};
+
+const TIMEOUT_PATTERNS: RegExp[] = [
+  /\be(?:socket)?timedout\b/,
+  /\btimed out\b/,
+  /\btimeout of \d+\s*ms exceeded\b/,
+  /\b(?:connect|connection|request|response|read|socket|headers|body|gateway|operation|step)\s+time-?out\b/,
+  /\btimeout (?:error|exceeded|expired)\b/,
+];
 
 const RULES: ExplanationRule[] = [
   {
-    patterns: [/econnrefused/],
+    patterns: [/\beconnrefused\b/],
     headline: () => t('The other system refused the connection'),
     hint: () =>
       t(
@@ -23,7 +34,7 @@ const RULES: ExplanationRule[] = [
       ),
   },
   {
-    patterns: [/enotfound/, /getaddrinfo/, /eai_again/],
+    patterns: [/\benotfound\b/, /\bgetaddrinfo\b/, /\beai_again\b/],
     headline: () => t('The domain name could not be resolved'),
     hint: () =>
       t(
@@ -31,7 +42,7 @@ const RULES: ExplanationRule[] = [
       ),
   },
   {
-    patterns: [/etimedout/, /timed out/, /timeout/],
+    patterns: TIMEOUT_PATTERNS,
     headline: () => t('The other system did not respond in time'),
     hint: () =>
       t(
@@ -39,7 +50,7 @@ const RULES: ExplanationRule[] = [
       ),
   },
   {
-    patterns: [/econnreset/, /socket hang up/, /epipe/],
+    patterns: [/\beconnreset\b/, /socket hang up/, /\bepipe\b/],
     headline: () => t('The connection was closed by the other system'),
     hint: () =>
       t(

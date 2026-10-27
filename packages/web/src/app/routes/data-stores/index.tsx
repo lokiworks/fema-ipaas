@@ -20,6 +20,7 @@ import { useDebounce } from 'use-debounce';
 import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { MasterDetailLayout } from '@/components/custom/master-detail-layout';
 import { SearchInput } from '@/components/custom/search-input';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -126,29 +127,31 @@ function DataStoresPage() {
         </div>
       )}
       {(stores ?? []).length > 0 && (
-        <div className="grid grid-cols-[260px_1fr] gap-4 w-full">
-          <div className="flex flex-col gap-1">
-            {(stores ?? []).map((store) => (
-              <StoreListItem
-                key={store.id}
-                store={store}
-                active={store.id === selected?.id}
-                onSelect={() => {
-                  select(store.id);
-                }}
-              />
-            ))}
-          </div>
-          {selected && (
-            <StorePanel
-              key={selected.id}
-              store={selected}
-              canWrite={canWrite}
-              onEdit={() => openDialog(selected)}
-              onDelete={() => setDeleting(selected)}
+        <MasterDetailLayout
+          showDetail={requestedId !== null}
+          onBack={() => setSearchParams({})}
+          list={(stores ?? []).map((store) => (
+            <StoreListItem
+              key={store.id}
+              store={store}
+              active={store.id === selected?.id}
+              onSelect={() => {
+                select(store.id);
+              }}
             />
-          )}
-        </div>
+          ))}
+          detail={
+            selected && (
+              <StorePanel
+                key={selected.id}
+                store={selected}
+                canWrite={canWrite}
+                onEdit={() => openDialog(selected)}
+                onDelete={() => setDeleting(selected)}
+              />
+            )
+          }
+        />
       )}
       <DataStoreDialog
         open={dialogOpen}
@@ -324,7 +327,7 @@ function StorePanel({
       {isLoading ? (
         <Skeleton className="h-48 w-full" />
       ) : (
-        <Table className="table-fixed">
+        <Table className="table-fixed min-w-[640px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-44">{t('dataStoreKeyLabel')}</TableHead>
@@ -430,6 +433,7 @@ function StorePanel({
         entityName={deletingRecord?.key ?? ''}
         buttonText={t('Delete')}
         isDanger
+        showToast
         open={deletingRecord !== null}
         onOpenChange={(open) => {
           if (!open) {

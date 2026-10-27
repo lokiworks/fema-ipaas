@@ -40,8 +40,8 @@ export const applicationEvents = (log: FastifyBaseLogger) => ({
         listeners.userEventListeners.push(registration.userEvent(log))
         listeners.workerEventListeners.push(registration.workerEvent(log))
     },
-    sendUserEvent(requestOrMeta: ApplicationEventSource, params: RawAuditEventParam): void {
-        rejectedPromiseHandler(enrichAuditEventParam(requestOrMeta, params, log).then((event) => {
+    sendUserEvent(requestOrMeta: ApplicationEventSource, params: RawAuditEventParam, scope?: AuditEventScopeOverride): void {
+        rejectedPromiseHandler(enrichAuditEventParam(requestOrMeta, params, log, scope).then((event) => {
             if (!isNil(event)) {
                 for (const listener of listeners.userEventListeners) {
                     listener(event)
@@ -66,12 +66,12 @@ export const applicationEvents = (log: FastifyBaseLogger) => ({
 })
 
 
-async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, params: RawAuditEventParam, log: FastifyBaseLogger): Promise<ApplicationEvent | undefined> {
+async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, params: RawAuditEventParam, log: FastifyBaseLogger, scope: AuditEventScopeOverride | undefined): Promise<ApplicationEvent | undefined> {
     const meta = await extractMetaInformation(requestOrMeta, log)
     if (isNil(meta)) {
         return undefined
     }
-    const projectId = auditEventScope.projectIdFor({ action: params.action, projectId: meta.projectId })
+    const projectId = auditEventScope.projectIdFor({ action: params.action, projectId: scope?.projectId ?? meta.projectId })
     const project = isNil(projectId) ? undefined : await projectService(log).getOne(projectId)
     const userId = meta.userId ?? project?.ownerId
     const { data: user } = await tryCatch(async () => isNil(userId) ? undefined : userService(log).getOneOrFail({ id: userId }))
@@ -130,4 +130,8 @@ export type MetaInformation = {
     ip?: string
 }
 
-type ApplicationEventSource = FastifyRequest | MetaInformation
+type AuditEventScopeOverride = {
+    projectId: ProjectId
+}
+
+export type ApplicationEventSource = FastifyRequest | MetaInformation

@@ -133,7 +133,6 @@ function useRemoveMember() {
       queryClient.invalidateQueries({
         queryKey: tenantAccessKeys.resourcesRoot,
       });
-      toast.success(t('User removed'));
     },
     onError: showError,
   });

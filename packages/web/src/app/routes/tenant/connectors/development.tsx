@@ -441,7 +441,7 @@ const CLI_STEPS = [
   {
     icon: PackageIcon,
     title: () => t('Scaffold'),
-    command: 'fema connectors create',
+    command: 'connectors-cli connectors create',
     description: () =>
       t(
         'Generates a connector package under packages/connectors with the SDK wired up.',
@@ -450,7 +450,7 @@ const CLI_STEPS = [
   {
     icon: TerminalIcon,
     title: () => t('Add an action or trigger'),
-    command: 'fema actions create\nfema triggers create',
+    command: 'connectors-cli actions create\nconnectors-cli triggers create',
     description: () =>
       t(
         'Adds a typed action or trigger file and registers it on the connector.',
@@ -459,7 +459,7 @@ const CLI_STEPS = [
   {
     icon: PackageCheckIcon,
     title: () => t('Validate'),
-    command: 'fema connectors validate',
+    command: 'connectors-cli connectors validate',
     description: () =>
       t(
         'Checks the packaging rules that only surface after publishing: scoped name, exact version, pinned dependencies.',
@@ -468,7 +468,7 @@ const CLI_STEPS = [
   {
     icon: UploadIcon,
     title: () => t('Pack and publish'),
-    command: 'fema connectors pack\nfema connectors publish',
+    command: 'connectors-cli connectors pack\nconnectors-cli connectors publish',
     description: () =>
       t(
         'Builds the bundle, writes the registry manifest, and uploads it to this instance.',

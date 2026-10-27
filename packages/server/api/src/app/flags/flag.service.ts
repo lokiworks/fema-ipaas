@@ -113,6 +113,12 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
             {
+                id: FlagId.OPEN_SIGN_UP_ENABLED,
+                value: system.get(AppSystemProp.ALLOW_OPEN_SIGN_UP) === 'true',
+                created,
+                updated,
+            },
+            {
                 id: FlagId.THEME,
                 value: defaultTheme,
                 created,

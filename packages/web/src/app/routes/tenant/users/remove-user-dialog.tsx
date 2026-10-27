@@ -1,6 +1,7 @@
 import { OwnedResourceType, TenantMember } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -139,11 +140,16 @@ function RemoveUserBody({
           onClick={() =>
             remove(
               { userId: member.id, transferToUserId: recipient },
-              { onSuccess: () => onOpenChange(false) },
+              {
+                onSuccess: () => {
+                  toast.success(t('memberRemovedToast', { name }));
+                  onOpenChange(false);
+                },
+              },
             )
           }
         >
-          {t('Remove')}
+          {t('removeMemberButton')}
         </Button>
       </DialogFooter>
     </div>

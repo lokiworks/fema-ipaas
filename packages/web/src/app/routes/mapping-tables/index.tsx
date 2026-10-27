@@ -22,6 +22,7 @@ import {
   EmptyTitle,
 } from '@/components/custom/empty';
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { MasterDetailLayout } from '@/components/custom/master-detail-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,7 +68,8 @@ function MappingTablesPage() {
     projectId,
     true,
   );
-  const selectedId = searchParams.get('id') ?? tables?.[0]?.id ?? null;
+  const explicitId = searchParams.get('id');
+  const selectedId = explicitId ?? tables?.[0]?.id ?? null;
   const [creating, setCreating] = useState(false);
   const select = (id: string) => setSearchParams({ id });
 
@@ -101,29 +103,33 @@ function MappingTablesPage() {
           <EmptyContent>{newTableButton}</EmptyContent>
         </Empty>
       ) : (
-        <div className="grid grid-cols-[260px_1fr] gap-4 w-full">
-          <div className="flex flex-col gap-2">
-            {isLoading && <Skeleton className="h-32 w-full" />}
-            {(tables ?? []).map((table) => (
-              <TableListItem
-                key={table.id}
-                table={table}
-                active={table.id === selectedId}
-                onSelect={() => select(table.id)}
-              />
-            ))}
-          </div>
-          <div className="min-w-0">
-            {selectedId && (
+        <MasterDetailLayout
+          showDetail={explicitId !== null}
+          onBack={() => setSearchParams({})}
+          list={
+            <>
+              {isLoading && <Skeleton className="h-32 w-full" />}
+              {(tables ?? []).map((table) => (
+                <TableListItem
+                  key={table.id}
+                  table={table}
+                  active={table.id === selectedId}
+                  onSelect={() => select(table.id)}
+                />
+              ))}
+            </>
+          }
+          detail={
+            selectedId && (
               <MappingTableEditorLoader
                 key={selectedId}
                 id={selectedId}
                 canWrite={canWrite}
                 onDeleted={() => setSearchParams({})}
               />
-            )}
-          </div>
-        </div>
+            )
+          }
+        />
       )}
       <NewTableDialog
         open={creating}
@@ -229,14 +235,14 @@ function MappingTableEditor({
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-2">
-          <div className="flex flex-col gap-1">
-            <CardTitle>{table.name}</CardTitle>
+        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="flex min-w-0 flex-col gap-1">
+            <CardTitle className="break-words">{table.name}</CardTitle>
             <CardDescription>
               {t('Updated')} <FormattedDate date={new Date(table.updated)} />
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -275,7 +281,7 @@ function MappingTableEditor({
             </ConfirmationDeleteDialog>
           </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-3">
+        <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <LabeledInput
             label={t('Name')}
             value={draft.name}
@@ -309,7 +315,7 @@ function MappingTableEditor({
             showCounter
             onChange={(valueLabel) => setDraft({ ...draft, valueLabel })}
           />
-          <div className="col-span-2 flex flex-col gap-2">
+          <div className="flex flex-col gap-2 sm:col-span-2">
             <Label>{t('When a key is not found')}</Label>
             <RadioGroup
               value={draft.missingBehavior}
@@ -320,7 +326,7 @@ function MappingTableEditor({
                   missingBehavior: toMissingBehavior(value),
                 })
               }
-              className="flex gap-4"
+              className="flex flex-wrap gap-x-4 gap-y-2"
             >
               {Object.values(MappingMissingBehavior).map((behavior) => (
                 <label

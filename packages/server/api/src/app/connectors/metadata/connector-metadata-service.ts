@@ -14,6 +14,7 @@ import { resolveVisibility } from '../connector-visibility'
 import { connectorCache, ConnectorRegistryEntry } from './connector-cache'
 import { ConnectorMetadataEntity, ConnectorMetadataSchema } from './connector-metadata-entity'
 import { connectorListUtils, filterActionsByAudience, filterConnectorBasedOnType, findBundledReplacement, isNewerVersion, isSupportedRelease, lastVersionOfEachConnector, loadLocalConnectors } from './utils'
+import { connectorSearching, OriginalConnectorText } from './utils/connector-searching'
 
 export const connectorRepos = repoFactory(ConnectorMetadataEntity)
 
@@ -33,10 +34,12 @@ export const connectorMetadataService = (log: FastifyBaseLogger) => {
             const policy = await resolveVisibility({ tenantId: params.tenantId, projectId: params.projectId, log })
             const audience = params.audience ?? ConnectorAudienceFilter.HUMAN
             const audienceConnectors = translatedConnectors.map((connector) => ({ ...connector, actions: filterActionsByAudience(connector.actions, audience) }))
+            const originalTexts = await originalTextsForSearch({ tenantId: params.tenantId, locale, searchQuery: params.searchQuery, log })
             const sortedConnectors = await connectorListUtils(log).sortAndSearchConnectors({
                 ...params,
                 connectors: audienceConnectors,
                 suggestionType: params.suggestionType,
+                originalTexts,
             })
             const visibleConnectors = params.includeHidden ? sortedConnectors : sortedConnectors.filter((connector) => !connector.deprecated)
             const filteredConnectors = params.includeHidden || isNil(policy) ? visibleConnectors : policy.filterConnectors(visibleConnectors)
@@ -450,6 +453,14 @@ const increaseMajorVersion = (version: string): string => {
     return incrementedVersion
 }
 
+async function originalTextsForSearch({ tenantId, locale, searchQuery, log }: OriginalTextsForSearchParams): Promise<Record<string, OriginalConnectorText> | undefined> {
+    if (isNil(searchQuery) || searchQuery === '' || locale === LocalesEnum.ENGLISH) {
+        return undefined
+    }
+    const original = await dedupe(`list:${tenantId ?? ''}:${LocalesEnum.ENGLISH}`, () => fetchLatestConnectors({ tenantId, locale: LocalesEnum.ENGLISH, log }))
+    return connectorSearching.originalTextsOf(original)
+}
+
 async function fetchLatestConnectors({ tenantId, locale = LocalesEnum.ENGLISH, log }: FetchLatestConnectorsParams): Promise<ConnectorMetadataSchema[]> {
     const currentRelease = versionUtil.getCurrentRelease()
 
@@ -548,6 +559,13 @@ function filterRegistry(registry: ConnectorRegistryEntry[], params: { release: s
 }
 
 
+
+type OriginalTextsForSearchParams = {
+    tenantId: string | undefined
+    locale: LocalesEnum
+    searchQuery: string | undefined
+    log: FastifyBaseLogger
+}
 
 type ListParams = {
     projectId?: string

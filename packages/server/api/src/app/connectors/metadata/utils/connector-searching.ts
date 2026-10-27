@@ -11,6 +11,25 @@ export const connectorSearching = {
     search: (params: SearchParams): ConnectorMetadataSchema[] => {
         return filterBasedOnCategories(params.categories, filterBasedOnSearchQuery(params))
     },
+    originalTextsOf: (connectors: ConnectorMetadataSchema[]): Record<string, OriginalConnectorText> => {
+        return Object.fromEntries(connectors.map((connector) => [connector.name, {
+            text: textOf(connector),
+            actions: textsOf(connector.actions),
+            triggers: textsOf(connector.triggers),
+        }]))
+    },
+}
+
+function textOf({ displayName, description }: { displayName: string, description: string }): string {
+    return `${displayName} ${description}`
+}
+
+function textsOf(entries: Record<string, ActionBase | TriggerBase>): Record<string, string> {
+    return Object.fromEntries(Object.entries(entries).map(([name, entry]) => [name, textOf(entry)]))
+}
+
+function withOriginalText<T extends ActionBase | TriggerBase>(entries: T[], originals: Record<string, string> | undefined): (T & { originalText: string })[] {
+    return entries.map((entry) => ({ ...entry, originalText: originals?.[entry.name] ?? '' }))
 }
 
 type SearchParams = {
@@ -18,10 +37,17 @@ type SearchParams = {
     searchQuery: string | undefined
     connectors: ConnectorMetadataSchema[]
     suggestionType?: SuggestionType
+    originalTexts?: Record<string, OriginalConnectorText>
+}
+
+export type OriginalConnectorText = {
+    text: string
+    actions: Record<string, string>
+    triggers: Record<string, string>
 }
 
 
-const filterBasedOnSearchQuery = ({ searchQuery, connectors, suggestionType }: SearchParams): ConnectorMetadataSchema[] => {
+const filterBasedOnSearchQuery = ({ searchQuery, connectors, suggestionType, originalTexts }: SearchParams): ConnectorMetadataSchema[] => {
     if (!searchQuery) {
         return connectors
     }
@@ -37,8 +63,9 @@ const filterBasedOnSearchQuery = ({ searchQuery, connectors, suggestionType }: S
             : []
         return {
             ...connector,
-            actions,
-            triggers,
+            originalText: originalTexts?.[connector.name]?.text ?? '',
+            actions: withOriginalText(actions, originalTexts?.[connector.name]?.actions),
+            triggers: withOriginalText(triggers, originalTexts?.[connector.name]?.triggers),
         }
     })
 
@@ -55,6 +82,9 @@ const filterBasedOnSearchQuery = ({ searchQuery, connectors, suggestionType }: S
         'actions.description',
         'triggers.displayName',
         'triggers.description',
+        'originalText',
+        'actions.originalText',
+        'triggers.originalText',
     ]
 
     const fuse = new Fuse(putActionsAndTriggersInAnArray, {
@@ -78,7 +108,7 @@ const filterBasedOnSearchQuery = ({ searchQuery, connectors, suggestionType }: S
         if (fuseMatchedNames.has(connector.name)) {
             return false
         }
-        const haystack = `${connector.displayName} ${connector.name}`.toLowerCase()
+        const haystack = `${connector.displayName} ${connector.name} ${connector.originalText}`.toLowerCase()
         return tokens.some((token) => haystack.includes(token))
     })
 
@@ -96,6 +126,7 @@ const filterBasedOnSearchQuery = ({ searchQuery, connectors, suggestionType }: S
 
         return {
             ...item,
+            originalText: undefined,
             actions: suggestedActions,
             triggers: suggestedTriggers,
         }
@@ -113,7 +144,7 @@ const filterBasedOnCategories = (categories: ConnectorCategory[] | undefined, co
 }
 
 function searchForSuggestion<T extends ActionBase | TriggerBase>(
-    actionsOrTriggers: T[],
+    actionsOrTriggers: (T & { originalText: string })[],
     searchQuery: string,
     connectorDisplayName: string,
 ): Record<string, T> {
@@ -127,7 +158,7 @@ function searchForSuggestion<T extends ActionBase | TriggerBase>(
     const nestedFuse = new Fuse(actionsOrTriggerWithConnectorDisplayName, {
         isCaseSensitive: false,
         shouldSort: true,
-        keys: ['connectorDisplayName', 'displayName', 'description'],
+        keys: ['connectorDisplayName', 'displayName', 'description', 'originalText'],
         threshold: 0.2,
     })
     const suggestions = nestedFuse.search(searchQuery)
@@ -136,6 +167,7 @@ function searchForSuggestion<T extends ActionBase | TriggerBase>(
             filteredSuggestions[item.name] = {
                 ...item,
                 connectorDisplayName: undefined,
+                originalText: undefined,
             }
             return filteredSuggestions
         },

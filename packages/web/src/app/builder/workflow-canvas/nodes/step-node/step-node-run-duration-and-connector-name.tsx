@@ -1,5 +1,9 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { WorkflowTriggerType, workflowStructureUtil } from '@fema-ipaas/shared';
+import {
+  StepOutputStatus,
+  WorkflowTriggerType,
+  workflowStructureUtil,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Sparkles, Timer } from 'lucide-react';
 import { useMemo } from 'react';
@@ -11,11 +15,19 @@ import { executionUtils } from '@/features/executions';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
-const StepNodeRunDuration = ({ duration }: { duration: number }) => {
+const StepNodeRunDuration = ({
+  duration,
+  running,
+}: {
+  duration: number;
+  running: boolean;
+}) => {
   return (
     <div className="ml-2 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
       <Timer className="size-3" />
-      <span>{formatUtils.formatDuration(duration)}</span>
+      <span>
+        {running ? `${t('Running')}...` : formatUtils.formatDuration(duration)}
+      </span>
     </div>
   );
 };
@@ -91,7 +103,10 @@ const StepNodeRunDurationAndConnectorName = ({
         </span>
       )}
       {selectedStepOutput && (
-        <StepNodeRunDuration duration={selectedStepOutput?.duration ?? 0} />
+        <StepNodeRunDuration
+          duration={selectedStepOutput.duration ?? 0}
+          running={selectedStepOutput.status === StepOutputStatus.RUNNING}
+        />
       )}
     </div>
   );

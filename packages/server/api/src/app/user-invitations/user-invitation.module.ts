@@ -8,9 +8,11 @@ import { userIdentityService } from '../authentication/user-identity/user-identi
 import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { tenantGuards } from '../core/security/tenant-guards'
+import { applicationEvents } from '../helper/application-events'
 import { projectAccess } from '../project/project-access'
 import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
+import { invitationAuditEvents } from './invitation-audit-events'
 import { INVITATION_EXPIRY_SECONDS, userInvitationsService } from './user-invitation.service'
 
 export const invitationModule: FastifyPluginAsyncZod = async (app) => {
@@ -49,7 +51,11 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         const invitation = await userInvitationsService(request.log).finalizeInvitation({
             userInvitation: userInvitationRecord,
             invitationExpirySeconds: INVITATION_EXPIRY_SECONDS,
+            actor: request,
         })
+        if (type === InvitationType.PROJECT && status === InvitationStatus.PENDING) {
+            applicationEvents(request.log).sendUserEvent(request, invitationAuditEvents.sent({ email, role: projectRole ?? undefined }), { projectId: request.body.projectId })
+        }
         await reply.status(StatusCodes.CREATED).send(invitation)
     })
 
@@ -97,6 +103,9 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
             id: request.params.id,
             tenantId: request.principal.tenant.id,
         })
+        if (invitation.type === InvitationType.PROJECT && !isNil(invitation.projectId)) {
+            applicationEvents(request.log).sendUserEvent(request, invitationAuditEvents.revoked({ email: invitation.email, role: invitation.projectRoleId ?? undefined }), { projectId: invitation.projectId })
+        }
         await reply.status(StatusCodes.NO_CONTENT).send()
     })
 }

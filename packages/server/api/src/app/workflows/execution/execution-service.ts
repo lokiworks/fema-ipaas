@@ -74,6 +74,11 @@ export const executionService = (log: FastifyBaseLogger) => ({
             })
         }
 
+        if (params.excludeStepTests) {
+            query = query.andWhere({
+                stepNameToTest: IsNull(),
+            })
+        }
         if (params.workflowId) {
             query = query.andWhere({
                 workflowId: In(params.workflowId),
@@ -933,6 +938,7 @@ type ListParams = {
     failedStepMessage?: string
     executionIds?: ExecutionId[]
     includeArchived?: boolean
+    excludeStepTests?: boolean
     environment?: RunEnvironment
 }
 

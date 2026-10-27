@@ -26,6 +26,27 @@ describe('errorExplanation.explain', () => {
     expect(errorExplanation.explain({ message })?.headline).toBe(headline);
   });
 
+  it.each([
+    'ReferenceError: setTimeout is not defined',
+    'ReferenceError: clearTimeout is not defined',
+    'TypeError: setTimeout is not a function',
+  ])('does not mistake the code error %s for a timeout', (message) => {
+    expect(errorExplanation.explain({ message })).toBeNull();
+  });
+
+  it.each([
+    'timeout of 5000ms exceeded',
+    'Request timed out',
+    'connect ETIMEDOUT 10.0.0.1:443',
+    'ESOCKETTIMEDOUT',
+    'Gateway Timeout',
+    'Connection timeout',
+  ])('still explains the real timeout %s', (message) => {
+    expect(errorExplanation.explain({ message })?.headline).toBe(
+      'The other system did not respond in time',
+    );
+  });
+
   it('returns null for messages it does not know', () => {
     expect(
       errorExplanation.explain({ message: 'value is required' }),

@@ -28,6 +28,7 @@ export function useDebugRunProgress({
     workflowVersion,
     setRun,
     clearRun,
+    markDebugTested,
     selectStepByName,
     deselectStep,
     setLeftSidebar,
@@ -35,6 +36,7 @@ export function useDebugRunProgress({
     state.workflowVersion,
     state.setRun,
     state.clearRun,
+    state.markDebugTested,
     state.selectStepByName,
     state.deselectStep,
     state.setLeftSidebar,
@@ -47,6 +49,13 @@ export function useDebugRunProgress({
   const isDraft = workflowVersion.state === WorkflowVersionState.DRAFT;
 
   const returnToEditing = () => {
+    const finished = lastRun.current;
+    if (!isNil(finished)) {
+      markDebugTested({
+        run: finished,
+        workflowVersion: builderStore.getState().workflowVersion,
+      });
+    }
     clearRun(checkAccess(Permission.WRITE_WORKFLOW));
     const previous = selectionBeforeRun.current;
     if (isNil(previous)) {
@@ -54,7 +63,6 @@ export function useDebugRunProgress({
     } else {
       selectStepByName(previous, { fromAutoFocus: true });
     }
-    const finished = lastRun.current;
     toast.success(t('Debug passed. The draft is editable again.'), {
       duration: TOAST_DURATION_MS,
       ...(isNil(finished)
@@ -64,7 +72,7 @@ export function useDebugRunProgress({
               label: t('View debug records'),
               onClick: () => {
                 setLeftSidebar(LeftSideBarType.RUNS);
-                setRun(finished, workflowVersion);
+                setRun(finished, builderStore.getState().workflowVersion);
               },
             },
           }),
@@ -92,7 +100,7 @@ export function useDebugRunProgress({
         lastRun: lastRun.current,
       });
       lastRun.current = nextRun;
-      setRun(nextRun, workflowVersion);
+      setRun(nextRun, builderStore.getState().workflowVersion);
       const succeeded = response.execution.status === ExecutionStatus.SUCCEEDED;
       if (returnsToEditing && isDraft && succeeded) {
         finishedRunId.current = response.execution.id;

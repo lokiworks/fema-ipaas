@@ -6,6 +6,8 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 
+import { errorExplanation } from '@/lib/error-explanation';
+
 function listNodes({
   trigger,
   outputs,
@@ -50,6 +52,22 @@ function filterNodes({
   });
 }
 
+function selectedRowName({
+  rows,
+  selectedStep,
+}: {
+  rows: DebugNodeRow[];
+  selectedStep: string | null;
+}): string | null {
+  const onCanvas = rows.find((row) => row.stepName === selectedStep);
+  return (
+    onCanvas?.stepName ??
+    firstFailed(rows)?.stepName ??
+    rows[0]?.stepName ??
+    null
+  );
+}
+
 function firstFailed(rows: DebugNodeRow[]): DebugNodeRow | null {
   return rows.find((row) => row.status === DebugNodeStatus.FAILED) ?? null;
 }
@@ -83,6 +101,7 @@ export const debugRecordsUtils = {
   listNodes,
   filterNodes,
   firstFailed,
+  selectedRowName,
   troubleshootingHints,
 };
 
@@ -120,7 +139,7 @@ const HINT_RULES: { hint: DebugHint; patterns: RegExp[] }[] = [
     hint: DebugHint.RATE_LIMITED,
     patterns: [/\b429\b/, /rate limit/, /too many requests/],
   },
-  { hint: DebugHint.TIMEOUT, patterns: [/timeout/, /timed out/, /etimedout/] },
+  { hint: DebugHint.TIMEOUT, patterns: errorExplanation.timeoutPatterns() },
   {
     hint: DebugHint.CHECK_NETWORK,
     patterns: [

@@ -13,9 +13,13 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { AboveTriggerButton } from './above-trigger-button';
 
 const TestWorkflowWidget = () => {
-  const [workflowVersion, hideTestWidget, workflow] = useBuilderStateContext(
-    (state) => [state.workflowVersion, state.hideTestWidget, state.workflow],
-  );
+  const [workflowVersion, hideTestWidget, workflow, run] =
+    useBuilderStateContext((state) => [
+      state.workflowVersion,
+      state.hideTestWidget,
+      state.workflow,
+      state.run,
+    ]);
   const { data: tree } = projectWorkspaceHooks.useTree(workflow.projectId);
   const publishedVersionId = workflow.publishedVersionId;
   const workflowStatus =
@@ -49,6 +53,7 @@ const TestWorkflowWidget = () => {
     !isManualTrigger ||
     !workflowVersion.valid ||
     hideTestWidget ||
+    !isNil(run) ||
     !userHasPermissionToRun ||
     !isLiveContent ||
     workflowStatus !== WorkflowStatus.ENABLED

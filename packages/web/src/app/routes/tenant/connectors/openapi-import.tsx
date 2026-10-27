@@ -221,7 +221,7 @@ export default function OpenApiImportPage() {
           <CardContent className="flex flex-col gap-3">
             <p className="text-xs text-muted-foreground">
               {t(
-                'Save these under packages/connectors, then run fema connectors validate and fema connectors publish.',
+                'generatedFilesNextSteps',
               )}
             </p>
             {Object.entries(generated.files).map(([path, contents]) => (

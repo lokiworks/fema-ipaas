@@ -1,5 +1,6 @@
 import {
   CreateDataStoreRequestBody,
+  DataStoreSummary,
   UpdateDataStoreRequestBody,
   UpsertDataStoreRecordRequestBody,
 } from '@fema-ipaas/shared';
@@ -69,8 +70,15 @@ function useDeleteDataStore() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => dataStoresApi.delete(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [DATA_STORES_KEY] });
+    onSuccess: (_, id) => {
+      queryClient.setQueriesData<DataStoreSummary[]>(
+        { queryKey: [DATA_STORES_KEY, 'list'] },
+        (stores) => stores?.filter((store) => store.id !== id),
+      );
+      void queryClient.invalidateQueries({
+        queryKey: [DATA_STORES_KEY],
+        predicate: (query) => !query.queryKey.includes(id),
+      });
     },
     onError: showErrorToast,
   });
@@ -112,7 +120,6 @@ function useDeleteRecord() {
       dataStoresApi.deleteRecord({ id, key }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [DATA_STORES_KEY] });
-      toast.success(t('Record deleted'));
     },
     onError: showErrorToast,
   });

@@ -1,4 +1,7 @@
-import { UpsertMappingTableRequestBody } from '@fema-ipaas/shared';
+import {
+  MappingTableSummary,
+  UpsertMappingTableRequestBody,
+} from '@fema-ipaas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
@@ -114,8 +117,15 @@ function useDeleteMappingTable() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => mappingTablesApi.delete(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [MAPPING_TABLES_KEY] });
+    onSuccess: (_, id) => {
+      queryClient.setQueriesData<MappingTableSummary[]>(
+        { queryKey: [MAPPING_TABLES_KEY, 'list'] },
+        (tables) => tables?.filter((table) => table.id !== id),
+      );
+      void queryClient.invalidateQueries({
+        queryKey: [MAPPING_TABLES_KEY],
+        predicate: (query) => !query.queryKey.includes(id),
+      });
     },
     onError: (error) =>
       toast.error(

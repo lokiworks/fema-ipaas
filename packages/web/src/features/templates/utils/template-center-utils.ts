@@ -166,6 +166,10 @@ function toStepSummary(step: Step): TemplateStepSummary {
       step.type === WorkflowActionType.CONNECTOR
         ? step.settings.connectorName
         : null,
+    componentType:
+      step.type === WorkflowActionType.COMPONENT
+        ? step.settings.componentType
+        : null,
   };
 }
 
@@ -244,6 +248,7 @@ export type TemplateStepSummary = {
   displayName: string;
   kind: TemplateStepKind;
   connectorName: string | null;
+  componentType: string | null;
 };
 
 export type TemplateWorkflowSteps = {

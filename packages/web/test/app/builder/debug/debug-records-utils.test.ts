@@ -90,6 +90,21 @@ describe('debugRecordsUtils', () => {
     expect(debugRecordsUtils.firstFailed(rows)?.stepName).toBe('step_1');
   });
 
+  it('highlights the step selected on the canvas, falling back to the failed one', () => {
+    expect(
+      debugRecordsUtils.selectedRowName({ rows, selectedStep: 'step_2' }),
+    ).toBe('step_2');
+    expect(
+      debugRecordsUtils.selectedRowName({ rows, selectedStep: null }),
+    ).toBe('step_1');
+    expect(
+      debugRecordsUtils.selectedRowName({ rows, selectedStep: 'gone' }),
+    ).toBe('step_1');
+    expect(
+      debugRecordsUtils.selectedRowName({ rows: [], selectedStep: null }),
+    ).toBeNull();
+  });
+
   it('filters by status and by every keyword', () => {
     expect(
       debugRecordsUtils.filterNodes({
@@ -119,6 +134,11 @@ describe('debugRecordsUtils', () => {
     expect(debugRecordsUtils.troubleshootingHints('connect ETIMEDOUT')).toEqual(
       [DebugHint.TIMEOUT],
     );
+    expect(
+      debugRecordsUtils.troubleshootingHints(
+        'ReferenceError: setTimeout is not defined',
+      ),
+    ).toEqual([DebugHint.CHECK_REFERENCE]);
     expect(debugRecordsUtils.troubleshootingHints('something odd')).toEqual([
       DebugHint.READ_MESSAGE,
     ]);

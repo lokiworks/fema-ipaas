@@ -46,6 +46,16 @@ describe('signupNames', () => {
             ).toEqual({ firstName, lastName })
         })
 
+        it.each([
+            ['林晓', '林晓'],
+            ['林 晓', '林晓'],
+            ['  林   晓  ', '林晓'],
+        ])('keeps a Chinese name %s whole as %s', (fullName, firstName) => {
+            expect(
+                signupNames.splitFullName({ fullName, email: 'someone@fema.local' }),
+            ).toEqual({ firstName, lastName: '' })
+        })
+
         it('strips the characters the tenant name rule rejects', () => {
             expect(
                 signupNames.splitFullName({ fullName: 'J. Smith', email: 'j@fema.local' }),
@@ -139,8 +149,39 @@ describe('signupNames', () => {
             expect(signupNames.personalProjectName({ ownerName })).toBe(expected)
         })
 
+        it.each([
+            ['林晓', '林晓的项目'],
+            ['林晓 的租户', '林晓的项目'],
+            ['林晓的租户', '林晓的项目'],
+            ['六轮成员', '六轮成员的项目'],
+        ])('leaves no space after a Chinese name: %s -> %s', (ownerName, expected) => {
+            useLanguage(LocalesEnum.CHINESE_SIMPLIFIED)
+
+            expect(signupNames.personalProjectName({ ownerName })).toBe(expected)
+        })
+
         it('keeps a name that merely ends in the suffix word intact', () => {
             expect(signupNames.personalProjectName({ ownerName: ' Tenant' })).toBe("Tenant's Project")
+        })
+    })
+
+    describe('fullNameOf', () => {
+        it.each([
+            [{ firstName: '晓', lastName: '林' }, '林晓'],
+            [{ firstName: '六轮成员', lastName: '' }, '六轮成员'],
+            [{ firstName: 'Ahmad', lastName: 'Tash' }, 'Ahmad Tash'],
+            [{ firstName: ' Ahmad ', lastName: '' }, 'Ahmad'],
+        ])('puts %o together as %s', (names, expected) => {
+            expect(signupNames.fullNameOf(names)).toBe(expected)
+        })
+    })
+
+    describe('tenantNameFromPerson in Simplified Chinese', () => {
+        it('leaves no space after a Chinese given name and keeps one after a Latin name', () => {
+            useLanguage(LocalesEnum.CHINESE_SIMPLIFIED)
+
+            expect(signupNames.tenantNameFromPerson({ firstName: '林晓', email: 'a@fema.local' })).toBe('林晓的租户')
+            expect(signupNames.tenantNameFromPerson({ firstName: 'Ahmad', email: 'a@fema.local' })).toBe('Ahmad 的租户')
         })
     })
 })

@@ -322,11 +322,7 @@ function summarize({
           email: event.data.member.email,
           userNames,
         }),
-        role: projectRoleLabels.label(
-          Object.values(DefaultProjectRole).find(
-            (role) => role === event.data.member.role,
-          ),
-        ),
+        role: invitationRoleLabel(event.data.member.role),
       });
     case ApplicationEventName.MEMBER_REMOVED:
       return t('auditMemberRemoved', {
@@ -335,6 +331,15 @@ function summarize({
           email: event.data.member.email,
           userNames,
         }),
+      });
+    case ApplicationEventName.INVITATION_SENT:
+      return t('auditInvitationSent', {
+        email: event.data.invitation.email,
+        role: invitationRoleLabel(event.data.invitation.role),
+      });
+    case ApplicationEventName.INVITATION_REVOKED:
+      return t('auditInvitationRevoked', {
+        email: event.data.invitation.email,
       });
     case ApplicationEventName.TENANT_USER_REMOVED:
       return summarizeUserRemoved({
@@ -501,7 +506,15 @@ function userLabel({
   if (email) {
     return email;
   }
-  return id.includes('@') ? id : t('Deleted user');
+  return id.includes('@')
+    ? id
+    : t('deletedUserWithId', { id: shortId(id) });
+}
+
+function invitationRoleLabel(role: string | undefined): string {
+  return projectRoleLabels.label(
+    Object.values(DefaultProjectRole).find((candidate) => candidate === role),
+  );
 }
 
 function summarizeUserRemoved({
@@ -786,6 +799,9 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('auditActionConnectorPublished'),
   [ApplicationEventName.MEMBER_ADDED]: () => t('auditActionMemberAdded'),
   [ApplicationEventName.MEMBER_REMOVED]: () => t('auditActionMemberRemoved'),
+  [ApplicationEventName.INVITATION_SENT]: () => t('auditActionInvitationSent'),
+  [ApplicationEventName.INVITATION_REVOKED]: () =>
+    t('auditActionInvitationRevoked'),
   [ApplicationEventName.DATA_STORE_CREATED]: () =>
     t('auditActionDataStoreCreated'),
   [ApplicationEventName.DATA_STORE_UPDATED]: () =>

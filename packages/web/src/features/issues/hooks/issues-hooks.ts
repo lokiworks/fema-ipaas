@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { internalErrorToast } from '@/components/ui/sonner';
 import { workflowsApi } from '@/features/workflows';
 import { api } from '@/lib/api';
+import { notFoundError } from '@/lib/not-found-error';
 
 import { issuesApi } from '../api/issues-api';
 
@@ -63,14 +64,19 @@ function useIssue(id: string) {
   });
 }
 
-function useWorkflowStopped(workflowId: string | null | undefined) {
-  const { data } = useQuery({
-    queryKey: [ISSUES_KEY, 'workflow-stopped', workflowId],
+function useWorkflowAvailability(workflowId: string | null | undefined) {
+  const { data, error } = useQuery({
+    queryKey: [ISSUES_KEY, 'workflow-availability', workflowId],
     queryFn: () => workflowsApi.get(workflowId ?? ''),
     enabled: !isNil(workflowId),
-    select: (workflow) => workflow.status !== WorkflowStatus.ENABLED,
+    retry: (failureCount, failure) =>
+      !notFoundError.isNotFound(failure) && failureCount < 2,
+    select: (workflow) => workflow.status,
   });
-  return data === true;
+  return {
+    stopped: data !== undefined && data !== WorkflowStatus.ENABLED,
+    deleted: notFoundError.isNotFound(error),
+  };
 }
 
 function useActivities(id: string) {
@@ -281,7 +287,7 @@ export const issuesHooks = {
   useOverview,
   useSummary,
   useIssue,
-  useWorkflowStopped,
+  useWorkflowAvailability,
   useActivities,
   useExecutions,
   useTrend,

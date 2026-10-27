@@ -204,12 +204,16 @@ function AuthStep({
   const { data: userCreated } = flagsHooks.useFlag<boolean>(
     FlagId.USER_CREATED,
   );
+  const { data: openSignUpFlag } = flagsHooks.useFlag<boolean>(
+    FlagId.OPEN_SIGN_UP_ENABLED,
+  );
   // Absent, not false: the flag has no row until the first account exists, so a
   // fresh install omits it from /v1/flags entirely. Flags are loaded through a
   // suspense query, so undefined here means missing rather than still loading.
   const firstUser = userCreated !== true;
   const effectiveMode: AuthMode = firstUser ? 'signup' : mode;
   const emailAuthEnabled = emailAuthEnabledFlag ?? true;
+  const showModeSwitch = !firstUser && ((openSignUpFlag ?? true) || mode === 'signup');
   const passwordlessAvailable = usePasswordlessAvailable();
   const { data: ssoData } = ssoHooks.useProviders();
   const ssoProviders = ssoData?.providers ?? [];
@@ -294,7 +298,7 @@ function AuthStep({
         ) : (
           <SignInForm />
         )}
-        {!firstUser && <ModeSwitch mode={mode} onSwitch={setMode} />}
+        {showModeSwitch && <ModeSwitch mode={mode} onSwitch={setMode} />}
       </DrawerShell>
     );
   }

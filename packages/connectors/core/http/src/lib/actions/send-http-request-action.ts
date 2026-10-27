@@ -42,11 +42,11 @@ export const httpSendRequestAction = createAction({
     }),
     headers: Property.Object({
       displayName: 'Headers',
-      required: true,
+      required: false,
     }),
     queryParams: Property.Object({
       displayName: 'Query params',
-      required: true,
+      required: false,
     }),
     authType: Property.StaticDropdown<AuthType>({
       displayName: 'Authentication',

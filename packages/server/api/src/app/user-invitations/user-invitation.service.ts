@@ -5,6 +5,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { EntityManager, IsNull } from 'typeorm'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
+import { ApplicationEventSource, applicationEvents } from '../helper/application-events'
 import { domainHelper } from '../helper/domain-helper'
 import { emailService } from '../helper/email/email-service'
 import { JwtAudience, jwtUtils } from '../helper/jwt-utils'
@@ -13,6 +14,7 @@ import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { projectMemberSideEffects } from '../project/project-member-side-effects'
 import { projectMemberService } from '../project/project-member.service'
 import { userService } from '../user/user-service'
+import { invitationAuditEvents } from './invitation-audit-events'
 import { UserInvitationEntity } from './user-invitation.entity'
 
 export const userInvitationRepo = repoFactory(UserInvitationEntity)
@@ -47,7 +49,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         }
         return invitation
     },
-    async provisionUserInvitation({ email }: ProvisionUserInvitationParams): Promise<void> {
+    async provisionUserInvitation({ email, actor }: ProvisionUserInvitationParams): Promise<void> {
         const invitations = await repo().createQueryBuilder('user_invitation')
             .where('LOWER("user_invitation"."email") = :email', { email: email.toLowerCase().trim() })
             .andWhere({
@@ -81,11 +83,17 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
                 case InvitationType.PROJECT: {
                     const { projectId } = invitation
                     assertNotNullOrUndefined(projectId, 'projectId')
+                    const role = toProjectRole(invitation.projectRoleId)
                     await projectMemberService(log).upsert({
                         projectId,
                         userId: user.id,
-                        role: toProjectRole(invitation.projectRoleId),
+                        role,
                     })
+                    applicationEvents(log).sendUserEvent(
+                        actor ?? { tenantId: invitation.tenantId, userId: user.id, projectId },
+                        invitationAuditEvents.memberJoined({ userId: user.id, role, email: invitation.email }),
+                        { projectId },
+                    )
                     break
                 }
             }
@@ -127,11 +135,13 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
     async finalizeInvitation({
         userInvitation,
         invitationExpirySeconds,
+        actor,
     }: FinalizeInvitationParams): Promise<UserInvitationWithLink> {
         if (userInvitation.status === InvitationStatus.ACCEPTED) {
             await this.accept({
                 invitationId: userInvitation.id,
                 tenantId: userInvitation.tenantId,
+                actor,
             })
             const memberUserId = isNil(userInvitation.projectId) ? null : await projectMemberSideEffects(log).findUserIdByEmail({ email: userInvitation.email, tenantId: userInvitation.tenantId })
             if (!isNil(userInvitation.projectId) && !isNil(memberUserId)) {
@@ -204,7 +214,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         }
         return invitation
     },
-    async accept({ invitationId, tenantId }: AcceptParams): Promise<AcceptResult> {
+    async accept({ invitationId, tenantId, actor }: AcceptParams): Promise<AcceptResult> {
         const invitation = await this.getOneOrThrow({ id: invitationId, tenantId })
         await repo().update(invitation.id, {
             status: InvitationStatus.ACCEPTED,
@@ -215,6 +225,7 @@ export const userInvitationsService = (log: FastifyBaseLogger) => ({
         }
         await this.provisionUserInvitation({
             email: invitation.email,
+            actor,
         })
         return { registered: true }
     },
@@ -306,6 +317,7 @@ type HasAnyAcceptedInvitationsParams = {
 }
 type ProvisionUserInvitationParams = {
     email: string
+    actor?: ApplicationEventSource
 }
 
 type TenantAndIdParams = {
@@ -320,6 +332,7 @@ export type UserInvitationToken = {
 type AcceptParams = {
     invitationId: string
     tenantId: string
+    actor?: ApplicationEventSource
 }
 
 type AcceptResult = {
@@ -341,6 +354,7 @@ export type CreateInvitationRecordParams = {
 export type FinalizeInvitationParams = {
     userInvitation: UserInvitation
     invitationExpirySeconds: number
+    actor?: ApplicationEventSource
 }
 
 type GetOneByTenantIdAndEmailParams = {

@@ -35,6 +35,7 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { personName } from '@/lib/person-name';
 import { recentVisits } from '@/lib/recent-visits';
 
 export function WorkspaceHomePage() {
@@ -78,7 +79,11 @@ export function WorkspaceHomePage() {
   return (
     <div className="flex w-full max-w-[1440px] flex-col gap-6 p-6">
       <HomeHero
-        userName={user?.firstName || user?.email || ''}
+        userName={personName.formatWithFallback({
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          fallback: user?.email ?? '',
+        })}
         tenantName={tenant.name}
         now={now}
         newWorkflowDisabledReason={newWorkflowDisabledReason}

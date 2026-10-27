@@ -233,12 +233,48 @@ describe('templateCenterUtils.workflowStepsOf', () => {
       displayName: 'New approval',
       kind: TemplateStepKind.CONNECTOR,
       connectorName: '@fema-ipaas/connector-feishu',
+      componentType: null,
     });
     expect(
       steps.actions.map((step) => [step.kind, step.connectorName]),
     ).toEqual([
       [TemplateStepKind.CONNECTOR, '@fema-ipaas/connector-slack'],
       [TemplateStepKind.CODE, null],
+    ]);
+  });
+
+  it('keeps the component type of a component step', () => {
+    const base = workflow();
+    const withComponent: WorkflowVersionTemplate = {
+      ...base,
+      trigger: {
+        ...base.trigger,
+        nextAction: {
+          name: 'step_9',
+          displayName: 'Return HTTP response',
+          valid: true,
+          lastUpdatedDate: NOW,
+          type: WorkflowActionType.COMPONENT,
+          settings: {
+            componentType: 'http-response',
+            propertySettings: {},
+            input: {},
+            errorHandlingOptions: undefined,
+          },
+        },
+      },
+    };
+    const [steps] = templateCenterUtils.workflowStepsOf(
+      template({ workflows: [withComponent] }),
+    );
+    expect(steps.actions).toEqual([
+      {
+        name: 'step_9',
+        displayName: 'Return HTTP response',
+        kind: TemplateStepKind.COMPONENT,
+        connectorName: null,
+        componentType: 'http-response',
+      },
     ]);
   });
 

@@ -20,12 +20,14 @@ import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
 import { unpublishedChanges } from './unpublished-changes';
-import { useDraftChanged } from './use-draft-changed';
+import { useActualDraft, useDraftChanged } from './use-draft-changed';
 
 export function WorkflowStateTags() {
-  const [workflow, workflowVersion, editLockHolder] = useBuilderStateContext(
-    (state) => [state.workflow, state.workflowVersion, state.editLockHolder],
-  );
+  const [workflow, editLockHolder] = useBuilderStateContext((state) => [
+    state.workflow,
+    state.editLockHolder,
+  ]);
+  const actualDraft = useActualDraft();
   const snapshotVersionId = useBuilderSnapshotVersionId();
   const { project } = projectCollectionUtils.useCurrentProject();
   const { checkAccess } = useAuthorization();
@@ -35,6 +37,7 @@ export function WorkflowStateTags() {
     baselineVersionId: project.releasesEnabled
       ? workflow.testVersionId
       : workflow.publishedVersionId,
+    ofActualDraft: true,
   });
   const { data: overview } = releasesHooks.useEnvironments({
     projectId: project.id,
@@ -63,7 +66,7 @@ export function WorkflowStateTags() {
     (project.releasesEnabled && !isNil(workflow.testVersionId));
   const hasUnpublishedChanges = unpublishedChanges.hasUnpublishedChanges({
     hasDeployment,
-    isDraft: workflowVersion.state === WorkflowVersionState.DRAFT,
+    isDraft: actualDraft?.state === WorkflowVersionState.DRAFT,
     draftChanged,
   });
 
@@ -113,10 +116,16 @@ export function WorkflowMetaLine() {
   const snapshotVersionId = useBuilderSnapshotVersionId();
   const { project } = projectCollectionUtils.useCurrentProject();
   const numbers = useVersionNumbers(workflow.id);
+  const draftChanged = useDraftChanged({
+    baselineVersionId: project.releasesEnabled
+      ? workflow.testVersionId
+      : workflow.publishedVersionId,
+  });
   const isEditing =
     isNil(snapshotVersionId) &&
     !readonly &&
-    workflowVersion.state === WorkflowVersionState.DRAFT;
+    workflowVersion.state === WorkflowVersionState.DRAFT &&
+    draftChanged !== false;
   const productionLabel = versionNumbers.label({
     numbers,
     versionId: workflow.publishedVersionId,

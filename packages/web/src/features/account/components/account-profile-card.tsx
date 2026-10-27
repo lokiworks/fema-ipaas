@@ -101,7 +101,7 @@ function ProfileNameForm({ initialName }: { initialName: string }) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Name')}</FormLabel>
+              <FormLabel>{t('Full name')}</FormLabel>
               <div className="flex items-center gap-2">
                 <FormControl>
                   <Input {...field} maxLength={20} className="max-w-sm" />

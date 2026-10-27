@@ -43,6 +43,8 @@ export enum ApplicationEventName {
     CONNECTOR_PUBLISHED = 'connector.published',
     MEMBER_ADDED = 'member.added',
     MEMBER_REMOVED = 'member.removed',
+    INVITATION_SENT = 'invitation.sent',
+    INVITATION_REVOKED = 'invitation.revoked',
     EXECUTION_PAYLOAD_REVEALED = 'workflow.run.payload.revealed',
     EXECUTION_PAYLOAD_REVEAL_DENIED = 'workflow.run.payload.reveal.denied',
     ISSUE_REPLAYED = 'issue.replayed',
@@ -419,6 +421,21 @@ export const MemberRemovedEvent = z.object({
 })
 export type MemberRemovedEvent = z.infer<typeof MemberRemovedEvent>
 
+export const InvitationEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.INVITATION_SENT),
+        z.literal(ApplicationEventName.INVITATION_REVOKED),
+    ]),
+    data: z.object({
+        invitation: z.object({
+            email: z.string(),
+            role: z.string().optional(),
+        }),
+    }),
+})
+export type InvitationEvent = z.infer<typeof InvitationEvent>
+
 const AuthenticationEventData = z.object({
     user: UserMeta.optional(),
     method: z.enum(['password', 'code', 'sso']).optional(),
@@ -726,6 +743,7 @@ export const ApplicationEvent = z.union([
     SignUpEvent,
     ConnectorPublishedEvent,
     MemberEvent,
+    InvitationEvent,
     ExecutionPayloadRevealedEvent,
     ExecutionPayloadRevealDeniedEvent,
     IssueReplayedEvent,
@@ -823,6 +841,10 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `User ${event.data.member.userId} was added as ${event.data.member.role}`
         case ApplicationEventName.MEMBER_REMOVED:
             return `User ${event.data.member.userId} was removed from the project`
+        case ApplicationEventName.INVITATION_SENT:
+            return `An invitation was sent to ${event.data.invitation.email}`
+        case ApplicationEventName.INVITATION_REVOKED:
+            return `The invitation to ${event.data.invitation.email} was revoked`
         case ApplicationEventName.TENANT_USERS_INVITED:
         case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
         case ApplicationEventName.TENANT_USER_REMOVED:

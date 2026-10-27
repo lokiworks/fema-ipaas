@@ -3,11 +3,13 @@ import { z } from 'zod'
 import { EmailType, PasswordType } from '../../user/user'
 import { MAX_CAPTCHA_TOKEN_LENGTH } from './passwordless-request'
 
+const OPTIONAL_SAFE_STRING_PATTERN = /^[^./]*$/
+
 export const SignUpRequest = z.object({
     email: EmailType,
     password: PasswordType,
     firstName: z.string().regex(new RegExp(SAFE_STRING_PATTERN)),
-    lastName: z.string().regex(new RegExp(SAFE_STRING_PATTERN)),
+    lastName: z.string().regex(OPTIONAL_SAFE_STRING_PATTERN),
     trackEvents: z.boolean(),
     newsLetter: z.boolean(),
     captchaToken: z.string().trim().min(1).max(MAX_CAPTCHA_TOKEN_LENGTH).optional(),

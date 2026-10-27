@@ -58,6 +58,7 @@ function RunRecord() {
     updateSampleData,
     clearRun,
     readonly,
+    selectedStep,
   ] = useBuilderStateContext((state) => [
     state.run,
     state.workflowVersion.trigger,
@@ -67,14 +68,14 @@ function RunRecord() {
     state.updateSampleData,
     state.clearRun,
     state.readonly,
+    state.selectedStep,
   ]);
   const { checkAccess } = useAuthorization();
   const displayNumbers = useStepDisplayNumbers();
   useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
   const [status, setStatus] = useState<DebugNodeStatus | 'ALL'>('ALL');
   const [query, setQuery] = useState('');
-  const [picked, setPicked] = useState<string | null>(null);
-  const [tab, setTab] = useState<RecordTab | null>(null);
+  const [tabChoice, setTabChoice] = useState<TabChoice | null>(null);
 
   const outputs = useMemo(() => {
     const steps = run?.steps ?? {};
@@ -91,14 +92,20 @@ function RunRecord() {
     () => debugRecordsUtils.listNodes({ trigger, outputs, displayNumbers }),
     [trigger, outputs, displayNumbers],
   );
-  const failed = debugRecordsUtils.firstFailed(rows);
-  const selectedName = picked ?? failed?.stepName ?? rows[0]?.stepName ?? null;
+  const selectedName = debugRecordsUtils.selectedRowName({
+    rows,
+    selectedStep,
+  });
   const selectedOutput = isNil(selectedName)
     ? undefined
     : outputs[selectedName];
   const errorText = errorOf(selectedOutput);
   const activeTab: RecordTab =
-    tab ?? (isNil(errorText) ? RecordTab.OUTPUT : RecordTab.ERROR);
+    tabChoice?.stepName === selectedName
+      ? tabChoice.tab
+      : isNil(errorText)
+      ? RecordTab.OUTPUT
+      : RecordTab.ERROR;
   const visibleRows = debugRecordsUtils.filterNodes({ rows, status, query });
 
   if (isNil(run)) {
@@ -179,11 +186,7 @@ function RunRecord() {
                 key={row.stepName}
                 row={row}
                 selected={row.stepName === selectedName}
-                onSelect={() => {
-                  setPicked(row.stepName);
-                  setTab(null);
-                  selectStepByName(row.stepName);
-                }}
+                onSelect={() => selectStepByName(row.stepName)}
               />
             ))}
           </div>
@@ -191,7 +194,9 @@ function RunRecord() {
         {!isNil(selectedName) && (
           <Tabs
             value={activeTab}
-            onValueChange={(value) => setTab(toTab(value))}
+            onValueChange={(value) =>
+              setTabChoice({ stepName: selectedName, tab: toTab(value) })
+            }
             className="flex min-h-0 flex-1 flex-col"
           >
             <div className="flex items-center justify-between gap-2 px-3 pt-2">
@@ -266,7 +271,12 @@ function NodeRow({
       <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
         {row.displayNumber}
       </span>
-      {!isNil(row.durationMs) && (
+      {row.status === DebugNodeStatus.RUNNING && (
+        <span className="shrink-0 text-[11px] text-muted-foreground">
+          {t('Running')}...
+        </span>
+      )}
+      {row.status !== DebugNodeStatus.RUNNING && !isNil(row.durationMs) && (
         <span className="shrink-0 text-[11px] text-muted-foreground">
           {formatUtils.formatDuration(row.durationMs)}
         </span>
@@ -336,6 +346,8 @@ function toTab(value: string): RecordTab {
     RecordTab.OUTPUT
   );
 }
+
+type TabChoice = { stepName: string; tab: RecordTab };
 
 enum RecordTab {
   INPUT = 'input',

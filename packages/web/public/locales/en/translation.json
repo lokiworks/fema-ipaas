@@ -6396,5 +6396,15 @@
   "Removed {name} from the project": "Removed {name} from the project",
   "removeMemberAction": "Remove",
   "invitationRevokeConsequence": "The invitation link stops working right away, and they can no longer join through it.",
-  "Invite link created": "Invite link created"
+  "Invite link created": "Invite link created",
+  "Back to list": "Back to list",
+  "memberRemovedToast": "Removed {name}",
+  "removeMemberButton": "Remove",
+  "issueAffectedRunsEmpty": "No runs to show. They may have been cleaned up after the retention period.",
+  "auditActionInvitationSent": "Invitation sent",
+  "auditActionInvitationRevoked": "Invitation revoked",
+  "auditInvitationSent": "Invited {email} to the project as \"{role}\"",
+  "auditInvitationRevoked": "Revoked the invitation to {email}",
+  "deletedUserWithId": "Deleted user ({id})",
+  "generatedFilesNextSteps": "Save these under packages/connectors, then validate and publish them with the connector command line tool."
 }

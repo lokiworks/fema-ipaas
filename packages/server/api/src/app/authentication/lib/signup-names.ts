@@ -5,19 +5,20 @@ import { AppSystemProp } from '../../helper/system/system-props'
 const MAX_NAME_PART_LENGTH = 50
 const FALLBACK_FIRST_NAME = 'there'
 const SAFE_STRING_CHARS = /[./]/g
+const CJK_PATTERN = /[㐀-鿿豈-﫿]/
 
 const NAME_FORMS: Record<LocalesEnum, NameForms> = {
     [LocalesEnum.ENGLISH]: {
         tenant: (name) => `${possessive(name)} Tenant`,
         project: (name) => `${possessive(name)} Project`,
         fallbackTenant: 'My Tenant',
-        tenantSuffix: ' Tenant',
+        tenantPattern: /^(.+) Tenant$/,
     },
     [LocalesEnum.CHINESE_SIMPLIFIED]: {
-        tenant: (name) => `${name} 的租户`,
-        project: (name) => `${name} 的项目`,
+        tenant: (name) => `${spacedBeforeChinese(name)}的租户`,
+        project: (name) => `${spacedBeforeChinese(name)}的项目`,
         fallbackTenant: '我的租户',
-        tenantSuffix: ' 的租户',
+        tenantPattern: /^(.+?)\s*的租户$/,
     },
 }
 
@@ -58,10 +59,23 @@ function tenantNameFor(name: string): string {
 function personalProjectName({ ownerName }: PersonalProjectNameParams): string {
     const forms = nameForms()
     const trimmed = ownerName.trim()
-    const suffixes = Object.values(NAME_FORMS).map((candidate) => candidate.tenantSuffix)
-    const suffix = suffixes.find((candidate) => trimmed.endsWith(candidate) && trimmed.length > candidate.length)
-    const withoutSuffix = isNil(suffix) ? trimmed : trimmed.slice(0, -suffix.length)
+    const withoutSuffix = Object.values(NAME_FORMS)
+        .map((candidate) => candidate.tenantPattern.exec(trimmed)?.[1])
+        .find((stripped) => !isNil(stripped)) ?? trimmed
     return forms.project(withoutSuffix.replace(/['’]s$/, ''))
+}
+
+function fullNameOf({ firstName, lastName }: FullNameOfParams): string {
+    const first = firstName.trim()
+    const last = lastName.trim()
+    if (CJK_PATTERN.test(`${first}${last}`)) {
+        return `${last}${first}`
+    }
+    return [first, last].filter((part) => part.length > 0).join(' ')
+}
+
+function spacedBeforeChinese(name: string): string {
+    return CJK_PATTERN.test(name.slice(-1)) ? name : `${name} `
 }
 
 function possessive(name: string): string {
@@ -77,6 +91,9 @@ function splitFullName({ fullName, email }: SplitFullNameParams): SplitName {
     if (isNil(first)) {
         return { firstName: firstNameFromEmail(email), lastName: '' }
     }
+    if (CJK_PATTERN.test(tokens.join(''))) {
+        return { firstName: tokens.join('').slice(0, MAX_NAME_PART_LENGTH), lastName: '' }
+    }
     return {
         firstName: first.slice(0, MAX_NAME_PART_LENGTH),
         lastName: rest.join(' ').slice(0, MAX_NAME_PART_LENGTH),
@@ -87,6 +104,7 @@ export const signupNames = {
     firstNameFromEmail,
     tenantNameFromPerson,
     personalProjectName,
+    fullNameOf,
     splitFullName,
 }
 
@@ -94,7 +112,12 @@ type NameForms = {
     tenant: (name: string) => string
     project: (name: string) => string
     fallbackTenant: string
-    tenantSuffix: string
+    tenantPattern: RegExp
+}
+
+type FullNameOfParams = {
+    firstName: string
+    lastName: string
 }
 
 type PersonalProjectNameParams = {

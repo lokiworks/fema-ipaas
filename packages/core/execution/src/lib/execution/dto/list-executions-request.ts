@@ -18,6 +18,7 @@ export const ListExecutionsRequestQuery = z.object({
     executionIds: OptionalArrayFromQuery(EntityId),
     includeArchived: OptionalBooleanFromQuery,
     environment: z.enum(RunEnvironment).optional(),
+    excludeStepTests: OptionalBooleanFromQuery,
 })
 
 export type ListExecutionsRequestQuery = z.infer<typeof ListExecutionsRequestQuery>

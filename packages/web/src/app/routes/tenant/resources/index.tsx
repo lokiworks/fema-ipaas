@@ -150,7 +150,7 @@ export default function ResourcesPage() {
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : (
-          <Table className="min-w-[48rem]">
+          <Table className="table-fixed min-w-[40rem]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10">
@@ -166,11 +166,11 @@ export default function ResourcesPage() {
                   />
                 </TableHead>
                 <TableHead>{t('Name')}</TableHead>
-                <TableHead className="w-32">{t('Type')}</TableHead>
-                <TableHead className="w-40">{t('Scope')}</TableHead>
-                <TableHead className="w-40">{t('Owner')}</TableHead>
-                <TableHead className="w-32">{t('Updated')}</TableHead>
-                <TableHead className="w-28">{t('Actions')}</TableHead>
+                <TableHead className="w-24">{t('Type')}</TableHead>
+                <TableHead className="w-32">{t('Scope')}</TableHead>
+                <TableHead className="w-24">{t('Owner')}</TableHead>
+                <TableHead className="w-28">{t('Updated')}</TableHead>
+                <TableHead className="w-20">{t('Actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -196,7 +196,7 @@ export default function ResourcesPage() {
                       }
                     />
                   </TableCell>
-                  <TableCell className="max-w-64">
+                  <TableCell className="min-w-0">
                     <TextWithTooltip tooltipMessage={resource.name}>
                       <p className="truncate">{resource.name}</p>
                     </TextWithTooltip>

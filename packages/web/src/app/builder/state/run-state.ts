@@ -4,8 +4,6 @@ import {
   WorkflowActionType,
   WorkflowOperationType,
   Execution,
-  RunEnvironment,
-  StepOutputStatus,
   workflowOperations,
   workflowStructureUtil,
   WorkflowVersion,
@@ -20,9 +18,10 @@ import { StoreApi } from 'zustand';
 
 import { internalErrorToast } from '@/components/ui/sonner';
 import { executionUtils } from '@/features/executions';
-import { versionDiff } from '@/features/releases/utils/version-diff';
 
 import { BuilderState } from '../builder-hooks';
+
+import { DebugTestedStep, debugTestedStepsUtils } from './debug-tested-steps';
 
 export type UpdateSampleDataParams = {
   stepName: string;
@@ -85,10 +84,15 @@ export const createRunState = (
     debugTestedSteps: {},
     markDebugTested: ({ run, workflowVersion }) =>
       set((state) => ({
-        debugTestedSteps: {
-          ...debugTestedStepsOf({ run, workflowVersion }),
-          ...state.debugTestedSteps,
-        },
+        debugTestedSteps: debugTestedStepsUtils.merge({
+          older: state.debugTestedSteps,
+          newer: debugTestedStepsUtils.testedStepsOf({
+            run,
+            runVersion: workflowVersion,
+            currentVersion: state.workflowVersion,
+            observedAt: new Date().toISOString(),
+          }),
+        }),
       })),
     loopsIndexes:
       initialState.run && initialState.run.steps
@@ -112,10 +116,15 @@ export const createRunState = (
         return {
           loopsIndexes,
           run,
-          debugTestedSteps: {
-            ...state.debugTestedSteps,
-            ...debugTestedStepsOf({ run, workflowVersion }),
-          },
+          debugTestedSteps: debugTestedStepsUtils.merge({
+            older: state.debugTestedSteps,
+            newer: debugTestedStepsUtils.testedStepsOf({
+              run,
+              runVersion: workflowVersion,
+              currentVersion: workflowVersion,
+              observedAt: new Date().toISOString(),
+            }),
+          }),
           workflowVersion,
           readonly: true,
           userManuallySelectedStepDuringRun: isNewRun
@@ -453,44 +462,4 @@ export const createRunState = (
       });
     },
   };
-};
-
-function debugTestedStepsOf({
-  run,
-  workflowVersion,
-}: {
-  run: Execution;
-  workflowVersion: WorkflowVersion;
-}): Record<string, DebugTestedStep> {
-  if (
-    run.environment !== RunEnvironment.TESTING ||
-    isNil(run.finishTime) ||
-    isNil(run.steps)
-  ) {
-    return {};
-  }
-  const testedAt = run.finishTime;
-  return Object.fromEntries(
-    Object.entries(run.steps)
-      .filter(([, output]) => output.status === StepOutputStatus.SUCCEEDED)
-      .flatMap(([stepName]) => {
-        const step = workflowStructureUtil.getStep(
-          stepName,
-          workflowVersion.trigger,
-        );
-        return isNil(step)
-          ? []
-          : [
-              [
-                stepName,
-                { testedAt, signature: versionDiff.stepSignature(step) },
-              ],
-            ];
-      }),
-  );
-}
-
-export type DebugTestedStep = {
-  testedAt: string;
-  signature: string;
 };

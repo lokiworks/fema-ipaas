@@ -1,6 +1,10 @@
 import { ErrorCode, isNil } from '@fema-ipaas/core-utils';
-import { OtpType, TelemetryEventName } from '@fema-ipaas/shared';
-import i18next, { t } from 'i18next';
+import {
+  MAX_FULL_NAME_LENGTH,
+  OtpType,
+  TelemetryEventName,
+} from '@fema-ipaas/shared';
+import { t } from 'i18next';
 import { Eye, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -38,12 +42,15 @@ import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
 import { authMutations } from '../hooks/auth-hooks';
 import { captchaUtils } from '../utils/captcha-utils';
+import { fullNameUtils } from '../utils/full-name-utils';
 import { passwordValidation } from '../utils/password-validation-utils';
 
 import {
   TurnstileWidget,
   useTurnstileSiteKey,
 } from './auth-landing/turnstile-widget';
+
+const SAFE_FULL_NAME_PATTERN = /^[^./]+$/;
 
 const SignUpForm = ({
   showCheckYourEmailNote,
@@ -60,11 +67,11 @@ const SignUpForm = ({
     defaultValues: {
       newsLetter: false,
       password: '',
+      fullName: '',
       email: searchParams.get('email') || '',
     },
   });
   const showNewsLetterCheckbox = false;
-  const lastNameFirst = i18next.language.startsWith('zh');
 
   const redirectAfterLogin = useRedirectAfterLogin();
   const navigate = useNavigate();
@@ -170,8 +177,11 @@ const SignUpForm = ({
       name: TelemetryEventName.SIGN_UP_SUBMITTED,
       payload: { method: 'email', ...acquisitionUtils.getAcquisitionParams() },
     });
+    const { fullName, ...credentials } = data;
     mutate({
-      ...data,
+      ...credentials,
+      firstName: fullNameUtils.normalize(fullName),
+      lastName: '',
       email: data.email.trim().toLowerCase(),
       trackEvents: true,
       captchaToken,
@@ -189,103 +199,33 @@ const SignUpForm = ({
     <>
       <Form {...form}>
         <form className="flex flex-col space-y-4">
-          <div className="flex flex-row gap-2">
-            {lastNameFirst ? (
-              <>
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  rules={{
-                    required: t('Last name is required'),
-                  }}
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <Label htmlFor="lastName">{t('Last Name')}</Label>
-                      <Input
-                        {...field}
-                        required
-                        id="lastName"
-                        type="text"
-                        placeholder={t('Doe')}
-                        className="rounded-sm"
-                        data-testid="sign-up-last-name"
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
+          <FormField
+            control={form.control}
+            name="fullName"
+            rules={{
+              required: t('Full name is required'),
+              pattern: {
+                value: SAFE_FULL_NAME_PATTERN,
+                message: t('Full name cannot contain . or /'),
+              },
+            }}
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <Label htmlFor="fullName">{t('Full name')}</Label>
+                <Input
+                  {...field}
+                  required
+                  id="fullName"
+                  type="text"
+                  maxLength={MAX_FULL_NAME_LENGTH}
+                  autoComplete="name"
+                  className="rounded-sm"
+                  data-testid="sign-up-full-name"
                 />
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  rules={{
-                    required: t('First name is required'),
-                  }}
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <Label htmlFor="firstName">{t('First Name')}</Label>
-                      <Input
-                        {...field}
-                        required
-                        id="firstName"
-                        type="text"
-                        placeholder={t('John')}
-                        className="rounded-sm"
-                        data-testid="sign-up-first-name"
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            ) : (
-              <>
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  rules={{
-                    required: t('First name is required'),
-                  }}
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <Label htmlFor="firstName">{t('First Name')}</Label>
-                      <Input
-                        {...field}
-                        required
-                        id="firstName"
-                        type="text"
-                        placeholder={t('John')}
-                        className="rounded-sm"
-                        data-testid="sign-up-first-name"
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  rules={{
-                    required: t('Last name is required'),
-                  }}
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <Label htmlFor="lastName">{t('Last Name')}</Label>
-                      <Input
-                        {...field}
-                        required
-                        id="lastName"
-                        type="text"
-                        placeholder={t('Doe')}
-                        className="rounded-sm"
-                        data-testid="sign-up-last-name"
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
+          />
           <FormField
             control={form.control}
             name="email"
@@ -436,8 +376,7 @@ export { SignUpForm };
 
 type SignUpSchema = {
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   password: string;
   newsLetter: boolean;
 };

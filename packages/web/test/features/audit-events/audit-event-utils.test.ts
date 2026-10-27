@@ -156,7 +156,7 @@ describe('auditEventUtils.summarize in Chinese', () => {
       }),
     ).toBe('b@corp.test 已被移出项目');
     expect(auditEventUtils.summarize({ event: removed('u3'), userNames })).toBe(
-      '已删除的用户 已被移出项目',
+      '已删除的用户（u3） 已被移出项目',
     );
   });
 
@@ -168,7 +168,37 @@ describe('auditEventUtils.summarize in Chinese', () => {
     };
     expect(
       auditEventUtils.summarize({ event, userNames: { u1: '张三' } }),
-    ).toBe('已移除用户 已删除的用户，其名下 3 项资源已转交给 张三');
+    ).toBe('已移除用户 已删除的用户（gone），其名下 3 项资源已转交给 张三');
+  });
+
+  it('describes sent and revoked project invitations with the invitee and role', () => {
+    const invitation = (
+      action:
+        | ApplicationEventName.INVITATION_SENT
+        | ApplicationEventName.INVITATION_REVOKED,
+    ): ApplicationEvent => ({
+      ...baseEvent(),
+      action,
+      data: { invitation: { email: 'new@corp.test', role: 'Developer' } },
+    });
+    expect(
+      auditEventUtils.summarize({
+        event: invitation(ApplicationEventName.INVITATION_SENT),
+        userNames: {},
+      }),
+    ).toContain('new@corp.test');
+    expect(
+      auditEventUtils.summarize({
+        event: invitation(ApplicationEventName.INVITATION_REVOKED),
+        userNames: {},
+      }),
+    ).toBe('已撤销对 new@corp.test 的邀请');
+    expect(
+      auditEventUtils.actionLabel(ApplicationEventName.INVITATION_SENT),
+    ).toBe('发出邀请');
+    expect(
+      auditEventUtils.actionLabel(ApplicationEventName.INVITATION_REVOKED),
+    ).toBe('撤销邀请');
   });
 
   it('shows the workflow name carried by the created event', () => {

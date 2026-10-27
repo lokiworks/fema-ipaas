@@ -26,15 +26,10 @@ export class AuthenticationPage extends BasePage {
     await this.openPasswordForm();
     await this.switchToSignUpForm();
 
-    const firstNameField = this.page.getByTestId('sign-up-first-name');
-    await firstNameField.click();
-    await firstNameField.fill(params?.firstName || 'Bugs');
-    await firstNameField.press('Tab');
-
-    const lastNameField = this.page.getByTestId('sign-up-last-name');
-    await lastNameField.click();
-    await lastNameField.fill(params?.lastName || 'Bunny');
-    await lastNameField.press('Tab');
+    const fullNameField = this.page.getByTestId('sign-up-full-name');
+    await fullNameField.click();
+    await fullNameField.fill(`${params?.firstName || 'Bugs'} ${params?.lastName || 'Bunny'}`);
+    await fullNameField.press('Tab');
 
     const emailField = this.page.getByTestId('sign-up-email');
     await emailField.click();

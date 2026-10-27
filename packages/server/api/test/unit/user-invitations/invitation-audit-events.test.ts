@@ -15,9 +15,9 @@ function asStoredEvent(event: ReturnType<typeof invitationAuditEvents.sent>): un
 
 describe('invitationAuditEvents', () => {
     it('records a joined member with the member audit event, so invite links and direct adds share one action', () => {
-        const event = invitationAuditEvents.memberJoined({ userId: 'u1', role: DefaultProjectRole.EDITOR, email: 'a@corp.test' })
+        const event = invitationAuditEvents.memberJoined({ userId: 'u1', role: DefaultProjectRole.DEVELOPER, email: 'a@corp.test' })
         expect(event.action).toBe(ApplicationEventName.MEMBER_ADDED)
-        expect(event.data).toEqual({ member: { userId: 'u1', role: DefaultProjectRole.EDITOR, email: 'a@corp.test' } })
+        expect(event.data).toEqual({ member: { userId: 'u1', role: DefaultProjectRole.DEVELOPER, email: 'a@corp.test' } })
     })
 
     it('records a sent invitation with the invitee email and the role it grants', () => {

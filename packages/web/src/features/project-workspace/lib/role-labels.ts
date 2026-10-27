@@ -17,7 +17,9 @@ function label(role: DefaultProjectRole | null | undefined): string {
 }
 
 function viewerHint(): string {
-  return t('You have "Can view" access in this project and can only view');
+  return t(
+    'You have "Can view" access in this project, so you can view workflows but not create or change them',
+  );
 }
 
 export const projectRoleLabels = { label, viewerHint };

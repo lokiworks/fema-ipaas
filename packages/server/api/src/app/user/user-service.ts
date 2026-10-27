@@ -53,8 +53,8 @@ export const userService = (log: FastifyBaseLogger) => ({
         }
         return user
     },
-    async updateLastActiveDate({ id }: UpdateLastActiveDateParams): Promise<void> {
-        await userRepo().update({ id }, { lastActiveDate: dayjs().toISOString() })
+    async updateLastActiveDate({ id, tenantId }: UpdateLastActiveDateParams): Promise<void> {
+        await userRepo().update({ id, tenantId }, { lastActiveDate: dayjs().toISOString() })
     },
     async update({ id, status, tenantId, tenantRole, externalId, modules }: UpdateParams): Promise<UserWithMetaInformation> {
         const user = await this.getOrThrow({ id })
@@ -281,6 +281,7 @@ async function getUsersForProject(tenantId: TenantId, _projectId: string): Promi
 
 type UpdateLastActiveDateParams = {
     id: UserId
+    tenantId: TenantId
 }
 
 type GetOneByIdAndTenantIdParams = {

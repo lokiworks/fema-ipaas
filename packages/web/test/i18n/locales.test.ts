@@ -18,6 +18,7 @@ const KEPT_IN_ENGLISH = new Set([
   'HTTP {status}',
   'JSON',
   'component: JSON',
+  '{status} · {duration}',
   'CPU',
   'example.com',
   'Redis',

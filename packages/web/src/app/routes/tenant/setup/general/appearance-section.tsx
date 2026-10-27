@@ -25,10 +25,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { LoginPagePreview } from '@/features/authentication';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { colorContrast, MIN_UI_CONTRAST } from '@/lib/color-contrast';
-import { primaryColorUtils } from '@/lib/primary-color-utils';
 import { cn } from '@/lib/utils';
 
 const hexColor = z.string().regex(HEX_COLOR_PATTERN, 'invalidHexColor');
@@ -162,7 +162,7 @@ export const AppearanceSection = () => {
 
   return (
     <>
-      <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_30rem]">
         <Form {...form}>
           <form
             className="grid space-y-4 mt-4"
@@ -377,11 +377,13 @@ export const AppearanceSection = () => {
           <span className="text-xs text-muted-foreground">
             {t('Sign-in page preview')}
           </span>
-          <LoginPreview
+          <LoginPagePreview
             productName={form.watch('name')}
             welcomeText={form.watch('welcomeText')}
             color={form.watch('color')}
-            iconUrl={iconPreview ?? tenant?.logoIconUrl ?? null}
+            iconUrl={
+              iconPreview ?? tenant?.logoIconUrl ?? branding.logos.logoIconUrl
+            }
             emailAuthEnabled={tenant?.emailAuthEnabled ?? true}
           />
         </div>
@@ -398,72 +400,6 @@ function acceptBrandingFile(event: ChangeEvent<HTMLInputElement>): File | null {
     return null;
   }
   return file;
-}
-
-function LoginPreview({
-  productName,
-  welcomeText,
-  color,
-  iconUrl,
-  emailAuthEnabled,
-}: {
-  productName: string;
-  welcomeText: string;
-  color: string;
-  iconUrl: string | null;
-  emailAuthEnabled: boolean;
-}) {
-  const buttonColor = colorContrast.isReadableOnWhite(color)
-    ? color
-    : undefined;
-  const name = productName.trim().length > 0 ? productName : t('Product name');
-  return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-lg border text-xs">
-      <div className="flex flex-col gap-3 bg-muted p-4">
-        <div className="flex min-w-0 items-center gap-2">
-          {iconUrl && (
-            <img
-              src={iconUrl}
-              alt=""
-              className="size-6 shrink-0 rounded object-contain"
-            />
-          )}
-          <span className="break-words font-semibold">{name}</span>
-        </div>
-        {welcomeText.trim().length > 0 && (
-          <span className="text-sm">{welcomeText}</span>
-        )}
-      </div>
-      <div className="flex flex-col gap-2 p-4">
-        <span className="font-medium">{t('Sign in to {name}', { name })}</span>
-        {emailAuthEnabled ? (
-          <>
-            <div className="h-6 rounded border" />
-            <div className="h-6 rounded border" />
-            <div
-              className="flex h-6 items-center justify-center rounded bg-primary text-primary-foreground"
-              style={
-                buttonColor
-                  ? {
-                      backgroundColor: buttonColor,
-                      color: primaryColorUtils.readableForeground({
-                        hex: buttonColor,
-                      }),
-                    }
-                  : undefined
-              }
-            >
-              {t('Sign in')}
-            </div>
-          </>
-        ) : (
-          <span className="text-muted-foreground">
-            {t('No sign-in method is turned on')}
-          </span>
-        )}
-      </div>
-    </div>
-  );
 }
 
 function PrimaryColorContrast({ color }: { color: string }) {

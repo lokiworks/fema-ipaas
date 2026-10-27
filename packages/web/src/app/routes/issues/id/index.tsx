@@ -635,16 +635,22 @@ function AffectedRunsCard({
                 className="flex items-center justify-between py-2 text-sm gap-2"
               >
                 <Link
-                  className="font-mono text-xs text-primary hover:underline truncate"
+                  className="flex min-w-0 items-center gap-2 text-primary hover:underline"
+                  title={execution.id}
                   to={authenticationSession.appendProjectRoutePrefix(
                     `/runs/${execution.id}`,
                   )}
                 >
-                  {execution.id}
+                  <span className="truncate">
+                    <FormattedDate
+                      date={new Date(execution.created)}
+                      includeTime
+                    />
+                  </span>
+                  <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                    {execution.id.slice(0, RUN_SHORT_ID_LENGTH)}
+                  </span>
                 </Link>
-                <span className="text-muted-foreground">
-                  <FormattedDate date={new Date(execution.created)} />
-                </span>
                 <Badge
                   variant={
                     variant === 'error'
@@ -857,6 +863,7 @@ const FAILURE_ALERT_KINDS: AlertRecordKind[] = [
   AlertRecordKind.STILL_FAILING,
 ];
 const RUNS_PAGE_SIZE = 8;
+const RUN_SHORT_ID_LENGTH = 6;
 const NOTE_MAX_LENGTH = 500;
 
 export { IssueDetailPage };

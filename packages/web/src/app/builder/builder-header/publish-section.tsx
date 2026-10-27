@@ -2,10 +2,11 @@ import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
   Execution,
   FlagId,
+  WorkflowStatus,
   WorkflowVersion,
   WorkflowVersionState,
 } from '@fema-ipaas/shared';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { CircleCheck } from 'lucide-react';
 import { useState } from 'react';
@@ -20,7 +21,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { projectWorkspaceHooks } from '@/features/project-workspace/hooks/project-workspace-hooks';
+import {
+  WORKSPACE_KEY,
+  projectWorkspaceHooks,
+} from '@/features/project-workspace/hooks/project-workspace-hooks';
 import { projectCollectionUtils } from '@/features/projects';
 import {
   DeployToTestDialog,
@@ -35,18 +39,40 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { DiscardChangesDialog } from './discard-changes-dialog';
 import { PublishDialog } from './publish-dialog';
-import { usePublishGuard } from './publish-guard';
+import { PublishGuard, usePublishGuard } from './publish-guard';
 import { useDraftChanged } from './use-draft-changed';
 
-export const BuilderPublishSection = () => {
+export const BuilderPublishSection = ({
+  guard,
+  publishDialogOpen,
+  onPublishDialogOpenChange,
+}: {
+  guard: PublishGuard;
+  publishDialogOpen: boolean;
+  onPublishDialogOpenChange: (open: boolean) => void;
+}) => {
   const { project } = projectCollectionUtils.useCurrentProject();
   if (project.releasesEnabled) {
     return <EnvironmentsPublishSection projectId={project.id} />;
   }
-  return <SingleEnvironmentPublishSection />;
+  return (
+    <SingleEnvironmentPublishSection
+      guard={guard}
+      publishDialogOpen={publishDialogOpen}
+      onPublishDialogOpenChange={onPublishDialogOpenChange}
+    />
+  );
 };
 
-function SingleEnvironmentPublishSection() {
+function SingleEnvironmentPublishSection({
+  guard,
+  publishDialogOpen,
+  onPublishDialogOpenChange,
+}: {
+  guard: PublishGuard;
+  publishDialogOpen: boolean;
+  onPublishDialogOpenChange: (open: boolean) => void;
+}) {
   const [
     isSaving,
     isPublishing,
@@ -59,7 +85,6 @@ function SingleEnvironmentPublishSection() {
     setLeftSidebar,
     workflowVersion,
     run,
-    editLockHolder,
   ] = useBuilderStateContext((state) => [
     state.saving,
     state.isPublishing,
@@ -72,11 +97,7 @@ function SingleEnvironmentPublishSection() {
     state.setLeftSidebar,
     state.workflowVersion,
     state.run,
-    state.editLockHolder,
   ]);
-  const guard = usePublishGuard({
-    lockedByName: editLockHolder?.userDisplayName ?? null,
-  });
   const draftChanged = useDraftChanged({
     baselineVersionId: workflow.publishedVersionId,
   });
@@ -88,7 +109,6 @@ function SingleEnvironmentPublishSection() {
     isSaving,
   });
   const { mutate: publishBatch } = projectWorkspaceHooks.useBatchPublish();
-  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const publish = (description: string | undefined) => {
     setIsPublishing(true);
     publishBatch(
@@ -109,16 +129,18 @@ function SingleEnvironmentPublishSection() {
           setWorkflow(updatedWorkflow);
           setVersion(updatedWorkflow.version);
           setIsPublishing(false);
-          setPublishDialogOpen(false);
+          onPublishDialogOpenChange(false);
           toast.success(t('Published. The workflow is now running.'));
         },
         onError: () => setIsPublishing(false),
       },
     );
   };
+  const queryClient = useQueryClient();
   const { mutateAsync: overWriteDraftWithVersion } =
     workflowHooks.useOverWriteDraftWithVersion({
       onSuccess: (updatedWorkflow) => {
+        void queryClient.invalidateQueries({ queryKey: [WORKSPACE_KEY] });
         setVersion(updatedWorkflow.version);
         setRightSidebar(RightSideBarType.NONE);
         setLeftSidebar(LeftSideBarType.NONE);
@@ -160,8 +182,6 @@ function SingleEnvironmentPublishSection() {
     isDiscardingChanges,
     isPublishing,
     isSaving,
-    hasNoChanges,
-    neverPublished: isNil(workflow.publishedVersionId),
   });
   const canDiscard =
     !isNil(workflow.publishedVersionId) &&
@@ -191,6 +211,7 @@ function SingleEnvironmentPublishSection() {
       )}
       <DiscardChangesDialog
         open={discardDialogOpen}
+        isRunning={workflow.status === WorkflowStatus.ENABLED}
         onCancel={() => setDiscardDialogOpen(false)}
         onConfirm={() => {
           setDiscardDialogOpen(false);
@@ -205,7 +226,7 @@ function SingleEnvironmentPublishSection() {
               variant="default"
               loading={isSaving}
               name="Publish"
-              onClick={() => guard.run(() => setPublishDialogOpen(true))}
+              onClick={() => guard.run(() => onPublishDialogOpenChange(true))}
               disabled={
                 !isValid ||
                 isBusy ||
@@ -234,7 +255,7 @@ function SingleEnvironmentPublishSection() {
       {guard.dialog}
       <PublishDialog
         open={publishDialogOpen}
-        onOpenChange={setPublishDialogOpen}
+        onOpenChange={onPublishDialogOpenChange}
         isPublishing={isPublishing}
         onConfirm={publish}
       />
@@ -489,14 +510,10 @@ function pickStatusText({
   isDiscardingChanges,
   isPublishing,
   isSaving,
-  hasNoChanges,
-  neverPublished,
 }: {
   isDiscardingChanges: boolean;
   isPublishing: boolean;
   isSaving: boolean;
-  hasNoChanges: boolean;
-  neverPublished: boolean;
 }) {
   if (isSaving) {
     return t('Saving...');
@@ -507,10 +524,7 @@ function pickStatusText({
   if (isPublishing) {
     return t('Publishing...');
   }
-  if (neverPublished) {
-    return null;
-  }
-  return hasNoChanges ? t('No unpublished changes') : t('Unpublished changes');
+  return null;
 }
 
 const DEPLOYED_STATUS_LABELS: Record<

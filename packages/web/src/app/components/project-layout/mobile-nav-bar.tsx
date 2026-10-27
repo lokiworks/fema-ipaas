@@ -58,8 +58,37 @@ export function MobileNavBar({
       {showProjectNav && (
         <MobileProjectNav key={`${location.pathname}${location.search}`} />
       )}
+      {!showProjectNav && !showTenantMenu && (
+        <MobilePageTitle pathname={location.pathname} />
+      )}
     </div>
   );
+}
+
+function MobilePageTitle({ pathname }: { pathname: string }) {
+  const title = pageTitleFor({ pathname });
+  if (!title) {
+    return null;
+  }
+  return (
+    <h1 className="min-w-0 flex-1 truncate px-2 text-sm font-medium">
+      {title}
+    </h1>
+  );
+}
+
+function pageTitleFor({ pathname }: { pathname: string }): string | null {
+  if (pathname === '/') {
+    return t('Home');
+  }
+  if (pathname.endsWith('/connections')) {
+    return t('Connections');
+  }
+  const match = PAGE_TITLES.find(
+    (entry) =>
+      pathname === entry.prefix || pathname.startsWith(`${entry.prefix}/`),
+  );
+  return match ? match.title() : null;
 }
 
 function MobileTenantNav() {
@@ -129,6 +158,16 @@ function MobileProjectNav() {
     </Sheet>
   );
 }
+
+const PAGE_TITLES: { prefix: string; title: () => string }[] = [
+  { prefix: '/projects', title: () => t('Projects') },
+  { prefix: '/logs', title: () => t('Logs') },
+  { prefix: '/issue-center', title: () => t('Issues') },
+  { prefix: '/monitor', title: () => t('Monitoring') },
+  { prefix: '/templates', title: () => t('Templates') },
+  { prefix: '/solutions', title: () => t('Solutions') },
+  { prefix: '/account', title: () => t('Account') },
+];
 
 type MobileNavBarProps = {
   showProjectNav: boolean;

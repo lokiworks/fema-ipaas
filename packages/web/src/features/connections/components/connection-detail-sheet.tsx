@@ -120,6 +120,8 @@ function ConnectionDetailContent({
   const { icon: StatusIcon, variant } = connectionUtils.getStatusIcon(
     detail.status,
   );
+  const accountIdentifier =
+    connectionUtils.getConnectionAccountIdentifier(detail);
 
   return (
     <>
@@ -182,10 +184,14 @@ function ConnectionDetailContent({
                   variant={variant}
                 />
               </dd>
-              <dt className="text-muted-foreground">{t('Account')}</dt>
-              <dd className="truncate font-mono text-xs">
-                {connectionUtils.getConnectionAccountIdentifier(detail) ?? '-'}
-              </dd>
+              {!isNil(accountIdentifier) && (
+                <>
+                  <dt className="text-muted-foreground">{t('Account')}</dt>
+                  <dd className="truncate font-mono text-xs">
+                    {accountIdentifier}
+                  </dd>
+                </>
+              )}
               <dt className="text-muted-foreground">
                 {t('Available Projects')}
               </dt>
@@ -265,6 +271,12 @@ function ConnectionDetailContent({
                       <span className="min-w-0 flex-1 truncate">
                         {workflow.displayName}
                       </span>
+                      <span
+                        title={workflow.workflowId}
+                        className="shrink-0 font-mono text-xs text-muted-foreground"
+                      >
+                        {workflow.workflowId.slice(0, WORKFLOW_SHORT_ID_LENGTH)}
+                      </span>
                       <span className="shrink-0 text-xs text-muted-foreground">
                         {allowed
                           ? workflow.projectDisplayName
@@ -314,12 +326,11 @@ function ConnectionDetailContent({
                 </Button>
               )}
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <UserBadge id={detail.ownerId ?? null} size="small" includeName />
-              <span className="text-xs text-muted-foreground">
-                {t('Owner')}
-              </span>
-            </div>
+            {detail.shareCount === 0 && (
+              <p className="text-sm text-muted-foreground">
+                {t('Not shared with anyone yet')}
+              </p>
+            )}
             {!manage && (
               <p className="text-xs text-muted-foreground">
                 {t(
@@ -350,3 +361,5 @@ function ConnectionDetailContent({
     </>
   );
 }
+
+const WORKFLOW_SHORT_ID_LENGTH = 6;

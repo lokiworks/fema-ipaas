@@ -6,10 +6,9 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { FlaskConical, Play } from 'lucide-react';
+import { FlaskConical } from 'lucide-react';
 import React, { useContext } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { connectorsHooks } from '@/features/connectors';
 
 import { useBuilderStateContext } from '../builder-hooks';
@@ -20,7 +19,6 @@ import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 
 import { useActionTestRunner } from './test-runner-context';
 import { TestSampleDataViewer } from './test-sample-data-viewer';
-import { TestButtonTooltip } from './test-step-tooltip';
 
 const TestStepSectionImplementation = React.memo(
   ({
@@ -125,18 +123,6 @@ const TestStepSectionImplementation = React.memo(
                   )}
                 </span>
               </div>
-              <TestButtonTooltip saving={isSaving} invalid={!currentStep.valid}>
-                <Button
-                  size="sm"
-                  onClick={onTestButtonClick}
-                  loading={isTesting || isSaving}
-                  disabled={!currentStep.valid || isLoadingDynamicProperties}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  <Play className="size-3.5 fill-current" />
-                  {t('Test Step')}
-                </Button>
-              </TestButtonTooltip>
             </div>
           </div>
         )}

@@ -170,7 +170,9 @@ const DateSection = ({
   dateOrDuration: string;
 }) => {
   return (
-    <span className="whitespace-nowrap">{`${text}: ${dateOrDuration}`}</span>
+    <span className="whitespace-nowrap">
+      {t('{label}: {value}', { label: text, value: dateOrDuration })}
+    </span>
   );
 };
 

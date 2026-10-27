@@ -169,5 +169,5 @@ function resolvePickerTarget(workflowVersion: WorkflowVersion): {
 const DEFAULT_PANEL_WIDTH = 260;
 const PICKER_PANEL_WIDTH = 340;
 const VERSIONS_PANEL_WIDTH = 360;
-const MIN_RECORDS_WIDTH = 520;
+const MIN_RECORDS_WIDTH = 440;
 const MAX_RECORDS_WIDTH = 960;

@@ -38,6 +38,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { connectorBlueprintHooks } from '@/features/connector-blueprints';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -241,16 +242,18 @@ function NewConnectorForm({
                   <FormLabel showRequiredIndicator>
                     {t('Connector name')}
                   </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      autoFocus
-                      maxLength={BLUEPRINT_LIMITS.name}
-                    />
-                  </FormControl>
-                  <div className="text-right text-xs text-muted-foreground">
-                    {displayName.length}/{BLUEPRINT_LIMITS.name}
-                  </div>
+                  <CharacterCounter
+                    length={displayName.length}
+                    max={BLUEPRINT_LIMITS.name}
+                  >
+                    <FormControl>
+                      <Input
+                        {...field}
+                        autoFocus
+                        maxLength={BLUEPRINT_LIMITS.name}
+                      />
+                    </FormControl>
+                  </CharacterCounter>
                   <FormMessage />
                 </FormItem>
               )}
@@ -289,19 +292,22 @@ function NewConnectorForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('Connector description')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      rows={3}
-                      maxLength={BLUEPRINT_LIMITS.description}
-                    />
-                  </FormControl>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{t('Required before publishing')}</span>
-                    <span>
-                      {description.length}/{BLUEPRINT_LIMITS.description}
-                    </span>
-                  </div>
+                  <CharacterCounter
+                    multiline
+                    length={description.length}
+                    max={BLUEPRINT_LIMITS.description}
+                  >
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        rows={3}
+                        maxLength={BLUEPRINT_LIMITS.description}
+                      />
+                    </FormControl>
+                  </CharacterCounter>
+                  <p className="text-xs text-muted-foreground">
+                    {t('Required before publishing')}
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

@@ -19,6 +19,7 @@ import {
   ConnectorSelectorOperation,
   connectorSelectorUtils,
 } from '@/features/connectors';
+import { WORKSPACE_KEY } from '@/features/project-workspace/hooks/project-workspace-hooks';
 import { workflowsApi, sampleDataHooks } from '@/features/workflows';
 import { PromiseQueue } from '@/lib/promise-queue';
 
@@ -308,11 +309,17 @@ export const createWorkflowState = (
                   ...updatedWorkflowVersionWithUpdatedSampleData,
                   id: serverWorkflowVersion.id,
                   state: serverWorkflowVersion.state,
+                  updated: serverWorkflowVersion.updated,
                 },
                 saving: workflowUpdatesQueue.size() !== 0,
                 lastSavedAt: Date.now(),
               };
             });
+            if (workflowUpdatesQueue.size() === 0) {
+              void initialState.queryClient.invalidateQueries({
+                queryKey: [WORKSPACE_KEY, 'tree'],
+              });
+            }
             onSuccess?.();
           } catch (error) {
             console.error(error);

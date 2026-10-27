@@ -123,22 +123,22 @@ afterEach(() => {
 });
 
 describe('VariableDialog value field', () => {
-  it('masks the value with CSS instead of a password input', () => {
+  it('shows the value in plain text by default because variables are non-sensitive', () => {
     setup();
     const input = valueInput();
     expect(input.type).toBe('text');
-    expect(input.className).toContain(MASK_CLASS);
-    expect(input.getAttribute('autocomplete')).toBe('off');
-    expect(input.getAttribute('spellcheck')).toBe('false');
+    expect(input.className).not.toContain(MASK_CLASS);
+    expect(input.autocomplete).toBe('off');
+    expect(input.matches('[spellcheck="false"]')).toBe(true);
   });
 
-  it('reveals the value on eye toggle and re-masks on toggle back', () => {
+  it('masks the value with CSS on eye toggle and reveals it on toggle back', () => {
     setup();
     clickEyeToggle();
     expect(valueInput().type).toBe('text');
-    expect(valueInput().className).not.toContain(MASK_CLASS);
-    clickEyeToggle();
     expect(valueInput().className).toContain(MASK_CLASS);
+    clickEyeToggle();
+    expect(valueInput().className).not.toContain(MASK_CLASS);
   });
 });
 
@@ -176,6 +176,13 @@ describe('VariableDialog name field', () => {
   it('caps the name length in the input', () => {
     setup();
     expect(nameInput().maxLength).toBe(64);
+  });
+
+  it('shows a character counter for the name', () => {
+    setup();
+    expect(container?.textContent).toContain('0/64');
+    typeInto({ input: nameInput(), value: 'STRIPE_PROD' });
+    expect(container?.textContent).toContain('11/64');
   });
 
   it('sends one create request when the form is submitted twice in the same tick', async () => {

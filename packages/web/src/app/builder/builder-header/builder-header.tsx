@@ -34,9 +34,11 @@ import { cn } from '@/lib/utils';
 import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
 import { DebugButton } from './debug-button';
+import { usePublishGuard } from './publish-guard';
 import { BuilderPublishSection } from './publish-section';
 import { RunStateChip } from './run-state-chip';
 import { useAssistantBridge } from './use-assistant-bridge';
+import { useDraftChanged } from './use-draft-changed';
 import { WorkflowMetaLine, WorkflowStateTags } from './workflow-header-status';
 import { EditWorkflowOrViewDraftButton } from './workflow-status/view-draft-or-edit-workflow-button';
 
@@ -48,9 +50,28 @@ export const BuilderHeader = () => {
     FlagId.SHOW_COMMUNITY,
   );
 
-  const [workflow, workflowVersion, applyOperation] = useBuilderStateContext(
-    (state) => [state.workflow, state.workflowVersion, state.applyOperation],
-  );
+  const [
+    workflow,
+    workflowVersion,
+    applyOperation,
+    isValid,
+    isSaving,
+    editLockHolder,
+  ] = useBuilderStateContext((state) => [
+    state.workflow,
+    state.workflowVersion,
+    state.applyOperation,
+    state.workflowVersion.valid,
+    state.saving,
+    state.editLockHolder,
+  ]);
+  const publishGuard = usePublishGuard({
+    lockedByName: editLockHolder?.userDisplayName ?? null,
+  });
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const draftChanged = useDraftChanged({
+    baselineVersionId: workflow.publishedVersionId,
+  });
 
   const assistantBridge = useAssistantBridge();
   const snapshotVersionId = useBuilderSnapshotVersionId();
@@ -68,6 +89,21 @@ export const BuilderHeader = () => {
   const [isEditingWorkflowName, setIsEditingWorkflowName] = useState(
     () => queryParams.get(NEW_WORKFLOW_QUERY_PARAM) === 'true',
   );
+
+  const menuWorkflow = treeRow && {
+    ...treeRow,
+    hasUnpublishedChanges:
+      isLatestVersion &&
+      workflowVersion.state === WorkflowVersionState.DRAFT &&
+      treeRow.published &&
+      !isNil(draftChanged)
+        ? draftChanged
+        : treeRow.hasUnpublishedChanges,
+  };
+  const publishDisabledReason = isSaving
+    ? t('Saving...')
+    : publishGuard.blockedReason ??
+      (isValid ? null : t('You have incomplete steps'));
 
   const titleContent = (
     <div className="flex min-w-0 items-center gap-2.5 px-4">
@@ -142,11 +178,20 @@ export const BuilderHeader = () => {
       {!embedState.hideActiveUsers && (
         <ActiveUsersWidget resourceId={workflow.id} />
       )}
-      {treeRow && isNil(snapshotVersionId) && (
+      {menuWorkflow && isNil(snapshotVersionId) && (
         <WorkflowMoreMenu
-          workflow={treeRow}
+          workflow={menuWorkflow}
           context={workspace}
           triggerClassName="size-8 border"
+          publishAction={
+            project.releasesEnabled
+              ? 'hidden'
+              : {
+                  onSelect: () =>
+                    publishGuard.run(() => setPublishDialogOpen(true)),
+                  disabledReason: publishDisabledReason,
+                }
+          }
         />
       )}
       {checkAccess(Permission.READ_WORKFLOW) && (
@@ -162,7 +207,11 @@ export const BuilderHeader = () => {
       {isNil(snapshotVersionId) && <DebugButton />}
       {isNil(snapshotVersionId) && (
         <div data-tour="builder-publish" className="flex items-center">
-          <BuilderPublishSection />
+          <BuilderPublishSection
+            guard={publishGuard}
+            publishDialogOpen={publishDialogOpen}
+            onPublishDialogOpenChange={setPublishDialogOpen}
+          />
         </div>
       )}
     </div>

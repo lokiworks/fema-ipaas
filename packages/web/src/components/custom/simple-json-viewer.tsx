@@ -1,9 +1,10 @@
 import { t } from 'i18next';
 import { Copy, Check } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import ReactJson from 'react-json-view';
 import { toast } from 'sonner';
 
+import { useLocalizedObjectSize } from '@/components/custom/use-localized-object-size';
 import { useTheme } from '@/components/providers/theme-provider';
 import { Button } from '@/components/ui/button';
 
@@ -24,6 +25,8 @@ export const SimpleJsonViewer: React.FC<SimpleJsonViewerProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const { resolvedTheme } = useTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+  useLocalizedObjectSize(containerRef);
 
   const formattedJson =
     typeof data === 'string' ? data : JSON.stringify(data, null, 2);
@@ -44,6 +47,7 @@ export const SimpleJsonViewer: React.FC<SimpleJsonViewerProps> = ({
 
   return (
     <div
+      ref={containerRef}
       className="w-full relative text-foreground overflow-hidden"
       style={{
         maxWidth: '100%',

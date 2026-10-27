@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { SearchInput } from '@/components/custom/search-input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tooltip,
   TooltipContent,
@@ -102,7 +103,8 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
   const limitReason = context.limitReached
     ? t('The project has reached its workflow limit')
     : null;
-  const viewerReason = canEdit ? null : projectRoleLabels.viewerHint();
+  const viewerReason =
+    canEdit || context.loading ? null : projectRoleLabels.viewerHint();
   const close = () => setDialog(null);
 
   const togglePick = (id: string) =>
@@ -411,9 +413,13 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <div className="flex items-center gap-1 px-2">
-        <span className="flex-1 text-xs font-medium text-muted-foreground">
-          {t('Project resources ({count})', { count: workflows.length })}
-        </span>
+        {context.loading ? (
+          <Skeleton className="h-4 w-20 flex-1" />
+        ) : (
+          <span className="flex-1 text-xs font-medium text-muted-foreground">
+            {t('Project resources ({count})', { count: workflows.length })}
+          </span>
+        )}
         <DisabledReason
           reason={
             viewerReason ??
@@ -545,8 +551,15 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
             {t('Move to the project root')}
           </div>
         )}
+        {context.loading && (
+          <div className="flex flex-col gap-2 px-2 py-2" aria-busy="true">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-5/6" />
+            <Skeleton className="h-6 w-2/3" />
+          </div>
+        )}
         {rows.map(renderRow)}
-        {rows.length === 0 && (
+        {!context.loading && rows.length === 0 && (
           <div className="flex flex-col items-start gap-2 px-2 py-4 text-sm text-muted-foreground">
             <span>
               {query.trim().length > 0

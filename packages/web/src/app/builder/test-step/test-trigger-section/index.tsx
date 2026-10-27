@@ -191,16 +191,9 @@ const TestTriggerSection = React.memo(
                   </span>
                 </div>
                 <FirstTimeTestingSection
-                  isValid={isValid}
                   testType={testType}
-                  isTesting={
-                    isPollingTesting || isSimulating || isTestingDialogOpen
-                  }
                   mockData={mockData}
                   isSaving={isSaving || isSavingMockdata}
-                  onSimulateTrigger={fireTest}
-                  onPollTrigger={fireTest}
-                  onMcpToolTesting={fireTest}
                   onSaveMockAsSampleData={saveMockAsSampleData}
                 />
               </div>

@@ -31,6 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { connectorBlueprintHooks } from '@/features/connector-blueprints';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { api } from '@/lib/api';
 
 export function OpenApiImportDialog({
@@ -235,12 +236,14 @@ function OpenApiImportForm({ onDone }: { onDone: () => void }) {
                   <FormLabel showRequiredIndicator>
                     {t('Connector name')}
                   </FormLabel>
-                  <FormControl>
-                    <Input {...field} maxLength={BLUEPRINT_LIMITS.name} />
-                  </FormControl>
-                  <div className="text-right text-xs text-muted-foreground">
-                    {displayName.length}/{BLUEPRINT_LIMITS.name}
-                  </div>
+                  <CharacterCounter
+                    length={displayName.length}
+                    max={BLUEPRINT_LIMITS.name}
+                  >
+                    <FormControl>
+                      <Input {...field} maxLength={BLUEPRINT_LIMITS.name} />
+                    </FormControl>
+                  </CharacterCounter>
                   <FormMessage />
                 </FormItem>
               )}
@@ -273,16 +276,19 @@ function OpenApiImportForm({ onDone }: { onDone: () => void }) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('Connector description')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      rows={2}
-                      maxLength={BLUEPRINT_LIMITS.description}
-                    />
-                  </FormControl>
-                  <div className="text-right text-xs text-muted-foreground">
-                    {description.length}/{BLUEPRINT_LIMITS.description}
-                  </div>
+                  <CharacterCounter
+                    multiline
+                    length={description.length}
+                    max={BLUEPRINT_LIMITS.description}
+                  >
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        rows={2}
+                        maxLength={BLUEPRINT_LIMITS.description}
+                      />
+                    </FormControl>
+                  </CharacterCounter>
                   <FormMessage />
                 </FormItem>
               )}

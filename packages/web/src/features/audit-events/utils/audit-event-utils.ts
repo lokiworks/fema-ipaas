@@ -392,6 +392,7 @@ export const auditEventUtils = {
   actionLabel,
   actionsForSources,
   needsWorkflowName,
+  runIdOf,
 };
 
 function summarizeRun({
@@ -423,6 +424,18 @@ function needsWorkflowName(event: ApplicationEvent): boolean {
       return true;
     default:
       return false;
+  }
+}
+
+function runIdOf(event: ApplicationEvent): string | null {
+  switch (event.action) {
+    case ApplicationEventName.EXECUTION_STARTED:
+    case ApplicationEventName.EXECUTION_FINISHED:
+    case ApplicationEventName.EXECUTION_RESUMED:
+    case ApplicationEventName.EXECUTION_RETRIED:
+      return event.data.execution.id;
+    default:
+      return null;
   }
 }
 

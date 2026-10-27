@@ -93,7 +93,10 @@ const NoteDragOverlay = () => {
             setDraggedNote(null, null);
           }
         }}
-        onClick={() => {
+        onPointerDown={(event) => event.stopPropagation()}
+        onMouseDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
           if (noteDragOverlayMode === NoteDragOverlayMode.CREATE) {
             const rect = containerRef.current?.getBoundingClientRect();
             if (rect) {

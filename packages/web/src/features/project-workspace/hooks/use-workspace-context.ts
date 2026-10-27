@@ -11,7 +11,7 @@ import { useAuthorization, useProjectRole } from '@/hooks/authorization-hooks';
 import { projectWorkspaceHooks } from './project-workspace-hooks';
 
 export function useWorkspaceContext(project: ProjectWithLimits) {
-  const { checkAccess } = useAuthorization();
+  const { checkAccess, isFetchingProjectRole } = useAuthorization();
   const { data: myRole } = useProjectRole();
   const tree = projectWorkspaceHooks.useTree(project.id);
   const { data: directory } = projectDirectoryHooks.useDirectory();
@@ -37,6 +37,7 @@ export function useWorkspaceContext(project: ProjectWithLimits) {
     role: myRole?.role ?? null,
     releasesEnabled: project.releasesEnabled,
     tree,
+    loading: tree.isLoading || isFetchingProjectRole,
     folders: tree.data?.folders ?? [],
     workflows,
     workflowNames: workflows.map((workflow) => workflow.displayName),

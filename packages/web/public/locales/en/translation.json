@@ -963,7 +963,7 @@
   "Pick a date range": "Pick a date range",
   "Select preset": "Select preset",
   "Select Time Range": "Select Time Range",
-  "Removed {entityName}": "Removed {entityName}",
+  "Removed {entityName}": "Removed “{entityName}”",
   "Any workflows currently using these connections": "Any workflows currently using these connections",
   "will break immediately": "will break immediately",
   "Strike": "Strike",
@@ -6266,5 +6266,17 @@
   "Sentinel high availability": "Sentinel high availability",
   "In-memory": "In-memory",
   "minimapTooltip": "Minimap ({shortcut})",
-  "Create a rule to compare two full lists and list the records that are missing or different.": "Create a rule to compare two full lists and list the records that are missing or different."
+  "Create a rule to compare two full lists and list the records that are missing or different.": "Create a rule to compare two full lists and list the records that are missing or different.",
+  "{label}: {value}": "{label}: {value}",
+  "durationMillisecondsShort": "{count} ms",
+  "durationSecondsShort": "{count} s",
+  "durationMinutesShort": "{count} min",
+  "You have \"Can view\" access in this project, so you can view workflows but not create or change them": "You have \"Can view\" access in this project, so you can view workflows but not create or change them",
+  "The draft goes back to the live version. Edits made since then are lost and cannot be restored.": "The draft goes back to the live version. Edits made since then are lost and cannot be restored.",
+  "No alert policies yet": "No alert policies yet",
+  "Issues still appear in each project, but nobody is notified.": "Issues still appear in each project, but nobody is notified.",
+  "No channels yet": "No channels yet",
+  "Add a Feishu, WeCom, DingTalk, Slack, webhook or email channel.": "Add a Feishu, WeCom, DingTalk, Slack, webhook or email channel.",
+  "Manage the members of this project.": "Manage the members of this project.",
+  "{status} · {duration}": "{status} · {duration}"
 }

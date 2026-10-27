@@ -22,6 +22,8 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 
 import { useBuilderStateContext, useBuilderStore } from '../builder-hooks';
 import { textMentionUtils } from '../connector-properties/text-input-with-mentions/text-input-utils';
+import { leftPanelWidth } from '../left-panel';
+import { LeftSideBarType } from '../types';
 
 import { workflowCanvasUtils } from './utils/workflow-canvas-utils';
 
@@ -211,6 +213,60 @@ export const useFocusOnStep = () => {
   }, [currentStep, selectStep, fitView, userManuallySelectedStepDuringRun]);
 };
 
+export const useFocusOnAddedStep = () => {
+  const [trigger, selectedStep] = useBuilderStateContext((state) => [
+    state.workflowVersion.trigger,
+    state.selectedStep,
+  ]);
+  const reactFlow = useReactFlow();
+  const knownStepNamesRef = useRef<Set<string> | null>(null);
+  const stepNames = new Set(
+    workflowStructureUtil.getAllSteps(trigger).map((step) => step.name),
+  );
+  const stepNamesKey = [...stepNames].join('|');
+
+  useEffect(() => {
+    const knownStepNames = knownStepNamesRef.current;
+    knownStepNamesRef.current = stepNames;
+    if (isNil(knownStepNames)) {
+      return;
+    }
+    const addedStepNames = [...stepNames].filter(
+      (name) => !knownStepNames.has(name),
+    );
+    if (addedStepNames.length !== 1 || addedStepNames[0] !== selectedStep) {
+      return;
+    }
+    workflowCanvasUtils.ensureStepInViewAfterLayout({
+      reactFlow,
+      stepName: addedStepNames[0],
+    });
+  }, [stepNamesKey]);
+};
+
+export const useShiftForRecordsPanel = () => {
+  const leftSidebar = useBuilderStateContext((state) => state.leftSidebar);
+  const reactFlow = useReactFlow();
+  const previousLeftSidebarRef = useRef(leftSidebar);
+
+  useEffect(() => {
+    const wasOpen = previousLeftSidebarRef.current === LeftSideBarType.RUNS;
+    const isOpen = leftSidebar === LeftSideBarType.RUNS;
+    previousLeftSidebarRef.current = leftSidebar;
+    if (wasOpen === isOpen) {
+      return;
+    }
+    const shift =
+      (leftPanelWidth(LeftSideBarType.RUNS) + LEFT_PANEL_CHROME_WIDTH) / 2 -
+      STEP_LABEL_HALF_WIDTH;
+    const { x, y, zoom } = reactFlow.getViewport();
+    void reactFlow.setViewport(
+      { x: isOpen ? x + shift : x - shift, y, zoom },
+      { duration: PANEL_SHIFT_DURATION_MS },
+    );
+  }, [leftSidebar]);
+};
+
 export const useResizeCanvas = (
   containerRef: React.RefObject<HTMLDivElement | null>,
   setHasCanvasBeenInitialised: (hasCanvasBeenInitialised: boolean) => void,
@@ -248,7 +304,13 @@ export const workflowCanvasHooks = {
   useShowBuilderIsSavingWarningBeforeLeaving,
   useIsFocusInsideListMapperModeInput,
   useFocusOnStep,
+  useFocusOnAddedStep,
+  useShiftForRecordsPanel,
   useResizeCanvas,
   useSwitchToDraft,
   useListenToExistingRun,
 };
+
+const PANEL_SHIFT_DURATION_MS = 200;
+const LEFT_PANEL_CHROME_WIDTH = 72;
+const STEP_LABEL_HALF_WIDTH = 90;

@@ -22,7 +22,7 @@ export function StepSearchPanel() {
       state.setHighlightedSteps,
     ]);
   const displayNumbers = useStepDisplayNumbers();
-  const { fitView } = useReactFlow();
+  const reactFlow = useReactFlow();
   useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
   const [query, setQuery] = useState('');
   const keywords = query
@@ -70,7 +70,7 @@ export function StepSearchPanel() {
                 selectStepByName(step.name);
                 setHighlightedSteps([step.name]);
                 workflowCanvasUtils.focusStepAfterLayout({
-                  fitView,
+                  reactFlow,
                   stepName: step.name,
                 });
               }}

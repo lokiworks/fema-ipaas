@@ -51,3 +51,29 @@ describe('formatUtils.formatDateToAgo in Chinese', () => {
     );
   });
 });
+
+describe('formatUtils.formatDuration in Chinese', () => {
+  beforeAll(async () => {
+    const zh = JSON.parse(
+      readFileSync(
+        path.resolve(__dirname, '../../public/locales/zh/translation.json'),
+        'utf-8',
+      ),
+    );
+    i18n.addResourceBundle('zh', 'translation', zh, true, true);
+    await i18n.changeLanguage('zh');
+  });
+
+  afterAll(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it.each([
+    [21, '21 毫秒'],
+    [2000, '2 秒'],
+    [90000, '1 分钟 30 秒'],
+    [120000, '2 分钟'],
+  ])('writes %i ms in the short style as %s', (durationMs, expected) => {
+    expect(formatUtils.formatDuration(durationMs, true)).toBe(expected);
+  });
+});

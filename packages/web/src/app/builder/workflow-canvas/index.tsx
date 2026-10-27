@@ -26,6 +26,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useBuilderStateContext } from '../builder-hooks';
 import { useHandleKeyPressOnCanvas } from '../shortcuts';
 import { useCursorPosition } from '../state/cursor-position-context';
+import { NoteDragOverlayMode } from '../state/notes-state';
 
 import {
   CanvasContextMenu,
@@ -57,6 +58,7 @@ export const WorkflowCanvas = React.memo(
       notes,
       canvasOrientation,
       collapsedSteps,
+      noteDragOverlayMode,
     ] = useBuilderStateContext((state) => {
       return [
         state.workflowVersion,
@@ -69,11 +71,14 @@ export const WorkflowCanvas = React.memo(
         state.workflowVersion.notes,
         state.canvasOrientation,
         state.collapsedSteps,
+        state.noteDragOverlayMode,
       ];
     });
     const containerRef = useRef<HTMLDivElement>(null);
     useShowChevronNextToSelection();
     workflowCanvasHooks.useFocusOnStep();
+    workflowCanvasHooks.useFocusOnAddedStep();
+    workflowCanvasHooks.useShiftForRecordsPanel();
     useHandleKeyPressOnCanvas();
     workflowCanvasHooks.useResizeCanvas(
       containerRef,
@@ -229,6 +234,9 @@ export const WorkflowCanvas = React.memo(
               className="bg-builder-background"
               onContextMenu={onContextMenu}
               onPaneClick={() => {
+                if (noteDragOverlayMode === NoteDragOverlayMode.CREATE) {
+                  return;
+                }
                 reactFlowStore.getState().unselectNodesAndEdges();
               }}
               translateExtent={translateExtent}

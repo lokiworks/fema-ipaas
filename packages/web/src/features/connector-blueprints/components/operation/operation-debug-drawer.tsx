@@ -34,6 +34,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { formatUtils } from '@/lib/format-utils';
 
 import { connectorBlueprintHooks } from '../../hooks/connector-blueprint-hooks';
 
@@ -278,11 +279,11 @@ function DebugConsole({
                 {t('Save this record')}
               </Button>
               <Badge variant={result.success ? 'success' : 'destructive'}>
-                {t('{status} · {duration} ms', {
+                {t('{status} · {duration}', {
                   status: result.success
                     ? `${result.status} OK`
                     : result.errorMessage ?? String(result.status),
-                  duration: result.durationMs,
+                  duration: formatUtils.formatDuration(result.durationMs, true),
                 })}
               </Badge>
             </>
@@ -340,7 +341,8 @@ function DebugConsole({
                     {new Date(record.at).toLocaleString()}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {record.status} · {record.durationMs} ms
+                    {record.status} ·{' '}
+                    {formatUtils.formatDuration(record.durationMs, true)}
                   </span>
                   <Button
                     size="sm"

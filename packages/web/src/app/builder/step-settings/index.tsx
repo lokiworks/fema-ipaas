@@ -170,7 +170,6 @@ const StepSettingsContainer = () => {
     });
   const isEmptyTrigger = modifiedStep.type === WorkflowTriggerType.EMPTY;
   const isTriggerStep = workflowStructureUtil.isTrigger(modifiedStep.type);
-  const isInBranchView = !isNil(selectedBranchIndex);
   const showConnectorVersion =
     isConnectorMetadata(stepMetadata) && !!stepMetadata.connectorVersion;
   const showGenerateSampleData =
@@ -426,7 +425,7 @@ const StepSettingsContainer = () => {
           <SidebarHeader
             onClose={() => exitStepSettings()}
             leadingIcon={
-              stepMetadata ? (
+              stepMetadata && isNil(selectedBranchIndex) ? (
                 <ConnectorIcon
                   logoUrl={stepMetadata.logoUrl}
                   displayName={stepMetadata.displayName}
@@ -436,9 +435,9 @@ const StepSettingsContainer = () => {
                 />
               ) : null
             }
-            actions={isInBranchView ? undefined : <StepNavigationButtons />}
+            actions={<StepNavigationButtons />}
             subheader={
-              showConnectorVersion || isInBranchView ? (
+              showConnectorVersion ? (
                 <div className="flex w-full items-center justify-between">
                   {showConnectorVersion &&
                   isConnectorMetadata(stepMetadata) &&
@@ -452,7 +451,6 @@ const StepSettingsContainer = () => {
                   ) : (
                     <span />
                   )}
-                  {isInBranchView && <StepNavigationButtons />}
                 </div>
               ) : undefined
             }

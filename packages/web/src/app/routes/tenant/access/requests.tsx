@@ -3,11 +3,13 @@ import {
   ModuleAccessRequestWithUsers,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
+import { Inbox } from 'lucide-react';
 import { useState } from 'react';
 
 import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -70,6 +72,15 @@ export default function AccessRequestsPage() {
         </Tabs>
         {isLoading ? (
           <Skeleton className="h-48 w-full" />
+        ) : (requests ?? []).length === 0 ? (
+          <ListEmptyState
+            icon={Inbox}
+            title={
+              filter === 'pending'
+                ? t('No requests waiting for review')
+                : t('No permission requests yet')
+            }
+          />
         ) : (
           <Table className="min-w-[44rem]">
             <TableHeader>
@@ -83,15 +94,6 @@ export default function AccessRequestsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(requests ?? []).length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-muted-foreground">
-                    {filter === 'pending'
-                      ? t('No requests waiting for review')
-                      : t('No permission requests yet')}
-                  </TableCell>
-                </TableRow>
-              )}
               {(requests ?? []).map((request) => (
                 <RequestRow key={request.id} request={request} />
               ))}

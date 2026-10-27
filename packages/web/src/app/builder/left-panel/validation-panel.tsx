@@ -39,13 +39,13 @@ export function ValidationPanel() {
   const { issues, errorCount, warningCount, isLoading } =
     useBuilderValidation();
   const displayNumbers = useStepDisplayNumbers();
-  const { fitView } = useReactFlow();
+  const reactFlow = useReactFlow();
   useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
 
   const locate = (issue: ValidationIssue) => {
     const step = workflowStructureUtil.getStep(issue.stepName, trigger);
     workflowCanvasUtils.focusStepAfterLayout({
-      fitView,
+      reactFlow,
       stepName: issue.stepName,
     });
     if (step?.type === WorkflowTriggerType.EMPTY) {

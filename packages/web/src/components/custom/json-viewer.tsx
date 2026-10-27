@@ -1,10 +1,11 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { Copy, Download } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import ReactJson from 'react-json-view';
 import { toast } from 'sonner';
 
+import { useLocalizedObjectSize } from '@/components/custom/use-localized-object-size';
 import { useTheme } from '@/components/providers/theme-provider';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,6 +46,8 @@ const JsonViewer = React.memo(
     className,
   }: JsonViewerProps) => {
     const { resolvedTheme } = useTheme();
+    const containerRef = useRef<HTMLDivElement>(null);
+    useLocalizedObjectSize(containerRef);
     const json = useMemo(() => {
       return removeUndefined(unclearJson);
     }, [unclearJson]);
@@ -70,6 +73,7 @@ const JsonViewer = React.memo(
     };
     return (
       <div
+        ref={containerRef}
         className={cn(
           'rounded-lg border border-solid border-dividers overflow-hidden relative',
           className,

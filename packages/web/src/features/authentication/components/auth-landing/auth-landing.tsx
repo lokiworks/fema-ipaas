@@ -73,21 +73,37 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
 
 function BrandPanel() {
   const branding = flagsHooks.useWebsiteBranding();
-  const welcomeText = branding.welcomeText?.trim() ?? '';
   return (
     <aside className="hidden flex-col justify-between gap-8 border-r bg-sidebar p-12 lg:flex">
+      <BrandPanelContent
+        productName={branding.websiteName}
+        iconUrl={branding.logos.logoIconUrl}
+        welcomeText={branding.welcomeText ?? ''}
+      />
+    </aside>
+  );
+}
+
+function BrandPanelContent({
+  productName,
+  iconUrl,
+  welcomeText,
+}: BrandPanelContentProps) {
+  const trimmedWelcomeText = welcomeText.trim();
+  return (
+    <>
       <div className="flex items-center gap-3">
         <img
-          src={branding.logos.logoIconUrl}
+          src={iconUrl}
           alt=""
           className="size-9 rounded-md object-contain"
         />
-        <span className="text-lg font-semibold">{branding.websiteName}</span>
+        <span className="text-lg font-semibold">{productName}</span>
       </div>
       <div className="flex flex-col gap-3">
-        {welcomeText.length > 0 && (
+        {trimmedWelcomeText.length > 0 && (
           <p className="max-w-md text-3xl font-semibold leading-snug text-foreground">
-            {welcomeText}
+            {trimmedWelcomeText}
           </p>
         )}
         <p className="max-w-md text-sm text-muted-foreground">
@@ -96,10 +112,8 @@ function BrandPanel() {
           )}
         </p>
       </div>
-      <span className="text-xs text-muted-foreground">
-        {branding.websiteName}
-      </span>
-    </aside>
+      <span className="text-xs text-muted-foreground">{productName}</span>
+    </>
   );
 }
 
@@ -108,3 +122,12 @@ const SETUP_PATH = '/setup';
 type AuthLandingProps = {
   initialMode: AuthMode;
 };
+
+type BrandPanelContentProps = {
+  productName: string;
+  iconUrl: string;
+  welcomeText: string;
+};
+
+export { BrandPanelContent };
+export type { BrandPanelContentProps };

@@ -45,7 +45,11 @@ export const useHandleKeyPressOnCanvas = () => {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (isEditableTarget(e.target)) {
+      if (
+        e.defaultPrevented ||
+        isEditableTarget(e.target) ||
+        isInsideOverlay(e.target)
+      ) {
         return;
       }
       const insideSelectionRect =
@@ -196,6 +200,12 @@ export const useHandleKeyPressOnCanvas = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 };
+
+const isInsideOverlay = (target: EventTarget | null): boolean =>
+  target instanceof Element &&
+  target.closest(
+    '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]',
+  ) !== null;
 
 const shortcutHandler = (
   event: KeyboardEvent,

@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { internalErrorToast } from '@/components/ui/sonner';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { variablesApi } from '@/features/variables/api/variables';
 import { useSubmitLock } from '@/hooks/use-submit-lock';
 import { api } from '@/lib/api';
@@ -85,7 +86,7 @@ function VariableForm(props: VariableFormProps) {
   const { existing, onOpenChange, onSaved } = props;
   const isEdit = !!existing;
   const projectId = authenticationSession.getProjectId();
-  const [valueVisible, setValueVisible] = useState(false);
+  const [valueVisible, setValueVisible] = useState(true);
   const [showValueField, setShowValueField] = useState(!isEdit);
   const submitLock = useSubmitLock();
 
@@ -172,14 +173,19 @@ function VariableForm(props: VariableFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel showRequiredIndicator>{t('Name')}</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isEdit}
-                  maxLength={VARIABLE_NAME_MAX_LENGTH}
-                  placeholder="FEISHU_GROUP_ID"
-                />
-              </FormControl>
+              <CharacterCounter
+                length={field.value.length}
+                max={VARIABLE_NAME_MAX_LENGTH}
+              >
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={isEdit}
+                    maxLength={VARIABLE_NAME_MAX_LENGTH}
+                    placeholder="FEISHU_GROUP_ID"
+                  />
+                </FormControl>
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}

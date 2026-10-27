@@ -6,7 +6,7 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Plus, SearchX, Server } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { ConsolePage } from '@/components/custom/console-page';
@@ -81,27 +81,34 @@ function McpServicesContent() {
   }, []);
 
   const all = services ?? [];
-  const counts = {
-    ALL: all.length,
-    MINE: all.filter((service) => service.canEdit).length,
-    OBTAINED: all.filter((service) => service.obtained).length,
-  };
-  const inTab = all.filter((service) => {
-    if (tab === 'MINE') return service.canEdit;
-    if (tab === 'OBTAINED') return service.obtained;
-    return true;
-  });
   const query = search.trim().toLowerCase();
-  const list = useMemo(
-    () =>
-      inTab.filter(
-        (service) =>
-          !query ||
-          `${service.name}${service.key ?? ''}${service.description}`
-            .toLowerCase()
-            .includes(query),
-      ),
-    [inTab, query],
+  const matchesQuery = (service: McpService) =>
+    !query ||
+    `${service.name}${service.key ?? ''}${service.description}`
+      .toLowerCase()
+      .includes(query);
+  const matchesTab = ({
+    service,
+    tabKey,
+  }: {
+    service: McpService;
+    tabKey: ListTab;
+  }) => {
+    if (tabKey === 'MINE') return service.canEdit;
+    if (tabKey === 'OBTAINED') return service.obtained && !service.canEdit;
+    return true;
+  };
+  const searched = all.filter(matchesQuery);
+  const counts = {
+    ALL: searched.length,
+    MINE: searched.filter((service) => matchesTab({ service, tabKey: 'MINE' }))
+      .length,
+    OBTAINED: searched.filter((service) =>
+      matchesTab({ service, tabKey: 'OBTAINED' }),
+    ).length,
+  };
+  const list = searched.filter((service) =>
+    matchesTab({ service, tabKey: tab }),
   );
 
   const myEditableServices = all.filter(

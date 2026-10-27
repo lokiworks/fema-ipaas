@@ -86,6 +86,7 @@ import {
   ConnectorIconWithConnectorName,
   connectorsHooks,
 } from '@/features/connectors';
+import { useMenuHint } from '@/features/project-workspace/components/action-menu';
 import { projectCollectionUtils } from '@/features/projects';
 
 const OWNERSHIP_OPTIONS: { value: ConnectionOwnershipFilter; label: string }[] =
@@ -467,97 +468,80 @@ function ConnectionsPage() {
                 {t('Share')}
               </Button>
             )}
-            <DropdownMenu>
+            <MoreActionsMenu>
+              <DropdownMenuItem onSelect={() => setDetailId(connection.id)}>
+                {t('View Details')}
+              </DropdownMenuItem>
+              {manage && (
+                <DropdownMenuItem
+                  onSelect={() =>
+                    setActiveDialog({
+                      type: 'edit',
+                      connectionId: connection.id,
+                    })
+                  }
+                >
+                  {t('Edit Connection')}
+                </DropdownMenuItem>
+              )}
+              {manage && (
+                <DropdownMenuItem
+                  onSelect={() =>
+                    setActiveDialog({
+                      type: 'reconnect',
+                      connectionId: connection.id,
+                    })
+                  }
+                >
+                  {t('Reconnect')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onSelect={() => {
+                  revalidateConnection(connection.id, {
+                    onSuccess: invalidateAccessible,
+                  });
+                }}
+              >
+                {t('Test Connection')}
+              </DropdownMenuItem>
+              {manage && (
+                <DropdownMenuItem
+                  onSelect={() =>
+                    setActiveDialog({
+                      type: 'access',
+                      connectionId: connection.id,
+                    })
+                  }
+                >
+                  {t('Available projects')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label={t('More actions')}
+                  <div>
+                    <DropdownMenuItem
+                      disabled={!isOwner}
+                      variant="destructive"
+                      onSelect={() =>
+                        setActiveDialog({
+                          type: 'delete',
+                          connectionId: connection.id,
+                        })
+                      }
                     >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
+                      {t('Delete')}
+                    </DropdownMenuItem>
+                  </div>
                 </TooltipTrigger>
-                <TooltipContent>{t('More actions')}</TooltipContent>
+                {!isOwner && (
+                  <TooltipContent>
+                    {t('Only the owner can delete this connection')}
+                  </TooltipContent>
+                )}
               </Tooltip>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => setDetailId(connection.id)}>
-                  {t('View Details')}
-                </DropdownMenuItem>
-                {manage && (
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      setActiveDialog({
-                        type: 'edit',
-                        connectionId: connection.id,
-                      })
-                    }
-                  >
-                    {t('Edit Connection')}
-                  </DropdownMenuItem>
-                )}
-                {manage && (
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      setActiveDialog({
-                        type: 'reconnect',
-                        connectionId: connection.id,
-                      })
-                    }
-                  >
-                    {t('Reconnect')}
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onSelect={() => {
-                    revalidateConnection(connection.id, {
-                      onSuccess: invalidateAccessible,
-                    });
-                  }}
-                >
-                  {t('Test Connection')}
-                </DropdownMenuItem>
-                {manage && (
-                  <DropdownMenuItem
-                    onSelect={() =>
-                      setActiveDialog({
-                        type: 'access',
-                        connectionId: connection.id,
-                      })
-                    }
-                  >
-                    {t('Available projects')}
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <DropdownMenuItem
-                        disabled={!isOwner}
-                        variant="destructive"
-                        onSelect={() =>
-                          setActiveDialog({
-                            type: 'delete',
-                            connectionId: connection.id,
-                          })
-                        }
-                      >
-                        {t('Delete')}
-                      </DropdownMenuItem>
-                    </div>
-                  </TooltipTrigger>
-                  {!isOwner && (
-                    <TooltipContent>
-                      {t('Only the owner can delete this connection')}
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            </MoreActionsMenu>
           </div>
         );
       },
@@ -796,6 +780,30 @@ function ConnectionsPage() {
         />
       )}
     </ConsolePage>
+  );
+}
+
+function MoreActionsMenu({ children }: { children: React.ReactNode }) {
+  const hint = useMenuHint();
+  return (
+    <DropdownMenu {...hint.menuProps}>
+      <Tooltip {...hint.tooltipProps}>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild {...hint.triggerProps}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              aria-label={t('More actions')}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{t('More actions')}</TooltipContent>
+      </Tooltip>
+      <DropdownMenuContent align="end">{children}</DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

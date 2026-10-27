@@ -22,7 +22,8 @@ const isWorkflowController = (stepMetadata: StepMetadata) => {
   }
   return (
     stepMetadata.type === WorkflowActionType.LOOP_ON_ITEMS ||
-    stepMetadata.type === WorkflowActionType.ROUTER
+    stepMetadata.type === WorkflowActionType.ROUTER ||
+    stepMetadata.type === WorkflowActionType.PARALLEL
   );
 };
 

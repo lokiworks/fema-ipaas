@@ -29,35 +29,12 @@ export function ActionMenu({
   align?: 'start' | 'end';
   triggerClassName?: string;
 }) {
-  const [hintOpen, setHintOpen] = useState(false);
-  const hintSuppressed = useRef(false);
+  const hint = useMenuHint();
   return (
-    <DropdownMenu
-      modal={false}
-      onOpenChange={(open) => {
-        setHintOpen(false);
-        hintSuppressed.current = !open;
-      }}
-    >
-      <Tooltip
-        open={hintOpen}
-        onOpenChange={(next) => {
-          if (next && hintSuppressed.current) {
-            return;
-          }
-          setHintOpen(next);
-        }}
-      >
+    <DropdownMenu modal={false} {...hint.menuProps}>
+      <Tooltip {...hint.tooltipProps}>
         <TooltipTrigger asChild>
-          <DropdownMenuTrigger
-            asChild
-            onPointerEnter={() => {
-              hintSuppressed.current = false;
-            }}
-            onBlur={() => {
-              hintSuppressed.current = false;
-            }}
-          >
+          <DropdownMenuTrigger asChild {...hint.triggerProps}>
             {trigger ?? (
               <Button
                 type="button"
@@ -111,6 +88,38 @@ export function ActionMenu({
     </DropdownMenu>
   );
 }
+
+function useMenuHint() {
+  const [hintOpen, setHintOpen] = useState(false);
+  const hintSuppressed = useRef(false);
+  return {
+    menuProps: {
+      onOpenChange: (open: boolean) => {
+        setHintOpen(false);
+        hintSuppressed.current = !open;
+      },
+    },
+    tooltipProps: {
+      open: hintOpen,
+      onOpenChange: (next: boolean) => {
+        if (next && hintSuppressed.current) {
+          return;
+        }
+        setHintOpen(next);
+      },
+    },
+    triggerProps: {
+      onPointerEnter: () => {
+        hintSuppressed.current = false;
+      },
+      onBlur: () => {
+        hintSuppressed.current = false;
+      },
+    },
+  };
+}
+
+export { useMenuHint };
 
 export type ActionMenuItem = {
   key: string;

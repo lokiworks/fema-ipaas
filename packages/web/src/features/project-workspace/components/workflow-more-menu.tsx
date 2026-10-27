@@ -43,10 +43,12 @@ export function WorkflowMoreMenu({
   workflow,
   context,
   triggerClassName,
+  publishAction,
 }: {
   workflow: ProjectTreeWorkflow;
   context: WorkspaceContext;
   triggerClassName?: string;
+  publishAction?: PublishAction;
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -170,15 +172,19 @@ export function WorkflowMoreMenu({
 
   const items: ActionMenuEntry[] = permissions.canEdit
     ? [
-        ...(workflow.published && !workflow.hasUnpublishedChanges
+        ...(publishAction === 'hidden' ||
+        (workflow.published && !workflow.hasUnpublishedChanges)
           ? []
           : [
               {
                 key: 'publish',
                 label: releasesEnabled ? t('Publish to test') : t('Publish'),
                 icon: CloudUpload,
-                disabledReason: permissions.canPublish ? null : t('No access'),
-                onSelect: () => setDialog('publish'),
+                disabledReason: permissions.canPublish
+                  ? publishAction?.disabledReason ?? null
+                  : t('No access'),
+                onSelect:
+                  publishAction?.onSelect ?? (() => setDialog('publish')),
               },
             ]),
         ...(releasesEnabled
@@ -383,6 +389,10 @@ export function WorkflowMoreMenu({
     </>
   );
 }
+
+export type PublishAction =
+  | 'hidden'
+  | { onSelect: () => void; disabledReason: string | null };
 
 type DialogKind =
   | 'info'

@@ -172,7 +172,7 @@ export function ProjectSettingsDialog({
           {tabs.find((tab) => tab.id === shownTab)?.label}
         </DialogTitle>
         <DialogDescription className="sr-only">
-          {t('Manage the members of this project and adjust its limits.')}
+          {t('Manage the members of this project.')}
         </DialogDescription>
         <div className="flex h-[700px]">
           <div className="w-[238px]">

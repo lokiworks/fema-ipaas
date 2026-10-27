@@ -10,6 +10,7 @@ import { useState } from 'react';
 
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -75,6 +76,14 @@ function PoliciesTab() {
       </div>
       {isLoading ? (
         <Skeleton className="h-40 w-full" />
+      ) : (policies ?? []).length === 0 ? (
+        <ListEmptyState
+          icon={BellRing}
+          title={t('No alert policies yet')}
+          description={t(
+            'Issues still appear in each project, but nobody is notified.',
+          )}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -137,18 +146,6 @@ function PoliciesTab() {
                 </TableCell>
               </TableRow>
             ))}
-            {(policies ?? []).length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-sm text-muted-foreground"
-                >
-                  {t(
-                    'No alert policies yet. Issues still appear in each project, but nobody is notified.',
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       )}
@@ -192,6 +189,14 @@ function ChannelsTab() {
       </div>
       {isLoading ? (
         <Skeleton className="h-40 w-full" />
+      ) : (channels ?? []).length === 0 ? (
+        <ListEmptyState
+          icon={Send}
+          title={t('No channels yet')}
+          description={t(
+            'Add a Feishu, WeCom, DingTalk, Slack, webhook or email channel.',
+          )}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -277,18 +282,6 @@ function ChannelsTab() {
                 </TableCell>
               </TableRow>
             ))}
-            {(channels ?? []).length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-sm text-muted-foreground"
-                >
-                  {t(
-                    'No channels yet. Add a Feishu, WeCom, DingTalk, Slack, webhook or email channel.',
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       )}
@@ -333,6 +326,11 @@ function RecordsTab() {
       )}
       {isLoading ? (
         <Skeleton className="h-40 w-full" />
+      ) : (page?.data ?? []).length === 0 ? (
+        <ListEmptyState
+          icon={BellRing}
+          title={t('No alerts have been sent yet.')}
+        />
       ) : (
         <Table>
           <TableHeader>
@@ -381,19 +379,6 @@ function RecordsTab() {
                 </TableCell>
               </TableRow>
             ))}
-            {(page?.data ?? []).length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-sm text-muted-foreground"
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <BellRing className="size-4" />
-                    {t('No alerts have been sent yet.')}
-                  </span>
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       )}

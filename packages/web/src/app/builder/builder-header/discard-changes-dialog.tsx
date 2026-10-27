@@ -12,10 +12,12 @@ import {
 
 export function DiscardChangesDialog({
   open,
+  isRunning,
   onCancel,
   onConfirm,
 }: {
   open: boolean;
+  isRunning: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -25,9 +27,13 @@ export function DiscardChangesDialog({
         <DialogHeader>
           <DialogTitle>{t('Discard unpublished changes?')}</DialogTitle>
           <DialogDescription>
-            {t(
-              'The draft goes back to the live version. Edits made since then are lost and cannot be restored. The live version keeps running unchanged.',
-            )}
+            {isRunning
+              ? t(
+                  'The draft goes back to the live version. Edits made since then are lost and cannot be restored. The live version keeps running unchanged.',
+                )
+              : t(
+                  'The draft goes back to the live version. Edits made since then are lost and cannot be restored.',
+                )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -55,8 +55,16 @@ const BigAddButtonCanvasNode = React.memo(
               height: `${stepNodeSize.height}px`,
               width: `${stepNodeSize.width}px`,
             }}
-            className="flex justify-center items-center "
+            className="relative flex justify-center items-center "
           >
+            {!readonly && (
+              <div className="absolute left-0 top-0">
+                <BigAddButtonConnector
+                  isHorizontal={isHorizontal}
+                  stepNodeSize={stepNodeSize}
+                />
+              </div>
+            )}
             {!readonly && (
               //we use transparent colors when opening the connector selector, so to not show the pattern of the background inside the button, we wrap the big add button in a div with the background color
               <div
@@ -141,31 +149,10 @@ const BigAddButtonCanvasNode = React.memo(
                 }}
                 className=" cursor-auto  flex items-center justify-center relative "
               >
-                <svg
-                  height={stepNodeSize.height}
-                  width={stepNodeSize.width}
-                  className="overflow-visible border-transparent "
-                  style={{
-                    stroke: 'var(--xy-edge-stroke, var(--xy-edge-stroke))',
-                  }}
-                  shapeRendering="auto"
-                >
-                  <g>
-                    <path
-                      d={
-                        isHorizontal
-                          ? `M -10 ${stepNodeSize.height / 2} h ${
-                              stepNodeSize.width + 14
-                            }`
-                          : `M ${stepNodeSize.width / 2} -10 v ${
-                              stepNodeSize.height + 14
-                            }`
-                      }
-                      fill="transparent"
-                      strokeWidth="1.5"
-                    />
-                  </g>
-                </svg>
+                <BigAddButtonConnector
+                  isHorizontal={isHorizontal}
+                  stepNodeSize={stepNodeSize}
+                />
               </div>
             )}
           </div>
@@ -185,6 +172,38 @@ const BigAddButtonCanvasNode = React.memo(
     );
   },
 );
+
+function BigAddButtonConnector({
+  isHorizontal,
+  stepNodeSize,
+}: {
+  isHorizontal: boolean;
+  stepNodeSize: { width: number; height: number };
+}) {
+  return (
+    <svg
+      height={stepNodeSize.height}
+      width={stepNodeSize.width}
+      className="overflow-visible border-transparent "
+      style={{
+        stroke: 'var(--xy-edge-stroke, var(--xy-edge-stroke))',
+      }}
+      shapeRendering="auto"
+    >
+      <g>
+        <path
+          d={
+            isHorizontal
+              ? `M -10 ${stepNodeSize.height / 2} h ${stepNodeSize.width + 14}`
+              : `M ${stepNodeSize.width / 2} -10 v ${stepNodeSize.height + 14}`
+          }
+          fill="transparent"
+          strokeWidth="1.5"
+        />
+      </g>
+    </svg>
+  );
+}
 
 BigAddButtonCanvasNode.displayName = 'BigAddButtonCanvasNode';
 export { BigAddButtonCanvasNode };

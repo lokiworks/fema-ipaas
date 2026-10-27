@@ -19,7 +19,10 @@ import {
   userInvitationsHooks,
 } from '@/features/invitations';
 import { projectMembersHooks } from '@/features/project-members';
-import { memberRows } from '@/features/project-workspace/lib/member-rows';
+import {
+  MemberRow,
+  memberRows,
+} from '@/features/project-workspace/lib/member-rows';
 import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
 import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
@@ -57,6 +60,12 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
     ownerId: project.ownerId,
     ownerName: directory?.find((item) => item.id === project.id)?.ownerName,
   });
+  const adminCount = rows.filter(
+    (row) => row.role === DefaultProjectRole.ADMIN,
+  ).length;
+  const isSoleOwner = (member: MemberRow) =>
+    member.userId === project.ownerId ||
+    (member.role === DefaultProjectRole.ADMIN && adminCount === 1);
   const pending = (invitations ?? []).filter(
     (invitation) => invitation.status === InvitationStatus.PENDING,
   );
@@ -124,18 +133,20 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
                     ))}
                   </SelectContent>
                 </Select>
-                <ConfirmationDeleteDialog
-                  title={t('Remove from project')}
-                  message={t(
-                    'They lose access to every workflow and connection in this project.',
-                  )}
-                  mutationFn={async () => removeMember(member.id)}
-                  entityName={t('member')}
-                >
-                  <Button variant="ghost" size="sm" disabled={readonly}>
-                    <Trash className="size-4" />
-                  </Button>
-                </ConfirmationDeleteDialog>
+                {!isSoleOwner(member) && (
+                  <ConfirmationDeleteDialog
+                    title={t('Remove from project')}
+                    message={t(
+                      'They lose access to every workflow and connection in this project.',
+                    )}
+                    mutationFn={async () => removeMember(member.id)}
+                    entityName={t('member')}
+                  >
+                    <Button variant="ghost" size="sm" disabled={readonly}>
+                      <Trash className="size-4" />
+                    </Button>
+                  </ConfirmationDeleteDialog>
+                )}
               </div>
             )}
           </div>

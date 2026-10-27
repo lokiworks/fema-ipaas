@@ -42,7 +42,6 @@ async function downloadWorkflowAsImage({
   await workflowImage.decode();
   const composedCanvas = composeImageWithCanvasBackground({
     workflowImage,
-    viewportElement,
     exportLayout,
   });
   await downloadCanvasAsPng({
@@ -54,9 +53,7 @@ async function downloadWorkflowAsImage({
 /**
  * The exported image covers the node bounds plus padding, scaled up for
  * crispness — unless that would exceed the browser canvas size limit, in
- * which case resolution is traded for coverage. `origin` is where the workflow
- * coordinate system's padded top-left corner lands in image pixels; both the
- * capture transform and the dot grid alignment derive from it.
+ * which case resolution is traded for coverage.
  */
 function calculateExportLayout(bounds: Bounds): ExportLayout {
   const contentWidth = bounds.width + 2 * IMAGE_PADDING;
@@ -289,11 +286,9 @@ async function fetchImageAsDataUrl(source: string): Promise<string | null> {
 
 function composeImageWithCanvasBackground({
   workflowImage,
-  viewportElement,
   exportLayout,
 }: {
   workflowImage: HTMLImageElement;
-  viewportElement: HTMLElement;
   exportLayout: ExportLayout;
 }): HTMLCanvasElement {
   const { imageWidth, imageHeight } = exportLayout;
@@ -306,7 +301,6 @@ function composeImageWithCanvasBackground({
   }
   context.fillStyle = getCanvasBackgroundColor();
   context.fillRect(0, 0, imageWidth, imageHeight);
-  drawCanvasDotPattern({ context, viewportElement, exportLayout });
   context.drawImage(workflowImage, 0, 0, imageWidth, imageHeight);
   drawPoweredByBranding({ context, exportLayout });
   return composedCanvas;
@@ -392,97 +386,11 @@ function readPoweredBySegments(
     }));
 }
 
-/**
- * The dotted canvas background lives outside the captured viewport element
- * (React Workflow draws it on a sibling layer), so redraw the same dot grid —
- * read from the live background pattern — onto the exported image.
- */
-function drawCanvasDotPattern({
-  context,
-  viewportElement,
-  exportLayout,
-}: {
-  context: CanvasRenderingContext2D;
-  viewportElement: HTMLElement;
-  exportLayout: ExportLayout;
-}): void {
-  const { imageWidth, imageHeight, origin, scale } = exportLayout;
-  const dotPattern = readBackgroundDotPattern(viewportElement);
-  if (!dotPattern) {
-    return;
-  }
-  const gap = dotPattern.gap * scale;
-  const radius = dotPattern.radius * scale;
-  if (gap < 1 || radius <= 0) {
-    return;
-  }
-  // drawing one tile and repeating it is orders of magnitude faster than
-  // arc-filling every dot on a large export
-  const tileSize = Math.max(1, Math.round(gap));
-  const tile = document.createElement('canvas');
-  tile.width = tileSize;
-  tile.height = tileSize;
-  const tileContext = tile.getContext('2d');
-  if (!tileContext) {
-    return;
-  }
-  tileContext.fillStyle = dotPattern.color;
-  tileContext.beginPath();
-  tileContext.arc(radius, radius, radius, 0, 2 * Math.PI);
-  tileContext.fill();
-  const pattern = context.createPattern(tile, 'repeat');
-  if (!pattern) {
-    return;
-  }
-  const originX = positiveModulo(origin.x, gap);
-  const originY = positiveModulo(origin.y, gap);
-  context.save();
-  context.translate(originX, originY);
-  context.fillStyle = pattern;
-  context.fillRect(-originX, -originY, imageWidth + gap, imageHeight + gap);
-  context.restore();
-}
-
-function readBackgroundDotPattern(viewportElement: HTMLElement): {
-  gap: number;
-  radius: number;
-  color: string;
-} | null {
-  const patternElement = document.querySelector<SVGPatternElement>(
-    '.react-flow__background pattern',
-  );
-  const circleElement = patternElement?.querySelector('circle');
-  if (!patternElement || !circleElement) {
-    return null;
-  }
-  const zoomMatch = viewportElement.style.transform.match(/scale\(([\d.]+)\)/);
-  const zoom = zoomMatch ? Number(zoomMatch[1]) : NaN;
-  if (!Number.isFinite(zoom) || zoom <= 0) {
-    return null;
-  }
-  return {
-    gap: patternElement.width.baseVal.value / zoom,
-    radius: circleElement.r.baseVal.value / zoom,
-    color: getComputedStyle(circleElement).fill,
-  };
-}
-
-function positiveModulo(value: number, modulo: number): number {
-  return ((value % modulo) + modulo) % modulo;
-}
-
 function getCanvasBackgroundColor(): string {
-  // the canvas element itself can have a transparent background (the visible
-  // color then comes from a parent), so walk up to the first painted one
-  let element = document.querySelector<HTMLElement>('.react-flow');
-  while (element) {
-    const backgroundColor = getComputedStyle(element).backgroundColor;
-    if (backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)') {
-      return backgroundColor;
-    }
-    element = element.parentElement;
-  }
-  return '#ffffff';
+  const background = getComputedStyle(document.documentElement)
+    .getPropertyValue('--builder-background')
+    .trim();
+  return background === '' ? '#ffffff' : background;
 }
 
 function sanitizeFileName(name: string): string {
@@ -574,7 +482,6 @@ const CAPTURE_STYLE_PROPERTIES = [
   'outline-color',
   'outline-offset',
   'background-color',
-  'background-image',
   'background-size',
   'background-position',
   'background-repeat',

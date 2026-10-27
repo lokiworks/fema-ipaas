@@ -150,10 +150,10 @@ function UnresolvedIssues() {
                   navigate(`/projects/${issue.projectId}/issues/${issue.id}`)
                 }
               >
-                <TableCell className="max-w-[28rem]">
+                <TableCell className="min-w-[16rem] max-w-[28rem]">
                   <IssueTitle issue={issue} />
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="text-sm whitespace-nowrap">
                   {issue.projectDisplayName}
                 </TableCell>
                 <TableCell className="text-sm whitespace-nowrap">

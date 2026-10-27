@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { Download } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { ConsolePage } from '@/components/custom/console-page';
@@ -282,6 +282,11 @@ function AuditRow({
 }) {
   const summary = auditEventUtils.summarize({ event, workflowNames });
   const projectLabel = projectLabelOf({ event, projectNameById });
+  const runId = auditEventUtils.runIdOf(event);
+  const runPath =
+    runId && event.projectId
+      ? `/projects/${event.projectId}/runs/${runId}`
+      : null;
   return (
     <TableRow>
       <TableCell className="whitespace-nowrap">
@@ -297,7 +302,16 @@ function AuditRow({
       </TableCell>
       <TableCell className="max-w-[28rem]">
         <TextWithTooltip tooltipMessage={summary}>
-          <p className="truncate text-muted-foreground">{summary}</p>
+          {runPath ? (
+            <Link
+              to={runPath}
+              className="block truncate text-primary hover:underline"
+            >
+              {summary}
+            </Link>
+          ) : (
+            <p className="truncate text-muted-foreground">{summary}</p>
+          )}
         </TextWithTooltip>
       </TableCell>
       <TableCell className="max-w-48 text-muted-foreground">

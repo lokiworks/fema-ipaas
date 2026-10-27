@@ -1066,3 +1066,5 @@ type AuthStepProps = {
 type Step = 'method' | 'code' | 'verified' | 'name' | 'password' | 'reset';
 
 export type AuthMode = 'signin' | 'signup';
+
+export { Heading as AuthHeading, ModeSwitch as AuthModeSwitch };

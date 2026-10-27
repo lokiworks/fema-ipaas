@@ -2,6 +2,8 @@ import {
   ComponentHealthCheck,
   ComponentHealthLevel,
   HealthComponent,
+  WorkerNode,
+  WorkerNodeStatus,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { RefreshCw } from 'lucide-react';
@@ -18,13 +20,17 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { tenantAccessHooks } from '@/features/tenant-access';
+import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 
 export function ComponentHealthTab() {
   const { data, isLoading, refetch, isFetching } =
     tenantAccessHooks.useComponentHealth();
   const { mutate: confirmBackup, isPending } =
     tenantAccessHooks.useConfirmBackup();
+  const { data: fleet } = tenantAccessHooks.useWorkerFleet();
+  const workerCounts = fleet
+    ? countWorkers(tenantAccessUtils.dedupeWorkerNodes(fleet.nodes))
+    : null;
   if (isLoading || !data) {
     return <Skeleton className="mt-4 h-96 w-full" />;
   }
@@ -64,7 +70,9 @@ export function ComponentHealthTab() {
               {componentLabel(check.component)}
               <LevelBadge level={check.level} />
             </ItemTitle>
-            <ItemDescription>{describe(check)}</ItemDescription>
+            <ItemDescription>
+              {describe({ check, workerCounts })}
+            </ItemDescription>
           </ItemContent>
           <ItemActions>
             {check.component === HealthComponent.BACKUP ? (
@@ -135,7 +143,27 @@ function componentLabel(component: HealthComponent): string {
   }
 }
 
-function describe(check: ComponentHealthCheck): string {
+function countWorkers(nodes: WorkerNode[]): WorkerCounts {
+  const countOf = (status: WorkerNodeStatus) =>
+    nodes.filter((node) => node.status === status).length;
+  return {
+    online: countOf(WorkerNodeStatus.ONLINE),
+    draining: countOf(WorkerNodeStatus.DRAINING),
+    offline: countOf(WorkerNodeStatus.OFFLINE),
+    versionMismatched: nodes.filter(
+      (node) =>
+        node.status !== WorkerNodeStatus.OFFLINE && !node.versionMatchesApp,
+    ).length,
+  };
+}
+
+function describe({
+  check,
+  workerCounts,
+}: {
+  check: ComponentHealthCheck;
+  workerCounts: WorkerCounts | null;
+}): string {
   const facts = check.facts;
   const text = (key: string): string => String(facts[key] ?? '');
   switch (check.component) {
@@ -207,10 +235,11 @@ function describe(check: ComponentHealthCheck): string {
       return t(
         '{online} online, {draining} draining, {offline} offline, {mismatched} on a different version',
         {
-          online: text('online'),
-          draining: text('draining'),
-          offline: text('offline'),
-          mismatched: text('versionMismatched'),
+          online: workerCounts?.online ?? text('online'),
+          draining: workerCounts?.draining ?? text('draining'),
+          offline: workerCounts?.offline ?? text('offline'),
+          mismatched:
+            workerCounts?.versionMismatched ?? text('versionMismatched'),
         },
       );
   }
@@ -259,3 +288,10 @@ function linkFor(component: HealthComponent): string | null {
       return null;
   }
 }
+
+type WorkerCounts = {
+  online: number;
+  draining: number;
+  offline: number;
+  versionMismatched: number;
+};

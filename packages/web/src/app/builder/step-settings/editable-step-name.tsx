@@ -60,7 +60,7 @@ const EditableStepName: React.FC<EditableStepNameProps> = ({
       {inBranchView ? (
         <>
           <div
-            className="truncate cursor-pointer hover:underline"
+            className="min-w-0 shrink truncate cursor-pointer hover:underline"
             onClick={(e) => {
               e.stopPropagation();
               setSelectedBranchIndex(null);

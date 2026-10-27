@@ -189,30 +189,27 @@ export const formatUtils = {
     if (durationMs < 1000) {
       const durationMsFormatted = Math.floor(durationMs);
       return short
-        ? `${durationMsFormatted} ms`
+        ? t('durationMillisecondsShort', { count: durationMsFormatted })
         : t('durationMilliseconds', { count: durationMsFormatted });
     }
     const seconds = Math.floor(durationMs / 1000);
     const minutes = Math.floor(seconds / 60);
+    const secondsLabel = (count: number) =>
+      short
+        ? t('durationSecondsShort', { count })
+        : t('durationSeconds', { count });
 
-    if (seconds < 60) {
-      return short ? `${seconds} s` : t('durationSeconds', { count: seconds });
+    if (minutes === 0) {
+      return secondsLabel(seconds);
     }
 
-    if (minutes > 0) {
-      const remainingSeconds = seconds % 60;
-      if (short) {
-        return `${minutes} min ${
-          remainingSeconds > 0 ? `${remainingSeconds} s` : ''
-        }`;
-      }
-      return remainingSeconds > 0
-        ? `${t('durationMinutes', { count: minutes })} ${t('durationSeconds', {
-            count: remainingSeconds,
-          })}`
-        : t('durationMinutes', { count: minutes });
-    }
-    return short ? `${seconds} s` : t('durationSeconds', { count: seconds });
+    const remainingSeconds = seconds % 60;
+    const minutesLabel = short
+      ? t('durationMinutesShort', { count: minutes })
+      : t('durationMinutes', { count: minutes });
+    return remainingSeconds > 0
+      ? `${minutesLabel} ${secondsLabel(remainingSeconds)}`
+      : minutesLabel;
   },
   formatStorageSize(bytes: number): string {
     if (bytes < 1024) {

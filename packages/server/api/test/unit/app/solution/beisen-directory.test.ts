@@ -11,4 +11,15 @@ describe('beisenDirectorySolutions', () => {
             expect(connectionChecks.map((check) => check.connectorName)).toEqual(connectorNames)
         }
     })
+
+    it('words the dingtalk leave step without dangling the account suffix', () => {
+        const text = JSON.stringify(beisenDirectorySolutions.people({ target: 'dingtalk' }).package)
+        expect(text).toContain('员工离职移动到待离职部门，账号不暂停')
+        expect(text).not.toContain('（不暂停）账号')
+    })
+
+    it('words the wecom leave step as disabling the account', () => {
+        const text = JSON.stringify(beisenDirectorySolutions.people({ target: 'wecom' }).package)
+        expect(text).toContain('员工离职停用企业微信账号')
+    })
 })

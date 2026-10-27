@@ -15,6 +15,7 @@ import {
   WorkflowTriggerType,
   Note,
 } from '@fema-ipaas/shared';
+import { ReactFlowInstance } from '@xyflow/react';
 import { t } from 'i18next';
 
 import { executionUtils } from '@/features/executions';
@@ -241,19 +242,76 @@ function createFocusStepInGraphParams(stepName: string) {
   };
 }
 
+function centerOnStep({
+  reactFlow,
+  stepName,
+  zoom,
+  duration,
+}: {
+  reactFlow: ReactFlowInstance;
+  stepName: string;
+  zoom?: number;
+  duration: number;
+}) {
+  const node = reactFlow.getInternalNode(stepName);
+  if (isNil(node)) {
+    return;
+  }
+  const width = node.measured.width ?? 0;
+  const height = node.measured.height ?? 0;
+  void reactFlow.setCenter(
+    node.internals.positionAbsolute.x + width / 2,
+    node.internals.positionAbsolute.y + height / 2,
+    { zoom: zoom ?? reactFlow.getZoom(), duration },
+  );
+}
+
 function focusStepAfterLayout({
-  fitView,
+  reactFlow,
+  stepName,
+  zoom = FOCUS_ZOOM,
+}: {
+  reactFlow: ReactFlowInstance;
+  stepName: string;
+  zoom?: number;
+}) {
+  window.setTimeout(() => {
+    centerOnStep({ reactFlow, stepName, zoom, duration: FOCUS_DURATION_MS });
+    window.setTimeout(
+      () => centerOnStep({ reactFlow, stepName, zoom, duration: 0 }),
+      FOCUS_DURATION_MS + FOCUS_SETTLE_DELAY_MS,
+    );
+  }, FOCUS_AFTER_LAYOUT_DELAY_MS);
+}
+
+function ensureStepInViewAfterLayout({
+  reactFlow,
   stepName,
 }: {
-  fitView: (
-    options: ReturnType<typeof createFocusStepInGraphParams>,
-  ) => unknown;
+  reactFlow: ReactFlowInstance;
   stepName: string;
 }) {
-  window.setTimeout(
-    () => fitView(createFocusStepInGraphParams(stepName)),
-    FOCUS_AFTER_LAYOUT_DELAY_MS,
-  );
+  window.setTimeout(() => {
+    const nodeElement = document.querySelector<HTMLElement>(
+      `.react-flow__node[data-id="${CSS.escape(stepName)}"]`,
+    );
+    const canvasElement = document.querySelector<HTMLElement>('.react-flow');
+    if (isNil(nodeElement) || isNil(canvasElement)) {
+      return;
+    }
+    const node = nodeElement.getBoundingClientRect();
+    const canvas = canvasElement.getBoundingClientRect();
+    const marginX = canvas.width * VIEW_SAFE_MARGIN_RATIO;
+    const marginY = canvas.height * VIEW_SAFE_MARGIN_RATIO;
+    const isInsideSafeArea =
+      node.left >= canvas.left + marginX &&
+      node.right <= canvas.right - marginX &&
+      node.top >= canvas.top + marginY &&
+      node.bottom <= canvas.bottom - marginY;
+    if (!isInsideSafeArea) {
+      centerOnStep({ reactFlow, stepName, duration: FOCUS_DURATION_MS });
+    }
+  }, FOCUS_AFTER_LAYOUT_DELAY_MS);
 }
 
 const calculateGraphBoundingBox = ({
@@ -803,6 +861,8 @@ export const workflowCanvasUtils = {
   },
   createFocusStepInGraphParams,
   focusStepAfterLayout,
+  ensureStepInViewAfterLayout,
+  centerOnStep,
   calculateGraphBoundingBox,
   createAddOperationFromAddButtonData,
   isSkipped,
@@ -814,3 +874,7 @@ export const workflowCanvasUtils = {
 type BranchingAction = RouterAction | ParallelAction;
 
 const FOCUS_AFTER_LAYOUT_DELAY_MS = 350;
+const FOCUS_DURATION_MS = 400;
+const FOCUS_SETTLE_DELAY_MS = 100;
+const FOCUS_ZOOM = 1.25;
+const VIEW_SAFE_MARGIN_RATIO = 0.15;

@@ -98,8 +98,8 @@ function CurrentVersionCard({ overview }: { overview: SystemOverview }) {
     {
       label: t('Installed'),
       value: t('{date} ({days} days ago)', {
-        date: installed.format('YYYY-MM-DD'),
-        days: dayjs().diff(installed, 'day'),
+        date: installed.format('YYYY/MM/DD'),
+        days: dayjs().startOf('day').diff(installed.startOf('day'), 'day'),
       }),
     },
     {
@@ -170,7 +170,7 @@ function CurrentVersionCard({ overview }: { overview: SystemOverview }) {
 function UpdateCard({ overview }: { overview: SystemOverview }) {
   const recheck = systemHooks.useRecheck();
   const { release } = overview;
-  const checkedAt = dayjs(release.checkedAt).format('YYYY-MM-DD HH:mm');
+  const checkedAt = dayjs(release.checkedAt).format('YYYY/MM/DD HH:mm');
   return (
     <>
       <Card>

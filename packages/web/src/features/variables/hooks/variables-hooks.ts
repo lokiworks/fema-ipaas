@@ -1,9 +1,7 @@
 import { ListVariablesRequestQuery } from '@fema-ipaas/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { t } from 'i18next';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
 
 import {
   CURSOR_QUERY_PARAM,
@@ -71,7 +69,6 @@ export const variablesMutations = {
       },
       onSuccess: () => {
         refetch();
-        toast.success(t('Variables deleted'));
       },
       onError: () => {
         internalErrorToast();

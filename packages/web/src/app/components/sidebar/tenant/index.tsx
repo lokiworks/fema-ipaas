@@ -48,16 +48,8 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
   const { data: myAccess } = tenantAccessHooks.useMyAccess();
   const pendingRequests = tenantAccessHooks.usePendingRequestCount();
 
-  const allGroups: {
-    label: string;
-    items: {
-      to: string;
-      label: string;
-      icon?: ComponentType<{ className?: string }>;
-      badge?: string;
-      module?: TenantModule;
-    }[];
-  }[] = [
+  const isConnectorsModule = tenantSidebarUtils.isConnectorsModule(pathname);
+  const adminGroups: SidebarGroupConfig[] = [
     {
       label: t('General'),
       items: [
@@ -106,33 +98,6 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
           to: '/tenant/limits/usage',
           label: t('Usage and limits'),
           icon: GaugeIcon,
-        },
-      ],
-    },
-    {
-      label: t('Connectors'),
-      items: [
-        {
-          to: '/tenant/connectors',
-          label: t('Connector Marketplace'),
-          icon: PuzzleIcon,
-        },
-        {
-          to: '/tenant/connectors/requests',
-          label: t('Connector requests'),
-          icon: InboxIcon,
-        },
-        {
-          to: '/tenant/connectors/development',
-          label: t('Connector Development'),
-          icon: TerminalIcon,
-          module: TenantModule.CONNECTOR_DEVELOPMENT,
-        },
-        {
-          to: '/tenant/connectors/openapi',
-          label: t('Import from OpenAPI'),
-          icon: FileJson2Icon,
-          module: TenantModule.CONNECTOR_DEVELOPMENT,
         },
       ],
     },
@@ -222,6 +187,35 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
       ],
     },
   ];
+  const connectorGroups: SidebarGroupConfig[] = [
+    {
+      items: [
+        {
+          to: '/tenant/connectors',
+          label: t('Connector Marketplace'),
+          icon: PuzzleIcon,
+        },
+        {
+          to: '/tenant/connectors/requests',
+          label: t('Connector requests'),
+          icon: InboxIcon,
+        },
+        {
+          to: '/tenant/connectors/development',
+          label: t('Connector Development'),
+          icon: TerminalIcon,
+          module: TenantModule.CONNECTOR_DEVELOPMENT,
+        },
+        {
+          to: '/tenant/connectors/openapi',
+          label: t('Import from OpenAPI'),
+          icon: FileJson2Icon,
+          module: TenantModule.CONNECTOR_DEVELOPMENT,
+        },
+      ],
+    },
+  ];
+  const allGroups = isConnectorsModule ? connectorGroups : adminGroups;
   const groups = isTenantAdmin
     ? allGroups
     : allGroups
@@ -246,14 +240,19 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
       className={cn('w-[220px] shrink-0 border-r', className)}
     >
       <div className="px-4 pb-1 pt-4 text-base font-semibold">
-        {t('Tenant Admin')}
+        {isConnectorsModule ? t('Connectors') : t('Tenant Admin')}
       </div>
       <div className="flex-1 overflow-y-auto">
         <SidebarContent className="gap-0">
           {groups.map((group, idx) => (
-            <SidebarGroup key={group.label} className="cursor-default shrink-0">
+            <SidebarGroup
+              key={group.label ?? 'items'}
+              className="cursor-default shrink-0"
+            >
               {idx > 0 && <SidebarSeparator className="mb-3" />}
-              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              {group.label && (
+                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              )}
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => (
@@ -288,7 +287,24 @@ function findActiveTo({ pathname, paths }: FindActiveToParams): string | null {
   );
 }
 
-const tenantSidebarUtils = { findActiveTo };
+const CONNECTORS_MODULE_PREFIX = '/tenant/connectors';
+
+function isConnectorsModule(pathname: string): boolean {
+  return pathname.startsWith(CONNECTORS_MODULE_PREFIX);
+}
+
+const tenantSidebarUtils = { findActiveTo, isConnectorsModule };
+
+type SidebarGroupConfig = {
+  label?: string;
+  items: {
+    to: string;
+    label: string;
+    icon?: ComponentType<{ className?: string }>;
+    badge?: string;
+    module?: TenantModule;
+  }[];
+};
 
 type FindActiveToParams = {
   pathname: string;

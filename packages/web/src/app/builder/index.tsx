@@ -25,6 +25,7 @@ import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
 import { BuilderHeader } from './builder-header/builder-header';
+import { useHydrateDebugTestedSteps } from './debug/use-hydrate-debug-tested-steps';
 import { BuilderLeftPanel } from './left-panel';
 import { ReferenceDragLayer } from './reference-drag/reference-drag-layer';
 import { CursorPositionProvider } from './state/cursor-position-context';
@@ -106,6 +107,7 @@ const BuilderPage = () => {
   const { data: flowComponents } = componentsHooks.useComponents();
   workflowCanvasHooks.useSetSocketListener(refetchConnector);
   workflowCanvasHooks.useListenToExistingRun();
+  useHydrateDebugTestedSteps();
 
   const [hasCanvasBeenInitialised, setHasCanvasBeenInitialised] =
     useState(false);

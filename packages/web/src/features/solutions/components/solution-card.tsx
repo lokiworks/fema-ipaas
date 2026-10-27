@@ -13,7 +13,7 @@ function SolutionCard({ solution, onClick }: SolutionCardProps) {
   return (
     <Card
       variant="interactive"
-      className="gap-3 p-4 text-left"
+      className="h-full gap-3 p-4 text-left"
       role="button"
       tabIndex={0}
       onClick={onClick}

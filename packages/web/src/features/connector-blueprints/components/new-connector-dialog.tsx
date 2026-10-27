@@ -130,6 +130,7 @@ function NewConnectorForm({
         : '',
     );
     form.setValue('presetId', preset?.id ?? null);
+    form.clearErrors();
     setStep(1);
   };
 

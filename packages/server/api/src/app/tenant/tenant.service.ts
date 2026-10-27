@@ -128,6 +128,7 @@ export const tenantService = (log: FastifyBaseLogger) => ({
             where: {},
             order: {
                 created: 'ASC',
+                id: 'ASC',
             },
         })
     },

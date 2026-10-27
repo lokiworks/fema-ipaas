@@ -612,9 +612,12 @@ const CAPTURE_STYLE_PROPERTIES = [
   'fill-opacity',
 ];
 
+const EXCLUDE_PROPS = { [SCREENSHOT_EXCLUDE_ATTRIBUTE]: 'ignore-me' };
+
 export const workflowScreenshotUtils = {
   downloadWorkflowAsImage,
   SCREENSHOT_EXCLUDE_ATTRIBUTE,
+  EXCLUDE_PROPS,
 };
 
 type Point = { x: number; y: number };

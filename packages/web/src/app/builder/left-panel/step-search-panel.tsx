@@ -74,10 +74,18 @@ export function StepSearchPanel() {
                   stepName: step.name,
                 });
               }}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex w-full min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="min-w-0 grow truncate">{step.displayName}</span>
-              <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+              <span
+                className="max-w-[75%] shrink-0 truncate"
+                title={step.displayName}
+              >
+                {step.displayName}
+              </span>
+              <span
+                className="min-w-0 grow truncate text-right font-mono text-[11px] text-muted-foreground"
+                title={displayNumbers[step.name]}
+              >
                 {displayNumbers[step.name]}
               </span>
             </button>

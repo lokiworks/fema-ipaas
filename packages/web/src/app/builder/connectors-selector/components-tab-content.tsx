@@ -9,7 +9,7 @@ import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import {
   componentLogoUrl,
   componentsHooks,
-  TranslatedComponentMetadata,
+  componentSearchUtils,
 } from '@/features/components';
 import {
   ConnectorSelectorTabType,
@@ -71,7 +71,7 @@ const ComponentsTabContent = ({
   }
 
   const matching = (components ?? []).filter((component) =>
-    matchesSearch(component, searchQuery),
+    componentSearchUtils.matches({ component, searchQuery }),
   );
 
   if (matching.length === 0) {
@@ -110,7 +110,7 @@ const ComponentsTabContent = ({
 
   if (isSearching) {
     return (
-      <div className="max-h-60 shrink-0 overflow-y-auto border-b pb-2">
+      <div className="max-h-[45%] shrink-0 overflow-y-auto pb-2">
         {categoryList}
       </div>
     );
@@ -132,21 +132,6 @@ function toStepMetadata(
     description: component.description,
     logoUrl: componentLogoUrl(component.icon),
   };
-}
-
-function matchesSearch(
-  component: TranslatedComponentMetadata,
-  searchQuery: string,
-): boolean {
-  if (searchQuery.trim() === '') {
-    return true;
-  }
-  const needle = searchQuery.trim().toLowerCase();
-  return (
-    component.displayName.toLowerCase().includes(needle) ||
-    component.description.toLowerCase().includes(needle) ||
-    component.originalText.toLowerCase().includes(needle)
-  );
 }
 
 export { ComponentsTabContent };

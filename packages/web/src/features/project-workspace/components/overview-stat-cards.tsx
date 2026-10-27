@@ -55,6 +55,7 @@ export function OverviewStatCards({
         icon={Workflow}
         value={String(workflows.length)}
         hint={workflowHint({ workflows, releasesEnabled, environments })}
+        isHintLoading={releasesEnabled && context.environmentsLoading}
       />
       <StatCard
         label={t('Runs in the last 7 days')}
@@ -149,6 +150,7 @@ function StatCard({
   hint,
   danger,
   isLoading,
+  isHintLoading,
   onClick,
 }: {
   label: string;
@@ -157,6 +159,7 @@ function StatCard({
   hint: string;
   danger?: boolean;
   isLoading?: boolean;
+  isHintLoading?: boolean;
   onClick?: () => void;
 }) {
   const content = (
@@ -174,7 +177,7 @@ function StatCard({
           {value}
         </span>
       )}
-      {isLoading ? (
+      {isLoading || isHintLoading ? (
         <Skeleton className="h-4 w-32" />
       ) : (
         <span className="truncate text-xs text-muted-foreground">{hint}</span>

@@ -103,7 +103,19 @@ export const stepUtils = {
         : undefined
       : undefined;
 
-    return [connectorName, connectorVersion, customLogoUrl, locale, step.type];
+    const componentType =
+      step.type === WorkflowActionType.COMPONENT
+        ? step.settings.componentType
+        : undefined;
+
+    return [
+      connectorName,
+      connectorVersion,
+      customLogoUrl,
+      locale,
+      step.type,
+      componentType,
+    ];
   },
   async getMetadata(
     step: WorkflowAction | WorkflowTrigger,

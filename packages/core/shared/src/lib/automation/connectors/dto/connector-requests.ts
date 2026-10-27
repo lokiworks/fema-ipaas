@@ -89,6 +89,7 @@ export const ConnectorOptionRequest = z.object({
     workflowVersionId: z.string(),
     input: z.any(),
     searchValue: z.string().optional(),
+    locale: z.string().optional(),
 })
 
 export type ConnectorOptionRequest = z.infer<typeof ConnectorOptionRequest>

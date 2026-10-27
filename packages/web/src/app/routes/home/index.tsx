@@ -125,12 +125,7 @@ export function HomePage() {
         />
       )}
       {dialog === 'share' && (
-        <ProjectSettingsDialog
-          open
-          onClose={close}
-          initialTab="members"
-          initialValues={{ projectName: project.displayName }}
-        />
+        <ProjectSettingsDialog open onClose={close} initialTab="members" />
       )}
     </>
   );
@@ -247,7 +242,11 @@ function ProjectOverview({
         isLoading={isLoading}
       />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <OverviewWorkflowTable context={context} stats={stats} />
+        <OverviewWorkflowTable
+          context={context}
+          stats={stats}
+          isLoading={isLoading}
+        />
         <OverviewSideCards
           context={context}
           stats={stats}

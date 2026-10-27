@@ -23,7 +23,7 @@ function readableForeground({ hex }: { hex: string }): string {
     colorContrast.ratio({ foreground: LIGHT_FOREGROUND, background: hex }) ?? 0;
   const onDark =
     colorContrast.ratio({ foreground: DARK_FOREGROUND, background: hex }) ?? 0;
-  return onLight >= TEXT_CONTRAST || onLight >= onDark
+  return onLight >= BUTTON_TEXT_CONTRAST || onLight >= onDark
     ? LIGHT_FOREGROUND
     : DARK_FOREGROUND;
 }
@@ -54,7 +54,7 @@ function hslToHex({
 const DARK_SURFACE = '#0a0a0a';
 const LIGHT_FOREGROUND = '#fafafa';
 const DARK_FOREGROUND = '#0a0a0a';
-const TEXT_CONTRAST = 4.5;
+const BUTTON_TEXT_CONTRAST = 3;
 const DARK_TEXT_CONTRAST = 5.5;
 const LIGHTNESS_STEP = 0.02;
 const MAX_STEPS = 40;

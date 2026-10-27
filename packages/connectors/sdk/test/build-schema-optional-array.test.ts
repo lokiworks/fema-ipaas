@@ -25,3 +25,20 @@ describe('buildSchema for array properties', () => {
     expect(schema.safeParse({ values: [1] }).success).toBe(false);
   });
 });
+
+describe('buildSchema for json properties', () => {
+  const requiredJson = Property.Json({ displayName: 'Value', required: true });
+
+  it('accepts any json value', () => {
+    const schema = connectorPropertiesUtils.buildSchema({ value: requiredJson }, undefined);
+    [1, 0, true, false, 'text', { a: 1 }, [1, 2]].forEach((value) => {
+      expect(schema.safeParse({ value }).success).toBe(true);
+    });
+  });
+
+  it('still rejects a missing or empty required value', () => {
+    const schema = connectorPropertiesUtils.buildSchema({ value: requiredJson }, undefined);
+    expect(schema.safeParse({}).success).toBe(false);
+    expect(schema.safeParse({ value: '' }).success).toBe(false);
+  });
+});

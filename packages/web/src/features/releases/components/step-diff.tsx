@@ -45,9 +45,6 @@ export function StepDiff({
               {kindLabel(change.kind)}
             </Badge>
             <span>{change.displayName}</span>
-            <span className="text-xs text-muted-foreground font-mono">
-              {change.name}
-            </span>
           </div>
           {fields.length > 0 && (
             <ul className="ml-2 flex flex-col gap-1 rounded-md border bg-muted/30 p-2 text-xs font-mono">

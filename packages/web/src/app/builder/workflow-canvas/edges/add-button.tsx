@@ -10,6 +10,7 @@ import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
 import { ButtonData } from '../utils/types';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
+import { workflowScreenshotUtils } from '../utils/workflow-screenshot-utils';
 
 const AddButton = React.memo((props: ButtonData) => {
   const [isStepInsideDropZone, setIsStepInsideDropzone] = useState(false);
@@ -95,6 +96,7 @@ const AddButton = React.memo((props: ButtonData) => {
           id={props.edgeId}
         >
           <div
+            {...workflowScreenshotUtils.EXCLUDE_PROPS}
             style={{
               width:
                 workflowCanvasConsts.FEMA_NODE_SIZE.ADD_BUTTON.width + 'px',

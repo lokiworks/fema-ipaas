@@ -18,9 +18,17 @@ import {
 } from '@fema-ipaas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
+import { GitCompareArrows } from 'lucide-react';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/custom/empty';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -143,85 +151,98 @@ function Rules({ projectId }: { projectId: string }) {
           {t('New reconciliation rule')}
         </Button>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {['Name', 'Status', 'Latest run', 'Differences'].map((label) => (
-              <TableHead key={label}>{t(label)}</TableHead>
-            ))}
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {(query.data ?? []).map((rule) => (
-            <TableRow key={rule.id}>
-              <TableCell>
-                <Button variant="link" onClick={() => setSelected(rule)}>
-                  {rule.name}
-                </Button>
-              </TableCell>
-              <TableCell>{t(rule.enabled ? 'Enabled' : 'Disabled')}</TableCell>
-              <TableCell>
-                {rule.lastRun ? (
-                  <div className="flex flex-col gap-1">
-                    <span>{t(rule.lastRun.status)}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {t('Source')}: {rule.lastRun.sourceCount} · {t('Target')}:{' '}
-                      {rule.lastRun.targetCount} · {t('Matched')}:{' '}
-                      {rule.lastRun.matchedCount}
-                    </span>
-                  </div>
-                ) : (
-                  '—'
-                )}
-              </TableCell>
-              <TableCell>{rule.lastRun?.differenceCount ?? '—'}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={
-                      !canWrite ||
-                      start.isPending ||
-                      ['QUEUED', 'RUNNING'].includes(rule.lastRun?.status ?? '')
-                    }
-                    onClick={() => start.mutate(rule.id)}
-                  >
-                    {t('Reconcile now')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={!canWrite}
-                    onClick={() => {
-                      setEditing(rule);
-                      setFormOpen(true);
-                    }}
-                  >
-                    {t('Edit')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={!canWrite}
-                    onClick={() => setDeleting(rule)}
-                  >
-                    {t('Delete')}
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {query.data?.length === 0 && (
+      {query.data?.length === 0 ? (
+        <Empty className="min-h-[320px]">
+          <EmptyHeader>
+            <EmptyMedia>
+              <GitCompareArrows className="size-10 text-muted-foreground" />
+            </EmptyMedia>
+            <EmptyTitle>{t('No reconciliation rules yet')}</EmptyTitle>
+            <EmptyDescription>
+              {t(
+                'Create a rule to compare two full lists and list the records that are missing or different.',
+              )}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={5}>
-                {t('No reconciliation rules yet')}
-              </TableCell>
+              {['Name', 'Status', 'Latest run', 'Differences'].map((label) => (
+                <TableHead key={label}>{t(label)}</TableHead>
+              ))}
+              <TableHead />
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {(query.data ?? []).map((rule) => (
+              <TableRow key={rule.id}>
+                <TableCell>
+                  <Button variant="link" onClick={() => setSelected(rule)}>
+                    {rule.name}
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  {t(rule.enabled ? 'Enabled' : 'Disabled')}
+                </TableCell>
+                <TableCell>
+                  {rule.lastRun ? (
+                    <div className="flex flex-col gap-1">
+                      <span>{t(rule.lastRun.status)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {t('Source')}: {rule.lastRun.sourceCount} ·{' '}
+                        {t('Target')}: {rule.lastRun.targetCount} ·{' '}
+                        {t('Matched')}: {rule.lastRun.matchedCount}
+                      </span>
+                    </div>
+                  ) : (
+                    '—'
+                  )}
+                </TableCell>
+                <TableCell>{rule.lastRun?.differenceCount ?? '—'}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={
+                        !canWrite ||
+                        start.isPending ||
+                        ['QUEUED', 'RUNNING'].includes(
+                          rule.lastRun?.status ?? '',
+                        )
+                      }
+                      onClick={() => start.mutate(rule.id)}
+                    >
+                      {t('Reconcile now')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={!canWrite}
+                      onClick={() => {
+                        setEditing(rule);
+                        setFormOpen(true);
+                      }}
+                    >
+                      {t('Edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={!canWrite}
+                      onClick={() => setDeleting(rule)}
+                    >
+                      {t('Delete')}
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
       <Sheet open={formOpen} onOpenChange={setFormOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-5xl">
           <SheetHeader>

@@ -162,7 +162,7 @@ function VariableForm(props: VariableFormProps) {
           </DialogTitle>
           <DialogDescription>
             {t(
-              'Store an API key, token, or other value you can reuse across workflow steps without exposing it.',
+              'Store non-sensitive settings such as group IDs, thresholds and callback URLs. Keep keys and tokens in connections instead.',
             )}
           </DialogDescription>
         </DialogHeader>
@@ -177,7 +177,7 @@ function VariableForm(props: VariableFormProps) {
                   {...field}
                   disabled={isEdit}
                   maxLength={VARIABLE_NAME_MAX_LENGTH}
-                  placeholder="STRIPE_PROD"
+                  placeholder="FEISHU_GROUP_ID"
                 />
               </FormControl>
               <FormMessage />

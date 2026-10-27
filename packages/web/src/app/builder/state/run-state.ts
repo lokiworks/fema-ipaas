@@ -32,6 +32,7 @@ export type UpdateSampleDataParams = {
 export type RunState = {
   run: Execution | null;
   debugTestedSteps: Record<string, string>;
+  markDebugTested: (run: Execution) => void;
   setRun: (run: Execution, workflowVersion: WorkflowVersion) => void;
   clearRun: (userHasPermissionToEditWorkflow: boolean) => void;
   loopsIndexes: Record<string, number>;
@@ -78,6 +79,13 @@ export const createRunState = (
     revertSampleDataLocallyCallbacks: {},
     run: initialState.run,
     debugTestedSteps: {},
+    markDebugTested: (run: Execution) =>
+      set((state) => ({
+        debugTestedSteps: {
+          ...debugTestedStepsOf(run),
+          ...state.debugTestedSteps,
+        },
+      })),
     loopsIndexes:
       initialState.run && initialState.run.steps
         ? executionUtils.pinLoopsToIterationsWithFailedStep(

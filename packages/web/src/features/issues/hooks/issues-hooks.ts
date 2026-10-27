@@ -181,7 +181,7 @@ function useReplay(id: string) {
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: [ISSUES_KEY] });
       toast.success(
-        t('{count} runs queued for replay', { count: result.queued }),
+        t('{count} runs queued for rerun', { count: result.queued }),
         {
           description: t(
             'The issue is not closed automatically. Once the runs succeed, mark it as resolved.',

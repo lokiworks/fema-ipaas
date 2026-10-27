@@ -165,10 +165,14 @@ const StepCanvasNode = React.memo(
             'bg-accent': isHorizontal && isSkipped,
             'hover:border-ring': isHorizontal && !isSelected,
             'ring-2 ring-primary/60 ring-offset-2':
-              isHighlighted || referenceState === 'allowed',
+              isHorizontal && (isHighlighted || referenceState === 'allowed'),
             'opacity-40': referenceState === 'blocked',
           },
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'focus-visible:outline-none',
+          {
+            'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2':
+              isHorizontal,
+          },
         )}
         onClick={(e) => handleStepClick(e)}
         onKeyDown={(e) => {
@@ -224,6 +228,9 @@ const StepCanvasNode = React.memo(
                     <StepNodeLogo
                       isSkipped={isSkipped}
                       isSelected={isSelected}
+                      isHighlighted={
+                        isHighlighted || referenceState === 'allowed'
+                      }
                       logoUrl={stepMetadata?.logoUrl ?? ''}
                       displayName={stepMetadata?.displayName ?? ''}
                     />

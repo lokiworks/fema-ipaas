@@ -4,7 +4,6 @@ import React from 'react';
 
 import { componentsHooks } from '@/features/components';
 
-import { ActionErrorHandlingForm } from '../connector-properties/action-error-handling';
 import { GenericPropertiesForm } from '../connector-properties/generic-properties-form';
 
 import { useStepSettingsContext } from './step-settings-context';
@@ -52,11 +51,6 @@ const ComponentSettings = React.memo(
             }}
           />
         )}
-        <ActionErrorHandlingForm
-          hideContinueOnFailure={false}
-          hideRetryOnFailure={false}
-          disabled={readonly}
-        />
       </div>
     );
   },

@@ -111,7 +111,11 @@ function CurrentVersionCard({ overview }: { overview: SystemOverview }) {
     {
       label: t('Queue'),
       value: overview.redis.ok
-        ? `Redis ${overview.redis.version ?? ''} · ${overview.redis.type}`
+        ? `Redis ${
+            overview.redis.version ?? ''
+          } · ${systemRunbook.redisTypeLabel({
+            redisType: overview.redis.type,
+          })}`
         : t('Not reachable'),
     },
     {

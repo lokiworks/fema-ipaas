@@ -24,6 +24,7 @@ import { cn } from '../../../../lib/utils';
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
+import { workflowScreenshotUtils } from '../utils/workflow-screenshot-utils';
 
 type BaseBranchLabel = {
   label: string;
@@ -160,6 +161,7 @@ const BranchLabel = (props: BaseBranchLabel) => {
               >
                 <DropdownMenuTrigger asChild>
                   <div
+                    {...workflowScreenshotUtils.EXCLUDE_PROPS}
                     className="h-5 shrink-0 border border-transparent hover:border-solid hover:border-primary-300/50 transition-all rounded-full w-5 flex items-center justify-center"
                     onClick={(e) => e.stopPropagation()}
                   >

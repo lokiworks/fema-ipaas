@@ -167,9 +167,14 @@ const getQueryKeyForStepMetadata = (
     step.type === WorkflowTriggerType.CONNECTOR
       ? step.settings.triggerName
       : undefined;
+  const componentType =
+    step.type === WorkflowActionType.COMPONENT
+      ? step.settings.componentType
+      : undefined;
   return [
     actionName,
     triggerName,
+    componentType,
     connectorName,
     connectorVersion,
     customLogoUrl,

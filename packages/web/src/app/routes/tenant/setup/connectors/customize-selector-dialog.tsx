@@ -217,9 +217,14 @@ const SelectorTabsEditor = ({ onClose }: { onClose: () => void }) => {
         >
           <Button variant="ghost">{t('Reset to default')}</Button>
         </ConfirmationDeleteDialog>
-        <Button onClick={handleSave} loading={saveMutation.isPending}>
-          {t('Save')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            {t('Cancel')}
+          </Button>
+          <Button onClick={handleSave} loading={saveMutation.isPending}>
+            {t('Save')}
+          </Button>
+        </div>
       </SheetFooter>
     </>
   );

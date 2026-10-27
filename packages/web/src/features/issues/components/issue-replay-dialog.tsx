@@ -29,16 +29,17 @@ export function IssueReplayDialog({
   issueId,
   workflowName,
   open,
+  initialStrategy = WorkflowRetryStrategy.FROM_FAILED_STEP,
   onOpenChange,
 }: {
   issueId: string;
   workflowName: string | null;
   open: boolean;
+  initialStrategy?: WorkflowRetryStrategy;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [strategy, setStrategy] = useState<WorkflowRetryStrategy>(
-    WorkflowRetryStrategy.FROM_FAILED_STEP,
-  );
+  const [strategy, setStrategy] =
+    useState<WorkflowRetryStrategy>(initialStrategy);
   const [includeDataProblems, setIncludeDataProblems] = useState(false);
   const [confirmedUnsafeSteps, setConfirmedUnsafeSteps] = useState<string[]>(
     [],
@@ -114,7 +115,11 @@ export function IssueReplayDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t('Replay failed runs')}</DialogTitle>
+          <DialogTitle>
+            {strategy === WorkflowRetryStrategy.FROM_FAILED_STEP
+              ? t('Rerun from the failed step')
+              : t('Rerun the whole run')}
+          </DialogTitle>
           <DialogDescription>
             {t(
               'Runs are checked first. Runs whose connection is still broken are held back instead of failing again.',
@@ -139,7 +144,7 @@ export function IssueReplayDialog({
               <RadioGroupItem value={WorkflowRetryStrategy.FROM_FAILED_STEP} />
               <span className="flex flex-col gap-1">
                 <span className="font-medium">
-                  {t('Replay from the failed step')}
+                  {t('Rerun from the failed step')}
                 </span>
                 <span className="text-xs text-muted-foreground font-normal">
                   {t('Steps that succeeded keep their original results.')}
@@ -149,11 +154,11 @@ export function IssueReplayDialog({
             <Label className="flex items-start gap-2 rounded-md border p-3 cursor-pointer">
               <RadioGroupItem value={WorkflowRetryStrategy.ON_LATEST_VERSION} />
               <span className="flex flex-col gap-1">
-                <span className="font-medium">
-                  {t('Replay the whole run on the latest version')}
-                </span>
+                <span className="font-medium">{t('Rerun the whole run')}</span>
                 <span className="text-xs text-muted-foreground font-normal">
-                  {t('Starts from the trigger and may create duplicate data.')}
+                  {t(
+                    'Runs the latest version from the trigger and may create duplicate data.',
+                  )}
                 </span>
               </span>
             </Label>
@@ -206,7 +211,7 @@ export function IssueReplayDialog({
                             setIncludeDataProblems(value === true)
                           }
                         />
-                        {t('Replay these {count} runs anyway', {
+                        {t('Rerun these {count} runs anyway', {
                           count: dataProblemCount,
                         })}
                       </label>
@@ -216,7 +221,7 @@ export function IssueReplayDialog({
               )}
               {(check?.items.length ?? 0) === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  {t('There are no runs to replay.')}
+                  {t('There are no runs to rerun.')}
                 </p>
               )}
             </div>
@@ -285,7 +290,7 @@ export function IssueReplayDialog({
               )
             }
           >
-            {t('Replay {count} runs', { count: toRun })}
+            {t('Rerun {count}', { count: toRun })}
           </Button>
         </DialogFooter>
       </DialogContent>

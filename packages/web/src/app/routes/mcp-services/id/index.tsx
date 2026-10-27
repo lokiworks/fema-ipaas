@@ -21,7 +21,6 @@ import {
 } from '@/features/mcp-services';
 import { authenticationSession } from '@/lib/authentication-session';
 import { notFoundError } from '@/lib/not-found-error';
-import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 type TabValue = 'tools' | 'connections' | 'usage' | 'availability' | 'releases';
 
@@ -39,12 +38,7 @@ function McpServiceDetailPage() {
 
   if (isLoading || !service) {
     return (
-      <div
-        className={cn(
-          'flex flex-col gap-4 w-full max-w-5xl py-4',
-          DASHBOARD_CONTENT_PADDING_X,
-        )}
-      >
+      <div className={PAGE_CLASSES}>
         <Skeleton className="h-40 w-full" />
       </div>
     );
@@ -94,12 +88,7 @@ function McpServiceDetail({ service }: { service: McpService }) {
   };
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-4 w-full max-w-5xl py-4',
-        DASHBOARD_CONTENT_PADDING_X,
-      )}
-    >
+    <div className={PAGE_CLASSES}>
       <Link
         to={authenticationSession.appendProjectRoutePrefix('/mcp-services')}
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -182,3 +171,5 @@ function McpServiceDetail({ service }: { service: McpService }) {
 }
 
 export { McpServiceDetailPage };
+
+const PAGE_CLASSES = 'flex w-full min-w-0 flex-col gap-4 px-4 py-5 md:px-6';

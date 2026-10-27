@@ -15,6 +15,7 @@ const CanvasControlButton = ({
   active = false,
   disabled = false,
   onClick,
+  tooltipSide,
 }: {
   tooltip: string;
   icon: LucideIcon;
@@ -22,6 +23,7 @@ const CanvasControlButton = ({
   active?: boolean;
   disabled?: boolean;
   onClick: () => void;
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left';
 }) => {
   return (
     <Tooltip>
@@ -36,7 +38,7 @@ const CanvasControlButton = ({
           <Icon className={cn('size-4', iconClassName)} />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
+      <TooltipContent side={tooltipSide}>{tooltip}</TooltipContent>
     </Tooltip>
   );
 };

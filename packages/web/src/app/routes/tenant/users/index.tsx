@@ -212,7 +212,7 @@ export default function UsersPage() {
               <TableHead className="w-28">{t('Platform role')}</TableHead>
               <TableHead className="w-56">{t('Module permissions')}</TableHead>
               <TableHead className="w-28">{t('Last active')}</TableHead>
-              <TableHead className="w-12" />
+              <TableHead className="w-16">{t('Actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

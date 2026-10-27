@@ -329,6 +329,18 @@ export function DataTable<
   };
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [visibleWidth, setVisibleWidth] = useState<number | null>(null);
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (isNil(container)) {
+      return;
+    }
+    const observer = new ResizeObserver(() =>
+      setVisibleWidth(container.clientWidth),
+    );
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
   const rows = table.getRowModel().rows;
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -642,7 +654,10 @@ export function DataTable<
                   colSpan={columns.length}
                   className="h-[350px] text-center"
                 >
-                  <div className="flex flex-col items-center justify-center gap-2">
+                  <div
+                    className="sticky left-0 flex flex-col items-center justify-center gap-2 px-4"
+                    style={{ width: visibleWidth ?? undefined }}
+                  >
                     {isError ? (
                       <>
                         <TriangleAlert className="size-14 text-destructive-600" />

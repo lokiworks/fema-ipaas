@@ -1,19 +1,30 @@
-import { DefaultProjectRole, ProjectMemberWithUser } from '@fema-ipaas/shared';
+import { DefaultProjectRole } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useMemo } from 'react';
 
 import { projectMembersHooks } from '@/features/project-members';
+import { memberRows } from '@/features/project-workspace/lib/member-rows';
+import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
+import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 
 function useIssueMembers() {
   const { data } = projectMembersHooks.useMembers();
+  const { project } = projectCollectionUtils.useCurrentProject();
+  const { data: directory } = projectDirectoryHooks.useDirectory();
+  const ownerName = directory?.find(
+    (item) => item.id === project?.id,
+  )?.ownerName;
+  const ownerId = project?.ownerId;
   return useMemo(() => {
-    const members = data?.data ?? [];
-    const assignable = members
-      .filter((member) => member.role !== DefaultProjectRole.VIEWER)
-      .map(toOption);
-    const names = new Map(
-      members.map((member) => [member.userId, displayName(member)]),
-    );
+    const rows = memberRows.build({
+      members: data?.data ?? [],
+      ownerId,
+      ownerName,
+    });
+    const assignable = rows
+      .filter((row) => row.role !== DefaultProjectRole.VIEWER)
+      .map((row) => ({ id: row.userId, name: row.name }));
+    const names = new Map(rows.map((row) => [row.userId, row.name]));
     const nameOf = (userId: string | null): string => {
       if (userId === null) {
         return t('System');
@@ -21,18 +32,7 @@ function useIssueMembers() {
       return names.get(userId) ?? t('Unknown user');
     };
     return { assignable, nameOf };
-  }, [data]);
-}
-
-function toOption(member: ProjectMemberWithUser): MemberOption {
-  return { id: member.userId, name: displayName(member) };
-}
-
-function displayName(member: ProjectMemberWithUser): string {
-  const fullName = `${member.user.firstName ?? ''} ${
-    member.user.lastName ?? ''
-  }`.trim();
-  return fullName.length > 0 ? fullName : member.user.email;
+  }, [data, ownerId, ownerName]);
 }
 
 export const issueMembersHooks = {

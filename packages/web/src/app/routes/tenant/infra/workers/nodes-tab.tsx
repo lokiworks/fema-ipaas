@@ -34,7 +34,7 @@ import { AddWorkerDialog } from './add-worker-dialog';
 export function NodesTab() {
   const { data: fleet, isLoading } = tenantAccessHooks.useWorkerFleet();
   const [addOpen, setAddOpen] = useState(false);
-  const nodes = fleet?.nodes ?? [];
+  const nodes = tenantAccessUtils.dedupeWorkerNodes(fleet?.nodes ?? []);
   const online = nodes.filter(
     (node) => node.status === WorkerNodeStatus.ONLINE,
   );

@@ -283,7 +283,7 @@ function VersionPath({ preview }: { preview: ReleasePreview }) {
     <p className="flex flex-wrap items-center gap-2 text-sm">
       <span className="font-medium">{preview.workflowDisplayName}</span>
       <Badge variant="info">
-        {t('Test')} {versionLabel(preview.testVersionNumber)}
+        {t('Test environment')} {versionLabel(preview.testVersionNumber)}
       </Badge>
       <span aria-hidden="true">→</span>
       <Badge variant="success">

@@ -53,7 +53,13 @@ export const formatUtils = {
       year: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      hour12: true,
+    }).format(date);
+  },
+  formatTimeWithSeconds(date: Date) {
+    return Intl.DateTimeFormat(i18next.language, {
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
     }).format(date);
   },
   formatDateWithTime(date: Date, hideCurrentYear: boolean) {
@@ -66,13 +72,18 @@ export const formatUtils = {
     const timeFormat = new Intl.DateTimeFormat(i18next.language, {
       hour: 'numeric',
       minute: 'numeric',
-      hour12: true,
     });
 
     if (isToday) {
-      return `${t('Today')}, ${timeFormat.format(date)}`;
+      return t('{day}, {time}', {
+        day: t('Today'),
+        time: timeFormat.format(date),
+      });
     } else if (isYesterday) {
-      return `${t('Yesterday')}, ${timeFormat.format(date)}`;
+      return t('{day}, {time}', {
+        day: t('Yesterday'),
+        time: timeFormat.format(date),
+      });
     }
 
     if (isSameYear && !hideCurrentYear) {
@@ -81,7 +92,6 @@ export const formatUtils = {
         day: 'numeric',
         hour: 'numeric',
         minute: 'numeric',
-        hour12: true,
       }).format(date);
     }
 
@@ -91,7 +101,6 @@ export const formatUtils = {
       year: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
-      hour12: true,
     }).format(date);
   },
   formatDate(date: Date) {

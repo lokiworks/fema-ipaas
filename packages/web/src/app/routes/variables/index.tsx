@@ -39,6 +39,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   variablesMutations,
   variablesQueries,
 } from '@/features/variables/hooks/variables-hooks';
@@ -178,16 +183,21 @@ function VariablesPage() {
         cell: ({ row }) => (
           <div className="flex justify-end">
             <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label={t('Open menu')}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label={t('More actions')}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>{t('More actions')}</TooltipContent>
+              </Tooltip>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
                   disabled={!canWrite}

@@ -11,7 +11,10 @@ type CopyToClipboardInputProps = {
   useInput: boolean;
   fileName?: string;
   displayValue?: string;
+  rows?: number;
 };
+
+const DEFAULT_TEXTAREA_ROWS = 6;
 
 const noBorderInputClass = `border-none w-full rfocus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0`;
 
@@ -20,6 +23,7 @@ const CopyToClipboardInput = ({
   fileName,
   useInput,
   displayValue,
+  rows = DEFAULT_TEXTAREA_ROWS,
 }: CopyToClipboardInputProps) => {
   const shownValue = displayValue ?? textToCopy;
   return (
@@ -29,7 +33,7 @@ const CopyToClipboardInput = ({
       ) : (
         <Textarea
           value={shownValue}
-          rows={6}
+          rows={rows}
           className={noBorderInputClass}
           readOnly
         />

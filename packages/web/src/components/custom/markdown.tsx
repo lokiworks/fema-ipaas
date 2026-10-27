@@ -1,17 +1,15 @@
 import { MarkdownVariant } from '@fema-ipaas/shared';
-import { useMutation } from '@tanstack/react-query';
-import { t } from 'i18next';
-import { Check, Copy, Info, AlertTriangle, Lightbulb } from 'lucide-react';
-import React, { useState } from 'react';
+import { Info, AlertTriangle, Lightbulb } from 'lucide-react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import breaks from 'remark-breaks';
 import gfm from 'remark-gfm';
-import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 
 import { Alert, AlertDescription } from '../ui/alert';
-import { Button } from '../ui/button';
+
+import { CopyToClipboardInput } from './clipboard/copy-to-clipboard';
 
 function applyVariables(markdown: string, variables: Record<string, string>) {
   if (typeof markdown !== 'string') {
@@ -23,6 +21,16 @@ function applyVariables(markdown: string, variables: Record<string, string>) {
   });
   return result;
 }
+
+function rowsForText({ text }: { text: string }) {
+  return Math.min(
+    Math.max(Math.ceil(text.length / CHARS_PER_ROW), 1),
+    MAX_ROWS,
+  );
+}
+
+const CHARS_PER_ROW = 30;
+const MAX_ROWS = 4;
 
 type MarkdownProps = {
   markdown: string | undefined;
@@ -70,22 +78,6 @@ const Container = ({
 
 const Markdown = React.memo(
   ({ markdown, variables, variant, className, loading }: MarkdownProps) => {
-    const [copiedText, setCopiedText] = useState<string | null>(null);
-
-    const { mutate: copyToClipboard } = useMutation({
-      mutationFn: async (text: string) => {
-        await navigator.clipboard.writeText(text);
-        setCopiedText(text);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setCopiedText(null);
-      },
-      onError: () => {
-        toast.error(t('Failed to copy to clipboard'), {
-          duration: 3000,
-        });
-      },
-    });
-
     if (loading && loading.length > 0) {
       return (
         <Container variant={variant}>
@@ -112,27 +104,12 @@ const Markdown = React.memo(
                 return <code {...props} className="text-wrap" />;
               }
               const codeContent = String(props.children).trim();
-              const isCopying = codeContent === copiedText;
               return (
-                <div className="relative w-full items-center flex bg-background border border-solid text-sm rounded block w-full gap-1 p-1.5">
-                  <input
-                    type="text"
-                    className="grow bg-background"
-                    value={codeContent}
-                    disabled
-                  />
-                  <Button
-                    variant="ghost"
-                    className="bg-background rounded p-2 inline-flex items-center justify-center h-8"
-                    onClick={() => copyToClipboard(codeContent)}
-                  >
-                    {isCopying ? (
-                      <Check className="w-3 h-3" />
-                    ) : (
-                      <Copy className="w-3 h-3" />
-                    )}
-                  </Button>
-                </div>
+                <CopyToClipboardInput
+                  textToCopy={codeContent}
+                  useInput={false}
+                  rows={rowsForText({ text: codeContent })}
+                />
               );
             },
             h1: ({ node: _node, ref: _ref, ...props }) => (

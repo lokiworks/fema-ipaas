@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserAvatar } from '@/components/custom/user-avatar';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { limitsHooks } from '@/features/limits';
 import { projectMembersHooks } from '@/features/project-members/hooks/project-members-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -36,7 +37,8 @@ export function OverviewSideCards({
   });
   const me = authenticationSession.getCurrentUserId();
   const workflowsLimit = context.workflowsLimit;
-  const { data: limitsUsage } = limitsHooks.useProjectUsage(project.id);
+  const { data: limitsUsage, isLoading: usageLoading } =
+    limitsHooks.useProjectUsage(project.id);
   const runsLimit =
     limitsUsage?.monthlyRuns.limit ?? project.monthlyRunsLimit ?? null;
   const monthRuns = limitsUsage?.monthlyRuns.used ?? stats?.runs.thisMonth ?? 0;
@@ -134,6 +136,7 @@ export function OverviewSideCards({
             })}
             used={monthRuns}
             limit={runsLimit}
+            isLoading={usageLoading}
           />
           <span className="text-xs text-muted-foreground">
             {t('Limits are set by platform administrators')}
@@ -148,11 +151,21 @@ function LimitRow({
   label,
   used,
   limit,
+  isLoading = false,
 }: {
   label: string;
   used: number;
   limit: number | null;
+  isLoading?: boolean;
 }) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-2 w-full" />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs text-muted-foreground">{label}</span>

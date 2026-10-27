@@ -34,12 +34,14 @@ import { NoResultsFound } from './no-results-found';
 
 type ConnectorsCardListProps = {
   searchQuery: string;
+  hideEmptyState?: boolean;
   operation: ConnectorSelectorOperation;
   stepToReplaceConnectorDisplayName?: string;
 };
 
 export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
   searchQuery,
+  hideEmptyState = false,
   operation,
   stepToReplaceConnectorDisplayName,
 }) => {
@@ -173,7 +175,7 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
           />
         )}
 
-        {noResultsFound && <NoResultsFound />}
+        {noResultsFound && !hideEmptyState && <NoResultsFound />}
       </div>
     </>
   );
@@ -201,50 +203,52 @@ const transformConnectorsMetadataToVirtualizedItems = (
   searchResult: CategorizedStepMetadataWithSuggestions[],
   showActionsOrTriggersInsideConnectorsList: boolean,
 ) => {
-  return searchResult.reduce<VirtualizedItem[]>((result, category) => {
-    if (!showActionsOrTriggersInsideConnectorsList) {
-      result.push({
-        id: category.title,
-        displayName: category.title,
-        height: CONNECTOR_SELECTOR_ELEMENTS_HEIGHTS.CATEGORY_ITEM_HEIGHT,
-        isCategory: true,
-      });
-    }
-    if (!showActionsOrTriggersInsideConnectorsList) {
-      for (
-        let start = 0;
-        start < category.metadata.length;
-        start += CONNECTOR_GRID_COLUMNS
-      ) {
-        const connectors = category.metadata.slice(
-          start,
-          start + CONNECTOR_GRID_COLUMNS,
-        );
+  return searchResult
+    .filter((category) => category.metadata.length > 0)
+    .reduce<VirtualizedItem[]>((result, category) => {
+      if (!showActionsOrTriggersInsideConnectorsList) {
         result.push({
-          id: `${category.title}-row-${start}`,
-          displayName: connectors[0].displayName,
-          height: CONNECTOR_GRID_ROW_HEIGHT,
-          isCategory: false,
-          isGridRow: true,
-          connectors,
+          id: category.title,
+          displayName: category.title,
+          height: CONNECTOR_SELECTOR_ELEMENTS_HEIGHTS.CATEGORY_ITEM_HEIGHT,
+          isCategory: true,
         });
       }
-      return result;
-    }
-    category.metadata.forEach((connectorMetadata, index) => {
-      result.push({
-        id: `${connectorMetadata.displayName}-${index}`,
-        height: getItemHeight(
+      if (!showActionsOrTriggersInsideConnectorsList) {
+        for (
+          let start = 0;
+          start < category.metadata.length;
+          start += CONNECTOR_GRID_COLUMNS
+        ) {
+          const connectors = category.metadata.slice(
+            start,
+            start + CONNECTOR_GRID_COLUMNS,
+          );
+          result.push({
+            id: `${category.title}-row-${start}`,
+            displayName: connectors[0].displayName,
+            height: CONNECTOR_GRID_ROW_HEIGHT,
+            isCategory: false,
+            isGridRow: true,
+            connectors,
+          });
+        }
+        return result;
+      }
+      category.metadata.forEach((connectorMetadata, index) => {
+        result.push({
+          id: `${connectorMetadata.displayName}-${index}`,
+          height: getItemHeight(
+            connectorMetadata,
+            showActionsOrTriggersInsideConnectorsList,
+          ),
+          isCategory: false,
           connectorMetadata,
-          showActionsOrTriggersInsideConnectorsList,
-        ),
-        isCategory: false,
-        connectorMetadata,
-        displayName: connectorMetadata.displayName,
+          displayName: connectorMetadata.displayName,
+        });
       });
-    });
-    return result;
-  }, []);
+      return result;
+    }, []);
 };
 
 const getItemHeight = (

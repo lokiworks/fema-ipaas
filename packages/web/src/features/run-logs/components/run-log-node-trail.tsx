@@ -124,15 +124,11 @@ export function RunLogNodeTrail({
                 <NodeStatusIcon node={node} />
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate">{node.displayName}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {node.name}
-                    {isNil(node.durationMs)
-                      ? ''
-                      : ` · ${formatUtils.formatDuration(
-                          node.durationMs,
-                          true,
-                        )}`}
-                  </span>
+                  {!isNil(node.durationMs) && (
+                    <span className="truncate text-xs text-muted-foreground">
+                      {formatUtils.formatDuration(node.durationMs, true)}
+                    </span>
+                  )}
                 </span>
               </button>
             </li>
@@ -201,9 +197,6 @@ function NodeDetail({
     <div className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium">{node.displayName}</span>
-        <span className="font-mono text-xs text-muted-foreground">
-          {node.name}
-        </span>
         <span className="text-xs text-muted-foreground">
           {isNil(node.status)
             ? t('Not executed')

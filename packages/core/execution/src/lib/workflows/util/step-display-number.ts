@@ -8,7 +8,7 @@ function prefixOf(step: Step): string {
         case WorkflowTriggerType.EMPTY:
             return 'trigger'
         case WorkflowTriggerType.CONNECTOR:
-            return `${connectorSlug(step.settings.connectorName)}-trigger`
+            return triggerPrefix(connectorSlug(step.settings.connectorName))
         case WorkflowActionType.ROUTER:
         case WorkflowActionType.PARALLEL:
             return 'branch'
@@ -94,6 +94,10 @@ function readDisplayNumber(step: Step): string | undefined {
     return step.settings.displayNumber
 }
 
+function triggerPrefix(connectorSlugValue: string): string {
+    return connectorSlugValue.endsWith(TRIGGER_SUFFIX) ? connectorSlugValue : `${connectorSlugValue}${TRIGGER_SUFFIX}`
+}
+
 function connectorSlug(connectorName: string): string {
     const withoutScope = connectorName.includes('/') ? connectorName.slice(connectorName.lastIndexOf('/') + 1) : connectorName
     const withoutPrefix = withoutScope.startsWith(CONNECTOR_PREFIX) ? withoutScope.slice(CONNECTOR_PREFIX.length) : withoutScope
@@ -113,6 +117,7 @@ export const stepDisplayNumberUtil = {
 const AI_CONNECTOR = '@fema-ipaas/connector-ai'
 const AGENT_ACTION = 'run_agent'
 const CONNECTOR_PREFIX = 'connector-'
+const TRIGGER_SUFFIX = '-trigger'
 
 type NumberingState = {
     next: Record<string, number>

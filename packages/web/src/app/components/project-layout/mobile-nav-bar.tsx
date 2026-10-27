@@ -14,7 +14,7 @@ import {
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 
 import { GlobalRail } from '../global-rail';
-import { TenantSidebar } from '../sidebar/tenant';
+import { TenantSidebar, tenantSidebarUtils } from '../sidebar/tenant';
 
 import { ProjectNavColumn } from './project-nav-column';
 
@@ -63,6 +63,10 @@ export function MobileNavBar({
 }
 
 function MobileTenantNav() {
+  const { pathname } = useLocation();
+  const title = tenantSidebarUtils.isConnectorsModule(pathname)
+    ? t('Connectors')
+    : t('Tenant Admin');
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -70,11 +74,9 @@ function MobileTenantNav() {
           type="button"
           variant="ghost"
           className="min-w-0 flex-1 justify-between gap-2"
-          aria-label={t('Tenant Admin')}
+          aria-label={title}
         >
-          <span className="min-w-0 truncate text-sm font-medium">
-            {t('Tenant Admin')}
-          </span>
+          <span className="min-w-0 truncate text-sm font-medium">{title}</span>
           <ChevronDown className="size-4 shrink-0" />
         </Button>
       </SheetTrigger>
@@ -84,8 +86,8 @@ function MobileTenantNav() {
         className="w-64 max-w-[85vw] gap-0 p-0"
       >
         <SheetHeader className="sr-only">
-          <SheetTitle>{t('Tenant Admin')}</SheetTitle>
-          <SheetDescription>{t('Tenant Admin')}</SheetDescription>
+          <SheetTitle>{title}</SheetTitle>
+          <SheetDescription>{title}</SheetDescription>
         </SheetHeader>
         <TenantSidebar className="w-full border-r-0" />
       </SheetContent>

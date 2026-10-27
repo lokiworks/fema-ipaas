@@ -7,6 +7,7 @@ import {
   TenantModule,
   TenantRole,
   WORKER_NODE_LIMITS,
+  WorkerNode,
   WorkerNodeStatus,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -107,6 +108,28 @@ function workerStatusLabel(status: WorkerNodeStatus): string {
     case WorkerNodeStatus.OFFLINE:
       return t('Offline');
   }
+}
+
+function dedupeWorkerNodes(nodes: WorkerNode[]): WorkerNode[] {
+  const byIp = nodes.reduce<Map<string, WorkerNode[]>>(
+    (groups, node) =>
+      new Map(groups).set(node.ip, [...(groups.get(node.ip) ?? []), node]),
+    new Map(),
+  );
+  return [...byIp.values()].flatMap((group) => {
+    const live = group.filter(
+      (node) => node.status !== WorkerNodeStatus.OFFLINE,
+    );
+    if (live.length > 0) {
+      return live;
+    }
+    const [latest] = [...group].sort(
+      (a, b) =>
+        new Date(b.lastHeartbeatAt).getTime() -
+        new Date(a.lastHeartbeatAt).getTime(),
+    );
+    return latest ? [latest] : [];
+  });
 }
 
 function parseEmails(text: string): string[] {
@@ -227,6 +250,7 @@ export const tenantAccessUtils = {
   resourceTypeLabel,
   loginMethodLabel,
   workerStatusLabel,
+  dedupeWorkerNodes,
   parseEmails,
   isEmail,
   isExternalEmail,

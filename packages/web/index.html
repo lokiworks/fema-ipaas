@@ -12,6 +12,21 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/logo-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/logo-180.png">
   <link rel="icon" type="image/x-icon" href="<%= apFavicon %>">
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('fema.theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || ((!stored || stored === 'system') && prefersDark)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.backgroundColor = '#151515';
+          document.documentElement.style.colorScheme = 'dark';
+        }
+      } catch (error) {
+        return;
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
 

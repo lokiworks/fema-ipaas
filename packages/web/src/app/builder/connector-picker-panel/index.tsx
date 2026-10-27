@@ -18,6 +18,7 @@ import { SidebarHeader } from '@/app/builder/sidebar-header';
 import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { componentSearchUtils, componentsHooks } from '@/features/components';
 import {
   ConnectorsSearchInput,
   ConnectorSearchProvider,
@@ -30,7 +31,6 @@ import {
   useConnectorSelectorTabs,
 } from '@/features/connectors';
 import { tenantHooks } from '@/hooks/tenant-hooks';
-import { cn } from '@/lib/utils';
 
 export const ConnectorPickerPanel = () => {
   const [operation, openedId] = useBuilderStateContext((state) => [
@@ -158,19 +158,45 @@ function PickerResults({
   searchQuery: string;
 }) {
   const { selectedTab } = useConnectorSelectorTabs();
-  const isSearching = selectedTab === ConnectorSelectorTabType.NONE;
-  return (
-    <div
-      className={cn(
-        'flex min-h-0 grow overflow-hidden',
-        isSearching ? 'flex-col' : 'flex-row',
-      )}
-    >
-      <ExploreTabContent operation={operation} />
-      <ComponentsTabContent operation={operation} searchQuery={searchQuery} />
-      <div className="flex min-h-0 w-full grow">
-        <ConnectorsCardList searchQuery={searchQuery} operation={operation} />
+  const { data: components } = componentsHooks.useComponents();
+  const componentMatches = (components ?? []).filter((component) =>
+    componentSearchUtils.matches({ component, searchQuery }),
+  ).length;
+  const canAddComponents = [
+    WorkflowOperationType.ADD_ACTION,
+    WorkflowOperationType.UPDATE_ACTION,
+  ].includes(operation.type);
+  if (selectedTab === ConnectorSelectorTabType.EXPLORE) {
+    return (
+      <div className="flex min-h-0 w-full grow overflow-hidden">
+        <ExploreTabContent operation={operation} />
       </div>
+    );
+  }
+  if (selectedTab === ConnectorSelectorTabType.COMPONENTS) {
+    return (
+      <div className="flex min-h-0 w-full grow overflow-hidden">
+        <ComponentsTabContent operation={operation} searchQuery={searchQuery} />
+      </div>
+    );
+  }
+  if (selectedTab === ConnectorSelectorTabType.NONE) {
+    return (
+      <div className="flex min-h-0 w-full grow flex-col overflow-hidden">
+        <ComponentsTabContent operation={operation} searchQuery={searchQuery} />
+        <div className="flex min-h-0 w-full grow">
+          <ConnectorsCardList
+            searchQuery={searchQuery}
+            operation={operation}
+            hideEmptyState={canAddComponents && componentMatches > 0}
+          />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex min-h-0 w-full grow overflow-hidden">
+      <ConnectorsCardList searchQuery={searchQuery} operation={operation} />
     </div>
   );
 }

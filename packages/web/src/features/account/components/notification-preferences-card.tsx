@@ -74,7 +74,7 @@ export function NotificationPreferencesCard() {
               </span>
               <MessageTooltip
                 isDisabled={true}
-                message="Instant-messaging delivery needs a Feishu, WeCom or DingTalk sign-in, which is not set up on this platform"
+                message={INSTANT_MESSAGING_UNAVAILABLE}
               >
                 <div className="flex items-center gap-1.5">
                   <Checkbox id={`${event}-im`} checked={false} disabled />
@@ -88,7 +88,7 @@ export function NotificationPreferencesCard() {
               </MessageTooltip>
               <MessageTooltip
                 isDisabled={!emailAvailable}
-                message="The administrator has not configured an email service (SMTP)"
+                message={EMAIL_UNAVAILABLE}
               >
                 <div className="flex items-center gap-1.5">
                   <Checkbox
@@ -110,7 +110,16 @@ export function NotificationPreferencesCard() {
             </div>
           ))
         )}
+        <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+          <li>{t(INSTANT_MESSAGING_UNAVAILABLE)}</li>
+          {!emailAvailable && <li>{t(EMAIL_UNAVAILABLE)}</li>}
+        </ul>
       </CardContent>
     </Card>
   );
 }
+
+const INSTANT_MESSAGING_UNAVAILABLE =
+  'Instant-messaging delivery needs a Feishu, WeCom or DingTalk sign-in, which is not set up on this platform';
+const EMAIL_UNAVAILABLE =
+  'The administrator has not configured an email service (SMTP)';

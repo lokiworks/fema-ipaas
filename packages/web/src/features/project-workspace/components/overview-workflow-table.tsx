@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -36,13 +37,17 @@ import { workspaceUtils } from '../lib/workspace-utils';
 export function OverviewWorkflowTable({
   context,
   stats,
+  isLoading,
 }: {
   context: WorkspaceContext;
   stats: ProjectOverviewStats | undefined;
+  isLoading: boolean;
 }) {
   const navigate = useNavigate();
   const [promoteId, setPromoteId] = useState<string | null>(null);
   const { workflows, releasesEnabled, projectId, permissions } = context;
+  const statsPending = isLoading;
+  const environmentsPending = context.environmentsLoading;
   const statsById = new Map<string, ProjectWorkflowStats>(
     (stats?.workflows ?? []).map((item) => [item.workflowId, item]),
   );
@@ -76,7 +81,7 @@ export function OverviewWorkflowTable({
             <TableHead className="min-w-44">{t('Name')}</TableHead>
             {releasesEnabled ? (
               <>
-                <TableHead className="w-24">{t('Test')}</TableHead>
+                <TableHead className="w-24">{t('Test environment')}</TableHead>
                 <TableHead className="w-24">{t('Production')}</TableHead>
               </>
             ) : (
@@ -132,13 +137,21 @@ export function OverviewWorkflowTable({
                 {releasesEnabled ? (
                   <>
                     <TableCell>
-                      <VersionCell number={item?.testVersionNumber ?? null} />
+                      {statsPending ? (
+                        <CellSkeleton />
+                      ) : (
+                        <VersionCell number={item?.testVersionNumber ?? null} />
+                      )}
                     </TableCell>
                     <TableCell>
-                      <VersionCell
-                        number={item?.productionVersionNumber ?? null}
-                        running={workflow.status === WorkflowStatus.ENABLED}
-                      />
+                      {statsPending ? (
+                        <CellSkeleton />
+                      ) : (
+                        <VersionCell
+                          number={item?.productionVersionNumber ?? null}
+                          running={workflow.status === WorkflowStatus.ENABLED}
+                        />
+                      )}
                     </TableCell>
                   </>
                 ) : (
@@ -147,10 +160,14 @@ export function OverviewWorkflowTable({
                   </TableCell>
                 )}
                 <TableCell>
-                  <LastRun item={item} />
+                  {statsPending ? <CellSkeleton /> : <LastRun item={item} />}
                 </TableCell>
                 <TableCell className="text-right">
-                  {formatUtils.formatNumber(item?.runs7d ?? 0)}
+                  {statsPending ? (
+                    <CellSkeleton className="ml-auto w-8" />
+                  ) : (
+                    formatUtils.formatNumber(item?.runs7d ?? 0)
+                  )}
                 </TableCell>
                 <TableCell
                   className={cn(
@@ -158,11 +175,19 @@ export function OverviewWorkflowTable({
                     rate !== null && rate < 90 && 'text-destructive',
                   )}
                 >
-                  {rate === null ? '—' : `${rate.toFixed(1)}%`}
+                  {statsPending ? (
+                    <CellSkeleton className="ml-auto w-10" />
+                  ) : rate === null ? (
+                    '—'
+                  ) : (
+                    `${rate.toFixed(1)}%`
+                  )}
                 </TableCell>
                 {releasesEnabled && (
                   <TableCell onClick={(event) => event.stopPropagation()}>
-                    {environment?.pendingReleaseId ? (
+                    {environmentsPending ? (
+                      <CellSkeleton />
+                    ) : environment?.pendingReleaseId ? (
                       <Button
                         type="button"
                         variant="ghost"
@@ -207,6 +232,10 @@ export function OverviewWorkflowTable({
   );
 }
 
+function CellSkeleton({ className }: { className?: string }) {
+  return <Skeleton className={cn('h-4 w-12', className)} />;
+}
+
 function VersionCell({
   number,
   running,
@@ -215,7 +244,7 @@ function VersionCell({
   running?: boolean;
 }) {
   if (number === null) {
-    return <span className="text-muted-foreground">{t('Not deployed')}</span>;
+    return <span className="text-muted-foreground">{t('Not published')}</span>;
   }
   return (
     <span className="flex items-center gap-1.5">

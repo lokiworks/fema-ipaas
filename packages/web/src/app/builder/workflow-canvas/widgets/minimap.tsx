@@ -16,8 +16,8 @@ const Minimap = () => {
     <>
       {showMinimap && (
         <MiniMap
-          position="bottom-left"
-          className="!rounded-md border border-border !left-0 !ml-2 overflow-hidden !bottom-[45px] animate-in fade-in duration-300"
+          position="bottom-right"
+          className="!rounded-md border border-border !right-0 !mr-3 overflow-hidden !bottom-[64px] animate-in fade-in duration-300"
           zoomable
           pannable
           zoomStep={0.3}

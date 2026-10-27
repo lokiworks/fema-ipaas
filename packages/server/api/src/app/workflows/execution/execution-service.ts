@@ -385,6 +385,11 @@ export const executionService = (log: FastifyBaseLogger) => ({
     async startManualTrigger({ projectId, workflowVersionId, triggeredBy }: StartManualTriggerParams): Promise<Execution> {
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
         const workflow = await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
+        runEnvironmentUtils.assertManualTriggerAllowed({
+            workflowVersionId: workflowVersion.id,
+            publishedVersionId: workflow.publishedVersionId,
+            workflowStatus: workflow.status,
+        })
         const triggerPayload = {}
         const tenantId = await projectService(log).getTenantId(projectId)
         const environment = runEnvironmentUtils.forManualTrigger({

@@ -1,5 +1,5 @@
 import { LucideIcon, MoreHorizontal } from 'lucide-react';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export function ActionMenu({
@@ -24,22 +29,51 @@ export function ActionMenu({
   align?: 'start' | 'end';
   triggerClassName?: string;
 }) {
+  const [hintOpen, setHintOpen] = useState(false);
+  const hintSuppressed = useRef(false);
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        {trigger ?? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label={label}
-            className={triggerClassName}
-            onClick={(event) => event.stopPropagation()}
+    <DropdownMenu
+      modal={false}
+      onOpenChange={(open) => {
+        setHintOpen(false);
+        hintSuppressed.current = !open;
+      }}
+    >
+      <Tooltip
+        open={hintOpen}
+        onOpenChange={(next) => {
+          if (next && hintSuppressed.current) {
+            return;
+          }
+          setHintOpen(next);
+        }}
+      >
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger
+            asChild
+            onPointerEnter={() => {
+              hintSuppressed.current = false;
+            }}
+            onBlur={() => {
+              hintSuppressed.current = false;
+            }}
           >
-            <MoreHorizontal />
-          </Button>
-        )}
-      </DropdownMenuTrigger>
+            {trigger ?? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                aria-label={label}
+                className={triggerClassName}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <MoreHorizontal />
+              </Button>
+            )}
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent
         align={align}
         className="w-56"

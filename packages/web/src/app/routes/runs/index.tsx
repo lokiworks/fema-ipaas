@@ -10,7 +10,7 @@ import {
   WorkflowRetryStrategy,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Archive, RefreshCw } from 'lucide-react';
+import { Archive, CopyMinus, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   Link,
@@ -175,35 +175,13 @@ const RunsPage = () => {
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <Tabs
-          value={dedupedView ? DEDUPED_VIEW : state.type}
-          onValueChange={selectTab}
-        >
+        <Tabs value={dedupedView ? '' : state.type} onValueChange={selectTab}>
           <TabsList>
             {TYPE_TABS.map((type) => (
               <TabsTrigger key={type} value={type}>
                 {runLogUiUtils.typeLabel(type)}
               </TabsTrigger>
             ))}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <TabsTrigger
-                    value={DEDUPED_VIEW}
-                    disabled={isNil(dedupeProjectId)}
-                  >
-                    {t('Deduplicated')}
-                  </TabsTrigger>
-                </span>
-              </TooltipTrigger>
-              {isNil(dedupeProjectId) && (
-                <TooltipContent className="max-w-64">
-                  {t(
-                    'Deduplicated triggers are listed per project. Filter by exactly one project to see them.',
-                  )}
-                </TooltipContent>
-              )}
-            </Tooltip>
           </TabsList>
         </Tabs>
         {!dedupedView && (
@@ -226,31 +204,61 @@ const RunsPage = () => {
             </Button>
           </>
         )}
-        {scope && (
+        <div className="ml-auto flex items-center gap-3">
           <Tooltip>
             <TooltipTrigger asChild>
-              {scope.canManagePrivacy ? (
-                <Link
-                  to="/tenant/security/privacy"
-                  className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:underline"
+              <span>
+                <Button
+                  type="button"
+                  variant={dedupedView ? 'secondary' : 'outline'}
+                  size="sm"
+                  aria-pressed={dedupedView}
+                  disabled={isNil(dedupeProjectId)}
+                  onClick={() =>
+                    selectTab(dedupedView ? state.type : DEDUPED_VIEW)
+                  }
                 >
-                  <Archive className="size-3.5" />
-                  {runLogUiUtils.retentionText(scope)}
-                </Link>
-              ) : (
-                <span className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Archive className="size-3.5" />
-                  {runLogUiUtils.retentionText(scope)}
-                </span>
-              )}
+                  <CopyMinus className="size-4" />
+                  {t('Deduplicated triggers')}
+                </Button>
+              </span>
             </TooltipTrigger>
-            <TooltipContent className="max-w-72">
-              {t(
-                'Expired logs are cleaned up automatically. Sensitive fields are masked before they are written to the log.',
-              )}
+            <TooltipContent className="max-w-64">
+              {isNil(dedupeProjectId)
+                ? t(
+                    'Deduplicated triggers are listed per project. Filter by exactly one project to see them.',
+                  )
+                : t(
+                    'Triggers that were dropped as duplicates and never ran. Switch back to see run logs.',
+                  )}
             </TooltipContent>
           </Tooltip>
-        )}
+          {scope && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {scope.canManagePrivacy ? (
+                  <Link
+                    to="/tenant/security/privacy"
+                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                  >
+                    <Archive className="size-3.5" />
+                    {runLogUiUtils.retentionText(scope)}
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Archive className="size-3.5" />
+                    {runLogUiUtils.retentionText(scope)}
+                  </span>
+                )}
+              </TooltipTrigger>
+              <TooltipContent className="max-w-72">
+                {t(
+                  'Expired logs are cleaned up automatically. Sensitive fields are masked before they are written to the log.',
+                )}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       </div>
       {dedupedView ? (
         <DedupedEventsTable />

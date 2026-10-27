@@ -236,9 +236,9 @@ function fixLabel(kind: IssueFixKind): string {
     case IssueFixKind.OPEN_STEP_ERROR_HANDLING:
       return t('Open the step and configure retries');
     case IssueFixKind.REPLAY_FROM_FAILED_STEP:
-      return t('Replay from the failed step');
+      return t('Rerun from the failed step');
     case IssueFixKind.REPLAY_FULL:
-      return t('Replay the whole run');
+      return t('Rerun the whole run');
     case IssueFixKind.OPEN_RUN:
       return t('Open the runs of this workflow');
     case IssueFixKind.OPEN_MAPPING_TABLES:

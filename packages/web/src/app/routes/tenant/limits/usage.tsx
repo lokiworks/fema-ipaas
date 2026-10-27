@@ -9,6 +9,7 @@ import {
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { BellRing } from 'lucide-react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { ConsolePage } from '@/components/custom/console-page';
@@ -60,7 +61,7 @@ export default function UsageLimitsPage() {
           </div>
           <section className="flex flex-col gap-3">
             <h2 className="text-base font-medium">{t('Instance limits')}</h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {instance.limits.map((limit) => (
                 <InstanceLimitCard key={limit.key} limit={limit} />
               ))}
@@ -230,7 +231,7 @@ function InstanceLimitCard({ limit }: { limit: InstanceLimit }) {
         <span className="text-xs text-muted-foreground">
           {limitsUtils.limitLabel(limit.key)}
         </span>
-        <span className="text-lg font-semibold tabular-nums">
+        <span className="text-lg font-semibold whitespace-nowrap tabular-nums">
           {limit.usage === null
             ? limitsUtils.formatValue({ unit: limit.unit, value: limit.value })
             : `${formatUtils.formatNumber(
@@ -252,12 +253,33 @@ function InstanceLimitCard({ limit }: { limit: InstanceLimit }) {
         </span>
         <div className="mt-auto flex min-w-0 flex-col gap-0.5 pt-1">
           <span className="text-xs">{limitsUtils.sourceLabel(limit)}</span>
-          <span className="break-all text-[11px] text-muted-foreground">
-            {t('Self-hosted setting: {name}', { name: limit.envVar })}
+          <span className="text-[11px] break-words text-muted-foreground">
+            <EnvVarLine
+              text={t('Self-hosted setting: {name}', { name: limit.envVar })}
+              name={limit.envVar}
+            />
           </span>
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function EnvVarLine({ text, name }: { text: string; name: string }) {
+  const [before, ...rest] = text.split(name);
+  const parts = name.split('_');
+  return (
+    <>
+      {before}
+      {parts.map((part, index) => (
+        <React.Fragment key={`${part}-${index}`}>
+          {index > 0 && '_'}
+          {index > 0 && <wbr />}
+          {part}
+        </React.Fragment>
+      ))}
+      {rest.join(name)}
+    </>
   );
 }
 
@@ -280,7 +302,7 @@ function ProjectUsageTable({
           <TableHead>{t('Project')}</TableHead>
           <TableHead className="text-right">{t('Runs this month')}</TableHead>
           <TableHead className="text-right">{t('Success rate')}</TableHead>
-          <TableHead>{t('Share')}</TableHead>
+          <TableHead>{t('Share of runs')}</TableHead>
           <TableHead>{t('Project limit used')}</TableHead>
         </TableRow>
       </TableHeader>

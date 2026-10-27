@@ -66,7 +66,7 @@ describe('IssueReplayDialog with runs blocked until a later time', () => {
     expect(dialog?.querySelector('[role=checkbox]')).toBeNull();
     const replayButton = Array.from(
       dialog?.querySelectorAll('button') ?? [],
-    ).find((button) => button.textContent?.includes('Replay 0 runs'));
+    ).find((button) => button.textContent?.includes('Rerun 0'));
     expect(replayButton).toBeDefined();
     expect(replayButton?.hasAttribute('disabled')).toBe(true);
     await act(async () => root.unmount());

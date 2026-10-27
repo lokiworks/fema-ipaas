@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
 import { authenticationSession } from '@/lib/authentication-session';
 
@@ -264,36 +265,34 @@ function GenerateWorkflowForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t('What should the workflow do?')}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        rows={5}
-                        autoFocus
-                        maxLength={AI_PROMPT_MAX_LENGTH}
-                        placeholder={t(
-                          'For example: when an employee is onboarded in Beisen, create their Feishu account by department and tell the HR group',
-                        )}
-                        onKeyDown={(event) => {
-                          if (
-                            event.key === 'Enter' &&
-                            (event.metaKey || event.ctrlKey) &&
-                            !event.nativeEvent.isComposing
-                          ) {
-                            event.preventDefault();
-                            submitPlan();
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <div className="flex justify-between gap-2 text-xs text-muted-foreground">
-                      <FormMessage />
-                      <span className="ml-auto">
-                        {t('{count} / {max}', {
-                          count: prompt.length,
-                          max: AI_PROMPT_MAX_LENGTH,
-                        })}
-                      </span>
-                    </div>
+                    <CharacterCounter
+                      multiline
+                      length={prompt.length}
+                      max={AI_PROMPT_MAX_LENGTH}
+                    >
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          rows={5}
+                          autoFocus
+                          maxLength={AI_PROMPT_MAX_LENGTH}
+                          placeholder={t(
+                            'For example: when an employee is onboarded in Beisen, create their Feishu account by department and tell the HR group',
+                          )}
+                          onKeyDown={(event) => {
+                            if (
+                              event.key === 'Enter' &&
+                              (event.metaKey || event.ctrlKey) &&
+                              !event.nativeEvent.isComposing
+                            ) {
+                              event.preventDefault();
+                              submitPlan();
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </CharacterCounter>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -412,7 +411,7 @@ function GenerateWorkflowForm({
                 })
               }
             />
-          ) : (
+          ) : hasPlanError ? null : (
             <PlanIntro />
           )}
         </section>

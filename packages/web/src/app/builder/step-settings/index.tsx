@@ -170,6 +170,9 @@ const StepSettingsContainer = () => {
     });
   const isEmptyTrigger = modifiedStep.type === WorkflowTriggerType.EMPTY;
   const isTriggerStep = workflowStructureUtil.isTrigger(modifiedStep.type);
+  const isInBranchView = !isNil(selectedBranchIndex);
+  const showConnectorVersion =
+    isConnectorMetadata(stepMetadata) && !!stepMetadata.connectorVersion;
   const showGenerateSampleData =
     !readonly && !isManualTrigger && !isEmptyTrigger;
   const showStepInputOutFromRun =
@@ -207,6 +210,7 @@ const StepSettingsContainer = () => {
   const showActionErrorHandlingForm =
     !isNil(stepMetadata) &&
     (modifiedStep.type === WorkflowActionType.CODE ||
+      modifiedStep.type === WorkflowActionType.COMPONENT ||
       (modifiedStep.type === WorkflowActionType.CONNECTOR && runAgentStep));
 
   useEffect(() => {
@@ -248,7 +252,10 @@ const StepSettingsContainer = () => {
               step={modifiedStep}
               connectorDisplayName={stepMetadata.displayName}
               logoUrl={stepMetadata.logoUrl}
-              operationDisplayName={modifiedStep.displayName}
+              operationDisplayName={
+                stepMetadata.actionOrTriggerOrAgentDisplayName ||
+                modifiedStep.displayName
+              }
               readonly={readonly}
             />
           )}
@@ -280,9 +287,9 @@ const StepSettingsContainer = () => {
             {stepMetadata && (
               <StepOperationSummary
                 step={modifiedStep}
-                connectorDisplayName={stepMetadata.displayName}
+                connectorDisplayName={t('Core Components')}
                 logoUrl={stepMetadata.logoUrl}
-                operationDisplayName={modifiedStep.displayName}
+                operationDisplayName={stepMetadata.displayName}
                 readonly={readonly}
                 hideChangeAction={true}
               />
@@ -325,7 +332,7 @@ const StepSettingsContainer = () => {
 
   const settingsForm = (
     <Tabs
-      value={stepPanelTab ?? initialTab}
+      value={isManualTrigger ? 'action' : stepPanelTab ?? initialTab}
       onValueChange={setStepPanelTab}
       className="flex h-full w-full flex-col"
     >
@@ -334,22 +341,28 @@ const StepSettingsContainer = () => {
           {isTriggerStep ? t('Trigger') : t('Action')}
           <TabErrorDot show={tabsWithErrors.includes(ValidationTab.ACTION)} />
         </TabsTrigger>
-        <TabsTrigger value="input" className="gap-1.5">
-          {isTriggerStep ? t('Settings') : t('Input')}
-          <TabErrorDot
-            show={
-              tabsWithErrors.includes(ValidationTab.INPUT) ||
-              !modifiedStep.valid
-            }
-          />
-        </TabsTrigger>
-        <TabsTrigger value="output">{t('Output')}</TabsTrigger>
-        <TabsTrigger value="error" className="gap-1.5">
-          {modifiedStep.type === WorkflowTriggerType.CONNECTOR
-            ? t('Run settings')
-            : t('Error Handling')}
-          <TabErrorDot show={tabsWithErrors.includes(ValidationTab.ERROR)} />
-        </TabsTrigger>
+        {!isManualTrigger && (
+          <>
+            <TabsTrigger value="input" className="gap-1.5">
+              {isTriggerStep ? t('Settings') : t('Input')}
+              <TabErrorDot
+                show={
+                  tabsWithErrors.includes(ValidationTab.INPUT) ||
+                  !modifiedStep.valid
+                }
+              />
+            </TabsTrigger>
+            <TabsTrigger value="output">{t('Output')}</TabsTrigger>
+            <TabsTrigger value="error" className="gap-1.5">
+              {modifiedStep.type === WorkflowTriggerType.CONNECTOR
+                ? t('Run settings')
+                : t('Error Handling')}
+              <TabErrorDot
+                show={tabsWithErrors.includes(ValidationTab.ERROR)}
+              />
+            </TabsTrigger>
+          </>
+        )}
       </TabsList>
       {(['action', 'input', 'error'] as const).map((section) => (
         <TabsContent
@@ -423,20 +436,25 @@ const StepSettingsContainer = () => {
                 />
               ) : null
             }
-            actions={
-              <div className="flex items-center gap-1">
-                {isConnectorMetadata(stepMetadata) &&
-                  stepMetadata.connectorVersion &&
+            actions={isInBranchView ? undefined : <StepNavigationButtons />}
+            subheader={
+              showConnectorVersion || isInBranchView ? (
+                <div className="flex w-full items-center justify-between">
+                  {showConnectorVersion &&
+                  isConnectorMetadata(stepMetadata) &&
                   (modifiedStep.type === WorkflowActionType.CONNECTOR ||
-                    modifiedStep.type === WorkflowTriggerType.CONNECTOR) && (
+                    modifiedStep.type === WorkflowTriggerType.CONNECTOR) ? (
                     <ConnectorVersionInHeader
                       step={modifiedStep}
                       connectorVersion={stepMetadata.connectorVersion}
                       readonly={readonly}
                     />
+                  ) : (
+                    <span />
                   )}
-                <StepNavigationButtons />
-              </div>
+                  {isInBranchView && <StepNavigationButtons />}
+                </div>
+              ) : undefined
             }
           >
             <EditableStepName

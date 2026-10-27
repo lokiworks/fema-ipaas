@@ -127,7 +127,7 @@ export const AppearanceSection = () => {
   const logoRef = useRef<HTMLInputElement>(null);
   const iconRef = useRef<HTMLInputElement>(null);
   const faviconRef = useRef<HTMLInputElement>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
 
   const { mutate: updateTenant, isPending } = useMutation({
     mutationFn: async () => {
@@ -229,12 +229,7 @@ export const AppearanceSection = () => {
                         accept="image/png,image/svg+xml,image/jpeg"
                         id="logoFile"
                         className="rounded-sm"
-                        onChange={(event) => {
-                          const file = acceptBrandingFile(event);
-                          setLogoPreview(
-                            file ? URL.createObjectURL(file) : null,
-                          );
-                        }}
+                        onChange={acceptBrandingFile}
                       />
                     </div>
                     <FormDescription>
@@ -257,7 +252,12 @@ export const AppearanceSection = () => {
                         accept="image/*"
                         id="iconFile"
                         className="rounded-sm"
-                        onChange={acceptBrandingFile}
+                        onChange={(event) => {
+                          const file = acceptBrandingFile(event);
+                          setIconPreview(
+                            file ? URL.createObjectURL(file) : null,
+                          );
+                        }}
                       />
                     </div>
                     <FormMessage />
@@ -381,7 +381,7 @@ export const AppearanceSection = () => {
             productName={form.watch('name')}
             welcomeText={form.watch('welcomeText')}
             color={form.watch('color')}
-            logoUrl={logoPreview ?? tenant?.fullLogoUrl ?? null}
+            iconUrl={iconPreview ?? tenant?.logoIconUrl ?? null}
             emailAuthEnabled={tenant?.emailAuthEnabled ?? true}
           />
         </div>
@@ -404,13 +404,13 @@ function LoginPreview({
   productName,
   welcomeText,
   color,
-  logoUrl,
+  iconUrl,
   emailAuthEnabled,
 }: {
   productName: string;
   welcomeText: string;
   color: string;
-  logoUrl: string | null;
+  iconUrl: string | null;
   emailAuthEnabled: boolean;
 }) {
   const buttonColor = colorContrast.isReadableOnWhite(color)
@@ -420,15 +420,15 @@ function LoginPreview({
   return (
     <div className="grid grid-cols-2 overflow-hidden rounded-lg border text-xs">
       <div className="flex flex-col gap-3 bg-muted p-4">
-        <div className="flex min-w-0 flex-col items-start gap-1.5">
-          {logoUrl && (
+        <div className="flex min-w-0 items-center gap-2">
+          {iconUrl && (
             <img
-              src={logoUrl}
+              src={iconUrl}
               alt=""
-              className="h-8 max-w-full object-contain object-left"
+              className="size-6 shrink-0 rounded object-contain"
             />
           )}
-          <span className="break-words font-medium">{name}</span>
+          <span className="break-words font-semibold">{name}</span>
         </div>
         {welcomeText.trim().length > 0 && (
           <span className="text-sm">{welcomeText}</span>

@@ -89,6 +89,11 @@ function ProjectInfoForm({
   const description = form.watch('description') ?? '';
   const displayName = form.watch('displayName');
   const color = form.watch('icon.color');
+  const currentColor = project?.icon.color;
+  const colorOptions =
+    currentColor === undefined || PROJECT_COLORS.includes(currentColor)
+      ? PROJECT_COLORS
+      : [...PROJECT_COLORS, currentColor];
   const taken = (directory ?? [])
     .filter((item) => item.id !== project?.id)
     .map((item) => item.displayName);
@@ -145,7 +150,7 @@ function ProjectInfoForm({
       >
         <DialogHeader>
           <DialogTitle>
-            {project === null ? t('Create Project') : t('Edit project info')}
+            {project === null ? t('Create Project') : t('Edit basic info')}
           </DialogTitle>
           <DialogDescription>
             {t(
@@ -186,7 +191,7 @@ function ProjectInfoForm({
             <FormItem>
               <FormLabel>{t('Color')}</FormLabel>
               <div className="flex flex-wrap gap-2" role="radiogroup">
-                {PROJECT_COLORS.map((option) => (
+                {colorOptions.map((option) => (
                   <button
                     key={option}
                     type="button"
@@ -278,10 +283,8 @@ const PROJECT_COLORS: ColorName[] = [
   ColorName.BLUE,
   ColorName.CYAN,
   ColorName.GREEN,
+  ColorName.YELLOW,
   ColorName.ORANGE,
   ColorName.RED,
   ColorName.PINK,
-  ColorName.VIOLET,
-  ColorName.DARK_GREEN,
-  ColorName.DEEP_ORANGE,
 ];

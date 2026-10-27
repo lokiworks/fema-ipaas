@@ -174,7 +174,10 @@ const CanvasControls = ({
           )}
         >
           <CanvasControlButton
-            tooltip={t('Minimap' + (isMac() ? ' (⌘ + M)' : ' (Ctrl + M)'))}
+            tooltip={t('minimapTooltip', {
+              shortcut: isMac() ? '⌘ + M' : 'Ctrl + M',
+            })}
+            tooltipSide="right"
             icon={Map}
             active={showMinimap}
             onClick={() => setShowMinimap(!showMinimap)}

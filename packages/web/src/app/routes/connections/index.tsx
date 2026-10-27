@@ -295,9 +295,11 @@ function ConnectionsPage() {
               <TextWithTooltip tooltipMessage={row.original.displayName}>
                 <span className="min-w-0">{row.original.displayName}</span>
               </TextWithTooltip>
-              <span className="truncate text-xs text-muted-foreground">
-                {accountIdentifier ? `${accountIdentifier}` : '-'}
-              </span>
+              {accountIdentifier && (
+                <span className="truncate text-xs text-muted-foreground">
+                  {accountIdentifier}
+                </span>
+              )}
             </div>
           </div>
         );
@@ -466,16 +468,21 @@ function ConnectionsPage() {
               </Button>
             )}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  aria-label={t('More actions')}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      aria-label={t('More actions')}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>{t('More actions')}</TooltipContent>
+              </Tooltip>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={() => setDetailId(connection.id)}>
                   {t('View Details')}

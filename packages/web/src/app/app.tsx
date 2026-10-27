@@ -29,7 +29,7 @@ export function App() {
                   <React.Fragment key={i18n.language}>
                     <ThemeProvider storageKey="fema.theme">
                       <AppRouter />
-                      <Toaster position="top-center" />
+                      <Toaster position="top-center" offset={64} />
                       <HelpDrawer />
                       <TourHost />
                       <ErrorDialog />

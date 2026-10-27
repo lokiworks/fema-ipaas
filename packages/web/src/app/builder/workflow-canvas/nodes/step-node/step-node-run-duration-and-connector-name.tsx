@@ -13,9 +13,9 @@ import { cn } from '@/lib/utils';
 
 const StepNodeRunDuration = ({ duration }: { duration: number }) => {
   return (
-    <div className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
+    <div className="ml-2 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
       <Timer className="size-3" />
-      <span>{formatUtils.formatDuration(duration, true)}</span>
+      <span>{formatUtils.formatDuration(duration)}</span>
     </div>
   );
 };
@@ -59,7 +59,7 @@ const StepNodeRunDurationAndConnectorName = ({
 
   return (
     <div
-      className={cn('flex mt-0.5 w-full items-center', {
+      className={cn('flex mt-0.5 w-full items-center gap-1', {
         'justify-between': !isHorizontal,
         'justify-center': isHorizontal,
       })}

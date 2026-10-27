@@ -268,7 +268,7 @@ function NodeRow({
       </span>
       {!isNil(row.durationMs) && (
         <span className="shrink-0 text-[11px] text-muted-foreground">
-          {formatUtils.formatDuration(row.durationMs, true)}
+          {formatUtils.formatDuration(row.durationMs)}
         </span>
       )}
     </button>

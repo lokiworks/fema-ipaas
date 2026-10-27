@@ -161,6 +161,7 @@ function SingleEnvironmentPublishSection() {
     isPublishing,
     isSaving,
     hasNoChanges,
+    neverPublished: isNil(workflow.publishedVersionId),
   });
   const canDiscard =
     !isNil(workflow.publishedVersionId) &&
@@ -170,12 +171,14 @@ function SingleEnvironmentPublishSection() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
-        {isBusy && (
-          <LoadingSpinner className="size-3 stroke-muted-foreground" />
-        )}
-        {statusText}
-      </span>
+      {(isBusy || !isNil(statusText)) && (
+        <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+          {isBusy && (
+            <LoadingSpinner className="size-3 stroke-muted-foreground" />
+          )}
+          {statusText}
+        </span>
+      )}
       {canDiscard && (
         <Button
           size="sm"
@@ -487,11 +490,13 @@ function pickStatusText({
   isPublishing,
   isSaving,
   hasNoChanges,
+  neverPublished,
 }: {
   isDiscardingChanges: boolean;
   isPublishing: boolean;
   isSaving: boolean;
   hasNoChanges: boolean;
+  neverPublished: boolean;
 }) {
   if (isSaving) {
     return t('Saving...');
@@ -501,6 +506,9 @@ function pickStatusText({
   }
   if (isPublishing) {
     return t('Publishing...');
+  }
+  if (neverPublished) {
+    return null;
   }
   return hasNoChanges ? t('No unpublished changes') : t('Unpublished changes');
 }

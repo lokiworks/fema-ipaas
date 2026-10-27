@@ -7,6 +7,7 @@ import {
   IssueStatus,
   IssueTrendGranularity,
   IssueWithSeverity,
+  WorkflowRetryStrategy,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
@@ -80,7 +81,8 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
   const canReplay = checkAccess(Permission.WRITE_RUN);
   const { assignable, nameOf } = issueMembersHooks.useIssueMembers();
   const { mutate: update } = issuesHooks.useUpdateIssue(issue.id);
-  const [replayOpen, setReplayOpen] = useState(false);
+  const [replayStrategy, setReplayStrategy] =
+    useState<WorkflowRetryStrategy | null>(null);
   const muted =
     !!issue.mutedUntil && new Date(issue.mutedUntil).getTime() > Date.now();
 
@@ -229,7 +231,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             issue={issue}
             canReplay={canReplay}
             canWrite={canWrite}
-            onReplay={() => setReplayOpen(true)}
+            onReplay={setReplayStrategy}
             onIgnore={() => update({ status: IssueStatus.IGNORED })}
           />
           {issue.kind === IssueKind.RECONCILIATION &&
@@ -250,7 +252,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
                 <AffectedRunsCard
                   issueId={issue.id}
                   canReplay={canReplay}
-                  onReplay={() => setReplayOpen(true)}
+                  onReplay={setReplayStrategy}
                 />
               </>
             )}
@@ -270,12 +272,15 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
         </div>
       </div>
 
-      <IssueReplayDialog
-        workflowName={issue.workflowDisplayName ?? null}
-        issueId={issue.id}
-        open={replayOpen}
-        onOpenChange={setReplayOpen}
-      />
+      {replayStrategy !== null && (
+        <IssueReplayDialog
+          workflowName={issue.workflowDisplayName ?? null}
+          issueId={issue.id}
+          open
+          initialStrategy={replayStrategy}
+          onOpenChange={(open) => !open && setReplayStrategy(null)}
+        />
+      )}
     </div>
   );
 }
@@ -356,7 +361,7 @@ function InsightCard({
   issue: IssueWithSeverity;
   canReplay: boolean;
   canWrite: boolean;
-  onReplay: () => void;
+  onReplay: (strategy: WorkflowRetryStrategy) => void;
   onIgnore: () => void;
 }) {
   const navigate = useNavigate();
@@ -388,10 +393,13 @@ function InsightCard({
         allowed: !!issue.workflowId,
       },
       [IssueFixKind.REPLAY_FROM_FAILED_STEP]: {
-        run: onReplay,
+        run: () => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP),
         allowed: canReplay,
       },
-      [IssueFixKind.REPLAY_FULL]: { run: onReplay, allowed: canReplay },
+      [IssueFixKind.REPLAY_FULL]: {
+        run: () => onReplay(WorkflowRetryStrategy.ON_LATEST_VERSION),
+        allowed: canReplay,
+      },
       [IssueFixKind.OPEN_RUN]: {
         run: () =>
           navigate(
@@ -595,7 +603,7 @@ function AffectedRunsCard({
 }: {
   issueId: string;
   canReplay: boolean;
-  onReplay: () => void;
+  onReplay: (strategy: WorkflowRetryStrategy) => void;
 }) {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const { data: page } = issuesHooks.useExecutions({
@@ -611,10 +619,10 @@ function AffectedRunsCard({
           size="sm"
           variant="outline"
           disabled={!canReplay}
-          onClick={onReplay}
+          onClick={() => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP)}
         >
           <RotateCcw className="size-4 mr-1" />
-          {t('Replay failed runs')}
+          {t('Rerun from the failed step')}
         </Button>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
@@ -709,7 +717,7 @@ function ActivityCard({
               addNote(note.trim(), { onSuccess: () => setNote('') })
             }
           >
-            {t('Add note')}
+            {t('Add remark')}
           </Button>
         </div>
         <ol className="flex flex-col gap-3">
@@ -795,47 +803,49 @@ function AlertsCard({
   affectedWorkflows: number;
 }) {
   const { data: alerts } = issuesHooks.useAlerts(issueId);
-  const merged = (alerts ?? [])
+  const alertList = alerts ?? [];
+  const merged = alertList
     .filter((alert) => FAILURE_ALERT_KINDS.includes(alert.kind))
     .reduce((sum, alert) => sum + alert.mergedCount, 0);
+  const description =
+    alertList.length === 0
+      ? t('No alert has been triggered yet')
+      : kind === IssueKind.TRIGGER
+      ? t('{workflows} workflows → {alerts} alerts', {
+          workflows: affectedWorkflows,
+          alerts: alertList.length,
+        })
+      : t('{failures} failures → {alerts} alerts', {
+          failures: merged,
+          alerts: alertList.length,
+        });
   return (
     <Card>
       <CardHeader>
         <CardTitle>{t('Alerts')}</CardTitle>
-        <CardDescription>
-          {kind === IssueKind.TRIGGER
-            ? t('{workflows} workflows → {alerts} alerts', {
-                workflows: affectedWorkflows,
-                alerts: alerts?.length ?? 0,
-              })
-            : t('{failures} failures → {alerts} alerts', {
-                failures: merged,
-                alerts: alerts?.length ?? 0,
-              })}
-        </CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ul className="flex flex-col gap-2 text-sm">
-          {(alerts ?? []).map((alert) => (
-            <li key={alert.id} className="flex flex-col">
-              <span>
-                {issueUiUtils.alertKindLabel(alert.kind)}
-                {alert.mergedCount > 1
-                  ? ` · ${t('merged {count}', { count: alert.mergedCount })}`
-                  : ''}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                <FormattedDate
-                  date={new Date(alert.sentAt ?? alert.scheduledAt)}
-                />
-              </span>
-            </li>
-          ))}
-          {(alerts ?? []).length === 0 && (
-            <li className="text-muted-foreground">{t('No alerts sent yet')}</li>
-          )}
-        </ul>
-      </CardContent>
+      {alertList.length > 0 && (
+        <CardContent>
+          <ul className="flex flex-col gap-2 text-sm">
+            {alertList.map((alert) => (
+              <li key={alert.id} className="flex flex-col">
+                <span>
+                  {issueUiUtils.alertKindLabel(alert.kind)}
+                  {alert.mergedCount > 1
+                    ? ` · ${t('merged {count}', { count: alert.mergedCount })}`
+                    : ''}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  <FormattedDate
+                    date={new Date(alert.sentAt ?? alert.scheduledAt)}
+                  />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      )}
     </Card>
   );
 }

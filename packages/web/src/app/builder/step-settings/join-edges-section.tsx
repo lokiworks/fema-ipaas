@@ -1,6 +1,5 @@
 import {
   WorkflowOperationType,
-  workflowCompiler,
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -8,9 +7,10 @@ import React, { useMemo } from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../builder-hooks';
+
+import { joinEdgeCandidates } from './join-edge-candidates';
 
 const JoinEdgesSection = React.memo(
   ({ stepName, readonly }: { stepName: string; readonly: boolean }) => {
@@ -32,36 +32,18 @@ const JoinEdgesSection = React.memo(
       [joinEdges, stepName],
     );
 
-    // A step can only wait for another step, never for the trigger: the trigger produces no step
-    // output, so a join edge from it would never be satisfied and the run would stall.
-    const candidates = useMemo(
-      () =>
-        workflowStructureUtil
-          .getAllSteps(workflowVersion.trigger)
-          .filter(
-            (step) =>
-              step.name !== stepName &&
-              workflowStructureUtil.isAction(step.type),
-          ),
-      [workflowVersion.trigger, stepName],
-    );
-
-    const blocked = useMemo(
-      () =>
-        new Set(
-          candidates
-            .filter(
-              (step) =>
-                !waitingFor.has(step.name) &&
-                workflowCompiler.wouldCreateCycle({
-                  workflowVersion,
-                  edge: { from: step.name, to: stepName },
-                }),
-            )
-            .map((step) => step.name),
-        ),
-      [candidates, waitingFor, workflowVersion, stepName],
-    );
+    const candidates = useMemo(() => {
+      const candidateNames = new Set([
+        ...joinEdgeCandidates.listCandidates({
+          workflowVersion,
+          stepName,
+        }),
+        ...waitingFor,
+      ]);
+      return workflowStructureUtil
+        .getAllSteps(workflowVersion.trigger)
+        .filter((step) => candidateNames.has(step.name));
+    }, [workflowVersion, stepName, waitingFor]);
 
     if (candidates.length === 0) {
       return null;
@@ -89,27 +71,15 @@ const JoinEdgesSection = React.memo(
             )}
           </span>
         </div>
-        <div className="flex max-h-40 flex-col gap-1 overflow-y-auto">
+        <div className="flex flex-col gap-1">
           {candidates.map((step) => (
             <label
               key={step.name}
-              title={
-                blocked.has(step.name)
-                  ? t(
-                      'This step runs after the current one, so waiting for it would never finish',
-                    )
-                  : undefined
-              }
-              className={cn(
-                'flex items-center gap-2 rounded px-1 py-1 text-sm',
-                blocked.has(step.name)
-                  ? 'cursor-not-allowed opacity-50'
-                  : 'cursor-pointer hover:bg-muted',
-              )}
+              className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-muted"
             >
               <Checkbox
                 checked={waitingFor.has(step.name)}
-                disabled={readonly || blocked.has(step.name)}
+                disabled={readonly}
                 onCheckedChange={() => toggle(step.name)}
               />
               <span className="truncate">{step.displayName}</span>

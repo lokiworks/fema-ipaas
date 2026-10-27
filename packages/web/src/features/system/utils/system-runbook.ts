@@ -15,7 +15,21 @@ export const systemRunbook = {
   keyBackupCommand,
   isVersionSkewed,
   containerTypeLabel,
+  redisTypeLabel,
 };
+
+function redisTypeLabel({ redisType }: { redisType: string }): string {
+  switch (redisType) {
+    case 'STANDALONE':
+      return t('Standalone');
+    case 'SENTINEL':
+      return t('Sentinel high availability');
+    case 'MEMORY':
+      return t('In-memory');
+    default:
+      return redisType;
+  }
+}
 
 function containerTypeLabel({
   containerType,

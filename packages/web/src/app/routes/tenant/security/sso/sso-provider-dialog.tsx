@@ -401,16 +401,18 @@ function OidcFields({ form, existing }: FieldsProps<OidcSsoSettings>) {
         form={form}
         name="issuer"
         label={t('Issuer URL')}
+        required
         placeholder="https://login.example.com/realms/acme"
         description={t(
           'The address that serves /.well-known/openid-configuration. It must match the issuer exactly.',
         )}
       />
-      <TextField form={form} name="clientId" label={t('Client ID')} />
+      <TextField form={form} name="clientId" label={t('Client ID')} required />
       <TextField
         form={form}
         name="clientSecret"
         label={t('Client secret')}
+        required={!existing?.hasClientSecret}
         type="password"
         placeholder={
           existing?.hasClientSecret ? t('Saved. Leave empty to keep it.') : ''
@@ -448,12 +450,14 @@ function FeishuFields({ form, existing }: FieldsProps<FeishuSsoSettings>) {
         form={form}
         name="appId"
         label={t('App ID')}
+        required
         placeholder="cli_xxxxxxxx"
       />
       <TextField
         form={form}
         name="appSecret"
         label={t('App secret')}
+        required={!existing?.hasAppSecret}
         type="password"
         placeholder={
           existing?.hasAppSecret ? t('Saved. Leave empty to keep it.') : ''
@@ -502,6 +506,7 @@ function TextField({
   placeholder,
   description,
   type,
+  required,
 }: TextFieldProps) {
   return (
     <FormField
@@ -509,7 +514,7 @@ function TextField({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          <FormLabel showRequiredIndicator={required}>{label}</FormLabel>
           <FormControl>
             <Input
               {...field}
@@ -757,6 +762,7 @@ type TextFieldProps = {
   placeholder?: string;
   description?: string;
   type?: string;
+  required?: boolean;
 };
 
 type SwitchFieldProps = {

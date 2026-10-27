@@ -52,6 +52,7 @@ const StepNavigationButtons = () => {
             <Button
               variant="ghost"
               size="sm"
+              className="px-2"
               disabled={prevDisabled}
               onClick={() =>
                 !prevDisabled && prevStep && selectStepByName(prevStep.name)
@@ -68,6 +69,7 @@ const StepNavigationButtons = () => {
             <Button
               variant="ghost"
               size="sm"
+              className="px-2"
               disabled={nextDisabled}
               onClick={() =>
                 !nextDisabled && nextStep && selectStepByName(nextStep.name)

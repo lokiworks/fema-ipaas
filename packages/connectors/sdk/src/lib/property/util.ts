@@ -82,6 +82,8 @@ function buildSchema(props: ConnectorPropertyMap, auth: ConnectorAuthProperty | 
           propsSchema[name] = z.union([
             z.record(z.string(), z.any()),
             z.array(z.any()),
+            z.number(),
+            z.boolean(),
             property.required ? z.string().check(z.minLength(1)) : z.string(),
           ]);
           break;

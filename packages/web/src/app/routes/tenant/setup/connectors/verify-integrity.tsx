@@ -22,6 +22,14 @@ const VerifyIntegrityButton = () => {
     mutationFn: () =>
       api.post<IntegrityReport>('/v1/connectors/integrity/verify', {}),
     onSuccess: (result) => {
+      if (result.checked === 0) {
+        toast.warning(
+          t(
+            'Nothing to verify: all connectors in use are built into the platform and are not installed from packages, so they carry no checksum',
+          ),
+        );
+        return;
+      }
       const problems = result.mismatched + result.unverifiable;
       if (problems === 0) {
         toast.success(t('connectorsVerified', { count: result.checked }));
@@ -83,7 +91,7 @@ const VerifyIntegrityButton = () => {
                 </div>
                 <span className="text-xs text-muted-foreground">
                   v{result.version}
-                  {result.reason ? ` · ${result.reason}` : ''}
+                  {result.reason ? ` · ${reasonLabel(result.reason)}` : ''}
                 </span>
               </div>
             ))}
@@ -93,6 +101,19 @@ const VerifyIntegrityButton = () => {
     </>
   );
 };
+
+function reasonLabel(reason: string): string {
+  switch (reason) {
+    case 'no checksum was recorded at install':
+      return t('No checksum was recorded when it was installed');
+    case 'no archive is stored for this connector':
+      return t('No package archive is stored for this connector');
+    case 'the stored archive could not be read':
+      return t('The stored package archive could not be read');
+    default:
+      return reason;
+  }
+}
 
 VerifyIntegrityButton.displayName = 'VerifyIntegrityButton';
 

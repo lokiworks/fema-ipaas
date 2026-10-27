@@ -13,7 +13,7 @@ import {
   PackageType,
   ConnectorOptionRequest,
 } from '@fema-ipaas/shared';
-import { t } from 'i18next';
+import i18next, { t } from 'i18next';
 
 import { internalErrorToast } from '@/components/ui/sonner';
 import { api } from '@/lib/api';
@@ -44,7 +44,10 @@ export const connectorsApi = {
     propertyType: T,
   ): Promise<ExecutePropsResult<T>> {
     return api
-      .post<ExecutePropsResult<T>>(`/v1/connectors/options`, request)
+      .post<ExecutePropsResult<T>>(`/v1/connectors/options`, {
+        ...request,
+        locale: i18next.language,
+      })
       .catch((error) => {
         if (propertyType === PropertyType.DYNAMIC) {
           throw error;

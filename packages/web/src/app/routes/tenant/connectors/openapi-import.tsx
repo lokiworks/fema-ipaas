@@ -1,5 +1,6 @@
 import {
   GenerateConnectorFromOpenApiResponse,
+  OpenApiAuthScheme,
   ParseOpenApiResponse,
 } from '@fema-ipaas/shared';
 import { useMutation } from '@tanstack/react-query';
@@ -40,7 +41,12 @@ export default function OpenApiImportPage() {
       );
       setGenerated(null);
     },
-    onError: () => toast.error(t('Could not read that OpenAPI document')),
+    onError: () => {
+      setParsed(null);
+      setSelected(new Set());
+      setGenerated(null);
+      toast.error(t('Could not read that OpenAPI document'));
+    },
   });
 
   const generateMutation = useMutation({
@@ -84,6 +90,13 @@ export default function OpenApiImportPage() {
               {t('Read document')}
             </Button>
           </div>
+          {parseMutation.isError && (
+            <p className="text-sm text-destructive">
+              {t(
+                'Could not read that OpenAPI document. Check that it is valid JSON in OpenAPI 3 or Swagger 2 format, then read it again.',
+              )}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -110,7 +123,7 @@ export default function OpenApiImportPage() {
                 ) : (
                   parsed.authSchemes.map((scheme) => (
                     <Badge key={scheme.name} variant="outline">
-                      {scheme.name} · {scheme.type}
+                      {authSchemeLabel(scheme)}
                     </Badge>
                   ))
                 )}
@@ -184,7 +197,9 @@ export default function OpenApiImportPage() {
                 <Button
                   onClick={() => generateMutation.mutate()}
                   disabled={
-                    selected.size === 0 || connectorName.trim().length === 0
+                    parsed === null ||
+                    selected.size === 0 ||
+                    connectorName.trim().length === 0
                   }
                   loading={generateMutation.isPending}
                 >
@@ -224,6 +239,47 @@ export default function OpenApiImportPage() {
       )}
     </ConsolePage>
   );
+}
+
+function authSchemeLabel(scheme: OpenApiAuthScheme): string {
+  switch (scheme.type) {
+    case 'apiKey':
+      return t('API key "{name}", sent in the {location} "{parameter}"', {
+        name: scheme.name,
+        location: apiKeyLocationLabel(scheme.in),
+        parameter: scheme.parameterName ?? scheme.name,
+      });
+    case 'http':
+      return httpSchemeLabel(scheme.scheme);
+    case 'oauth2':
+      return t('OAuth 2.0 authorization');
+    case 'openIdConnect':
+      return t('OpenID Connect sign-in');
+    default:
+      return t('Other authentication ({type})', { type: scheme.type });
+  }
+}
+
+function apiKeyLocationLabel(location: string | undefined): string {
+  switch (location) {
+    case 'query':
+      return t('query string');
+    case 'cookie':
+      return t('cookie');
+    default:
+      return t('request header');
+  }
+}
+
+function httpSchemeLabel(scheme: string | undefined): string {
+  switch (scheme?.toLowerCase()) {
+    case 'bearer':
+      return t('Bearer token');
+    case 'basic':
+      return t('Username and password (Basic)');
+    default:
+      return t('HTTP authentication ({scheme})', { scheme: scheme ?? '-' });
+  }
 }
 
 function toggle(current: Set<string>, value: string): Set<string> {

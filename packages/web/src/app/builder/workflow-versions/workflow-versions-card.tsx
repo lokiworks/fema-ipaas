@@ -99,7 +99,11 @@ const WorkflowVersionDetailsCard = React.memo(
         )}
         <div className="grid min-w-0 grow gap-2">
           <FormattedDate
-            date={new Date(workflowVersion.created)}
+            date={
+              new Date(
+                releaseInfo?.production?.created ?? workflowVersion.created,
+              )
+            }
             includeTime={true}
             className="break-words text-sm font-medium leading-tight select-none cursor-default"
           ></FormattedDate>

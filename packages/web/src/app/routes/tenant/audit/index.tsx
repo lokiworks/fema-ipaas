@@ -69,6 +69,27 @@ export default function AuditLogPage() {
     cursor,
   });
   const resetPaging = () => setCursors([]);
+  const projectNameById = useMemo(
+    () =>
+      new Map(
+        (projects ?? []).map((project) => [project.id, project.displayName]),
+      ),
+    [projects],
+  );
+  const projectIdsNeedingNames = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (data?.data ?? [])
+            .filter(auditEventUtils.needsWorkflowName)
+            .flatMap((event) => (event.projectId ? [event.projectId] : [])),
+        ),
+      ),
+    [data?.data],
+  );
+  const workflowNames = auditEventsHooks.useWorkflowNames({
+    projectIds: projectIdsNeedingNames,
+  });
 
   const exportCsv = async () => {
     setExporting(true);
@@ -87,8 +108,8 @@ export default function AuditLogPage() {
           dayjs(event.created).format('YYYY-MM-DD HH:mm:ss'),
           event.userEmail ?? '',
           auditEventUtils.actionLabel(event.action),
-          auditEventUtils.summarize(event),
-          event.projectDisplayName ?? t('Platform'),
+          auditEventUtils.summarize({ event, workflowNames }),
+          projectLabelOf({ event, projectNameById }),
           event.ip ? displayIp(event.ip) : '',
         ]),
       ]);
@@ -217,7 +238,12 @@ export default function AuditLogPage() {
                 </TableRow>
               )}
               {(data?.data ?? []).map((event) => (
-                <AuditRow key={event.id} event={event} />
+                <AuditRow
+                  key={event.id}
+                  event={event}
+                  workflowNames={workflowNames}
+                  projectNameById={projectNameById}
+                />
               ))}
             </TableBody>
           </Table>
@@ -245,8 +271,17 @@ export default function AuditLogPage() {
   );
 }
 
-function AuditRow({ event }: { event: ApplicationEvent }) {
-  const summary = auditEventUtils.summarize(event);
+function AuditRow({
+  event,
+  workflowNames,
+  projectNameById,
+}: {
+  event: ApplicationEvent;
+  workflowNames: Record<string, string>;
+  projectNameById: Map<string, string>;
+}) {
+  const summary = auditEventUtils.summarize({ event, workflowNames });
+  const projectLabel = projectLabelOf({ event, projectNameById });
   return (
     <TableRow>
       <TableCell className="whitespace-nowrap">
@@ -266,12 +301,8 @@ function AuditRow({ event }: { event: ApplicationEvent }) {
         </TextWithTooltip>
       </TableCell>
       <TableCell className="max-w-48 text-muted-foreground">
-        <TextWithTooltip
-          tooltipMessage={event.projectDisplayName ?? t('Platform')}
-        >
-          <p className="truncate whitespace-nowrap">
-            {event.projectDisplayName ?? t('Platform')}
-          </p>
+        <TextWithTooltip tooltipMessage={projectLabel}>
+          <p className="truncate whitespace-nowrap">{projectLabel}</p>
         </TextWithTooltip>
       </TableCell>
       <TableCell className="font-mono text-xs text-muted-foreground">
@@ -279,6 +310,22 @@ function AuditRow({ event }: { event: ApplicationEvent }) {
       </TableCell>
     </TableRow>
   );
+}
+
+function projectLabelOf({
+  event,
+  projectNameById,
+}: {
+  event: ApplicationEvent;
+  projectNameById: Map<string, string>;
+}): string {
+  if (event.projectDisplayName) {
+    return event.projectDisplayName;
+  }
+  if (event.projectId) {
+    return projectNameById.get(event.projectId) ?? t('Deleted project');
+  }
+  return t('Platform');
 }
 
 function displayIp(ip: string | null | undefined): string {

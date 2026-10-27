@@ -69,7 +69,7 @@ export function ComponentHealthTab() {
           <ItemActions>
             {check.component === HealthComponent.BACKUP ? (
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost" asChild>
+                <Button size="sm" variant="link" asChild>
                   <Link to="/tenant/infra/backup">{t('View')}</Link>
                 </Button>
                 <Button
@@ -83,7 +83,7 @@ export function ComponentHealthTab() {
               </div>
             ) : (
               linkFor(check.component) && (
-                <Button size="sm" variant="ghost" asChild>
+                <Button size="sm" variant="link" asChild>
                   <Link to={linkFor(check.component) ?? '/'}>{t('View')}</Link>
                 </Button>
               )

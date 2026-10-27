@@ -1,6 +1,5 @@
 import { isNil, SeekPage } from '@fema-ipaas/core-utils';
 import {
-  RunEnvironment,
   RunLogRow,
   RunLogType,
   RunRerunBlockReason,
@@ -260,9 +259,7 @@ function columns({
       ),
       cell: ({ row }) => (
         <span className="whitespace-nowrap text-sm text-muted-foreground">
-          {row.original.environment === RunEnvironment.PRODUCTION
-            ? t('Production')
-            : t('Test')}
+          {runLogUiUtils.environmentLabel(row.original)}
         </span>
       ),
     },
@@ -430,9 +427,7 @@ function CompactWorkflowCell({
     hideProjectColumn ? null : row.projectDisplayName,
     row.type === RunLogType.DEBUG
       ? t('Debug log')
-      : row.environment === RunEnvironment.PRODUCTION
-      ? t('Production')
-      : t('Test'),
+      : runLogUiUtils.environmentLabel(row),
     row.type === RunLogType.DEBUG || isNil(row.versionNumber)
       ? null
       : `v${row.versionNumber}`,

@@ -3,7 +3,7 @@ import {
   BlueprintTriggerType,
   ConnectorBlueprintDetail,
 } from '@fema-ipaas/shared';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import {
   ArrowLeftIcon,
@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ComponentType, ReactNode, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +38,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { internalErrorToast } from '@/components/ui/sonner';
+import { TypeToConfirmDialog } from '@/features/project-workspace/components/type-to-confirm-dialog';
 import { cn } from '@/lib/utils';
 
 import { connectorBlueprintsApi } from '../../api/connector-blueprints-api';
@@ -94,6 +97,22 @@ export function BlueprintWorkspaceSidebar({
         ? current.filter((entry) => entry !== folder)
         : [...current, folder],
     );
+  const { mutate: deleteConnector, isPending: isDeleting } = useMutation({
+    mutationFn: async () => {
+      await connectorBlueprintsApi.delete(detail.id);
+      await queryClient.invalidateQueries({
+        queryKey: [CONNECTOR_BLUEPRINTS_KEY, 'list'],
+      });
+    },
+    onSuccess: () => {
+      toast.success(
+        t('Removed {entityName}', { entityName: detail.displayName }),
+      );
+      setDeleteOpen(false);
+      navigate('/tenant/connectors/development');
+    },
+    onError: () => internalErrorToast(),
+  });
   const { mutate: saveDefinition } =
     connectorBlueprintHooks.useUpdateConnectorBlueprint({ id: detail.id });
   const usageText =
@@ -450,22 +469,15 @@ export function BlueprintWorkspaceSidebar({
           });
         }}
       />
-      <ConfirmationDeleteDialog
-        title={t('Delete connector {name}?', { name: detail.displayName })}
-        message={t('{usage} This cannot be undone.', { usage: usageText })}
-        entityName={detail.displayName}
-        buttonText={t('Delete connector')}
-        isDanger
-        showToast
+      <TypeToConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        mutationFn={async () => {
-          await connectorBlueprintsApi.delete(detail.id);
-          await queryClient.invalidateQueries({
-            queryKey: [CONNECTOR_BLUEPRINTS_KEY, 'list'],
-          });
-          navigate('/tenant/connectors/development');
-        }}
+        title={t('Delete connector {name}?', { name: detail.displayName })}
+        description={t('{usage} This cannot be undone.', { usage: usageText })}
+        confirmText={detail.displayName}
+        actionLabel={t('Delete connector')}
+        isPending={isDeleting}
+        onConfirm={() => deleteConnector()}
       />
     </aside>
   );

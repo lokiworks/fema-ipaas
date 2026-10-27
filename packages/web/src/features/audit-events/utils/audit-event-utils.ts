@@ -6,14 +6,19 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
-function summarizeWorkflowUpdate(
+function summarizeWorkflowUpdate({
+  event,
+}: {
   event: Extract<
     ApplicationEvent,
     { action: ApplicationEventName.WORKFLOW_UPDATED }
-  >,
-): string {
+  >;
+}): string {
   const workflow = event.data.workflowVersion.displayName;
   const { request } = event.data;
+  const version: unknown = event.data.workflowVersion;
+  const stepLabel = (name: string) =>
+    findStepDisplayName({ node: version, name }) ?? name;
   switch (request.type) {
     case WorkflowOperationType.ADD_ACTION:
       return t('auditAddedAction', {
@@ -27,7 +32,7 @@ function summarizeWorkflowUpdate(
       });
     case WorkflowOperationType.DELETE_ACTION:
       return t('auditDeletedActions', {
-        actions: request.request.names.join(', '),
+        actions: request.request.names.map(stepLabel).join(', '),
         workflow,
       });
     case WorkflowOperationType.CHANGE_NAME:
@@ -41,19 +46,19 @@ function summarizeWorkflowUpdate(
       return t('auditUnlockedWorkflow', { workflow });
     case WorkflowOperationType.MOVE_ACTION:
       return t('auditMovedAction', {
-        action: request.request.name,
-        parent: request.request.newParentStep,
+        action: stepLabel(request.request.name),
+        parent: stepLabel(request.request.newParentStep),
       });
     case WorkflowOperationType.LOCK_WORKFLOW:
       return t('auditLockedWorkflow', { workflow });
     case WorkflowOperationType.CHANGE_STATUS:
       return t('auditChangedStatus', {
         workflow,
-        status: request.request.status,
+        status: workflowStatusLabel(request.request.status),
       });
     case WorkflowOperationType.DUPLICATE_ACTION:
       return t('auditDuplicatedAction', {
-        action: request.request.stepName,
+        action: stepLabel(request.request.stepName),
         workflow,
       });
     case WorkflowOperationType.IMPORT_WORKFLOW:
@@ -72,12 +77,12 @@ function summarizeWorkflowUpdate(
       });
     case WorkflowOperationType.SAVE_SAMPLE_DATA:
       return t('auditSavedSampleData', {
-        step: request.request.stepName,
+        step: stepLabel(request.request.stepName),
         workflow,
       });
     case WorkflowOperationType.UPDATE_SAMPLE_DATA_INFO:
       return t('auditUpdatedSampleDataInfo', {
-        step: request.request.stepName,
+        step: stepLabel(request.request.stepName),
         workflow,
       });
     case WorkflowOperationType.ADD_BRANCH:
@@ -103,7 +108,7 @@ function summarizeWorkflowUpdate(
       });
     case WorkflowOperationType.SET_SKIP_ACTION:
       return t('auditSkippedActions', {
-        actions: request.request.names.join(', '),
+        actions: request.request.names.map(stepLabel).join(', '),
         workflow,
       });
     case WorkflowOperationType.UPDATE_METADATA:
@@ -131,40 +136,60 @@ function summarizeWorkflowUpdate(
   }
 }
 
-function runParamsOf(execution: { id: string; workflowDisplayName?: string }): {
-  run: string;
-  workflow: string;
-} {
-  return { run: execution.id, workflow: execution.workflowDisplayName ?? '' };
-}
-
-function summarize(event: ApplicationEvent): string {
+function summarize({
+  event,
+  workflowNames = {},
+}: {
+  event: ApplicationEvent;
+  workflowNames?: Record<string, string>;
+}): string {
   switch (event.action) {
     case ApplicationEventName.WORKFLOW_UPDATED:
-      return summarizeWorkflowUpdate(event);
+      return summarizeWorkflowUpdate({ event });
     case ApplicationEventName.EXECUTION_STARTED:
-      return event.data.execution.workflowDisplayName
-        ? t('auditRunStartedNamed', runParamsOf(event.data.execution))
-        : t('auditRunStarted', { run: event.data.execution.id });
-    case ApplicationEventName.EXECUTION_FINISHED:
-      return event.data.execution.workflowDisplayName
-        ? t('auditRunFinishedNamed', runParamsOf(event.data.execution))
-        : t('auditRunFinished', { run: event.data.execution.id });
-    case ApplicationEventName.EXECUTION_RESUMED:
-      return event.data.execution.workflowDisplayName
-        ? t('auditRunResumedNamed', runParamsOf(event.data.execution))
-        : t('auditRunResumed', { run: event.data.execution.id });
-    case ApplicationEventName.EXECUTION_RETRIED:
-      return event.data.execution.workflowDisplayName
-        ? t('auditRunRetriedNamed', runParamsOf(event.data.execution))
-        : t('auditRunRetried', { run: event.data.execution.id });
-    case ApplicationEventName.WORKFLOW_CREATED:
-      return t('auditWorkflowCreated', { workflow: event.data.workflow.id });
-    case ApplicationEventName.WORKFLOW_DELETED:
-      return t('auditWorkflowDeleted', {
-        workflow: event.data.workflow.id,
-        name: event.data.workflowVersion.displayName,
+      return summarizeRun({
+        execution: event.data.execution,
+        workflowNames,
+        named: 'auditRunStartedNamed',
+        unnamed: 'auditRunStarted',
       });
+    case ApplicationEventName.EXECUTION_FINISHED:
+      return summarizeRun({
+        execution: event.data.execution,
+        workflowNames,
+        named: 'auditRunFinishedNamed',
+        unnamed: 'auditRunFinished',
+      });
+    case ApplicationEventName.EXECUTION_RESUMED:
+      return summarizeRun({
+        execution: event.data.execution,
+        workflowNames,
+        named: 'auditRunResumedNamed',
+        unnamed: 'auditRunResumed',
+      });
+    case ApplicationEventName.EXECUTION_RETRIED:
+      return summarizeRun({
+        execution: event.data.execution,
+        workflowNames,
+        named: 'auditRunRetriedNamed',
+        unnamed: 'auditRunRetried',
+      });
+    case ApplicationEventName.WORKFLOW_CREATED: {
+      const name = workflowNames[event.data.workflow.id];
+      return name
+        ? t('auditWorkflowCreatedNamed', { name })
+        : t('auditWorkflowCreated', {
+            workflow: shortId(event.data.workflow.id),
+          });
+    }
+    case ApplicationEventName.WORKFLOW_DELETED: {
+      const name = event.data.workflowVersion.displayName;
+      return name
+        ? t('auditWorkflowDeletedNamed', { name })
+        : t('auditWorkflowDeleted', {
+            workflow: shortId(event.data.workflow.id),
+          });
+    }
     case ApplicationEventName.WORKFLOW_PUBLISHED:
       return t('auditWorkflowPublished', {
         workflow: event.data.workflowVersion.displayName,
@@ -362,7 +387,84 @@ function actionLabel(action: ApplicationEventName): string {
   return ACTION_LABELS[action]();
 }
 
-export const auditEventUtils = { summarize, actionLabel, actionsForSources };
+export const auditEventUtils = {
+  summarize,
+  actionLabel,
+  actionsForSources,
+  needsWorkflowName,
+};
+
+function summarizeRun({
+  execution,
+  workflowNames,
+  named,
+  unnamed,
+}: {
+  execution: { id: string; workflowId: string; workflowDisplayName?: string };
+  workflowNames: Record<string, string>;
+  named: string;
+  unnamed: string;
+}): string {
+  const workflow =
+    execution.workflowDisplayName ?? workflowNames[execution.workflowId];
+  return workflow
+    ? t(named, { workflow, run: shortId(execution.id) })
+    : t(unnamed, { run: shortId(execution.id) });
+}
+
+function needsWorkflowName(event: ApplicationEvent): boolean {
+  switch (event.action) {
+    case ApplicationEventName.EXECUTION_STARTED:
+    case ApplicationEventName.EXECUTION_FINISHED:
+    case ApplicationEventName.EXECUTION_RESUMED:
+    case ApplicationEventName.EXECUTION_RETRIED:
+      return !event.data.execution.workflowDisplayName;
+    case ApplicationEventName.WORKFLOW_CREATED:
+      return true;
+    default:
+      return false;
+  }
+}
+
+function workflowStatusLabel(status: string): string {
+  switch (status) {
+    case 'ENABLED':
+      return t('Enabled');
+    case 'DISABLED':
+      return t('Stopped');
+    default:
+      return status;
+  }
+}
+
+function shortId(id: string): string {
+  return id.slice(0, 6);
+}
+
+function findStepDisplayName({
+  node,
+  name,
+}: {
+  node: unknown;
+  name: string;
+}): string | undefined {
+  if (Array.isArray(node)) {
+    return node
+      .map((child) => findStepDisplayName({ node: child, name }))
+      .find((found) => found !== undefined);
+  }
+  if (typeof node !== 'object' || node === null) {
+    return undefined;
+  }
+  const record = new Map(Object.entries(node));
+  const displayName = record.get('displayName');
+  if (record.get('name') === name && typeof displayName === 'string') {
+    return displayName;
+  }
+  return [...record.values()]
+    .map((child) => findStepDisplayName({ node: child, name }))
+    .find((found) => found !== undefined);
+}
 
 function withReason({
   text,

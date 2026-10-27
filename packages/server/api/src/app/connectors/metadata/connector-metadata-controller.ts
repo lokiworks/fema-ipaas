@@ -1,6 +1,7 @@
 import { ConnectorMetadataModel, ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk'
 import { ApplicationError, ErrorCode, isNil, LocalesEnum, Permission } from '@fema-ipaas/core-utils'
 import { ALL_PRINCIPAL_TYPES, ConnectorAudienceFilter, ConnectorCategory, ConnectorOptionRequest, EngineResponse, GetConnectorRequestParams, GetConnectorRequestQuery, GetConnectorRequestWithScopeParams, ListConnectorsRequestQuery, Principal, PrincipalType, RegistryConnectorsRequestQuery, SampleDataFileType, WorkerJobType } from '@fema-ipaas/shared'
+import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
@@ -13,6 +14,7 @@ import { connectorSyncService } from '../connector-sync-service'
 import { resolveVisibility } from '../connector-visibility'
 import { connectorMetadataService, getConnectorPackageWithoutArchive } from './connector-metadata-service'
 import { filterActionsByAudience } from './utils'
+import { optionsTranslation } from './utils/options-translation'
 
 export const connectorModule: FastifyPluginAsyncZod = async (app) => {
     await app.register(baseConnectorsController, { prefix: '/v1/connectors' })
@@ -153,10 +155,34 @@ const baseConnectorsController: FastifyPluginAsyncZod = async (app) => {
                     })
                     : undefined,
             }, req.log)
-            return response
+            return optionsTranslation.translateOptionsResult({
+                result: response,
+                i18n: await loadOptionsI18n({ request: req.body, tenantId: tenant.id, projectId, log: req.log }),
+            })
         },
     )
 
+}
+
+async function loadOptionsI18n({ request, tenantId, projectId, log }: LoadOptionsI18nParams): Promise<Record<string, string> | undefined> {
+    const isLocalized = !isNil(request.locale) && request.locale !== LocalesEnum.ENGLISH
+    if (!isLocalized || isNil(request.connectorName) || isNil(request.connectorVersion)) {
+        return undefined
+    }
+    const connector = await connectorMetadataService(log).get({
+        name: request.connectorName,
+        version: request.connectorVersion,
+        tenantId,
+        projectId,
+    })
+    return Object.entries(connector?.i18n ?? {}).find(([locale]) => locale === request.locale)?.[1]
+}
+
+type LoadOptionsI18nParams = {
+    request: ConnectorOptionRequest
+    tenantId: string
+    projectId: string
+    log: FastifyBaseLogger
 }
 
 function getTenantId(principal: Principal): string | undefined {

@@ -25,6 +25,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatUtils } from '@/lib/format-utils';
 
 import { runMonitorLabels } from '../utils/run-monitor-labels';
 import { RUN_MONITOR_RANGES } from '../utils/run-monitor-utils';
@@ -148,7 +149,7 @@ export function MonitorToolbar({
       </div>
       <span className="ml-auto text-xs text-muted-foreground">
         {t('Updated at {time}', {
-          time: new Date(updatedAt).toLocaleTimeString(),
+          time: formatUtils.formatTimeWithSeconds(new Date(updatedAt)),
         })}
       </span>
       <Tooltip>

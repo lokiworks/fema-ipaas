@@ -7,11 +7,13 @@ const StepNodeLogo = ({
   logoUrl,
   displayName,
   isSelected = false,
+  isHighlighted = false,
 }: {
   isSkipped: boolean;
   logoUrl: string;
   displayName: string;
   isSelected?: boolean;
+  isHighlighted?: boolean;
 }) => {
   const canvasOrientation = useBuilderStateContext(
     (state) => state.canvasOrientation,
@@ -25,6 +27,8 @@ const StepNodeLogo = ({
           'opacity-80': isSkipped,
           'bg-background shadow-[0_1px_4px_rgba(31,35,41,0.12)]': !isHorizontal,
           'ring-2 ring-primary': !isHorizontal && isSelected,
+          'ring-2 ring-primary/60':
+            !isHorizontal && isHighlighted && !isSelected,
         },
       )}
     >

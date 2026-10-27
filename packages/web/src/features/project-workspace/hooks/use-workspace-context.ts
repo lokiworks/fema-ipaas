@@ -42,6 +42,7 @@ export function useWorkspaceContext(project: ProjectWithLimits) {
     workflowNames: workflows.map((workflow) => workflow.displayName),
     environments: environments.data ?? null,
     environmentByWorkflow,
+    environmentsLoading: environments.isLoading,
     limitReached,
     workflowsLimit,
     directoryItem,

@@ -1,7 +1,8 @@
 import { FlowComponentMetadata } from '@fema-ipaas/component-sdk';
-import { t } from 'i18next';
 
 import { api } from '@/lib/api';
+
+import { componentTranslation } from '../utils/component-translation';
 
 export const componentsApi = {
   async list(): Promise<TranslatedComponentMetadata[]> {
@@ -13,39 +14,17 @@ export const componentsApi = {
 function translateComponent(
   component: FlowComponentMetadata,
 ): TranslatedComponentMetadata {
-  const translated = {
-    ...structuredClone(component),
+  return {
+    ...component,
     originalText: `${component.displayName} ${component.description} ${component.type}`,
+    displayName: componentTranslation.translateText({
+      text: component.displayName,
+    }),
+    description: componentTranslation.translateText({
+      text: component.description,
+    }),
+    props: componentTranslation.translateProps({ props: component.props }),
   };
-  translated.displayName = translateText(component.displayName);
-  translated.description = translateText(component.description);
-  for (const prop of Object.values(translated.props)) {
-    prop.displayName = translateText(prop.displayName);
-    if (prop.description) {
-      prop.description = translateText(prop.description);
-    }
-    if ('options' in prop && hasStaticOptions(prop.options)) {
-      for (const option of prop.options.options) {
-        option.label = translateText(option.label);
-      }
-    }
-  }
-  return translated;
-}
-
-function translateText(text: string): string {
-  return t(`component: ${text}`, { defaultValue: text });
-}
-
-function hasStaticOptions(
-  value: unknown,
-): value is { options: { label: string; value: unknown }[] } {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'options' in value &&
-    Array.isArray(value.options)
-  );
 }
 
 export type TranslatedComponentMetadata = FlowComponentMetadata & {

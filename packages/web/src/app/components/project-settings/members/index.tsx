@@ -29,7 +29,8 @@ import { InviteMemberDialog } from './invite-member-dialog';
 const ROLE_DESCRIPTIONS: Record<DefaultProjectRole, string> = {
   [DefaultProjectRole.ADMIN]: 'Full control of the project',
   [DefaultProjectRole.DEVELOPER]: 'Build and publish workflows',
-  [DefaultProjectRole.OPERATOR]: 'Run workflows and manage connections',
+  [DefaultProjectRole.OPERATOR]:
+    'Run and replay workflows, handle issues, manage connections',
   [DefaultProjectRole.VIEWER]: 'Read-only access',
 };
 

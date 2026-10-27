@@ -12,6 +12,7 @@ import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
 import { BigAddButtonNode } from '../utils/types';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
+import { workflowScreenshotUtils } from '../utils/workflow-screenshot-utils';
 
 const BigAddButtonCanvasNode = React.memo(
   ({ data, id }: Omit<BigAddButtonNode, 'position'>) => {
@@ -58,7 +59,10 @@ const BigAddButtonCanvasNode = React.memo(
           >
             {!readonly && (
               //we use transparent colors when opening the connector selector, so to not show the pattern of the background inside the button, we wrap the big add button in a div with the background color
-              <div className="bg-builder-background">
+              <div
+                className="bg-builder-background"
+                {...workflowScreenshotUtils.EXCLUDE_PROPS}
+              >
                 <div
                   style={{
                     height: `${workflowCanvasConsts.FEMA_NODE_SIZE.BIG_ADD_BUTTON.height}px`,

@@ -26,4 +26,10 @@ describe('primaryColorUtils.readableForeground', () => {
       '#0a0a0a',
     );
   });
+
+  it('keeps white text on the default Feishu blue', () => {
+    expect(primaryColorUtils.readableForeground({ hex: '#3370ff' })).toBe(
+      '#fafafa',
+    );
+  });
 });

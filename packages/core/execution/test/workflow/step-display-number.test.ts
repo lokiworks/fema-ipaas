@@ -94,6 +94,17 @@ describe('stepDisplayNumberUtil', () => {
         })
     })
 
+    it('does not repeat the trigger suffix when the connector name already ends with it', () => {
+        const root = { ...trigger(), settings: { ...trigger().settings, connectorName: '@fema-ipaas/connector-manual-trigger' } }
+        expect(stepDisplayNumberUtil.computeNumbers(root)).toEqual({ trigger: 'manual-trigger-1' })
+    })
+
+    it('renumbers a stored doubled trigger suffix', () => {
+        const base = trigger()
+        const root = { ...base, settings: { ...base.settings, connectorName: '@fema-ipaas/connector-manual-trigger', displayNumber: 'manual-trigger-trigger-1' } }
+        expect(stepDisplayNumberUtil.computeNumbers(root)).toEqual({ trigger: 'manual-trigger-1' })
+    })
+
     it('numbers steps of the same prefix in tree order', () => {
         const root = trigger(connectorAction({
             name: 'step_1',

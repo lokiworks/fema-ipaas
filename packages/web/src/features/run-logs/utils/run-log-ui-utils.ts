@@ -2,6 +2,7 @@ import { isNil } from '@fema-ipaas/core-utils';
 import {
   ConnectionStatus,
   ReliabilityEventKind,
+  RunEnvironment,
   RunLogCondition,
   RunLogConditionField,
   RunLogDurationOperator,
@@ -48,6 +49,21 @@ function typeLabel(type: RunLogType): string {
     case RunLogType.ALL:
       return t('All');
   }
+}
+
+function environmentLabel({
+  type,
+  environment,
+}: {
+  type: RunLogType;
+  environment: RunEnvironment;
+}): string {
+  if (type === RunLogType.DEBUG) {
+    return t('Debug');
+  }
+  return environment === RunEnvironment.PRODUCTION
+    ? t('Production')
+    : t('Test environment');
 }
 
 function fieldLabel(field: RunLogConditionField): string {
@@ -309,6 +325,7 @@ function stepNodes({
 export const runLogUiUtils = {
   timeRangeLabel,
   typeLabel,
+  environmentLabel,
   fieldLabel,
   durationOperatorLabel,
   handledKindLabel,

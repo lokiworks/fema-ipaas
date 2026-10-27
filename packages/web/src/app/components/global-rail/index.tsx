@@ -1,6 +1,7 @@
 import { t } from 'i18next';
 import {
   ActivityIcon,
+  CheckIcon,
   HouseIcon,
   LayoutGridIcon,
   LayoutTemplateIcon,
@@ -154,19 +155,23 @@ function buildItems({
       isActive: (path) =>
         path.startsWith('/projects') &&
         !path.endsWith('/connections') &&
-        !MCP_MODULE_PATTERN.test(path),
+        !MCP_MODULE_PATTERN.test(path) &&
+        !PROJECT_ISSUES_PATTERN.test(path) &&
+        !PROJECT_RUNS_PATTERN.test(path),
     },
     {
       to: '/logs',
       label: t('Logs'),
       icon: ScrollTextIcon,
-      isActive: (path) => path.startsWith('/logs'),
+      isActive: (path) =>
+        path.startsWith('/logs') || PROJECT_RUNS_PATTERN.test(path),
     },
     {
       to: '/issue-center',
       label: t('Issues'),
       icon: SirenIcon,
-      isActive: (path) => path.startsWith('/issue-center'),
+      isActive: (path) =>
+        path.startsWith('/issue-center') || PROJECT_ISSUES_PATTERN.test(path),
       badge: openIssueCount,
     },
     {
@@ -206,7 +211,9 @@ function ModuleSwitcher({
   active: boolean;
 }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const currentModuleKey = currentModuleKeyOf(pathname);
   const modules: ModuleEntry[] = [
     {
       key: 'integration',
@@ -271,7 +278,11 @@ function ModuleSwitcher({
               <button
                 key={entry.key}
                 type="button"
-                className="flex flex-col items-start gap-1.5 rounded-md p-2.5 text-left hover:bg-accent"
+                aria-current={entry.key === currentModuleKey}
+                className={cn(
+                  'relative flex flex-col items-start gap-1.5 rounded-md p-2.5 text-left hover:bg-accent',
+                  entry.key === currentModuleKey && 'bg-accent',
+                )}
                 onClick={() => {
                   setOpen(false);
                   navigate(entry.to);
@@ -285,6 +296,12 @@ function ModuleSwitcher({
                 >
                   <entry.icon className="size-[18px]" />
                 </span>
+                {entry.key === currentModuleKey && (
+                  <span className="absolute right-2 top-2 flex items-center gap-1 text-xs font-medium text-primary">
+                    <CheckIcon className="size-3.5" />
+                    {t('Current')}
+                  </span>
+                )}
                 <span className="text-sm font-medium">{entry.label}</span>
                 <span className="text-xs text-muted-foreground">
                   {entry.description}
@@ -297,8 +314,23 @@ function ModuleSwitcher({
   );
 }
 
+function currentModuleKeyOf(pathname: string): ModuleEntry['key'] {
+  if (pathname.startsWith(CONNECTORS_MODULE_PREFIX)) {
+    return 'connectors';
+  }
+  if (MCP_MODULE_PATTERN.test(pathname)) {
+    return 'mcp';
+  }
+  if (pathname.startsWith('/tenant')) {
+    return 'admin';
+  }
+  return 'integration';
+}
+
 const CONNECTORS_MODULE_PREFIX = '/tenant/connectors';
 const MCP_MODULE_PATTERN = /^\/projects\/[^/]+\/mcp-services/;
+const PROJECT_ISSUES_PATTERN = /^\/projects\/[^/]+\/issues(\/|$)/;
+const PROJECT_RUNS_PATTERN = /^\/projects\/[^/]+\/runs(\/|$)/;
 
 type RailItem = {
   to: string;

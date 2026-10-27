@@ -125,7 +125,7 @@ export default function ConnectorDetailPage() {
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-6 px-6 py-5">
-      <div className="flex flex-wrap items-start gap-4 rounded-lg border p-4">
+      <div className="flex flex-col gap-4 rounded-lg border p-4 md:flex-row md:items-start">
         <ConnectorIcon
           logoUrl={connectorModel.logoUrl}
           displayName={connectorModel.displayName}
@@ -133,14 +133,14 @@ export default function ConnectorDetailPage() {
           size="lg"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl font-semibold whitespace-nowrap">
               {connectorModel.displayName}
             </h1>
             <SourceTag source={connectorModel.source} />
-            {(connectorModel.categories ?? []).map((category) => (
-              <Badge key={category} variant="outline">
-                {connectorCategoryLabels.categoryLabel(category)}
+            {connectorMarketUtils.groupsOf(connectorModel).map((group) => (
+              <Badge key={group} variant="outline">
+                {connectorCategoryLabels.marketLabel(group)}
               </Badge>
             ))}
           </div>
@@ -176,7 +176,7 @@ export default function ConnectorDetailPage() {
             </span>
           </div>
         </div>
-        <div className="flex shrink-0 flex-col gap-2">
+        <div className="flex shrink-0 flex-row flex-wrap gap-2 md:flex-col">
           {!isNil(connectorModel.auth) && (
             <Button onClick={() => setConnectOpen(true)}>
               <LinkIcon className="mr-1 size-4" />
@@ -469,29 +469,33 @@ function OpBlock({ op }: { op: ActionBase | TriggerBase }) {
     <div className="rounded-md border">
       <button
         type="button"
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
+        className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm"
         onClick={() => setOpen((value) => !value)}
       >
         <ChevronRightIcon
           className={cn(
-            'size-4 shrink-0 transition-transform',
+            'mt-0.5 size-4 shrink-0 transition-transform',
             open && 'rotate-90',
           )}
         />
-        <span className="font-medium">{op.displayName}</span>
-        <span className="font-mono text-xs text-muted-foreground">
-          {op.name}
+        <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="font-medium whitespace-nowrap">
+            {op.displayName}
+          </span>
+          <span className="min-w-0 font-mono text-xs break-all text-muted-foreground">
+            {op.name}
+          </span>
+          {'classification' in op && !isNil(op.classification) && (
+            <Badge
+              variant={
+                op.classification === 'DESTRUCTIVE' ? 'destructive' : 'accent'
+              }
+              className="px-1.5 py-0 text-[10px] font-normal whitespace-nowrap"
+            >
+              {connectorCategoryLabels.classificationLabel(op.classification)}
+            </Badge>
+          )}
         </span>
-        {'classification' in op && !isNil(op.classification) && (
-          <Badge
-            variant={
-              op.classification === 'DESTRUCTIVE' ? 'destructive' : 'accent'
-            }
-            className="px-1.5 py-0 text-[10px] font-normal"
-          >
-            {connectorCategoryLabels.classificationLabel(op.classification)}
-          </Badge>
-        )}
       </button>
       {open && (
         <div className="flex flex-col gap-3 border-t p-3">

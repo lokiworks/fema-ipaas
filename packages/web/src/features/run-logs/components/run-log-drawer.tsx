@@ -200,15 +200,17 @@ function DrawerBody({
           <Badge variant="outline">
             {row.type === RunLogType.DEBUG ? t('Debug') : t('Run')}
           </Badge>
-          <Badge
-            variant={
-              row.environment === RunEnvironment.PRODUCTION ? 'outline' : 'info'
-            }
-          >
-            {row.environment === RunEnvironment.PRODUCTION
-              ? t('Production')
-              : t('Test')}
-          </Badge>
+          {row.type !== RunLogType.DEBUG && (
+            <Badge
+              variant={
+                row.environment === RunEnvironment.PRODUCTION
+                  ? 'outline'
+                  : 'info'
+              }
+            >
+              {runLogUiUtils.environmentLabel(row)}
+            </Badge>
+          )}
         </SheetTitle>
         <SheetDescription asChild>
           <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -476,11 +478,7 @@ function RunInfo({ detail }: { detail: RunLogDetail }) {
           <dt className="text-muted-foreground">{t('Project')}</dt>
           <dd>{row.projectDisplayName}</dd>
           <dt className="text-muted-foreground">{t('Environment')}</dt>
-          <dd>
-            {row.environment === RunEnvironment.PRODUCTION
-              ? t('Production')
-              : t('Test')}
-          </dd>
+          <dd>{runLogUiUtils.environmentLabel(row)}</dd>
           <dt className="text-muted-foreground">{t('Version')}</dt>
           <dd>
             {row.type === RunLogType.DEBUG

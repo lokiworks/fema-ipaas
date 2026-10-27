@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { globalConnectionsQueries } from '@/features/connections';
+import { limitsHooks } from '@/features/limits';
 import {
   CreateProjectButton,
   EditProjectDialog,
@@ -61,15 +62,32 @@ export default function ProjectsPage() {
       request: { limit: 9999 },
       extraKeys: [],
     });
+  const { data: projectLimits } = limitsHooks.useProjectLimits();
+  const memberCountByProjectId = useMemo(
+    () =>
+      new Map(
+        (projectLimits?.data ?? []).map((row) => [
+          row.projectId,
+          row.memberCount,
+        ]),
+      ),
+    [projectLimits?.data],
+  );
   const allProjectsWithGlobalConnectionsCount = useMemo(() => {
     return allProjects.map((project) => ({
       ...project,
+      analytics: {
+        ...project.analytics,
+        members:
+          memberCountByProjectId.get(project.id) ??
+          Math.max(1, project.analytics.members),
+      },
       globalConnectionsCount:
         allGlobalConnectionsPage?.data?.filter((connection) =>
           connection.projectIds.includes(project.id),
         ).length ?? 0,
     }));
-  }, [allProjects, allGlobalConnectionsPage?.data]);
+  }, [allProjects, allGlobalConnectionsPage?.data, memberCountByProjectId]);
   const columns = useMemo(() => projectsTableColumns(), []);
 
   const columnsWithCheckbox: ColumnDef<

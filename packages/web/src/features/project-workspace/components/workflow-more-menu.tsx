@@ -170,13 +170,17 @@ export function WorkflowMoreMenu({
 
   const items: ActionMenuEntry[] = permissions.canEdit
     ? [
-        {
-          key: 'publish',
-          label: releasesEnabled ? t('Publish to test') : t('Publish'),
-          icon: CloudUpload,
-          disabledReason: permissions.canPublish ? null : t('No access'),
-          onSelect: () => setDialog('publish'),
-        },
+        ...(workflow.published && !workflow.hasUnpublishedChanges
+          ? []
+          : [
+              {
+                key: 'publish',
+                label: releasesEnabled ? t('Publish to test') : t('Publish'),
+                icon: CloudUpload,
+                disabledReason: permissions.canPublish ? null : t('No access'),
+                onSelect: () => setDialog('publish'),
+              },
+            ]),
         ...(releasesEnabled
           ? [
               {

@@ -38,6 +38,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { api } from '@/lib/api';
 
 import { templatesMutations } from '../hooks/templates-hook';
@@ -172,13 +173,14 @@ function GenerateTemplateForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel showRequiredIndicator>{t('Template name')}</FormLabel>
-              <FormControl>
-                <Input {...field} maxLength={TEMPLATE_NAME_MAX_LENGTH} />
-              </FormControl>
-              <CharacterCount
+              <CharacterCounter
                 length={name.length}
                 max={TEMPLATE_NAME_MAX_LENGTH}
-              />
+              >
+                <FormControl>
+                  <Input {...field} maxLength={TEMPLATE_NAME_MAX_LENGTH} />
+                </FormControl>
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}
@@ -189,17 +191,19 @@ function GenerateTemplateForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('Template description')}</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  rows={3}
-                  maxLength={TEMPLATE_DESCRIPTION_MAX_LENGTH}
-                />
-              </FormControl>
-              <CharacterCount
+              <CharacterCounter
+                multiline
                 length={description.length}
                 max={TEMPLATE_DESCRIPTION_MAX_LENGTH}
-              />
+              >
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    rows={3}
+                    maxLength={TEMPLATE_DESCRIPTION_MAX_LENGTH}
+                  />
+                </FormControl>
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}
@@ -340,14 +344,6 @@ function GeneratedTemplate({
         </Button>
       </DialogFooter>
     </div>
-  );
-}
-
-function CharacterCount({ length, max }: { length: number; max: number }) {
-  return (
-    <span className="text-xs text-muted-foreground">
-      {length}/{max}
-    </span>
   );
 }
 

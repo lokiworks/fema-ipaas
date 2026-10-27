@@ -133,6 +133,8 @@ export function ThemeProvider({
     }
 
     root.classList.add(resolvedTheme);
+    root.style.backgroundColor = '';
+    root.style.colorScheme = resolvedTheme;
   }, [branding, resolvedTheme]);
 
   const value = {

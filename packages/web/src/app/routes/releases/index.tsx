@@ -364,7 +364,7 @@ function versionPath(change: ReleaseChangeWithDetails): string | null {
     return null;
   }
   const target = TEST_ACTIONS.includes(change.action)
-    ? t('Test')
+    ? t('Test environment')
     : t('Production');
   return t('{target} {from} → {to}', {
     target,

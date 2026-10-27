@@ -319,7 +319,7 @@ function WorkflowsCard({ workflows }: { workflows: EnvironmentWorkflow[] }) {
                   <TableCell>
                     {isNil(row.testDeployedAt) ? (
                       <span className="text-sm text-muted-foreground">
-                        {t('Not deployed')}
+                        {t('Not published')}
                       </span>
                     ) : (
                       <FormattedDate

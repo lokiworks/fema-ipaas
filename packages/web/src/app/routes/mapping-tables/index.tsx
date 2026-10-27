@@ -52,6 +52,7 @@ import {
   mappingCsv,
   mappingTablesHooks,
 } from '@/features/mapping-tables';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { useSubmitLock } from '@/hooks/use-submit-lock';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -278,6 +279,8 @@ function MappingTableEditor({
             value={draft.name}
             disabled={!canWrite}
             maxLength={30}
+            required
+            showCounter
             onChange={(name) => setDraft({ ...draft, name })}
           />
           <LabeledInput
@@ -285,6 +288,7 @@ function MappingTableEditor({
             value={draft.description}
             disabled={!canWrite}
             maxLength={100}
+            showCounter
             onChange={(description) => setDraft({ ...draft, description })}
           />
           <LabeledInput
@@ -292,6 +296,7 @@ function MappingTableEditor({
             value={draft.keyLabel}
             disabled={!canWrite}
             maxLength={20}
+            showCounter
             onChange={(keyLabel) => setDraft({ ...draft, keyLabel })}
           />
           <LabeledInput
@@ -299,6 +304,7 @@ function MappingTableEditor({
             value={draft.valueLabel}
             disabled={!canWrite}
             maxLength={20}
+            showCounter
             onChange={(valueLabel) => setDraft({ ...draft, valueLabel })}
           />
           <div className="col-span-2 flex flex-col gap-2">
@@ -731,6 +737,8 @@ function NewTableDialog({
             value={name}
             disabled={false}
             maxLength={30}
+            required
+            showCounter
             onChange={setName}
           />
           <DialogFooter>
@@ -756,25 +764,40 @@ function LabeledInput({
   value,
   disabled,
   maxLength,
+  required = false,
+  showCounter = false,
   onChange,
 }: {
   label: string;
   value: string;
   disabled: boolean;
   maxLength: number;
+  required?: boolean;
+  showCounter?: boolean;
   onChange: (value: string) => void;
 }) {
   const inputId = useId();
+  const input = (
+    <Input
+      id={inputId}
+      value={value}
+      disabled={disabled}
+      maxLength={maxLength}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  );
   return (
     <div className="flex flex-col gap-1">
-      <Label htmlFor={inputId}>{label}</Label>
-      <Input
-        id={inputId}
-        value={value}
-        disabled={disabled}
-        maxLength={maxLength}
-        onChange={(event) => onChange(event.target.value)}
-      />
+      <Label htmlFor={inputId} showRequiredIndicator={required}>
+        {label}
+      </Label>
+      {showCounter ? (
+        <CharacterCounter length={value.length} max={maxLength}>
+          {input}
+        </CharacterCounter>
+      ) : (
+        input
+      )}
     </div>
   );
 }

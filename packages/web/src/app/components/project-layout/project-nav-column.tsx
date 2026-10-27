@@ -50,7 +50,10 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
 
-import { ProjectSettingsDialog } from '../project-settings';
+import {
+  ProjectSettingsDialog,
+  projectSettingsHooks,
+} from '../project-settings';
 
 import { pathOf, useProjectNavTabs } from './use-project-nav-tabs';
 
@@ -76,6 +79,7 @@ function ProjectSidebar({ className }: { className?: string }) {
   const pendingCount = pendingForMe?.count ?? 0;
   const currentLocation = `${location.pathname}${location.search}`;
   const { canEdit, isOwner } = context.permissions;
+  const hasProjectSettings = projectSettingsHooks.useHasGeneralSettings();
   const close = () => setDialog(null);
 
   const renderTab = (tab: ProjectDashboardLayoutHeaderTab) => {
@@ -173,12 +177,16 @@ function ProjectSidebar({ className }: { className?: string }) {
       icon: canEdit ? Share2 : Users,
       onSelect: () => setDialog('members'),
     },
-    {
-      key: 'settings',
-      label: t('Project settings'),
-      icon: Settings,
-      onSelect: () => setDialog('settings'),
-    },
+    ...(hasProjectSettings
+      ? [
+          {
+            key: 'settings',
+            label: t('Project settings'),
+            icon: Settings,
+            onSelect: () => setDialog('settings'),
+          },
+        ]
+      : []),
     'divider',
     {
       key: 'edit',
@@ -250,7 +258,6 @@ function ProjectSidebar({ className }: { className?: string }) {
           open
           onClose={close}
           initialTab={dialog === 'members' ? 'members' : 'general'}
-          initialValues={{ projectName: project.displayName }}
         />
       )}
       {(dialog === 'edit' || dialog === 'create') && (

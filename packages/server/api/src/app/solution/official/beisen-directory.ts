@@ -1,4 +1,4 @@
-import { isObject, SolutionConfigType, SolutionPackage, WorkflowActionType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
+import { isObject, SolutionCheckKind, SolutionConfigType, SolutionPackage, WorkflowActionType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import type { OfficialSolution } from '../official-solutions'
 import { solutionPackageUtils } from '../solution-package-utils'
 import { beisenFeishuSolution } from './beisen-feishu'
@@ -41,7 +41,9 @@ function adapt({ pkg, target, organization }: { pkg: SolutionPackage, target: Ta
     const manualChecks = [{ label: `${labelOf(target)}应用已授权通讯录读写与消息权限`, detail: target === 'wecom' ? '配置可信 IP、双 Secret；应用可见范围覆盖所有同步成员与部门。' : '应用通讯录范围覆盖整树，待离职部门已创建，管理员已了解移动部门不会停用账号。', who: `${labelOf(target)}管理员` }]
     const built = solutionPackageUtils.buildPackage({ workflows, tables, manualChecks })
     const config = rewritten.config.map((item) => ({ ...item, label: item.key === 'hrChatId' ? 'HR 通知接收人 userid' : item.key === 'itChatId' ? 'IT / 管理员通知接收人 userid' : item.label, hint: item.key.endsWith('ChatId') ? target === 'wecom' ? '多个人用 | 分隔；接收人须在自建应用可见范围内。' : '多个人用逗号分隔；离职通知需要管理员在后台办理离职。' : item.hint, defaultValue: organization && item.key === 'rootDepartmentId' ? '1' : item.defaultValue, patches: item.patches.map((patch) => patch.inputKey === 'chatId' ? { ...patch, inputKey: 'userid' } : patch) }))
-    return SolutionPackage.parse({ ...built, config, reconciliationRules: rewritten.reconciliationRules, checks: built.checks.map((check) => check.kind === 'MANUAL' ? { ...check, blocking: true } : check) })
+    const connectionChecks = rewritten.checks.filter((check) => check.kind === SolutionCheckKind.CONNECTION)
+    const otherChecks = built.checks.filter((check) => check.kind !== SolutionCheckKind.CONNECTION).map((check) => check.kind === SolutionCheckKind.MANUAL ? { ...check, blocking: true } : check)
+    return SolutionPackage.parse({ ...built, connections: rewritten.connections, config, reconciliationRules: rewritten.reconciliationRules, checks: [...connectionChecks, ...otherChecks] })
 }
 
 function rewrite({ value, target }: { value: unknown, target: Target }): unknown {

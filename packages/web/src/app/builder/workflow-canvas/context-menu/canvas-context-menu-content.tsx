@@ -29,6 +29,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from '@/components/ui/context-menu';
+import { defaultStepNames } from '@/features/workflows/utils/default-step-names';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { CanvasShortcuts } from '../../shortcuts';
@@ -167,6 +168,7 @@ export const CanvasContextMenuContent = ({
       type: WorkflowOperationType.DUPLICATE_ACTION,
       request: {
         stepName: selectedNodes[0],
+        copySuffix: defaultStepNames.copySuffix(),
       },
     });
   };
@@ -194,7 +196,19 @@ export const CanvasContextMenuContent = ({
         <ContextMenuItem
           disabled={disabled}
           onClick={() => {
-            setOpenedConnectorSelectorStepNameOrAddButtonId(selectedNodes[0]);
+            if (!firstSelectedStep) {
+              return;
+            }
+            setOpenedConnectorSelectorStepNameOrAddButtonId(
+              firstSelectedStep.name,
+              {
+                type: workflowStructureUtil.isTrigger(firstSelectedStep.type)
+                  ? WorkflowOperationType.UPDATE_TRIGGER
+                  : WorkflowOperationType.UPDATE_ACTION,
+                stepName: firstSelectedStep.name,
+              },
+              firstSelectedStep.displayName,
+            );
           }}
           className="flex items-center gap-2"
         >
@@ -398,7 +412,9 @@ export const CanvasContextMenuContent = ({
                       stepName: firstSelectedStep.name,
                       branchIndex:
                         firstSelectedStep.settings.branches.length - 1,
-                      branchName: `Branch ${firstSelectedStep.settings.branches.length}`,
+                      branchName: defaultStepNames.branchName({
+                        index: firstSelectedStep.settings.branches.length,
+                      }),
                     },
                   });
                   void pasteNodes({

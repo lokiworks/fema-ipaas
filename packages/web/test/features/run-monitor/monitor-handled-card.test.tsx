@@ -26,6 +26,7 @@ const HANDLED: RunMonitorHandled = {
   mergedIssues: 2,
   rateLimitWaits: 6,
   rateLimitedRuns: 3,
+  withheldRetries: 0,
   rateLimitSources: [
     {
       connectorName: '@fema-ipaas/connector-feishu',

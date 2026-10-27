@@ -17,6 +17,7 @@ const KEPT_IN_ENGLISH = new Set([
   'PostgreSQL pg_dump',
   'HTTP {status}',
   'JSON',
+  'component: JSON',
   'CPU',
   'example.com',
   'Redis',

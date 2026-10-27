@@ -3,7 +3,7 @@ import { PackagePlus } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -20,12 +20,11 @@ export function SolutionsPage() {
     searchParams.get(TAB_PARAM) === INSTALLED_TAB ? INSTALLED_TAB : LIBRARY_TAB;
 
   return (
-    <CenteredPage
+    <ConsolePage
       title={t('Solutions')}
       description={t(
         'Ready-made sets of workflows and mapping tables. The install wizard walks you through connections, configuration and checks.',
       )}
-      widthClassName="max-w-[72rem]"
       actions={
         <Button onClick={() => setGenerating(true)}>
           <PackagePlus className="size-4" />
@@ -58,7 +57,7 @@ export function SolutionsPage() {
         onOpenChange={setGenerating}
         onCreated={(id) => navigate(`/solutions/${id}`)}
       />
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

@@ -120,7 +120,9 @@ function SlotRow({
           </span>
           <span className="text-xs text-muted-foreground">
             {t('Used by: {names}', {
-              names: solutionsUtils.workflowNamesOf({ slot, pkg }).join(', '),
+              names: solutionsUtils
+                .workflowNamesOf({ slot, pkg })
+                .join(t('listSeparator')),
             })}
           </span>
         </div>

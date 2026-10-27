@@ -16,8 +16,8 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
 import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   DataTable,
   RowDataWithActions,
@@ -254,13 +254,12 @@ const TenantTemplatesPage = () => {
   );
 
   return (
-    <div className="flex flex-col w-full">
-      <DashboardPageHeader
-        description={t(
-          'Convert the most common automations into reusable templates',
-        )}
-        title={t('Templates')}
-      />
+    <ConsolePage
+      description={t(
+        'Convert the most common automations into reusable templates',
+      )}
+      title={t('Templates')}
+    >
       <DataTable
         emptyStateTextTitle={t('No templates found')}
         emptyStateTextDescription={t(
@@ -302,7 +301,7 @@ const TenantTemplatesPage = () => {
           },
         ]}
       />
-    </div>
+    </ConsolePage>
   );
 };
 

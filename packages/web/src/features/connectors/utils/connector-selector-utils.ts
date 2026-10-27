@@ -41,6 +41,7 @@ import {
   ConnectorSelectorConnectorItem,
   ConnectorStepMetadataWithSuggestions,
 } from '@/features/connectors/types';
+import { defaultStepNames } from '@/features/workflows/utils/default-step-names';
 
 import { formUtils } from './form-utils';
 const defaultCode = `export const code = async (inputs) => {
@@ -229,7 +230,10 @@ const getDefaultStepValues = ({
         {
           type: WorkflowActionType.PARALLEL,
           settings: overrideDefaultSettings ?? {
-            branches: [{ branchName: 'Branch 1' }, { branchName: 'Branch 2' }],
+            branches: [
+              { branchName: defaultStepNames.branchName({ index: 1 }) },
+              { branchName: defaultStepNames.branchName({ index: 2 }) },
+            ],
           },
           children: [null, null],
         },
@@ -254,7 +258,7 @@ const getDefaultStepValues = ({
                   ],
                 ],
                 branchType: BranchExecutionType.CONDITION,
-                branchName: 'Branch 1',
+                branchName: defaultStepNames.branchName({ index: 1 }),
               },
               {
                 branchType: BranchExecutionType.FALLBACK,

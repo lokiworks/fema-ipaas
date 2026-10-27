@@ -19,6 +19,10 @@ import {
   userInvitationsHooks,
 } from '@/features/invitations';
 import { projectMembersHooks } from '@/features/project-members';
+import { memberRows } from '@/features/project-workspace/lib/member-rows';
+import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
+import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
+import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 
 import { InviteMemberDialog } from './invite-member-dialog';
 
@@ -31,6 +35,8 @@ const ROLE_DESCRIPTIONS: Record<DefaultProjectRole, string> = {
 
 export function MembersSettings({ readonly }: { readonly: boolean }) {
   const { data: members, isLoading } = projectMembersHooks.useMembers();
+  const { project } = projectCollectionUtils.useCurrentProject();
+  const { data: directory } = projectDirectoryHooks.useDirectory();
   const { mutate: updateRole } = projectMembersHooks.useUpdateMemberRole();
   const { mutate: removeMember } = projectMembersHooks.useRemoveMember();
 
@@ -45,7 +51,11 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
     return <SkeletonList numberOfItems={3} className="h-12" />;
   }
 
-  const rows = members?.data ?? [];
+  const rows = memberRows.build({
+    members: members?.data ?? [],
+    ownerId: project.ownerId,
+    ownerName: directory?.find((item) => item.id === project.id)?.ownerName,
+  });
   const pending = (invitations ?? []).filter(
     (invitation) => invitation.status === InvitationStatus.PENDING,
   );
@@ -68,56 +78,65 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
           >
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-medium">
-                {`${member.user.firstName} ${member.user.lastName}`.trim() ||
-                  member.user.email}
+                {member.name}
               </span>
-              <span className="truncate text-xs text-muted-foreground">
-                {member.user.email}
+              {member.email && (
+                <span className="truncate text-xs text-muted-foreground">
+                  {member.email}
+                </span>
+              )}
+            </div>
+            {member.implicit ? (
+              <span className="shrink-0 pr-3 text-sm text-muted-foreground">
+                {projectRoleLabels.label(member.role)}
               </span>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <Select
-                value={member.role}
-                disabled={readonly}
-                onValueChange={(value) => {
-                  const role = Object.values(DefaultProjectRole).find(
-                    (candidate) => candidate === value,
-                  );
-                  if (!role) {
-                    return;
-                  }
-                  updateRole({ userId: member.userId, role });
-                }}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(DefaultProjectRole).map((role) => (
-                    <SelectItem key={role} value={role}>
-                      <div className="flex flex-col">
-                        <span>{t(role)}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {t(ROLE_DESCRIPTIONS[role])}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <ConfirmationDeleteDialog
-                title={t('Remove from project')}
-                message={t(
-                  'They lose access to every workflow and connection in this project.',
-                )}
-                mutationFn={async () => removeMember(member.id)}
-                entityName={t('member')}
-              >
-                <Button variant="ghost" size="sm" disabled={readonly}>
-                  <Trash className="size-4" />
-                </Button>
-              </ConfirmationDeleteDialog>
-            </div>
+            ) : (
+              <div className="flex shrink-0 items-center gap-2">
+                <Select
+                  value={member.role}
+                  disabled={readonly}
+                  onValueChange={(value) => {
+                    const role = Object.values(DefaultProjectRole).find(
+                      (candidate) => candidate === value,
+                    );
+                    if (!role) {
+                      return;
+                    }
+                    updateRole({ userId: member.userId, role });
+                  }}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue>
+                      {projectRoleLabels.label(member.role)}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(DefaultProjectRole).map((role) => (
+                      <SelectItem key={role} value={role}>
+                        <div className="flex flex-col">
+                          <span>{projectRoleLabels.label(role)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {t(ROLE_DESCRIPTIONS[role])}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <ConfirmationDeleteDialog
+                  title={t('Remove from project')}
+                  message={t(
+                    'They lose access to every workflow and connection in this project.',
+                  )}
+                  mutationFn={async () => removeMember(member.id)}
+                  entityName={t('member')}
+                >
+                  <Button variant="ghost" size="sm" disabled={readonly}>
+                    <Trash className="size-4" />
+                  </Button>
+                </ConfirmationDeleteDialog>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -135,7 +154,11 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
                     {invitation.email}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {t(invitation.projectRoleId ?? 'Viewer')}
+                    {projectRoleLabels.label(
+                      Object.values(DefaultProjectRole).find(
+                        (role) => role === invitation.projectRoleId,
+                      ) ?? DefaultProjectRole.VIEWER,
+                    )}
                     {' · '}
                     <FormattedDate date={new Date(invitation.created)} />
                   </span>

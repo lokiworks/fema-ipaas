@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import { Moon, Sun } from 'lucide-react';
+import { Check, LucideIcon, Monitor, Moon, Sun } from 'lucide-react';
 import React from 'react';
 
 import { useTheme } from '@/components/providers/theme-provider';
@@ -17,23 +17,21 @@ export function AppearanceCard({ children }: { children?: React.ReactNode }) {
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Label>{t('Theme')}</Label>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant={theme === 'light' ? 'default' : 'outline'}
-              onClick={() => setTheme('light')}
-            >
-              <Sun className="size-4" />
-              {t('Light')}
-            </Button>
-            <Button
-              type="button"
-              variant={theme === 'dark' ? 'default' : 'outline'}
-              onClick={() => setTheme('dark')}
-            >
-              <Moon className="size-4" />
-              {t('Dark')}
-            </Button>
+          <div className="flex flex-wrap gap-2" role="radiogroup">
+            {THEME_OPTIONS.map(({ value, label, Icon }) => (
+              <Button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={theme === value}
+                variant={theme === value ? 'default' : 'outline'}
+                onClick={() => setTheme(value)}
+              >
+                <Icon className="size-4" />
+                {label()}
+                {theme === value && <Check className="size-4" />}
+              </Button>
+            ))}
           </div>
         </div>
         {children}
@@ -41,3 +39,13 @@ export function AppearanceCard({ children }: { children?: React.ReactNode }) {
     </Card>
   );
 }
+
+const THEME_OPTIONS: {
+  value: 'light' | 'dark' | 'system';
+  label: () => string;
+  Icon: LucideIcon;
+}[] = [
+  { value: 'light', label: () => t('Light'), Icon: Sun },
+  { value: 'dark', label: () => t('Dark'), Icon: Moon },
+  { value: 'system', label: () => t('Follow system'), Icon: Monitor },
+];

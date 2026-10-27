@@ -11,6 +11,8 @@ import { t } from 'i18next';
 import { CopyPlus, EllipsisVertical, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { defaultStepNames } from '@/features/workflows/utils/default-step-names';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,9 +94,6 @@ const BranchLabel = (props: BaseBranchLabel) => {
   const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
 
   if (isNil(step)) {
-    return <></>;
-  }
-  if (isInsideRouterBranch && step.type !== WorkflowActionType.ROUTER) {
     return <></>;
   }
 
@@ -183,6 +182,7 @@ const BranchLabel = (props: BaseBranchLabel) => {
                         request: {
                           stepName: props.sourceNodeName,
                           branchIndex,
+                          copySuffix: defaultStepNames.copySuffix(),
                         },
                       });
                       setSelectedBranchIndex(branchIndex + 1);

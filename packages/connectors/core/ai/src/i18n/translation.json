@@ -49,5 +49,7 @@
   "Calls nobody approves in time are rejected automatically": "Calls nobody approves in time are rejected automatically",
   "1 hour": "1 hour",
   "4 hours": "4 hours",
-  "24 hours": "24 hours"
+  "24 hours": "24 hours",
+  "Connected server": "Connected server",
+  "Set by the server picker: the id of the connected MCP server this entry was taken from, so the platform can warn when that server is removed or broken": "Set by the server picker: the id of the connected MCP server this entry was taken from, so the platform can warn when that server is removed or broken"
 }

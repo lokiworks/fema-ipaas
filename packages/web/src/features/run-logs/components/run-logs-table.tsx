@@ -9,6 +9,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import { ChevronDown, RotateCcw, ScrollText } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import {
   BulkAction,
@@ -176,7 +177,7 @@ function columns({
       accessorKey: 'created',
       size: 140,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('Created')} />
+        <DataTableColumnHeader column={column} title={t('Log time')} />
       ),
       cell: ({ row }) => (
         <FormattedDate
@@ -199,7 +200,19 @@ function columns({
         return (
           <div className="min-w-0">
             <TextWithTooltip tooltipMessage={name}>
-              <p className="truncate text-sm font-medium">{name}</p>
+              {row.original.workflowExists ? (
+                <Link
+                  to={`/projects/${row.original.projectId}/workflows/${row.original.workflowId}`}
+                  className="block truncate text-sm font-medium text-primary hover:underline"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {name}
+                </Link>
+              ) : (
+                <p className="truncate text-sm font-medium text-muted-foreground">
+                  {name}
+                </p>
+              )}
             </TextWithTooltip>
           </div>
         );
@@ -329,7 +342,7 @@ function columns({
     },
     {
       accessorKey: 'actions',
-      size: 110,
+      size: 150,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Actions')} />
       ),
@@ -460,7 +473,11 @@ function CompactWorkflowCell({
 }
 
 function RowRerun({ row, onRerun }: { row: RunLogRow; onRerun: () => void }) {
-  if (row.rerunBlockReason === RunRerunBlockReason.NOT_FAILED) {
+  if (
+    row.type === RunLogType.DEBUG ||
+    (!isNil(row.rerunBlockReason) &&
+      HIDDEN_RERUN_REASONS.includes(row.rerunBlockReason))
+  ) {
     return null;
   }
   if (isNil(row.rerunBlockReason)) {
@@ -506,3 +523,12 @@ function rerunTagTooltip(row: RunLogRow): string {
     { count: row.inPlaceRetryCount },
   );
 }
+
+const HIDDEN_RERUN_REASONS: RunRerunBlockReason[] = [
+  RunRerunBlockReason.NOT_FAILED,
+  RunRerunBlockReason.DEBUG_RUN,
+  RunRerunBlockReason.DEDUPED,
+  RunRerunBlockReason.SUBFLOW_RUN,
+  RunRerunBlockReason.RERUN_SUCCEEDED,
+  RunRerunBlockReason.WORKFLOW_DELETED,
+];

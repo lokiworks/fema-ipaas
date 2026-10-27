@@ -100,6 +100,11 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-progress: var(--sidebar-progress);
 
+  --color-rail: var(--rail-background);
+  --color-rail-foreground: var(--rail-foreground);
+  --color-rail-active: var(--rail-active-foreground);
+  --color-rail-accent: var(--rail-accent);
+
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-background: var(--background);
@@ -174,7 +179,8 @@
   --animate-collapsible-down: collapsible-down 0.2s ease-out;
   --animate-collapsible-up: collapsible-up 0.2s ease-out
     alternate;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif,
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Tahoma,
+    'PingFang SC', 'Microsoft Yahei', Arial, 'Hiragino Sans GB', sans-serif,
     'Apple Color Emoji', 'Segoe UI Emoji', Segoe UI Symbol, 'Noto Color Emoji';
   --font-sentient: 'Sentient', serif;
   --shadow-step-container: 0px 0px 22px hsl(var(--border) / 0.3);
@@ -452,28 +458,28 @@
   }
 
   :root {
-    --background: theme('colors.white');
-    --foreground: theme('colors.neutral.950');
-    --popover: theme('colors.white');
+    --background: #ffffff;
+    --foreground: #1f2329;
+    --popover: #ffffff;
 
-    --secondary: theme('colors.black');
-    --secondary-foreground: theme('colors.white');
+    --secondary: hsl(var(--primary) / 0.1);
+    --secondary-foreground: hsl(var(--primary));
 
-    --muted: theme('colors.neutral.100');
-    --muted-foreground: theme('colors.neutral.600');
+    --muted: #f2f3f5;
+    --muted-foreground: #646a73;
 
-    --accent: theme('colors.neutral.50');
-    --accent-foreground: theme('colors.neutral.900');
+    --accent: #f5f6f7;
+    --accent-foreground: #1f2329;
 
-    --border: theme('colors.neutral.200');
-    --input: theme('colors.neutral.200');
+    --border: #dee0e3;
+    --input: #d0d3d6;
 
-    --ring: theme('colors.neutral.400');
+    --ring: #3370ff;
     --radius: 0.5rem;
 
-    --primary-100: 257 75% 85%;
-    --primary: 257 74% 57%;
-    --primary-300: 257 74% 25%;
+    --primary-100: 222 100% 94%;
+    --primary: 222 100% 60%;
+    --primary-300: 222 72% 50%;
     --primary-foreground: 210 20% 98%;
 
     /* Success — Emerald */
@@ -527,9 +533,14 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
-    --sidebar-background: theme('colors.neutral.50');
-    --sidebar-foreground: theme('colors.neutral.950');
-    --sidebar-primary: 257 74% 57%;
+    --rail-background: #1f2329;
+    --rail-foreground: #a6abb3;
+    --rail-active-foreground: #ffffff;
+    --rail-accent: rgba(255, 255, 255, 0.1);
+
+    --sidebar-background: #f5f6f7;
+    --sidebar-foreground: #1f2329;
+    --sidebar-primary: 222 100% 60%;
     --sidebar-primary-foreground: theme('colors.neutral.50');
     --sidebar-accent: color-mix(
       in srgb,
@@ -540,14 +551,14 @@
     --sidebar-border: theme('colors.neutral.200');
     --sidebar-ring: theme('colors.neutral.400');
     --sidebar-progress: 0 0% 50%;
-    --builder-background: #fbfbfb;
-    --builder-background-pattern: #b2b2b2;
+    --builder-background: #f5f6f7;
+    --builder-background-pattern: #c9cdd4;
   }
 
   .dark {
-    --background: theme('colors.neutral.950');
+    --background: #151515;
     --foreground: theme('colors.neutral.50');
-    --popover: theme('colors.neutral.800');
+    --popover: #262626;
     --muted: theme('colors.neutral.800');
     --muted-foreground: theme('colors.neutral.400');
 
@@ -557,10 +568,10 @@
     --accent: theme('colors.neutral.700');
     --accent-foreground: theme('colors.neutral.50');
 
-    --primary-100: 210 80% 40%;
-    --primary: 210 90% 50%;
-    --primary-300: 210 100% 85%;
-    --primary-foreground: 210 90% 98%;
+    --primary-100: 222 80% 38%;
+    --primary: 222 100% 57%;
+    --primary-300: 222 100% 85%;
+    --primary-foreground: 0 0% 100%;
 
     --success: var(--success-400);
     --destructive: var(--destructive-400);
@@ -574,8 +585,8 @@
     --warning-600: var(--warning-400);
     --warning-700: var(--warning-300);
 
-    --border: hsla(0, 0%, 100%, 0.08);
-    --input: hsla(0, 0%, 100%, 0.08);
+    --border: hsla(0, 0%, 100%, 0.12);
+    --input: hsla(0, 0%, 100%, 0.14);
 
     --ring: theme('colors.neutral.500');
     --radius: 0.5rem;
@@ -588,13 +599,18 @@
     --chart-4: 280 75% 65%;
     --chart-5: 340 80% 60%;
 
-    --sidebar-background: theme('colors.neutral.800');
+    --rail-background: #101114;
+    --rail-foreground: #8f959e;
+    --rail-active-foreground: #ffffff;
+    --rail-accent: rgba(255, 255, 255, 0.08);
+
+    --sidebar-background: #1d1d1d;
     --sidebar-foreground: theme('colors.neutral.50');
-    --sidebar-primary: 210 85% 65%;
+    --sidebar-primary: 222 100% 67%;
     --sidebar-primary-foreground: 210 90% 98%;
     --sidebar-accent: theme('colors.neutral.700');
     --sidebar-accent-foreground: theme('colors.neutral.50');
-    --sidebar-border: hsla(0, 0%, 100%, 0.08);
+    --sidebar-border: hsla(0, 0%, 100%, 0.12);
     --sidebar-ring: theme('colors.neutral.600');
     --sidebar-progress: 210 15% 40%;
     --builder-background: hsla(0, 0%, 9%, 1);

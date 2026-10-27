@@ -26,6 +26,7 @@ export type SidebarItemType = {
   badge?: string;
   iconClassName?: string;
   highlight?: boolean;
+  active?: boolean;
 };
 
 export const SidebarNavItem = (item: SidebarItemType) => {
@@ -34,9 +35,18 @@ export const SidebarNavItem = (item: SidebarItemType) => {
   const { state } = useSidebar();
   const iconRef = useRef<AnimatedIconHandle | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const isLinkActive =
-    location.pathname.startsWith(item.to) || item.isActive?.(location.pathname);
+    item.active ??
+    (location.pathname.startsWith(item.to) ||
+      item.isActive?.(location.pathname));
   const isCollapsed = state === 'collapsed';
+
+  useEffect(() => {
+    if (isLinkActive) {
+      buttonRef.current?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [isLinkActive]);
 
   useEffect(() => {
     if (isHovered) {
@@ -48,6 +58,7 @@ export const SidebarNavItem = (item: SidebarItemType) => {
 
   const button = (
     <SidebarMenuButton
+      ref={buttonRef}
       aria-label={item.label}
       className={cn(
         { 'bg-sidebar-accent hover:bg-sidebar-accent!': isLinkActive },

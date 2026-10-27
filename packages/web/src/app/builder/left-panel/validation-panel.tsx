@@ -1,4 +1,9 @@
-import { WorkflowTriggerType, workflowStructureUtil } from '@fema-ipaas/shared';
+import {
+  WorkflowOperationType,
+  WorkflowTriggerType,
+  workflowStructureUtil,
+} from '@fema-ipaas/shared';
+import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import {
   CircleAlertIcon,
@@ -9,9 +14,11 @@ import {
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { SidebarHeader } from '@/app/builder/sidebar-header';
 import { LeftSideBarType } from '@/app/builder/types';
+import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
 import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
+import { workflowCanvasUtils } from '@/app/builder/workflow-canvas/utils/workflow-canvas-utils';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -32,12 +39,20 @@ export function ValidationPanel() {
   const { issues, errorCount, warningCount, isLoading } =
     useBuilderValidation();
   const displayNumbers = useStepDisplayNumbers();
+  const { fitView } = useReactFlow();
+  useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
 
   const locate = (issue: ValidationIssue) => {
     const step = workflowStructureUtil.getStep(issue.stepName, trigger);
+    workflowCanvasUtils.focusStepAfterLayout({
+      fitView,
+      stepName: issue.stepName,
+    });
     if (step?.type === WorkflowTriggerType.EMPTY) {
       selectStepByName(issue.stepName);
-      openPicker(issue.stepName);
+      openPicker(issue.stepName, {
+        type: WorkflowOperationType.UPDATE_TRIGGER,
+      });
       return;
     }
     selectStepByName(issue.stepName, { tab: issue.tab });

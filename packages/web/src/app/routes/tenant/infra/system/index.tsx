@@ -12,8 +12,8 @@ import { Download, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CenteredPage } from '@/app/components/centered-page';
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,8 +48,7 @@ export default function SystemPage() {
   const { data: overview, isLoading } = systemHooks.useOverview();
   const download = systemHooks.useDownloadDiagnostics();
   return (
-    <CenteredPage
-      widthClassName="max-w-[48rem]"
+    <ConsolePage
       title={t('System and upgrades')}
       description={t(
         'Check the version and follow the upgrade steps. Upgrades are run on the server; this page never restarts anything.',
@@ -84,7 +83,7 @@ export default function SystemPage() {
           </TabsContent>
         </Tabs>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 
@@ -234,7 +233,9 @@ function UpdateStatus({ overview }: { overview: SystemOverview }) {
             </span>
             <CopyToClipboardInput
               useInput={false}
-              textToCopy={`docker pull ghcr.io/lokiworks/fema-ipaas:<version>\ndocker save ghcr.io/lokiworks/fema-ipaas:<version> | gzip > fema-<version>.tar.gz\n# on the server\ndocker load -i fema-<version>.tar.gz`}
+              textToCopy={`docker pull ghcr.io/lokiworks/fema-ipaas:<version>\ndocker save ghcr.io/lokiworks/fema-ipaas:<version> | gzip > fema-<version>.tar.gz\n# ${t(
+                'Run on the server',
+              )}\ndocker load -i fema-<version>.tar.gz`}
             />
           </AlertDescription>
         </Alert>

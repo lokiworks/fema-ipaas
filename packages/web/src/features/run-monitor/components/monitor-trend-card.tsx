@@ -121,7 +121,7 @@ export function MonitorTrendCard({
       </CardHeader>
       <CardContent className="pt-2">
         {chartMode === RunMonitorChartMode.TABLE ? (
-          <div className="max-h-[260px] overflow-auto rounded-md border">
+          <div className="max-h-[340px] overflow-auto rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>

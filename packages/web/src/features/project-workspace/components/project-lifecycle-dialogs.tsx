@@ -1,4 +1,6 @@
+import { tryCatch } from '@fema-ipaas/core-utils';
 import { PROJECT_NAME_MAX_LENGTH } from '@fema-ipaas/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -12,8 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
+import {
+  projectDirectoryHooks,
+  projectDirectoryUtils,
+} from '@/features/projects/api/project-directory-api';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
+import { authenticationSession } from '@/lib/authentication-session';
 
 import { projectWorkspaceHooks } from '../hooks/project-workspace-hooks';
 import { workspaceUtils } from '../lib/workspace-utils';
@@ -30,12 +36,37 @@ export function DeleteProjectDialog({
   project: { id: string; displayName: string; runningCount: number };
 }) {
   const navigate = useNavigate();
+  const { data: directory } = projectDirectoryHooks.useDirectory();
+  const queryClient = useQueryClient();
+  const invalidateWorkspace = projectWorkspaceHooks.useInvalidateWorkspace();
   const { data: counts } = projectWorkspaceHooks.useResourceCounts({
     projectId: project.id,
     enabled: open,
   });
-  const { mutate: remove, isPending } =
+  const { mutateAsync: remove, isPending } =
     projectWorkspaceHooks.useDeleteProject();
+  const handleDelete = async () => {
+    const { error } = await tryCatch(() => remove(project.id));
+    if (error) {
+      return;
+    }
+    const nextProject = (directory ?? []).find(
+      (item) => item.id !== project.id && projectDirectoryUtils.isMember(item),
+    );
+    toast.success(t('Deleted project {name}', { name: project.displayName }));
+    onOpenChange(false);
+    if (nextProject) {
+      authenticationSession.switchToProject(nextProject.id);
+      navigate(`/projects/${nextProject.id}/home`, { replace: true });
+    } else {
+      navigate('/projects', { replace: true });
+    }
+    queryClient.removeQueries({
+      predicate: (query) => query.queryKey.includes(project.id),
+    });
+    invalidateWorkspace();
+    await projectCollectionUtils.refetchProjects();
+  };
   const blockedReason =
     project.runningCount > 0
       ? t(
@@ -66,17 +97,7 @@ export function DeleteProjectDialog({
       actionLabel={t('Delete project')}
       isPending={isPending}
       blockedReason={blockedReason}
-      onConfirm={() =>
-        remove(project.id, {
-          onSuccess: () => {
-            toast.success(
-              t('Deleted project {name}', { name: project.displayName }),
-            );
-            onOpenChange(false);
-            navigate('/projects');
-          },
-        })
-      }
+      onConfirm={handleDelete}
     />
   );
 }
@@ -156,7 +177,7 @@ export function CopyProjectDialog({
             {t('Cancel')}
           </Button>
           <Button type="button" loading={isPending} onClick={handleCopy}>
-            {t('Create copy')}
+            {t('Create')}
           </Button>
         </DialogFooter>
       </DialogContent>

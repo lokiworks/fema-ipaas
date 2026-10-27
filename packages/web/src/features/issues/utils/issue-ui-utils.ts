@@ -26,7 +26,7 @@ import { failureText } from './failure-text';
 function statusLabel(status: IssueStatus): string {
   switch (status) {
     case IssueStatus.OPEN:
-      return t('Open');
+      return t('Issue status: open');
     case IssueStatus.INVESTIGATING:
       return t('Investigating');
     case IssueStatus.RESOLVED:

@@ -3,14 +3,12 @@ import { t } from 'i18next';
 const WorkflowEndWidget = () => {
   return (
     <div
-      className=" text-center w-[41px] bg-builder-background text-foreground/70 rounded-md animate-fade -ml-[20px]"
       key={'workflow-end-button'}
       id="workflow-end-button"
-    >
-      <div className="w-full text-center text-sm h-full bg-border/80 p-1 rounded-md">
-        {t('End')}
-      </div>
-    </div>
+      role="img"
+      aria-label={t('End')}
+      className="absolute left-[-4px] top-0 size-2 rounded-full bg-border animate-fade"
+    />
   );
 };
 

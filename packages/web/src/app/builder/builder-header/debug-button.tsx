@@ -33,11 +33,11 @@ export function DebugButton() {
     triggerName: workflowVersion.trigger.settings.triggerName,
   });
 
-  const progress = useDebugRunProgress({ returnsToEditing: !isManualTrigger });
+  const progress = useDebugRunProgress({ returnsToEditing: true });
   const { mutate: runWorkflow, isPending } =
     workflowHooks.useTestWorkflowOrStartManualTrigger({
       workflowVersionId: workflowVersion.id,
-      isForManualTrigger: isManualTrigger,
+      isForManualTrigger: false,
       onUpdateRun: progress.onUpdateRun,
     });
 

@@ -73,7 +73,7 @@ export function NodesTab() {
       {isLoading ? (
         <Skeleton className="h-48 w-full" />
       ) : (
-        <Table>
+        <Table className="min-w-[48rem]">
           <TableHeader>
             <TableRow>
               <TableHead>{t('Worker')}</TableHead>

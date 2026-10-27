@@ -5,8 +5,8 @@ import { useTheme } from '@/components/providers/theme-provider';
 import { Button } from '@/components/ui/button';
 
 export function AuthThemeSwitch() {
-  const { theme, setTheme } = useTheme();
-  const dark = theme === 'dark';
+  const { resolvedTheme, setTheme } = useTheme();
+  const dark = resolvedTheme === 'dark';
   return (
     <Button
       type="button"

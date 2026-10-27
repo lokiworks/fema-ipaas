@@ -143,7 +143,7 @@ describe('MobileBuilderNotice', () => {
     await renderNotice();
 
     expect(hrefs()).toEqual([
-      '/projects/project-1/automations',
+      '/projects/project-1/home',
       '/projects/project-1/runs?workflowId=wf-1',
     ]);
   });
@@ -152,7 +152,7 @@ describe('MobileBuilderNotice', () => {
     environment.canReadRuns = false;
     await renderNotice();
 
-    expect(hrefs()).toEqual(['/projects/project-1/automations']);
+    expect(hrefs()).toEqual(['/projects/project-1/home']);
   });
 
   it('hides both links when the host app disabled navigation in the builder', async () => {

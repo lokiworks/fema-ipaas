@@ -13,12 +13,12 @@ import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import {
   CircleStop,
+  ExternalLink,
   Info,
   Link2,
   RotateCcw,
   SkipForward,
   SquarePen,
-  Workflow,
 } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -356,13 +356,7 @@ function DrawerBody({
 
       <div className="flex items-center gap-2 border-b pb-2">
         <span className="text-sm font-medium">{t('Step list')}</span>
-        <Button type="button" size="sm" variant="ghost" asChild>
-          <Link to={`/projects/${row.projectId}/runs/${row.id}`}>
-            <Workflow className="size-4" />
-            {t('Workflow canvas')}
-          </Link>
-        </Button>
-        <span className="text-xs text-muted-foreground">
+        <span className="min-w-0 truncate text-xs text-muted-foreground">
           {row.type === RunLogType.DEBUG
             ? t('Showing the draft used for this debug run')
             : isNil(row.versionNumber)
@@ -371,6 +365,18 @@ function DrawerBody({
                 version: row.versionNumber,
               })}
         </span>
+        <Button
+          type="button"
+          size="sm"
+          variant="link"
+          className="ml-auto h-auto shrink-0 gap-1 p-0"
+          asChild
+        >
+          <Link to={`/projects/${row.projectId}/runs/${row.id}`}>
+            {t('View in canvas')}
+            <ExternalLink className="size-3.5" />
+          </Link>
+        </Button>
       </div>
       {run ? (
         <RunLogNodeTrail

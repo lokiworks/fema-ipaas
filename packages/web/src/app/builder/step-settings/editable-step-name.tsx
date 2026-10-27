@@ -26,7 +26,6 @@ interface EditableStepNameProps {
   tooltipTitle?: string;
   tooltipDescription?: string;
   connectorVersion?: string;
-  stepIndex?: number;
   displayNumber?: string;
 }
 
@@ -43,7 +42,6 @@ const EditableStepName: React.FC<EditableStepNameProps> = ({
   tooltipTitle,
   tooltipDescription,
   connectorVersion,
-  stepIndex,
   displayNumber,
 }) => {
   const inBranchView = !isNil(selectedBranchIndex);
@@ -111,22 +109,23 @@ const EditableStepName: React.FC<EditableStepNameProps> = ({
                 }
                 aria-label={readonly ? undefined : t('Edit Step Name')}
                 className={cn(
-                  'flex items-center gap-1.5 min-w-0',
+                  'flex min-w-0 flex-col',
                   !readonly &&
                     'cursor-text rounded-sm hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                 )}
               >
-                <span className="truncate text-foreground">
-                  {typeof stepIndex === 'number' && `${stepIndex}. `}
-                  {displayName}
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate text-foreground">
+                    {displayName}
+                  </span>
+                  {!readonly && (
+                    <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
+                  )}
                 </span>
                 {displayNumber && (
-                  <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+                  <span className="truncate font-mono text-[11px] font-normal text-muted-foreground">
                     {displayNumber}
                   </span>
-                )}
-                {!readonly && (
-                  <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
                 )}
               </div>
             </TooltipTrigger>

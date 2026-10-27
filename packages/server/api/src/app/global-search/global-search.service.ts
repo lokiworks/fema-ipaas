@@ -1,4 +1,4 @@
-import { isNil, tryCatch } from '@fema-ipaas/core-utils'
+import { isNil, LocalesEnum, tryCatch } from '@fema-ipaas/core-utils'
 import {
     GlobalSearchGroup,
     GlobalSearchItem,
@@ -103,9 +103,18 @@ async function searchConnections(ctx: SearchContext): Promise<GlobalSearchItem[]
 }
 
 async function searchConnectors(ctx: SearchContext): Promise<GlobalSearchItem[]> {
-    const connectors = await connectorMetadataService(ctx.log).list({ tenantId: ctx.tenantId, includeHidden: false, searchQuery: ctx.query })
-    return connectors
+    const metadata = connectorMetadataService(ctx.log)
+    const [englishMatches, chineseMatches, chineseCatalog] = await Promise.all([
+        metadata.list({ tenantId: ctx.tenantId, includeHidden: false, searchQuery: ctx.query }),
+        metadata.list({ tenantId: ctx.tenantId, includeHidden: false, searchQuery: ctx.query, locale: LocalesEnum.CHINESE_SIMPLIFIED }),
+        metadata.list({ tenantId: ctx.tenantId, includeHidden: false, locale: LocalesEnum.CHINESE_SIMPLIFIED }),
+    ])
+    const chineseByName = new Map(chineseCatalog.map((connector) => [connector.name, connector]))
+    const matchedNames = [...new Set([...chineseMatches, ...englishMatches].map((connector) => connector.name))]
+    return matchedNames
         .slice(0, globalSearchUtils.fetchSize)
+        .map((name) => chineseByName.get(name) ?? englishMatches.find((connector) => connector.name === name))
+        .filter((connector) => !isNil(connector))
         .map((connector) => item({ ctx, type: GlobalSearchResultType.CONNECTOR, id: connector.name, label: connector.displayName, subtitle: connector.description }))
 }
 

@@ -12,6 +12,7 @@ import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 
 import { WorkspaceContext } from '../hooks/use-workspace-context';
+import { memberRows } from '../lib/member-rows';
 import { projectRoleLabels } from '../lib/role-labels';
 
 export function OverviewSideCards({
@@ -28,7 +29,11 @@ export function OverviewSideCards({
   const navigate = useNavigate();
   const { project, permissions, workflows, releasesEnabled } = context;
   const { data: membersPage } = projectMembersHooks.useMembers();
-  const members = membersPage?.data ?? [];
+  const members = memberRows.build({
+    members: membersPage?.data ?? [],
+    ownerId: project.ownerId,
+    ownerName: directoryItem?.ownerName,
+  });
   const me = authenticationSession.getCurrentUserId();
   const workflowsLimit = context.workflowsLimit;
   const { data: limitsUsage } = limitsHooks.useProjectUsage(project.id);
@@ -49,29 +54,23 @@ export function OverviewSideCards({
         }
       >
         <div className="flex flex-col gap-2">
-          {members.slice(0, MEMBERS_SHOWN).map((member) => {
-            const name =
-              `${member.user.firstName ?? ''} ${
-                member.user.lastName ?? ''
-              }`.trim() || member.user.email;
-            return (
-              <div key={member.id} className="flex items-center gap-2 text-sm">
-                <UserAvatar
-                  name={name}
-                  email={member.user.email}
-                  size={24}
-                  disableTooltip
-                />
-                <span className="min-w-0 flex-1 truncate">
-                  {name}
-                  {member.userId === me ? ` ${t('(you)')}` : ''}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {projectRoleLabels.label(member.role)}
-                </span>
-              </div>
-            );
-          })}
+          {members.slice(0, MEMBERS_SHOWN).map((member) => (
+            <div key={member.id} className="flex items-center gap-2 text-sm">
+              <UserAvatar
+                name={member.name}
+                email={member.email ?? member.name}
+                size={24}
+                disableTooltip
+              />
+              <span className="min-w-0 flex-1 truncate">
+                {member.name}
+                {member.userId === me ? ` ${t('(you)')}` : ''}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {projectRoleLabels.label(member.role)}
+              </span>
+            </div>
+          ))}
           {members.length === 0 && (
             <span className="text-sm text-muted-foreground">
               {t('No members yet')}

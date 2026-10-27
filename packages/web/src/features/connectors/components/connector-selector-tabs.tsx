@@ -28,17 +28,10 @@ export const ConnectorSelectorTabs = ({
       }}
       className="w-full min-w-0"
     >
-      <TabsList className="h-full w-full flex gap-1 px-2 justify-start rounded-none bg-background overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+      <TabsList className="w-full justify-start gap-5 overflow-x-auto px-3 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {tabs.map((tab) => (
-          <TabsTrigger
-            key={tab.key}
-            value={tab.key}
-            className="flex flex-col h-full rounded-md flex-1 min-w-[56px] max-w-[85px] hover:bg-gray-300/30 dark:hover:bg-gray-300/10 data-[state=active]:text-primary data-[state=active]:shadow-none border-transparent data-[state=active]:border-primary data-[state=active]:active data-[state=active]:bg-transparent text-accent-foreground [&>svg]:size-5 [&>svg]:shrink-0"
-          >
-            {tab.icon}
-            <span className="mt-1.5 text-sm truncate w-full text-center">
-              {tab.name}
-            </span>
+          <TabsTrigger key={tab.key} value={tab.key} className="shrink-0">
+            {tab.name}
           </TabsTrigger>
         ))}
       </TabsList>

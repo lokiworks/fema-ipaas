@@ -179,4 +179,19 @@ describe('stepDisplayNumberUtil', () => {
         const numbers = workflowStructureUtil.getAllSteps(base.trigger).map((step) => step.settings.displayNumber)
         expect(numbers).toEqual(['webhook-trigger-1', 'feishu-1', 'feishu-2'])
     })
+
+    it('names a duplicated step with the requested copy suffix and defaults to Copy', () => {
+        const base = version(trigger(connectorAction({ name: 'step_1', connector: '@fema-ipaas/connector-feishu' })))
+        const localized = workflowOperations.apply(base, {
+            type: WorkflowOperationType.DUPLICATE_ACTION,
+            request: { stepName: 'step_1', copySuffix: '副本' },
+        })
+        const defaulted = workflowOperations.apply(base, {
+            type: WorkflowOperationType.DUPLICATE_ACTION,
+            request: { stepName: 'step_1' },
+        })
+        const displayNames = (workflowVersion: WorkflowVersion): string[] => workflowStructureUtil.getAllSteps(workflowVersion.trigger).map((step) => step.displayName)
+        expect(displayNames(localized)).toEqual(['Webhook', 'step_1', 'step_1 副本'])
+        expect(displayNames(defaulted)).toEqual(['Webhook', 'step_1', 'step_1 Copy'])
+    })
 })

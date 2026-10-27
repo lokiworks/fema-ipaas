@@ -118,6 +118,9 @@ function GlobalSearchDialogContent({
 
   const hasQuery = debouncedSearch.length > 0;
   const noResults = hasQuery && !isLoading && groups.length === 0;
+  const resultCount = groups
+    .flatMap((group) => group.items)
+    .filter((item) => item.type !== 'view-all').length;
 
   const firstItemId =
     groups.find((g) => !g.isLoading && g.items.length > 0)?.items[0]?.id ?? '';
@@ -157,6 +160,12 @@ function GlobalSearchDialogContent({
           </button>
         )}
       </div>
+
+      {hasQuery && !isLoading && resultCount > 0 && (
+        <div className="px-4 pb-2 text-xs text-muted-foreground">
+          {t('{count} search results in total', { count: resultCount })}
+        </div>
+      )}
 
       <CommandList className="flex-1 min-h-0 max-h-none overflow-y-auto! scrollbar-hover">
         {noResults && (

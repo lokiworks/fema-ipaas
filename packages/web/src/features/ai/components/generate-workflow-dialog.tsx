@@ -8,12 +8,19 @@ import {
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
-import { ListChecks, Plug, Sparkles, WandSparkles } from 'lucide-react';
+import {
+  CircleAlert,
+  ListChecks,
+  Plug,
+  Sparkles,
+  WandSparkles,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -244,6 +251,7 @@ function GenerateWorkflowForm({
           />
           <Form {...form}>
             <form
+              id={PLAN_FORM_ID}
               className="flex flex-col gap-3"
               onSubmit={(event) => {
                 event.preventDefault();
@@ -313,62 +321,22 @@ function GenerateWorkflowForm({
                   ))}
                 </div>
               </div>
-              {form.formState.errors.root?.serverError && (
-                <div
-                  role="alert"
-                  className="flex flex-col items-start gap-2 text-sm text-destructive"
-                  data-testid="plan-error"
-                >
-                  <p>{form.formState.errors.root.serverError.message}</p>
-                  {modelFailed && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        form.handleSubmit((values) =>
-                          requestPlan({
-                            values,
-                            answers: [],
-                            withModel: false,
-                          }),
-                        )()
-                      }
-                    >
-                      {t('Plan with built-in rules instead')}
-                    </Button>
-                  )}
-                </div>
-              )}
-              {hasPlanError &&
-                !isPlanning &&
-                (closestTemplates ?? []).length > 0 && (
-                  <ClosestTemplates
-                    templates={closestTemplates ?? []}
-                    onPick={(template) => {
-                      form.setValue('prompt', template.examplePrompt, {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      });
-                      void form.handleSubmit((values) =>
-                        requestPlan({ values, answers: [], withModel: true }),
-                      )();
-                    }}
-                  />
-                )}
               <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  type="submit"
-                  loading={isPlanning}
-                  disabled={
-                    models.isLoading ||
-                    isPlanning ||
-                    isCreating ||
-                    prompt.trim().length === 0
-                  }
-                >
-                  {plan ? t('Plan again') : t('Plan')}
-                </Button>
+                {plan && (
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    loading={isPlanning}
+                    disabled={
+                      models.isLoading ||
+                      isPlanning ||
+                      isCreating ||
+                      prompt.trim().length === 0
+                    }
+                  >
+                    {t('Plan again')}
+                  </Button>
+                )}
                 {isPlanning && !models.usesRules && (
                   <span className="text-xs text-muted-foreground">
                     {t('Planning usually takes 10 to 30 seconds.')}
@@ -390,8 +358,29 @@ function GenerateWorkflowForm({
         </div>
         <section
           aria-live="polite"
-          className="min-w-0 rounded-md border p-4 lg:overflow-y-auto"
+          className="flex min-w-0 flex-col gap-4 rounded-md border p-4 lg:overflow-y-auto"
         >
+          {hasPlanError && !isPlanning && (
+            <PlanFailure
+              message={form.formState.errors.root?.serverError?.message ?? ''}
+              canUseRules={modelFailed}
+              templates={closestTemplates ?? []}
+              onUseRules={() =>
+                form.handleSubmit((values) =>
+                  requestPlan({ values, answers: [], withModel: false }),
+                )()
+              }
+              onPickTemplate={(template) => {
+                form.setValue('prompt', template.examplePrompt, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+                void form.handleSubmit((values) =>
+                  requestPlan({ values, answers: [], withModel: true }),
+                )();
+              }}
+            />
+          )}
           {isPlanning ? (
             <PlanningState usesRules={models.usesRules} />
           ) : plan ? (
@@ -449,7 +438,7 @@ function GenerateWorkflowForm({
         >
           {t('Cancel')}
         </Button>
-        {plan && (
+        {plan ? (
           <Button
             type="button"
             loading={isCreating}
@@ -458,8 +447,61 @@ function GenerateWorkflowForm({
           >
             {t('Create draft')}
           </Button>
+        ) : (
+          <Button
+            type="submit"
+            form={PLAN_FORM_ID}
+            loading={isPlanning}
+            disabled={
+              models.isLoading ||
+              isPlanning ||
+              isCreating ||
+              prompt.trim().length === 0
+            }
+          >
+            {t('Start planning')}
+          </Button>
         )}
       </DialogFooter>
+    </div>
+  );
+}
+
+function PlanFailure({
+  message,
+  canUseRules,
+  templates,
+  onUseRules,
+  onPickTemplate,
+}: {
+  message: string;
+  canUseRules: boolean;
+  templates: PlanTemplate[];
+  onUseRules: () => void;
+  onPickTemplate: (template: PlanTemplate) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <Alert variant="destructive" data-testid="plan-error">
+        <CircleAlert />
+        <AlertTitle>{t('Planning failed')}</AlertTitle>
+        <AlertDescription className="flex flex-col items-start gap-3">
+          <p>{message}</p>
+          {canUseRules && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onUseRules}
+            >
+              {t('Plan with built-in rules instead')}
+            </Button>
+          )}
+        </AlertDescription>
+      </Alert>
+      {templates.length > 0 && (
+        <ClosestTemplates templates={templates} onPick={onPickTemplate} />
+      )}
     </div>
   );
 }
@@ -632,3 +674,5 @@ const INTRO_ITEMS = [
 ];
 
 type PromptValues = z.infer<typeof PromptSchema>;
+
+const PLAN_FORM_ID = 'generate-workflow-plan-form';

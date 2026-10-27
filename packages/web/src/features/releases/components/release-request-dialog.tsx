@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { projectCollectionUtils } from '@/features/projects';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -229,15 +230,21 @@ function ReleaseRequestForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('What changed')}</FormLabel>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    maxLength={300}
-                    placeholder={t(
-                      'e.g. Read the amount threshold from a variable; tested with 12 invoices',
-                    )}
-                  />
-                </FormControl>
+                <CharacterCounter
+                  multiline
+                  length={(field.value ?? '').length}
+                  max={300}
+                >
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      maxLength={300}
+                      placeholder={t(
+                        'e.g. Read the amount threshold from a variable; tested with 12 invoices',
+                      )}
+                    />
+                  </FormControl>
+                </CharacterCounter>
                 <FormMessage />
               </FormItem>
             )}

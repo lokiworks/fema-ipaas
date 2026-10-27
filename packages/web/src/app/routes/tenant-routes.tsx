@@ -142,7 +142,7 @@ export const tenantRoutes = [
     ProjectLimitsPage,
   ),
   tenantRoute('/tenant/limits/usage', 'Usage and limits', UsageLimitsPage),
-  tenantRoute('/tenant/connections', 'Connections', TenantConnectionsPage),
+  tenantRoute('/tenant/connections', 'All connections', TenantConnectionsPage),
   {
     path: '/tenant/setup',
     element: (
@@ -154,7 +154,11 @@ export const tenantRoutes = [
     ),
   },
   tenantRoute('/tenant/setup/general', 'General', GeneralPage),
-  tenantRoute('/tenant/setup/connectors', 'Connectors', TenantConnectorsPage),
+  tenantRoute(
+    '/tenant/setup/connectors',
+    'Installed connectors',
+    TenantConnectorsPage,
+  ),
   tenantRoute(
     '/tenant/connectors',
     'Connector Marketplace',

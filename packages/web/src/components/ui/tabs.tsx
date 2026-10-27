@@ -17,7 +17,9 @@ const tabsListVariants = cva('inline-flex', {
   variants: {
     variant: {
       default:
-        'items-center justify-center h-9 rounded-md bg-muted p-1 text-muted-foreground',
+        'items-center gap-6 h-10 border-b border-border text-muted-foreground',
+      segmented:
+        'items-center justify-center h-8 rounded-md bg-muted p-0.5 text-muted-foreground',
       outline: '',
     },
   },
@@ -26,19 +28,24 @@ const tabsListVariants = cva('inline-flex', {
   },
 });
 
-const tabsTriggerVariants = cva('inline-flex items-center justify-center', {
-  variants: {
-    variant: {
-      default:
-        'whitespace-nowrap rounded-sm px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs',
-      outline:
-        'px-3 py-1 text-sm font-medium ring-offset-background transition-all border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:text-foreground text-accent-foreground',
+const tabsTriggerVariants = cva(
+  'inline-flex items-center justify-center gap-1.5',
+  {
+    variants: {
+      variant: {
+        default:
+          'relative h-full whitespace-nowrap text-sm transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:text-primary disabled:pointer-events-none disabled:opacity-50 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full data-[state=active]:font-medium data-[state=active]:text-primary data-[state=active]:after:bg-primary',
+        segmented:
+          'whitespace-nowrap rounded-sm px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs',
+        outline:
+          'px-3 py-1 text-sm font-medium ring-offset-background transition-all border-b-2 border-transparent data-[state=active]:border-secondary data-[state=active]:text-foreground text-accent-foreground',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
     },
   },
-  defaultVariants: {
-    variant: 'default',
-  },
-});
+);
 
 function TabsList({
   className,

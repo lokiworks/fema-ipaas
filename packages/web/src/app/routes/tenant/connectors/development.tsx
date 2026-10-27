@@ -17,6 +17,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   Empty,
   EmptyContent,
@@ -122,7 +123,7 @@ export default function ConnectorDevelopmentPage() {
 
   if (initialListsLoaded && !hasAnyConnector) {
     return (
-      <div className="flex w-full flex-col gap-4 p-4">
+      <ConsolePage title={t('Connector Development')}>
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -150,24 +151,18 @@ export default function ConnectorDevelopmentPage() {
         </Empty>
         {dialogs}
         <CliGuideSection />
-      </div>
+      </ConsolePage>
     );
   }
 
   return (
-    <div className="flex w-full flex-col gap-4 p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            {t('Connector Development')}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Develop connectors for internal systems or services that are not covered yet. Once published they can be used in workflows and MCP services.',
-            )}
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-2">
+    <ConsolePage
+      title={t('Connector Development')}
+      description={t(
+        'Develop connectors for internal systems or services that are not covered yet. Once published they can be used in workflows and MCP services.',
+      )}
+      actions={
+        <>
           <Button variant="outline" onClick={() => setImportOpen(true)}>
             <FileJsonIcon className="mr-1 size-4" />
             {t('Import from OpenAPI')}
@@ -176,9 +171,9 @@ export default function ConnectorDevelopmentPage() {
             <PlusIcon className="mr-1 size-4" />
             {t('New connector')}
           </Button>
-        </div>
-      </div>
-
+        </>
+      }
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Tabs
           value={tab}
@@ -222,7 +217,7 @@ export default function ConnectorDevelopmentPage() {
           onNew={() => setNewOpen(true)}
         />
       ) : (
-        <Table>
+        <Table className="min-w-[44rem]">
           <TableHeader>
             <TableRow>
               <TableHead>{t('Connector')}</TableHead>
@@ -301,7 +296,7 @@ export default function ConnectorDevelopmentPage() {
       )}
       {dialogs}
       <CliGuideSection />
-    </div>
+    </ConsolePage>
   );
 }
 

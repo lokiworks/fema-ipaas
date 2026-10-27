@@ -14,6 +14,7 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Plus, X } from 'lucide-react';
+import { useRef } from 'react';
 import { FieldPath, useFieldArray, useForm } from 'react-hook-form';
 
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
@@ -54,6 +55,7 @@ function SsoProviderDialog({
   open,
   onOpenChange,
 }: SsoProviderDialogProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
   const existing =
     provider === SsoProvider.OIDC ? settings.oidc : settings.feishu;
   const form = useForm<SsoFormValues>({
@@ -94,7 +96,15 @@ function SsoProviderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-xl">
+      <DialogContent
+        ref={contentRef}
+        className="max-h-[88vh] overflow-y-auto sm:max-w-xl"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          const firstInput = contentRef.current?.querySelector('input');
+          (firstInput ?? contentRef.current)?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             {provider === SsoProvider.OIDC

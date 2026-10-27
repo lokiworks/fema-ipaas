@@ -7,6 +7,7 @@ import { CanvasNode, CanvasOrientation } from '../utils/types';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
 
 const verticalPaddingOnFitView = 100;
+const INITIAL_MIN_ZOOM_RATIO = 0.9;
 
 const useFitToView = ({
   canvasWidth,
@@ -35,6 +36,9 @@ const useFitToView = ({
       const effectiveOrientation = orientation ?? canvasOrientation;
       const nodes = getNodes();
       if (nodes.length === 0) return;
+      const minZoomRatio = isInitialRenderCall
+        ? INITIAL_MIN_ZOOM_RATIO
+        : workflowCanvasConsts.MIN_ZOOM;
       if (effectiveOrientation === 'horizontal') {
         const stepNodeSize = workflowCanvasConsts.STEP_NODE_SIZE.horizontal;
         const minX = Math.min(...nodes.map((node) => node.position.x));
@@ -48,7 +52,7 @@ const useFitToView = ({
         const zoomRatio = Math.min(
           Math.max(
             Math.min(canvasWidth / graphWidth, canvasHeight / graphHeight),
-            0.9,
+            minZoomRatio,
           ),
           1.25,
         );
@@ -74,8 +78,13 @@ const useFitToView = ({
         },
         orientation: effectiveOrientation,
       }).height;
+      const fitHeight = isInitialRenderCall
+        ? graphHeight
+        : graphHeight +
+          workflowCanvasConsts.FEMA_NODE_SIZE.STEP.height +
+          verticalPaddingOnFitView * 2;
       const zoomRatio = Math.min(
-        Math.max(canvasHeight / graphHeight, 0.9),
+        Math.max(canvasHeight / fitHeight, minZoomRatio),
         1.25,
       );
 

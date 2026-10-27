@@ -49,5 +49,7 @@
   "Calls nobody approves in time are rejected automatically": "超时无人批准的调用会被自动拒绝",
   "1 hour": "1 小时",
   "4 hours": "4 小时",
-  "24 hours": "24 小时"
+  "24 hours": "24 小时",
+  "Connected server": "已连接的服务器",
+  "Set by the server picker: the id of the connected MCP server this entry was taken from, so the platform can warn when that server is removed or broken": "由服务器选择器自动填写：这一项取自哪个已连接的 MCP 服务器的 ID，服务器被删除或不可用时平台据此给出提醒"
 }

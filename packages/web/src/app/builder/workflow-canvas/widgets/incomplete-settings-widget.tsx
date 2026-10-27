@@ -1,5 +1,6 @@
 import {
   WorkflowAction,
+  WorkflowOperationType,
   WorkflowTriggerType,
   WorkflowVersion,
   Step,
@@ -41,7 +42,9 @@ const IncompleteSettingsButton: React.FC<IncompleteSettingsButtonProps> = ({
       const stepToFocus = invalidSteps[0];
       selectStepByName(stepToFocus.name);
       if (stepToFocus.type === WorkflowTriggerType.EMPTY) {
-        setOpenedConnectorSelectorStepNameOrAddButtonId(stepToFocus.name);
+        setOpenedConnectorSelectorStepNameOrAddButtonId(stepToFocus.name, {
+          type: WorkflowOperationType.UPDATE_TRIGGER,
+        });
       }
       fitView(
         workflowCanvasUtils.createFocusStepInGraphParams(stepToFocus.name),

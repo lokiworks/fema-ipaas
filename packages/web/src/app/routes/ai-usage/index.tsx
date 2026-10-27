@@ -5,6 +5,7 @@ import { ReactNode, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -25,7 +26,6 @@ import {
 import { aiHooks, aiUtils } from '@/features/ai';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
-import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 function AiUsagePage() {
   const projectId = authenticationSession.getProjectId() ?? '';
@@ -54,21 +54,12 @@ function AiUsagePage() {
   };
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-4 w-full max-w-5xl py-4',
-        DASHBOARD_CONTENT_PADDING_X,
+    <ConsolePage
+      title={t('AI usage')}
+      description={t(
+        'Model calls and tokens used by this project. Token counts come from the model provider, so check its bill for prices.',
       )}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-base font-semibold">{t('AI usage')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Model calls and tokens used by this project. Token counts come from the model provider, so check its bill for prices.',
-            )}
-          </p>
-        </div>
+      actions={
         <Select value={selectedMonth} onValueChange={selectMonth}>
           <SelectTrigger className="w-auto gap-2 h-8">
             <Calendar className="size-4" />
@@ -82,11 +73,12 @@ function AiUsagePage() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      }
+    >
       {isLoading && <Skeleton className="h-64 w-full" />}
       {usage && usage.totals.calls === 0 && <EmptyUsage />}
       {usage && usage.totals.calls > 0 && <UsageDetails usage={usage} />}
-    </div>
+    </ConsolePage>
   );
 }
 

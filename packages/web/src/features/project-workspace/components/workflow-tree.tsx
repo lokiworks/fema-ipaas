@@ -1,4 +1,4 @@
-import { Folder } from '@fema-ipaas/shared';
+import { Folder, WorkflowStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   ChevronDown,
@@ -65,7 +65,15 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
   const { mutate: removeFolder, isPending: isDeletingFolder } =
     projectWorkspaceHooks.useDeleteFolder();
   const { mutate: removeMany, isPending: isDeleting } =
-    projectWorkspaceHooks.useDeleteWorkflows();
+    projectWorkspaceHooks.useDeleteWorkflows({
+      onDeleted: (request) => {
+        const currentId =
+          location.pathname.match(/\/workflows\/([^/]+)/)?.[1] ?? null;
+        if (currentId && request.workflowIds.includes(currentId)) {
+          navigate(`/projects/${projectId}/home`, { replace: true });
+        }
+      },
+    });
 
   const rows = workspaceUtils.buildTreeRows({
     folders,
@@ -276,13 +284,13 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
             'group flex h-8 cursor-pointer items-center gap-1.5 rounded-md pr-1 text-sm hover:bg-muted',
             dropTarget === folder.id && 'bg-primary/10 ring-1 ring-primary',
           )}
-          onClick={() => {
-            if (query.trim().length === 0) {
+          onClick={(event) => {
+            if (isOwnClick(event) && query.trim().length === 0) {
               toggleFolder(folder.id);
             }
           }}
           onKeyDown={(event) => {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && event.target === event.currentTarget) {
               toggleFolder(folder.id);
             }
           }}
@@ -330,13 +338,18 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
           setDragId(null);
           setDropTarget(null);
         }}
-        onClick={() =>
-          batch
-            ? togglePick(workflow.id)
-            : navigate(`/projects/${projectId}/workflows/${workflow.id}`)
-        }
+        onClick={(event) => {
+          if (!isOwnClick(event)) {
+            return;
+          }
+          if (batch) {
+            togglePick(workflow.id);
+            return;
+          }
+          navigate(`/projects/${projectId}/workflows/${workflow.id}`);
+        }}
         onKeyDown={(event) => {
-          if (event.key === 'Enter') {
+          if (event.key === 'Enter' && event.target === event.currentTarget) {
             navigate(`/projects/${projectId}/workflows/${workflow.id}`);
           }
         }}
@@ -354,7 +367,22 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
             onCheckedChange={() => togglePick(workflow.id)}
           />
         )}
-        <WorkflowIcon className="size-4 shrink-0 text-muted-foreground" />
+        <span className="relative shrink-0">
+          <WorkflowIcon className="size-4 text-muted-foreground" />
+          <span
+            aria-label={
+              workflow.status === WorkflowStatus.ENABLED
+                ? t('Running')
+                : t('Stopped')
+            }
+            className={cn(
+              'absolute right-[-2px] top-[-2px] size-[7px] rounded-full ring-[1.5px] ring-background',
+              workflow.status === WorkflowStatus.ENABLED
+                ? 'bg-success'
+                : 'bg-muted-foreground/40',
+            )}
+          />
+        </span>
         <span className="min-w-0 flex-1 truncate" title={workflow.displayName}>
           {workflow.displayName}
         </span>
@@ -392,43 +420,53 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
             (workflows.length === 0 ? t('No workflows yet') : null)
           }
         >
-          <Button
-            type="button"
-            variant={batch ? 'secondary' : 'ghost'}
-            size="icon-xs"
-            aria-label={batch ? t('Exit batch mode') : t('Batch actions')}
-            disabled={!canEdit || workflows.length === 0}
-            onClick={() => {
-              if (batch) {
-                exitBatch();
-                return;
-              }
-              setBatch(true);
-              setPicked([]);
-              setCollapsed(new Set());
-            }}
+          <HintedButton
+            hint={batch ? t('Exit batch mode') : t('Batch actions')}
+            enabled={canEdit && workflows.length > 0}
           >
-            <ListChecks />
-          </Button>
+            <Button
+              type="button"
+              variant={batch ? 'secondary' : 'ghost'}
+              size="icon-xs"
+              aria-label={batch ? t('Exit batch mode') : t('Batch actions')}
+              disabled={!canEdit || workflows.length === 0}
+              onClick={() => {
+                if (batch) {
+                  exitBatch();
+                  return;
+                }
+                setBatch(true);
+                setPicked([]);
+                setCollapsed(new Set());
+              }}
+            >
+              <ListChecks />
+            </Button>
+          </HintedButton>
         </DisabledReason>
         {folders.length > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label={
-              allOpen ? t('Collapse all folders') : t('Expand all folders')
-            }
-            onClick={() =>
-              setCollapsed(
-                allOpen
-                  ? new Set(folders.map((folder) => folder.id))
-                  : new Set(),
-              )
-            }
+          <HintedButton
+            hint={allOpen ? t('Collapse all folders') : t('Expand all folders')}
+            enabled
           >
-            {allOpen ? <ChevronsDownUp /> : <ChevronsUpDown />}
-          </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={
+                allOpen ? t('Collapse all folders') : t('Expand all folders')
+              }
+              onClick={() =>
+                setCollapsed(
+                  allOpen
+                    ? new Set(folders.map((folder) => folder.id))
+                    : new Set(),
+                )
+              }
+            >
+              {allOpen ? <ChevronsDownUp /> : <ChevronsUpDown />}
+            </Button>
+          </HintedButton>
         )}
         {canEdit ? (
           <ActionMenu
@@ -469,7 +507,7 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
       {batch && (
         <div className="flex items-center gap-2 px-2 text-xs">
           <span className="flex-1">
-            {t('{count} selected', { count: livePicked.length })}
+            {t('{count} resources selected', { count: livePicked.length })}
           </span>
           <Button
             type="button"
@@ -540,7 +578,6 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
             <Button
               type="button"
               size="sm"
-              variant="outline"
               disabled={livePicked.length === 0 || !permissions.canPublish}
               onClick={() => setDialog({ kind: 'publish', ids: livePicked })}
             >
@@ -559,7 +596,7 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
               disabled={livePicked.length === 0 || folders.length === 0}
               onClick={() => setDialog({ kind: 'move', ids: livePicked })}
             >
-              {t('Move to')}
+              {t('Batch move')}
             </Button>
           </DisabledReason>
           <DisabledReason
@@ -693,6 +730,32 @@ export function WorkflowTree({ context }: { context: WorkspaceContext }) {
         />
       )}
     </div>
+  );
+}
+
+function HintedButton({
+  hint,
+  enabled,
+  children,
+}: {
+  hint: string;
+  enabled: boolean;
+  children: React.ReactNode;
+}) {
+  if (!enabled) {
+    return <>{children}</>;
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent>{hint}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function isOwnClick(event: React.MouseEvent<HTMLElement>) {
+  return (
+    event.target instanceof Node && event.currentTarget.contains(event.target)
   );
 }
 

@@ -4,6 +4,10 @@ import { Lock, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+  ConsolePage,
+  ConsoleTableFrame,
+} from '@/components/custom/console-page';
 import { SearchInput } from '@/components/custom/search-input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,9 +40,16 @@ export function AllProjectsPage() {
     primary: true,
   });
   const items = data ?? [];
-  const mineCount = items.filter((item) =>
-    projectDirectoryUtils.isMember(item),
-  ).length;
+  const mineCount = projectsListUtils.filter({
+    items,
+    tab: 'mine',
+    query,
+  }).length;
+  const allCount = projectsListUtils.filter({
+    items,
+    tab: 'all',
+    query,
+  }).length;
   const shown = projectsListUtils.filter({ items, tab, query });
 
   const open = (item: ProjectDirectoryItem, suffix = '') => {
@@ -57,21 +68,18 @@ export function AllProjectsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold">{t('All projects')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'A project is the smallest management unit; permissions and data are isolated between projects.',
-            )}
-          </p>
-        </div>
+    <ConsolePage
+      title={t('All projects')}
+      description={t(
+        'A project is the smallest management unit; permissions and data are isolated between projects.',
+      )}
+      actions={
         <Button type="button" onClick={() => setCreating(true)}>
           <Plus />
           {t('New Project')}
         </Button>
-      </header>
+      }
+    >
       <div className="flex flex-wrap items-center gap-3">
         <Tabs
           value={tab}
@@ -82,7 +90,7 @@ export function AllProjectsPage() {
               {t('My projects ({count})', { count: mineCount })}
             </TabsTrigger>
             <TabsTrigger value="all">
-              {t('All projects ({count})', { count: items.length })}
+              {t('All projects ({count})', { count: allCount })}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -94,7 +102,7 @@ export function AllProjectsPage() {
           />
         </div>
       </div>
-      <div className="rounded-lg border">
+      <ConsoleTableFrame className="rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -198,7 +206,10 @@ export function AllProjectsPage() {
             })}
             {!isLoading && shown.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="py-16 text-center text-muted-foreground"
+                >
                   {query.trim().length > 0
                     ? t('No matching projects')
                     : t('No projects yet')}
@@ -207,7 +218,7 @@ export function AllProjectsPage() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </ConsoleTableFrame>
       <span className="text-xs text-muted-foreground">
         {t('{count} projects in total', { count: shown.length })}
       </span>
@@ -221,6 +232,6 @@ export function AllProjectsPage() {
           )
         }
       />
-    </div>
+    </ConsolePage>
   );
 }

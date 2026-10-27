@@ -19,6 +19,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   CURSOR_QUERY_PARAM,
   LIMIT_QUERY_PARAM,
@@ -41,7 +42,6 @@ import {
   runLogUiUtils,
 } from '@/features/run-logs';
 import { DedupedEventsTable } from '@/features/trigger-runtime';
-import { cn } from '@/lib/utils';
 
 const RunsPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -168,17 +168,12 @@ const RunsPage = () => {
     });
 
   return (
-    <div className={cn('flex flex-col gap-4', isNil(presetProjectId) && 'p-6')}>
-      {isNil(presetProjectId) && (
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold">{t('Run logs')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Run records of every workflow in your projects. Find why a run failed and rerun it.',
-            )}
-          </p>
-        </header>
+    <ConsolePage
+      title={t('Run logs')}
+      description={t(
+        'Run records of every workflow in your projects. Find why a run failed and rerun it.',
       )}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Tabs
           value={dedupedView ? DEDUPED_VIEW : state.type}
@@ -300,7 +295,7 @@ const RunsPage = () => {
         }}
         onConfirm={(request) => rerun.mutate(request)}
       />
-    </div>
+    </ConsolePage>
   );
 };
 

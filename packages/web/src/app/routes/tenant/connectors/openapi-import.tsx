@@ -7,6 +7,7 @@ import { t } from 'i18next';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,14 +56,12 @@ export default function OpenApiImportPage() {
   });
 
   return (
-    <div className="flex w-full flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('Import from OpenAPI')}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t('Turn an internal API description into a connector package.')}
-        </p>
-      </div>
-
+    <ConsolePage
+      title={t('Import from OpenAPI')}
+      description={t(
+        'Turn an internal API description into a connector package.',
+      )}
+    >
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">
@@ -74,7 +73,7 @@ export default function OpenApiImportPage() {
             value={document}
             onChange={(event) => setDocument(event.target.value)}
             placeholder={t('Paste an OpenAPI 3 or Swagger 2 document in JSON')}
-            className="h-40 font-mono text-xs"
+            className="h-72 font-mono text-xs"
           />
           <div>
             <Button
@@ -223,7 +222,7 @@ export default function OpenApiImportPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </ConsolePage>
   );
 }
 

@@ -1,17 +1,10 @@
 import dayjs from 'dayjs';
 import { t } from 'i18next';
-import {
-  Activity,
-  Boxes,
-  Calendar,
-  HeartPulse,
-  LineChart,
-  Stethoscope,
-} from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   Select,
   SelectContent,
@@ -79,12 +72,11 @@ export default function SettingsHealthPage() {
   };
 
   return (
-    <div className="flex flex-col w-full max-w-[40rem] mx-auto gap-4 px-4">
-      <DashboardPageHeader
-        title={t('Health')}
-        description={t('Check the status of your tenant and its components')}
-      >
-        {(activeTab === 'runs' || activeTab === 'queue') && (
+    <ConsolePage
+      title={t('Health')}
+      description={t('Check the status of your tenant and its components')}
+      actions={
+        activeTab === 'runs' || activeTab === 'queue' ? (
           <Select value={selectedMonth} onValueChange={handleMonthChange}>
             <SelectTrigger className="w-auto gap-2 h-8">
               <Calendar className="h-4 w-4" />
@@ -98,35 +90,20 @@ export default function SettingsHealthPage() {
               ))}
             </SelectContent>
           </Select>
-        )}
-      </DashboardPageHeader>
-
+        ) : undefined
+      }
+    >
       <Tabs
         value={activeTab}
         onValueChange={(value) => setTab(value as TabValue)}
         className="w-full"
       >
-        <TabsList variant="outline" className="border-b w-full">
-          <TabsTrigger variant="outline" value="components">
-            <Boxes className="w-4 h-4 mr-2" />
-            {t('Components')}
-          </TabsTrigger>
-          <TabsTrigger variant="outline" value="system">
-            <HeartPulse className="w-4 h-4 mr-2" />
-            {t('System Health')}
-          </TabsTrigger>
-          <TabsTrigger variant="outline" value="runs">
-            <LineChart className="w-4 h-4 mr-2" />
-            {t('Runs Health')}
-          </TabsTrigger>
-          <TabsTrigger variant="outline" value="queue">
-            <Activity className="w-4 h-4 mr-2" />
-            {t('Queue Health')}
-          </TabsTrigger>
-          <TabsTrigger variant="outline" value="diagnostics">
-            <Stethoscope className="w-4 h-4 mr-2" />
-            {t('Diagnostics')}
-          </TabsTrigger>
+        <TabsList className="w-full overflow-x-auto">
+          <TabsTrigger value="components">{t('Components')}</TabsTrigger>
+          <TabsTrigger value="system">{t('System Health')}</TabsTrigger>
+          <TabsTrigger value="runs">{t('Runs Health')}</TabsTrigger>
+          <TabsTrigger value="queue">{t('Queue Health')}</TabsTrigger>
+          <TabsTrigger value="diagnostics">{t('Diagnostics')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="components">
@@ -149,6 +126,6 @@ export default function SettingsHealthPage() {
           <DiagnosticsTab enabled={activeTab === 'diagnostics'} />
         </TabsContent>
       </Tabs>
-    </div>
+    </ConsolePage>
   );
 }

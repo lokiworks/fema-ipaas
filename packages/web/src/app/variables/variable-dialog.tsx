@@ -171,7 +171,7 @@ function VariableForm(props: VariableFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Name')}</FormLabel>
+              <FormLabel showRequiredIndicator>{t('Name')}</FormLabel>
               <FormControl>
                 <Input
                   {...field}

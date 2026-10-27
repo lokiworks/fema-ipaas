@@ -2,7 +2,6 @@ import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
   Execution,
   FlagId,
-  PopulatedWorkflow,
   WorkflowVersion,
   WorkflowVersionState,
 } from '@fema-ipaas/shared';
@@ -21,6 +20,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { projectWorkspaceHooks } from '@/features/project-workspace/hooks/project-workspace-hooks';
 import { projectCollectionUtils } from '@/features/projects';
 import {
   DeployToTestDialog,
@@ -34,6 +34,7 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { DiscardChangesDialog } from './discard-changes-dialog';
+import { PublishDialog } from './publish-dialog';
 import { usePublishGuard } from './publish-guard';
 import { useDraftChanged } from './use-draft-changed';
 
@@ -86,15 +87,35 @@ function SingleEnvironmentPublishSection() {
     run,
     isSaving,
   });
-  const { mutateAsync: publish } = workflowHooks.useChangeWorkflowStatus({
-    workflowId: workflow.id,
-    change: 'publish',
-    onSuccess: (updatedWorkflow: PopulatedWorkflow) => {
-      setWorkflow(updatedWorkflow);
-      setVersion(updatedWorkflow.version);
-    },
-    setIsPublishing,
-  });
+  const { mutate: publishBatch } = projectWorkspaceHooks.useBatchPublish();
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
+  const publish = (description: string | undefined) => {
+    setIsPublishing(true);
+    publishBatch(
+      {
+        projectId: workflow.projectId,
+        workflowIds: [workflow.id],
+        description,
+      },
+      {
+        onSuccess: async (response) => {
+          const failure = response.items.find((item) => !item.success);
+          if (!isNil(failure)) {
+            setIsPublishing(false);
+            toast.error(t(failure.error ?? 'Publish failed'));
+            return;
+          }
+          const updatedWorkflow = await workflowsApi.get(workflow.id);
+          setWorkflow(updatedWorkflow);
+          setVersion(updatedWorkflow.version);
+          setIsPublishing(false);
+          setPublishDialogOpen(false);
+          toast.success(t('Published. The workflow is now running.'));
+        },
+        onError: () => setIsPublishing(false),
+      },
+    );
+  };
   const { mutateAsync: overWriteDraftWithVersion } =
     workflowHooks.useOverWriteDraftWithVersion({
       onSuccess: (updatedWorkflow) => {
@@ -181,7 +202,7 @@ function SingleEnvironmentPublishSection() {
               variant="default"
               loading={isSaving}
               name="Publish"
-              onClick={() => guard.run(() => publish())}
+              onClick={() => guard.run(() => setPublishDialogOpen(true))}
               disabled={
                 !isValid ||
                 isBusy ||
@@ -208,6 +229,12 @@ function SingleEnvironmentPublishSection() {
         )}
       </Tooltip>
       {guard.dialog}
+      <PublishDialog
+        open={publishDialogOpen}
+        onOpenChange={setPublishDialogOpen}
+        isPublishing={isPublishing}
+        onConfirm={publish}
+      />
     </div>
   );
 }

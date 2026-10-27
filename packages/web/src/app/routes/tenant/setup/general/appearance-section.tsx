@@ -362,7 +362,7 @@ export const AppearanceSection = () => {
                 {form.formState.errors.root.serverError.message}
               </FormMessage>
             )}
-            <div className="flex gap-2 justify-end mt-4">
+            <div className="mt-4 flex max-w-[600px] justify-end gap-2">
               <Button
                 type="submit"
                 loading={isPending}
@@ -420,11 +420,15 @@ function LoginPreview({
   return (
     <div className="grid grid-cols-2 overflow-hidden rounded-lg border text-xs">
       <div className="flex flex-col gap-3 bg-muted p-4">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-col items-start gap-1.5">
           {logoUrl && (
-            <img src={logoUrl} alt="" className="size-6 object-contain" />
+            <img
+              src={logoUrl}
+              alt=""
+              className="h-8 max-w-full object-contain object-left"
+            />
           )}
-          <span className="font-medium">{name}</span>
+          <span className="break-words font-medium">{name}</span>
         </div>
         {welcomeText.trim().length > 0 && (
           <span className="text-sm">{welcomeText}</span>

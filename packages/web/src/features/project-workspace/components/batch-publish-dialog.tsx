@@ -24,6 +24,8 @@ import { cn } from '@/lib/utils';
 import { projectWorkspaceApi } from '../api/project-workspace-api';
 import { projectWorkspaceHooks } from '../hooks/project-workspace-hooks';
 
+import { CharacterCounter } from './character-counter';
+
 export function BatchPublishDialog({
   open,
   onOpenChange,
@@ -198,18 +200,21 @@ function BatchPublishBody({
               <span className="text-sm font-medium">
                 {t('Publish description')}
               </span>
-              <Textarea
-                rows={3}
-                value={description}
-                maxLength={PUBLISH_DESCRIPTION_MAX_LENGTH}
-                placeholder={t(
-                  'Describe what changed so the team can trace it later',
-                )}
-                onChange={(event) => setDescription(event.target.value)}
-              />
-              <span className="text-xs text-muted-foreground">
-                {description.length}/{PUBLISH_DESCRIPTION_MAX_LENGTH}
-              </span>
+              <CharacterCounter
+                multiline
+                length={description.length}
+                max={PUBLISH_DESCRIPTION_MAX_LENGTH}
+              >
+                <Textarea
+                  rows={3}
+                  value={description}
+                  maxLength={PUBLISH_DESCRIPTION_MAX_LENGTH}
+                  placeholder={t(
+                    'Describe what changed so the team can trace it later',
+                  )}
+                  onChange={(event) => setDescription(event.target.value)}
+                />
+              </CharacterCounter>
             </div>
           </>
         )}

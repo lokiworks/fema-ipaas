@@ -8,7 +8,7 @@ import {
 } from '@fema-ipaas/shared';
 import { Handle, NodeProps, Position } from '@xyflow/react';
 import { t } from 'i18next';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { ConnectorSelector } from '@/app/builder/connectors-selector';
@@ -67,11 +67,6 @@ const StepCanvasNode = React.memo(
     const { stepMetadata } = stepsHooks.useStepMetadata({
       step,
     });
-    const stepIndex = useMemo(
-      () =>
-        workflowStructureUtil.getStepNumber(workflowVersion.trigger, step.name),
-      [step, workflowVersion],
-    );
     const isTrigger = workflowStructureUtil.isTrigger(step.type);
     const isSkipped = workflowCanvasUtils.isSkipped(
       step.name,
@@ -161,15 +156,14 @@ const StepCanvasNode = React.memo(
             : undefined
         }
         className={cn(
-          'transition-all border-box rounded-md border border-solid border-border relative overflow-visible  group',
+          'transition-all border-box rounded-md relative overflow-visible group',
           {
-            'border-primary': isSelected,
-            'bg-background': !isDragging,
-            'border-none': isDragging,
+            'border border-solid border-border': isHorizontal && !isDragging,
+            'border-primary': isHorizontal && isSelected,
+            'bg-background': isHorizontal && !isDragging,
             'shadow-none': isDragging,
-            'bg-accent': isSkipped,
-            'rounded-tl-none': isTrigger && !isHorizontal,
-            'hover:border-ring': !isSelected,
+            'bg-accent': isHorizontal && isSkipped,
+            'hover:border-ring': isHorizontal && !isSelected,
             'ring-2 ring-primary/60 ring-offset-2':
               isHighlighted || referenceState === 'allowed',
             'opacity-40': referenceState === 'blocked',
@@ -193,17 +187,13 @@ const StepCanvasNode = React.memo(
         {...stepNodeDivAttributes}
         {...stepNodeDivListeners}
       >
-        {isTrigger && <TriggerWidget isSelected={isSelected} />}
+        {isTrigger && isHorizontal && <TriggerWidget isSelected={isSelected} />}
         <LoopIterationInput stepName={step.name} />
         <StepNodeStatusInRun stepName={step.name} />
         <StepNodeSkippedStatus stepName={step.name} />
         <StepNodeStatusInDraft stepName={step.name} />
         <StepNodeCollapseToggle step={step} />
-        <div
-          className={cn('h-full w-full', {
-            'px-3 overflow-hidden': !isHorizontal,
-          })}
-        >
+        <div className="h-full w-full">
           {!isDragging && (
             <ConnectorSelector
               operation={{
@@ -227,28 +217,36 @@ const StepCanvasNode = React.memo(
                 </div>
               ) : (
                 <div
-                  className="flex items-center justify-center h-full w-full gap-[10px]"
+                  className="relative h-full w-full"
                   onClick={(e) => handleStepClick(e)}
                 >
-                  <StepNodeLogo
-                    isSkipped={isSkipped}
-                    logoUrl={stepMetadata?.logoUrl ?? ''}
-                    displayName={stepMetadata?.displayName ?? ''}
-                  />
-                  <StepNodeDisplayName
-                    stepDisplayName={
-                      step.type === WorkflowTriggerType.EMPTY
-                        ? t('Select Trigger')
-                        : step.displayName
-                    }
-                    stepIndex={stepIndex}
-                    isSkipped={isSkipped}
-                    connectorDisplayName={stepMetadata?.displayName ?? ''}
-                    stepName={step.name}
-                  />
-                  {!readonly && (
-                    <StepNodeChevron onClickOverride={chevronClickOverride} />
-                  )}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <StepNodeLogo
+                      isSkipped={isSkipped}
+                      isSelected={isSelected}
+                      logoUrl={stepMetadata?.logoUrl ?? ''}
+                      displayName={stepMetadata?.displayName ?? ''}
+                    />
+                  </div>
+                  <div className="absolute left-[calc(50%+34px)] top-1/2 flex w-[190px] -translate-y-1/2 items-center gap-0.5">
+                    <StepNodeDisplayName
+                      stepDisplayName={
+                        step.type === WorkflowTriggerType.EMPTY
+                          ? t('Select Trigger')
+                          : step.displayName
+                      }
+                      isSkipped={isSkipped}
+                      connectorDisplayName={stepMetadata?.displayName ?? ''}
+                      stepName={step.name}
+                    />
+                    {!readonly && (
+                      <div className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                        <StepNodeChevron
+                          onClickOverride={chevronClickOverride}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </ConnectorSelector>
@@ -267,7 +265,6 @@ const StepCanvasNode = React.memo(
                       ? t('Select Trigger')
                       : step.displayName
                   }
-                  stepIndex={stepIndex}
                   isSkipped={isSkipped}
                   connectorDisplayName={stepMetadata?.displayName ?? ''}
                   stepName={step.name}

@@ -4,6 +4,8 @@ import {
   WorkflowActionType,
   WorkflowOperationType,
   Execution,
+  RunEnvironment,
+  StepOutputStatus,
   workflowOperations,
   workflowStructureUtil,
   WorkflowVersion,
@@ -29,6 +31,7 @@ export type UpdateSampleDataParams = {
 
 export type RunState = {
   run: Execution | null;
+  debugTestedSteps: Record<string, string>;
   setRun: (run: Execution, workflowVersion: WorkflowVersion) => void;
   clearRun: (userHasPermissionToEditWorkflow: boolean) => void;
   loopsIndexes: Record<string, number>;
@@ -74,6 +77,7 @@ export const createRunState = (
   return {
     revertSampleDataLocallyCallbacks: {},
     run: initialState.run,
+    debugTestedSteps: {},
     loopsIndexes:
       initialState.run && initialState.run.steps
         ? executionUtils.pinLoopsToIterationsWithFailedStep(
@@ -96,6 +100,10 @@ export const createRunState = (
         return {
           loopsIndexes,
           run,
+          debugTestedSteps: {
+            ...state.debugTestedSteps,
+            ...debugTestedStepsOf(run),
+          },
           workflowVersion,
           readonly: true,
           userManuallySelectedStepDuringRun: isNewRun
@@ -434,3 +442,19 @@ export const createRunState = (
     },
   };
 };
+
+function debugTestedStepsOf(run: Execution): Record<string, string> {
+  if (
+    run.environment !== RunEnvironment.TESTING ||
+    isNil(run.finishTime) ||
+    isNil(run.steps)
+  ) {
+    return {};
+  }
+  const testedAt = run.finishTime;
+  return Object.fromEntries(
+    Object.entries(run.steps)
+      .filter(([, output]) => output.status === StepOutputStatus.SUCCEEDED)
+      .map(([stepName]) => [stepName, testedAt]),
+  );
+}

@@ -59,7 +59,7 @@ export function HomeAiBox({
         <MessageTooltip isDisabled={disabled} message={disabledReason ?? ''}>
           <Button disabled={disabled} onClick={submit}>
             <Sparkles className="size-4" />
-            {trimmed ? t('Start planning') : t('Create with AI')}
+            {t('Create with AI')}
           </Button>
         </MessageTooltip>
       </div>

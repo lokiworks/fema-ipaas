@@ -17,7 +17,7 @@ import { useMemo, useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -62,7 +62,7 @@ export function PrivacyPage() {
     showErrorDialog: true,
   });
   return (
-    <CenteredPage
+    <ConsolePage
       title={t('Data and privacy')}
       description={t(
         'How long run data is kept, what is recorded, and which fields are masked in logs.',
@@ -77,7 +77,7 @@ export function PrivacyPage() {
           <DataErasureSection />
         </div>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

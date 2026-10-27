@@ -3,7 +3,6 @@ import React from 'react';
 
 import IncompleteSettingsButton from '@/app/builder/workflow-canvas/widgets/incomplete-settings-widget';
 import { TestWorkflowWidget } from '@/app/builder/workflow-canvas/widgets/test-workflow-widget';
-import WorkflowEndWidget from '@/app/builder/workflow-canvas/widgets/workflow-end-widget';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
@@ -48,29 +47,6 @@ const AboveWorkflowWidgets = React.memo(() => {
   );
 });
 AboveWorkflowWidgets.displayName = 'AboveWorkflowWidgets';
-const BelowWorkflowWidget = React.memo(() => {
-  return (
-    <ViewportPortal>
-      <WidgetWrapper>
-        <div
-          style={{
-            pointerEvents: 'auto',
-          }}
-        >
-          <div
-            className="flex items-center justify-center gap-2"
-            style={{
-              width: workflowCanvasConsts.FEMA_NODE_SIZE.STEP.width + 'px',
-            }}
-          >
-            <WorkflowEndWidget></WorkflowEndWidget>
-          </div>
-        </div>
-      </WidgetWrapper>
-    </ViewportPortal>
-  );
-});
-
 const WidgetWrapper = ({ children }: { children: React.ReactNode }) => {
   const canvasOrientation = useBuilderStateContext(
     (state) => state.canvasOrientation,
@@ -88,5 +64,4 @@ const WidgetWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-BelowWorkflowWidget.displayName = 'BelowWorkflowWidget';
-export { AboveWorkflowWidgets, BelowWorkflowWidget };
+export { AboveWorkflowWidgets };

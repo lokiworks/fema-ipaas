@@ -152,8 +152,10 @@ function emptyCopy({
       };
     case TemplateCenterTab.RECOMMENDED:
       return {
-        title: t('No templates in this category yet'),
-        description: null,
+        title: t('The template center has no templates yet'),
+        description: t(
+          'Open the "···" menu of a published workflow and choose "Generate template" to create the first template.',
+        ),
       };
   }
 }

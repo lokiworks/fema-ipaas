@@ -38,6 +38,8 @@ import { cn } from '@/lib/utils';
 import { projectWorkspaceHooks } from '../hooks/project-workspace-hooks';
 import { workspaceUtils } from '../lib/workspace-utils';
 
+import { CharacterCounter } from './character-counter';
+
 export function ProjectInfoDialog({
   open,
   onOpenChange,
@@ -157,18 +159,17 @@ function ProjectInfoForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel showRequiredIndicator>{t('Project Name')}</FormLabel>
-              <div className="relative">
+              <CharacterCounter
+                length={field.value.length}
+                max={PROJECT_NAME_MAX_LENGTH}
+              >
                 <Input
                   {...field}
                   autoFocus
                   maxLength={PROJECT_NAME_MAX_LENGTH}
-                  className="pr-16"
                   placeholder={t('For example: HR onboarding')}
                 />
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                  {field.value.length}/{PROJECT_NAME_MAX_LENGTH}
-                </span>
-              </div>
+              </CharacterCounter>
               {duplicate && (
                 <p className="text-sm text-destructive">
                   {t('projectNameTaken')}
@@ -216,16 +217,19 @@ function ProjectInfoForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('Description')}</FormLabel>
-              <Textarea
-                {...field}
-                value={field.value ?? ''}
-                rows={3}
-                maxLength={PROJECT_DESCRIPTION_MAX_LENGTH}
-                placeholder={t('What this project is for')}
-              />
-              <p className="text-xs text-muted-foreground">
-                {description.length}/{PROJECT_DESCRIPTION_MAX_LENGTH}
-              </p>
+              <CharacterCounter
+                multiline
+                length={description.length}
+                max={PROJECT_DESCRIPTION_MAX_LENGTH}
+              >
+                <Textarea
+                  {...field}
+                  value={field.value ?? ''}
+                  rows={3}
+                  maxLength={PROJECT_DESCRIPTION_MAX_LENGTH}
+                  placeholder={t('What this project is for')}
+                />
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}
@@ -248,7 +252,7 @@ function ProjectInfoForm({
             loading={isCreating || isSaving}
             disabled={duplicate}
           >
-            {project === null ? t('Create Project') : t('Save')}
+            {project === null ? t('Create') : t('Save')}
           </Button>
         </DialogFooter>
       </form>

@@ -1,4 +1,12 @@
-import { PackageIcon, TerminalIcon } from 'lucide-react';
+import {
+  ActivityIcon,
+  Link2Icon,
+  PackageIcon,
+  ScrollTextIcon,
+  ServerCogIcon,
+  SirenIcon,
+  TerminalIcon,
+} from 'lucide-react';
 import { type ComponentType } from 'react';
 
 import { CompassIcon } from '@/components/icons/compass';
@@ -15,7 +23,6 @@ import { ShieldIcon } from '@/components/icons/shield';
 import { SquareDashedBottomCodeIcon } from '@/components/icons/square-dashed-bottom-code';
 import { UnplugIcon } from '@/components/icons/unplug';
 import { UsersIcon } from '@/components/icons/users';
-import { WorkflowIcon } from '@/components/icons/workflow';
 
 export type StaticPage = {
   id: string;
@@ -23,18 +30,45 @@ export type StaticPage = {
   href: string;
   icon: ComponentType<{ className?: string; size?: number }>;
   requiresTenantAdmin?: boolean;
+  projectScoped?: boolean;
 };
 
 export const STATIC_PAGES: StaticPage[] = [
   {
-    id: 'page-automations',
-    label: 'Automations',
-    href: '/automations',
-    icon: WorkflowIcon,
+    id: 'page-logs',
+    label: 'Run logs',
+    href: '/logs',
+    icon: ScrollTextIcon,
+  },
+  {
+    id: 'page-issues',
+    label: 'Issues',
+    href: '/issue-center',
+    icon: SirenIcon,
+  },
+  {
+    id: 'page-connections',
+    label: 'Connections',
+    href: '/connections',
+    icon: Link2Icon,
+    projectScoped: true,
+  },
+  {
+    id: 'page-monitor',
+    label: 'Run monitor',
+    href: '/monitor',
+    icon: ActivityIcon,
+  },
+  {
+    id: 'page-mcp-services',
+    label: 'MCP services',
+    href: '/mcp-services',
+    icon: ServerCogIcon,
+    projectScoped: true,
   },
   {
     id: 'page-explore',
-    label: 'Explore Templates',
+    label: 'Template center',
     href: '/templates',
     icon: CompassIcon,
   },
@@ -44,7 +78,6 @@ export const STATIC_PAGES: StaticPage[] = [
     href: '/solutions',
     icon: PackageIcon,
   },
-  // Tenant Admin pages
   {
     id: 'page-tenant-projects',
     label: 'Tenant Admin — Projects',

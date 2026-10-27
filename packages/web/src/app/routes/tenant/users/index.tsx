@@ -7,7 +7,7 @@ import { t } from 'i18next';
 import { MoreHorizontal, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { SearchInput } from '@/components/custom/search-input';
@@ -101,8 +101,7 @@ export default function UsersPage() {
     );
 
   return (
-    <CenteredPage
-      widthClassName="max-w-[64rem]"
+    <ConsolePage
       title={t('Users')}
       description={t(
         'Assign module permissions to members. Business integration is granted to everyone and cannot be removed.',
@@ -196,7 +195,7 @@ export default function UsersPage() {
       {isLoading ? (
         <Skeleton className="h-64 w-full" />
       ) : (
-        <Table>
+        <Table className="min-w-[52rem]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
@@ -325,7 +324,7 @@ export default function UsersPage() {
         members={members}
         onOpenChange={(open) => !open && setDialog(null)}
       />
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

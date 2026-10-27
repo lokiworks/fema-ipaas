@@ -6,13 +6,11 @@ import { StepNodeRunDurationAndConnectorName } from './step-node-run-duration-an
 
 const StepNodeDisplayName = ({
   stepDisplayName,
-  stepIndex,
   isSkipped,
   connectorDisplayName,
   stepName,
 }: {
   stepDisplayName: string;
-  stepIndex: number;
   isSkipped: boolean;
   connectorDisplayName: string;
   stepName: string;
@@ -23,25 +21,25 @@ const StepNodeDisplayName = ({
   const isHorizontal = canvasOrientation === 'horizontal';
   return (
     <div
-      className={cn('grow flex flex-col justify-center min-w-0 w-full', {
+      className={cn('flex flex-col justify-center min-w-0', {
         'items-start': !isHorizontal,
-        'items-center': isHorizontal,
+        'grow w-full items-center': isHorizontal,
       })}
     >
       <div
-        className={cn('flex items-center min-w-0 w-full', {
+        className={cn('flex items-center min-w-0 max-w-full', {
           'justify-between': !isHorizontal,
-          'justify-center': isHorizontal,
+          'w-full justify-center': isHorizontal,
         })}
       >
         <TextWithTooltip tooltipMessage={stepDisplayName} key={stepDisplayName}>
           <div
-            className={cn('text-sm truncate grow shrink ', {
+            className={cn('text-sm font-medium truncate grow shrink', {
               'text-accent-foreground/70': isSkipped,
               'text-center': isHorizontal,
             })}
           >
-            {stepIndex}. {stepDisplayName}
+            {stepDisplayName}
           </div>
         </TextWithTooltip>
       </div>

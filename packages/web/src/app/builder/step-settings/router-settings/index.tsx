@@ -15,6 +15,8 @@ import { Split } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
+import { defaultStepNames } from '@/features/workflows/utils/default-step-names';
+
 import { FormField, FormItem } from '../../../../components/ui/form';
 import { Label } from '../../../../components/ui/label';
 import {
@@ -110,13 +112,17 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
           if (operation.type === WorkflowOperationType.DUPLICATE_BRANCH) {
             insert(operation.request.branchIndex + 1, {
               ...branch,
-              branchName: `${branch.branchName} Copy`,
+              branchName: `${
+                branch.branchName
+              } ${defaultStepNames.copySuffix()}`,
             });
           } else {
             insert(
               updatedStep.settings.branches.length - 1,
               workflowStructureUtil.createBranch(
-                `Branch ${updatedStep.settings.branches.length}`,
+                defaultStepNames.branchName({
+                  index: updatedStep.settings.branches.length,
+                }),
                 undefined,
               ),
             );
@@ -227,6 +233,7 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
                 request: {
                   stepName: step.name,
                   branchIndex: index,
+                  copySuffix: defaultStepNames.copySuffix(),
                 },
               });
               setSelectedBranchIndex(index + 1);
@@ -257,7 +264,9 @@ export const RouterSettings = memo(({ readonly }: { readonly: boolean }) => {
                     request: {
                       stepName: step.name,
                       branchIndex: step.settings.branches.length - 1,
-                      branchName: `Branch ${step.settings.branches.length}`,
+                      branchName: defaultStepNames.branchName({
+                        index: step.settings.branches.length,
+                      }),
                     },
                   });
 

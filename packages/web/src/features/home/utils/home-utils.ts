@@ -3,6 +3,7 @@ import {
   ExecutionStatus,
   FAILED_STATES,
   HOME_HOURS_PER_DAY,
+  HomeFailedRun,
   ProjectDirectoryItem,
 } from '@fema-ipaas/shared';
 
@@ -160,6 +161,32 @@ function nextBatch({
   );
 }
 
+function groupFailedRuns({
+  runs,
+}: {
+  runs: HomeFailedRun[];
+}): GroupedFailedRun[] {
+  return runs.reduce<GroupedFailedRun[]>((groups, run) => {
+    const timedOut = run.status === ExecutionStatus.TIMEOUT;
+    const existing = groups.find(
+      (group) =>
+        group.latest.workflowId === run.workflowId &&
+        group.timedOut === timedOut,
+    );
+    if (!existing) {
+      return [...groups, { latest: run, count: 1, timedOut }];
+    }
+    const latest =
+      new Date(run.created).getTime() >
+      new Date(existing.latest.created).getTime()
+        ? run
+        : existing.latest;
+    return groups.map((group) =>
+      group === existing ? { latest, count: group.count + 1, timedOut } : group,
+    );
+  }, []);
+}
+
 const MS_PER_HOUR = 60 * 60 * 1000;
 const HOME_FAILED_STATUSES: ExecutionStatus[] = [
   ...FAILED_STATES,
@@ -179,8 +206,15 @@ export const homeUtils = {
   roleLabelKey,
   pickTargetProject,
   nextBatch,
+  groupFailedRuns,
 };
 
 export const HOME_RECENT_LIMIT = 6;
 export const HOME_TEMPLATE_BATCH_SIZE = 4;
 export const HOME_AI_PROMPT_MAX_LENGTH = 500;
+
+export type GroupedFailedRun = {
+  latest: HomeFailedRun;
+  count: number;
+  timedOut: boolean;
+};

@@ -72,5 +72,6 @@
   "Return every updated row in the output. Leave off when the update can match a large number of rows — the row count is always returned.": "在输出中返回每一行更新后的数据。当更新可能匹配大量行时请关闭——行数始终都会返回。",
   "Rows whose search column equals this value are deleted.": "匹配列等于该值的行会被删除。",
   "Return every deleted row in the output. Leave off when the delete can match a large number of rows — the row count is always returned.": "在输出中返回每一行被删除的数据。当删除可能匹配大量行时请关闭——行数始终都会返回。",
-  "Postgres": "Postgres"
+  "Postgres": "Postgres",
+  "Connection": "连接"
 }

@@ -1,5 +1,6 @@
 import { t } from 'i18next';
 import { Check } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { WIZARD_STEPS, WizardStep } from '@/features/solutions';
@@ -45,6 +46,8 @@ function WizardFooter({
   nextType = 'button',
   hint,
 }: WizardFooterProps) {
+  const navigate = useNavigate();
+  const { id = '' } = useParams();
   return (
     <div className="flex items-center gap-3 border-t pt-4">
       {onBack && (
@@ -54,6 +57,13 @@ function WizardFooter({
       )}
       <div className="grow" />
       {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => navigate(`/solutions/${id}`)}
+      >
+        {t('Cancel')}
+      </Button>
       <Button
         type={nextType}
         disabled={nextDisabled}

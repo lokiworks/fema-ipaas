@@ -32,15 +32,16 @@ export function HomeTemplates({ projectId }: { projectId: string | null }) {
       title={t('Start from a template')}
       action={
         <div className="flex items-center gap-2">
-          <Button
-            size="xs"
-            variant="ghost"
-            disabled={templates.length <= HOME_TEMPLATE_BATCH_SIZE}
-            onClick={() => setBatch(batch + 1)}
-          >
-            <RefreshCw className="size-3" />
-            {t('Show others')}
-          </Button>
+          {templates.length > HOME_TEMPLATE_BATCH_SIZE && (
+            <Button
+              size="xs"
+              variant="ghost"
+              onClick={() => setBatch(batch + 1)}
+            >
+              <RefreshCw className="size-3" />
+              {t('Show others')}
+            </Button>
+          )}
           <Link
             to="/templates"
             className="text-xs text-primary hover:underline"

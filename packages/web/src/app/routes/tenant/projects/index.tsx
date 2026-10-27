@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   DataTable,
   RowDataWithActions,
@@ -306,11 +306,10 @@ export default function ProjectsPage() {
   ];
 
   return (
-    <div className="flex flex-col w-full">
-      <DashboardPageHeader
-        title={t('Projects')}
-        description={t('Manage your automation projects')}
-      />
+    <ConsolePage
+      title={t('Projects')}
+      description={t('Manage your automation projects')}
+    >
       <div className="mb-4">
         <SetupChecklistCard />
       </div>
@@ -367,7 +366,7 @@ export default function ProjectsPage() {
         initialValues={editDialogInitialValues}
         projectId={editDialogProjectId}
       />
-    </div>
+    </ConsolePage>
   );
 }
 

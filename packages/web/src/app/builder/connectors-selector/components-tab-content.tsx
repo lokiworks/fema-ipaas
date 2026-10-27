@@ -6,7 +6,11 @@ import { WorkflowActionType, WorkflowOperationType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
-import { componentLogoUrl, componentsHooks } from '@/features/components';
+import {
+  componentLogoUrl,
+  componentsHooks,
+  TranslatedComponentMetadata,
+} from '@/features/components';
 import {
   ConnectorSelectorTabType,
   useConnectorSelectorTabs,
@@ -26,11 +30,11 @@ const CATEGORY_ORDER: FlowComponentCategory[] = [
   FlowComponentCategory.HUMAN,
 ];
 
-const CATEGORY_TITLES: Record<FlowComponentCategory, string> = {
-  [FlowComponentCategory.CONTROL]: t('Control'),
-  [FlowComponentCategory.DATA]: t('Data'),
-  [FlowComponentCategory.RUNTIME]: t('Runtime'),
-  [FlowComponentCategory.HUMAN]: t('Human'),
+const CATEGORY_TITLES: Record<FlowComponentCategory, () => string> = {
+  [FlowComponentCategory.CONTROL]: () => t('component: Control'),
+  [FlowComponentCategory.DATA]: () => t('component: Data'),
+  [FlowComponentCategory.RUNTIME]: () => t('component: Runtime'),
+  [FlowComponentCategory.HUMAN]: () => t('component: Human'),
 };
 
 const ComponentsTabContent = ({
@@ -46,8 +50,10 @@ const ComponentsTabContent = ({
   ]);
   const { data: components, isLoading } = componentsHooks.useComponents();
 
+  const isSearching =
+    selectedTab === ConnectorSelectorTabType.NONE && searchQuery.trim() !== '';
   if (
-    selectedTab !== ConnectorSelectorTabType.COMPONENTS ||
+    (selectedTab !== ConnectorSelectorTabType.COMPONENTS && !isSearching) ||
     ![
       WorkflowOperationType.ADD_ACTION,
       WorkflowOperationType.UPDATE_ACTION,
@@ -69,42 +75,48 @@ const ComponentsTabContent = ({
   );
 
   if (matching.length === 0) {
-    return <NoResultsFound />;
+    return isSearching ? null : <NoResultsFound />;
   }
 
-  return (
-    <CardList listClassName="gap-0 w-full">
-      {CATEGORY_ORDER.filter((category) =>
-        matching.some((component) => component.category === category),
-      ).map((category) => (
-        <div key={category}>
-          <div className="px-3 pt-3 pb-1 text-xs font-medium text-muted-foreground">
-            {CATEGORY_TITLES[category]}
-          </div>
-          {matching
-            .filter((component) => component.category === category)
-            .map((component) => {
-              const metadata = toStepMetadata(component);
-              return (
-                <GenericActionOrTriggerItem
-                  key={component.type}
-                  item={metadata}
-                  hideConnectorIconAndDescription={false}
-                  stepMetadataWithSuggestions={metadata}
-                  onClick={() => {
-                    handleAddingOrUpdatingStep({
-                      connectorSelectorItem: metadata,
-                      operation,
-                      selectStepAfter: true,
-                    });
-                  }}
-                />
-              );
-            })}
-        </div>
-      ))}
-    </CardList>
-  );
+  const categoryList = CATEGORY_ORDER.filter((category) =>
+    matching.some((component) => component.category === category),
+  ).map((category) => (
+    <div key={category}>
+      <div className="px-3 pt-3 pb-1 text-xs font-medium text-muted-foreground">
+        {CATEGORY_TITLES[category]()}
+      </div>
+      {matching
+        .filter((component) => component.category === category)
+        .map((component) => {
+          const metadata = toStepMetadata(component);
+          return (
+            <GenericActionOrTriggerItem
+              key={component.type}
+              item={metadata}
+              hideConnectorIconAndDescription={false}
+              stepMetadataWithSuggestions={metadata}
+              onClick={() => {
+                handleAddingOrUpdatingStep({
+                  connectorSelectorItem: metadata,
+                  operation,
+                  selectStepAfter: true,
+                });
+              }}
+            />
+          );
+        })}
+    </div>
+  ));
+
+  if (isSearching) {
+    return (
+      <div className="max-h-60 shrink-0 overflow-y-auto border-b pb-2">
+        {categoryList}
+      </div>
+    );
+  }
+
+  return <CardList listClassName="gap-0 w-full">{categoryList}</CardList>;
 };
 
 function toStepMetadata(
@@ -123,7 +135,7 @@ function toStepMetadata(
 }
 
 function matchesSearch(
-  component: FlowComponentMetadata,
+  component: TranslatedComponentMetadata,
   searchQuery: string,
 ): boolean {
   if (searchQuery.trim() === '') {
@@ -132,7 +144,8 @@ function matchesSearch(
   const needle = searchQuery.trim().toLowerCase();
   return (
     component.displayName.toLowerCase().includes(needle) ||
-    component.description.toLowerCase().includes(needle)
+    component.description.toLowerCase().includes(needle) ||
+    component.originalText.toLowerCase().includes(needle)
   );
 }
 

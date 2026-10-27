@@ -28,7 +28,7 @@ export function ToolRail({ active, onSelect, badges }: ToolRailProps) {
   return (
     <div
       data-tour="builder-tool-rail"
-      className="flex h-full w-11 shrink-0 flex-col items-center gap-1 border-r bg-background py-2"
+      className="pointer-events-auto flex w-10 shrink-0 flex-col items-center gap-1 rounded-lg border bg-background py-1.5 shadow-sm"
     >
       {visibleTools.map((tool) => {
         const isActive = active === tool.type;

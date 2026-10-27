@@ -23,7 +23,6 @@ import { flagsHooks } from '@/hooks/flags-hooks';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
-import { EditWorkflowOrViewDraftButton } from '../../builder-header/workflow-status/view-draft-or-edit-workflow-button';
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
 
@@ -103,53 +102,50 @@ const RunInfoWidget = () => {
       )}
       key={run.id + run.status}
     >
-      <div className="flex items-center justify-between w-full flex-wrap">
-        <div className="flex min-w-0 flex-wrap items-center text-sm">
-          <Icon className="size-5 mr-2" />
-          <span className="text-foreground dark:text-foreground font-medium">
-            {getStatusText({
-              status: run.status,
-              timeout: timeoutSeconds ?? -1,
-              memoryLimit: memoryLimit ?? -1,
-              logSizeLimit: logSizeLimit ?? -1,
-            })}
-          </span>
-
-          <div className="shrink-0 text-foreground dark:text-foreground">
-            {isRunTerminal && (
-              <>
-                &nbsp;-&nbsp;
-                {run.startTime && (
-                  <DateSection
-                    text={t('Started')}
-                    dateOrDuration={formatUtils.formatDateWithTime(
-                      new Date(run.startTime),
-                      true,
-                    )}
-                  />
-                )}
-                {', '}
-                {run.finishTime && run.startTime && (
-                  <DateSection
-                    text={t('Took')}
-                    dateOrDuration={formatUtils.formatDuration(
-                      new Date(run.finishTime).getTime() -
-                        new Date(run.startTime).getTime(),
-                    )}
-                  />
-                )}
-              </>
+      <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="flex min-w-0 flex-col gap-0.5 text-sm">
+          <div className="flex min-w-0 items-center">
+            <Icon className="mr-2 size-5 shrink-0" />
+            <span className="font-medium text-foreground dark:text-foreground">
+              {getStatusText({
+                status: run.status,
+                timeout: timeoutSeconds ?? -1,
+                memoryLimit: memoryLimit ?? -1,
+                logSizeLimit: logSizeLimit ?? -1,
+              })}
+            </span>
+            {isRunTerminal && !isTimelineEmpty(run.timeline) && (
+              <HoverCard openDelay={200} closeDelay={100}>
+                <HoverCardTrigger className="ml-1 inline-flex cursor-default items-center">
+                  <Info className="size-4 text-muted-foreground" />
+                </HoverCardTrigger>
+                <HoverCardContent className="w-[28rem] p-3">
+                  <TimelineBar timeline={run.timeline} />
+                </HoverCardContent>
+              </HoverCard>
             )}
           </div>
-          {isRunTerminal && !isTimelineEmpty(run.timeline) && (
-            <HoverCard openDelay={200} closeDelay={100}>
-              <HoverCardTrigger className="ml-1 inline-flex cursor-default items-center">
-                <Info className="size-4 text-muted-foreground" />
-              </HoverCardTrigger>
-              <HoverCardContent className="w-[28rem] p-3">
-                <TimelineBar timeline={run.timeline} />
-              </HoverCardContent>
-            </HoverCard>
+          {isRunTerminal && (
+            <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+              {run.startTime && (
+                <DateSection
+                  text={t('Started')}
+                  dateOrDuration={formatUtils.formatDateWithTime(
+                    new Date(run.startTime),
+                    true,
+                  )}
+                />
+              )}
+              {run.finishTime && run.startTime && (
+                <DateSection
+                  text={t('Took')}
+                  dateOrDuration={formatUtils.formatDuration(
+                    new Date(run.finishTime).getTime() -
+                      new Date(run.startTime).getTime(),
+                  )}
+                />
+              )}
+            </div>
           )}
         </div>
 
@@ -158,9 +154,6 @@ const RunInfoWidget = () => {
           {run.failedStep && (
             <JumpToFailedStepButton failedStepName={run.failedStep.name} />
           )}
-          <EditWorkflowOrViewDraftButton
-            onCanvas={false}
-          ></EditWorkflowOrViewDraftButton>
         </div>
       </div>
     </LargeWidgetWrapper>
@@ -177,10 +170,7 @@ const DateSection = ({
   dateOrDuration: string;
 }) => {
   return (
-    <>
-      <span>{`${text}: `}</span>
-      <span>{`${dateOrDuration}`}</span>
-    </>
+    <span className="whitespace-nowrap">{`${text}: ${dateOrDuration}`}</span>
   );
 };
 

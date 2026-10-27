@@ -1,12 +1,12 @@
-import { FlowComponentCategory } from '@fema-ipaas/component-sdk';
 import { useQuery } from '@tanstack/react-query';
+import i18next from 'i18next';
 
 import { componentsApi } from '../api/components-api';
 
 export const componentsHooks = {
   useComponents: () =>
     useQuery({
-      queryKey: ['flow-components'],
+      queryKey: ['flow-components', i18next.language],
       queryFn: () => componentsApi.list(),
       staleTime: Infinity,
     }),
@@ -33,11 +33,3 @@ const COMPONENT_ICONS = new Set([
   'calendar',
   'list',
 ]);
-
-export const COMPONENT_CATEGORY_LABELS: Record<FlowComponentCategory, string> =
-  {
-    [FlowComponentCategory.CONTROL]: 'Control',
-    [FlowComponentCategory.DATA]: 'Data',
-    [FlowComponentCategory.RUNTIME]: 'Runtime',
-    [FlowComponentCategory.HUMAN]: 'Human',
-  };

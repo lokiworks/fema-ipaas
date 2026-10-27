@@ -2,7 +2,7 @@ import { WorkflowAction, WorkflowTrigger } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useState } from 'react';
 
-import { SIDEBAR_ID } from '@/app/components/sidebar/dashboard';
+import { BUILDER_CONTENT_ID } from '@/app/components/builder-layout';
 import { stepsHooks } from '@/features/connectors';
 
 import {
@@ -19,8 +19,9 @@ const StepDragOverlay = ({
   const { cursorPosition } = useCursorPosition();
   const [overlayPosition, setOverlayPosition] =
     useState<typeof cursorPosition>(cursorPosition);
-  const sidebar = document.getElementById(SIDEBAR_ID);
-  const sidebarWidth = sidebar?.clientWidth ?? 0;
+  const sidebarWidth =
+    document.getElementById(BUILDER_CONTENT_ID)?.getBoundingClientRect().left ??
+    0;
   const left = `${
     overlayPosition.x -
     workflowCanvasConsts.STEP_DRAG_OVERLAY_WIDTH / 2 -

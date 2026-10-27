@@ -51,6 +51,8 @@ import { cn } from '@/lib/utils';
 import { projectWorkspaceHooks } from '../hooks/project-workspace-hooks';
 import { workspaceUtils } from '../lib/workspace-utils';
 
+import { CharacterCounter } from './character-counter';
+
 export function MoveWorkflowsDialog({
   open,
   onOpenChange,
@@ -299,7 +301,7 @@ export function CopyWorkflowDialog({
             }
             onClick={handleCopy}
           >
-            {t('Create copy')}
+            {t('Create')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -423,14 +425,16 @@ function WorkflowInfoForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel showRequiredIndicator>{t('Workflow name')}</FormLabel>
-              <Input
-                {...field}
-                disabled={!canEdit}
-                maxLength={WORKFLOW_NAME_MAX_LENGTH}
-              />
-              <p className="text-xs text-muted-foreground">
-                {field.value.length}/{WORKFLOW_NAME_MAX_LENGTH}
-              </p>
+              <CharacterCounter
+                length={field.value.length}
+                max={WORKFLOW_NAME_MAX_LENGTH}
+              >
+                <Input
+                  {...field}
+                  disabled={!canEdit}
+                  maxLength={WORKFLOW_NAME_MAX_LENGTH}
+                />
+              </CharacterCounter>
               {duplicate && (
                 <p className="text-sm text-destructive">
                   {t('workflowNameTaken')}
@@ -446,16 +450,19 @@ function WorkflowInfoForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('Description')}</FormLabel>
-              <Textarea
-                {...field}
-                value={field.value ?? ''}
-                disabled={!canEdit}
-                rows={3}
-                maxLength={WORKFLOW_DESCRIPTION_MAX_LENGTH}
-              />
-              <p className="text-xs text-muted-foreground">
-                {description.length}/{WORKFLOW_DESCRIPTION_MAX_LENGTH}
-              </p>
+              <CharacterCounter
+                multiline
+                length={description.length}
+                max={WORKFLOW_DESCRIPTION_MAX_LENGTH}
+              >
+                <Textarea
+                  {...field}
+                  value={field.value ?? ''}
+                  disabled={!canEdit}
+                  rows={3}
+                  maxLength={WORKFLOW_DESCRIPTION_MAX_LENGTH}
+                />
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}

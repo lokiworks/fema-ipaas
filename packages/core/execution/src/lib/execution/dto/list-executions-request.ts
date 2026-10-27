@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { OptionalArrayFromQuery, OptionalBooleanFromQuery } from '@fema-ipaas/core-utils'
 import { EntityId } from '@fema-ipaas/core-utils'
+import { RunEnvironment } from '../execution'
 import { ExecutionStatus } from '../state/workflow-execution'
 
 export const ListExecutionsRequestQuery = z.object({
@@ -16,6 +17,7 @@ export const ListExecutionsRequestQuery = z.object({
     failedStepMessage: z.string().optional(),
     executionIds: OptionalArrayFromQuery(EntityId),
     includeArchived: OptionalBooleanFromQuery,
+    environment: z.enum(RunEnvironment).optional(),
 })
 
 export type ListExecutionsRequestQuery = z.infer<typeof ListExecutionsRequestQuery>

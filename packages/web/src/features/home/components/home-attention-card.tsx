@@ -1,6 +1,5 @@
 import {
   ConnectionStatus,
-  ExecutionStatus,
   HomeBrokenConnection,
   HomeFailedRun,
   HomeRunStats,
@@ -10,6 +9,8 @@ import { t } from 'i18next';
 import { CircleCheck, CircleX, Link2Off } from 'lucide-react';
 
 import { formatUtils } from '@/lib/format-utils';
+
+import { homeUtils } from '../utils/home-utils';
 
 import { ProjectRunsLink } from './project-runs-link';
 import { SideCard, SideRow } from './side-card';
@@ -27,6 +28,8 @@ export function HomeAttentionCard({
   projects: ProjectDirectoryItem[];
   fallbackProjectId: string | null;
 }) {
+  const groupedFailedRuns = homeUtils.groupFailedRuns({ runs: failedRuns });
+  const truncated = runs.failedOrTimeout > failedRuns.length;
   const nothing = failedRuns.length === 0 && brokenConnections.length === 0;
   const failedTargets = runs.byProject
     .filter((row) => row.failedOrTimeout > 0)
@@ -47,21 +50,33 @@ export function HomeAttentionCard({
       }
     >
       <div className="flex flex-col gap-0.5">
-        {failedRuns.map((run) => (
+        {groupedFailedRuns.map(({ latest, count, timedOut }) => (
           <SideRow
-            key={run.id}
+            key={`${latest.workflowId}-${timedOut}`}
             icon={CircleX}
             iconClassName="text-destructive"
             title={
-              run.status === ExecutionStatus.TIMEOUT
-                ? t('{name} timed out', { name: run.workflowDisplayName })
-                : t('{name} failed', { name: run.workflowDisplayName })
+              timedOut
+                ? t('{name} timed out', { name: latest.workflowDisplayName })
+                : t('{name} failed', { name: latest.workflowDisplayName })
             }
-            subtitle={formatUtils.formatDate(new Date(run.created))}
-            to={`/projects/${run.projectId}/runs/${run.id}`}
+            subtitle={
+              count > 1
+                ? t(
+                    truncated
+                      ? 'At least {count} times today, latest {time}'
+                      : '{count} times today, latest {time}',
+                    {
+                      count,
+                      time: formatUtils.formatDate(new Date(latest.created)),
+                    },
+                  )
+                : formatUtils.formatDate(new Date(latest.created))
+            }
+            to={`/projects/${latest.projectId}/runs/${latest.id}`}
           />
         ))}
-        {runs.failedOrTimeout > failedRuns.length && (
+        {truncated && (
           <ProjectRunsLink
             targets={failedTargets}
             fallbackProjectId={fallbackProjectId}

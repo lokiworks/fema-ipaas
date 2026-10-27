@@ -5,6 +5,7 @@ import {
   DefaultProjectRole,
   ProjectDirectoryItem,
   WorkflowPlan,
+  WorkflowPlanSource,
   WorkflowPlanStep,
 } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
@@ -96,6 +97,10 @@ describe('aiUtils plan helpers', () => {
     const plan: WorkflowPlan = {
       displayName: 'Onboarding',
       summary: '',
+      source: WorkflowPlanSource.RULES,
+      unavailableSystems: [],
+      recommendations: [],
+      removedSteps: [],
       trigger: step({ requiresConnection: false }),
       steps: [
         step({ displayName: 'a' }),

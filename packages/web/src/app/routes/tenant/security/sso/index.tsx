@@ -21,9 +21,9 @@ import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 
-import { CenteredPage } from '@/app/components/centered-page';
 import { AllowedDomainDialog } from '@/app/routes/tenant/security/sso/allowed-domain';
 import { SsoProviderDialog } from '@/app/routes/tenant/security/sso/sso-provider-dialog';
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   Item,
   ItemActions,
@@ -76,8 +76,7 @@ const AuthenticationPage = () => {
   const { data: sso } = tenantAccessHooks.useSsoSettings();
 
   return (
-    <CenteredPage
-      widthClassName="max-w-[48rem]"
+    <ConsolePage
       title={t('Sign-in and security')}
       description={t(
         'How members sign in. A method has to be configured before it can be turned on, and at least one method stays on.',
@@ -130,7 +129,7 @@ const AuthenticationPage = () => {
           </Item>
         </div>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 };
 
@@ -218,9 +217,9 @@ function LoginMethodRow({
         <ItemTitle>
           {tenantAccessUtils.loginMethodLabel(method.method)}
           {method.enabled ? (
-            <Badge variant="success">{t('On')}</Badge>
+            <Badge variant="success">{t('Turned on')}</Badge>
           ) : method.available ? (
-            <Badge variant="outline">{t('Off')}</Badge>
+            <Badge variant="outline">{t('Turned off')}</Badge>
           ) : (
             <Badge variant="outline">{t('Not available')}</Badge>
           )}

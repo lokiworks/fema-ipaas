@@ -241,6 +241,21 @@ function createFocusStepInGraphParams(stepName: string) {
   };
 }
 
+function focusStepAfterLayout({
+  fitView,
+  stepName,
+}: {
+  fitView: (
+    options: ReturnType<typeof createFocusStepInGraphParams>,
+  ) => unknown;
+  stepName: string;
+}) {
+  window.setTimeout(
+    () => fitView(createFocusStepInGraphParams(stepName)),
+    FOCUS_AFTER_LAYOUT_DELAY_MS,
+  );
+}
+
 const calculateGraphBoundingBox = ({
   graph,
   orientation,
@@ -787,6 +802,7 @@ export const workflowCanvasUtils = {
     };
   },
   createFocusStepInGraphParams,
+  focusStepAfterLayout,
   calculateGraphBoundingBox,
   createAddOperationFromAddButtonData,
   isSkipped,
@@ -796,3 +812,5 @@ export const workflowCanvasUtils = {
 };
 
 type BranchingAction = RouterAction | ParallelAction;
+
+const FOCUS_AFTER_LAYOUT_DELAY_MS = 350;

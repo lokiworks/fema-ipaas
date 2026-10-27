@@ -1,11 +1,16 @@
 import { SeekPage } from '@fema-ipaas/core-utils';
-import { Execution, isExecutionStateTerminal } from '@fema-ipaas/shared';
+import {
+  Execution,
+  isExecutionStateTerminal,
+  RunEnvironment,
+} from '@fema-ipaas/shared';
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import React, { useMemo } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { LeftSideBarType } from '@/app/builder/types';
+import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
 import {
   CardListEmpty,
   CardListItemSkeleton,
@@ -29,6 +34,8 @@ const RunsList = React.memo(() => {
     state.run,
   ]);
 
+  useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
+
   const {
     data: runs,
     isLoading,
@@ -51,6 +58,7 @@ const RunsList = React.memo(() => {
         workflowId: [workflow.id],
         projectId: authenticationSession.getProjectId()!,
         limit: 15,
+        environment: RunEnvironment.TESTING,
         cursor: pageParam as string | undefined,
       }),
     refetchOnMount: true,
@@ -96,7 +104,7 @@ const RunsList = React.memo(() => {
   return (
     <div className="h-full w-full flex flex-col">
       <SidebarHeader onClose={() => setLeftSidebar(LeftSideBarType.NONE)}>
-        {t('Recent Runs')}
+        {t('Debug records')}
       </SidebarHeader>
       {isLoading && <CardListItemSkeleton numberOfCards={10} />}
 

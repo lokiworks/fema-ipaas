@@ -9,10 +9,11 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import { ArrowRight, CircleAlert, Rocket, Trash2 } from 'lucide-react';
+import { ArrowRight, CircleAlert, History, Rocket, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   CURSOR_QUERY_PARAM,
   DataTable,
@@ -38,15 +39,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { connectionsApi } from '@/features/connections/api/connections';
 import { issueMembersHooks } from '@/features/issues';
@@ -62,41 +54,53 @@ import { authenticationSession } from '@/lib/authentication-session';
 function ReleasesPage() {
   const { project } = projectCollectionUtils.useCurrentProject();
   const { checkAccess } = useAuthorization();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const canManage = checkAccess(Permission.WRITE_PROJECT);
+  const requestedTab = searchParams.get('tab');
   const opensRequests =
     project.releasesEnabled &&
-    (searchParams.get('tab') === REQUESTS_TAB ||
+    (requestedTab === REQUESTS_TAB ||
       searchParams.has('status') ||
       searchParams.has('mine'));
+  const activeTab =
+    TABS.find((tab) => tab === requestedTab) ??
+    (opensRequests ? REQUESTS_TAB : ENVIRONMENTS_TAB);
+  const changeTab = (tab: string) =>
+    setSearchParams(new URLSearchParams({ tab }), { replace: true });
   return (
-    <Tabs
-      defaultValue={opensRequests ? REQUESTS_TAB : ENVIRONMENTS_TAB}
-      className="w-full"
-    >
-      <TabsList>
-        <TabsTrigger value={ENVIRONMENTS_TAB}>{t('Environments')}</TabsTrigger>
-        {project.releasesEnabled && (
-          <TabsTrigger value={REQUESTS_TAB}>
-            {t('Release requests')}
-          </TabsTrigger>
-        )}
-        <TabsTrigger value={HISTORY_TAB}>{t('Change history')}</TabsTrigger>
-      </TabsList>
-      <TabsContent value={ENVIRONMENTS_TAB}>
-        <EnvironmentsSection
-          testConnections={<TestConnections canManage={canManage} />}
-        />
-      </TabsContent>
-      {project.releasesEnabled && (
-        <TabsContent value={REQUESTS_TAB}>
-          <ReleaseRequests />
-        </TabsContent>
+    <ConsolePage
+      title={t('Releases and approvals')}
+      description={t(
+        'Publish workflows to the test and production environments, review requests and trace every change.',
       )}
-      <TabsContent value={HISTORY_TAB}>
-        <ChangeHistory />
-      </TabsContent>
-    </Tabs>
+    >
+      <Tabs value={activeTab} onValueChange={changeTab}>
+        <TabsList>
+          <TabsTrigger value={ENVIRONMENTS_TAB}>
+            {t('Environments')}
+          </TabsTrigger>
+          {project.releasesEnabled && (
+            <TabsTrigger value={REQUESTS_TAB}>
+              {t('Release requests')}
+            </TabsTrigger>
+          )}
+          <TabsTrigger value={HISTORY_TAB}>{t('Change history')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value={ENVIRONMENTS_TAB}>
+          <EnvironmentsSection
+            testConnections={<TestConnections canManage={canManage} />}
+          />
+        </TabsContent>
+        {project.releasesEnabled && (
+          <TabsContent value={REQUESTS_TAB}>
+            <ReleaseRequests />
+          </TabsContent>
+        )}
+        <TabsContent value={HISTORY_TAB}>
+          <ChangeHistory />
+        </TabsContent>
+      </Tabs>
+    </ConsolePage>
   );
 }
 
@@ -233,73 +237,87 @@ function ReleaseRequests() {
 
 function ChangeHistory() {
   const projectId = authenticationSession.getProjectId()!;
-  const [cursors, setCursors] = useState<string[]>([]);
-  const { data, isLoading } = releasesHooks.useChanges({
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { data, isLoading, isError } = releasesHooks.useChanges({
     projectId,
-    cursor: cursors[cursors.length - 1],
+    cursor: searchParams.get(CURSOR_QUERY_PARAM) ?? undefined,
+    limit: Number(searchParams.get(LIMIT_QUERY_PARAM) ?? DEFAULT_LIMIT),
   });
-  if (isLoading) {
-    return <Skeleton className="h-64 w-full" />;
-  }
-  const changes = data?.data ?? [];
+
+  const columns: ColumnDef<
+    RowDataWithActions<ReleaseChangeWithDetails>,
+    unknown
+  >[] = [
+    {
+      accessorKey: 'created',
+      size: 180,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('Time')} />
+      ),
+      cell: ({ row }) => (
+        <FormattedDate date={new Date(row.original.created)} />
+      ),
+    },
+    {
+      accessorKey: 'actorName',
+      size: 160,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('Actor')} />
+      ),
+      cell: ({ row }) => (
+        <span className="truncate text-sm">
+          {row.original.actorName || '—'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'action',
+      size: 160,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('Action')} />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm">
+          {releaseUiUtils.changeActionLabel(row.original.action)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'note',
+      size: 420,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('Details')} />
+      ),
+      cell: ({ row }) => (
+        <div className="text-muted-foreground">
+          <ChangeDetails change={row.original} />
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="flex flex-col gap-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-44">{t('Time')}</TableHead>
-            <TableHead className="w-44">{t('Actor')}</TableHead>
-            <TableHead className="w-40">{t('Action')}</TableHead>
-            <TableHead>{t('Details')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {changes.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={4} className="text-muted-foreground">
-                {t(
-                  'No changes yet. Deploying to test, promoting, approving and rolling back are all recorded here.',
-                )}
-              </TableCell>
-            </TableRow>
-          )}
-          {changes.map((change) => (
-            <TableRow key={change.id}>
-              <TableCell>
-                <FormattedDate date={new Date(change.created)} />
-              </TableCell>
-              <TableCell className="truncate">
-                {change.actorName || '—'}
-              </TableCell>
-              <TableCell>
-                {releaseUiUtils.changeActionLabel(change.action)}
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                <ChangeDetails change={change} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={cursors.length === 0}
-          onClick={() => setCursors(cursors.slice(0, -1))}
-        >
-          {t('Previous')}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={!data?.next}
-          onClick={() => data?.next && setCursors([...cursors, data.next])}
-        >
-          {t('Next')}
-        </Button>
-      </div>
-    </div>
+    <DataTable
+      emptyStateTextTitle={t('No changes yet')}
+      emptyStateTextDescription={t(
+        'Deploying to test, promoting, approving and rolling back are all recorded here.',
+      )}
+      emptyStateIcon={<History className="size-14" />}
+      columns={columns}
+      page={data}
+      isLoading={isLoading}
+      isError={isError}
+      onRowClick={(row) => {
+        if (row.releaseId) {
+          navigate(
+            authenticationSession.appendProjectRoutePrefix(
+              `/releases/${row.releaseId}`,
+            ),
+          );
+        }
+      }}
+    />
   );
 }
 
@@ -576,6 +594,7 @@ const DEFAULT_LIMIT = 20;
 const ENVIRONMENTS_TAB = 'environments';
 const REQUESTS_TAB = 'requests';
 const HISTORY_TAB = 'history';
+const TABS = [ENVIRONMENTS_TAB, REQUESTS_TAB, HISTORY_TAB];
 const TEST_ACTIONS: ReleaseChangeAction[] = [
   ReleaseChangeAction.DEPLOYED_TO_TEST,
 ];

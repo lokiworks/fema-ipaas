@@ -14,13 +14,9 @@ import {
   ShieldCheckIcon,
   TerminalIcon,
 } from 'lucide-react';
-import { ComponentType, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { ComponentType } from 'react';
+import { useLocation } from 'react-router-dom';
 
-import {
-  ChevronLeftIcon,
-  ChevronLeftIconHandle,
-} from '@/components/icons/chevron-left';
 import { FileHeartIcon } from '@/components/icons/file-heart';
 import { FileJson2Icon } from '@/components/icons/file-json2';
 import { LayoutGridIcon } from '@/components/icons/layout-grid';
@@ -31,36 +27,23 @@ import { ServerIcon } from '@/components/icons/server';
 import { SettingsIcon } from '@/components/icons/settings';
 import { UnplugIcon } from '@/components/icons/unplug';
 import { UsersIcon } from '@/components/icons/users';
-import { buttonVariants } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarMenu,
-  SidebarHeader,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarSeparator,
 } from '@/components/ui/sidebar-shadcn';
 import { tenantAccessHooks } from '@/features/tenant-access';
-import {
-  useAuthorization,
-  useIsTenantAdmin,
-} from '@/hooks/authorization-hooks';
-import { determineDefaultRoute } from '@/lib/route-utils';
+import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { cn } from '@/lib/utils';
 
 import { SidebarNavItem } from '../sidebar-nav-item';
-import { SidebarUser } from '../sidebar-user';
 
-export function TenantSidebar() {
-  const { checkAccess } = useAuthorization();
-  const defaultRoute = determineDefaultRoute({
-    checkAccess,
-  });
-  const chevronRef = useRef<ChevronLeftIconHandle>(null);
-
+export function TenantSidebar({ className }: TenantSidebarProps) {
+  const { pathname } = useLocation();
   const isTenantAdmin = useIsTenantAdmin();
   const { data: myAccess } = tenantAccessHooks.useMyAccess();
   const pendingRequests = tenantAccessHooks.usePendingRequestCount();
@@ -101,7 +84,7 @@ export function TenantSidebar() {
         },
         {
           to: '/tenant/connections',
-          label: t('Connections'),
+          label: t('All connections'),
           icon: UnplugIcon,
         },
         {
@@ -168,7 +151,7 @@ export function TenantSidebar() {
         },
         {
           to: '/tenant/setup/connectors',
-          label: t('Connectors'),
+          label: t('Installed connectors'),
           icon: PuzzleIcon,
         },
         {
@@ -252,22 +235,19 @@ export function TenantSidebar() {
         }))
         .filter((group) => group.items.length > 0);
 
+  const activeTo = tenantSidebarUtils.findActiveTo({
+    pathname,
+    paths: groups.flatMap((group) => group.items.map((item) => item.to)),
+  });
+
   return (
-    <Sidebar className="border-r-0!">
-      <SidebarHeader className="pb-0">
-        <Link
-          to={defaultRoute}
-          className={cn(
-            buttonVariants({ variant: 'ghost' }),
-            'w-full justify-start gap-2 px-2',
-          )}
-          onMouseEnter={() => chevronRef.current?.startAnimation()}
-          onMouseLeave={() => chevronRef.current?.stopAnimation()}
-        >
-          <ChevronLeftIcon ref={chevronRef} className="size-4" size={16} />
-          <span className="truncate text-sm">{t('Back to app')}</span>
-        </Link>
-      </SidebarHeader>
+    <Sidebar
+      collapsible="none"
+      className={cn('w-[220px] shrink-0 border-r', className)}
+    >
+      <div className="px-4 pb-1 pt-4 text-base font-semibold">
+        {t('Tenant Admin')}
+      </div>
       <div className="flex-1 overflow-y-auto">
         <SidebarContent className="gap-0">
           {groups.map((group, idx) => (
@@ -284,6 +264,7 @@ export function TenantSidebar() {
                       label={item.label}
                       icon={item.icon}
                       badge={item.badge}
+                      active={item.to === activeTo}
                     />
                   ))}
                 </SidebarMenu>
@@ -292,10 +273,30 @@ export function TenantSidebar() {
           ))}
         </SidebarContent>
       </div>
-
-      <SidebarFooter>
-        <SidebarUser />
-      </SidebarFooter>
     </Sidebar>
   );
 }
+
+function findActiveTo({ pathname, paths }: FindActiveToParams): string | null {
+  const matches = paths.filter(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
+  return matches.reduce<string | null>(
+    (longest, path) =>
+      longest === null || path.length > longest.length ? path : longest,
+    null,
+  );
+}
+
+const tenantSidebarUtils = { findActiveTo };
+
+type FindActiveToParams = {
+  pathname: string;
+  paths: string[];
+};
+
+type TenantSidebarProps = {
+  className?: string;
+};
+
+export { tenantSidebarUtils };

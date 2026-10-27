@@ -169,6 +169,7 @@ const StepSettingsContainer = () => {
       triggerName: modifiedStep.settings.triggerName ?? '',
     });
   const isEmptyTrigger = modifiedStep.type === WorkflowTriggerType.EMPTY;
+  const isTriggerStep = workflowStructureUtil.isTrigger(modifiedStep.type);
   const showGenerateSampleData =
     !readonly && !isManualTrigger && !isEmptyTrigger;
   const showStepInputOutFromRun =
@@ -328,13 +329,13 @@ const StepSettingsContainer = () => {
       onValueChange={setStepPanelTab}
       className="flex h-full w-full flex-col"
     >
-      <TabsList className="mx-4 mt-2 flex shrink-0 justify-start overflow-x-auto scrollbar-none">
-        <TabsTrigger value="action" className="gap-1.5 px-2">
-          {t('Action')}
+      <TabsList className="mx-4 mt-1 flex shrink-0 justify-start gap-5 overflow-x-auto scrollbar-none">
+        <TabsTrigger value="action" className="gap-1.5">
+          {isTriggerStep ? t('Trigger') : t('Action')}
           <TabErrorDot show={tabsWithErrors.includes(ValidationTab.ACTION)} />
         </TabsTrigger>
-        <TabsTrigger value="input" className="gap-1.5 px-2">
-          {t('Input')}
+        <TabsTrigger value="input" className="gap-1.5">
+          {isTriggerStep ? t('Settings') : t('Input')}
           <TabErrorDot
             show={
               tabsWithErrors.includes(ValidationTab.INPUT) ||
@@ -342,10 +343,8 @@ const StepSettingsContainer = () => {
             }
           />
         </TabsTrigger>
-        <TabsTrigger value="output" className="px-2">
-          {t('Output')}
-        </TabsTrigger>
-        <TabsTrigger value="error" className="gap-1.5 px-2">
+        <TabsTrigger value="output">{t('Output')}</TabsTrigger>
+        <TabsTrigger value="error" className="gap-1.5">
           {modifiedStep.type === WorkflowTriggerType.CONNECTOR
             ? t('Run settings')
             : t('Error Handling')}
@@ -442,10 +441,6 @@ const StepSettingsContainer = () => {
           >
             <EditableStepName
               selectedBranchIndex={selectedBranchIndex}
-              stepIndex={workflowStructureUtil.getStepNumber(
-                workflowVersion.trigger,
-                selectedStep.name,
-              )}
               displayNumber={displayNumbers[selectedStep.name]}
               setDisplayName={(value) => {
                 form.setValue('displayName', value, {

@@ -7,20 +7,15 @@ import { BotIcon } from '@/components/icons/bot';
 import { ChartLineIcon } from '@/components/icons/chart-line';
 import { CompassIcon } from '@/components/icons/compass';
 import { useEmbedding } from '@/components/providers/embed-provider';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
+import { SidebarProvider } from '@/components/ui/sidebar-shadcn';
 import { projectHooks } from '@/features/projects';
 import { useIsCompact, useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
 
 import { authenticationSession } from '../../../lib/authentication-session';
-import {
-  GlobalSearchProvider,
-  useGlobalSearch,
-} from '../global-search/global-search-context';
-import { ProjectDashboardSidebar } from '../sidebar/dashboard';
+import { GlobalRail } from '../global-rail';
+import { GlobalSearchProvider } from '../global-search/global-search-context';
 
 import { MobileNavBar } from './mobile-nav-bar';
-import { ProjectDashboardLayoutHeader } from './project-dashboard-layout-header';
 import { ProjectNavColumn } from './project-nav-column';
 
 export type ProjectDashboardLayoutHeaderTab = {
@@ -91,6 +86,7 @@ export function ProjectDashboardLayout({
 
   const hideHeader =
     itemsWithoutHeader.some((item) => location.pathname.includes(item.to)) ||
+    location.pathname.endsWith('/connections') ||
     isTenantPage ||
     PROJECTLESS_PATHS.includes(location.pathname) ||
     location.pathname.startsWith(SOLUTIONS_PATH);
@@ -101,7 +97,6 @@ export function ProjectDashboardLayout({
         <ProjectDashboardLayoutInner
           hideHeader={hideHeader}
           isEmbedded={isEmbedded}
-          currentProjectId={currentProjectId}
         >
           {children}
         </ProjectDashboardLayoutInner>
@@ -113,49 +108,30 @@ export function ProjectDashboardLayout({
 function ProjectDashboardLayoutInner({
   hideHeader,
   isEmbedded,
-  currentProjectId,
   children,
 }: {
   hideHeader: boolean;
   isEmbedded: boolean;
-  currentProjectId: string;
   children: React.ReactNode;
 }) {
-  const { open: searchOpen } = useGlobalSearch();
   const isMobile = useIsMobile();
   const isCompact = useIsCompact();
 
   return (
-    <SidebarProvider defaultOpen={false} hoverMode={!searchOpen}>
-      {!isEmbedded && <ProjectDashboardSidebar />}
-      <SidebarInset className="flex flex-col h-full overflow-hidden bg-sidebar">
-        <div
-          className={cn(
-            'flex-1 flex flex-col overflow-hidden',
-            !isEmbedded && 'md:pr-2 md:pt-3 md:pb-3',
-          )}
-        >
-          <div
-            id="dashboard-content-container"
-            className={cn(
-              'relative flex flex-col h-full bg-background overflow-clip',
-              !isEmbedded &&
-                'md:rounded-xl md:shadow-[2px_0px_4px_-2px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.05)] md:border',
-            )}
-          >
-            {isCompact && !isEmbedded && (
-              <MobileNavBar showProjectNav={!hideHeader} showMenu={isMobile} />
-            )}
-            {!hideHeader && (
-              <ProjectDashboardLayoutHeader key={currentProjectId} />
-            )}
-            <div className="flex min-h-0 flex-1 flex-row">
-              {!hideHeader && !isEmbedded && !isCompact && <ProjectNavColumn />}
-              <div className="min-w-0 flex-1 overflow-auto">{children}</div>
-            </div>
-          </div>
+    <SidebarProvider defaultOpen={false} className="h-svh min-h-0">
+      {!isEmbedded && !isCompact && <GlobalRail />}
+      <div
+        id="dashboard-content-container"
+        className="relative flex min-w-0 flex-1 flex-col overflow-clip bg-background"
+      >
+        {isCompact && !isEmbedded && (
+          <MobileNavBar showProjectNav={!hideHeader} showMenu={isMobile} />
+        )}
+        <div className="flex min-h-0 flex-1 flex-row">
+          {!hideHeader && !isEmbedded && !isCompact && <ProjectNavColumn />}
+          <div className="min-w-0 flex-1 overflow-auto">{children}</div>
         </div>
-      </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }

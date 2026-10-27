@@ -73,7 +73,7 @@ export function generateTheme({
 }
 
 export const defaultTheme = generateTheme({
-    primaryColor: '#2D6CDF',
+    primaryColor: '#3370FF',
     websiteName: 'Integration Platform',
     fullLogoUrl: '/assets/full-logo.svg',
     favIconUrl: '/assets/logo.svg',

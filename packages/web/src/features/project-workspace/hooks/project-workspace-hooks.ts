@@ -98,12 +98,19 @@ function useMoveWorkflows() {
   });
 }
 
-function useDeleteWorkflows() {
+function useDeleteWorkflows({
+  onDeleted,
+}: {
+  onDeleted?: (request: WorkflowBatchRequestBody) => void;
+} = {}) {
   const invalidate = useInvalidateWorkspace();
   return useMutation({
     mutationFn: (request: WorkflowBatchRequestBody) =>
       projectWorkspaceApi.deleteMany(request),
-    onSuccess: invalidate,
+    onSuccess: (_result, request) => {
+      onDeleted?.(request);
+      invalidate();
+    },
     onError: showError,
   });
 }
@@ -219,14 +226,9 @@ function useCopyProject() {
 }
 
 function useDeleteProject() {
-  const invalidate = useInvalidateWorkspace();
   return useMutation({
     mutationFn: (projectId: string) =>
       projectWorkspaceApi.deleteProject(projectId),
-    onSuccess: async () => {
-      invalidate();
-      await projectCollectionUtils.refetchProjects();
-    },
     onError: showError,
   });
 }

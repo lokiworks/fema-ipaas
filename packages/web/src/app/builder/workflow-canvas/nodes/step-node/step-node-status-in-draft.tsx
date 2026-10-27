@@ -51,6 +51,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     isStepValid,
     isManualTrigger,
     isSkipped,
+    debugTestedAt,
   ] = useBuilderStateContext((state) => {
     const step = workflowStructureUtil.getStep(
       stepName,
@@ -73,6 +74,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       !!step?.valid,
       isManualTrigger,
       workflowCanvasUtils.isSkipped(stepName, state.workflowVersion.trigger),
+      state.debugTestedSteps[stepName],
     ];
   });
 
@@ -165,10 +167,14 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     if (isBeingTested) return 'testing';
     if (hasValidationWarning) return 'has-warning';
 
-    if (isNil(lastTestDate)) {
+    const latestTestDate = [lastTestDate, debugTestedAt]
+      .filter((date): date is string => !isNil(date))
+      .sort()
+      .at(-1);
+    if (isNil(latestTestDate)) {
       return 'untested';
     }
-    if (lastUpdatedDate > lastTestDate) {
+    if (lastUpdatedDate > latestTestDate) {
       return 'needs-test';
     }
     if (hasError) return 'failed';
@@ -181,6 +187,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     isBeingTested,
     hasError,
     lastTestDate,
+    debugTestedAt,
     lastUpdatedDate,
   ]);
 

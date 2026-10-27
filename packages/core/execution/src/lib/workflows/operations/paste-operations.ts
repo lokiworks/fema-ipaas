@@ -27,10 +27,11 @@ export const _getOperationsForPaste = (
     actions: WorkflowAction[],
     workflowVersion: WorkflowVersion,
     pastingDetails: PasteLocation,
+    copySuffix?: string,
 ) => {
     const newNamesMap = addActionUtils.mapToNewNames(workflowVersion, actions)
     const clonedActions: WorkflowAction[] = actions.map(action => workflowStructureUtil.transferStep(action, (step: WorkflowAction) => {
-        return addActionUtils.clone(step, newNamesMap)
+        return addActionUtils.clone({ step, oldNameToNewName: newNamesMap, copySuffix })
     }) as WorkflowAction)
     const operations: WorkflowOperationRequest[] = []
     for (let i = 0; i < clonedActions.length; i++) {

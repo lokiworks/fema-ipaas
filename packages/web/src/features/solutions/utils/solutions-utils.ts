@@ -20,6 +20,27 @@ function categoriesOf(solutions: SolutionSummary[]): string[] {
   return [...new Set(solutions.map((solution) => solution.category))].sort();
 }
 
+function categoryLabel(category: string): string {
+  switch (category.trim().toUpperCase()) {
+    case 'FINANCE':
+      return t('solutionCategoryFinance');
+    case 'HR':
+      return t('solutionCategoryHr');
+    case 'IT':
+      return t('solutionCategoryIt');
+    case 'SALES':
+      return t('solutionCategorySales');
+    case 'OPERATIONS':
+      return t('solutionCategoryOperations');
+    case 'MARKETING':
+      return t('solutionCategoryMarketing');
+    case 'OTHER':
+      return t('solutionCategoryOther');
+    default:
+      return category;
+  }
+}
+
 function filterSolutions({
   solutions,
   category,
@@ -235,6 +256,7 @@ export const WIZARD_STEPS = [
 
 export const solutionsUtils = {
   categoriesOf,
+  categoryLabel,
   filterSolutions,
   isOwn,
   providerLabel,

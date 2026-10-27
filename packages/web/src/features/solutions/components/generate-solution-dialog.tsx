@@ -219,7 +219,7 @@ function GenerateSolutionForm({ onCancel, onCreated }: GenerateFormProps) {
                         })
                       }
                     >
-                      {category}
+                      {solutionsUtils.categoryLabel(category)}
                     </Button>
                   ))}
                 </div>

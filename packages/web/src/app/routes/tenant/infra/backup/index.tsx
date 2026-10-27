@@ -8,8 +8,8 @@ import { t } from 'i18next';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { CenteredPage } from '@/app/components/centered-page';
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -53,8 +53,7 @@ export default function BackupPage() {
     backupHooks.useOverview();
   const { data: overview, isLoading } = systemHooks.useOverview();
   return (
-    <CenteredPage
-      widthClassName="max-w-[56rem]"
+    <ConsolePage
       title={t('Backup and restore')}
       description={t(
         'Backups cover the database and the files stored in it. The encryption key and the JWT secret are never written into a backup; keep them apart.',
@@ -80,7 +79,7 @@ export default function BackupPage() {
           )}
         </div>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

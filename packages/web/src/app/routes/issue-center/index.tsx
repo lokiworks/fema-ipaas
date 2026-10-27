@@ -7,8 +7,11 @@ import { t } from 'i18next';
 import { Link2, Siren, Workflow } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { CenteredPage } from '@/app/components/centered-page';
 import { AlertSettings } from '@/app/routes/tenant/alerts';
+import {
+  ConsolePage,
+  ConsoleTableFrame,
+} from '@/components/custom/console-page';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +32,7 @@ import {
   issueUiUtils,
 } from '@/features/issues';
 import { ReconciliationSettings } from '@/features/reconciliation/reconciliation';
+import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { cn } from '@/lib/utils';
 
@@ -44,12 +48,11 @@ export function IssueCenterPage() {
       : ISSUES_TAB;
 
   return (
-    <CenteredPage
+    <ConsolePage
       title={t('Issues')}
       description={t(
         'Failed production runs from every project you can see, grouped by cause. Start here when something breaks.',
       )}
-      widthClassName="max-w-[72rem]"
     >
       <Tabs
         value={tab}
@@ -78,7 +81,7 @@ export function IssueCenterPage() {
           </TabsContent>
         )}
       </Tabs>
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 
@@ -126,52 +129,54 @@ function UnresolvedIssues() {
           />
         ))}
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('Issue')}</TableHead>
-            <TableHead>{t('Project')}</TableHead>
-            <TableHead>{t('Impact')}</TableHead>
-            <TableHead>{t('Last seen')}</TableHead>
-            <TableHead>{t('Status')}</TableHead>
-            <TableHead>{t('Severity')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {issues.map((issue) => (
-            <TableRow
-              key={issue.id}
-              className="cursor-pointer"
-              onClick={() =>
-                navigate(`/projects/${issue.projectId}/issues/${issue.id}`)
-              }
-            >
-              <TableCell className="max-w-[28rem]">
-                <IssueTitle issue={issue} />
-              </TableCell>
-              <TableCell className="text-sm">
-                {issue.projectDisplayName}
-              </TableCell>
-              <TableCell className="text-sm whitespace-nowrap">
-                {issueUiUtils.impactText(issue)}
-              </TableCell>
-              <TableCell className="text-sm whitespace-nowrap">
-                <FormattedDate date={new Date(issue.lastSeenAt)} />
-              </TableCell>
-              <TableCell>
-                <IssueStatusBadge
-                  status={issue.status}
-                  reopened={issue.reopened}
-                  muted={false}
-                />
-              </TableCell>
-              <TableCell>
-                <IssueSeverityBadge severity={issue.severity} />
-              </TableCell>
+      <ConsoleTableFrame>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('Issue')}</TableHead>
+              <TableHead>{t('Project')}</TableHead>
+              <TableHead>{t('Impact')}</TableHead>
+              <TableHead>{t('Last seen')}</TableHead>
+              <TableHead>{t('Status')}</TableHead>
+              <TableHead>{t('Severity')}</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {issues.map((issue) => (
+              <TableRow
+                key={issue.id}
+                className="cursor-pointer"
+                onClick={() =>
+                  navigate(`/projects/${issue.projectId}/issues/${issue.id}`)
+                }
+              >
+                <TableCell className="max-w-[28rem]">
+                  <IssueTitle issue={issue} />
+                </TableCell>
+                <TableCell className="text-sm">
+                  {issue.projectDisplayName}
+                </TableCell>
+                <TableCell className="text-sm whitespace-nowrap">
+                  {issueUiUtils.impactText(issue)}
+                </TableCell>
+                <TableCell className="text-sm whitespace-nowrap">
+                  <FormattedDate date={new Date(issue.lastSeenAt)} />
+                </TableCell>
+                <TableCell>
+                  <IssueStatusBadge
+                    status={issue.status}
+                    reopened={issue.reopened}
+                    muted={false}
+                  />
+                </TableCell>
+                <TableCell>
+                  <IssueSeverityBadge severity={issue.severity} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </ConsoleTableFrame>
       {overview.latest.length >= LATEST_LIMIT && (
         <span className="text-xs text-muted-foreground">
           {t(
@@ -239,7 +244,9 @@ function IssueTitle({ issue }: { issue: IssueOverviewItem }) {
         </TextWithTooltip>
         <span className="truncate text-xs text-muted-foreground">
           {detail}
-          {issue.errorCode ? ` · ${issue.errorCode}` : ''}
+          {issue.errorCode
+            ? ` · ${runLogUiUtils.errorCodeLabel(issue.errorCode)}`
+            : ''}
         </span>
       </div>
     </div>

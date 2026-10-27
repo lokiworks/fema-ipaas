@@ -5,7 +5,7 @@ import {
 import { t } from 'i18next';
 import { useState } from 'react';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -32,8 +32,7 @@ export default function AccessRequestsPage() {
   const pendingCount = tenantAccessHooks.usePendingRequestCount();
 
   return (
-    <CenteredPage
-      widthClassName="max-w-[64rem]"
+    <ConsolePage
       title={t('Permission requests')}
       description={t(
         'Members can ask for modules they do not have. How they are told is set in permission settings.',
@@ -72,12 +71,12 @@ export default function AccessRequestsPage() {
         {isLoading ? (
           <Skeleton className="h-48 w-full" />
         ) : (
-          <Table>
+          <Table className="min-w-[44rem]">
             <TableHeader>
               <TableRow>
                 <TableHead>{t('Requester')}</TableHead>
                 <TableHead className="w-36">{t('Module')}</TableHead>
-                <TableHead>{t('Reason')}</TableHead>
+                <TableHead>{t('Request reason')}</TableHead>
                 <TableHead className="w-36">{t('Requested')}</TableHead>
                 <TableHead className="w-36">{t('Status')}</TableHead>
                 <TableHead className="w-40" />
@@ -100,7 +99,7 @@ export default function AccessRequestsPage() {
           </Table>
         )}
       </div>
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

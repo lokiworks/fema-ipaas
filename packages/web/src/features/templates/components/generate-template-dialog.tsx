@@ -52,7 +52,10 @@ export function GenerateTemplateDialog({
 }: GenerateTemplateDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent
+        className="max-w-lg"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <GenerateTemplateBody
           key={open ? 'open' : 'closed'}
           workflowId={workflowId}
@@ -160,6 +163,7 @@ function GenerateTemplateForm({
             id="generate-template-workflow"
             value={workflowName}
             readOnly
+            disabled
           />
         </div>
         <FormField

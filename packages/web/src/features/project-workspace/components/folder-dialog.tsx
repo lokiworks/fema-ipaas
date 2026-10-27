@@ -26,6 +26,8 @@ import { api } from '@/lib/api';
 import { projectWorkspaceHooks } from '../hooks/project-workspace-hooks';
 import { workspaceUtils } from '../lib/workspace-utils';
 
+import { CharacterCounter } from './character-counter';
+
 export function FolderDialog({
   open,
   onOpenChange,
@@ -138,10 +140,16 @@ function FolderForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel showRequiredIndicator>{t('Folder name')}</FormLabel>
-              <Input {...field} autoFocus maxLength={FOLDER_NAME_MAX_LENGTH} />
-              <p className="text-xs text-muted-foreground">
-                {field.value.length}/{FOLDER_NAME_MAX_LENGTH}
-              </p>
+              <CharacterCounter
+                length={field.value.length}
+                max={FOLDER_NAME_MAX_LENGTH}
+              >
+                <Input
+                  {...field}
+                  autoFocus
+                  maxLength={FOLDER_NAME_MAX_LENGTH}
+                />
+              </CharacterCounter>
               {duplicate && (
                 <p className="text-sm text-destructive">
                   {t('folderNameTaken')}

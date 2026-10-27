@@ -11,7 +11,7 @@ import { t } from 'i18next';
 import { BellRing } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -35,8 +35,7 @@ export default function UsageLimitsPage() {
   const rows = projects?.data ?? [];
 
   return (
-    <CenteredPage
-      widthClassName="max-w-5xl"
+    <ConsolePage
       title={t('Usage and limits')}
       description={t(
         'Instance limits come from the deployment configuration; project limits are adjusted in Projects and limits. Run counts exclude debug runs.',
@@ -82,7 +81,7 @@ export default function UsageLimitsPage() {
           </section>
         </div>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 
@@ -251,10 +250,10 @@ function InstanceLimitCard({ limit }: { limit: InstanceLimit }) {
         <span className="text-xs text-muted-foreground">
           {limitsUtils.enforcementHint(limit.key)}
         </span>
-        <div className="mt-auto flex flex-col gap-0.5 pt-1">
-          <code className="text-xs">{limit.envVar}</code>
-          <span className="text-xs text-muted-foreground">
-            {limitsUtils.sourceLabel(limit)}
+        <div className="mt-auto flex min-w-0 flex-col gap-0.5 pt-1">
+          <span className="text-xs">{limitsUtils.sourceLabel(limit)}</span>
+          <span className="break-all text-[11px] text-muted-foreground">
+            {t('Self-hosted setting: {name}', { name: limit.envVar })}
           </span>
         </div>
       </CardContent>
@@ -275,7 +274,7 @@ function ProjectUsageTable({
     (a, b) => b.monthlyRuns.used - a.monthlyRuns.used,
   );
   return (
-    <Table>
+    <Table className="min-w-[44rem]">
       <TableHeader>
         <TableRow>
           <TableHead>{t('Project')}</TableHead>

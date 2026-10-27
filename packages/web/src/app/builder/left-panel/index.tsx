@@ -23,13 +23,22 @@ import { ValidationPanel } from './validation-panel';
 export function BuilderLeftPanel() {
   const { errorCount, warningCount } = useBuilderValidation();
   const [recordsWidth, setRecordsWidth] = useState(MIN_RECORDS_WIDTH);
-  const [leftSidebar, setLeftSidebar, openPicker, workflowVersion] =
-    useBuilderStateContext((state) => [
-      state.leftSidebar,
-      state.setLeftSidebar,
-      state.setOpenedConnectorSelectorStepNameOrAddButtonId,
-      state.workflowVersion,
-    ]);
+  const [
+    leftSidebar,
+    setLeftSidebar,
+    openPicker,
+    workflowVersion,
+    pickerOperation,
+  ] = useBuilderStateContext((state) => [
+    state.leftSidebar,
+    state.setLeftSidebar,
+    state.setOpenedConnectorSelectorStepNameOrAddButtonId,
+    state.workflowVersion,
+    state.connectorSelectorOperation,
+  ]);
+  const isPanelVisible =
+    leftSidebar !== LeftSideBarType.NONE &&
+    (leftSidebar !== LeftSideBarType.CONNECTOR_PICKER || !!pickerOperation);
 
   const handleSelect = (type: LeftSideBarType) => {
     if (leftSidebar === LeftSideBarType.CONNECTOR_PICKER) {
@@ -44,7 +53,7 @@ export function BuilderLeftPanel() {
   };
 
   return (
-    <div className="flex h-full shrink-0 flex-row">
+    <div className="pointer-events-none absolute inset-y-0 left-0 z-50 flex flex-row items-start gap-2 p-3 pb-16">
       <ToolRail
         active={leftSidebar}
         onSelect={handleSelect}
@@ -55,14 +64,14 @@ export function BuilderLeftPanel() {
               : { count: warningCount, tone: 'warning' },
         }}
       />
-      {leftSidebar !== LeftSideBarType.NONE && (
+      {isPanelVisible && (
         <div
-          className="relative flex h-full shrink-0 flex-col border-r bg-background"
+          className="pointer-events-auto relative flex h-full shrink-0 flex-col overflow-hidden rounded-lg border bg-background shadow-md"
           style={{
             width:
               leftSidebar === LeftSideBarType.RUNS
                 ? recordsWidth
-                : DEFAULT_PANEL_WIDTH,
+                : leftPanelWidth(leftSidebar),
           }}
         >
           {leftSidebar === LeftSideBarType.CONNECTOR_PICKER && (
@@ -82,6 +91,21 @@ export function BuilderLeftPanel() {
       )}
     </div>
   );
+}
+
+export function leftPanelWidth(type: LeftSideBarType): number {
+  switch (type) {
+    case LeftSideBarType.NONE:
+      return 0;
+    case LeftSideBarType.CONNECTOR_PICKER:
+      return PICKER_PANEL_WIDTH;
+    case LeftSideBarType.RUNS:
+      return MIN_RECORDS_WIDTH;
+    case LeftSideBarType.VERSIONS:
+      return VERSIONS_PANEL_WIDTH;
+    default:
+      return DEFAULT_PANEL_WIDTH;
+  }
 }
 
 function PanelResizeHandle({
@@ -143,5 +167,7 @@ function resolvePickerTarget(workflowVersion: WorkflowVersion): {
 }
 
 const DEFAULT_PANEL_WIDTH = 260;
+const PICKER_PANEL_WIDTH = 340;
+const VERSIONS_PANEL_WIDTH = 360;
 const MIN_RECORDS_WIDTH = 520;
 const MAX_RECORDS_WIDTH = 960;

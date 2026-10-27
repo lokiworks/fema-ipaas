@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   AccessibleConnection,
   connectionAccessUtils,
@@ -26,6 +27,10 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { NewConnectionDialog } from '@/app/connections/new-connection-dialog';
 import { ReconnectConnectionDialog } from '@/app/connections/reconnect-connection-dialog';
 import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
+import {
+  ConsolePage,
+  ConsoleTableFrame,
+} from '@/components/custom/console-page';
 import {
   CURSOR_QUERY_PARAM,
   DataTable,
@@ -200,10 +205,12 @@ function ConnectionsPage() {
   const { connectors } = connectorsHooks.useConnectors({
     skipProjectFilter: true,
   });
-  const connectorOptions = (connectors ?? []).map((connector) => ({
-    label: connector.displayName,
-    value: connector.name,
-  }));
+  const connectorOptions = (connectors ?? [])
+    .filter((connector) => !isNil(connector.auth))
+    .map((connector) => ({
+      label: connector.displayName,
+      value: connector.name,
+    }));
   const { data: myProjects } = projectCollectionUtils.useAll();
 
   const { mutate: revalidateConnection } =
@@ -551,16 +558,12 @@ function ConnectionsPage() {
   ];
 
   return (
-    <div className="flex w-full flex-col">
-      <div className="flex items-start justify-between px-4 pt-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-base font-semibold">{t('Connections')}</h1>
-          <p className="max-w-xl text-sm text-muted-foreground">
-            {t(
-              'Connections store the accounts and secrets needed to access third-party apps. They belong to their creator and can be shared with teammates to use or co-edit.',
-            )}
-          </p>
-        </div>
+    <ConsolePage
+      title={t('Connections')}
+      description={t(
+        'Connections store the accounts and secrets needed to access third-party apps. They belong to their creator and can be shared with teammates to use or co-edit.',
+      )}
+      actions={
         <NewConnectionDialog
           isGlobalConnection={false}
           onConnectionCreated={invalidateAccessible}
@@ -569,133 +572,138 @@ function ConnectionsPage() {
             {t('New Connection')}
           </AnimatedIconButton>
         </NewConnectionDialog>
-      </div>
-      <DataTable
-        emptyStateTextTitle={
-          filtering
-            ? t('No connections match these filters')
-            : t('No connections yet')
-        }
-        emptyStateTextDescription={
-          filtering
-            ? t('Try a different search, or clear the filters and try again.')
-            : t('Create a connection so workflow steps can call this account.')
-        }
-        emptyStateIcon={<Link2 className="size-14" />}
-        columns={columns}
-        page={connections}
-        isLoading={connectionsLoading}
-        isError={connectionsError}
-        onRowClick={(row) => setDetailId(row.id)}
-        getRowClassName={(row) => (row.id === detailId ? 'bg-accent/40' : '')}
-        customFilters={[
-          <Input
-            key="search"
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder={t('Search by name, account or connector')}
-            className="w-64"
-          />,
-          <Select
-            key="connectorName"
-            value={connectorName ?? 'ALL'}
-            onValueChange={(value) =>
-              setFilterParam('connectorName', value === 'ALL' ? null : value)
-            }
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder={t('App')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{t('All Apps')}</SelectItem>
-              {connectorOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>,
-          <Select
-            key="statusGroup"
-            value={statusGroup ?? 'ALL'}
-            onValueChange={(value) =>
-              setFilterParam('statusGroup', value === 'ALL' ? null : value)
-            }
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder={t('Status')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{t('All')}</SelectItem>
-              <SelectItem value="ACTIVE">{t('Connected')}</SelectItem>
-              <SelectItem value="BROKEN">{t('Needs action')}</SelectItem>
-            </SelectContent>
-          </Select>,
-          <Select
-            key="availableInProjectId"
-            value={availableInProjectId ?? 'ALL'}
-            onValueChange={(value) =>
-              setFilterParam(
-                'availableInProjectId',
-                value === 'ALL' ? null : value,
-              )
-            }
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder={t('Available Projects')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">{t('All Projects')}</SelectItem>
-              {myProjects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.displayName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>,
-          ...(filtering
-            ? [
+      }
+    >
+      <ConsoleTableFrame>
+        <DataTable
+          emptyStateTextTitle={
+            filtering
+              ? t('No connections match these filters')
+              : t('No connections yet')
+          }
+          emptyStateTextDescription={
+            filtering
+              ? t('Try a different search, or clear the filters and try again.')
+              : t(
+                  'Create a connection so workflow steps can call this account.',
+                )
+          }
+          emptyStateIcon={<Link2 className="size-14" />}
+          columns={columns}
+          page={connections}
+          isLoading={connectionsLoading}
+          isError={connectionsError}
+          onRowClick={(row) => setDetailId(row.id)}
+          getRowClassName={(row) => (row.id === detailId ? 'bg-accent/40' : '')}
+          customFilters={[
+            <Input
+              key="search"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder={t('Search by name, account or connector')}
+              className="w-64"
+            />,
+            <Select
+              key="connectorName"
+              value={connectorName ?? 'ALL'}
+              onValueChange={(value) =>
+                setFilterParam('connectorName', value === 'ALL' ? null : value)
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder={t('App')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t('All Apps')}</SelectItem>
+                {connectorOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>,
+            <Select
+              key="statusGroup"
+              value={statusGroup ?? 'ALL'}
+              onValueChange={(value) =>
+                setFilterParam('statusGroup', value === 'ALL' ? null : value)
+              }
+            >
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder={t('Status')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t('All')}</SelectItem>
+                <SelectItem value="ACTIVE">{t('Connected')}</SelectItem>
+                <SelectItem value="BROKEN">{t('Needs action')}</SelectItem>
+              </SelectContent>
+            </Select>,
+            <Select
+              key="availableInProjectId"
+              value={availableInProjectId ?? 'ALL'}
+              onValueChange={(value) =>
+                setFilterParam(
+                  'availableInProjectId',
+                  value === 'ALL' ? null : value,
+                )
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder={t('Available Projects')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t('All Projects')}</SelectItem>
+                {myProjects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.displayName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>,
+            ...(filtering
+              ? [
+                  <Button
+                    key="clear"
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                  >
+                    <X className="mr-1 h-3.5 w-3.5" />
+                    {t('Clear Filters')}
+                  </Button>,
+                ]
+              : []),
+          ]}
+          toolbarButtons={[
+            <div
+              key="ownership"
+              className="flex items-center gap-1 rounded-md bg-muted p-1"
+            >
+              {OWNERSHIP_OPTIONS.map((option) => (
                 <Button
-                  key="clear"
-                  variant="ghost"
+                  key={option.value}
+                  type="button"
                   size="sm"
-                  onClick={clearFilters}
+                  variant={ownership === option.value ? 'secondary' : 'ghost'}
+                  className="h-7"
+                  onClick={() =>
+                    setFilterParam(
+                      'ownership',
+                      option.value === ConnectionOwnershipFilter.ALL
+                        ? null
+                        : option.value,
+                    )
+                  }
                 >
-                  <X className="mr-1 h-3.5 w-3.5" />
-                  {t('Clear Filters')}
-                </Button>,
-              ]
-            : []),
-        ]}
-        toolbarButtons={[
-          <div
-            key="ownership"
-            className="flex items-center gap-1 rounded-md bg-muted p-1"
-          >
-            {OWNERSHIP_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                type="button"
-                size="sm"
-                variant={ownership === option.value ? 'secondary' : 'ghost'}
-                className="h-7"
-                onClick={() =>
-                  setFilterParam(
-                    'ownership',
-                    option.value === ConnectionOwnershipFilter.ALL
-                      ? null
-                      : option.value,
-                  )
-                }
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>,
-        ]}
-      />
+                  {option.label}
+                </Button>
+              ))}
+            </div>,
+          ]}
+        />
+      </ConsoleTableFrame>
       {missingConnectionWarning && (
-        <div className="px-4 pt-2">
+        <div>
           <Alert variant="warning">
             <AlertDescription className="flex items-center justify-between gap-2">
               <span>
@@ -780,7 +788,7 @@ function ConnectionsPage() {
           onRename={invalidateAccessible}
         />
       )}
-    </div>
+    </ConsolePage>
   );
 }
 

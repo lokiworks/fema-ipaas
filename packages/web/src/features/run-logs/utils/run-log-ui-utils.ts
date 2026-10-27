@@ -190,6 +190,25 @@ function errorHint(errorCode: string): string {
   );
 }
 
+function errorCodeLabel(errorCode: string): string {
+  switch (errorCode) {
+    case 'STEP_FAILED':
+      return t('Step execution failed');
+    case 'STEP_TIMEOUT':
+      return t('Step execution timed out');
+    case 'CONNECTION_EXPIRED':
+      return t('Connection authorization expired');
+    case 'CONNECTION_NOT_FOUND':
+      return t('Connection was deleted');
+    case 'CONNECTION_LOADING_FAILED':
+      return t('Connection failed to load');
+  }
+  const httpStatus = HTTP_CODE_PATTERN.exec(errorCode)?.[1];
+  return isNil(httpStatus)
+    ? errorCode
+    : t('The other system returned HTTP {status}', { status: httpStatus });
+}
+
 function connectionStatusLabel(status: string | null | undefined): string {
   switch (status) {
     case ConnectionStatus.ACTIVE:
@@ -217,7 +236,7 @@ function conditionLabel({
   const label = fieldLabel(condition.field);
   switch (condition.field) {
     case RunLogConditionField.PROJECT:
-      return `${label}: ${condition.values
+      return `${label}${t('labelSeparator')}${condition.values
         .map(
           (id) =>
             scope?.projects.find((project) => project.id === id)?.displayName ??
@@ -225,7 +244,7 @@ function conditionLabel({
         )
         .join(t('listSeparator'))}`;
     case RunLogConditionField.WORKFLOW:
-      return `${label}: ${condition.values
+      return `${label}${t('labelSeparator')}${condition.values
         .map(
           (id) =>
             scope?.workflows.find((workflow) => workflow.id === id)
@@ -233,15 +252,15 @@ function conditionLabel({
         )
         .join(t('listSeparator'))}`;
     case RunLogConditionField.STATUS:
-      return `${label}: ${condition.values
+      return `${label}${t('labelSeparator')}${condition.values
         .map((status) => executionUtils.getStatusLabel(status))
         .join(t('listSeparator'))}`;
     case RunLogConditionField.CONNECTOR:
-      return `${label}: ${condition.values
+      return `${label}${t('labelSeparator')}${condition.values
         .map((name) => connectorName(name))
         .join(t('listSeparator'))}`;
     case RunLogConditionField.HANDLED:
-      return `${label}: ${condition.values
+      return `${label}${t('labelSeparator')}${condition.values
         .map((kind) => handledKindLabel(kind))
         .join(t('listSeparator'))}`;
     case RunLogConditionField.CONTENT:
@@ -297,6 +316,7 @@ export const runLogUiUtils = {
   retentionText,
   maxRetentionDays,
   errorHint,
+  errorCodeLabel,
   connectionStatusLabel,
   conditionLabel,
   stepNodes,
@@ -311,6 +331,8 @@ export type RunLogStepNode = {
   input: unknown;
   output: unknown;
 };
+
+const HTTP_CODE_PATTERN = /^HTTP_(\d{3})$/;
 
 const BLOCKED_UNTIL_FORMAT: Intl.DateTimeFormatOptions = {
   year: 'numeric',

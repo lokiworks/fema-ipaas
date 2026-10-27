@@ -50,9 +50,7 @@ const StepNodeRunDurationAndConnectorName = ({
   const aiGenerated = useBuilderStateContext(
     (state) => state.workflow.metadata?.['aiGenerated'] === true,
   );
-  const subtitle = isNil(displayNumber)
-    ? connectorDisplayName
-    : `${connectorDisplayName} · ${displayNumber}`;
+  const subtitle = displayNumber ?? connectorDisplayName;
   const selectedStepOutput = useMemo(() => {
     return run && run.steps
       ? executionUtils.extractStepOutput(stepName, loopIndexes, run.steps)
@@ -71,13 +69,10 @@ const StepNodeRunDurationAndConnectorName = ({
         key={stepName + selectedStepOutput?.duration}
       >
         <div
-          className={cn(
-            'text-[11px] text-muted-foreground truncate grow shrink',
-            {
-              'w-full': !isHorizontal,
-              'text-center': isHorizontal,
-            },
-          )}
+          className={cn('text-xs text-muted-foreground truncate grow shrink', {
+            'w-full': !isHorizontal,
+            'text-center': isHorizontal,
+          })}
         >
           {subtitle}
         </div>

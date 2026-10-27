@@ -7,7 +7,7 @@ import { _getImportOperations } from './import-workflow'
 import { WorkflowOperationRequest, WorkflowOperationType, StepLocationRelativeToParent } from '.'
 
 
-function _duplicateStep(stepName: string, workflowVersion: WorkflowVersion): WorkflowOperationRequest[] {
+function _duplicateStep(stepName: string, workflowVersion: WorkflowVersion, copySuffix?: string): WorkflowOperationRequest[] {
     const clonedAction: WorkflowAction = JSON.parse(JSON.stringify(workflowStructureUtil.getActionOrThrow(stepName, workflowVersion.trigger)))
     const clonedActionWithoutNextAction = {
         ...clonedAction,
@@ -15,7 +15,7 @@ function _duplicateStep(stepName: string, workflowVersion: WorkflowVersion): Wor
     }
     const oldNameToNewName = addActionUtils.mapToNewNames(workflowVersion, [clonedActionWithoutNextAction])
     const clonedSubflow = workflowStructureUtil.transferStep(clonedActionWithoutNextAction, (step: WorkflowAction) => {
-        return addActionUtils.clone(step, oldNameToNewName)
+        return addActionUtils.clone({ step, oldNameToNewName, copySuffix })
     })
     const importOperations = _getImportOperations(clonedSubflow)
 
@@ -36,13 +36,14 @@ function _duplicateBranch(
     routerName: string,
     childIndex: number,
     workflowVersion: WorkflowVersion,
+    copySuffix?: string,
 ): WorkflowOperationRequest[] {
     const router = workflowStructureUtil.getActionOrThrow(routerName, workflowVersion.trigger)
     const clonedRouter: RouterAction = JSON.parse(JSON.stringify(router))
     const operations: WorkflowOperationRequest[] = [{
         type: WorkflowOperationType.ADD_BRANCH,
         request: {
-            branchName: `${clonedRouter.settings.branches[childIndex].branchName} Copy`,
+            branchName: `${clonedRouter.settings.branches[childIndex].branchName} ${copySuffix ?? 'Copy'}`,
             branchIndex: childIndex + 1,
             stepName: routerName,
             conditions: clonedRouter.settings.branches[childIndex].branchType === BranchExecutionType.CONDITION ? clonedRouter.settings.branches[childIndex].conditions : undefined,
@@ -53,7 +54,7 @@ function _duplicateBranch(
     if (!isNil(childRouter)) {
         const oldNameToNewName = addActionUtils.mapToNewNames(workflowVersion, [childRouter])
         const clonedSubflow = workflowStructureUtil.transferStep(childRouter, (step: WorkflowAction) => {
-            return addActionUtils.clone(step, oldNameToNewName)
+            return addActionUtils.clone({ step, oldNameToNewName, copySuffix })
         })
         const importOperations = _getImportOperations(clonedSubflow)
         operations.push({

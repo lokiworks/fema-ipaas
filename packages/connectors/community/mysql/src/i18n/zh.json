@@ -39,5 +39,11 @@
   "Specify the columns you want to select": "指定要查询的列",
   "The query string to execute, use ? for arguments to avoid SQL injection.": "要执行的查询语句，使用 ? 作为参数占位符以避免 SQL 注入。",
   "Arguments to use in the query, if any. Should be in the same order as the ? in the query string..": "查询中使用的参数（如有），顺序需与查询语句里的 ? 一致。",
-  "MySQL": "MySQL"
+  "MySQL": "MySQL",
+  "New or updated row": "新增或更新的行",
+  "Poll a monotonically increasing ID or update time, with a unique key to retain rows sharing the same timestamp": "轮询单调递增的 ID 或更新时间，并用唯一键区分更新时间相同的行，避免漏掉",
+  "Increasing ID or update timestamp column": "递增 ID 或更新时间列",
+  "Unique key column": "唯一键列",
+  "Must increase as rows are added or updated. Rows arriving with an older value require full reconciliation.": "新增或更新行时这一列的值必须变大。值比已读位置更旧的行不会被触发，需要靠全量对账补上。",
+  "Connection": "连接"
 }

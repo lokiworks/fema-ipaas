@@ -6,7 +6,6 @@ import {
 import React, { useState } from 'react';
 
 import { CardListItemSkeleton } from '@/components/custom/card-list';
-import { Separator } from '@/components/ui/separator';
 import { VirtualizedScrollArea } from '@/components/ui/virtualized-scroll-area';
 import {
   connectorsHooks,
@@ -79,11 +78,28 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
   if (
     [
       ConnectorSelectorTabType.EXPLORE,
+      ConnectorSelectorTabType.COMPONENTS,
       ConnectorSelectorTabType.AI_AND_AGENTS,
       ConnectorSelectorTabType.APPROVALS,
     ].includes(selectedTab)
   ) {
     return null;
+  }
+  if (
+    showActionsOrTriggersList &&
+    selectedConnectorMetadataInConnectorSelector
+  ) {
+    return (
+      <div className="w-full min-w-0">
+        <ConnectorActionsOrTriggersList
+          stepMetadataWithSuggestions={
+            selectedConnectorMetadataInConnectorSelector
+          }
+          hideConnectorIconAndDescription={false}
+          operation={operation}
+        />
+      </div>
+    );
   }
   return (
     <>
@@ -159,19 +175,6 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
 
         {noResultsFound && <NoResultsFound />}
       </div>
-
-      {showActionsOrTriggersList && (
-        <>
-          <Separator orientation="vertical" className="h-full" />
-          <ConnectorActionsOrTriggersList
-            stepMetadataWithSuggestions={
-              selectedConnectorMetadataInConnectorSelector
-            }
-            hideConnectorIconAndDescription={false}
-            operation={operation}
-          />
-        </>
-      )}
     </>
   );
 };

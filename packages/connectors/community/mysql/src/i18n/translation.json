@@ -39,5 +39,11 @@
   "Specify the columns you want to select": "Specify the columns you want to select",
   "The query string to execute, use ? for arguments to avoid SQL injection.": "The query string to execute, use ? for arguments to avoid SQL injection.",
   "Arguments to use in the query, if any. Should be in the same order as the ? in the query string..": "Arguments to use in the query, if any. Should be in the same order as the ? in the query string..",
-  "MySQL": "MySQL"
+  "MySQL": "MySQL",
+  "New or updated row": "New or updated row",
+  "Poll a monotonically increasing ID or update time, with a unique key to retain rows sharing the same timestamp": "Poll a monotonically increasing ID or update time, with a unique key to retain rows sharing the same timestamp",
+  "Increasing ID or update timestamp column": "Increasing ID or update timestamp column",
+  "Unique key column": "Unique key column",
+  "Must increase as rows are added or updated. Rows arriving with an older value require full reconciliation.": "Must increase as rows are added or updated. Rows arriving with an older value require full reconciliation.",
+  "Connection": "Connection"
 }

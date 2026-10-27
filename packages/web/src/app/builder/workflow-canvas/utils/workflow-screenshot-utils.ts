@@ -22,11 +22,12 @@ async function downloadWorkflowAsImage({
   const workflowNodes = nodes.filter(
     (node) => node.type !== CanvasNodeType.NOTE,
   );
+  const noteNodes = nodes.filter((node) => node.type === CanvasNodeType.NOTE);
   if (!viewportElement || workflowNodes.length === 0) {
     throw new Error('No workflow steps available to capture');
   }
   await sleep();
-  const bounds = calculateNodesBoundsFromDom(workflowNodes);
+  const bounds = calculateNodesBoundsFromDom([...workflowNodes, ...noteNodes]);
   if (!bounds) {
     throw new Error('Could not determine the workflow bounds to capture');
   }
@@ -179,11 +180,8 @@ function isCapturedElement(domNode: Element): boolean {
   const isBuilderPortal = domNode.classList.contains(
     'react-flow__viewport-portal',
   );
-  const isNote = domNode.classList.contains(
-    `react-flow__node-${CanvasNodeType.NOTE}`,
-  );
   const isExcluded = domNode.hasAttribute(SCREENSHOT_EXCLUDE_ATTRIBUTE);
-  return !isBuilderPortal && !isNote && !isExcluded;
+  return !isBuilderPortal && !isExcluded;
 }
 
 /**
@@ -488,7 +486,7 @@ function getCanvasBackgroundColor(): string {
 }
 
 function sanitizeFileName(name: string): string {
-  const sanitized = name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
+  const sanitized = name.replace(/[^\p{L}\p{N}\-_ ]/gu, '').trim();
   return sanitized.length > 0 ? sanitized : 'workflow';
 }
 

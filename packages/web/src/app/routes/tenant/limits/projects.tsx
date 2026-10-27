@@ -3,7 +3,7 @@ import { t } from 'i18next';
 import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,8 +27,7 @@ export default function ProjectLimitsPage() {
   const rows = data?.data ?? [];
 
   return (
-    <CenteredPage
-      widthClassName="max-w-5xl"
+    <ConsolePage
       title={t('Projects and limits')}
       description={t(
         'Workflow and monthly run limits of each project. Once a project reaches its monthly limit, new runs are refused and recorded in the run log.',
@@ -37,7 +36,7 @@ export default function ProjectLimitsPage() {
       {isLoading ? (
         <Skeleton className="h-48 w-full" />
       ) : (
-        <Table>
+        <Table className="min-w-[44rem]">
           <TableHeader>
             <TableRow>
               <TableHead>{t('Project')}</TableHead>
@@ -107,7 +106,7 @@ export default function ProjectLimitsPage() {
           }
         }}
       />
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

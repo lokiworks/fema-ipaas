@@ -12,6 +12,7 @@ describe('mcpServiceUiUtils.toolNameFor', () => {
     expect(
       mcpServiceUiUtils.toolNameFor({
         displayName: 'Create Feishu Account',
+        fallback: 'tool',
         taken: [],
       }),
     ).toBe('create_feishu_account');
@@ -21,6 +22,7 @@ describe('mcpServiceUiUtils.toolNameFor', () => {
     expect(
       mcpServiceUiUtils.toolNameFor({
         displayName: 'sync',
+        fallback: 'tool',
         taken: ['sync'],
       }),
     ).toBe('sync_2');

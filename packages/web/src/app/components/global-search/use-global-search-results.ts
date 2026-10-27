@@ -6,6 +6,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
+import { connectorsHooks } from '@/features/connectors/hooks/connectors-hooks';
 import { foldersApi } from '@/features/folders';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
 import { workflowsApi } from '@/features/workflows';
@@ -40,6 +41,19 @@ function getTimePeriod(
   return 'last-30-days';
 }
 
+function pageMatchesQuery({
+  page,
+  query,
+}: {
+  page: StaticPage;
+  query: string;
+}): boolean {
+  const needle = query.toLowerCase();
+  return [t(page.label), page.label].some((label) =>
+    label.toLowerCase().includes(needle),
+  );
+}
+
 export function useGlobalSearchResults(query: string, open: boolean) {
   const projectId = authenticationSession.getProjectId() ?? '';
   const isTenantAdmin = useIsTenantAdmin();
@@ -51,6 +65,9 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     ? getProjectName(currentProject)
     : null;
   const hasQuery = query.length > 0;
+  const { connectors } = connectorsHooks.useConnectors({
+    skipProjectFilter: true,
+  });
 
   const accessHistory = hideTables
     ? getAccessHistory().filter((h) => h.type !== 'table')
@@ -99,7 +116,8 @@ export function useGlobalSearchResults(query: string, open: boolean) {
   const matchedPages = STATIC_PAGES.filter(
     (p) =>
       (!p.requiresTenantAdmin || isTenantAdmin) &&
-      (!hasQuery || p.label.toLowerCase().includes(query.toLowerCase())),
+      (!p.projectScoped || !!projectId) &&
+      (!hasQuery || pageMatchesQuery({ page: p, query })),
   ).slice(0, SEARCH_LIMIT);
 
   const matchedProjects = allProjects
@@ -141,9 +159,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       id: `folder-${folder.id}`,
       type: 'folder' as const,
       label: folder.displayName,
-      href:
-        authenticationSession.appendProjectRoutePrefix('/automations') +
-        `?folder=${folder.id}`,
+      href: authenticationSession.appendProjectRoutePrefix('/home'),
       projectName: currentProjectName,
     }));
 
@@ -156,7 +172,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
       id: `project-${project.id}`,
       type: 'project' as const,
       label: name,
-      href: `/projects/${project.id}/automations`,
+      href: `/projects/${project.id}/home`,
       iconBgColor: palette?.color,
       iconTextColor: palette?.textColor,
       iconLetter: name.charAt(0).toUpperCase(),
@@ -167,7 +183,9 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     id: page.id,
     type: 'page' as const,
     label: t(page.label),
-    href: page.href,
+    href: page.projectScoped
+      ? authenticationSession.appendProjectRoutePrefix(page.href)
+      : page.href,
     pageIcon: page.icon,
   }));
 
@@ -307,9 +325,14 @@ export function useGlobalSearchResults(query: string, open: boolean) {
         id: row.id,
         type: row.kind,
         resourceType: row.resourceType,
-        label: row.label,
+        label: globalSearchUtils.displayLabel(row),
         href: row.href,
-        subtitle: row.subtitle,
+        subtitle: globalSearchUtils.displaySubtitle({
+          row,
+          connectorName: (name) =>
+            connectors?.find((connector) => connector.name === name)
+              ?.displayName ?? name,
+        }),
         projectName: row.projectName,
       })),
     isLoading: false,

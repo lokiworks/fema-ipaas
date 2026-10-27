@@ -258,7 +258,9 @@ function ErrorCard({
   return (
     <div className="flex flex-col gap-2 rounded-md border border-destructive-200 bg-destructive-50 p-3 text-sm dark:border-destructive-800 dark:bg-destructive-950">
       <div className="font-medium text-destructive-700 dark:text-destructive-200">
-        {t('Error · {code}', { code: classified.errorCode })}
+        {t('Error · {code}', {
+          code: runLogUiUtils.errorCodeLabel(classified.errorCode),
+        })}
       </div>
       <p className="whitespace-pre-wrap break-words">
         {classified.message.length > 0

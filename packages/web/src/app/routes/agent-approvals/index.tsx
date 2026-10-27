@@ -2,7 +2,7 @@ import { AgentApprovalStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useState } from 'react';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { agentApprovalsHooks, ApprovalCard } from '@/features/agent-approvals';
@@ -20,8 +20,7 @@ export function AgentApprovalsPage() {
     primary: true,
   });
   return (
-    <CenteredPage
-      widthClassName="max-w-[48rem]"
+    <ConsolePage
       title={t('Agent approvals')}
       description={t(
         'AI agents pause here before calling tools that change other systems. Approve to let the run continue; reject to make the agent go on without the call.',
@@ -55,6 +54,6 @@ export function AgentApprovalsPage() {
           ))}
         </div>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 }

@@ -8,7 +8,7 @@ import { t } from 'i18next';
 import { ArrowRightLeft } from 'lucide-react';
 import { useState } from 'react';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { SearchInput } from '@/components/custom/search-input';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
@@ -77,8 +77,7 @@ export default function ResourcesPage() {
   };
 
   return (
-    <CenteredPage
-      widthClassName="max-w-[64rem]"
+    <ConsolePage
       title={t('Integration resources')}
       description={t(
         'Every integration resource in the tenant. When someone leaves or changes teams, hand their resources over here.',
@@ -151,7 +150,7 @@ export default function ResourcesPage() {
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : (
-          <Table>
+          <Table className="min-w-[48rem]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10">
@@ -171,7 +170,7 @@ export default function ResourcesPage() {
                 <TableHead className="w-40">{t('Scope')}</TableHead>
                 <TableHead className="w-40">{t('Owner')}</TableHead>
                 <TableHead className="w-32">{t('Updated')}</TableHead>
-                <TableHead className="w-28" />
+                <TableHead className="w-28">{t('Actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -216,8 +215,9 @@ export default function ResourcesPage() {
                   </TableCell>
                   <TableCell>
                     <Button
-                      variant="ghost"
+                      variant="link"
                       size="sm"
+                      className="h-auto p-0"
                       onClick={() => setTransferring([resource])}
                     >
                       {t('Transfer')}
@@ -237,7 +237,7 @@ export default function ResourcesPage() {
           setPicked([]);
         }}
       />
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

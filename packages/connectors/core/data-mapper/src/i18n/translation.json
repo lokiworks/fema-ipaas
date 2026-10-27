@@ -10,5 +10,18 @@
   "Field mapping": "Field mapping",
   "Target fields and how each one is computed": "Target fields and how each one is computed",
   "Fail when a field cannot be mapped": "Fail when a field cannot be mapped",
-  "When off, fields that fail keep their unconverted value and the step succeeds": "When off, fields that fail keep their unconverted value and the step succeeds"
+  "When off, fields that fail keep their unconverted value and the step succeeds": "When off, fields that fail keep their unconverted value and the step succeeds",
+  "Look up a mapping": "Look up a mapping",
+  "Read mapping table rows": "Read mapping table rows",
+  "Save mapping table rows": "Save mapping table rows",
+  "Look up a binding without failing when it is missing": "Look up a binding without failing when it is missing",
+  "Read the latest project mapping table bindings": "Read the latest project mapping table bindings",
+  "Add missing bindings and report conflicting values": "Add missing bindings and report conflicting values",
+  "Mapping table": "Mapping table",
+  "Key": "Key",
+  "Rows": "Rows",
+  "When a value differs": "When a value differs",
+  "An array of objects with key and value fields.": "An array of objects with key and value fields.",
+  "Keep the existing value": "Keep the existing value",
+  "Replace the existing value": "Replace the existing value"
 }

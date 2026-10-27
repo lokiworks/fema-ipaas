@@ -12,6 +12,7 @@ import { t } from 'i18next';
 import { toast } from 'sonner';
 
 import { connectionsApi } from '@/features/connections/api/connections';
+import { defaultStepNames } from '@/features/workflows/utils/default-step-names';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { BuilderState } from '../../builder-hooks';
@@ -143,6 +144,7 @@ export async function pasteNodes({
     actions,
     workflowVersion,
     location,
+    defaultStepNames.copySuffix(),
   );
   applyOperations(addOperations);
   if (addOperations.length === 0) {

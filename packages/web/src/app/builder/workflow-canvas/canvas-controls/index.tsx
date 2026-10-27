@@ -7,7 +7,6 @@ import {
   GalleryVerticalEnd,
   Hand,
   ImageDown,
-  LoaderCircle,
   Map,
   Maximize,
   Minus,
@@ -108,22 +107,23 @@ const CanvasControls = ({
     setIsCapturingImage(false);
   };
 
-  const handleToggleOrientation = () => {
+  const handleToggleOrientation = async () => {
     const newOrientation =
       canvasOrientation === 'horizontal' ? 'vertical' : 'horizontal';
+    const expectedNodeCount = getNodes().length;
     setCanvasOrientation(newOrientation);
-    // the canvas remounts when the orientation changes, give it a frame to sync nodes before fitting
-    setTimeout(
-      () =>
-        handleFitToView({
-          isInitialRenderCall: false,
-          orientation: newOrientation,
-        }),
-      100,
-    );
+    await waitForNodes({ getNodes, expectedNodeCount });
+    handleFitToView({
+      isInitialRenderCall: false,
+      orientation: newOrientation,
+    });
   };
 
   const handleCreateNote = () => {
+    if (noteDragOverlayMode === NoteDragOverlayMode.CREATE) {
+      setDraggedNote(null, null);
+      return;
+    }
     setDraggedNote(
       {
         id: '',
@@ -154,22 +154,23 @@ const CanvasControls = ({
   const orientationLabel = isHorizontal
     ? t('Vertical layout')
     : t('Horizontal layout');
-  const noteLabel = t('Add note');
+  const noteLabel =
+    noteDragOverlayMode === NoteDragOverlayMode.CREATE
+      ? t('Cancel adding note')
+      : t('Add note');
 
   return (
     <div
       id="canvas-controls"
       className={cn(
-        'z-50 absolute bottom-2 left-0 flex items-center w-full pointer-events-none',
-        compact && 'justify-between gap-2 px-2',
+        'z-50 absolute bottom-3 left-0 flex w-full items-center justify-between gap-2 px-3 pointer-events-none',
         tiny && 'justify-center',
       )}
     >
       {!tiny && (
         <div
           className={cn(
-            'flex items-center justify-center gap-1 p-1.5 pointer-events-auto rounded-lg bg-background border border-sidebar-border',
-            compact ? 'shrink-0' : 'absolute ml-2',
+            'flex shrink-0 items-center justify-center gap-0.5 p-1 pointer-events-auto rounded-lg bg-background border shadow-sm',
           )}
         >
           <CanvasControlButton
@@ -196,12 +197,9 @@ const CanvasControls = ({
           )}
         </div>
       )}
-      {!compact && <div className="grow"></div>}
-
       <div
         className={cn(
-          'bg-background gap-2 flex items-center shadow-2xl justify-center border border-sidebar-border p-1.5 rounded-lg pointer-events-auto',
-          compact && 'min-w-0 gap-1',
+          'bg-background gap-0.5 flex min-w-0 items-center justify-center border p-1 rounded-lg shadow-sm pointer-events-auto',
         )}
         data-testid="canvas-controls-main"
       >
@@ -228,117 +226,112 @@ const CanvasControls = ({
           onClick={() => handleFitToView({ isInitialRenderCall: false })}
         />
         {!compact && (
-          <>
-            <CanvasControlButton
-              tooltip={fullScreenLabel}
-              icon={Maximize}
-              onClick={toggleFullScreen}
-            />
-            <CanvasControlButton
-              tooltip={downloadLabel}
-              icon={isCapturingImage ? LoaderCircle : ImageDown}
-              iconClassName={isCapturingImage ? 'animate-spin' : undefined}
-              disabled={isCapturingImage}
-              onClick={handleDownloadWorkflowAsImage}
-            />
-            <CanvasControlButton
-              tooltip={orientationLabel}
-              icon={isHorizontal ? GalleryVerticalEnd : GalleryHorizontalEnd}
-              onClick={handleToggleOrientation}
-            />
-          </>
+          <CanvasControlButton
+            tooltip={fullScreenLabel}
+            icon={Maximize}
+            onClick={toggleFullScreen}
+          />
         )}
         <div>
           <Separator orientation="vertical" className="h-5"></Separator>
         </div>
-        <CanvasControlButton
-          tooltip={t('Grab mode')}
-          icon={Hand}
-          active={isInGrabMode}
-          onClick={() => setPanningMode('grab')}
-        />
-        <CanvasControlButton
-          tooltip={t('Select mode')}
-          icon={MousePointer}
-          active={!isInGrabMode}
-          onClick={() => setPanningMode('pan')}
-        />
-        {!compact && !readonly && (
-          <CanvasControlButton
-            tooltip={noteLabel}
-            icon={StickyNote}
-            active={noteDragOverlayMode === NoteDragOverlayMode.CREATE}
-            onClick={handleCreateNote}
-          />
-        )}
-        {compact && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t('More canvas tools')}
-                data-testid="canvas-controls-more"
-              >
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top">
-              {tiny && (
-                <>
-                  <DropdownMenuItem
-                    onSelect={() => setShowMinimap(!showMinimap)}
-                  >
-                    <Map className="size-4" />
-                    {t('Minimap')}
-                  </DropdownMenuItem>
-                  {!readonly && (
-                    <>
-                      <DropdownMenuItem disabled={!canUndo} onSelect={undo}>
-                        <Undo2 className="size-4" />
-                        {t('Undo')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled={!canRedo} onSelect={redo}>
-                        <Redo2 className="size-4" />
-                        {t('Redo')}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </>
-              )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('More canvas tools')}
+              data-testid="canvas-controls-more"
+            >
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top">
+            {tiny && (
+              <>
+                <DropdownMenuItem onSelect={() => setShowMinimap(!showMinimap)}>
+                  <Map className="size-4" />
+                  {t('Minimap')}
+                </DropdownMenuItem>
+                {!readonly && (
+                  <>
+                    <DropdownMenuItem disabled={!canUndo} onSelect={undo}>
+                      <Undo2 className="size-4" />
+                      {t('Undo')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled={!canRedo} onSelect={redo}>
+                      <Redo2 className="size-4" />
+                      {t('Redo')}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </>
+            )}
+            {compact && (
               <DropdownMenuItem onSelect={toggleFullScreen}>
                 <Maximize className="size-4" />
                 {fullScreenLabel}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={isCapturingImage}
-                onSelect={handleDownloadWorkflowAsImage}
-              >
-                <ImageDown className="size-4" />
-                {downloadLabel}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={handleToggleOrientation}>
-                {isHorizontal ? (
-                  <GalleryVerticalEnd className="size-4" />
-                ) : (
-                  <GalleryHorizontalEnd className="size-4" />
-                )}
-                {orientationLabel}
-              </DropdownMenuItem>
-              {!readonly && (
-                <DropdownMenuItem onSelect={handleCreateNote}>
-                  <StickyNote className="size-4" />
-                  {noteLabel}
-                </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onSelect={() => setPanningMode(isInGrabMode ? 'pan' : 'grab')}
+            >
+              {isInGrabMode ? (
+                <MousePointer className="size-4" />
+              ) : (
+                <Hand className="size-4" />
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+              {isInGrabMode ? t('Select mode') : t('Grab mode')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isCapturingImage}
+              onSelect={handleDownloadWorkflowAsImage}
+            >
+              <ImageDown className="size-4" />
+              {downloadLabel}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => void handleToggleOrientation()}>
+              {isHorizontal ? (
+                <GalleryVerticalEnd className="size-4" />
+              ) : (
+                <GalleryHorizontalEnd className="size-4" />
+              )}
+              {orientationLabel}
+            </DropdownMenuItem>
+            {!readonly && (
+              <DropdownMenuItem onSelect={handleCreateNote}>
+                <StickyNote className="size-4" />
+                {noteLabel}
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      {!compact && <div className="grow"></div>}
     </div>
   );
 };
+
+function waitForNodes({
+  getNodes,
+  expectedNodeCount,
+}: {
+  getNodes: () => unknown[];
+  expectedNodeCount: number;
+}): Promise<void> {
+  return new Promise((resolve) => {
+    const startedAt = performance.now();
+    const check = () => {
+      const synced = getNodes().length >= expectedNodeCount;
+      const timedOut = performance.now() - startedAt > NODES_SYNC_TIMEOUT_MS;
+      if (synced || timedOut) {
+        requestAnimationFrame(() => resolve());
+        return;
+      }
+      requestAnimationFrame(check);
+    };
+    requestAnimationFrame(() => requestAnimationFrame(check));
+  });
+}
 
 function toggleFullScreen() {
   if (document.fullscreenElement) {
@@ -348,6 +341,7 @@ function toggleFullScreen() {
   void document.documentElement.requestFullscreen();
 }
 
+const NODES_SYNC_TIMEOUT_MS = 3000;
 const COMPACT_CANVAS_PX = 760;
 const TINY_CANVAS_PX = 460;
 

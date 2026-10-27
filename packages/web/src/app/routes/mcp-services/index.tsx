@@ -9,6 +9,7 @@ import { Plus, SearchX, Server } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   Empty,
   EmptyContent,
@@ -31,7 +32,6 @@ import {
 import { ModuleGate } from '@/features/tenant-access';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
-import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 type ListTab = 'ALL' | 'MINE' | 'OBTAINED';
 
@@ -109,21 +109,12 @@ function McpServicesContent() {
   );
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-4 w-full max-w-5xl py-4',
-        DASHBOARD_CONTENT_PADDING_X,
+    <ConsolePage
+      title={t('MCP services')}
+      description={t(
+        'Package connector actions and published workflows into MCP services that AI assistants like Claude and Cursor can call directly.',
       )}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-base font-semibold">{t('MCP services')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Package connector actions and published workflows into MCP services that AI assistants like Claude and Cursor can call directly.',
-            )}
-          </p>
-        </div>
+      actions={
         <PermissionNeededTooltip hasPermission={canWrite}>
           <Button
             size="sm"
@@ -134,7 +125,8 @@ function McpServicesContent() {
             {t('Create MCP service')}
           </Button>
         </PermissionNeededTooltip>
-      </div>
+      }
+    >
       <div className="flex items-center justify-between gap-4">
         <Tabs value={tab} onValueChange={(value) => setTab(value as ListTab)}>
           <TabsList>
@@ -282,7 +274,7 @@ function McpServicesContent() {
           }}
         />
       )}
-    </div>
+    </ConsolePage>
   );
 }
 

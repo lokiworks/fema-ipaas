@@ -1,5 +1,6 @@
 import { Permission } from '@fema-ipaas/core-utils';
 import { VariableWithoutSensitiveData } from '@fema-ipaas/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {
@@ -14,6 +15,10 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { VariableDialog } from '@/app/variables/variable-dialog';
+import {
+  ConsolePage,
+  ConsoleTableFrame,
+} from '@/components/custom/console-page';
 import {
   BulkAction,
   DataTable,
@@ -92,8 +97,16 @@ function VariablesPage() {
     showErrorDialog: true,
   });
 
+  const queryClient = useQueryClient();
+  const refreshAll = () => {
+    refetch();
+    void queryClient.invalidateQueries({
+      queryKey: ['variable-owners', projectId],
+    });
+  };
+
   const { mutateAsync: deleteVariable } =
-    variablesMutations.useBulkDeleteVariables(refetch);
+    variablesMutations.useBulkDeleteVariables(refreshAll);
 
   const { data: owners } = variablesQueries.useVariableOwners(projectId);
 
@@ -258,41 +271,46 @@ function VariablesPage() {
     [selectedRows, showBulkDeleteDialog, canWrite, deleteVariable],
   );
 
-  const toolbarButtons = [
-    <PermissionNeededTooltip key="new" hasPermission={canWrite}>
-      <Button
-        disabled={!canWrite}
-        size="sm"
-        onClick={() => setCreateOpen(true)}
-      >
-        <PlusIcon size={16} className="mr-1" />
-        {t('New variable')}
-      </Button>
-    </PermissionNeededTooltip>,
-  ];
-
   return (
-    <div className="flex flex-col w-full">
-      <DataTable
-        emptyStateTextTitle={t('No variables yet')}
-        emptyStateTextDescription={t(
-          'Create one to reference a value from any step input.',
-        )}
-        emptyStateIcon={<Variable className="size-14" />}
-        columns={columns}
-        page={filteredData}
-        isLoading={isLoading}
-        isError={isError}
-        filters={filters}
-        toolbarButtons={toolbarButtons}
-        selectColumn={true}
-        onSelectedRowsChange={setSelectedRows}
-        bulkActions={bulkActions}
-      />
+    <ConsolePage
+      title={t('Project config')}
+      description={t(
+        'Project configuration holds values shared by workflows, such as group IDs, thresholds or callback URLs. Reference them as config.key.',
+      )}
+      actions={
+        <PermissionNeededTooltip hasPermission={canWrite}>
+          <Button
+            disabled={!canWrite}
+            size="sm"
+            onClick={() => setCreateOpen(true)}
+          >
+            <PlusIcon size={16} className="mr-1" />
+            {t('New variable')}
+          </Button>
+        </PermissionNeededTooltip>
+      }
+    >
+      <ConsoleTableFrame>
+        <DataTable
+          emptyStateTextTitle={t('No variables yet')}
+          emptyStateTextDescription={t(
+            'Create one to reference a value from any step input.',
+          )}
+          emptyStateIcon={<Variable className="size-14" />}
+          columns={columns}
+          page={filteredData}
+          isLoading={isLoading}
+          isError={isError}
+          filters={filters}
+          selectColumn={true}
+          onSelectedRowsChange={setSelectedRows}
+          bulkActions={bulkActions}
+        />
+      </ConsoleTableFrame>
       <VariableDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSaved={() => refetch()}
+        onSaved={refreshAll}
       />
       <VariableDialog
         open={!!editing}
@@ -303,7 +321,7 @@ function VariablesPage() {
           }
         }}
         onSaved={() => {
-          refetch();
+          refreshAll();
           setEditing(undefined);
         }}
       />
@@ -327,7 +345,7 @@ function VariablesPage() {
           setDeleting(undefined);
         }}
       />
-    </div>
+    </ConsolePage>
   );
 }
 

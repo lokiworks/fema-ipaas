@@ -125,7 +125,7 @@ function CheckResultRow({
               <SolutionCheckLabel label={result.label} />
             </span>
             <Badge variant={result.blocking ? 'destructive' : 'secondary'}>
-              {result.blocking ? t('Required') : t('Recommended')}
+              {result.blocking ? t('Must pass') : t('Recommended')}
             </Badge>
             {result.who && (
               <span className="text-xs text-muted-foreground">

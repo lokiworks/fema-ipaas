@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import { api } from '@/lib/api';
 
 import { dataStoresHooks } from '../hooks/data-stores-hooks';
@@ -131,14 +132,19 @@ function DataStoreForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('Name')}</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  autoFocus
-                  maxLength={DATA_STORE_NAME_MAX_LENGTH}
-                  placeholder={t('dataStoreNamePlaceholder')}
-                />
-              </FormControl>
+              <CharacterCounter
+                length={field.value.length}
+                max={DATA_STORE_NAME_MAX_LENGTH}
+              >
+                <FormControl>
+                  <Input
+                    {...field}
+                    autoFocus
+                    maxLength={DATA_STORE_NAME_MAX_LENGTH}
+                    placeholder={t('dataStoreNamePlaceholder')}
+                  />
+                </FormControl>
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}
@@ -149,14 +155,20 @@ function DataStoreForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('Description (optional)')}</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  rows={2}
-                  maxLength={DATA_STORE_DESCRIPTION_MAX_LENGTH}
-                  placeholder={t('dataStoreDescriptionPlaceholder')}
-                />
-              </FormControl>
+              <CharacterCounter
+                multiline
+                length={(field.value ?? '').length}
+                max={DATA_STORE_DESCRIPTION_MAX_LENGTH}
+              >
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    rows={2}
+                    maxLength={DATA_STORE_DESCRIPTION_MAX_LENGTH}
+                    placeholder={t('dataStoreDescriptionPlaceholder')}
+                  />
+                </FormControl>
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}
@@ -215,7 +227,7 @@ function DataStoreForm({
             {t('Cancel')}
           </Button>
           <Button type="submit" loading={isCreating || isUpdating}>
-            {t('Confirm')}
+            {existing ? t('Save') : t('Create')}
           </Button>
         </DialogFooter>
       </form>

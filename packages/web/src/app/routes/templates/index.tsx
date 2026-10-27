@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { PageHeader } from '@/components/custom/page-header';
+import { ConsolePage } from '@/components/custom/console-page';
 import { SearchInput } from '@/components/custom/search-input';
 import {
   Select,
@@ -28,7 +28,7 @@ import {
   TemplateGridSkeleton,
 } from '@/features/templates/components/template-center-parts';
 import { authenticationSession } from '@/lib/authentication-session';
-import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 const TemplatesPage = () => {
   const [searchParams] = useSearchParams();
@@ -74,17 +74,13 @@ const TemplatesPage = () => {
   };
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        showSidebarToggle={true}
-        title={t('Template center')}
-        description={t(
-          'Start from common integration scenarios, create a workflow in one click, then adjust it to your systems.',
-        )}
-      />
-      <div
-        className={cn('flex flex-col gap-4 pb-8', DASHBOARD_CONTENT_PADDING_X)}
-      >
+    <ConsolePage
+      title={t('Template center')}
+      description={t(
+        'Start from common integration scenarios, create a workflow in one click, then adjust it to your systems.',
+      )}
+    >
+      <div className="flex flex-col gap-4 pb-8">
         {featured.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {featured.map((template) => (
@@ -173,7 +169,7 @@ const TemplatesPage = () => {
         onOpenChange={setDrawerOpen}
         projectId={null}
       />
-    </div>
+    </ConsolePage>
   );
 };
 

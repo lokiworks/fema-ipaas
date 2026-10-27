@@ -65,7 +65,7 @@ const MobileBuilderNotice = ({ workflow }: { workflow: PopulatedWorkflow }) => {
         <div className="flex flex-col gap-2">
           <Link
             className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
-            to={`/projects/${workflow.projectId}/automations`}
+            to={`/projects/${workflow.projectId}/home`}
           >
             <ArrowLeft />
             {t('Back to workflows')}

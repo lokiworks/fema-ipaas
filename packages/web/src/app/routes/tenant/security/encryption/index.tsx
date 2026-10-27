@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import {
@@ -54,8 +54,7 @@ const EncryptionPage = () => {
   });
 
   return (
-    <CenteredPage
-      widthClassName="max-w-[48rem]"
+    <ConsolePage
       title={t('Encryption')}
       description={t(
         'Connection credentials and variable values are encrypted before they are stored.',
@@ -218,7 +217,7 @@ const EncryptionPage = () => {
           </Item>
         </div>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 };
 

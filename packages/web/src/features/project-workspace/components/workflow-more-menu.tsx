@@ -18,7 +18,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { releaseUiUtils } from '@/features/releases';
@@ -49,12 +49,24 @@ export function WorkflowMoreMenu({
   triggerClassName?: string;
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { permissions, releasesEnabled, projectId, folders } = context;
   const [dialog, setDialog] = useState<DialogKind | null>(null);
   const { mutate: update, isPending: isUpdating } =
     projectWorkspaceHooks.useUpdateWorkflow();
   const { mutate: removeMany, isPending: isDeleting } =
-    projectWorkspaceHooks.useDeleteWorkflows();
-  const { permissions, releasesEnabled, projectId, folders } = context;
+    projectWorkspaceHooks.useDeleteWorkflows({
+      onDeleted: () => {
+        toast.success(t('Deleted'));
+        if (
+          location.pathname.startsWith(
+            `/projects/${projectId}/workflows/${workflow.id}`,
+          )
+        ) {
+          navigate(`/projects/${projectId}/home`, { replace: true });
+        }
+      },
+    });
   const environment = context.environmentByWorkflow.get(workflow.id);
   const close = () => setDialog(null);
 
@@ -359,12 +371,7 @@ export function WorkflowMoreMenu({
           onConfirm={() =>
             removeMany(
               { projectId, workflowIds: [workflow.id] },
-              {
-                onSuccess: () => {
-                  toast.success(t('Deleted'));
-                  close();
-                },
-              },
+              { onSuccess: close },
             )
           }
         />

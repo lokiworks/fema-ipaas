@@ -12,7 +12,7 @@ import {
   Calendar,
 } from 'lucide-react';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
+import { ConsolePage } from '@/components/custom/console-page';
 import { DataTable } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import {
@@ -269,11 +269,10 @@ export default function TriggerHealthPage() {
   ];
 
   return (
-    <div className="flex flex-col w-full gap-4">
-      <DashboardPageHeader
-        title={t('Trigger Health Status')}
-        description={t('Monitor the health and performance of your triggers')}
-      />
+    <ConsolePage
+      title={t('Trigger Health Status')}
+      description={t('Monitor the health and performance of your triggers')}
+    >
       <DataTable
         emptyStateTextTitle={t('No trigger data available')}
         emptyStateTextDescription={t(
@@ -286,6 +285,6 @@ export default function TriggerHealthPage() {
         isLoading={isLoading}
         isError={isError}
       />
-    </div>
+    </ConsolePage>
   );
 }

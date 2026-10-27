@@ -198,7 +198,7 @@ function ChannelsTab() {
             <TableRow>
               <TableHead>{t('Name')}</TableHead>
               <TableHead>{t('Type')}</TableHead>
-              <TableHead>{t('Target')}</TableHead>
+              <TableHead>{t('Alert target')}</TableHead>
               <TableHead>{t('Status')}</TableHead>
               <TableHead>{t('Used by')}</TableHead>
               <TableHead />
@@ -404,7 +404,7 @@ function RecordsTab() {
           disabled={!page?.previous}
           onClick={() => setCursor(page?.previous ?? undefined)}
         >
-          {t('Previous')}
+          {t('Previous page')}
         </Button>
         <Button
           size="sm"
@@ -412,7 +412,7 @@ function RecordsTab() {
           disabled={!page?.next}
           onClick={() => setCursor(page?.next ?? undefined)}
         >
-          {t('Next')}
+          {t('Next page')}
         </Button>
       </div>
     </div>

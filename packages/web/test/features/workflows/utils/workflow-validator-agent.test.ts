@@ -50,6 +50,7 @@ function flowWith(step: WorkflowAction): WorkflowTrigger {
     valid: false,
     displayName: 'Trigger',
     settings: {},
+    lastUpdatedDate: new Date(0).toISOString(),
     nextAction: step,
   };
 }

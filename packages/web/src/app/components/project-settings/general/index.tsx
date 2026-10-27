@@ -143,7 +143,7 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
             </div>
           </div>
         )}
-        {tenantRole === TenantRole.ADMIN && (
+        {tenantRole === TenantRole.ADMIN && isRateLimiterEnabled && (
           <FormField
             name="maxConcurrentJobs"
             render={({ field }) => (
@@ -173,16 +173,12 @@ export const GeneralSettings = ({ form }: GeneralSettingsProps) => {
                     )
                   }
                   onClear={() => field.onChange(null)}
-                  disabled={form.formState.disabled || !isRateLimiterEnabled}
+                  disabled={form.formState.disabled}
                 />
                 <FormDescription className="text-xs text-muted-foreground">
-                  {isRateLimiterEnabled === false
-                    ? t(
-                        'The rate limiting feature is disabled. Enable the PROJECT_RATE_LIMITER_ENABLED environment variable to use this feature.',
-                      )
-                    : t(
-                        'Maximum number of workflows that can run at the same time for this project',
-                      )}
+                  {t(
+                    'Maximum number of workflows that can run at the same time for this project',
+                  )}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

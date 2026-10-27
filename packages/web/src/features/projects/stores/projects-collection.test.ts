@@ -92,8 +92,23 @@ describe('getProjectName', () => {
     ({ getProjectName } = await import('./project-collection'));
   });
 
-  it('returns "Personal Project" for a PERSONAL type project', () => {
-    const project = makeProject('p1', ProjectType.PERSONAL, CURRENT_USER_ID);
+  it('returns the displayName for a PERSONAL type project', () => {
+    const project = makeProject(
+      'p1',
+      ProjectType.PERSONAL,
+      CURRENT_USER_ID,
+      'Acme project',
+    );
+    expect(getProjectName(project)).toBe('Acme project');
+  });
+
+  it('falls back to "Personal Project" when a PERSONAL project has no displayName', () => {
+    const project = makeProject(
+      'p3',
+      ProjectType.PERSONAL,
+      CURRENT_USER_ID,
+      '',
+    );
     expect(getProjectName(project)).toBe('Personal Project');
   });
 
@@ -105,16 +120,6 @@ describe('getProjectName', () => {
       'Marketing',
     );
     expect(getProjectName(project)).toBe('Marketing');
-  });
-
-  it('ignores displayName for PERSONAL projects', () => {
-    const project = makeProject(
-      'p2',
-      ProjectType.PERSONAL,
-      CURRENT_USER_ID,
-      'ShouldBeIgnored',
-    );
-    expect(getProjectName(project)).toBe('Personal Project');
   });
 });
 

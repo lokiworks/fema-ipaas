@@ -342,16 +342,18 @@ function EmptyProjectLanding({
           <h2 className="text-sm font-medium">
             {t('Create a workflow from a template')}
           </h2>
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            disabled={templates.length <= 4}
-            onClick={() => setBatch((current) => current + 1)}
-          >
-            <RefreshCw />
-            {t('Show others')}
-          </Button>
+          {templates.length > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              disabled={templates.length <= 4}
+              onClick={() => setBatch((current) => current + 1)}
+            >
+              <RefreshCw />
+              {t('Show others')}
+            </Button>
+          )}
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {shown.map((template) => (

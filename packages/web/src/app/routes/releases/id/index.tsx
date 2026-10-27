@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { ResourceNotFound } from '@/components/custom/resource-not-found';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { executionUtils } from '@/features/executions';
 import { issueMembersHooks } from '@/features/issues';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 import {
   ReleaseChecks,
   releasesHooks,
@@ -65,41 +67,43 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
     currentUserId !== null && release.approverIds.includes(currentUserId);
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <Link
-        to={authenticationSession.appendProjectRoutePrefix(
-          '/releases?tab=requests',
-        )}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground w-fit"
-      >
-        <ArrowLeft className="size-4" />
-        {t('All release requests')}
-      </Link>
-      <div className="flex flex-col gap-2">
-        <h1 className="text-xl font-semibold">{release.workflowDisplayName}</h1>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <Badge
-            variant={
-              pending
-                ? 'info'
-                : release.status === WorkflowReleaseStatus.DEPLOYED
-                ? 'success'
-                : 'outline'
-            }
+    <ConsolePage
+      title={release.workflowDisplayName}
+      actions={
+        <Button asChild variant="outline" size="sm">
+          <Link
+            to={authenticationSession.appendProjectRoutePrefix(
+              '/releases?tab=requests',
+            )}
           >
-            {releaseUiUtils.statusLabel(release.status)}
-          </Badge>
+            <ArrowLeft className="size-4" />
+            {t('All release requests')}
+          </Link>
+        </Button>
+      }
+    >
+      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Badge
+          variant={
+            pending
+              ? 'info'
+              : release.status === WorkflowReleaseStatus.DEPLOYED
+              ? 'success'
+              : 'outline'
+          }
+        >
+          {releaseUiUtils.statusLabel(release.status)}
+        </Badge>
+        <span>
+          {t('Requested by {name}', { name: nameOf(release.requestedById) })} ·{' '}
+          <FormattedDate date={new Date(release.created)} />
+        </span>
+        {release.decidedById && release.decidedAt && (
           <span>
-            {t('Requested by {name}', { name: nameOf(release.requestedById) })}{' '}
-            · <FormattedDate date={new Date(release.created)} />
+            · {t('Decided by {name}', { name: nameOf(release.decidedById) })} ·{' '}
+            <FormattedDate date={new Date(release.decidedAt)} />
           </span>
-          {release.decidedById && release.decidedAt && (
-            <span>
-              · {t('Decided by {name}', { name: nameOf(release.decidedById) })}{' '}
-              · <FormattedDate date={new Date(release.decidedAt)} />
-            </span>
-          )}
-        </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
@@ -177,12 +181,14 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
               )}
               {pending && isApprover && (
                 <>
-                  <Textarea
-                    value={comment}
-                    maxLength={200}
-                    placeholder={t('Comment (required to reject)')}
-                    onChange={(event) => setComment(event.target.value)}
-                  />
+                  <CharacterCounter multiline length={comment.length} max={200}>
+                    <Textarea
+                      value={comment}
+                      maxLength={200}
+                      placeholder={t('Comment (required to reject)')}
+                      onChange={(event) => setComment(event.target.value)}
+                    />
+                  </CharacterCounter>
                   <div className="flex gap-2">
                     <Button
                       size="sm"
@@ -231,7 +237,7 @@ function ReleaseDetail({ release }: { release: WorkflowReleaseDetail }) {
           </Card>
         </div>
       </div>
-    </div>
+    </ConsolePage>
   );
 }
 

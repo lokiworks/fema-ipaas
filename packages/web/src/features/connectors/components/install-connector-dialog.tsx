@@ -23,6 +23,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -323,9 +324,18 @@ const InstallConnectorDialog = ({
                 {form.formState.errors.root.serverError.message}
               </FormMessage>
             )}
-            <Button loading={isPending} type="submit">
-              {t('Install')}
-            </Button>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button loading={isPending} type="submit">
+                {t('Install')}
+              </Button>
+            </DialogFooter>
           </form>
         </FormProvider>
       </DialogContent>

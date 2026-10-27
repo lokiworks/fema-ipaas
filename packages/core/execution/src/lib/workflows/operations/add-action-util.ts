@@ -29,8 +29,8 @@ function remapStepReferences({ text, oldNameToNewName }: RemapStepReferencesProp
 }
 
 
-function clone(step: WorkflowAction, oldNameToNewName: Record<string, string>): WorkflowAction {
-    step.displayName = `${step.displayName} Copy`
+function clone({ step, oldNameToNewName, copySuffix }: CloneProps): WorkflowAction {
+    step.displayName = `${step.displayName} ${copySuffix ?? DEFAULT_COPY_SUFFIX}`
     step.name = oldNameToNewName[step.name]
     if (step.settings.sampleData) {
         step.settings = {
@@ -55,6 +55,14 @@ function clone(step: WorkflowAction, oldNameToNewName: Record<string, string>): 
 export const addActionUtils = {
     mapToNewNames,
     clone,
+}
+
+const DEFAULT_COPY_SUFFIX = 'Copy'
+
+type CloneProps = {
+    step: WorkflowAction
+    oldNameToNewName: Record<string, string>
+    copySuffix?: string
 }
 
 type RemapStepReferencesProps = {

@@ -56,4 +56,27 @@ describe('connectorTranslation.translateConnector', () => {
       ],
     });
   });
+
+  it('translates the display name of each auth method', () => {
+    const translated = connectorTranslation.translateConnector<ConnectorMetadataModel>({
+      connector: JSON.parse(JSON.stringify({
+        ...connectorWithTwoAuths,
+        auth: [
+          { ...connectorWithTwoAuths.auth[0], displayName: 'Connection' },
+          { ...connectorWithTwoAuths.auth[1], displayName: 'Server URL' },
+        ],
+        i18n: {
+          [LocalesEnum.CHINESE_SIMPLIFIED]: {
+            ...connectorWithTwoAuths.i18n[LocalesEnum.CHINESE_SIMPLIFIED],
+            Connection: '连接',
+          },
+        },
+      })),
+      locale: LocalesEnum.CHINESE_SIMPLIFIED,
+    });
+
+    expect(translated).toMatchObject({
+      auth: [{ displayName: '连接' }, { displayName: '服务地址' }],
+    });
+  });
 });

@@ -18,7 +18,12 @@ import { toast } from 'sonner';
 
 import { ReadMoreDescription } from '@/components/custom/read-more-description';
 import { Button } from '@/components/ui/button';
-import { FormItem, FormLabel } from '@/components/ui/form';
+import {
+  FormError,
+  FormItem,
+  FormLabel,
+  useFormField,
+} from '@/components/ui/form';
 import { RequiredFieldAsterisk } from '@/components/ui/label';
 import {
   Tooltip,
@@ -85,11 +90,16 @@ function AutoFormFieldWrapper({
           </FormLabel>
         )}
         {dynamicInputModeToggled && !isArrayProperty && (
-          <TextInputWithMentions
-            disabled={disabled}
-            onChange={field.onChange}
-            initialValue={field.value ?? null}
-          />
+          <FieldErrorScope
+            fieldName={isAuthProperty ? t('Connection') : property.displayName}
+            isEmpty={isEmptyFieldValue(field.value)}
+          >
+            <TextInputWithMentions
+              disabled={disabled}
+              onChange={field.onChange}
+              initialValue={field.value ?? null}
+            />
+          </FieldErrorScope>
         )}
 
         {isArrayProperty && dynamicInputModeToggled && (
@@ -103,7 +113,12 @@ function AutoFormFieldWrapper({
         )}
 
         {!placeBeforeLabelText && !dynamicInputModeToggled && (
-          <div>{children}</div>
+          <FieldErrorScope
+            fieldName={isAuthProperty ? t('Connection') : property.displayName}
+            isEmpty={isEmptyFieldValue(field.value)}
+          >
+            {children}
+          </FieldErrorScope>
         )}
         {!isForConnectionSelect &&
           !hideDescription &&
@@ -113,6 +128,43 @@ function AutoFormFieldWrapper({
           )}
       </FormItem>
     </AutoFormFielWrapperErrorBoundary>
+  );
+}
+
+function FieldErrorScope({
+  children,
+  fieldName,
+  isEmpty,
+}: {
+  children: React.ReactNode;
+  fieldName: string;
+  isEmpty: boolean;
+}) {
+  const { error, formMessageId } = useFormField();
+  const hasError = !isNil(error);
+  const message = isEmpty
+    ? t('{name} is required', { name: fieldName })
+    : t(String(error?.message ?? ''));
+  return (
+    <div>
+      <div
+        className={cn(hasError && '[&_.border-input]:border-destructive')}
+        aria-invalid={hasError}
+      >
+        {children}
+      </div>
+      {hasError && message.length > 0 && (
+        <FormError formMessageId={formMessageId} className="mt-1">
+          {message}
+        </FormError>
+      )}
+    </div>
+  );
+}
+
+function isEmptyFieldValue(value: unknown): boolean {
+  return (
+    isNil(value) || value === '' || (Array.isArray(value) && value.length === 0)
   );
 }
 

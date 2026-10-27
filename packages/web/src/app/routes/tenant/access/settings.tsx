@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useForm } from 'react-hook-form';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -45,8 +45,7 @@ export default function AccessSettingsPage() {
   const { data: settings, isLoading } = tenantAccessHooks.useModuleSettings();
   const { data: membersData } = tenantAccessHooks.useMembers();
   return (
-    <CenteredPage
-      widthClassName="max-w-[60rem]"
+    <ConsolePage
       title={t('Permission settings')}
       description={t(
         'What members see when they open a module they have no access to, and whether they can ask for it.',
@@ -61,7 +60,7 @@ export default function AccessSettingsPage() {
           members={membersData?.members ?? []}
         />
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

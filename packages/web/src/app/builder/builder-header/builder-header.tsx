@@ -5,49 +5,32 @@ import {
   WorkflowOperationType,
   WorkflowVersionState,
   supportUrl,
-  UncategorizedFolderId,
 } from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
-import { ChevronDown, CircleHelp } from 'lucide-react';
+import { CircleHelp, PencilLine, Workflow } from 'lucide-react';
 import { useState } from 'react';
-import {
-  createSearchParams,
-  useNavigate,
-  useSearchParams,
-} from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { useBuilderSnapshotVersionId } from '@/app/builder/snapshot-context';
-import { LeftSideBarType } from '@/app/builder/types';
 import { ActiveUsersWidget } from '@/components/custom/active-users-widget';
 import EditableText from '@/components/custom/editable-text';
 import { HomeButton } from '@/components/custom/home-button';
 import { PageHeader } from '@/components/custom/page-header';
 import { useEmbedding } from '@/components/providers/embed-provider';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { AiAssistantButton } from '@/features/ai';
-import { foldersHooks } from '@/features/folders';
-import { getProjectName, projectCollectionUtils } from '@/features/projects';
+import { WorkflowMoreMenu } from '@/features/project-workspace/components/workflow-more-menu';
+import { useWorkspaceContext } from '@/features/project-workspace/hooks/use-workspace-context';
+import { projectCollectionUtils } from '@/features/projects';
 import { workflowHooks } from '@/features/workflows';
-import { WorkflowCreatedByBadge } from '@/features/workflows/components/workflow-created-by-badge';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
-import { authenticationSession } from '@/lib/authentication-session';
 import { useNewWindow } from '@/lib/navigation-utils';
 import { NEW_WORKFLOW_QUERY_PARAM } from '@/lib/route-utils';
 import { cn } from '@/lib/utils';
 
-import WorkflowActionMenu from '../../components/workflow-actions-menu';
 import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
 import { DebugButton } from './debug-button';
@@ -55,40 +38,29 @@ import { BuilderPublishSection } from './publish-section';
 import { RunStateChip } from './run-state-chip';
 import { useAssistantBridge } from './use-assistant-bridge';
 import { WorkflowMetaLine, WorkflowStateTags } from './workflow-header-status';
-import { BuilderWorkflowStatusSection } from './workflow-status';
+import { EditWorkflowOrViewDraftButton } from './workflow-status/view-draft-or-edit-workflow-button';
 
 export const BuilderHeader = () => {
   const [queryParams] = useSearchParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const openNewWindow = useNewWindow();
   const { data: showSupport } = flagsHooks.useFlag<boolean>(
     FlagId.SHOW_COMMUNITY,
   );
 
-  const [
-    workflow,
-    workflowVersion,
-    moveToFolderClientSide,
-    applyOperation,
-    setLeftSidebar,
-  ] = useBuilderStateContext((state) => [
-    state.workflow,
-    state.workflowVersion,
-    state.moveToFolderClientSide,
-    state.applyOperation,
-    state.setLeftSidebar,
-  ]);
+  const [workflow, workflowVersion, applyOperation] = useBuilderStateContext(
+    (state) => [state.workflow, state.workflowVersion, state.applyOperation],
+  );
 
   const assistantBridge = useAssistantBridge();
   const snapshotVersionId = useBuilderSnapshotVersionId();
   const { embedState } = useEmbedding();
   const { project } = projectCollectionUtils.useCurrentProject();
-  const { checkAccess } = useAuthorization();
-
-  const { data: folderData } = foldersHooks.useFolder(
-    workflow.folderId ?? UncategorizedFolderId,
+  const workspace = useWorkspaceContext(project);
+  const treeRow = workspace.tree.data?.workflows.find(
+    (row) => row.id === workflow.id,
   );
+  const { checkAccess } = useAuthorization();
 
   const isLatestVersion =
     workflowVersion.state === WorkflowVersionState.DRAFT ||
@@ -97,99 +69,66 @@ export const BuilderHeader = () => {
     () => queryParams.get(NEW_WORKFLOW_QUERY_PARAM) === 'true',
   );
 
-  const goToWorkflowsPage = () => {
-    navigate({
-      pathname: authenticationSession.appendProjectRoutePrefix('/automations'),
-      search: createSearchParams({
-        folderId: folderData?.id ?? UncategorizedFolderId,
-      }).toString(),
-    });
-  };
-
   const titleContent = (
-    <div className="flex min-w-0 flex-col justify-center gap-0.5 px-4">
-      <Breadcrumb className="flex min-w-0 items-center gap-2">
-        <BreadcrumbList className="min-w-0 flex-nowrap">
-          {!embedState.disableNavigationInBuilder && (
-            <>
-              <BreadcrumbItem>
-                <BreadcrumbLink
-                  onClick={goToWorkflowsPage}
-                  className="cursor-pointer whitespace-nowrap text-sm"
-                >
-                  {getProjectName(project)}
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-            </>
-          )}
+    <div className="flex min-w-0 items-center gap-2.5 px-4">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Workflow className="size-4" />
+      </span>
+      <div className="flex min-w-0 flex-col justify-center gap-0.5">
+        <div className="flex min-w-0 items-center gap-1.5">
           {!embedState.hideWorkflowNameInBuilder && (
-            <BreadcrumbItem className="min-w-0">
-              <BreadcrumbPage className="min-w-0">
-                <div
-                  className={cn(
-                    'flex min-w-0 items-center gap-1 overflow-hidden text-sm',
-                    { 'max-w-[500px]': !isEditingWorkflowName },
-                  )}
+            <div
+              className={cn(
+                'flex min-w-[7rem] items-center gap-0.5 overflow-hidden text-sm font-medium',
+                { 'max-w-[420px]': !isEditingWorkflowName },
+              )}
+            >
+              <EditableText
+                className="hover:cursor-text"
+                value={workflowVersion.displayName}
+                readonly={!isLatestVersion}
+                onValueChange={(value) => {
+                  applyOperation(
+                    {
+                      type: WorkflowOperationType.CHANGE_NAME,
+                      request: {
+                        displayName: value,
+                      },
+                    },
+                    () => {
+                      workflowHooks.invalidateWorkflowsQuery(queryClient);
+                    },
+                  );
+                }}
+                isEditing={isEditingWorkflowName}
+                setIsEditing={setIsEditingWorkflowName}
+                tooltipContent=""
+              />
+              {isLatestVersion && !isEditingWorkflowName && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('Rename')}
+                  className="size-6 shrink-0 text-muted-foreground"
+                  onClick={() => setIsEditingWorkflowName(true)}
                 >
-                  <EditableText
-                    className="hover:cursor-text"
-                    value={workflowVersion.displayName}
-                    readonly={!isLatestVersion}
-                    onValueChange={(value) => {
-                      applyOperation(
-                        {
-                          type: WorkflowOperationType.CHANGE_NAME,
-                          request: {
-                            displayName: value,
-                          },
-                        },
-                        () => {
-                          workflowHooks.invalidateWorkflowsQuery(queryClient);
-                        },
-                      );
-                    }}
-                    isEditing={isEditingWorkflowName}
-                    setIsEditing={setIsEditingWorkflowName}
-                    tooltipContent=""
-                  />
-                  <WorkflowActionMenu
-                    onVersionsListClick={() => {
-                      setLeftSidebar(LeftSideBarType.VERSIONS);
-                    }}
-                    insideBuilder={true}
-                    workflow={workflow}
-                    workflowVersion={workflowVersion}
-                    readonly={!isLatestVersion}
-                    onDelete={goToWorkflowsPage}
-                    onRename={() => {
-                      setIsEditingWorkflowName(true);
-                    }}
-                    onMoveTo={(folderId) => moveToFolderClientSide(folderId)}
-                    onDuplicate={() => {}}
-                  >
-                    <Button
-                      variant="ghost"
-                      aria-label={t('More actions')}
-                      className="size-6 flex items-center justify-center"
-                    >
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </WorkflowActionMenu>
-                </div>
-              </BreadcrumbPage>
-            </BreadcrumbItem>
+                  <PencilLine className="size-3.5" />
+                </Button>
+              )}
+            </div>
           )}
-        </BreadcrumbList>
-        <WorkflowStateTags />
-        <RunStateChip />
-      </Breadcrumb>
-      <WorkflowMetaLine />
+          <div className="flex min-w-0 shrink-[4] items-center gap-1.5 overflow-hidden">
+            <RunStateChip />
+            <WorkflowStateTags />
+          </div>
+        </div>
+        <WorkflowMetaLine />
+      </div>
     </div>
   );
 
   const rightContent = (
-    <div className="flex shrink-0 flex-nowrap items-center justify-center gap-4">
+    <div className="flex shrink-0 flex-nowrap items-center justify-center gap-2">
       {showSupport && (
         <Button
           variant="ghost"
@@ -203,15 +142,22 @@ export const BuilderHeader = () => {
       {!embedState.hideActiveUsers && (
         <ActiveUsersWidget resourceId={workflow.id} />
       )}
-      <BuilderWorkflowStatusSection></BuilderWorkflowStatusSection>
-      <WorkflowCreatedByBadge createdBy={workflow.createdBy} />
-      <Separator orientation="vertical" className="h-5" />
+      {treeRow && isNil(snapshotVersionId) && (
+        <WorkflowMoreMenu
+          workflow={treeRow}
+          context={workspace}
+          triggerClassName="size-8 border"
+        />
+      )}
       {checkAccess(Permission.READ_WORKFLOW) && (
         <AiAssistantButton
           projectId={workflow.projectId}
           workflowId={workflow.id}
           bridge={assistantBridge}
         />
+      )}
+      {isNil(snapshotVersionId) && (
+        <EditWorkflowOrViewDraftButton onCanvas={false} />
       )}
       {isNil(snapshotVersionId) && <DebugButton />}
       {isNil(snapshotVersionId) && (

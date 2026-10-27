@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
 import { CopyTextTooltip } from '@/components/custom/clipboard/copy-text-tooltip';
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   DataTable,
   DataTableFilters,
@@ -221,15 +221,12 @@ export default function TenantConnectionsPage() {
   ];
 
   return (
-    <div className="flex flex-col w-full">
-      <DashboardPageHeader
-        title={t('Connections')}
-        description={t(
-          'All app connections across every project on this tenant',
-        )}
-      />
+    <ConsolePage
+      title={t('All connections')}
+      description={t('All app connections across every project on this tenant')}
+    >
       {owners?.truncated && (
-        <div className="px-6 pb-2 text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           {t('Owner filter is limited to the first {count} owners', {
             count: MAX_TENANT_CONNECTION_OWNERS,
           })}
@@ -247,7 +244,7 @@ export default function TenantConnectionsPage() {
         isError={isError}
         filters={filters}
       />
-    </div>
+    </ConsolePage>
   );
 }
 

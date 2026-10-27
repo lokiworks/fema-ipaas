@@ -14,6 +14,7 @@ import { FriendlyErrorView } from '@/app/builder/data-display/friendly-error-vie
 import { RunsList } from '@/app/builder/run-list';
 import { SidebarHeader } from '@/app/builder/sidebar-header';
 import { LeftSideBarType } from '@/app/builder/types';
+import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
 import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
 import { CollapsibleJson } from '@/components/custom/collapsible-json';
 import { Button } from '@/components/ui/button';
@@ -69,6 +70,7 @@ function RunRecord() {
   ]);
   const { checkAccess } = useAuthorization();
   const displayNumbers = useStepDisplayNumbers();
+  useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
   const [status, setStatus] = useState<DebugNodeStatus | 'ALL'>('ALL');
   const [query, setQuery] = useState('');
   const [picked, setPicked] = useState<string | null>(null);
@@ -135,7 +137,7 @@ function RunRecord() {
         <span>
           {run.environment === RunEnvironment.PRODUCTION
             ? t('Production')
-            : t('Test')}
+            : t('Debug')}
         </span>
       </div>
       <div className="flex items-center gap-2 px-3 pb-2">

@@ -15,6 +15,7 @@ import { ComponentsTabContent } from '@/app/builder/connectors-selector/componen
 import { ConnectorsCardList } from '@/app/builder/connectors-selector/connectors-card-list';
 import { ExploreTabContent } from '@/app/builder/connectors-selector/explore-tab-content';
 import { SidebarHeader } from '@/app/builder/sidebar-header';
+import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -26,8 +27,10 @@ import {
   ConnectorSelectorTabType,
   connectorSelectorCustomization,
   useConnectorSearchContext,
+  useConnectorSelectorTabs,
 } from '@/features/connectors';
 import { tenantHooks } from '@/hooks/tenant-hooks';
+import { cn } from '@/lib/utils';
 
 export const ConnectorPickerPanel = () => {
   const [operation, openedId] = useBuilderStateContext((state) => [
@@ -85,6 +88,7 @@ const ConnectorPickerPanelContent = ({
       deselectStep();
     }
   };
+  useEscapeToClose({ onClose: handleClose });
 
   const tabsList = connectorSelectorCustomization.buildResolvedTabs({
     availableBuiltinTabs: buildTabsList(operation.type),
@@ -137,21 +141,39 @@ const ConnectorPickerPanelContent = ({
           <ConnectorSelectorTabs tabs={tabsList} />
           <Separator orientation="horizontal" />
         </div>
-        <div className="flex min-h-0 grow flex-row overflow-hidden">
-          <ExploreTabContent operation={operation} />
-          <ComponentsTabContent
-            operation={operation}
-            searchQuery={searchQuery === '' ? '' : debouncedQuery}
-          />
-          <ConnectorsCardList
-            searchQuery={searchQuery === '' ? '' : debouncedQuery}
-            operation={operation}
-          />
-        </div>
+        <PickerResults
+          operation={operation}
+          searchQuery={searchQuery === '' ? '' : debouncedQuery}
+        />
       </div>
     </ConnectorSelectorTabsProvider>
   );
 };
+
+function PickerResults({
+  operation,
+  searchQuery,
+}: {
+  operation: ConnectorSelectorOperation;
+  searchQuery: string;
+}) {
+  const { selectedTab } = useConnectorSelectorTabs();
+  const isSearching = selectedTab === ConnectorSelectorTabType.NONE;
+  return (
+    <div
+      className={cn(
+        'flex min-h-0 grow overflow-hidden',
+        isSearching ? 'flex-col' : 'flex-row',
+      )}
+    >
+      <ExploreTabContent operation={operation} />
+      <ComponentsTabContent operation={operation} searchQuery={searchQuery} />
+      <div className="flex min-h-0 w-full grow">
+        <ConnectorsCardList searchQuery={searchQuery} operation={operation} />
+      </div>
+    </div>
+  );
+}
 
 function panelTitle(operationType: WorkflowOperationType) {
   return operationType === WorkflowOperationType.UPDATE_TRIGGER

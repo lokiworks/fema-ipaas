@@ -13,7 +13,6 @@ import { AfterImportWorkflowRedirect } from '../guards/after-import-workflow-red
 import { RoutePermissionGuard } from '../guards/permission-guard';
 import { ProjectRouterWrapper } from '../guards/project-route-wrapper';
 
-import { AutomationsPage } from './automations';
 const WorkflowBuilderPage = lazyWithRetry(
   () =>
     import('./workflows/id').then((m) => ({ default: m.WorkflowBuilderPage })),
@@ -91,17 +90,12 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<RouteLoadingBar />}>{children}</Suspense>;
 }
 
-const automationsPagePermissions = [
-  Permission.READ_WORKFLOW,
-  Permission.READ_FOLDER,
-];
-
 export const projectRoutes = [
   ...ProjectRouterWrapper({
     path: routesThatRequireProjectId.home,
     element: (
       <ProjectDashboardLayout>
-        <RoutePermissionGuard requiredPermissions={Permission.READ_RUN}>
+        <RoutePermissionGuard requiredPermissions={Permission.READ_WORKFLOW}>
           <PageTitle title="Home">
             <SuspenseWrapper>
               <HomePage />
@@ -112,22 +106,12 @@ export const projectRoutes = [
     ),
   }),
   ...ProjectRouterWrapper({
-    path: routesThatRequireProjectId.automations,
-    element: (
-      <ProjectDashboardLayout>
-        <RoutePermissionGuard requiredPermissions={automationsPagePermissions}>
-          <PageTitle title="Workflows">
-            <SuspenseWrapper>
-              <AutomationsPage />
-            </SuspenseWrapper>
-          </PageTitle>
-        </RoutePermissionGuard>
-      </ProjectDashboardLayout>
-    ),
+    path: '/automations',
+    element: <Navigate to={routesThatRequireProjectId.home} replace />,
   }),
   ...ProjectRouterWrapper({
     path: routesThatRequireProjectId.workflows,
-    element: <Navigate to={routesThatRequireProjectId.automations} replace />,
+    element: <Navigate to={routesThatRequireProjectId.home} replace />,
   }),
   ...ProjectRouterWrapper({
     path: routesThatRequireProjectId.singleWorkflow,

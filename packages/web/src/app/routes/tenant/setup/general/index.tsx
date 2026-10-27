@@ -1,7 +1,7 @@
 import { t } from 'i18next';
 
-import { CenteredPage } from '@/app/components/centered-page';
 import { AppearanceSection } from '@/app/routes/tenant/setup/general/appearance-section';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Separator } from '@/components/ui/separator';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
@@ -13,8 +13,7 @@ export const GeneralPage = () => {
   const canDeleteTenant = false && tenant.ownerId === user?.id;
 
   return (
-    <CenteredPage
-      widthClassName="max-w-[64rem]"
+    <ConsolePage
       title={t('General')}
       description={t('Change the settings for your tenant.')}
     >
@@ -24,7 +23,7 @@ export const GeneralPage = () => {
           <Separator className="my-8" />
         </>
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 };
 

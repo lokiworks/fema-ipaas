@@ -58,7 +58,9 @@ function SolutionDetailView({ solution }: SolutionDetailViewProps) {
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span>{solutionsUtils.providerLabel(solution.provider)}</span>
             <span>v{solution.currentVersion}</span>
-            <Badge variant="outline">{solution.category}</Badge>
+            <Badge variant="outline">
+              {solutionsUtils.categoryLabel(solution.category)}
+            </Badge>
             <span>
               {t('Updated')} <FormattedDate date={new Date(solution.updated)} />
             </span>
@@ -172,7 +174,7 @@ function SolutionDetailView({ solution }: SolutionDetailViewProps) {
                     {t('Used by: {names}', {
                       names: solutionsUtils
                         .workflowNamesOf({ slot, pkg })
-                        .join(', '),
+                        .join(t('listSeparator')),
                     })}
                   </div>
                 </div>
@@ -259,7 +261,7 @@ function CheckRow({ check }: { check: SolutionCheck }) {
       <div className="flex shrink-0 items-center gap-1">
         {check.who && <Badge variant="outline">{check.who}</Badge>}
         <Badge variant={check.blocking ? 'destructive' : 'secondary'}>
-          {check.blocking ? t('Required') : t('Recommended')}
+          {check.blocking ? t('Must pass') : t('Recommended')}
         </Badge>
       </div>
     </div>

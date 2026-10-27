@@ -257,12 +257,14 @@ export const projectCollectionUtils = {
     );
   },
   useHasAccessToProject: (projectId: string) => {
-    const { data } = useLiveSuspenseQuery((q) =>
-      q
-        .from({ project: projectCollection })
-        .where(({ project }) => eq(project.id, projectId))
-        .select(({ project }) => ({ ...project }))
-        .findOne(),
+    const { data } = useLiveSuspenseQuery(
+      (q) =>
+        q
+          .from({ project: projectCollection })
+          .where(({ project }) => eq(project.id, projectId))
+          .select(({ project }) => ({ ...project }))
+          .findOne(),
+      [projectId],
     );
     return !isNil(data);
   },
@@ -271,7 +273,8 @@ export const projectCollectionUtils = {
 export const getProjectName = (
   project: Pick<ProjectWithLimits, 'type' | 'displayName'>,
 ): string => {
-  return project.type === ProjectType.PERSONAL
+  return project.type === ProjectType.PERSONAL &&
+    project.displayName.trim().length === 0
     ? t('Personal Project')
     : project.displayName;
 };

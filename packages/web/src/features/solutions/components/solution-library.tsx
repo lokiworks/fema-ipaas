@@ -84,7 +84,7 @@ function SolutionLibrary({ onGenerate }: SolutionLibraryProps) {
         {solutionsUtils.categoriesOf(all).map((item) => (
           <CategoryChip
             key={item}
-            label={item}
+            label={solutionsUtils.categoryLabel(item)}
             active={category === item}
             onClick={() => setCategory(item)}
           />

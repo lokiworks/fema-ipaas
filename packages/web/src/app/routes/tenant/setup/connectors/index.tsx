@@ -8,7 +8,6 @@ import {
   Package,
   Hash,
   GitBranch,
-  Layers,
   Puzzle,
   Trash,
 } from 'lucide-react';
@@ -16,16 +15,15 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
 import { ConnectorActions } from '@/app/routes/tenant/setup/connectors/connector-actions';
 import { CustomizeSelectorDialog } from '@/app/routes/tenant/setup/connectors/customize-selector-dialog';
 import { SyncConnectorsButton } from '@/app/routes/tenant/setup/connectors/sync-connectors';
 import { VerifyIntegrityButton } from '@/app/routes/tenant/setup/connectors/verify-integrity';
+import { ConsolePage } from '@/components/custom/console-page';
 import { DataTable, RowDataWithActions } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { oauthAppsQueries } from '@/features/connections';
 import {
   InstallConnectorDialog,
@@ -34,8 +32,6 @@ import {
   connectorsHooks,
 } from '@/features/connectors';
 import { api } from '@/lib/api';
-
-type TabValue = 'connectors' | 'connector-sets';
 
 const ConnectorsListTab = () => {
   const [searchParams] = useSearchParams();
@@ -196,55 +192,14 @@ const ConnectorsListTab = () => {
 };
 
 const TenantConnectorsPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as TabValue) || 'connectors';
-
-  const setTab = (tab: TabValue) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (tab === 'connectors') {
-      newParams.delete('tab');
-    } else {
-      newParams.set('tab', tab);
-    }
-    setSearchParams(newParams, { replace: true });
-  };
-
   return (
-    <>
-      <DashboardPageHeader
-        description={t(
-          'Manage the connectors that are available to your users',
-        )}
-        title={t('Connectors')}
-      />
-      <div className="mx-auto w-full flex flex-col flex-1 min-h-0">
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setTab(v as TabValue)}
-          className="flex flex-col flex-1 min-h-0 min-w-0"
-        >
-          <TabsList
-            variant="outline"
-            className="border-b w-full rounded-none justify-start shrink-0"
-          >
-            <TabsTrigger variant="outline" value="connectors">
-              <Puzzle className="size-4 mr-2" />
-              {t('Connectors')}
-            </TabsTrigger>
-            <TabsTrigger variant="outline" value="connector-sets">
-              <Layers className="size-4 mr-2" />
-              {t('Connector Sets')}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent
-            value="connectors"
-            className="flex-1 min-h-0 flex flex-col mt-0 min-w-0"
-          >
-            <ConnectorsListTab />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </>
+    <ConsolePage
+      className="min-h-0 flex-1"
+      description={t('Manage the connectors that are available to your users')}
+      title={t('Installed connectors')}
+    >
+      <ConnectorsListTab />
+    </ConsolePage>
   );
 };
 

@@ -1,5 +1,10 @@
 import { isNil, Permission, tryCatch } from '@fema-ipaas/core-utils';
-import { TenantRole, ProjectType } from '@fema-ipaas/shared';
+import {
+  FlagId,
+  PROJECT_COLOR_PALETTE,
+  ProjectType,
+  TenantRole,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Settings, UsersRound } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -16,14 +21,13 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { internalErrorMessage } from '@/components/ui/sonner';
+import { ProjectMark } from '@/features/project-workspace/components/project-mark';
 import { projectCollectionUtils } from '@/features/projects';
-import { ProjectDisplay } from '@/features/projects/components/project-display';
 import { useAuthorization } from '@/hooks/authorization-hooks';
+import { flagsHooks } from '@/hooks/flags-hooks';
 import { userHooks } from '@/hooks/user-hooks';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
-
-import { ProjectAvatar } from '../project-avatar';
 
 import { GeneralSettings, FormValues } from './general';
 import { MembersSettings } from './members';
@@ -58,6 +62,9 @@ export function ProjectSettingsDialog({
   const previousOpenRef = useRef(open);
 
   const tenantRole = userHooks.getCurrentUserTenantRole();
+  const { data: isRateLimiterEnabled } = flagsHooks.useFlag<boolean>(
+    FlagId.PROJECT_RATE_LIMITER_ENABLED,
+  );
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -106,8 +113,10 @@ export function ProjectSettingsDialog({
     previousOpenRef.current = open;
   }, [open, project]);
 
-  const hasGeneralSettings =
-    project.type === ProjectType.TEAM || tenantRole === TenantRole.ADMIN;
+  const canRename = project.type === ProjectType.TEAM;
+  const canLimitJobs =
+    tenantRole === TenantRole.ADMIN && isRateLimiterEnabled === true;
+  const hasGeneralSettings = canRename || canLimitJobs;
 
   const canReadMembers = checkAccess(Permission.READ_PROJECT_MEMBER);
 
@@ -126,8 +135,12 @@ export function ProjectSettingsDialog({
     },
   ].filter((tab) => !tab.disabled);
 
+  const shownTab = tabs.some((tab) => tab.id === activeTab)
+    ? activeTab
+    : tabs[0]?.id;
+
   const renderTabContent = () => {
-    switch (activeTab) {
+    switch (shownTab) {
       case 'general':
         return <GeneralSettings form={form} />;
       case 'members':
@@ -142,11 +155,11 @@ export function ProjectSettingsDialog({
   };
 
   const renderTabHeader = () => {
-    const hasUnsavedChanges = activeTab === 'general' && form.formState.isDirty;
+    const hasUnsavedChanges = shownTab === 'general' && form.formState.isDirty;
     return (
       <div className="flex items-center gap-2">
         <span className="text-lg font-bold">
-          {tabs.find((tab) => tab.id === activeTab)?.label}
+          {tabs.find((tab) => tab.id === shownTab)?.label}
         </span>
         {hasUnsavedChanges && (
           <Badge variant="ghost" className="text-muted-foreground">
@@ -157,7 +170,7 @@ export function ProjectSettingsDialog({
     );
   };
   const renderDialogFooter = () => {
-    if (activeTab !== 'general') return null;
+    if (shownTab !== 'general') return null;
 
     return (
       <div className="border-t bg-background rounded-br-md">
@@ -181,22 +194,30 @@ export function ProjectSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-full max-h-[95vh] rounded-sm flex flex-col p-0">
+      <DialogContent
+        className="max-w-5xl w-full max-h-[95vh] rounded-sm flex flex-col p-0"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <DialogTitle className="sr-only">{t('Project settings')}</DialogTitle>
         <DialogDescription className="sr-only">
-          {t('Rename this project, manage its members and adjust its limits.')}
+          {canRename
+            ? t(
+                'Rename this project, manage its members and adjust its limits.',
+              )
+            : t('Manage the members of this project and adjust its limits.')}
         </DialogDescription>
         <div className="flex h-[700px]">
           <div className="w-[238px]">
             <nav className="bg-sidebar space-y-1 bg-muted rounded-sm rounded-r-none h-full flex flex-col rounded-l-md">
-              <ProjectDisplay
-                title={form.watch('projectName') ?? project.displayName}
-                icon={form.watch('icon') ?? project.icon}
-                containerClassName="px-3 my-4"
-                titleClassName="text-sm font-medium"
-                maxLengthToNotShowTooltip={18}
-                projectType={project.type}
-              />
+              <div className="flex items-center gap-2 px-3 my-4">
+                <ProjectMark
+                  name={form.watch('projectName') ?? project.displayName}
+                  icon={{ color: currentIconColor }}
+                />
+                <span className="truncate text-sm font-medium">
+                  {form.watch('projectName') ?? project.displayName}
+                </span>
+              </div>
               <div
                 role="tablist"
                 aria-orientation="vertical"
@@ -208,11 +229,11 @@ export function ProjectSettingsDialog({
                     key={tab.id}
                     type="button"
                     role="tab"
-                    aria-selected={activeTab === tab.id}
+                    aria-selected={shownTab === tab.id}
                     className={cn(
                       'flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium transition-all cursor-pointer text-left hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       {
-                        'bg-sidebar-accent': activeTab === tab.id,
+                        'bg-sidebar-accent': shownTab === tab.id,
                       },
                     )}
                     onClick={() => setActiveTab(tab.id)}
@@ -227,14 +248,20 @@ export function ProjectSettingsDialog({
           <div className="flex-1 min-w-0 flex flex-col">
             <div className="flex-1 min-h-0 overflow-hidden">
               <ScrollArea className="h-full">
-                {activeTab === 'general' && (
-                  <ProjectAvatar
-                    displayName={project.displayName}
-                    projectType={project.type}
-                    iconColor={currentIconColor}
-                    size="md"
-                    showBackground={true}
-                  />
+                {shownTab === 'general' && (
+                  <div
+                    className="flex h-[114px] w-full items-center justify-center rounded-tr-md"
+                    style={{
+                      backgroundColor:
+                        PROJECT_COLOR_PALETTE[currentIconColor].color + '26',
+                    }}
+                  >
+                    <ProjectMark
+                      name={form.watch('projectName') ?? project.displayName}
+                      icon={{ color: currentIconColor }}
+                      className="size-[50px] rounded-sm text-xl"
+                    />
+                  </div>
                 )}
                 <div className="flex flex-col gap-3 px-10 pt-4">
                   {renderTabHeader()}

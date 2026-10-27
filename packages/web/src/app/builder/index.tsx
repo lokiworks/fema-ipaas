@@ -119,7 +119,6 @@ const BuilderPage = () => {
           </div>
           <ReferenceDragLayer />
           <ResizablePanelGroup orientation="horizontal">
-            <BuilderLeftPanel />
             <ResizablePanel defaultSize="100%" id="workflow-canvas">
               <div ref={middlePanelRef} className="relative h-full w-full">
                 <CursorPositionProvider>
@@ -127,6 +126,7 @@ const BuilderPage = () => {
                     setHasCanvasBeenInitialised={setHasCanvasBeenInitialised}
                   ></WorkflowCanvas>
                 </CursorPositionProvider>
+                <BuilderLeftPanel />
 
                 <BuilderBanner />
                 {middlePanelRef.current &&

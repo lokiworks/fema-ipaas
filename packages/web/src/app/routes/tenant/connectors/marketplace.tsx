@@ -26,6 +26,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   Empty,
   EmptyContent,
@@ -73,6 +74,7 @@ import {
   projectDirectoryUtils,
 } from '@/features/projects/api/project-directory-api';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
+import { cn } from '@/lib/utils';
 
 const CATEGORY_ICONS: Record<MarketCategoryValue, LucideIcon> = {
   all: LayoutGridIcon,
@@ -188,17 +190,24 @@ export default function ConnectorMarketplacePage() {
     (!showMcpSectionInAll || allServers.length === 0);
 
   return (
-    <div className="flex w-full flex-col gap-4">
-      <ConnectorMarketplaceHeader
-        category={category}
-        addServerDisabledReason={addServerDisabledReason}
-        onRequest={() => setRequesting(true)}
-        onAddServer={() => setAddingServer(true)}
-      />
-      <div className="flex min-h-0 flex-1 gap-4">
+    <ConsolePage
+      title={t('Connector Marketplace')}
+      description={t(
+        'Connectors wrap third-party APIs into actions and triggers you can use in workflows; actions can also be opened up as MCP tools.',
+      )}
+      actions={
+        <ConnectorMarketplaceActions
+          category={category}
+          addServerDisabledReason={addServerDisabledReason}
+          onRequest={() => setRequesting(true)}
+          onAddServer={() => setAddingServer(true)}
+        />
+      }
+    >
+      <div className="flex min-h-0 flex-1 flex-col gap-4 md:flex-row">
         <nav
           aria-label={t('Connector categories')}
-          className="flex w-52 shrink-0 flex-col gap-1"
+          className="flex shrink-0 gap-1 max-md:overflow-x-auto md:w-52 md:flex-col"
         >
           {MARKET_CATEGORIES.map((item) => (
             <CategoryNavButton
@@ -210,7 +219,7 @@ export default function ConnectorMarketplacePage() {
               onClick={() => setCategory(item.value)}
             />
           ))}
-          <div className="my-1 border-t" />
+          <div className="my-1 border-t max-md:hidden" />
           <CategoryNavButton
             icon={ServerIcon}
             label={t('MCP servers')}
@@ -284,7 +293,7 @@ export default function ConnectorMarketplacePage() {
                 </Select>
               </div>
               {isLoadingConnectors ? (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-3">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <Skeleton key={index} className="h-32 w-full" />
                   ))}
@@ -292,7 +301,7 @@ export default function ConnectorMarketplacePage() {
               ) : (
                 <>
                   {filteredConnectors.length > 0 && (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-3">
                       {filteredConnectors.map((connector) => (
                         <ConnectorCard
                           key={`${connector.name}@${connector.version}`}
@@ -350,7 +359,7 @@ export default function ConnectorMarketplacePage() {
                           {t('View all')}
                         </Button>
                       </div>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-3">
                         {allServers.map((server) => (
                           <McpServerCard
                             key={server.id}
@@ -379,11 +388,11 @@ export default function ConnectorMarketplacePage() {
         onOpenChange={setAddingServer}
         onSaved={(server) => navigate(`/tenant/connectors/mcp/${server.id}`)}
       />
-    </div>
+    </ConsolePage>
   );
 }
 
-function ConnectorMarketplaceHeader({
+function ConnectorMarketplaceActions({
   category,
   addServerDisabledReason,
   onRequest,
@@ -395,40 +404,30 @@ function ConnectorMarketplaceHeader({
   onAddServer: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-2">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('Connector Marketplace')}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t(
-            'Connectors wrap third-party APIs into actions and triggers you can use in workflows; actions can also be opened up as MCP tools.',
+    <>
+      <Button variant="outline" onClick={onRequest}>
+        <MessageSquarePlusIcon className="mr-1 size-4" />
+        {t('Request a connector')}
+      </Button>
+      {category !== MCP_CATEGORY && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={addServerDisabledReason ? 0 : undefined}>
+              <Button
+                disabled={Boolean(addServerDisabledReason)}
+                onClick={onAddServer}
+              >
+                <ServerIcon className="mr-1 size-4" />
+                {t('Add an MCP server')}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {addServerDisabledReason && (
+            <TooltipContent>{addServerDisabledReason}</TooltipContent>
           )}
-        </p>
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <Button variant="outline" onClick={onRequest}>
-          <MessageSquarePlusIcon className="mr-1 size-4" />
-          {t('Request a connector')}
-        </Button>
-        {category !== MCP_CATEGORY && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={addServerDisabledReason ? 0 : undefined}>
-                <Button
-                  disabled={Boolean(addServerDisabledReason)}
-                  onClick={onAddServer}
-                >
-                  <ServerIcon className="mr-1 size-4" />
-                  {t('Add an MCP server')}
-                </Button>
-              </span>
-            </TooltipTrigger>
-            {addServerDisabledReason && (
-              <TooltipContent>{addServerDisabledReason}</TooltipContent>
-            )}
-          </Tooltip>
-        )}
-      </div>
-    </div>
+        </Tooltip>
+      )}
+    </>
   );
 }
 
@@ -450,11 +449,12 @@ function CategoryNavButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={
+      className={cn(
+        'flex shrink-0 items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm',
         active
-          ? 'flex items-center gap-2 rounded-md bg-muted px-2 py-1.5 text-left text-sm font-medium'
-          : 'flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground hover:bg-muted/60'
-      }
+          ? 'bg-muted font-medium'
+          : 'text-muted-foreground hover:bg-muted/60',
+      )}
     >
       <Icon className="size-4 shrink-0" />
       <span className="grow truncate">{label}</span>
@@ -502,7 +502,7 @@ function ConnectorCard({
       <p className="line-clamp-2 min-h-8 text-xs text-muted-foreground">
         {connector.description || t('No description')}
       </p>
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-3 whitespace-nowrap text-xs text-muted-foreground">
         {connector.actions > 0 && (
           <span>{t('{count} actions', { count: connector.actions })}</span>
         )}
@@ -590,13 +590,13 @@ function McpServerSection({
         )}
       </div>
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={index} className="h-32 w-full" />
           ))}
         </div>
       ) : servers.length > 0 ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-3">
           {servers.map((server) => (
             <McpServerCard
               key={server.id}

@@ -338,6 +338,10 @@ export function DataTable<
     enabled: virtualizeRows,
   });
 
+  const tableMinWidth = table
+    .getVisibleLeafColumns()
+    .reduce((total, column) => total + column.getSize(), 0);
+
   return (
     <div
       className={cn(
@@ -348,8 +352,8 @@ export function DataTable<
         (customFilters && customFilters.length > 0) ||
         (toolbarButtons && toolbarButtons.length > 0)) && (
         <DataTableToolbar>
-          <div className="w-full flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+          <div className="flex w-full flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {filters &&
                 filters.map((filter) => (
                   <DataTableFilter
@@ -377,11 +381,11 @@ export function DataTable<
       <div
         ref={scrollContainerRef}
         className={cn('mt-0', {
-          'overflow-hidden': !virtualizeRows,
+          'overflow-x-auto': !virtualizeRows,
           'flex-1 min-h-0 overflow-auto': virtualizeRows,
         })}
       >
-        <Table className="table-fixed">
+        <Table className="table-fixed" style={{ minWidth: tableMinWidth }}>
           <TableHeader
             className={cn(virtualizeRows ? 'sticky top-0 z-10' : undefined)}
           >
@@ -714,7 +718,7 @@ export function DataTable<
             }
           >
             <ChevronLeft className="h-4 w-4" />
-            {t('Previous')}
+            {t('Previous page')}
           </Button>
           <Button
             variant="ghost"
@@ -731,7 +735,7 @@ export function DataTable<
               clientPagination ? !table.getCanNextPage() : !nextPageCursor
             }
           >
-            {t('Next')}
+            {t('Next page')}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

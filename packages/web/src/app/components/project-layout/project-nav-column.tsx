@@ -1,6 +1,8 @@
+import { Permission } from '@fema-ipaas/core-utils';
 import { ProjectIcon } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
+  ChartColumn,
   Check,
   ChevronDown,
   CopyPlus,
@@ -8,7 +10,9 @@ import {
   LayoutDashboard,
   LayoutGrid,
   Plus,
+  Settings,
   Share2,
+  ShieldQuestion,
   Trash2,
   Users,
 } from 'lucide-react';
@@ -42,6 +46,7 @@ import {
 } from '@/features/projects/api/project-directory-api';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { releasesHooks } from '@/features/releases/hooks/releases-hooks';
+import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
 
@@ -61,7 +66,8 @@ export function ProjectNavColumn({ className }: { className?: string }) {
 
 function ProjectSidebar({ className }: { className?: string }) {
   const { project } = projectCollectionUtils.useCurrentProject();
-  const { primaryTabs, secondaryTabs } = useProjectNavTabs();
+  const { tabs } = useProjectNavTabs();
+  const { checkAccess } = useAuthorization();
   const context = useWorkspaceContext(project);
   const location = useLocation();
   const navigate = useNavigate();
@@ -100,7 +106,7 @@ function ProjectSidebar({ className }: { className?: string }) {
           <Icon size={16} className="shrink-0" />
           <span className="flex-1 truncate text-left">{tab.label}</span>
           {showBadge && (
-            <span className="rounded-full bg-destructive px-1.5 text-[11px] font-medium leading-4 text-destructive-foreground">
+            <span className="min-w-4 rounded-full bg-destructive px-1.5 text-center text-[11px] font-medium leading-4 text-white">
               {workspaceUtils.badgeText(pendingCount)}
             </span>
           )}
@@ -128,19 +134,50 @@ function ProjectSidebar({ className }: { className?: string }) {
     );
   };
 
-  const projectMenu: ActionMenuEntry[] = [
+  const goTo = (path: string) =>
+    navigate(authenticationSession.appendProjectRoutePrefix(path));
+  const pageEntries: ActionMenuEntry[] = [
     {
       key: 'overview',
       label: t('Project overview'),
       icon: LayoutDashboard,
-      onSelect: () =>
-        navigate(authenticationSession.appendProjectRoutePrefix('/home')),
+      onSelect: () => goTo('/home'),
     },
+    ...(checkAccess(Permission.READ_RUN)
+      ? [
+          {
+            key: 'agent-approvals',
+            label: t('Agent approvals'),
+            icon: ShieldQuestion,
+            onSelect: () => goTo('/agent-approvals'),
+          },
+        ]
+      : []),
+    ...(checkAccess(Permission.READ_PROJECT)
+      ? [
+          {
+            key: 'ai-usage',
+            label: t('AI usage'),
+            icon: ChartColumn,
+            onSelect: () => goTo('/ai-usage'),
+          },
+        ]
+      : []),
+  ];
+  const projectMenu: ActionMenuEntry[] = [
+    ...pageEntries,
+    'divider',
     {
       key: 'share',
       label: canEdit ? t('Share') : t('View members'),
       icon: canEdit ? Share2 : Users,
       onSelect: () => setDialog('members'),
+    },
+    {
+      key: 'settings',
+      label: t('Project settings'),
+      icon: Settings,
+      onSelect: () => setDialog('settings'),
     },
     'divider',
     {
@@ -202,20 +239,17 @@ function ProjectSidebar({ className }: { className?: string }) {
           onCreate={() => setDialog('create')}
         />
       </div>
-      <div className="flex flex-col gap-0.5">{primaryTabs.map(renderTab)}</div>
-      {secondaryTabs.length > 0 && (
-        <div className="flex flex-col gap-0.5 border-t pt-3">
-          {secondaryTabs.map(renderTab)}
-        </div>
+      {tabs.length > 0 && (
+        <div className="flex flex-col gap-0.5">{tabs.map(renderTab)}</div>
       )}
       <div className="flex min-h-64 flex-1 flex-col border-t pt-3">
         <WorkflowTree context={context} />
       </div>
-      {dialog === 'members' && (
+      {(dialog === 'members' || dialog === 'settings') && (
         <ProjectSettingsDialog
           open
           onClose={close}
-          initialTab="members"
+          initialTab={dialog === 'members' ? 'members' : 'general'}
           initialValues={{ projectName: project.displayName }}
         />
       )}
@@ -382,4 +416,10 @@ function ProjectSwitcher({
 
 ProjectNavColumn.displayName = 'ProjectNavColumn';
 
-type SidebarDialog = 'members' | 'edit' | 'create' | 'delete' | 'copy';
+type SidebarDialog =
+  | 'members'
+  | 'settings'
+  | 'edit'
+  | 'create'
+  | 'delete'
+  | 'copy';

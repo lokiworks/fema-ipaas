@@ -2,11 +2,12 @@ import { TenantModule } from '@fema-ipaas/shared';
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
+import { SidebarProvider } from '@/components/ui/sidebar-shadcn';
 import { ModuleGate } from '@/features/tenant-access';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 
 import { AllowOnlyLoggedInUserOnlyGuard } from './allow-logged-in-user-only-guard';
+import { GlobalRail } from './global-rail';
 import { GlobalSearchProvider } from './global-search/global-search-context';
 import { MobileNavBar } from './project-layout/mobile-nav-bar';
 import { TenantSidebar } from './sidebar/tenant';
@@ -23,29 +24,28 @@ export function TenantLayout({ children }: { children: React.ReactNode }) {
     <AllowOnlyLoggedInUserOnlyGuard>
       <GlobalSearchProvider>
         {showTenantAdminDashboard ? (
-          <SidebarProvider open={true}>
-            <TenantSidebar />
-            <SidebarInset className="flex flex-col h-full overflow-hidden bg-sidebar">
-              <div className="flex-1 flex flex-col md:p-2 md:pt-3 md:pb-3 overflow-hidden">
-                <div
-                  id="dashboard-content-container"
-                  className="relative flex flex-col h-full bg-background md:rounded-xl md:shadow-[2px_0px_4px_-2px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.05)] md:border overflow-clip"
-                >
-                  <div className="md:hidden">
-                    <MobileNavBar showProjectNav={false} />
-                  </div>
-                  <div className="flex flex-col flex-1 overflow-auto">
-                    {moduleRoute ? (
-                      <ModuleGate module={moduleRoute.module}>
-                        {children}
-                      </ModuleGate>
-                    ) : (
-                      children
-                    )}
-                  </div>
-                </div>
+          <SidebarProvider open={true} className="h-svh min-h-0">
+            <GlobalRail className="max-md:hidden" />
+            <div className="h-full max-md:hidden">
+              <TenantSidebar />
+            </div>
+            <div
+              id="dashboard-content-container"
+              className="relative flex min-w-0 flex-1 flex-col overflow-clip bg-background"
+            >
+              <div className="md:hidden">
+                <MobileNavBar showProjectNav={false} showTenantMenu />
               </div>
-            </SidebarInset>
+              <div className="flex flex-1 flex-col overflow-auto">
+                {moduleRoute ? (
+                  <ModuleGate module={moduleRoute.module}>
+                    {children}
+                  </ModuleGate>
+                ) : (
+                  children
+                )}
+              </div>
+            </div>
           </SidebarProvider>
         ) : (
           <Navigate to="/" />

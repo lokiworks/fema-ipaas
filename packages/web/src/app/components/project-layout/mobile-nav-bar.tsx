@@ -1,6 +1,5 @@
 import { t } from 'i18next';
 import { ChevronDown, MenuIcon } from 'lucide-react';
-import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
@@ -12,39 +11,85 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { useSidebar } from '@/components/ui/sidebar-shadcn';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
+
+import { GlobalRail } from '../global-rail';
+import { TenantSidebar } from '../sidebar/tenant';
 
 import { ProjectNavColumn } from './project-nav-column';
 
 export function MobileNavBar({
   showProjectNav,
   showMenu = true,
+  showTenantMenu = false,
 }: MobileNavBarProps) {
-  const { setOpenMobile } = useSidebar();
   const location = useLocation();
-
-  useEffect(() => {
-    setOpenMobile(false);
-  }, [location.pathname, setOpenMobile]);
 
   return (
     <div className="flex h-12 shrink-0 items-center gap-2 border-b bg-background px-2">
       {showMenu && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={t('Open menu')}
-          onClick={() => setOpenMobile(true)}
-        >
-          <MenuIcon className="size-5" />
-        </Button>
+        <Sheet key={location.pathname}>
+          <SheetTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={t('Open menu')}
+            >
+              <MenuIcon className="size-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            hideCloseButton
+            className="w-16 gap-0 border-0 p-0"
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>{t('Main navigation')}</SheetTitle>
+              <SheetDescription>{t('Main navigation')}</SheetDescription>
+            </SheetHeader>
+            <GlobalRail />
+          </SheetContent>
+        </Sheet>
+      )}
+      {showTenantMenu && (
+        <MobileTenantNav key={`tenant-${location.pathname}`} />
       )}
       {showProjectNav && (
         <MobileProjectNav key={`${location.pathname}${location.search}`} />
       )}
     </div>
+  );
+}
+
+function MobileTenantNav() {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          className="min-w-0 flex-1 justify-between gap-2"
+          aria-label={t('Tenant Admin')}
+        >
+          <span className="min-w-0 truncate text-sm font-medium">
+            {t('Tenant Admin')}
+          </span>
+          <ChevronDown className="size-4 shrink-0" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        hideCloseButton
+        className="w-64 max-w-[85vw] gap-0 p-0"
+      >
+        <SheetHeader className="sr-only">
+          <SheetTitle>{t('Tenant Admin')}</SheetTitle>
+          <SheetDescription>{t('Tenant Admin')}</SheetDescription>
+        </SheetHeader>
+        <TenantSidebar className="w-full border-r-0" />
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -68,7 +113,11 @@ function MobileProjectNav() {
           <ChevronDown className="size-4 shrink-0" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 max-w-[85vw] gap-0 p-0">
+      <SheetContent
+        side="left"
+        hideCloseButton
+        className="w-72 max-w-[85vw] gap-0 p-0"
+      >
         <SheetHeader className="sr-only">
           <SheetTitle>{t('Project navigation')}</SheetTitle>
           <SheetDescription>{t('Project navigation')}</SheetDescription>
@@ -82,4 +131,5 @@ function MobileProjectNav() {
 type MobileNavBarProps = {
   showProjectNav: boolean;
   showMenu?: boolean;
+  showTenantMenu?: boolean;
 };

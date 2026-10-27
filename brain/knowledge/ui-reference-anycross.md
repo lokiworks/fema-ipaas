@@ -30,6 +30,9 @@ icon: 🧭
 
 ## Gotchas
 
+- **真实产品的外壳在 `GlobalRail` 加 `ProjectNavColumn`**。深色主导航（图标下带文字）在 `packages/web/src/app/components/global-rail`，项目侧栏只放项目配置、发布与审批、映射表、数据存储，其余入口在主导航或项目「···」菜单里。编辑器（`BuilderLayout`）同样带这两栏。
+- **`secondary` 不是黑色**。它是跟随主色的浅色（选中态），复选框和开关的勾选态用 `primary`；全局 `Tabs` 默认是飞书的下划线样式，要胶囊样式时传 `variant="segmented"`。
+- **改界面要真机截图对照**。功能脚本全绿时样式照样可能全错，截图和 `design/index.html` 同一页并排看过才算验证。
 - **没有独立的工作流列表页**。AnyCross 的工作流挂在项目二级侧栏里，按文件夹组织；原型也是这样做的。
 - **告警分两层，AnyCross 只有第二层**。平台内置「问题中心 + 告警策略」（`#/issues`、`#/issues/alerts`），负责按原因聚合、降噪和复发识别；更复杂的告警仍然可以用「告警触发器」开头的工作流。
 - **工作流的 `version`、`published`、`status` 始终指生产环境**。开启测试环境的项目里，测试部署单独放在 `wf.test`；版本记录的 `envs` 记录这个版本部署过哪些环境。改发布相关逻辑时两处都要看。

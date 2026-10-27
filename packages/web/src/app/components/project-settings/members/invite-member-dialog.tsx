@@ -34,6 +34,7 @@ import {
 import { internalErrorToast } from '@/components/ui/sonner';
 import { userInvitationMutations } from '@/features/invitations';
 import { invitationUtils } from '@/features/invitations/utils/invitation-utils';
+import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
 export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
@@ -157,7 +158,7 @@ function InviteMemberForm({ onDone }: { onDone: () => void }) {
                 <SelectContent>
                   {Object.values(DefaultProjectRole).map((role) => (
                     <SelectItem key={role} value={role}>
-                      {t(role)}
+                      {projectRoleLabels.label(role)}
                     </SelectItem>
                   ))}
                 </SelectContent>

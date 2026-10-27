@@ -11,13 +11,12 @@ import {
   MemoryStick,
   HardDrive,
   Layers,
-  Activity,
 } from 'lucide-react';
 import prettyBytes from 'pretty-bytes';
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -59,30 +58,19 @@ export default function WorkersPage() {
   };
 
   return (
-    <div className="flex flex-col w-full gap-4 px-4">
-      <DashboardPageHeader
-        description={t('Check the health of your workers')}
-        title={t('Workers')}
-      ></DashboardPageHeader>
-
+    <ConsolePage
+      description={t('Check the health of your workers')}
+      title={t('Workers')}
+    >
       <Tabs
         value={activeTab}
         onValueChange={(value) => setTab(value as TabValue)}
         className="w-full"
       >
-        <TabsList variant="outline" className="border-b w-full">
-          <TabsTrigger variant="outline" value="nodes">
-            <Server className="w-4 h-4 mr-2" />
-            {t('Nodes')}
-          </TabsTrigger>
-          <TabsTrigger variant="outline" value="health">
-            <Activity className="w-4 h-4 mr-2" />
-            {t('Health')}
-          </TabsTrigger>
-          <TabsTrigger variant="outline" value="worker-groups">
-            <Layers className="w-4 h-4 mr-2" />
-            {t('Worker groups')}
-          </TabsTrigger>
+        <TabsList className="w-full overflow-x-auto">
+          <TabsTrigger value="nodes">{t('Nodes')}</TabsTrigger>
+          <TabsTrigger value="health">{t('Resource usage')}</TabsTrigger>
+          <TabsTrigger value="worker-groups">{t('Worker groups')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="nodes">
@@ -142,7 +130,7 @@ export default function WorkersPage() {
           <WorkerAssignmentsTab />
         </TabsContent>
       </Tabs>
-    </div>
+    </ConsolePage>
   );
 }
 

@@ -78,5 +78,20 @@
   "The numeric OId of the organization unit. The company root is 900 followed by your Beisen tenant ID, for example 900100000.": "组织单元的数字 OId。公司根组织是 900 加你的北森租户 ID，例如 900100000。",
   "Also list the employees of every organization unit below this one.": "同时列出这个组织下面各级组织单元的员工。",
   "Stop after this many employees, up to 50000. Beisen serves 300 per call.": "取到这么多员工就停，最多 50000。北森每次返回 300 个。",
-  "The work or personal email recorded on the employee.": "员工档案里记录的工作邮箱或个人邮箱。"
+  "The work or personal email recorded on the employee.": "员工档案里记录的工作邮箱或个人邮箱。",
+  "Enumerate employees": "全量列举员工",
+  "Get current employee record": "读取员工当前任职记录",
+  "Enumerate organizations": "全量列举组织",
+  "Read current employees and recent departures one page at a time": "分页读取在职员工和最近离职的员工",
+  "Find the current employee record by employee number, scanning the organization when no direct lookup is available": "按工号查员工的当前任职记录；没有直接查询接口时会扫描整个组织",
+  "Read the current organization tree, including disabled units": "读取当前的组织树，包含已停用的组织单元",
+  "Root organization OId": "根组织 OId",
+  "Include departures from the last days": "包含最近几天离职的员工",
+  "Page token": "分页游标",
+  "Page size": "每页条数",
+  "Employee number": "工号",
+  "Read the entire tree": "读取整棵树",
+  "Organization changed": "组织变动",
+  "Wake a department-tree synchronization when the source organization changes": "来源系统的组织变动时，启动一次部门树同步",
+  "Connection": "连接"
 }

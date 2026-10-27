@@ -1,4 +1,5 @@
 import { WorkflowTriggerType, workflowStructureUtil } from '@fema-ipaas/shared';
+import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
@@ -6,7 +7,9 @@ import { useState } from 'react';
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { SidebarHeader } from '@/app/builder/sidebar-header';
 import { LeftSideBarType } from '@/app/builder/types';
+import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
 import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
+import { workflowCanvasUtils } from '@/app/builder/workflow-canvas/utils/workflow-canvas-utils';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -19,6 +22,8 @@ export function StepSearchPanel() {
       state.setHighlightedSteps,
     ]);
   const displayNumbers = useStepDisplayNumbers();
+  const { fitView } = useReactFlow();
+  useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
   const [query, setQuery] = useState('');
   const keywords = query
     .toLowerCase()
@@ -64,6 +69,10 @@ export function StepSearchPanel() {
               onClick={() => {
                 selectStepByName(step.name);
                 setHighlightedSteps([step.name]);
+                workflowCanvasUtils.focusStepAfterLayout({
+                  fitView,
+                  stepName: step.name,
+                });
               }}
               className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >

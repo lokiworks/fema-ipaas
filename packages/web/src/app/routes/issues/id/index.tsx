@@ -52,6 +52,7 @@ import {
   issueUiUtils,
 } from '@/features/issues';
 import { ReconciliationDifferences } from '@/features/reconciliation/reconciliation';
+import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { notFoundError } from '@/lib/not-found-error';
@@ -64,7 +65,11 @@ function IssueDetailPage() {
     return <ResourceNotFound kind="issue" />;
   }
   if (isLoading || !issue) {
-    return <Skeleton className="h-96 w-full" />;
+    return (
+      <div className="w-full px-6 py-5">
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
   }
   return <IssueDetail key={issue.id} issue={issue} />;
 }
@@ -80,7 +85,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
     !!issue.mutedUntil && new Date(issue.mutedUntil).getTime() > Date.now();
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex w-full min-w-0 flex-col gap-4 px-6 py-5">
       <Link
         to={authenticationSession.appendProjectRoutePrefix('/issues')}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground w-fit"
@@ -107,7 +112,9 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
               {issueUiUtils.kindLabel(issue.kind)}
             </Badge>
             {issue.errorCode && (
-              <span className="font-mono">{issue.errorCode}</span>
+              <TextWithTooltip tooltipMessage={issue.errorCode}>
+                <span>{runLogUiUtils.errorCodeLabel(issue.errorCode)}</span>
+              </TextWithTooltip>
             )}
             <span>
               {t('First seen')}{' '}
@@ -135,8 +142,17 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
                   {member.name}
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => update({ assigneeId: null })}>
+              {assignable.length === 0 ? (
+                <DropdownMenuItem disabled>
+                  {t('No members to assign yet')}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuSeparator />
+              )}
+              <DropdownMenuItem
+                disabled={!issue.assigneeId}
+                onSelect={() => update({ assigneeId: null })}
+              >
                 {t('Remove assignee')}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -643,7 +659,7 @@ function AffectedRunsCard({
             disabled={!page?.previous}
             onClick={() => setCursor(page?.previous ?? undefined)}
           >
-            {t('Previous')}
+            {t('Previous page')}
           </Button>
           <Button
             size="sm"
@@ -651,7 +667,7 @@ function AffectedRunsCard({
             disabled={!page?.next}
             onClick={() => setCursor(page?.next ?? undefined)}
           >
-            {t('Next')}
+            {t('Next page')}
           </Button>
         </div>
       </CardContent>

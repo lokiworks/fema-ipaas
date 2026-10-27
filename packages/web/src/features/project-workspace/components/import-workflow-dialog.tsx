@@ -25,6 +25,8 @@ import { cn } from '@/lib/utils';
 import { projectWorkspaceHooks } from '../hooks/project-workspace-hooks';
 import { workspaceUtils } from '../lib/workspace-utils';
 
+import { CharacterCounter } from './character-counter';
+
 export function ImportWorkflowFileDialog({
   open,
   onOpenChange,
@@ -216,14 +218,13 @@ function ImportBody({
       {picked && (
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium">{t('Workflow name')}</span>
-          <Input
-            value={name}
-            maxLength={WORKFLOW_NAME_MAX_LENGTH}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <span className="text-xs text-muted-foreground">
-            {name.length}/{WORKFLOW_NAME_MAX_LENGTH}
-          </span>
+          <CharacterCounter length={name.length} max={WORKFLOW_NAME_MAX_LENGTH}>
+            <Input
+              value={name}
+              maxLength={WORKFLOW_NAME_MAX_LENGTH}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </CharacterCounter>
           {nameError && (
             <span className="text-sm text-destructive">{nameError}</span>
           )}

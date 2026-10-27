@@ -10,5 +10,18 @@
   "Field mapping": "字段映射",
   "Target fields and how each one is computed": "目标字段以及每个字段的取值方式",
   "Fail when a field cannot be mapped": "字段映射失败时让节点失败",
-  "When off, fields that fail keep their unconverted value and the step succeeds": "关闭后，映射失败的字段保留原值，节点仍然成功"
+  "When off, fields that fail keep their unconverted value and the step succeeds": "关闭后，映射失败的字段保留原值，节点仍然成功",
+  "Look up a mapping": "查映射",
+  "Read mapping table rows": "读取映射表",
+  "Save mapping table rows": "写入映射表",
+  "Look up a binding without failing when it is missing": "在映射表里查一个键，查不到时不报错",
+  "Read the latest project mapping table bindings": "读取项目映射表里最新的对照行",
+  "Add missing bindings and report conflicting values": "补上缺少的对照行，并报告取值冲突的行",
+  "Mapping table": "映射表",
+  "Key": "键",
+  "Rows": "对照行",
+  "When a value differs": "取值不一致时",
+  "An array of objects with key and value fields.": "对象数组，每个对象包含 key 和 value 字段。",
+  "Keep the existing value": "保留原有的值",
+  "Replace the existing value": "覆盖为新值"
 }

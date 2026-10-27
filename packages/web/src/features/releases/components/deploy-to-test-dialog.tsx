@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import { CharacterCounter } from '@/features/project-workspace/components/character-counter';
 
 export function DeployToTestDialog({
   open,
@@ -78,14 +79,20 @@ function DeployToTestForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('Release note (optional)')}</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  value={field.value ?? ''}
-                  maxLength={300}
-                  placeholder={t('e.g. Added the signature to the message')}
-                />
-              </FormControl>
+              <CharacterCounter
+                multiline
+                length={(field.value ?? '').length}
+                max={300}
+              >
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ''}
+                    maxLength={300}
+                    placeholder={t('e.g. Added the signature to the message')}
+                  />
+                </FormControl>
+              </CharacterCounter>
               <FormMessage />
             </FormItem>
           )}

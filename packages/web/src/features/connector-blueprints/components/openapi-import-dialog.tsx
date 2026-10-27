@@ -176,7 +176,7 @@ function OpenApiImportForm({ onDone }: { onDone: () => void }) {
         <Textarea
           value={document}
           onChange={(event) => setDocument(event.target.value)}
-          rows={10}
+          rows={16}
           className="font-mono text-xs"
           placeholder='{ "openapi": "3.0.1", "paths": { ... } }'
         />

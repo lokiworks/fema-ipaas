@@ -6,7 +6,7 @@ import { useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -36,7 +36,7 @@ export function HolidayCalendarPage() {
     showErrorDialog: true,
   });
   return (
-    <CenteredPage
+    <ConsolePage
       title={t('Holiday calendar')}
       description={t(
         'Schedules that turn on "Skip public holidays" do not run on these dates. The calendar starts empty, so import the official dates for each year.',
@@ -50,7 +50,7 @@ export function HolidayCalendarPage() {
           calendar={calendar}
         />
       )}
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 

@@ -1,6 +1,7 @@
 import { t } from 'i18next';
 
 import LanguageToggle from '@/app/components/account-settings/language-toggle';
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   AccessTokensCard,
   AccountProfileCard,
@@ -40,8 +41,13 @@ export function AccountPage() {
   ];
 
   return (
-    <div className="flex w-full max-w-[1100px] flex-col gap-6 p-6">
-      <h1 className="text-xl font-semibold">{t('Personal settings')}</h1>
+    <ConsolePage
+      title={t('Personal settings')}
+      description={t(
+        'Manage your profile, appearance, notifications and access tokens.',
+      )}
+      className="gap-6"
+    >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <AccountProfileCard user={user} details={details} />
         <div className="flex flex-col gap-6">
@@ -52,6 +58,6 @@ export function AccountPage() {
         </div>
       </div>
       <AccessTokensCard />
-    </div>
+    </ConsolePage>
   );
 }

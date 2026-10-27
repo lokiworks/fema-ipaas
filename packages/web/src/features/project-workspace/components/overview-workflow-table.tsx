@@ -73,24 +73,24 @@ export function OverviewWorkflowTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t('Name')}</TableHead>
+            <TableHead className="min-w-44">{t('Name')}</TableHead>
             {releasesEnabled ? (
               <>
-                <TableHead className="w-28">{t('Test')}</TableHead>
-                <TableHead className="w-28">{t('Production')}</TableHead>
+                <TableHead className="w-24">{t('Test')}</TableHead>
+                <TableHead className="w-24">{t('Production')}</TableHead>
               </>
             ) : (
               <TableHead className="w-24">{t('Status')}</TableHead>
             )}
-            <TableHead className="w-32">{t('Last run')}</TableHead>
-            <TableHead className="w-24 text-right">
+            <TableHead className="w-28">{t('Last run')}</TableHead>
+            <TableHead className="w-20 whitespace-nowrap text-right">
               {t('Runs (7 days)')}
             </TableHead>
-            <TableHead className="w-24 text-right">
+            <TableHead className="w-20 whitespace-nowrap text-right">
               {t('Success rate')}
             </TableHead>
             {releasesEnabled && (
-              <TableHead className="w-32">{t('Promotion')}</TableHead>
+              <TableHead className="w-28">{t('Promotion')}</TableHead>
             )}
           </TableRow>
         </TableHeader>
@@ -112,7 +112,7 @@ export function OverviewWorkflowTable({
                   navigate(`/projects/${projectId}/workflows/${workflow.id}`)
                 }
               >
-                <TableCell className="max-w-0">
+                <TableCell className="min-w-44 max-w-0">
                   <span className="flex min-w-0 items-center gap-2">
                     <span className="truncate" title={workflow.displayName}>
                       {workflow.displayName}

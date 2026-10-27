@@ -71,7 +71,7 @@ function truncate({ text, max }: { text: string, max: number }): string {
 const LIGHT_TINT_PERCENT = 12
 const LIGHT_TEXT_COLOR = '#ffffff'
 const DARK_TEXT_COLOR = '#0a0a0a'
-const FALLBACK_PRIMARY_COLOR = '#2d6cdf'
+const FALLBACK_PRIMARY_COLOR = '#3370ff'
 const DISPLAY_TIMEZONE = 'Asia/Shanghai'
 
 export const emailBrandingUtils = {

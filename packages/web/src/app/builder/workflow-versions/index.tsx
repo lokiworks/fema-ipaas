@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { LeftSideBarType } from '@/app/builder/types';
+import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
 import { CardList, CardListItemSkeleton } from '@/components/custom/card-list';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,6 +25,8 @@ const WorkflowVersionsList = () => {
       state.setLeftSidebar,
       state.workflowVersion,
     ]);
+
+  useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
 
   const {
     data: workflowVersionPage,

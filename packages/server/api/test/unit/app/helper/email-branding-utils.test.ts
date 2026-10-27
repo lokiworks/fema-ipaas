@@ -49,8 +49,8 @@ describe('emailBrandingUtils.lightTint', () => {
 
 describe('emailBrandingUtils.usableColor', () => {
     it('falls back to the default primary colour when the tenant colour cannot be parsed', () => {
-        expect(emailBrandingUtils.usableColor({ color: 'not-a-colour' })).toBe('#2d6cdf')
-        expect(emailBrandingUtils.usableColor({ color: null })).toBe('#2d6cdf')
+        expect(emailBrandingUtils.usableColor({ color: 'not-a-colour' })).toBe('#3370ff')
+        expect(emailBrandingUtils.usableColor({ color: null })).toBe('#3370ff')
     })
 
     it('keeps a valid colour', () => {

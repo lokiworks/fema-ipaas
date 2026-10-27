@@ -51,6 +51,7 @@ export const connectorTranslation = {
   pathsToValuesToTranslate: [
     "displayName",
     "description",
+    "auth.displayName",
     "auth.username.displayName",
     "auth.username.description",
     "auth.password.displayName",

@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import * as RippleHook from 'use-ripple-hook';
 
 import { flagsHooks } from '@/hooks/flags-hooks';
@@ -15,6 +21,7 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme;
+  resolvedTheme: 'dark' | 'light';
   setTheme: (theme: Theme) => void;
   forceLightMode: boolean;
   setForceLightMode: (value: boolean) => void;
@@ -22,12 +29,25 @@ type ThemeProviderState = {
 
 const initialState: ThemeProviderState = {
   theme: 'system',
+  resolvedTheme: 'light',
   setTheme: () => null,
   forceLightMode: false,
   setForceLightMode: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+
+function subscribeToColorScheme(onChange: () => void) {
+  const query = window.matchMedia(DARK_COLOR_SCHEME_QUERY);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+function prefersDarkColorScheme() {
+  return window.matchMedia(DARK_COLOR_SCHEME_QUERY).matches;
+}
+
+const DARK_COLOR_SCHEME_QUERY = '(prefers-color-scheme: dark)';
 
 const setFavicon = (url: string) => {
   document.querySelectorAll("link[rel*='icon']").forEach((el) => el.remove());
@@ -47,7 +67,18 @@ export function ThemeProvider({
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
   );
   const [forceLightMode, setForceLightMode] = useState(false);
+  const systemPrefersDark = useSyncExternalStore(
+    subscribeToColorScheme,
+    prefersDarkColorScheme,
+  );
   const branding = flagsHooks.useWebsiteBranding();
+  const resolvedTheme = forceLightMode
+    ? 'light'
+    : theme === 'system'
+    ? systemPrefersDark
+      ? 'dark'
+      : 'light'
+    : theme;
   useEffect(() => {
     if (!branding) {
       console.warn('Website brand is not defined');
@@ -55,11 +86,6 @@ export function ThemeProvider({
     }
     const root = window.document.documentElement;
 
-    const resolvedTheme = forceLightMode
-      ? 'light'
-      : theme === 'system'
-      ? 'light'
-      : theme;
     root.classList.remove('light', 'dark');
     const primaryHex =
       resolvedTheme === 'dark'
@@ -107,10 +133,11 @@ export function ThemeProvider({
     }
 
     root.classList.add(resolvedTheme);
-  }, [theme, branding, forceLightMode]);
+  }, [branding, resolvedTheme]);
 
   const value = {
     theme,
+    resolvedTheme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);

@@ -10,7 +10,7 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { CenteredPage } from '@/app/components/centered-page';
+import { ConsolePage } from '@/components/custom/console-page';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { Button } from '@/components/ui/button';
@@ -75,14 +75,21 @@ export default function AuditLogPage() {
     try {
       const rows = await collectAll(filters);
       const csv = tenantAccessUtils.toCsv([
-        [t('Time'), t('Actor'), t('Action'), t('Target'), t('Project'), 'IP'],
+        [
+          t('Time'),
+          t('Actor'),
+          t('Action'),
+          t('Audit target'),
+          t('Project'),
+          'IP',
+        ],
         ...rows.map((event) => [
           dayjs(event.created).format('YYYY-MM-DD HH:mm:ss'),
           event.userEmail ?? '',
           auditEventUtils.actionLabel(event.action),
           auditEventUtils.summarize(event),
           event.projectDisplayName ?? t('Platform'),
-          event.ip ?? '',
+          event.ip ? displayIp(event.ip) : '',
         ]),
       ]);
       await downloadFile({
@@ -100,8 +107,7 @@ export default function AuditLogPage() {
   };
 
   return (
-    <CenteredPage
-      widthClassName="max-w-[72rem]"
+    <ConsolePage
       title={t('Audit Log')}
       description={t(
         'Key actions taken on the platform. Records are kept for 90 days.',
@@ -191,14 +197,14 @@ export default function AuditLogPage() {
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : (
-          <Table>
+          <Table className="min-w-[56rem]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-44">{t('Time')}</TableHead>
                 <TableHead className="w-48">{t('Actor')}</TableHead>
                 <TableHead className="w-44">{t('Action')}</TableHead>
-                <TableHead>{t('Target')}</TableHead>
-                <TableHead className="w-36">{t('Project')}</TableHead>
+                <TableHead>{t('Audit target')}</TableHead>
+                <TableHead className="w-48">{t('Project')}</TableHead>
                 <TableHead className="w-32">IP</TableHead>
               </TableRow>
             </TableHeader>
@@ -223,7 +229,7 @@ export default function AuditLogPage() {
             disabled={cursors.length === 0}
             onClick={() => setCursors(cursors.slice(0, -1))}
           >
-            {t('Previous')}
+            {t('Previous page')}
           </Button>
           <Button
             variant="outline"
@@ -231,11 +237,11 @@ export default function AuditLogPage() {
             disabled={!data?.next}
             onClick={() => data?.next && setCursors([...cursors, data.next])}
           >
-            {t('Next')}
+            {t('Next page')}
           </Button>
         </div>
       </div>
-    </CenteredPage>
+    </ConsolePage>
   );
 }
 
@@ -243,7 +249,7 @@ function AuditRow({ event }: { event: ApplicationEvent }) {
   const summary = auditEventUtils.summarize(event);
   return (
     <TableRow>
-      <TableCell>
+      <TableCell className="whitespace-nowrap">
         <FormattedDate date={new Date(event.created)} />
       </TableCell>
       <TableCell className="max-w-48">
@@ -251,20 +257,32 @@ function AuditRow({ event }: { event: ApplicationEvent }) {
           <p className="truncate">{event.userEmail ?? '—'}</p>
         </TextWithTooltip>
       </TableCell>
-      <TableCell>{auditEventUtils.actionLabel(event.action)}</TableCell>
+      <TableCell className="whitespace-nowrap">
+        {auditEventUtils.actionLabel(event.action)}
+      </TableCell>
       <TableCell className="max-w-[28rem]">
         <TextWithTooltip tooltipMessage={summary}>
           <p className="truncate text-muted-foreground">{summary}</p>
         </TextWithTooltip>
       </TableCell>
-      <TableCell className="text-muted-foreground">
-        {event.projectDisplayName ?? t('Platform')}
+      <TableCell className="max-w-48 text-muted-foreground">
+        <TextWithTooltip
+          tooltipMessage={event.projectDisplayName ?? t('Platform')}
+        >
+          <p className="truncate whitespace-nowrap">
+            {event.projectDisplayName ?? t('Platform')}
+          </p>
+        </TextWithTooltip>
       </TableCell>
       <TableCell className="font-mono text-xs text-muted-foreground">
-        {event.ip ?? '—'}
+        {displayIp(event.ip)}
       </TableCell>
     </TableRow>
   );
+}
+
+function displayIp(ip: string | null | undefined): string {
+  return ip ? ip.replace(/^::ffff:/, '') : '—';
 }
 
 async function collectAll(filters: {

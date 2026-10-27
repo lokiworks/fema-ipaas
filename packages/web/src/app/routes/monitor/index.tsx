@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import { Skeleton } from '@/components/ui/skeleton';
 import { connectorsHooks } from '@/features/connectors/hooks/connectors-hooks';
 import {
@@ -29,7 +30,6 @@ import {
   runMonitorLabels,
   runMonitorUtils,
 } from '@/features/run-monitor';
-import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
 
 export function MonitorPage() {
   const navigate = useNavigate();
@@ -212,21 +212,12 @@ export function MonitorPage() {
   ].join(' · ');
 
   return (
-    <div
-      className={cn(
-        'flex w-full flex-col gap-4 py-4',
-        DASHBOARD_CONTENT_PADDING_X,
+    <ConsolePage
+      title={t('Run monitor')}
+      description={t(
+        'Watch run counts, success rates, durations and AI usage by project and workflow, across the projects you are a member of.',
       )}
-    >
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-2xl font-semibold">{t('Run monitor')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Watch run counts, success rates, durations and AI usage by project and workflow, across the projects you are a member of.',
-            )}
-          </p>
-        </div>
+      actions={
         <MonitorViewsMenu
           views={myViews}
           selectedId={viewId}
@@ -250,7 +241,8 @@ export function MonitorPage() {
           onReset={() => setConfig(savedConfig)}
           onDelete={removeView}
         />
-      </header>
+      }
+    >
       <MonitorToolbar
         range={effective.range}
         projectIds={effective.projectIds}
@@ -364,7 +356,7 @@ export function MonitorPage() {
         }}
         onSubmit={submitName}
       />
-    </div>
+    </ConsolePage>
   );
 }
 

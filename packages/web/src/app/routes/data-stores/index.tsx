@@ -17,6 +17,7 @@ import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { SearchInput } from '@/components/custom/search-input';
@@ -50,7 +51,7 @@ import {
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { recentVisits } from '@/lib/recent-visits';
-import { cn, DASHBOARD_CONTENT_PADDING_X } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 function DataStoresPage() {
   const projectId = authenticationSession.getProjectId() ?? '';
@@ -86,19 +87,10 @@ function DataStoresPage() {
   };
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-4 w-full py-4',
-        DASHBOARD_CONTENT_PADDING_X,
-      )}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-base font-semibold">{t('Data stores')}</h1>
-          <p className="text-sm text-muted-foreground">
-            {t('dataStoresPageDescription')}
-          </p>
-        </div>
+    <ConsolePage
+      title={t('Data stores')}
+      description={t('dataStoresPageDescription')}
+      actions={
         <ViewOnlyTooltip canWrite={canWrite}>
           <Button
             size="sm"
@@ -109,7 +101,8 @@ function DataStoresPage() {
             {t('New data store')}
           </Button>
         </ViewOnlyTooltip>
-      </div>
+      }
+    >
       {!canWrite && (
         <Alert>
           <Info className="size-4" />
@@ -176,7 +169,7 @@ function DataStoresPage() {
           setSearchParams({});
         }}
       />
-    </div>
+    </ConsolePage>
   );
 }
 

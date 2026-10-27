@@ -151,6 +151,9 @@ function AddWorkerGuide({
         </AlertDescription>
       </Alert>
       <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          {t('Cancel')}
+        </Button>
         <Button onClick={() => onOpenChange(false)}>{t('Done')}</Button>
       </DialogFooter>
     </div>

@@ -131,18 +131,33 @@ function summarizeWorkflowUpdate(
   }
 }
 
+function runParamsOf(execution: { id: string; workflowDisplayName?: string }): {
+  run: string;
+  workflow: string;
+} {
+  return { run: execution.id, workflow: execution.workflowDisplayName ?? '' };
+}
+
 function summarize(event: ApplicationEvent): string {
   switch (event.action) {
     case ApplicationEventName.WORKFLOW_UPDATED:
       return summarizeWorkflowUpdate(event);
     case ApplicationEventName.EXECUTION_STARTED:
-      return t('auditRunStarted', { run: event.data.execution.id });
+      return event.data.execution.workflowDisplayName
+        ? t('auditRunStartedNamed', runParamsOf(event.data.execution))
+        : t('auditRunStarted', { run: event.data.execution.id });
     case ApplicationEventName.EXECUTION_FINISHED:
-      return t('auditRunFinished', { run: event.data.execution.id });
+      return event.data.execution.workflowDisplayName
+        ? t('auditRunFinishedNamed', runParamsOf(event.data.execution))
+        : t('auditRunFinished', { run: event.data.execution.id });
     case ApplicationEventName.EXECUTION_RESUMED:
-      return t('auditRunResumed', { run: event.data.execution.id });
+      return event.data.execution.workflowDisplayName
+        ? t('auditRunResumedNamed', runParamsOf(event.data.execution))
+        : t('auditRunResumed', { run: event.data.execution.id });
     case ApplicationEventName.EXECUTION_RETRIED:
-      return t('auditRunRetried', { run: event.data.execution.id });
+      return event.data.execution.workflowDisplayName
+        ? t('auditRunRetriedNamed', runParamsOf(event.data.execution))
+        : t('auditRunRetried', { run: event.data.execution.id });
     case ApplicationEventName.WORKFLOW_CREATED:
       return t('auditWorkflowCreated', { workflow: event.data.workflow.id });
     case ApplicationEventName.WORKFLOW_DELETED:

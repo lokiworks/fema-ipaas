@@ -78,5 +78,20 @@
   "The numeric OId of the organization unit. The company root is 900 followed by your Beisen tenant ID, for example 900100000.": "The numeric OId of the organization unit. The company root is 900 followed by your Beisen tenant ID, for example 900100000.",
   "Also list the employees of every organization unit below this one.": "Also list the employees of every organization unit below this one.",
   "Stop after this many employees, up to 50000. Beisen serves 300 per call.": "Stop after this many employees, up to 50000. Beisen serves 300 per call.",
-  "The work or personal email recorded on the employee.": "The work or personal email recorded on the employee."
+  "The work or personal email recorded on the employee.": "The work or personal email recorded on the employee.",
+  "Enumerate employees": "Enumerate employees",
+  "Get current employee record": "Get current employee record",
+  "Enumerate organizations": "Enumerate organizations",
+  "Read current employees and recent departures one page at a time": "Read current employees and recent departures one page at a time",
+  "Find the current employee record by employee number, scanning the organization when no direct lookup is available": "Find the current employee record by employee number, scanning the organization when no direct lookup is available",
+  "Read the current organization tree, including disabled units": "Read the current organization tree, including disabled units",
+  "Root organization OId": "Root organization OId",
+  "Include departures from the last days": "Include departures from the last days",
+  "Page token": "Page token",
+  "Page size": "Page size",
+  "Employee number": "Employee number",
+  "Read the entire tree": "Read the entire tree",
+  "Organization changed": "Organization changed",
+  "Wake a department-tree synchronization when the source organization changes": "Wake a department-tree synchronization when the source organization changes",
+  "Connection": "Connection"
 }

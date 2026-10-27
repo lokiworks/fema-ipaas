@@ -73,7 +73,7 @@ export default function ConnectorDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 px-6 py-5">
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -82,22 +82,24 @@ export default function ConnectorDetailPage() {
 
   if (isNotFound || isNil(connectorModel)) {
     return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <PackageXIcon />
-          </EmptyMedia>
-          <EmptyTitle>{t('This connector is not available')}</EmptyTitle>
-          <EmptyDescription>
-            {t('The link may be broken, or the connector has been removed.')}
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button onClick={() => navigate('/tenant/connectors')}>
-            {t('Back to the connector marketplace')}
-          </Button>
-        </EmptyContent>
-      </Empty>
+      <div className="px-6 py-5">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <PackageXIcon />
+            </EmptyMedia>
+            <EmptyTitle>{t('This connector is not available')}</EmptyTitle>
+            <EmptyDescription>
+              {t('The link may be broken, or the connector has been removed.')}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button onClick={() => navigate('/tenant/connectors')}>
+              {t('Back to the connector marketplace')}
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </div>
     );
   }
 
@@ -122,7 +124,7 @@ export default function ConnectorDetailPage() {
     .slice(0, 4);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6 px-6 py-5">
       <div className="flex flex-wrap items-start gap-4 rounded-lg border p-4">
         <ConnectorIcon
           logoUrl={connectorModel.logoUrl}

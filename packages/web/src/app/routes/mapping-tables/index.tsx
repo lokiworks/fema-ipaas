@@ -11,7 +11,16 @@ import { Download, Plus, Table2, Trash2, Upload } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/custom/empty';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -61,57 +70,66 @@ function MappingTablesPage() {
   const [creating, setCreating] = useState(false);
   const select = (id: string) => setSearchParams({ id });
 
+  const noTables = !isLoading && (tables ?? []).length === 0;
+  const newTableButton = (
+    <Button size="sm" disabled={!canWrite} onClick={() => setCreating(true)}>
+      <Plus className="size-4 mr-1" />
+      {t('New mapping table')}
+    </Button>
+  );
+
   return (
-    <div className="grid grid-cols-[260px_1fr] gap-4 w-full">
-      <div className="flex flex-col gap-2">
-        <Button
-          size="sm"
-          disabled={!canWrite}
-          onClick={() => setCreating(true)}
-        >
-          <Plus className="size-4 mr-1" />
-          {t('New mapping table')}
-        </Button>
-        {isLoading && <Skeleton className="h-32 w-full" />}
-        {(tables ?? []).map((table) => (
-          <TableListItem
-            key={table.id}
-            table={table}
-            active={table.id === selectedId}
-            onSelect={() => select(table.id)}
-          />
-        ))}
-        {!isLoading && (tables ?? []).length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Mapping tables translate codes between systems, like department names to department IDs.',
-            )}
-          </p>
-        )}
-      </div>
-      <div>
-        {selectedId ? (
-          <MappingTableEditorLoader
-            key={selectedId}
-            id={selectedId}
-            canWrite={canWrite}
-            onDeleted={() => setSearchParams({})}
-          />
-        ) : (
-          <div className="flex flex-col items-start gap-2 text-muted-foreground">
-            <Table2 className="size-10" />
-            <span className="text-sm">
+    <ConsolePage
+      title={t('Mapping tables')}
+      description={t(
+        'Mapping tables translate codes between systems, like department names to department IDs.',
+      )}
+      actions={noTables ? undefined : newTableButton}
+    >
+      {noTables ? (
+        <Empty className="min-h-[360px]">
+          <EmptyHeader>
+            <EmptyMedia>
+              <Table2 className="size-10 text-muted-foreground" />
+            </EmptyMedia>
+            <EmptyTitle>{t('No mapping tables yet')}</EmptyTitle>
+            <EmptyDescription>
               {t('Create a mapping table to get started.')}
-            </span>
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>{newTableButton}</EmptyContent>
+        </Empty>
+      ) : (
+        <div className="grid grid-cols-[260px_1fr] gap-4 w-full">
+          <div className="flex flex-col gap-2">
+            {isLoading && <Skeleton className="h-32 w-full" />}
+            {(tables ?? []).map((table) => (
+              <TableListItem
+                key={table.id}
+                table={table}
+                active={table.id === selectedId}
+                onSelect={() => select(table.id)}
+              />
+            ))}
           </div>
-        )}
-      </div>
+          <div className="min-w-0">
+            {selectedId && (
+              <MappingTableEditorLoader
+                key={selectedId}
+                id={selectedId}
+                canWrite={canWrite}
+                onDeleted={() => setSearchParams({})}
+              />
+            )}
+          </div>
+        </div>
+      )}
       <NewTableDialog
         open={creating}
         onOpenChange={setCreating}
         onCreated={select}
       />
-    </div>
+    </ConsolePage>
   );
 }
 
@@ -332,13 +350,13 @@ function MappingTableEditor({
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
-          <div className="grid grid-cols-[1fr_1fr_auto] gap-2 text-xs font-medium text-muted-foreground">
+          <div className="grid grid-cols-[1fr_1fr_4rem] gap-2 text-xs font-medium text-muted-foreground">
             <span>{draft.keyLabel}</span>
             <span>{draft.valueLabel}</span>
             <span />
           </div>
           {canWrite && (
-            <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+            <div className="grid grid-cols-[1fr_1fr_4rem] gap-2">
               <Input
                 value={newRow.k}
                 placeholder={t('New key')}
@@ -355,6 +373,7 @@ function MappingTableEditor({
               />
               <Button
                 size="sm"
+                className="w-full"
                 disabled={newRowProblem !== null}
                 title={newRowProblem ?? undefined}
                 onClick={() => {
@@ -373,7 +392,7 @@ function MappingTableEditor({
             {draft.rows.map((row, index) => (
               <div
                 key={`${index}-${row.k}`}
-                className="grid grid-cols-[1fr_1fr_auto] gap-2"
+                className="grid grid-cols-[1fr_1fr_4rem] gap-2"
               >
                 <Input
                   aria-label={draft.keyLabel || t('Key')}
@@ -406,6 +425,7 @@ function MappingTableEditor({
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="w-full"
                   aria-label={t('Delete')}
                   disabled={!canWrite}
                   onClick={() =>

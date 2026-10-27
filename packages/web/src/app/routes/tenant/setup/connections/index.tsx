@@ -18,11 +18,11 @@ import {
 import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { DashboardPageHeader } from '@/app/components/dashboard-page-header';
 import { NewConnectionDialog } from '@/app/connections/new-connection-dialog';
 import { ReconnectButtonDialog } from '@/app/connections/reconnect-button-dialog';
 import { AnimatedIconButton } from '@/components/custom/animated-icon-button';
 import { CopyTextTooltip } from '@/components/custom/clipboard/copy-text-tooltip';
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   BulkAction,
   CURSOR_QUERY_PARAM,
@@ -303,11 +303,10 @@ const GlobalConnectionsTable = () => {
   );
 
   return (
-    <div className="flex-col w-full">
-      <DashboardPageHeader
-        description={t('Manage tenant-wide connections to external systems.')}
-        title={t('Global Connections')}
-      />
+    <ConsolePage
+      description={t('Manage tenant-wide connections to external systems.')}
+      title={t('Global Connections')}
+    >
       <DataTable
         emptyStateTextTitle={t('No global connections found')}
         emptyStateTextDescription={t(
@@ -324,7 +323,7 @@ const GlobalConnectionsTable = () => {
         bulkActions={bulkActions}
         toolbarButtons={toolbarButtons}
       />
-    </div>
+    </ConsolePage>
   );
 };
 

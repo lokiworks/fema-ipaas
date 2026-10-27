@@ -98,6 +98,7 @@ export type UpdateSampleDataInfoRequest = z.infer<typeof UpdateSampleDataInfoReq
 export const DuplicateBranchRequest = z.object({
     branchIndex: z.number(),
     stepName: z.string(),
+    copySuffix: z.string().optional(),
 })
 export type DeleteBranchRequest = z.infer<typeof DeleteBranchRequest>
 export type AddBranchRequest = z.infer<typeof AddBranchRequest>
@@ -166,6 +167,7 @@ export type UpdateActionRequest = z.infer<typeof UpdateActionRequest>
 
 export const DuplicateStepRequest = z.object({
     stepName: z.string(),
+    copySuffix: z.string().optional(),
 })
 
 export type DuplicateStepRequest = z.infer<typeof DuplicateStepRequest>
@@ -357,14 +359,14 @@ export const workflowOperations = {
                 clonedVersion.displayName = operation.request.displayName
                 break
             case WorkflowOperationType.DUPLICATE_BRANCH: {
-                const operations = _duplicateBranch(operation.request.stepName, operation.request.branchIndex, clonedVersion)
+                const operations = _duplicateBranch(operation.request.stepName, operation.request.branchIndex, clonedVersion, operation.request.copySuffix)
                 operations.forEach((operation) => {
                     clonedVersion = workflowOperations.apply(clonedVersion, operation)
                 })
                 break
             }
             case WorkflowOperationType.DUPLICATE_ACTION: {
-                const operations = _duplicateStep(operation.request.stepName, clonedVersion)
+                const operations = _duplicateStep(operation.request.stepName, clonedVersion, operation.request.copySuffix)
                 operations.forEach((operation) => {
                     clonedVersion = workflowOperations.apply(clonedVersion, operation)
                 })

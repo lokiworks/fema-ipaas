@@ -10,7 +10,7 @@
   "Markdown": "Markdown",
   "Values": "值",
   "Fields": "字段",
-  "If you'd like to use the values with a previous step, click the (X) first, and then select the step you want to use.": "如果想使用上一步骤的值，请先点击 (X)，然后选择要引用的步骤。",
+  "If you'd like to use the values with a previous step, click the (X) first, and then select the step you want to use.": "如果想使用上一步骤的值，请先点击（X），然后选择要引用的步骤。",
   "If the data you're passing in is an object, you can specify certain fields to filter on. The object will be discarded if the fields don't exist. Otherwise, leave fields empty.": "如果传入的数据是对象，可以指定用于过滤的字段；字段不存在时该对象会被丢弃。否则请把字段留空。",
   "Data Summarizer": "数据汇总",
   "Aggregate lists of values: sum, average, min/max and unique counts": "对数值列表做聚合：求和、平均、最值与去重计数"

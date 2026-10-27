@@ -11,9 +11,12 @@ export const LoadingScreen = ({
 }: LoadingScreenProps) => {
   return (
     <div
-      className={cn('flex h-screen w-screen items-center justify-center', {
-        'h-full w-full': mode === 'container',
-      })}
+      className={cn(
+        'flex h-screen w-screen items-center justify-center bg-background',
+        {
+          'h-full w-full': mode === 'container',
+        },
+      )}
     >
       <LoadingSpinner
         className={cn({

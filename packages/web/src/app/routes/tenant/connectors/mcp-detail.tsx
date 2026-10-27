@@ -115,7 +115,7 @@ export default function McpServerDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 px-6 py-5">
         <Skeleton className="h-32 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -124,24 +124,26 @@ export default function McpServerDetailPage() {
 
   if (isError || isNil(server)) {
     return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <ServerOffIcon />
-          </EmptyMedia>
-          <EmptyTitle>{t('This MCP server is not available')}</EmptyTitle>
-          <EmptyDescription>
-            {t(
-              'It may only be open to specific projects you are not in, or it has been deleted.',
-            )}
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button onClick={() => navigate('/tenant/connectors?cat=mcp')}>
-            {t('Back to MCP servers')}
-          </Button>
-        </EmptyContent>
-      </Empty>
+      <div className="px-6 py-5">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ServerOffIcon />
+            </EmptyMedia>
+            <EmptyTitle>{t('This MCP server is not available')}</EmptyTitle>
+            <EmptyDescription>
+              {t(
+                'It may only be open to specific projects you are not in, or it has been deleted.',
+              )}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button onClick={() => navigate('/tenant/connectors?cat=mcp')}>
+              {t('Back to MCP servers')}
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </div>
     );
   }
 
@@ -153,7 +155,7 @@ export default function McpServerDetailPage() {
       });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-6 px-6 py-5">
       <div className="flex flex-wrap items-start gap-4 rounded-lg border p-4">
         <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-muted">
           <ServerIcon className="size-8" />

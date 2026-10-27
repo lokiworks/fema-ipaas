@@ -2,8 +2,11 @@ import {
   GlobalSearchGroup,
   GlobalSearchItem,
   GlobalSearchResultType,
+  IssueKind,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
+
+import { issueUiUtils } from '@/features/issues/utils/issue-ui-utils';
 
 function itemHref({
   item,
@@ -17,7 +20,7 @@ function itemHref({
     case GlobalSearchResultType.WORKFLOW:
       return `/projects/${projectId}/workflows/${item.id}`;
     case GlobalSearchResultType.PROJECT:
-      return `/projects/${item.id}/automations`;
+      return `/projects/${item.id}/home`;
     case GlobalSearchResultType.CONNECTION:
       return `/projects/${currentProjectId}/connections?id=${encodeURIComponent(
         item.id,
@@ -51,7 +54,7 @@ function viewAllHref({
   const search = encodeURIComponent(query);
   switch (type) {
     case GlobalSearchResultType.WORKFLOW:
-      return `/projects/${currentProjectId}/automations`;
+      return `/projects/${currentProjectId}/home`;
     case GlobalSearchResultType.PROJECT:
       return '/projects';
     case GlobalSearchResultType.CONNECTION:
@@ -132,7 +135,40 @@ function toRows({
   ];
 }
 
+function displayLabel(row: GlobalSearchRow): string {
+  if (
+    row.kind === 'resource' &&
+    row.resourceType === GlobalSearchResultType.ISSUE
+  ) {
+    return issueUiUtils.issueTitle({
+      kind: IssueKind.STEP,
+      title: row.label,
+      connectionExternalId: null,
+    });
+  }
+  return row.label;
+}
+
+function displaySubtitle({
+  row,
+  connectorName,
+}: {
+  row: GlobalSearchRow;
+  connectorName: (name: string) => string;
+}): string | null {
+  if (
+    row.kind === 'resource' &&
+    row.resourceType === GlobalSearchResultType.CONNECTION &&
+    row.subtitle !== null
+  ) {
+    return connectorName(row.subtitle);
+  }
+  return row.subtitle;
+}
+
 export const globalSearchUtils = {
+  displayLabel,
+  displaySubtitle,
   itemHref,
   viewAllHref,
   groupHeading,

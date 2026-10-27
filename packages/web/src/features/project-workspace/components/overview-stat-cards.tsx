@@ -174,7 +174,11 @@ function StatCard({
           {value}
         </span>
       )}
-      <span className="truncate text-xs text-muted-foreground">{hint}</span>
+      {isLoading ? (
+        <Skeleton className="h-4 w-32" />
+      ) : (
+        <span className="truncate text-xs text-muted-foreground">{hint}</span>
+      )}
     </>
   );
   const className =

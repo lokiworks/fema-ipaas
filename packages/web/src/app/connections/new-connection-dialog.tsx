@@ -122,8 +122,8 @@ const NewConnectionDialog = React.memo(
             </ScrollArea>
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="ghost">
-                  {t('Close')}
+                <Button type="button" variant="outline">
+                  {t('Cancel')}
                 </Button>
               </DialogClose>
             </DialogFooter>

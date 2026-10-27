@@ -24,6 +24,10 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
+  ConsolePage,
+  ConsoleTableFrame,
+} from '@/components/custom/console-page';
+import {
   BulkAction,
   CURSOR_QUERY_PARAM,
   DataTable,
@@ -49,6 +53,7 @@ import {
   issuesHooks,
   issueUiUtils,
 } from '@/features/issues';
+import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
@@ -177,7 +182,11 @@ function IssuesPage() {
                 </span>
                 <span className="text-xs text-muted-foreground truncate">
                   {issueUiUtils.scopeText(row.original)}
-                  {row.original.errorCode ? ` · ${row.original.errorCode}` : ''}
+                  {row.original.errorCode
+                    ? ` · ${runLogUiUtils.errorCodeLabel(
+                        row.original.errorCode,
+                      )}`
+                    : ''}
                 </span>
               </div>
             </div>
@@ -345,34 +354,41 @@ function IssuesPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <ConsolePage
+      title={t('Issues')}
+      description={t(
+        'Failed production runs of this project, grouped by cause so one problem only alerts once.',
+      )}
+      actions={
+        summary && (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!canWrite}
+            loading={verify.isPending}
+            onClick={() => verify.mutate()}
+          >
+            {t('Check recent results')}
+          </Button>
+        )
+      }
+    >
       {summary && (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-muted-foreground">
-              {t(
-                'Last 7 days: {failures} failures → {issues} issues → {alerts} alerts',
-                {
-                  failures: summary.failuresLast7Days,
-                  issues: summary.issuesLast7Days,
-                  alerts: summary.alertsLast7Days,
-                },
-              )}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!canWrite}
-              loading={verify.isPending}
-              onClick={() => verify.mutate()}
-            >
-              {t('Check recent results')}
-            </Button>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            {t(
+              'Last 7 days: {failures} failures → {issues} issues → {alerts} alerts',
+              {
+                failures: summary.failuresLast7Days,
+                issues: summary.issuesLast7Days,
+                alerts: summary.alertsLast7Days,
+              },
+            )}
+          </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <SummaryCard
               active={view === IssueListView.OPEN}
-              title={t('Open')}
+              title={t('Issue status: open')}
               value={summary.open}
               hint={t('{count} high severity', {
                 count: summary.openHighSeverity,
@@ -405,32 +421,34 @@ function IssuesPage() {
           </div>
         </>
       )}
-      <DataTable
-        emptyStateTextTitle={t('No issues')}
-        emptyStateTextDescription={t(
-          'Failed production runs are grouped here by cause, so one problem only alerts once.',
-        )}
-        emptyStateIcon={<Siren className="size-14" />}
-        columns={columns}
-        page={page}
-        isLoading={isLoading}
-        isError={isError}
-        filters={filters}
-        selectColumn={canWrite}
-        onSelectedRowsChange={setSelectedRows}
-        bulkActions={bulkActions}
-        onRowClick={(row, newWindow) => {
-          const path = authenticationSession.appendProjectRoutePrefix(
-            `/issues/${row.id}`,
-          );
-          if (newWindow) {
-            window.open(path, '_blank');
-            return;
-          }
-          navigate(path);
-        }}
-      />
-    </div>
+      <ConsoleTableFrame>
+        <DataTable
+          emptyStateTextTitle={t('No issues')}
+          emptyStateTextDescription={t(
+            'Failed production runs are grouped here by cause, so one problem only alerts once.',
+          )}
+          emptyStateIcon={<Siren className="size-14" />}
+          columns={columns}
+          page={page}
+          isLoading={isLoading}
+          isError={isError}
+          filters={filters}
+          selectColumn={canWrite}
+          onSelectedRowsChange={setSelectedRows}
+          bulkActions={bulkActions}
+          onRowClick={(row, newWindow) => {
+            const path = authenticationSession.appendProjectRoutePrefix(
+              `/issues/${row.id}`,
+            );
+            if (newWindow) {
+              window.open(path, '_blank');
+              return;
+            }
+            navigate(path);
+          }}
+        />
+      </ConsoleTableFrame>
+    </ConsolePage>
   );
 }
 
@@ -469,7 +487,7 @@ function viewLabel(view: IssueListView): string {
     case IssueListView.UNRESOLVED:
       return t('Unresolved');
     case IssueListView.OPEN:
-      return t('Open');
+      return t('Issue status: open');
     case IssueListView.REOPENED:
       return t('Reopened');
     case IssueListView.INVESTIGATING:

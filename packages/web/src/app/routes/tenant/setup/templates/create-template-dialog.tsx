@@ -182,22 +182,6 @@ export const CreateTemplateDialog = ({
               )}
             />
             <FormField
-              name="blogUrl"
-              render={({ field }) => (
-                <FormItem className="grid space-y-2">
-                  <Label htmlFor="blogUrl">{t('Blog URL')}</Label>
-                  <Input
-                    {...field}
-                    required
-                    id="blogUrl"
-                    placeholder={t('Template Blog URL')}
-                    className="rounded-sm"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
               name="template"
               render={({ field }) => (
                 <FormItem className="grid space-y-2">

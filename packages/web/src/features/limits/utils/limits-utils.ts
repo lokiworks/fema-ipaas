@@ -225,17 +225,13 @@ function enforcementHint(key: InstanceLimitKey): string {
 function sourceLabel(limit: InstanceLimit): string {
   switch (limit.source) {
     case InstanceLimitSource.ENV:
-      return t('Set by {name}', { name: limit.envVar });
     case InstanceLimitSource.LEGACY_ENV:
-      return t('Set by {name}', { name: limit.legacyEnvVar ?? limit.envVar });
+      return t('Set in the deployment configuration');
     case InstanceLimitSource.INHERITED:
-      return t('Follows {name} until {env} is set', {
-        name: limit.inheritedFromEnvVar ?? '',
-        env: limit.envVar,
-      });
+      return t('Follows an earlier deployment setting');
     case InstanceLimitSource.DEFAULT:
       return limit.key === InstanceLimitKey.CONCURRENT_RUNS
-        ? t('Not enforced until {env} is set', { env: limit.envVar })
+        ? t('Not limited until configured by the operator')
         : t('Default value');
   }
 }

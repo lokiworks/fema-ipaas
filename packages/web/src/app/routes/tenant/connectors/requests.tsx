@@ -2,6 +2,7 @@ import { ConnectorDemandStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useState } from 'react';
 
+import { ConsolePage } from '@/components/custom/console-page';
 import {
   Empty,
   EmptyDescription,
@@ -46,27 +47,26 @@ export default function ConnectorRequestsPage() {
 
   if (!isTenantAdmin) {
     return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyTitle>{t('Tenant admins only')}</EmptyTitle>
-          <EmptyDescription>
-            {t('Only tenant admins can review connector requests.')}
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <ConsolePage title={t('Connector requests')}>
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>{t('Tenant admins only')}</EmptyTitle>
+            <EmptyDescription>
+              {t('Only tenant admins can review connector requests.')}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </ConsolePage>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('Connector requests')}</h1>
-        <p className="text-sm text-muted-foreground">
-          {t(
-            'Requests submitted by members for connectors that do not exist yet.',
-          )}
-        </p>
-      </div>
+    <ConsolePage
+      title={t('Connector requests')}
+      description={t(
+        'Requests submitted by members for connectors that do not exist yet.',
+      )}
+    >
       <Tabs
         value={status}
         onValueChange={(value) => {
@@ -78,7 +78,7 @@ export default function ConnectorRequestsPage() {
         <TabsList>
           <TabsTrigger value="ALL">{t('All')}</TabsTrigger>
           <TabsTrigger value={ConnectorDemandStatus.OPEN}>
-            {t('Open')}
+            {t('Pending')}
           </TabsTrigger>
           <TabsTrigger value={ConnectorDemandStatus.PLANNED}>
             {t('Planned')}
@@ -105,7 +105,7 @@ export default function ConnectorRequestsPage() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <Table>
+        <Table className="min-w-[44rem]">
           <TableHeader>
             <TableRow>
               <TableHead>{t('Requester')}</TableHead>
@@ -144,7 +144,7 @@ export default function ConnectorRequestsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value={ConnectorDemandStatus.OPEN}>
-                        {t('Open')}
+                        {t('Pending')}
                       </SelectItem>
                       <SelectItem value={ConnectorDemandStatus.PLANNED}>
                         {t('Planned')}
@@ -166,14 +166,14 @@ export default function ConnectorRequestsPage() {
           </TableBody>
         </Table>
       )}
-    </div>
+    </ConsolePage>
   );
 }
 
 function StatusBadge({ status }: { status: ConnectorDemandStatus }) {
   switch (status) {
     case ConnectorDemandStatus.OPEN:
-      return <Badge variant="outline">{t('Open')}</Badge>;
+      return <Badge variant="outline">{t('Pending')}</Badge>;
     case ConnectorDemandStatus.PLANNED:
       return <Badge variant="info">{t('Planned')}</Badge>;
     case ConnectorDemandStatus.DONE:

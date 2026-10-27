@@ -84,7 +84,7 @@ function NewConnectorForm({
       iconColor: BLUEPRINT_ICON_COLORS[0],
       presetId: null,
     },
-    mode: 'onChange',
+    mode: 'onTouched',
   });
   const { mutate, isPending } =
     connectorBlueprintHooks.useCreateConnectorBlueprint({
@@ -119,9 +119,7 @@ function NewConnectorForm({
             (candidate) => candidate.id === selectedPresetId,
           ) ?? null;
     const baseName = preset ? preset.name : '';
-    form.setValue('displayName', baseName.slice(0, BLUEPRINT_LIMITS.name), {
-      shouldValidate: true,
-    });
+    form.setValue('displayName', baseName.slice(0, BLUEPRINT_LIMITS.name));
     form.setValue(
       'identifier',
       preset
@@ -130,7 +128,6 @@ function NewConnectorForm({
             taken: existingIdentifiers,
           })
         : '',
-      { shouldValidate: true },
     );
     form.setValue('presetId', preset?.id ?? null);
     setStep(1);
@@ -318,24 +315,21 @@ function NewConnectorForm({
         )}
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={step === 0 ? onDone : () => setStep(0)}
-          >
-            {step === 0 ? t('Cancel') : t('Back')}
+          <Button type="button" variant="outline" onClick={onDone}>
+            {t('Cancel')}
           </Button>
+          {step === 1 && (
+            <Button type="button" variant="outline" onClick={() => setStep(0)}>
+              {t('Previous step')}
+            </Button>
+          )}
           {step === 0 ? (
             <NextStepButton
               disabled={selectedPresetId === null}
               onClick={goToDetails}
             />
           ) : (
-            <Button
-              type="submit"
-              disabled={!form.formState.isValid}
-              loading={isPending}
-            >
+            <Button type="submit" loading={isPending}>
               {t('Create')}
             </Button>
           )}

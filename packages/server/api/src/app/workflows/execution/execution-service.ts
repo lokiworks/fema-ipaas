@@ -27,6 +27,7 @@ import { workflowVersionService } from '../workflow-version/workflow-version.ser
 import { ExecutionEntity } from './execution-entity'
 import { executionSideEffects } from './execution-side-effects'
 import { runsMetadataQueue } from './executions-queue'
+import { runEnvironmentUtils } from './run-environment'
 import { waitpointService } from './waitpoint/waitpoint-service'
 
 const CANCELLABLE_STATUSES: ExecutionStatus[] = [ExecutionStatus.PAUSED, ExecutionStatus.QUEUED]
@@ -383,15 +384,19 @@ export const executionService = (log: FastifyBaseLogger) => ({
     },
     async startManualTrigger({ projectId, workflowVersionId, triggeredBy }: StartManualTriggerParams): Promise<Execution> {
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
-        await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
+        const workflow = await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
         const triggerPayload = {}
         const tenantId = await projectService(log).getTenantId(projectId)
+        const environment = runEnvironmentUtils.forManualTrigger({
+            workflowVersionId: workflowVersion.id,
+            publishedVersionId: workflow.publishedVersionId,
+        })
 
         const execution = await queueOrCreateInstantly({
             projectId,
             workflowId: workflowVersion.workflowId,
             workflowVersionId: workflowVersion.id,
-            environment: RunEnvironment.PRODUCTION,
+            environment,
             parentRunId: undefined,
             failParentOnFailure: undefined,
             stepNameToTest: undefined,

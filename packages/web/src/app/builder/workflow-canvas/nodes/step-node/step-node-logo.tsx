@@ -6,10 +6,12 @@ const StepNodeLogo = ({
   isSkipped,
   logoUrl,
   displayName,
+  isSelected = false,
 }: {
   isSkipped: boolean;
   logoUrl: string;
   displayName: string;
+  isSelected?: boolean;
 }) => {
   const canvasOrientation = useBuilderStateContext(
     (state) => state.canvasOrientation,
@@ -17,9 +19,14 @@ const StepNodeLogo = ({
   const isHorizontal = canvasOrientation === 'horizontal';
   return (
     <div
-      className={cn('flex items-center justify-center rounded-sm shrink-0', {
-        'opacity-80': isSkipped,
-      })}
+      className={cn(
+        'flex shrink-0 items-center justify-center rounded-xl transition-shadow',
+        {
+          'opacity-80': isSkipped,
+          'bg-background shadow-[0_1px_4px_rgba(31,35,41,0.12)]': !isHorizontal,
+          'ring-2 ring-primary': !isHorizontal && isSelected,
+        },
+      )}
     >
       <ImageWithColorBackground
         src={logoUrl}
@@ -27,7 +34,7 @@ const StepNodeLogo = ({
         key={logoUrl + displayName}
         border={true}
         className={cn({
-          'w-9 h-9 p-2': !isHorizontal,
+          'size-12 p-3': !isHorizontal,
           'w-12 h-12 p-2.5': isHorizontal,
         })}
         roundedCorner={true}

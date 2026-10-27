@@ -1,12 +1,11 @@
 import { useEmbedding } from '@/components/providers/embed-provider';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar-shadcn';
+import { SidebarProvider } from '@/components/ui/sidebar-shadcn';
+import { useIsCompact } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-import {
-  GlobalSearchProvider,
-  useGlobalSearch,
-} from '../global-search/global-search-context';
-import { ProjectDashboardSidebar } from '../sidebar/dashboard';
+import { GlobalRail } from '../global-rail';
+import { GlobalSearchProvider } from '../global-search/global-search-context';
+import { ProjectNavColumn } from '../project-layout/project-nav-column';
 
 export function BuilderLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,30 +17,25 @@ export function BuilderLayout({ children }: { children: React.ReactNode }) {
 
 function BuilderLayoutInner({ children }: { children: React.ReactNode }) {
   const { embedState } = useEmbedding();
-  const { open: searchOpen } = useGlobalSearch();
+  const isCompact = useIsCompact();
 
   return (
-    <SidebarProvider hoverMode={!searchOpen} defaultOpen={false}>
-      {!embedState.isEmbedded && <ProjectDashboardSidebar />}
-      <SidebarInset className="flex flex-col h-full overflow-hidden bg-sidebar">
-        <div
-          className={cn(
-            'flex-1 flex flex-col overflow-hidden',
-            !embedState.isEmbedded && 'p-1.5',
-          )}
-        >
-          <div
-            className={cn(
-              'flex flex-col h-full bg-background overflow-hidden',
-              embedState.isEmbedded
-                ? 'border-l'
-                : 'rounded-xl shadow-[2px_0px_4px_-2px_rgba(0,0,0,0.05),0px_2px_4px_-2px_rgba(0,0,0,0.05)] border',
-            )}
-          >
-            {children}
-          </div>
-        </div>
-      </SidebarInset>
+    <SidebarProvider defaultOpen={false} className="h-svh min-h-0">
+      {!embedState.isEmbedded && !isCompact && <GlobalRail />}
+      {!embedState.isEmbedded && !isCompact && (
+        <ProjectNavColumn className="max-xl:hidden" />
+      )}
+      <div
+        id={BUILDER_CONTENT_ID}
+        className={cn(
+          'flex min-w-0 flex-1 flex-col overflow-hidden bg-background',
+          embedState.isEmbedded && 'border-l',
+        )}
+      >
+        {children}
+      </div>
     </SidebarProvider>
   );
 }
+
+export const BUILDER_CONTENT_ID = 'builder-content';

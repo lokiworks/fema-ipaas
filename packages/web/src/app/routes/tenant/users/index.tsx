@@ -389,6 +389,7 @@ function MemberActions({
         title={t('Revoke invitation')}
         message={t('The invitation link stops working right away.')}
         entityName={member.email}
+        targetName={member.email}
         buttonText={t('Revoke')}
         mutationFn={onRevoke}
       >

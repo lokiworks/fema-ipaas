@@ -73,8 +73,10 @@ function OutputViewerShell({
   return (
     <div className="rounded-lg border border-solid border-dividers overflow-hidden">
       <Tabs defaultValue="friendly">
-        <div className="px-3 py-2 flex border-solid border-b border-dividers items-center gap-1">
-          <span className="text-md grow">{title}</span>
+        <div className="px-3 py-2 flex flex-wrap border-solid border-b border-dividers items-center gap-1">
+          <span className="text-md grow shrink-0 whitespace-nowrap">
+            {title}
+          </span>
           <div className="flex items-center gap-0">
             <TooltipProvider>
               <Tooltip>
@@ -94,7 +96,7 @@ function OutputViewerShell({
               tooltipSide="bottom"
             />
           </div>
-          <TabsList className="h-8">
+          <TabsList className="h-8 shrink-0">
             <TabsTrigger value="friendly" className="text-xs px-2 h-6">
               {t('Friendly View')}
             </TabsTrigger>

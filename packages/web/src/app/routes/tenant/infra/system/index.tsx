@@ -109,7 +109,7 @@ function CurrentVersionCard({ overview }: { overview: SystemOverview }) {
         : t('Not reachable'),
     },
     {
-      label: t('Queue'),
+      label: t('Job queue'),
       value: overview.redis.ok
         ? `Redis ${
             overview.redis.version ?? ''

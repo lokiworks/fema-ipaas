@@ -77,3 +77,35 @@ describe('formatUtils.formatDuration in Chinese', () => {
     expect(formatUtils.formatDuration(durationMs, true)).toBe(expected);
   });
 });
+
+describe('formatUtils.formatRelativeDayWithTime in Chinese', () => {
+  beforeAll(async () => {
+    const zh = JSON.parse(
+      readFileSync(
+        path.resolve(__dirname, '../../public/locales/zh/translation.json'),
+        'utf-8',
+      ),
+    );
+    i18n.addResourceBundle('zh', 'translation', zh, true, true);
+    await i18n.changeLanguage('zh');
+  });
+
+  afterAll(async () => {
+    vi.useRealTimers();
+    await i18n.changeLanguage('en');
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2025, 5, 15, 12, 0));
+  });
+
+  it.each([
+    [new Date(2025, 5, 15, 3, 17), '今天 03:17'],
+    [new Date(2025, 5, 16, 3, 17), '明天 03:17'],
+    [new Date(2025, 5, 14, 20, 5), '昨天 20:05'],
+    [new Date(2025, 5, 20, 3, 17), '2025/06/20 03:17'],
+  ])('writes %s as %s', (date, expected) => {
+    expect(formatUtils.formatRelativeDayWithTime(date)).toBe(expected);
+  });
+});

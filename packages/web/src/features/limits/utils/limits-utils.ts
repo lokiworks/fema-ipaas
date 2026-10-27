@@ -222,6 +222,24 @@ function enforcementHint(key: InstanceLimitKey): string {
   }
 }
 
+function isUnenforced(limit: InstanceLimit): boolean {
+  return (
+    limit.key === InstanceLimitKey.CONCURRENT_RUNS &&
+    limit.source === InstanceLimitSource.DEFAULT
+  );
+}
+
+function unenforcedHint(key: InstanceLimitKey): string {
+  switch (key) {
+    case InstanceLimitKey.CONCURRENT_RUNS:
+      return t(
+        'No cap is set, so runs are never queued. Once a cap is set, runs above it wait in the queue; debug runs are not counted.',
+      );
+    default:
+      return enforcementHint(key);
+  }
+}
+
 function sourceLabel(limit: InstanceLimit): string {
   switch (limit.source) {
     case InstanceLimitSource.ENV:
@@ -231,7 +249,7 @@ function sourceLabel(limit: InstanceLimit): string {
       return t('Follows an earlier deployment setting');
     case InstanceLimitSource.DEFAULT:
       return limit.key === InstanceLimitKey.CONCURRENT_RUNS
-        ? t('Not limited until configured by the operator')
+        ? t('Not limited until a cap is configured')
         : t('Default value');
   }
 }
@@ -248,6 +266,8 @@ export const limitsUtils = {
   formatValue,
   limitLabel,
   enforcementHint,
+  isUnenforced,
+  unenforcedHint,
   sourceLabel,
 };
 

@@ -2,6 +2,7 @@ import { isNil } from '@fema-ipaas/core-utils';
 import { Permission, WorkflowStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
+import { useDraftChanged } from '@/app/builder/builder-header/use-draft-changed';
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { useDebugRunProgress } from '@/app/builder/debug/use-debug-run-progress';
 import { connectorSelectorUtils } from '@/features/connectors';
@@ -29,10 +30,17 @@ const TestWorkflowWidget = () => {
     triggerName: workflowVersion.trigger.settings.triggerName,
   });
 
+  const draftChanged = useDraftChanged({
+    baselineVersionId: publishedVersionId,
+  });
+  const isLiveContent =
+    !isNil(publishedVersionId) &&
+    (publishedVersionId === workflowVersion.id || draftChanged === false);
+
   const progress = useDebugRunProgress({ returnsToEditing: !isManualTrigger });
   const { mutate: runWorkflow, isPending: isTestingWorkflow } =
     workflowHooks.useTestWorkflowOrStartManualTrigger({
-      workflowVersionId: workflowVersion.id,
+      workflowVersionId: publishedVersionId ?? workflowVersion.id,
       isForManualTrigger: isManualTrigger,
       onUpdateRun: progress.onUpdateRun,
     });
@@ -42,8 +50,7 @@ const TestWorkflowWidget = () => {
     !workflowVersion.valid ||
     hideTestWidget ||
     !userHasPermissionToRun ||
-    isNil(publishedVersionId) ||
-    publishedVersionId !== workflowVersion.id ||
+    !isLiveContent ||
     workflowStatus !== WorkflowStatus.ENABLED
   ) {
     return null;

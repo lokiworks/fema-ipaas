@@ -5,7 +5,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {
   Link2,
-  MoreVertical,
+  MoreHorizontal,
   Pencil,
   Search,
   Trash2,
@@ -192,7 +192,7 @@ function VariablesPage() {
                       aria-label={t('More actions')}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
@@ -341,6 +341,7 @@ function VariablesPage() {
           'This permanently deletes the variable. Workflows that reference it will fail at runtime.',
         )}
         entityName={deleting?.name ?? ''}
+        targetName={deleting?.name}
         isDanger
         showToast
         open={!!deleting}

@@ -2,7 +2,6 @@ import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
   Execution,
   FlagId,
-  WorkflowStatus,
   WorkflowVersion,
   WorkflowVersionState,
 } from '@fema-ipaas/shared';
@@ -14,6 +13,7 @@ import { toast } from 'sonner';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { LeftSideBarType, RightSideBarType } from '@/app/builder/types';
+import { versionNumbers } from '@/app/builder/workflow-versions/version-numbers';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { Button } from '@/components/ui/button';
 import {
@@ -146,6 +146,13 @@ function SingleEnvironmentPublishSection({
         setLeftSidebar(LeftSideBarType.NONE);
       },
     });
+  const { data: versionList } = workflowHooks.useListWorkflowVersions(
+    workflow.id,
+  );
+  const liveVersionLabel = versionNumbers.label({
+    numbers: versionNumbers.numberVersions(versionList?.data ?? []),
+    versionId: workflow.publishedVersionId,
+  });
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
   const { mutate: discardChange, isPending: isDiscardingChanges } = useMutation(
     {
@@ -211,7 +218,7 @@ function SingleEnvironmentPublishSection({
       )}
       <DiscardChangesDialog
         open={discardDialogOpen}
-        isRunning={workflow.status === WorkflowStatus.ENABLED}
+        liveVersionLabel={liveVersionLabel}
         onCancel={() => setDiscardDialogOpen(false)}
         onConfirm={() => {
           setDiscardDialogOpen(false);

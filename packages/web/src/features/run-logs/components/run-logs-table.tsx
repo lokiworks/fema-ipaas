@@ -31,7 +31,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useIsCompact } from '@/hooks/use-mobile';
+import { useIsNarrowDesktop } from '@/hooks/use-mobile';
 import { formatUtils } from '@/lib/format-utils';
 
 import { runLogUiUtils } from '../utils/run-log-ui-utils';
@@ -56,7 +56,7 @@ export function RunLogsTable({
     strategy: WorkflowRetryStrategy;
   }) => void;
 }) {
-  const compact = useIsCompact();
+  const compact = useIsNarrowDesktop();
   const bulkActions: BulkAction<RunLogRow>[] = [
     {
       render: (selectedRows, resetSelection) => (
@@ -174,7 +174,7 @@ function columns({
   return [
     {
       accessorKey: 'created',
-      size: 140,
+      size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Log time')} />
       ),
@@ -188,7 +188,7 @@ function columns({
     },
     {
       accessorKey: 'workflowDisplayName',
-      size: 180,
+      size: 140,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Workflow')} />
       ),
@@ -219,14 +219,14 @@ function columns({
     },
     {
       accessorKey: 'businessKey',
-      size: 120,
+      size: 110,
       enableSorting: false,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Business key')} />
       ),
       cell: ({ row }) =>
         isNil(row.original.businessKey) ? (
-          <span className="text-sm text-muted-foreground">-</span>
+          <span className="text-sm text-muted-foreground">—</span>
         ) : (
           <TextWithTooltip tooltipMessage={row.original.businessKey}>
             <p className="truncate font-mono text-xs">
@@ -237,7 +237,7 @@ function columns({
     },
     {
       accessorKey: 'projectDisplayName',
-      size: 140,
+      size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Project')} />
       ),
@@ -253,7 +253,7 @@ function columns({
     },
     {
       accessorKey: 'environment',
-      size: 90,
+      size: 80,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Environment')} />
       ),
@@ -290,7 +290,7 @@ function columns({
     },
     {
       accessorKey: 'versionNumber',
-      size: 60,
+      size: 56,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Version')} />
       ),
@@ -300,14 +300,14 @@ function columns({
         ) : (
           <span className="text-sm">
             {isNil(row.original.versionNumber)
-              ? '-'
+              ? '—'
               : `v${row.original.versionNumber}`}
           </span>
         ),
     },
     {
       accessorKey: 'status',
-      size: 110,
+      size: 100,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Status')} />
       ),
@@ -315,21 +315,21 @@ function columns({
     },
     {
       accessorKey: 'durationMs',
-      size: 80,
+      size: 84,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Duration')} />
       ),
       cell: ({ row }) => (
         <span className="text-sm">
           {isNil(row.original.durationMs)
-            ? '-'
+            ? '—'
             : formatUtils.formatDuration(row.original.durationMs, true)}
         </span>
       ),
     },
     {
       accessorKey: 'errorCount',
-      size: 60,
+      size: 52,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Errors')} />
       ),
@@ -339,7 +339,7 @@ function columns({
     },
     {
       accessorKey: 'actions',
-      size: 150,
+      size: 130,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Actions')} />
       ),

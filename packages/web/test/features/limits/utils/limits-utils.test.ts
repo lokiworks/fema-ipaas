@@ -1,4 +1,9 @@
-import { InstanceLimitUnit } from '@fema-ipaas/shared';
+import {
+  InstanceLimit,
+  InstanceLimitKey,
+  InstanceLimitSource,
+  InstanceLimitUnit,
+} from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { limitsUtils } from '@/features/limits/utils/limits-utils';
@@ -99,5 +104,35 @@ describe('limitsUtils usage helpers', () => {
   it('maps the form values to the request', () => {
     expect(limitsUtils.toRequestValue('')).toBeNull();
     expect(limitsUtils.toRequestValue('1,000')).toBe(1000);
+  });
+});
+
+describe('limitsUtils.isUnenforced', () => {
+  const limit = (overrides: Partial<InstanceLimit>): InstanceLimit => ({
+    key: InstanceLimitKey.CONCURRENT_RUNS,
+    value: 100,
+    unit: InstanceLimitUnit.COUNT,
+    envVar: 'FEMA_MAX_CONCURRENT_RUNS',
+    legacyEnvVar: null,
+    inheritedFromEnvVar: null,
+    source: InstanceLimitSource.DEFAULT,
+    usage: 0,
+    ...overrides,
+  });
+
+  it('treats the default concurrency as not enforced', () => {
+    expect(limitsUtils.isUnenforced(limit({}))).toBe(true);
+  });
+
+  it('treats an explicit concurrency cap as enforced', () => {
+    expect(
+      limitsUtils.isUnenforced(limit({ source: InstanceLimitSource.ENV })),
+    ).toBe(false);
+  });
+
+  it('keeps other defaults enforced', () => {
+    expect(
+      limitsUtils.isUnenforced(limit({ key: InstanceLimitKey.RUNS_PER_MONTH })),
+    ).toBe(false);
   });
 });

@@ -6,8 +6,10 @@ import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { Order } from '../helper/pagination/paginator'
 import { userService } from '../user/user-service'
 import { projectAccess } from './project-access'
+import { projectMemberRules } from './project-member-rules'
 import { ProjectMemberEntity } from './project-member.entity'
 import { projectMemberRepo } from './project-member.repo'
+import { projectService } from './project-service'
 
 export const projectMemberService = (log: FastifyBaseLogger) => ({
     async resolveMyRole({ principal, projectId }: ResolveMyRoleParams): Promise<MyRoleResponse> {
@@ -46,6 +48,8 @@ export const projectMemberService = (log: FastifyBaseLogger) => ({
     },
 
     async upsert({ projectId, userId, role }: UpsertParams): Promise<ProjectMember> {
+        const project = await projectService(log).getOneOrThrow(projectId)
+        projectMemberRules.assertRoleChangeAllowed({ ownerId: project.ownerId, userId, nextRole: role })
         const existing = await projectMemberRepo().findOneBy({ projectId, userId })
         if (!isNil(existing)) {
             return projectMemberRepo().save({ ...existing, role })

@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/tooltip';
 import { connectorSelectorUtils } from '@/features/connectors';
 import { StepStatusIcon, executionUtils } from '@/features/executions';
+import { versionDiff } from '@/features/releases/utils/version-diff';
 import {
   ValidationCode,
   ValidationSeverity,
@@ -51,7 +52,8 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     isStepValid,
     isManualTrigger,
     isSkipped,
-    debugTestedAt,
+    debugTested,
+    step,
   ] = useBuilderStateContext((state) => {
     const step = workflowStructureUtil.getStep(
       stepName,
@@ -75,6 +77,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       isManualTrigger,
       workflowCanvasUtils.isSkipped(stepName, state.workflowVersion.trigger),
       state.debugTestedSteps[stepName],
+      step,
     ];
   });
 
@@ -159,6 +162,12 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       ),
     },
   };
+  const currentSignature = useMemo(
+    () => (isNil(step) ? null : versionDiff.stepSignature(step)),
+    [step],
+  );
+  const isTestedByDebug =
+    !isNil(debugTested) && debugTested.signature === currentSignature;
   const hasValidationError = !isNil(firstError);
   const hasValidationWarning = !isNil(firstWarning);
   const status: DraftStepStatus = useMemo(() => {
@@ -167,14 +176,13 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     if (isBeingTested) return 'testing';
     if (hasValidationWarning) return 'has-warning';
 
-    const latestTestDate = [lastTestDate, debugTestedAt]
-      .filter((date): date is string => !isNil(date))
-      .sort()
-      .at(-1);
-    if (isNil(latestTestDate)) {
-      return 'untested';
+    if (isTestedByDebug) {
+      return hasError ? 'failed' : 'tested';
     }
-    if (lastUpdatedDate > latestTestDate) {
+    if (isNil(lastTestDate)) {
+      return isNil(debugTested) ? 'untested' : 'needs-test';
+    }
+    if (lastUpdatedDate > lastTestDate) {
       return 'needs-test';
     }
     if (hasError) return 'failed';
@@ -187,7 +195,8 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     isBeingTested,
     hasError,
     lastTestDate,
-    debugTestedAt,
+    isTestedByDebug,
+    debugTested,
     lastUpdatedDate,
   ]);
 

@@ -69,7 +69,7 @@ export function TurnOffEnvironmentsDialog({
             loading={isPending}
             onClick={turnOff}
           >
-            {t('Turn off')}
+            {t('Turn off both environments')}
           </Button>
         </DialogFooter>
       </DialogContent>

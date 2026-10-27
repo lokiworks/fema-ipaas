@@ -20,6 +20,7 @@ import { StoreApi } from 'zustand';
 
 import { internalErrorToast } from '@/components/ui/sonner';
 import { executionUtils } from '@/features/executions';
+import { versionDiff } from '@/features/releases/utils/version-diff';
 
 import { BuilderState } from '../builder-hooks';
 
@@ -31,8 +32,11 @@ export type UpdateSampleDataParams = {
 
 export type RunState = {
   run: Execution | null;
-  debugTestedSteps: Record<string, string>;
-  markDebugTested: (run: Execution) => void;
+  debugTestedSteps: Record<string, DebugTestedStep>;
+  markDebugTested: (params: {
+    run: Execution;
+    workflowVersion: WorkflowVersion;
+  }) => void;
   setRun: (run: Execution, workflowVersion: WorkflowVersion) => void;
   clearRun: (userHasPermissionToEditWorkflow: boolean) => void;
   loopsIndexes: Record<string, number>;
@@ -79,10 +83,10 @@ export const createRunState = (
     revertSampleDataLocallyCallbacks: {},
     run: initialState.run,
     debugTestedSteps: {},
-    markDebugTested: (run: Execution) =>
+    markDebugTested: ({ run, workflowVersion }) =>
       set((state) => ({
         debugTestedSteps: {
-          ...debugTestedStepsOf(run),
+          ...debugTestedStepsOf({ run, workflowVersion }),
           ...state.debugTestedSteps,
         },
       })),
@@ -110,7 +114,7 @@ export const createRunState = (
           run,
           debugTestedSteps: {
             ...state.debugTestedSteps,
-            ...debugTestedStepsOf(run),
+            ...debugTestedStepsOf({ run, workflowVersion }),
           },
           workflowVersion,
           readonly: true,
@@ -451,7 +455,13 @@ export const createRunState = (
   };
 };
 
-function debugTestedStepsOf(run: Execution): Record<string, string> {
+function debugTestedStepsOf({
+  run,
+  workflowVersion,
+}: {
+  run: Execution;
+  workflowVersion: WorkflowVersion;
+}): Record<string, DebugTestedStep> {
   if (
     run.environment !== RunEnvironment.TESTING ||
     isNil(run.finishTime) ||
@@ -463,6 +473,24 @@ function debugTestedStepsOf(run: Execution): Record<string, string> {
   return Object.fromEntries(
     Object.entries(run.steps)
       .filter(([, output]) => output.status === StepOutputStatus.SUCCEEDED)
-      .map(([stepName]) => [stepName, testedAt]),
+      .flatMap(([stepName]) => {
+        const step = workflowStructureUtil.getStep(
+          stepName,
+          workflowVersion.trigger,
+        );
+        return isNil(step)
+          ? []
+          : [
+              [
+                stepName,
+                { testedAt, signature: versionDiff.stepSignature(step) },
+              ],
+            ];
+      }),
   );
 }
+
+export type DebugTestedStep = {
+  testedAt: string;
+  signature: string;
+};

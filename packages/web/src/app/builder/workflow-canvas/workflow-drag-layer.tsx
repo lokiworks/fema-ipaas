@@ -28,6 +28,7 @@ import { NoteDragOverlayMode } from '../state/notes-state';
 import NoteDragOverlay from './nodes/note-node/note-drag-overlay';
 import StepDragOverlay from './nodes/step-node/step-drag-overlay';
 import { workflowCanvasConsts } from './utils/consts';
+import { notePlacement } from './utils/note-placement';
 import { ButtonData } from './utils/types';
 
 const WorkflowDragLayer = ({ children }: { children: React.ReactNode }) => {
@@ -233,7 +234,14 @@ function handleNoteDragEnd({
           x: element.getBoundingClientRect().left,
           y: element.getBoundingClientRect().top,
         });
-        moveNote(draggedNote.id, positionOnCanvas);
+        moveNote(
+          draggedNote.id,
+          notePlacement.placeAwayFromSteps({
+            reactFlow,
+            position: positionOnCanvas,
+            size: draggedNote.size,
+          }),
+        );
       }
     }
   }

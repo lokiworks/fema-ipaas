@@ -223,6 +223,21 @@ export const formatUtils = {
     }
     return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
   },
+  formatRelativeDayWithTime(date: Date): string {
+    const now = dayjs();
+    const input = dayjs(date);
+    const time = input.format('HH:mm');
+    if (input.isSame(now, 'day')) {
+      return t('{day}, {time}', { day: t('Today'), time });
+    }
+    if (input.isSame(now.add(1, 'day'), 'day')) {
+      return t('{day}, {time}', { day: t('Tomorrow'), time });
+    }
+    if (input.isSame(now.subtract(1, 'day'), 'day')) {
+      return t('{day}, {time}', { day: t('Yesterday'), time });
+    }
+    return input.format('YYYY/MM/DD HH:mm');
+  },
   urlIsNotLocalhostOrIp(url: string): boolean {
     const parsed = new URL(url);
     if (

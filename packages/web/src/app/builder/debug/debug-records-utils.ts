@@ -123,7 +123,14 @@ const HINT_RULES: { hint: DebugHint; patterns: RegExp[] }[] = [
   { hint: DebugHint.TIMEOUT, patterns: [/timeout/, /timed out/, /etimedout/] },
   {
     hint: DebugHint.CHECK_NETWORK,
-    patterns: [/enotfound/, /econnrefused/, /econnreset/, /getaddrinfo/],
+    patterns: [
+      /enotfound/,
+      /econnrefused/,
+      /econnreset/,
+      /getaddrinfo/,
+      /fetch failed/,
+      /network error/,
+    ],
   },
   {
     hint: DebugHint.CHECK_INPUT,

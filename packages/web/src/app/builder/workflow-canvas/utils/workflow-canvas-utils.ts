@@ -236,9 +236,9 @@ function mergeGraph(graph1: CanvasGraph, graph2: CanvasGraph): CanvasGraph {
 function createFocusStepInGraphParams(stepName: string) {
   return {
     nodes: [{ id: stepName }],
-    duration: 1000,
-    maxZoom: 1.25,
-    minZoom: 1.25,
+    duration: FOCUS_STEP_DURATION_MS,
+    maxZoom: FOCUS_STEP_ZOOM,
+    minZoom: FOCUS_STEP_ZOOM,
   };
 }
 
@@ -247,11 +247,13 @@ function centerOnStep({
   stepName,
   zoom,
   duration,
+  screenOffsetX = 0,
 }: {
   reactFlow: ReactFlowInstance;
   stepName: string;
   zoom?: number;
   duration: number;
+  screenOffsetX?: number;
 }) {
   const node = reactFlow.getInternalNode(stepName);
   if (isNil(node)) {
@@ -259,11 +261,30 @@ function centerOnStep({
   }
   const width = node.measured.width ?? 0;
   const height = node.measured.height ?? 0;
+  const targetZoom = zoom ?? reactFlow.getZoom();
   void reactFlow.setCenter(
-    node.internals.positionAbsolute.x + width / 2,
+    node.internals.positionAbsolute.x + width / 2 - screenOffsetX / targetZoom,
     node.internals.positionAbsolute.y + height / 2,
-    { zoom: zoom ?? reactFlow.getZoom(), duration },
+    { zoom: targetZoom, duration },
   );
+}
+
+function focusStepOnRun({
+  reactFlow,
+  stepName,
+  screenOffsetX,
+}: {
+  reactFlow: ReactFlowInstance;
+  stepName: string;
+  screenOffsetX: number;
+}) {
+  centerOnStep({
+    reactFlow,
+    stepName,
+    zoom: FOCUS_STEP_ZOOM,
+    duration: FOCUS_STEP_DURATION_MS,
+    screenOffsetX,
+  });
 }
 
 function focusStepAfterLayout({
@@ -863,6 +884,7 @@ export const workflowCanvasUtils = {
   focusStepAfterLayout,
   ensureStepInViewAfterLayout,
   centerOnStep,
+  focusStepOnRun,
   calculateGraphBoundingBox,
   createAddOperationFromAddButtonData,
   isSkipped,
@@ -873,6 +895,8 @@ export const workflowCanvasUtils = {
 
 type BranchingAction = RouterAction | ParallelAction;
 
+const FOCUS_STEP_DURATION_MS = 1000;
+const FOCUS_STEP_ZOOM = 1.25;
 const FOCUS_AFTER_LAYOUT_DELAY_MS = 350;
 const FOCUS_DURATION_MS = 400;
 const FOCUS_SETTLE_DELAY_MS = 100;

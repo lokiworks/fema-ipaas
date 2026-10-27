@@ -128,6 +128,16 @@ describe('auth forms', () => {
       expect(mocks.signIn).not.toHaveBeenCalled();
     });
 
+    it('asks for the email first when it is left empty', async () => {
+      await render(<SignInForm />);
+
+      await clickButton('Sign in');
+
+      expect(pageText()).toContain('Required');
+      expect(pageText()).not.toContain('Email is invalid');
+      expect(mocks.signIn).not.toHaveBeenCalled();
+    });
+
     it('trims the address before checking and sending it', async () => {
       mocks.signIn.mockResolvedValue({ token: 't', projectId: 'p' });
       await render(<SignInForm />);

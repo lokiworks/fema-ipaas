@@ -23,8 +23,8 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { useBuilderStateContext, useBuilderStore } from '../builder-hooks';
 import { textMentionUtils } from '../connector-properties/text-input-with-mentions/text-input-utils';
 import { leftPanelWidth } from '../left-panel';
-import { LeftSideBarType } from '../types';
 
+import { leftPanelShift } from './utils/left-panel-shift';
 import { workflowCanvasUtils } from './utils/workflow-canvas-utils';
 
 const useSetSocketListener = (refetchConnector: () => void) => {
@@ -197,20 +197,28 @@ export const useFocusOnStep = () => {
     currentRun?.steps ?? {},
   );
 
-  const { fitView } = useReactFlow();
+  const reactFlow = useReactFlow();
+  const leftSidebar = useBuilderStateContext((state) => state.leftSidebar);
   const focusCurrentStep = useDebouncedCallback(() => {
     if (userManuallySelectedStepDuringRun) {
       return;
     }
     if (!isNil(currentStep)) {
-      fitView(workflowCanvasUtils.createFocusStepInGraphParams(currentStep));
+      workflowCanvasUtils.focusStepOnRun({
+        reactFlow,
+        stepName: currentStep,
+        screenOffsetX: leftPanelShift.shiftFor({
+          sidebar: leftSidebar,
+          panelWidth: leftPanelWidth(leftSidebar),
+        }),
+      });
       selectStep(currentStep, { fromAutoFocus: true });
     }
   }, 500);
 
   useEffect(() => {
     focusCurrentStep();
-  }, [currentStep, selectStep, fitView, userManuallySelectedStepDuringRun]);
+  }, [currentStep, selectStep, reactFlow, userManuallySelectedStepDuringRun]);
 };
 
 export const useFocusOnAddedStep = () => {
@@ -244,27 +252,31 @@ export const useFocusOnAddedStep = () => {
   }, [stepNamesKey]);
 };
 
-export const useShiftForRecordsPanel = () => {
+export const useShiftForLeftPanel = () => {
   const leftSidebar = useBuilderStateContext((state) => state.leftSidebar);
   const reactFlow = useReactFlow();
-  const previousLeftSidebarRef = useRef(leftSidebar);
+  const { viewportInitialized } = reactFlow;
+  const appliedShiftRef = useRef(0);
 
   useEffect(() => {
-    const wasOpen = previousLeftSidebarRef.current === LeftSideBarType.RUNS;
-    const isOpen = leftSidebar === LeftSideBarType.RUNS;
-    previousLeftSidebarRef.current = leftSidebar;
-    if (wasOpen === isOpen) {
+    if (!viewportInitialized) {
       return;
     }
-    const shift =
-      (leftPanelWidth(LeftSideBarType.RUNS) + LEFT_PANEL_CHROME_WIDTH) / 2 -
-      STEP_LABEL_HALF_WIDTH;
+    const desired = leftPanelShift.shiftFor({
+      sidebar: leftSidebar,
+      panelWidth: leftPanelWidth(leftSidebar),
+    });
+    const delta = leftPanelShift.deltaToApply({
+      desired,
+      applied: appliedShiftRef.current,
+    });
+    if (delta === 0) {
+      return;
+    }
+    appliedShiftRef.current = desired;
     const { x, y, zoom } = reactFlow.getViewport();
-    void reactFlow.setViewport(
-      { x: isOpen ? x + shift : x - shift, y, zoom },
-      { duration: PANEL_SHIFT_DURATION_MS },
-    );
-  }, [leftSidebar]);
+    void reactFlow.setViewport({ x: x + delta, y, zoom });
+  }, [leftSidebar, viewportInitialized]);
 };
 
 export const useResizeCanvas = (
@@ -305,12 +317,8 @@ export const workflowCanvasHooks = {
   useIsFocusInsideListMapperModeInput,
   useFocusOnStep,
   useFocusOnAddedStep,
-  useShiftForRecordsPanel,
+  useShiftForLeftPanel,
   useResizeCanvas,
   useSwitchToDraft,
   useListenToExistingRun,
 };
-
-const PANEL_SHIFT_DURATION_MS = 200;
-const LEFT_PANEL_CHROME_WIDTH = 72;
-const STEP_LABEL_HALF_WIDTH = 90;

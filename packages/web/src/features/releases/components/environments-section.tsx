@@ -229,7 +229,7 @@ function EnvironmentsOnCard({
                   disabled={!isNil(disabledReason)}
                   onClick={onTurnOff}
                 >
-                  {t('Turn off')}
+                  {t('Turn off both environments')}
                 </Button>
               </div>
             </TooltipTrigger>

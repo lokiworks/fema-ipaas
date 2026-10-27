@@ -1,5 +1,6 @@
 import { EncryptionKeySource } from '@fema-ipaas/shared';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
@@ -113,11 +114,11 @@ const EncryptionPage = () => {
                 <dd>
                   {status.firstObservedAt ? (
                     <>
-                      <FormattedDate date={new Date(status.firstObservedAt)} />
+                      {dayjs(status.firstObservedAt).format('YYYY/MM/DD HH:mm')}
                       <span className="text-muted-foreground">
                         {' '}
                         {t('(first seen by this platform, {days} days ago)', {
-                          days: status.ageDays ?? 0,
+                          days: calendarDaysSince(status.firstObservedAt),
                         })}
                       </span>
                     </>
@@ -222,6 +223,13 @@ const EncryptionPage = () => {
 };
 
 EncryptionPage.displayName = 'EncryptionPage';
+
+function calendarDaysSince(iso: string): number {
+  return Math.max(
+    0,
+    dayjs().startOf('day').diff(dayjs(iso).startOf('day'), 'day'),
+  );
+}
 
 type TableRotationReport = {
   scanned: number;

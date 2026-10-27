@@ -90,3 +90,79 @@ describe('globalSearchUtils.toRows', () => {
     ).toHaveLength(1);
   });
 });
+
+describe('globalSearchUtils.prioritizeCurrentProject', () => {
+  const workflow = (id: string, projectId: string) => ({
+    ...item(GlobalSearchResultType.WORKFLOW, projectId),
+    id,
+  });
+
+  it('puts results of the current project first and keeps the rest in order', () => {
+    const group = {
+      type: GlobalSearchResultType.WORKFLOW,
+      items: [workflow('a', 'p2'), workflow('b', 'p1'), workflow('c', 'p2')],
+      hasMore: false,
+    };
+    const result = globalSearchUtils.prioritizeCurrentProject({
+      group,
+      currentProjectId: 'p1',
+    });
+    expect(result.items.map((entry) => entry.id)).toEqual(['b', 'a', 'c']);
+  });
+
+  it('merges extra current project items without duplicates and caps the group', () => {
+    const group = {
+      type: GlobalSearchResultType.WORKFLOW,
+      items: [
+        workflow('a', 'p2'),
+        workflow('b', 'p2'),
+        workflow('c', 'p2'),
+        workflow('d', 'p2'),
+        workflow('e', 'p1'),
+      ],
+      hasMore: false,
+    };
+    const result = globalSearchUtils.prioritizeCurrentProject({
+      group,
+      currentProjectId: 'p1',
+      currentProjectItems: [workflow('e', 'p1'), workflow('f', 'p1')],
+    });
+    expect(result.items.map((entry) => entry.id)).toEqual([
+      'e',
+      'f',
+      'a',
+      'b',
+      'c',
+    ]);
+    expect(result.hasMore).toBe(true);
+  });
+
+  it('puts the current project first in the project group', () => {
+    const group = {
+      type: GlobalSearchResultType.PROJECT,
+      items: [
+        { ...item(GlobalSearchResultType.PROJECT, 'p2'), id: 'p2' },
+        { ...item(GlobalSearchResultType.PROJECT, 'p1'), id: 'p1' },
+      ],
+      hasMore: false,
+    };
+    expect(
+      globalSearchUtils
+        .prioritizeCurrentProject({ group, currentProjectId: 'p1' })
+        .items.map((entry) => entry.id),
+    ).toEqual(['p1', 'p2']);
+  });
+
+  it('does not repeat the project name as its own subtitle', () => {
+    const rows = globalSearchUtils.toRows({
+      group: {
+        type: GlobalSearchResultType.PROJECT,
+        items: [{ ...item(GlobalSearchResultType.PROJECT, 'p1'), id: 'p1' }],
+        hasMore: false,
+      },
+      query: 'x',
+      currentProjectId: 'p1',
+    });
+    expect(rows[0].projectName).toBeNull();
+  });
+});

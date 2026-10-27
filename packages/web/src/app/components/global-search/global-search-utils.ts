@@ -1,4 +1,5 @@
 import {
+  GLOBAL_SEARCH_GROUP_LIMIT,
   GlobalSearchGroup,
   GlobalSearchItem,
   GlobalSearchResultType,
@@ -115,7 +116,10 @@ function toRows({
     resourceType: item.type,
     label: item.label,
     subtitle: item.subtitle ?? null,
-    projectName: item.projectName ?? null,
+    projectName:
+      item.type === GlobalSearchResultType.PROJECT
+        ? null
+        : item.projectName ?? null,
     href: itemHref({ item, currentProjectId }),
   }));
   if (!group.hasMore) {
@@ -133,6 +137,46 @@ function toRows({
       href: viewAllHref({ type: group.type, query, currentProjectId }),
     },
   ];
+}
+
+function belongsToProject({
+  item,
+  projectId,
+}: {
+  item: GlobalSearchItem;
+  projectId: string;
+}): boolean {
+  return item.type === GlobalSearchResultType.PROJECT
+    ? item.id === projectId
+    : item.projectId === projectId;
+}
+
+function prioritizeCurrentProject({
+  group,
+  currentProjectId,
+  currentProjectItems = [],
+}: {
+  group: GlobalSearchGroup;
+  currentProjectId: string;
+  currentProjectItems?: GlobalSearchItem[];
+}): GlobalSearchGroup {
+  const known = new Set(currentProjectItems.map((item) => item.id));
+  const merged = [
+    ...currentProjectItems,
+    ...group.items.filter((item) => !known.has(item.id)),
+  ];
+  const current = merged.filter((item) =>
+    belongsToProject({ item, projectId: currentProjectId }),
+  );
+  const others = merged.filter(
+    (item) => !belongsToProject({ item, projectId: currentProjectId }),
+  );
+  const ordered = [...current, ...others];
+  return {
+    ...group,
+    items: ordered.slice(0, GLOBAL_SEARCH_GROUP_LIMIT),
+    hasMore: group.hasMore || ordered.length > GLOBAL_SEARCH_GROUP_LIMIT,
+  };
 }
 
 function displayLabel(row: GlobalSearchRow): string {
@@ -167,6 +211,7 @@ function displaySubtitle({
 }
 
 export const globalSearchUtils = {
+  prioritizeCurrentProject,
   displayLabel,
   displaySubtitle,
   itemHref,

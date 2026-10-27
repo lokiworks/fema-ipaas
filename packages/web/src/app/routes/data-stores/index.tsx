@@ -451,6 +451,7 @@ function StorePanel({
           count: store.recordCount,
         })}
         entityName={store.name}
+        targetName={store.name}
         buttonText={t('Clear')}
         isDanger
         open={clearing}

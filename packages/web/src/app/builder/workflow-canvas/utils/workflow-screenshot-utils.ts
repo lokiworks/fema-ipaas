@@ -170,7 +170,30 @@ async function cloneViewportWithCapturedStyles(
     }
   });
   elementsToRemove.forEach((element) => element.remove());
+  overlapEdgeSegments(clonedViewport);
   return clonedViewport;
+}
+
+function overlapEdgeSegments(clonedViewport: HTMLElement): void {
+  clonedViewport
+    .querySelectorAll<SVGElement>(EDGE_PATH_SELECTOR)
+    .forEach((path) => {
+      const extended = extendStraightVerticalPath(path.getAttribute('d'));
+      if (extended) {
+        path.setAttribute('d', extended);
+      }
+    });
+}
+
+function extendStraightVerticalPath(pathData: string | null): string | null {
+  const match = pathData?.trim().match(STRAIGHT_VERTICAL_PATH_PATTERN);
+  if (!match) {
+    return null;
+  }
+  const [, startX, startY, length] = match;
+  return `M ${startX} ${Number(startY) - SEGMENT_OVERLAP} v ${
+    Number(length) + 2 * SEGMENT_OVERLAP
+  }`;
 }
 
 function isCapturedElement(domNode: Element): boolean {
@@ -402,6 +425,11 @@ function sleep(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+const EDGE_PATH_SELECTOR =
+  '.react-flow__edge-path, .react-flow__node-BIG_ADD_BUTTON svg path';
+const STRAIGHT_VERTICAL_PATH_PATTERN =
+  /^M\s*(-?[\d.]+)\s+(-?[\d.]+)\s*v\s*([\d.]+)$/;
+const SEGMENT_OVERLAP = 1;
 const IMAGE_PADDING = 60;
 const MAX_IMAGE_DIMENSION = 8192;
 const PREFERRED_PIXEL_SCALE = 2;

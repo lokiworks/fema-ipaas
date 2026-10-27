@@ -134,6 +134,7 @@ function PoliciesTab() {
                       'Alerts from this policy stop immediately. The alert history is kept.',
                     )}
                     entityName={policy.name}
+                    targetName={policy.name}
                     isDanger
                     mutationFn={async () => {
                       await deletePolicy(policy.id);
@@ -260,6 +261,7 @@ function ChannelsTab() {
                     title={t('Delete channel')}
                     message={t('The channel stops receiving alerts.')}
                     entityName={channel.name}
+                    targetName={channel.name}
                     isDanger
                     mutationFn={async () => {
                       await deleteChannel(channel.id);

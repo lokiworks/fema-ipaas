@@ -1,6 +1,9 @@
 export { authMutations } from './hooks/auth-hooks';
 export { AuthLayout } from './components/auth-form-template';
-export { AuthLanding } from './components/auth-landing/auth-landing';
+export {
+  AuthLanding,
+  AuthSplitLayout,
+} from './components/auth-landing/auth-landing';
 export { LoginPagePreview } from './components/auth-landing/login-page-preview';
 export { ChangePasswordForm } from './components/change-password';
 export { CheckEmailNote } from './components/check-email-note';

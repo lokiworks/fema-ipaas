@@ -112,7 +112,8 @@ function MobileTenantNav() {
       <SheetContent
         side="left"
         hideCloseButton
-        className="w-64 max-w-[85vw] gap-0 p-0"
+        className="w-64 max-w-[85vw] gap-0 p-0 outline-none"
+        onOpenAutoFocus={focusSheetContainer}
       >
         <SheetHeader className="sr-only">
           <SheetTitle>{title}</SheetTitle>
@@ -147,7 +148,8 @@ function MobileProjectNav() {
       <SheetContent
         side="left"
         hideCloseButton
-        className="w-72 max-w-[85vw] gap-0 p-0"
+        className="w-72 max-w-[85vw] gap-0 p-0 outline-none"
+        onOpenAutoFocus={focusSheetContainer}
       >
         <SheetHeader className="sr-only">
           <SheetTitle>{t('Project navigation')}</SheetTitle>
@@ -157,6 +159,13 @@ function MobileProjectNav() {
       </SheetContent>
     </Sheet>
   );
+}
+
+function focusSheetContainer(event: Event) {
+  event.preventDefault();
+  if (event.currentTarget instanceof HTMLElement) {
+    event.currentTarget.focus();
+  }
 }
 
 const PAGE_TITLES: { prefix: string; title: () => string }[] = [

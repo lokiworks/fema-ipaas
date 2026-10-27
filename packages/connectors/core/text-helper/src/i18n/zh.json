@@ -1,5 +1,5 @@
 {
-  "Tools for text processing": "文本处理工具",
+  "Tools for text processing": "文本工具集：拼接、替换、拆分、查找，以及 Markdown 与 HTML 互转等。核心组件里的「文本处理」只适合单步的简单处理。",
   "Concatenate": "拼接",
   "Replace": "替换",
   "Split": "拆分",
@@ -55,7 +55,7 @@
   "Default": "默认",
   "Original": "原始",
   "GitHub": "GitHub",
-  "Text Helper": "文本助手",
+  "Text Helper": "文本工具",
   "Find All": "查找全部",
   "Extract from HTML": "从 HTML 提取",
   "Find all substrings matching a regex or text pattern.": "查找所有匹配正则表达式或文本模式的子串。",

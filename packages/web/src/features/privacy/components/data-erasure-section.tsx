@@ -111,7 +111,7 @@ function ErasureRow({ request }: { request: DataErasureRequest }) {
           {statusLabel(request.status)}
         </Badge>
         <span className="ml-auto text-xs text-muted-foreground">
-          {dayjs(request.created).format('YYYY-MM-DD HH:mm')}
+          {dayjs(request.created).format('YYYY/MM/DD HH:mm')}
         </span>
       </div>
       <span className="text-xs text-muted-foreground">{request.reason}</span>

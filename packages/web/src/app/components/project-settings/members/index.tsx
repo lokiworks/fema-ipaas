@@ -15,6 +15,11 @@ import {
 } from '@/components/ui/select';
 import { SkeletonList } from '@/components/ui/skeleton';
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   userInvitationMutations,
   userInvitationsHooks,
 } from '@/features/invitations';
@@ -100,6 +105,20 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
               <span className="shrink-0 pr-3 text-sm text-muted-foreground">
                 {projectRoleLabels.label(member.role)}
               </span>
+            ) : isSoleOwner(member) ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    tabIndex={0}
+                    className="shrink-0 cursor-default pr-3 text-sm text-muted-foreground"
+                  >
+                    {projectRoleLabels.label(member.role)}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('A project needs at least one owner.')}
+                </TooltipContent>
+              </Tooltip>
             ) : (
               <div className="flex shrink-0 items-center gap-2">
                 <Select
@@ -133,20 +152,19 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
                     ))}
                   </SelectContent>
                 </Select>
-                {!isSoleOwner(member) && (
-                  <ConfirmationDeleteDialog
-                    title={t('Remove from project')}
-                    message={t(
-                      'They lose access to every workflow and connection in this project.',
-                    )}
-                    mutationFn={async () => removeMember(member.id)}
-                    entityName={t('member')}
-                  >
-                    <Button variant="ghost" size="sm" disabled={readonly}>
-                      <Trash className="size-4" />
-                    </Button>
-                  </ConfirmationDeleteDialog>
-                )}
+                <ConfirmationDeleteDialog
+                  title={t('Remove from project')}
+                  message={t(
+                    'They lose access to every workflow and connection in this project.',
+                  )}
+                  mutationFn={async () => removeMember(member.id)}
+                  entityName={t('member')}
+                  targetName={member.name}
+                >
+                  <Button variant="ghost" size="sm" disabled={readonly}>
+                    <Trash className="size-4" />
+                  </Button>
+                </ConfirmationDeleteDialog>
               </div>
             )}
           </div>

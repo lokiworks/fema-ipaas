@@ -136,7 +136,7 @@ function WhatToBackUpCard({
               },
             )}`}
         </CheckRow>
-        <CheckRow level="info" title={t('Queue')}>
+        <CheckRow level="info" title={t('Job queue')}>
           {t(
             'Redis only holds queued jobs and caches. It does not need a backup.',
           )}

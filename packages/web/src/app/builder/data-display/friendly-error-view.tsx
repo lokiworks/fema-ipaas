@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 import { CopyAiPromptButton } from './copy-ai-prompt';
+import { errorExplanation } from './error-explanation';
 import { ErrorExplanationContext } from './explanation-prompt';
 
 type FriendlyErrorViewProps = {
@@ -33,10 +34,18 @@ const FriendlyErrorView = ({
   className,
 }: FriendlyErrorViewProps) => {
   const { status } = error;
-  const { Icon, headline, hint, tone } = getStatusPresentation(status);
+  const presentation = getStatusPresentation(status);
   const isHttpError = !isNil(status);
   const messageText = pickDisplayMessage(error);
-  const showMessage = !isNil(messageText) && messageText.length > 0;
+  const explanation =
+    isHttpError || isNil(messageText)
+      ? null
+      : errorExplanation.explain({ message: messageText });
+  const { Icon, tone } = presentation;
+  const headline = explanation?.headline ?? presentation.headline;
+  const hint = explanation?.hint ?? presentation.hint;
+  const showMessage =
+    isNil(explanation) && !isNil(messageText) && messageText.length > 0;
   const messageLabel = isHttpError
     ? connectorDisplayName
       ? t('Response from {connectorDisplayName}', { connectorDisplayName })
@@ -151,7 +160,7 @@ const getStatusPresentation = (
       Icon: AlertOctagon,
       headline: t('Step failed'),
       hint: t(
-        'The step did not complete successfully. Check the step configuration, or contact support if the issue persists.',
+        'The step did not complete successfully. Check the step configuration, or contact your platform administrator if the problem persists.',
       ),
       tone: DESTRUCTIVE_TONE,
     };

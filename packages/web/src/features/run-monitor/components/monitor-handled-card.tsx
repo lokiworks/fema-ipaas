@@ -8,6 +8,11 @@ import { ShieldCheck } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { formatUtils } from '@/lib/format-utils';
 
 export function MonitorHandledCard({
@@ -44,12 +49,14 @@ export function MonitorHandledCard({
         <HandledItem
           testId="handled-duplicates"
           value={number(handled.duplicateEvents)}
-          label={t('Duplicate events blocked')}
+          label={t('Deduplicated triggers')}
           description={t(
             'The trigger saw the same event again and did not process it a second time.',
           )}
-          actionLabel={t('See the blocked events')}
-          disabledHint={t('Select one project to open its blocked events')}
+          actionLabel={t('See the deduplicated triggers')}
+          disabledHint={t(
+            'Deduplicated triggers are listed per project. Filter by exactly one project to see them.',
+          )}
           onAction={onOpenDuplicates}
         />
         <HandledItem
@@ -190,16 +197,33 @@ function HandledItem({
         </span>
       )}
       <div>
-        <Button
-          variant="link"
-          size="sm"
-          className="px-0"
-          disabled={onAction === null}
-          title={onAction === null ? disabledHint ?? undefined : undefined}
-          onClick={() => onAction?.()}
-        >
-          {actionLabel}
-        </Button>
+        {onAction === null && disabledHint !== null ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0} className="inline-block">
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="pointer-events-none px-0"
+                  disabled
+                >
+                  {actionLabel}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{disabledHint}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button
+            variant="link"
+            size="sm"
+            className="px-0"
+            disabled={onAction === null}
+            onClick={() => onAction?.()}
+          >
+            {actionLabel}
+          </Button>
+        )}
       </div>
     </div>
   );

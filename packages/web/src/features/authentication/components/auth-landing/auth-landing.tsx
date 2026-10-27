@@ -44,28 +44,36 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
   }
 
   return (
+    <AuthSplitLayout>
+      {showWizard ? (
+        <section
+          aria-label={t('Setup wizard')}
+          className="w-full max-w-[680px]"
+        >
+          <SetupWizard />
+        </section>
+      ) : (
+        <section
+          role="dialog"
+          aria-label={t('Sign in or create your account')}
+          className="w-full max-w-[400px] overflow-hidden rounded-2xl border bg-background shadow-sm"
+        >
+          <AuthDrawerBody initialMode={initialMode} />
+        </section>
+      )}
+    </AuthSplitLayout>
+  );
+}
+
+export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
+  return (
     <div className="relative grid min-h-dvh w-full grid-cols-1 bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <div className="absolute right-4 top-4 z-10">
         <AuthThemeSwitch />
       </div>
       <BrandPanel />
       <main className="flex flex-col items-center justify-center gap-4 overflow-y-auto p-4 lg:flex-row lg:items-start lg:justify-start lg:p-16">
-        {showWizard ? (
-          <section
-            aria-label={t('Setup wizard')}
-            className="w-full max-w-[680px]"
-          >
-            <SetupWizard />
-          </section>
-        ) : (
-          <section
-            role="dialog"
-            aria-label={t('Sign in or create your account')}
-            className="w-full max-w-[400px] overflow-hidden rounded-2xl border bg-background shadow-sm"
-          >
-            <AuthDrawerBody initialMode={initialMode} />
-          </section>
-        )}
+        {children}
       </main>
     </div>
   );

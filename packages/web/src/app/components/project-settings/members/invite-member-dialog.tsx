@@ -63,6 +63,7 @@ export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
         </DialogHeader>
         <InviteMemberForm
           key={open ? 'open' : 'closed'}
+          emailConfigured={smtpConfigured !== false}
           onDone={() => setOpen(false)}
         />
       </DialogContent>
@@ -70,7 +71,7 @@ export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
   );
 }
 
-function InviteMemberForm({ onDone }: { onDone: () => void }) {
+function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
   const [sentWithoutEmail, setSentWithoutEmail] =
     useState<UserInvitationWithLink | null>(null);
   const form = useForm<InviteFormValues>({
@@ -168,8 +169,11 @@ function InviteMemberForm({ onDone }: { onDone: () => void }) {
           )}
         />
         <DialogFooter>
+          <Button type="button" variant="outline" onClick={onDone}>
+            {t('Cancel')}
+          </Button>
           <Button type="submit" loading={isPending}>
-            {t('Send invitation')}
+            {emailConfigured ? t('Send invitation') : t('Create invite link')}
           </Button>
         </DialogFooter>
       </form>
@@ -180,6 +184,11 @@ function InviteMemberForm({ onDone }: { onDone: () => void }) {
 type InviteFormValues = {
   email: string;
   projectRole: DefaultProjectRole;
+};
+
+type InviteMemberFormProps = {
+  onDone: () => void;
+  emailConfigured: boolean;
 };
 
 type InviteMemberDialogProps = {

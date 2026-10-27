@@ -51,7 +51,7 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
   const isConnectorsModule = tenantSidebarUtils.isConnectorsModule(pathname);
   const adminGroups: SidebarGroupConfig[] = [
     {
-      label: t('General'),
+      label: t('Organization and members'),
       items: [
         {
           to: '/tenant/projects',

@@ -1,6 +1,7 @@
 import { ErrorCode, isNil } from '@fema-ipaas/core-utils';
 import {
   FlagId,
+  formErrors,
   OtpType,
   AuthenticationResponse,
   SignInRequest,
@@ -30,7 +31,11 @@ import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 import { CheckEmailNote } from './check-email-note';
 
 const SignInSchema = z.object({
-  email: z.string().trim().regex(formatUtils.emailRegex, t('Email is invalid')),
+  email: z
+    .string()
+    .trim()
+    .min(1, formErrors.required)
+    .regex(formatUtils.emailRegex, t('Email is invalid')),
   password: z.string().min(1, t('Password is required')),
 });
 

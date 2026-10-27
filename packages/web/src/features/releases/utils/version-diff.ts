@@ -215,6 +215,7 @@ export enum StepChangeKind {
 
 export const versionDiff = {
   hasChanges,
+  stepSignature: signature,
   diffSteps,
   fieldChanges,
   workflowChanges,

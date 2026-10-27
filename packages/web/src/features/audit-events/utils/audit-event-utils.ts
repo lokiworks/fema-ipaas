@@ -364,6 +364,11 @@ function summarize({
       return event.data.environmentsEnabled === true
         ? t('auditEnvironmentsOn')
         : t('auditEnvironmentsOff');
+    case ApplicationEventName.USER_SIGN_IN_FAILED:
+      return summarizeSignInFailed({
+        target: event.data.target,
+        detail: event.data.detail,
+      });
     case ApplicationEventName.TENANT_USERS_INVITED:
     case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
     case ApplicationEventName.TENANT_USER_REMOVED:
@@ -373,7 +378,6 @@ function summarize({
     case ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED:
     case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
     case ApplicationEventName.SSO_SETTINGS_UPDATED:
-    case ApplicationEventName.USER_SIGN_IN_FAILED:
     case ApplicationEventName.WORKER_STATE_CHANGED:
     case ApplicationEventName.AUDIT_LOG_EXPORTED:
     case ApplicationEventName.PROJECT_LIMITS_UPDATED:
@@ -447,6 +451,49 @@ function workflowStatusLabel(status: string): string {
       return t('Stopped');
     default:
       return status;
+  }
+}
+
+function summarizeSignInFailed({
+  target,
+  detail,
+}: {
+  target: string;
+  detail: string | undefined;
+}): string {
+  const matched = detail ? SIGN_IN_DETAIL_PATTERN.exec(detail) : null;
+  if (!matched) {
+    return detail ? `${target} · ${detail}` : target;
+  }
+  const [, method, code] = matched;
+  return t('auditSignInFailed', {
+    email: target || t('Unknown'),
+    method:
+      method === 'password' ? t('password') : t('email verification code'),
+    reason: signInFailureReason(code),
+  });
+}
+
+function signInFailureReason(code: string): string {
+  switch (code) {
+    case 'INVALID_CREDENTIALS':
+      return t('wrong email or password');
+    case 'INVALID_OTP':
+      return t('wrong or expired verification code');
+    case 'USER_IS_INACTIVE':
+      return t('the account is disabled');
+    case 'EMAIL_IS_NOT_VERIFIED':
+      return t('the email is not verified');
+    case 'EMAIL_AUTH_DISABLED':
+      return t('email sign-in is turned off');
+    case 'DOMAIN_NOT_ALLOWED':
+      return t('the email domain is not allowed');
+    case 'INVITATION_ONLY_SIGN_UP':
+      return t('this account is not invited yet');
+    case 'AUTHORIZATION':
+      return t('not authorized');
+    default:
+      return t('the sign-in was refused');
   }
 }
 
@@ -591,6 +638,8 @@ function actionsForSources(sources: string[]): string[] | undefined {
     (name) => !SYSTEM_EVENT_NAMES.includes(name),
   );
 }
+
+const SIGN_IN_DETAIL_PATTERN = /^(password|email code): ([A-Z_]+)$/;
 
 const SYSTEM_EVENT_NAMES: string[] = [
   ApplicationEventName.EXECUTION_STARTED,

@@ -16,6 +16,8 @@ import { componentTranslation } from '@/features/components';
 import { connectorsHooks, formUtils } from '@/features/connectors';
 import { authenticationSession } from '@/lib/authentication-session';
 
+import { stepFormBaseline } from '../step-settings/step-form-baseline-context';
+
 import { DynamicPropertiesErrorBoundary } from './dynamic-connector-properties-error-boundary';
 import { DynamicPropertiesContext } from './dynamic-properties-context';
 import { GenericPropertiesForm } from './generic-properties-form';
@@ -43,6 +45,7 @@ const DynamicPropertiesImplementation = React.memo(
       state.readonly,
     ]);
     const form = useFormContext();
+    const { adoptCurrentValues } = stepFormBaseline.useBaseline();
     const watchConfig: Record<string, unknown> = {
       name:
         props.placedInside === 'stepSettings' ? 'settings.input' : undefined,
@@ -64,6 +67,7 @@ const DynamicPropertiesImplementation = React.memo(
       undefined,
     );
     const optionsRequestId = useRef(0);
+    const initialLoadHandled = useRef(false);
     const { propertyLoadingFinished, propertyLoadingStarted } = useContext(
       DynamicPropertiesContext,
     );
@@ -181,10 +185,24 @@ const DynamicPropertiesImplementation = React.memo(
                 form,
               );
             }
-            form.setValue(propertyPath, defaultValue, {
-              shouldValidate: true,
-              shouldDirty: true,
-            });
+            const isInitialLoad = !initialLoadHandled.current;
+            initialLoadHandled.current = true;
+            const alreadyHasDefaults =
+              isInitialLoad &&
+              deepEqual(form.getValues(propertyPath), defaultValue, {
+                strict: true,
+              });
+            if (alreadyHasDefaults) {
+              form.trigger(propertyPath);
+            } else {
+              form.setValue(propertyPath, defaultValue, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }
+            if (isInitialLoad) {
+              adoptCurrentValues();
+            }
           },
           onError: () => {
             if (requestId !== optionsRequestId.current) {

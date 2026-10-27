@@ -9,7 +9,6 @@ import {
 import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { BellRing } from 'lucide-react';
-import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { ConsolePage } from '@/components/custom/console-page';
@@ -225,6 +224,7 @@ function InstanceLimitCard({ limit }: { limit: InstanceLimit }) {
       ? null
       : limitsUtils.usageRatio({ used: limit.usage, limit: limit.value });
   const tone = limitsUtils.usageTone(ratio);
+  const unenforced = limitsUtils.isUnenforced(limit);
   return (
     <Card>
       <CardContent className="flex h-full flex-col gap-2 pt-4">
@@ -232,8 +232,13 @@ function InstanceLimitCard({ limit }: { limit: InstanceLimit }) {
           {limitsUtils.limitLabel(limit.key)}
         </span>
         <span className="text-lg font-semibold whitespace-nowrap tabular-nums">
-          {limit.usage === null
-            ? limitsUtils.formatValue({ unit: limit.unit, value: limit.value })
+          {unenforced
+            ? t('Unlimited')
+            : limit.usage === null
+            ? limitsUtils.formatValue({
+                unit: limit.unit,
+                value: limit.value,
+              })
             : `${formatUtils.formatNumber(
                 limit.usage,
               )} / ${limitsUtils.formatValue({
@@ -241,7 +246,12 @@ function InstanceLimitCard({ limit }: { limit: InstanceLimit }) {
                 value: limit.value,
               })}`}
         </span>
-        {ratio !== null && (
+        {unenforced && limit.usage !== null && (
+          <span className="text-xs text-muted-foreground">
+            {t('{count} running now', { count: limit.usage })}
+          </span>
+        )}
+        {ratio !== null && !unenforced && (
           <Progress
             className="h-1.5"
             value={Math.min(100, ratio * 100)}
@@ -249,37 +259,21 @@ function InstanceLimitCard({ limit }: { limit: InstanceLimit }) {
           />
         )}
         <span className="text-xs text-muted-foreground">
-          {limitsUtils.enforcementHint(limit.key)}
+          {unenforced
+            ? limitsUtils.unenforcedHint(limit.key)
+            : limitsUtils.enforcementHint(limit.key)}
         </span>
         <div className="mt-auto flex min-w-0 flex-col gap-0.5 pt-1">
           <span className="text-xs">{limitsUtils.sourceLabel(limit)}</span>
-          <span className="text-[11px] break-words text-muted-foreground">
-            <EnvVarLine
-              text={t('Self-hosted setting: {name}', { name: limit.envVar })}
-              name={limit.envVar}
-            />
+          <span className="text-[11px] text-muted-foreground">
+            {t('Self-hosted setting')}
           </span>
+          <code className="font-mono text-[11px] break-all text-muted-foreground">
+            {limit.envVar}
+          </code>
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function EnvVarLine({ text, name }: { text: string; name: string }) {
-  const [before, ...rest] = text.split(name);
-  const parts = name.split('_');
-  return (
-    <>
-      {before}
-      {parts.map((part, index) => (
-        <React.Fragment key={`${part}-${index}`}>
-          {index > 0 && '_'}
-          {index > 0 && <wbr />}
-          {part}
-        </React.Fragment>
-      ))}
-      {rest.join(name)}
-    </>
   );
 }
 

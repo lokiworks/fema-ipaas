@@ -135,7 +135,7 @@ export const WorkflowStepInputOutput = () => {
   const message =
     run.status === ExecutionStatus.INTERNAL_ERROR && isNil(selectedStepOutput)
       ? t(
-          'There are no logs captured for this run, because of an internal error, please contact support.',
+          'There are no logs captured for this run because of an internal error, please contact your platform administrator.',
         )
       : handleRunFailureOrEmptyLog(run, rententionDays);
   if (message) {
@@ -243,15 +243,15 @@ export const WorkflowStepInputOutput = () => {
             enabled={stepConnectorName === AI_CONNECTOR_NAME}
           />
           <div className="flex items-center justify-between gap-2 shrink-0 mb-2">
-            <TabsList className="h-9">
-              {!isTrigger && (
-                <TabsTrigger value="input">{t('Input')}</TabsTrigger>
-              )}
-              {isAgent && (
-                <TabsTrigger value="timeline">{t('Timeline')}</TabsTrigger>
-              )}
-              <TabsTrigger value="output">{t('Output')}</TabsTrigger>
-            </TabsList>
+            {!isTrigger && (
+              <TabsList className="h-9">
+                <TabsTrigger value="input">{t('Run input')}</TabsTrigger>
+                {isAgent && (
+                  <TabsTrigger value="timeline">{t('Timeline')}</TabsTrigger>
+                )}
+                <TabsTrigger value="output">{t('Run output')}</TabsTrigger>
+              </TabsList>
+            )}
             <div className="flex items-center gap-1 shrink-0"></div>
           </div>
 
@@ -262,7 +262,7 @@ export const WorkflowStepInputOutput = () => {
               ) && <TruncatedInputNotice />}
               <SmartOutputViewer
                 json={selectedStepOutput.input}
-                title={t('Input')}
+                title={t('Data')}
               />
             </TabsContent>
           )}
@@ -281,7 +281,7 @@ export const WorkflowStepInputOutput = () => {
             ) : status === 'success' ? (
               <SmartOutputViewer
                 json={parsedOutput}
-                title={t('Output')}
+                title={t('Data')}
                 connectorSchema={connectorSchema}
               />
             ) : (

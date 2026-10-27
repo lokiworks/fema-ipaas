@@ -12,6 +12,7 @@ import {
   useCursorPositionEffect,
 } from '../../cursor-position-context';
 import { workflowCanvasConsts } from '../../utils/consts';
+import { notePlacement } from '../../utils/note-placement';
 
 import { NoteContent } from '.';
 
@@ -106,7 +107,11 @@ const NoteDragOverlay = () => {
               });
               addNote({
                 content: workflowCanvasConsts.DEFAULT_NOTE_CONTENT,
-                position: positionOnCanvas,
+                position: notePlacement.placeAwayFromSteps({
+                  reactFlow,
+                  position: positionOnCanvas,
+                  size: draggedNote.size,
+                }),
                 size: draggedNote.size,
                 color: workflowCanvasConsts.DEFAULT_NOTE_COLOR,
               });

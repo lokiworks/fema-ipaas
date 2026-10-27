@@ -1,10 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import {
-  ConnectorPropertyMap,
-  Property,
-} from '@fema-ipaas/connector-sdk';
+import { ConnectorPropertyMap, Property } from '@fema-ipaas/connector-sdk';
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -79,6 +76,7 @@ vi.mock('@/features/connectors', async () => {
 });
 
 import { DynamicProperties } from '@/app/builder/connector-properties/dynamic-connector-property';
+import { stepFormBaseline } from '@/app/builder/step-settings/step-form-baseline-context';
 
 const shortTextSchema = (fieldNames: string[]): ConnectorPropertyMap => {
   const schema: ConnectorPropertyMap = {};
@@ -92,6 +90,8 @@ const shortTextSchema = (fieldNames: string[]): ConnectorPropertyMap => {
 };
 
 let formInstance: UseFormReturn | undefined;
+let initialFields: Record<string, unknown> | undefined;
+const adoptCurrentValues = vi.fn();
 
 const Harness = () => {
   const form = useForm<FieldValues>({
@@ -99,6 +99,7 @@ const Harness = () => {
       settings: {
         input: {
           items: ['a'],
+          ...(initialFields ? { fields: initialFields } : {}),
         },
       },
     },
@@ -106,18 +107,20 @@ const Harness = () => {
   formInstance = form;
   return (
     <FormProvider {...form}>
-      <DynamicProperties
-        refreshers={['items']}
-        propertyName="fields"
-        connectorName="@fema-ipaas/connector-test"
-        connectorVersion="0.0.1"
-        actionOrTriggerName="test_action"
-        disabled={false}
-        placedInside="stepSettings"
-        updateFormSchema={null}
-        propertySettings={null}
-        updatePropertySettingsSchema={null}
-      />
+      <stepFormBaseline.Provider value={{ adoptCurrentValues }}>
+        <DynamicProperties
+          refreshers={['items']}
+          propertyName="fields"
+          connectorName="@fema-ipaas/connector-test"
+          connectorVersion="0.0.1"
+          actionOrTriggerName="test_action"
+          disabled={false}
+          placedInside="stepSettings"
+          updateFormSchema={null}
+          propertySettings={null}
+          updatePropertySettingsSchema={null}
+        />
+      </stepFormBaseline.Provider>
     </FormProvider>
   );
 };
@@ -131,6 +134,8 @@ describe('DynamicProperties refresher change', () => {
     container?.remove();
     mutateCalls.length = 0;
     formInstance = undefined;
+    initialFields = undefined;
+    adoptCurrentValues.mockClear();
   });
 
   const mount = () => {
@@ -258,5 +263,26 @@ describe('DynamicProperties refresher change', () => {
     expect(formInstance!.getValues('settings.input.fields')).toEqual({
       firstName: 'John',
     });
+  });
+
+  it('adopts the initial defaults as the saved baseline only once', () => {
+    mount();
+    resolveOptions(shortTextSchema(['firstName']));
+    expect(adoptCurrentValues).toHaveBeenCalledTimes(1);
+
+    act(() => formInstance!.setValue('settings.input.items', ['a', 'b']));
+    resolveOptions(shortTextSchema(['firstName']));
+    expect(adoptCurrentValues).toHaveBeenCalledTimes(1);
+  });
+
+  it('adopts without writing when the stored value already equals the defaults', () => {
+    initialFields = { firstName: '' };
+    mount();
+    const setValue = vi.spyOn(formInstance!, 'setValue');
+    resolveOptions(shortTextSchema(['firstName']));
+
+    expect(setValue).not.toHaveBeenCalled();
+    expect(adoptCurrentValues).toHaveBeenCalledTimes(1);
+    expect(formInstance!.formState.isDirty).toBe(false);
   });
 });

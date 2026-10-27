@@ -1,5 +1,5 @@
 {
-  "Manipulate, format, and extract time units for all your date and time needs.": "对日期和时间做运算、格式化，以及提取时间单位。",
+  "Manipulate, format, and extract time units for all your date and time needs.": "日期工具集：获取当前日期、格式化、加减时间、计算间隔、提取年月日等。核心组件里的「日期处理」只适合单步的简单处理。",
   "Get Current Date": "获取当前日期",
   "Format Date": "格式化日期",
   "Extract Date Units": "提取日期单位",
@@ -512,5 +512,5 @@
   "October": "十月",
   "November": "十一月",
   "December": "十二月",
-  "Date Helper": "日期助手"
+  "Date Helper": "日期工具"
 }

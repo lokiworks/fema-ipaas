@@ -46,7 +46,7 @@ export function NodesTab() {
 
   return (
     <div className="flex flex-col gap-4 pt-4">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1 text-sm">
           <span>
             {t('onlineWorkersSummary', {
@@ -235,6 +235,7 @@ function NodeRow({
                 'The worker disappears from this list. If its process is still running it shows up again on its next heartbeat; stop the container to take it away for good.',
               )}
               entityName={node.ip}
+              targetName={node.ip}
               buttonText={t('Remove')}
               mutationFn={async () => {
                 await actAsync({ id: node.id, action: 'remove' });

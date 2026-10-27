@@ -11,7 +11,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import deepEqual from 'deep-equal';
 import { t } from 'i18next';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, Resolver } from 'react-hook-form';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
@@ -57,6 +57,7 @@ import { ParallelSettings } from './parallel-settings';
 import { PendingReviewNotice } from './pending-review-notice';
 import { RouterSettings } from './router-settings';
 import { SensitiveOutputToggle } from './sensitive-output-toggle';
+import { stepFormBaseline } from './step-form-baseline-context';
 import { StepNavigationButtons } from './step-navigation-buttons';
 import { StepOperationSummary } from './step-operation-summary';
 import { useStepSettingsContext } from './step-settings-context';
@@ -160,6 +161,21 @@ const StepSettingsContainer = () => {
     },
   });
 
+  const adoptCurrentValues = useCallback(() => {
+    const adopted: WorkflowAction | WorkflowTrigger = JSON.parse(
+      JSON.stringify(form.getValues()),
+    );
+    currentValuesRef.current = {
+      ...adopted,
+      valid: currentValuesRef.current.valid,
+    };
+  }, [form]);
+  const baseline = useMemo(
+    () => ({ adoptCurrentValues }),
+    [adoptCurrentValues],
+  );
+
+  const hasFormErrors = Object.keys(form.formState.errors).length > 0;
   const sidebarHeaderContainerRef = useRef<HTMLDivElement>(null);
   const modifiedStep = form.getValues();
   const isManualTrigger =
@@ -346,8 +362,7 @@ const StepSettingsContainer = () => {
               {isTriggerStep ? t('Settings') : t('Input')}
               <TabErrorDot
                 show={
-                  tabsWithErrors.includes(ValidationTab.INPUT) ||
-                  !modifiedStep.valid
+                  tabsWithErrors.includes(ValidationTab.INPUT) || hasFormErrors
                 }
               />
             </TabsTrigger>
@@ -516,13 +531,15 @@ const StepSettingsContainer = () => {
             }}
           />
         )}
-        <DynamicPropertiesProvider
-          key={`${selectedStep.name}-${selectedStep.type}`}
-        >
-          <StepTestRunnerProvider step={selectedStep}>
-            {settingsForm}
-          </StepTestRunnerProvider>
-        </DynamicPropertiesProvider>
+        <stepFormBaseline.Provider value={baseline}>
+          <DynamicPropertiesProvider
+            key={`${selectedStep.name}-${selectedStep.type}`}
+          >
+            <StepTestRunnerProvider step={selectedStep}>
+              {settingsForm}
+            </StepTestRunnerProvider>
+          </DynamicPropertiesProvider>
+        </stepFormBaseline.Provider>
       </form>
     </Form>
   );

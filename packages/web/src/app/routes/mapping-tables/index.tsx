@@ -256,6 +256,7 @@ function MappingTableEditor({
                 'Steps that look up this table would fail, so it can only be deleted when nothing uses it.',
               )}
               entityName={table.name}
+              targetName={table.name}
               isDanger
               mutationFn={async () => {
                 await deleteTable(table.id);

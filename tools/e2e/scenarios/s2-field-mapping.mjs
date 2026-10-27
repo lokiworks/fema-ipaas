@@ -989,7 +989,7 @@ async function keyboardOrder() {
   const steps = page.getByTestId('reference-steps')
   await steps.waitFor()
   await shot('22-reference-by-keyboard')
-  await steps.getByRole('button', { name: /^1\. 捕获 Webhook/ }).click()
+  await steps.getByRole('button', { name: /网址触发器/ }).click()
   await page.getByText('Whole output').or(page.getByText('整个出参')).first().waitFor()
   await page.getByRole('dialog').getByText('body.employeeInfo.name', { exact: true }).first().click()
   await page.waitForTimeout(1000)

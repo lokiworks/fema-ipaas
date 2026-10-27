@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 
 import { Button } from '@/components/ui/button';
@@ -12,12 +13,12 @@ import {
 
 export function DiscardChangesDialog({
   open,
-  isRunning,
+  liveVersionLabel,
   onCancel,
   onConfirm,
 }: {
   open: boolean;
-  isRunning: boolean;
+  liveVersionLabel: string | null;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
@@ -27,12 +28,13 @@ export function DiscardChangesDialog({
         <DialogHeader>
           <DialogTitle>{t('Discard unpublished changes?')}</DialogTitle>
           <DialogDescription>
-            {isRunning
+            {isNil(liveVersionLabel)
               ? t(
-                  'The draft goes back to the live version. Edits made since then are lost and cannot be restored. The live version keeps running unchanged.',
+                  'All edits made since the last publish will be discarded and the workflow goes back to the live version. This cannot be undone.',
                 )
               : t(
-                  'The draft goes back to the live version. Edits made since then are lost and cannot be restored.',
+                  'All edits made since the last publish will be discarded and the workflow goes back to live version {version}. This cannot be undone.',
+                  { version: liveVersionLabel },
                 )}
           </DialogDescription>
         </DialogHeader>

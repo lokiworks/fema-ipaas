@@ -1,4 +1,5 @@
 import {
+  GlobalSearchGroup,
   GlobalSearchResultType,
   PROJECT_COLOR_PALETTE,
 } from '@fema-ipaas/shared';
@@ -108,7 +109,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
         limit: SEARCH_LIMIT,
         cursor: undefined,
       }),
-    enabled: suggestionsEnabled,
+    enabled: suggestionsEnabled || (hasQuery && open && !!projectId),
     staleTime: hasQuery ? 15_000 : 60_000,
     placeholderData: keepPreviousData,
   });
@@ -314,29 +315,51 @@ export function useGlobalSearchResults(query: string, open: boolean) {
     };
   }
 
+  const currentProjectWorkflowItems: GlobalSearchGroup['items'] = (
+    workflowsQuery.data?.data ?? []
+  ).map((workflow) => ({
+    id: workflow.id,
+    type: GlobalSearchResultType.WORKFLOW,
+    label: workflow.version.displayName,
+    subtitle: null,
+    projectId,
+    projectName: currentProjectName,
+  }));
+
   const serverGroups: SearchResultGroup[] = (
     globalSearchQuery.data?.groups ?? []
-  ).map((group) => ({
-    type: `resource-${group.type}`,
-    heading: globalSearchUtils.groupHeading(group.type),
-    items: globalSearchUtils
-      .toRows({ group, query, currentProjectId: projectId })
-      .map((row) => ({
-        id: row.id,
-        type: row.kind,
-        resourceType: row.resourceType,
-        label: globalSearchUtils.displayLabel(row),
-        href: row.href,
-        subtitle: globalSearchUtils.displaySubtitle({
-          row,
-          connectorName: (name) =>
-            connectors?.find((connector) => connector.name === name)
-              ?.displayName ?? name,
-        }),
-        projectName: row.projectName,
-      })),
-    isLoading: false,
-  }));
+  )
+    .map((group) =>
+      globalSearchUtils.prioritizeCurrentProject({
+        group,
+        currentProjectId: projectId,
+        currentProjectItems:
+          group.type === GlobalSearchResultType.WORKFLOW
+            ? currentProjectWorkflowItems
+            : [],
+      }),
+    )
+    .map((group) => ({
+      type: `resource-${group.type}`,
+      heading: globalSearchUtils.groupHeading(group.type),
+      items: globalSearchUtils
+        .toRows({ group, query, currentProjectId: projectId })
+        .map((row) => ({
+          id: row.id,
+          type: row.kind,
+          resourceType: row.resourceType,
+          label: globalSearchUtils.displayLabel(row),
+          href: row.href,
+          subtitle: globalSearchUtils.displaySubtitle({
+            row,
+            connectorName: (name) =>
+              connectors?.find((connector) => connector.name === name)
+                ?.displayName ?? name,
+          }),
+          projectName: row.projectName,
+        })),
+      isLoading: false,
+    }));
 
   const groups: SearchResultGroup[] = [
     ...(globalSearchQuery.isLoading && hasQuery

@@ -5,7 +5,7 @@ import {
 } from '@fema-ipaas/shared';
 import dayjs from 'dayjs';
 import { t } from 'i18next';
-import { Download } from 'lucide-react';
+import { Download, Info } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -30,6 +30,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   auditEventsApi,
   auditEventsHooks,
@@ -225,7 +230,21 @@ export default function AuditLogPage() {
                 <TableHead className="w-48">{t('Actor')}</TableHead>
                 <TableHead className="w-44">{t('Action')}</TableHead>
                 <TableHead>{t('Audit target')}</TableHead>
-                <TableHead className="w-48">{t('Project')}</TableHead>
+                <TableHead className="w-48">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex cursor-default items-center gap-1">
+                        {t('Project')}
+                        <Info className="size-3.5 text-muted-foreground" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t(
+                        'Events that do not belong to any project, such as failed sign-ins and tenant settings, show as "Platform-level".',
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </TableHead>
                 <TableHead className="w-32">IP</TableHead>
               </TableRow>
             </TableHeader>
@@ -339,7 +358,7 @@ function projectLabelOf({
   if (event.projectId) {
     return projectNameById.get(event.projectId) ?? t('Deleted project');
   }
-  return t('Platform');
+  return t('Platform-level');
 }
 
 function displayIp(ip: string | null | undefined): string {

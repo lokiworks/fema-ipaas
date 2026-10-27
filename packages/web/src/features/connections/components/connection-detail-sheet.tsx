@@ -213,7 +213,7 @@ function ConnectionDetailContent({
               <dd>
                 <ConnectionPermissionTag permission={detail.myPermission} />
               </dd>
-              <dt className="text-muted-foreground">{t('Created')}</dt>
+              <dt className="text-muted-foreground">{t('Created at')}</dt>
               <dd>
                 <FormattedDate date={new Date(detail.created)} />
               </dd>

@@ -21,6 +21,7 @@ interface ConfirmationDeleteDialogProps {
   message: React.ReactNode | string;
   mutationFn: () => Promise<void>;
   entityName: string;
+  targetName?: string;
   children?: React.ReactNode;
   open?: boolean;
   isDanger?: boolean;
@@ -38,6 +39,7 @@ export const ConfirmationDeleteDialog = ({
   showToast,
   isDanger,
   entityName,
+  targetName,
   buttonText,
   children,
   open,
@@ -85,6 +87,11 @@ export const ConfirmationDeleteDialog = ({
             {message}
           </DialogDescription>
         </DialogHeader>
+        {targetName && (
+          <p className="rounded-sm bg-muted px-3 py-2 text-sm font-medium break-all">
+            {t('Target: {name}', { name: targetName })}
+          </p>
+        )}
         {warning && (
           <Alert variant="warning">
             <TriangleAlert className="h-4 w-4" />
@@ -93,6 +100,7 @@ export const ConfirmationDeleteDialog = ({
         )}
         <DialogFooter className="mt-3">
           <Button
+            type="button"
             variant="outline"
             disabled={isPending}
             onClick={() => handleClose()}

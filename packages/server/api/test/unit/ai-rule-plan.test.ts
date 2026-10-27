@@ -46,7 +46,7 @@ const CATALOG: CatalogEntry[] = [
     },
     {
         name: DATE_HELPER,
-        displayName: '日期助手',
+        displayName: '日期工具',
         suggestedTriggers: [],
         suggestedActions: [
             operation({ name: 'get_current_date', props: ['timeFormat', 'timeZone'] }),

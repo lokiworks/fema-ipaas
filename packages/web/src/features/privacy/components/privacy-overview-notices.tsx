@@ -1,10 +1,10 @@
 import { PayloadLevel, RawViewRole } from '@fema-ipaas/shared';
-import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { ShieldCheck, Trash2, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatUtils } from '@/lib/format-utils';
 
 import { privacyHooks } from '../hooks/privacy-hooks';
 
@@ -45,7 +45,11 @@ export function PurgeEstimateNotice() {
         <span>
           {t(
             'The next cleanup runs at {time}. Based on the saved settings it will delete the following. Deleted data cannot be recovered.',
-            { time: dayjs(purge.nextRunAt).format('MM-DD HH:mm') },
+            {
+              time: formatUtils.formatRelativeDayWithTime(
+                new Date(purge.nextRunAt),
+              ),
+            },
           )}
         </span>
       </div>

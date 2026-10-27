@@ -1,6 +1,6 @@
 import { ErrorCode, isNil } from '@fema-ipaas/core-utils';
 import { OtpType, TelemetryEventName } from '@fema-ipaas/shared';
-import { t } from 'i18next';
+import i18next, { t } from 'i18next';
 import { Eye, EyeOff } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -64,6 +64,7 @@ const SignUpForm = ({
     },
   });
   const showNewsLetterCheckbox = false;
+  const lastNameFirst = i18next.language.startsWith('zh');
 
   const redirectAfterLogin = useRedirectAfterLogin();
   const navigate = useNavigate();
@@ -188,51 +189,102 @@ const SignUpForm = ({
     <>
       <Form {...form}>
         <form className="flex flex-col space-y-4">
-          <div className={'flex flex-row gap-2'}>
-            <FormField
-              control={form.control}
-              name="firstName"
-              rules={{
-                required: t('First name is required'),
-              }}
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <Label htmlFor="firstName">{t('First Name')}</Label>
-                  <Input
-                    {...field}
-                    required
-                    id="firstName"
-                    type="text"
-                    placeholder={'John'}
-                    className="rounded-sm"
-                    data-testid="sign-up-first-name"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="lastName"
-              rules={{
-                required: t('Last name is required'),
-              }}
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <Label htmlFor="lastName">{t('Last Name')}</Label>
-                  <Input
-                    {...field}
-                    required
-                    id="lastName"
-                    type="text"
-                    placeholder={'Doe'}
-                    className="rounded-sm"
-                    data-testid="sign-up-last-name"
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <div className="flex flex-row gap-2">
+            {lastNameFirst ? (
+              <>
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  rules={{
+                    required: t('Last name is required'),
+                  }}
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <Label htmlFor="lastName">{t('Last Name')}</Label>
+                      <Input
+                        {...field}
+                        required
+                        id="lastName"
+                        type="text"
+                        placeholder={t('Doe')}
+                        className="rounded-sm"
+                        data-testid="sign-up-last-name"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  rules={{
+                    required: t('First name is required'),
+                  }}
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <Label htmlFor="firstName">{t('First Name')}</Label>
+                      <Input
+                        {...field}
+                        required
+                        id="firstName"
+                        type="text"
+                        placeholder={t('John')}
+                        className="rounded-sm"
+                        data-testid="sign-up-first-name"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            ) : (
+              <>
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  rules={{
+                    required: t('First name is required'),
+                  }}
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <Label htmlFor="firstName">{t('First Name')}</Label>
+                      <Input
+                        {...field}
+                        required
+                        id="firstName"
+                        type="text"
+                        placeholder={t('John')}
+                        className="rounded-sm"
+                        data-testid="sign-up-first-name"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  rules={{
+                    required: t('Last name is required'),
+                  }}
+                  render={({ field }) => (
+                    <FormItem className="w-full">
+                      <Label htmlFor="lastName">{t('Last Name')}</Label>
+                      <Input
+                        {...field}
+                        required
+                        id="lastName"
+                        type="text"
+                        placeholder={t('Doe')}
+                        className="rounded-sm"
+                        data-testid="sign-up-last-name"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
           </div>
           <FormField
             control={form.control}

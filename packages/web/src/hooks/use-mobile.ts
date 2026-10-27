@@ -2,6 +2,7 @@ import * as React from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 const COMPACT_BREAKPOINT = 1024;
+const NARROW_DESKTOP_BREAKPOINT = 1280;
 
 function useBelowWidth(breakpoint: number) {
   const [below, setBelow] = React.useState<boolean | undefined>(() =>
@@ -27,4 +28,8 @@ export function useIsMobile() {
 
 export function useIsCompact() {
   return useBelowWidth(COMPACT_BREAKPOINT);
+}
+
+export function useIsNarrowDesktop() {
+  return useBelowWidth(NARROW_DESKTOP_BREAKPOINT);
 }

@@ -46,7 +46,9 @@ import {
 } from '@/components/ui/tooltip';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 import { tenantUserMutations } from '@/features/tenant-admin/hooks/tenant-user-hooks';
+import { useIsNarrowDesktop } from '@/hooks/use-mobile';
 import { authenticationSession } from '@/lib/authentication-session';
+import { personName } from '@/lib/person-name';
 
 import { AddUsersDialog } from './add-users-dialog';
 import { EditAccessDialog } from './edit-access-dialog';
@@ -55,6 +57,7 @@ import { ResetPasswordDialog } from './reset-password-dialog';
 
 export default function UsersPage() {
   const { data, isLoading, refetch } = tenantAccessHooks.useMembers();
+  const compact = useIsNarrowDesktop();
   const { mutate: setEnabled } = tenantAccessHooks.useSetEnabled();
   const bulk = tenantAccessHooks.useBulkSetEnabled();
   const [selected, setSelected] = useState<string[]>([]);
@@ -76,7 +79,7 @@ export default function UsersPage() {
       (scope === 'all' || member.external) &&
       (status === 'any' || member.status === status) &&
       (query.length === 0 ||
-        `${member.firstName} ${member.lastName} ${member.email}`
+        `${personName.format(member)} ${member.email}`
           .toLowerCase()
           .includes(query)),
   );
@@ -195,7 +198,7 @@ export default function UsersPage() {
       {isLoading ? (
         <Skeleton className="h-64 w-full" />
       ) : (
-        <Table className="min-w-[52rem]">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
@@ -208,17 +211,22 @@ export default function UsersPage() {
                 />
               </TableHead>
               <TableHead>{t('User')}</TableHead>
-              <TableHead className="w-28">{t('Status')}</TableHead>
-              <TableHead className="w-28">{t('Platform role')}</TableHead>
-              <TableHead className="w-56">{t('Module permissions')}</TableHead>
-              <TableHead className="w-28">{t('Last active')}</TableHead>
+              <TableHead className="w-24">{t('Status')}</TableHead>
+              <TableHead className="w-24">{t('Platform role')}</TableHead>
+              <TableHead className="w-40">{t('Module permissions')}</TableHead>
+              {!compact && (
+                <TableHead className="w-28">{t('Last active')}</TableHead>
+              )}
               <TableHead className="w-16">{t('Actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {visible.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-muted-foreground">
+                <TableCell
+                  colSpan={compact ? 6 : 7}
+                  className="text-muted-foreground"
+                >
                   {t('No users match these filters')}
                 </TableCell>
               </TableRow>
@@ -274,15 +282,17 @@ export default function UsersPage() {
                 <TableCell>
                   <ModuleBadges modules={member.modules} />
                 </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {member.lastActiveDate ? (
-                    <FormattedDate date={new Date(member.lastActiveDate)} />
-                  ) : member.kind === 'INVITATION' ? (
-                    t('Never signed in')
-                  ) : (
-                    '—'
-                  )}
-                </TableCell>
+                {!compact && (
+                  <TableCell className="text-muted-foreground">
+                    {member.lastActiveDate ? (
+                      <FormattedDate date={new Date(member.lastActiveDate)} />
+                    ) : member.kind === 'INVITATION' ? (
+                      t('Never signed in')
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                )}
                 <TableCell>
                   <MemberActions
                     member={member}

@@ -173,6 +173,8 @@ const DEFAULT_TIMEZONE = 'UTC'
 
 const ACTIVE_STATUSES: ExecutionStatus[] = [ExecutionStatus.QUEUED, ExecutionStatus.RUNNING, ExecutionStatus.PAUSED]
 
+const NON_FAILURE_STATUSES: ExecutionStatus[] = [ExecutionStatus.SUCCEEDED, ExecutionStatus.CANCELED, ...ACTIVE_STATUSES]
+
 const STOPPED_AT_STEP_STATUSES: ExecutionStatus[] = [ExecutionStatus.FAILED, ExecutionStatus.TIMEOUT, ExecutionStatus.MEMORY_LIMIT_EXCEEDED]
 
 const GROUP_KEYS: Record<RunMonitorStatusGroup, keyof GroupCounts> = {
@@ -207,6 +209,7 @@ export const runMonitorUtils = {
     aiSource,
     toNumberOrNull,
     activeStatuses: ACTIVE_STATUSES,
+    nonFailureStatuses: NON_FAILURE_STATUSES,
 }
 
 export type RangeSpec = {

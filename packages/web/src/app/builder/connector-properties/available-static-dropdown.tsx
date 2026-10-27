@@ -1,4 +1,5 @@
 import { StaticDropdownProperty } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 
 import { SearchableSelect } from '@/components/custom/searchable-select';
@@ -38,6 +39,10 @@ function WithFlags(props: Props) {
 }
 
 function Choices({ property, value, onChange, disabled }: Props) {
+  const handleChange = (next: unknown) =>
+    isNil(next) && !isNil(property.defaultValue)
+      ? onChange(property.defaultValue)
+      : onChange(next);
   return property.display === 'cards' ? (
     <StaticDropdownCards
       options={property.options.options}
@@ -48,7 +53,7 @@ function Choices({ property, value, onChange, disabled }: Props) {
   ) : (
     <SearchableSelect
       options={property.options.options}
-      onChange={onChange}
+      onChange={handleChange}
       value={value}
       disabled={disabled}
       placeholder={property.options.placeholder ?? t('Select an option')}

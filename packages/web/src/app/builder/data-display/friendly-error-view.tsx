@@ -14,10 +14,10 @@ import {
 
 import { CollapsibleJson } from '@/components/custom/collapsible-json';
 import { Badge } from '@/components/ui/badge';
+import { errorExplanation } from '@/lib/error-explanation';
 import { cn } from '@/lib/utils';
 
 import { CopyAiPromptButton } from './copy-ai-prompt';
-import { errorExplanation } from './error-explanation';
 import { ErrorExplanationContext } from './explanation-prompt';
 
 type FriendlyErrorViewProps = {

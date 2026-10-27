@@ -2,6 +2,7 @@ import {
   formErrors,
   DefaultProjectRole,
   FlagId,
+  InvitationStatus,
   UserInvitationWithLink,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,6 +35,7 @@ import {
 import { internalErrorToast } from '@/components/ui/sonner';
 import { userInvitationMutations } from '@/features/invitations';
 import { invitationUtils } from '@/features/invitations/utils/invitation-utils';
+import { projectMembersHooks } from '@/features/project-members';
 import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
@@ -85,11 +87,21 @@ function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
     defaultValues: { email: '', projectRole: DefaultProjectRole.OPERATOR },
   });
 
+  const invalidateMembers = projectMembersHooks.useInvalidateMembers();
   const { mutate: invite, isPending } =
     userInvitationMutations.useInviteToProject({
       onSuccess: (invitation) => {
+        if (invitation.status === InvitationStatus.ACCEPTED) {
+          void invalidateMembers();
+          toast.success(
+            t('{email} joined the project', { email: invitation.email }),
+          );
+          onDone();
+          return;
+        }
         if (invitationUtils.needsManualDelivery(invitation)) {
           setSentWithoutEmail(invitation);
+          toast.success(t('Invite link created'));
           return;
         }
         toast.success(t('invitationsSentCount', { count: 1 }));

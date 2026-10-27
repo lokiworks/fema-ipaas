@@ -24,7 +24,7 @@ describe('projectDirectoryUtils.memberCount', () => {
 
 describe('projectDirectoryUtils.displayName', () => {
     it('prefers the full name and falls back to the email', () => {
-        expect(projectDirectoryUtils.displayName({ firstName: '明', lastName: '王', email: 'w@x.cn' })).toBe('明 王')
+        expect(projectDirectoryUtils.displayName({ firstName: '明', lastName: '王', email: 'w@x.cn' })).toBe('王明')
         expect(projectDirectoryUtils.displayName({ firstName: ' ', lastName: null, email: 'w@x.cn' })).toBe('w@x.cn')
     })
 })

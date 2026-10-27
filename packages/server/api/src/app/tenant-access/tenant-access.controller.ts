@@ -1,4 +1,4 @@
-import { EntityId } from '@fema-ipaas/core-utils'
+import { EntityId, tryCatch } from '@fema-ipaas/core-utils'
 import {
     AddTenantUsersRequestBody,
     AddTenantUsersResponse,
@@ -91,13 +91,17 @@ export const tenantAccessController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.delete('/members/:id', RemoveRequest, async (request, reply) => {
+        const { data: removedMember } = await tryCatch(() => tenantMembersService(request.log).getMemberOrThrow({
+            tenantId: request.principal.tenant.id,
+            userId: request.params.id,
+        }))
         const { transferred } = await tenantMembersService(request.log).remove({
             tenantId: request.principal.tenant.id,
             userId: request.params.id,
             actorId: request.principal.id,
             transferToUserId: request.query.transferToUserId,
         })
-        audit({ request, action: ApplicationEventName.TENANT_USER_REMOVED, target: request.params.id, detail: transferred > 0 ? `${transferred} resources to ${request.query.transferToUserId}` : undefined })
+        audit({ request, action: ApplicationEventName.TENANT_USER_REMOVED, target: removedMember?.email ?? request.params.id, detail: transferred > 0 ? `${transferred} resources to ${request.query.transferToUserId}` : undefined })
         await reply.status(StatusCodes.NO_CONTENT).send()
     })
 

@@ -47,11 +47,11 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
   const { project } = projectCollectionUtils.useCurrentProject();
   const { data: directory } = projectDirectoryHooks.useDirectory();
   const { mutate: updateRole } = projectMembersHooks.useUpdateMemberRole();
-  const { mutate: removeMember } = projectMembersHooks.useRemoveMember();
+  const { mutateAsync: removeMember } = projectMembersHooks.useRemoveMember();
 
   const { invitations, isLoading: isLoadingInvitations } =
     userInvitationsHooks.useInvitations();
-  const { mutate: revokeInvitation } =
+  const { mutateAsync: revokeInvitation } =
     userInvitationMutations.useRevokeInvitation({
       onSuccess: () => toast.success(t('Invitation revoked')),
     });
@@ -157,9 +157,17 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
                   message={t(
                     'They lose access to every workflow and connection in this project.',
                   )}
-                  mutationFn={async () => removeMember(member.id)}
-                  entityName={t('member')}
+                  mutationFn={async () => {
+                    await removeMember(member.id);
+                    toast.success(
+                      t('Removed {name} from the project', {
+                        name: member.name,
+                      }),
+                    );
+                  }}
+                  entityName={member.name}
                   targetName={member.name}
+                  buttonText={t('removeMemberAction')}
                 >
                   <Button variant="ghost" size="sm" disabled={readonly}>
                     <Trash className="size-4" />
@@ -193,15 +201,25 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
                     <FormattedDate date={new Date(invitation.created)} />
                   </span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={readonly}
-                  aria-label={t('Revoke invitation')}
-                  onClick={() => revokeInvitation(invitation.id)}
+                <ConfirmationDeleteDialog
+                  title={t('Revoke invitation')}
+                  message={t('invitationRevokeConsequence')}
+                  mutationFn={async () => {
+                    await revokeInvitation(invitation.id);
+                  }}
+                  entityName={invitation.email}
+                  targetName={invitation.email}
+                  buttonText={t('Revoke')}
                 >
-                  <Trash className="size-4" />
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={readonly}
+                    aria-label={t('Revoke invitation')}
+                  >
+                    <Trash className="size-4" />
+                  </Button>
+                </ConfirmationDeleteDialog>
               </div>
             ))}
           </div>

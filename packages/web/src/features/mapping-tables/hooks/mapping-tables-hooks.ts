@@ -116,7 +116,6 @@ function useDeleteMappingTable() {
     mutationFn: (id: string) => mappingTablesApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [MAPPING_TABLES_KEY] });
-      toast.success(t('Mapping table deleted'));
     },
     onError: (error) =>
       toast.error(

@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { tenantUserHooks } from '@/features/tenant-admin/hooks/tenant-user-hooks';
+import { personName } from '@/lib/person-name';
 
 import { mcpServicesHooks } from '../hooks/mcp-services-hooks';
 
@@ -63,9 +64,11 @@ function McpAvailabilityTab({
                 .filter((user) =>
                   service.availability.userIds.includes(user.id),
                 )
-                .map(
-                  (user) =>
-                    `${user.firstName} ${user.lastName}`.trim() || user.email,
+                .map((user) =>
+                  personName.formatWithFallback({
+                    ...user,
+                    fallback: user.email,
+                  }),
                 )
                 .join('、') || t('Nobody selected')}
         </Fact>
@@ -107,7 +110,10 @@ function McpAvailabilityTab({
             onValueChange={setUserIds}
             items={activeUsers.map((user) => ({
               value: user.id,
-              label: `${user.firstName} ${user.lastName}`.trim() || user.email,
+              label: personName.formatWithFallback({
+                ...user,
+                fallback: user.email,
+              }),
             }))}
           >
             <MultiSelectTrigger>
@@ -119,7 +125,10 @@ function McpAvailabilityTab({
                 <MultiSelectEmpty>{t('No results')}</MultiSelectEmpty>
                 {activeUsers.map((user) => (
                   <MultiSelectItem key={user.id} value={user.id}>
-                    {`${user.firstName} ${user.lastName}`.trim() || user.email}
+                    {personName.formatWithFallback({
+                      ...user,
+                      fallback: user.email,
+                    })}
                   </MultiSelectItem>
                 ))}
               </MultiSelectList>

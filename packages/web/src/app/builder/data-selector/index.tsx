@@ -410,7 +410,7 @@ const DataSelector = ({
   );
 
   useLayoutEffect(() => {
-    if (!narrow || !showDataSelector) {
+    if (embedded || !showDataSelector) {
       setFit(DEFAULT_FIT);
       return;
     }
@@ -419,10 +419,14 @@ const DataSelector = ({
         container: containerRef.current,
         stepName: selectedStepName,
         bodyHeight: preferredHeight,
+        selectorWidth: dockedWidth,
+        sideMargin: narrow ? NARROW_SIDE_MARGIN_PX : SIDE_MARGIN_PX,
       }),
     );
   }, [
+    embedded,
     narrow,
+    dockedWidth,
     showDataSelector,
     selectedStepName,
     preferredHeight,
@@ -459,9 +463,7 @@ const DataSelector = ({
           : cn(
               'absolute right-0 z-50 transition-all shadow-lg',
               narrow ? 'mr-2' : 'mr-5',
-              placement === 'top'
-                ? 'top-0 mt-5'
-                : cn('bottom-0', narrow ? 'mb-16' : 'mb-5'),
+              placement === 'top' ? 'top-0 mt-5' : 'bottom-0 mb-16',
               {
                 'opacity-0 pointer-events-none':
                   !showDataSelector || suppressed,
@@ -636,10 +638,14 @@ function fitAroundNode({
   container,
   stepName,
   bodyHeight,
+  selectorWidth,
+  sideMargin,
 }: {
   container: HTMLElement | null;
   stepName: string;
   bodyHeight: number;
+  selectorWidth: number;
+  sideMargin: number;
 }): SelectorFit {
   const canvas = container?.offsetParent;
   const node = document.querySelector(
@@ -650,6 +656,10 @@ function fitAroundNode({
   }
   const canvasRect = canvas.getBoundingClientRect();
   const nodeRect = node.getBoundingClientRect();
+  const selectorLeft = canvasRect.right - sideMargin - selectorWidth;
+  if (nodeRect.right + NODE_GAP_PX <= selectorLeft) {
+    return DEFAULT_FIT;
+  }
   const fullHeight = HEADER_PX + bodyHeight;
   const spaceBelow =
     canvasRect.bottom - TOOLBAR_CLEARANCE_PX - (nodeRect.bottom + NODE_GAP_PX);
@@ -679,6 +689,8 @@ const TOOLBAR_CLEARANCE_PX = 64;
 const NARROW_HEIGHT_RATIO = 0.4;
 const HEADER_PX = 48;
 const NODE_GAP_PX = 12;
+const SIDE_MARGIN_PX = 20;
+const NARROW_SIDE_MARGIN_PX = 8;
 const MIN_BODY_PX = 140;
 const DEFAULT_FIT: SelectorFit = { placement: 'bottom', heightLimit: null };
 

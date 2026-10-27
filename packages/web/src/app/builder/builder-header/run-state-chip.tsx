@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import { WorkflowStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
@@ -12,6 +13,11 @@ export function RunStateChip() {
     tree?.workflows.find((row) => row.id === workflow.id)?.status ??
     workflow.status;
   const running = status === WorkflowStatus.ENABLED;
+  const label = running
+    ? t('Running')
+    : isNil(workflow.publishedVersionId)
+    ? t('Not run')
+    : t('Stopped');
 
   return (
     <span
@@ -28,7 +34,7 @@ export function RunStateChip() {
           running ? 'bg-success' : 'bg-muted-foreground/60',
         )}
       />
-      {running ? t('Running') : t('Not run')}
+      {label}
     </span>
   );
 }

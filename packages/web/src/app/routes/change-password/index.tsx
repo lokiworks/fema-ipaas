@@ -2,7 +2,7 @@ import { AuthSplitLayout, ChangePasswordForm } from '@/features/authentication';
 
 const ChangePasswordPage = () => {
   return (
-    <AuthSplitLayout>
+    <AuthSplitLayout showMobileBrand>
       <ChangePasswordForm />
     </AuthSplitLayout>
   );

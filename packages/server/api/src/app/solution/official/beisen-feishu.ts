@@ -268,7 +268,7 @@ function repairWorkflow(): SolutionWorkflow {
     const left = prefixedSteps({ workflow: leaveWorkflow(), prefix: 'left_' })
     const route = routerStep({ name: 'current_status', displayName: '按最新人员状态处理', condition: { operator: 'TEXT_EXACTLY_MATCHES', firstValue: '{{trigger.output.recordInfo.employeeStatus}}', secondValue: '8', caseSensitive: true }, branchName: '离职暂停', fallbackName: '在职开通并同步部门', child: left })
     const trigger = WorkflowTrigger.parse({ name: 'trigger', type: 'CONNECTOR_TRIGGER', displayName: '人员状态补齐', valid: true, lastUpdatedDate: '2026-10-27T00:00:00.000Z', settings: { connectorName: '@fema-ipaas/connector-subflows', connectorVersion: '~0.6.0', triggerName: 'callableWorkflow', input: { mode: 'advanced', exampleData: { sampleData: {} } }, propertySettings: {}, concurrency: { maxConcurrentRuns: 0, orderKeyPath: '{{trigger.recordInfo.jobNumber}}' } }, nextAction: { ...route, children: [left, active] } })
-    return { key: 'repair', name: '按当前人员状态补齐飞书账号', description: '对账补齐前已重新读取北森，按最新人员状态走相同的开通、部门、暂停和通知逻辑。', schemaVersion: null, trigger }
+    return { key: 'repair', name: '按当前人员状态补齐飞书账号', description: '对账规则读取北森后把最新人员状态交给本流程，本流程自身不再读取北森；按该状态走相同的开通、部门、暂停和通知逻辑。', schemaVersion: null, trigger }
 }
 
 function prefixedSteps({ workflow, prefix }: { workflow: SolutionWorkflow, prefix: string }) {

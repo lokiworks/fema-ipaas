@@ -1,6 +1,6 @@
 vi.mock('i18next', () => ({ t: (key: string) => key }));
 
-import { errorExplanation } from '@/app/builder/data-display/error-explanation';
+import { errorExplanation } from '@/lib/error-explanation';
 
 describe('errorExplanation.explain', () => {
   it.each([

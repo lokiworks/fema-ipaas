@@ -1,4 +1,4 @@
-import { EntityId, Permission, SeekPage } from '@fema-ipaas/core-utils'
+import { EntityId, Permission, SeekPage, tryCatch } from '@fema-ipaas/core-utils'
 import { ApplicationEventName, DefaultProjectRole, PrincipalType, ProjectMember, ProjectMemberWithUser } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -27,7 +27,7 @@ export const projectMemberController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/', UpsertMemberRequest, async (request): Promise<ProjectMember> => {
-        await userService(request.log).getOneByIdAndTenantIdOrThrow({ id: request.body.userId, tenantId: request.principal.tenant.id })
+        const target = await userService(request.log).getOneByIdAndTenantIdOrThrow({ id: request.body.userId, tenantId: request.principal.tenant.id })
         const alreadyMember = await projectMemberService(request.log).isMember({ projectId: request.body.projectId, userId: request.body.userId })
         const member = await projectMemberService(request.log).upsert({
             projectId: request.body.projectId,
@@ -36,7 +36,7 @@ export const projectMemberController: FastifyPluginAsyncZod = async (app) => {
         })
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.MEMBER_ADDED,
-            data: { member: { userId: member.userId, role: member.role } },
+            data: { member: { userId: member.userId, role: member.role, email: target.email } },
         })
         if (!alreadyMember) {
             await projectMemberSideEffects(request.log).onMemberAdded({ projectId: member.projectId, userId: member.userId, role: member.role, actorId: request.principal.id })
@@ -49,9 +49,10 @@ export const projectMemberController: FastifyPluginAsyncZod = async (app) => {
             id: request.params.id,
             projectId: request.query.projectId,
         })
+        const { data: removedUser } = await tryCatch(() => userService(request.log).getMetaInformation({ id: removed.userId }))
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.MEMBER_REMOVED,
-            data: { member: { userId: removed.userId, role: removed.role } },
+            data: { member: { userId: removed.userId, role: removed.role, email: removedUser?.email } },
         })
         await reply.status(StatusCodes.NO_CONTENT).send()
     })

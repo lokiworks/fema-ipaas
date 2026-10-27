@@ -68,7 +68,11 @@ export function ComponentHealthTab() {
           <ItemContent>
             <ItemTitle>
               {componentLabel(check.component)}
-              <LevelBadge level={check.level} />
+              {isUpdateCheckUnavailable(check) ? (
+                <Badge variant="outline">{t('Cannot check')}</Badge>
+              ) : (
+                <LevelBadge level={check.level} />
+              )}
             </ItemTitle>
             <ItemDescription>
               {describe({ check, workerCounts })}
@@ -100,6 +104,14 @@ export function ComponentHealthTab() {
         </Item>
       ))}
     </div>
+  );
+}
+
+function isUpdateCheckUnavailable(check: ComponentHealthCheck): boolean {
+  return (
+    check.component === HealthComponent.VERSION &&
+    check.level === ComponentHealthLevel.OK &&
+    check.facts.updateCheckFailed === true
   );
 }
 

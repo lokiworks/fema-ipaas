@@ -25,6 +25,7 @@ import { ConnectorNotAvailableAlert } from '../connector-not-available-alert';
 import { useStepSettingsContext } from '../step-settings-context';
 
 import { ConnectionSelect } from './connection-select';
+import { errorHandlingProps } from './error-handling-props';
 import { TriggerRunSettings } from './trigger-run-settings';
 
 const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
@@ -104,11 +105,13 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
     props: actionPropsWithoutAuth,
     forcedEssentialNames: actionForcedEssentialNames,
     isFilterBuilder: hasFilterBuilderLayout(selectedAction?.propertyGroups),
+    extractErrorHandling: true,
   });
   const triggerSplit = splitProps({
     props: triggerPropsWithoutAuth,
     forcedEssentialNames: triggerForcedEssentialNames,
     isFilterBuilder: hasFilterBuilderLayout(selectedTrigger?.propertyGroups),
+    extractErrorHandling: false,
   });
 
   const hideContinueOnFailure =
@@ -120,6 +123,7 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
       ? (hideContinueOnFailure ? 0 : 1) + (hideRetryOnFailure ? 0 : 1)
       : 0;
 
+  const actionErrorProps = actionSplit.errorHandling;
   const actionAdvancedCount = Object.keys(actionSplit.advanced).length;
   const triggerAdvancedCount = Object.keys(triggerSplit.advanced).length;
 
@@ -207,6 +211,25 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
                     }}
                   ></GenericPropertiesForm>
                 </AdvancedSection>
+              )}
+              {showError && Object.keys(actionErrorProps).length > 0 && (
+                <GenericPropertiesForm
+                  key={`${selectedAction.name}-error-handling`}
+                  prefixValue={'settings.input'}
+                  props={actionErrorProps}
+                  propertySettings={selectedStep.settings.propertySettings}
+                  disabled={props.readonly}
+                  useMentionTextInput={true}
+                  markdownVariables={markdownVariables}
+                  dynamicPropsInfo={{
+                    connectorName: connectorModel.name,
+                    connectorVersion: connectorModel.version,
+                    actionOrTriggerName: selectedAction.name,
+                    placedInside: 'stepSettings',
+                    updateFormSchema,
+                    updatePropertySettingsSchema,
+                  }}
+                ></GenericPropertiesForm>
               )}
               {showError && errorHandlingItemsCount > 0 && (
                 <ActionErrorHandlingForm
@@ -356,21 +379,31 @@ function splitProps({
   props,
   forcedEssentialNames,
   isFilterBuilder,
+  extractErrorHandling,
 }: {
   props: ConnectorPropertyMap;
   forcedEssentialNames: Set<string>;
   isFilterBuilder: boolean;
+  extractErrorHandling: boolean;
 }): {
   essential: ConnectorPropertyMap;
   advanced: ConnectorPropertyMap;
+  errorHandling: ConnectorPropertyMap;
 } {
-  if (isFilterBuilder) {
-    return { essential: props, advanced: {} as ConnectorPropertyMap };
-  }
+  const errorHandling: Record<string, ConnectorProperty> = {};
   const essential: Record<string, ConnectorProperty> = {};
   const advanced: Record<string, ConnectorProperty> = {};
   for (const [name, property] of Object.entries(props)) {
-    if (!forcedEssentialNames.has(name) && isAdvancedProp(property)) {
+    if (
+      extractErrorHandling &&
+      errorHandlingProps.isErrorHandlingName({ name })
+    ) {
+      errorHandling[name] = property;
+    } else if (
+      !isFilterBuilder &&
+      !forcedEssentialNames.has(name) &&
+      isAdvancedProp(property)
+    ) {
       advanced[name] = property;
     } else {
       essential[name] = property;
@@ -379,6 +412,7 @@ function splitProps({
   return {
     essential: essential as ConnectorPropertyMap,
     advanced: advanced as ConnectorPropertyMap,
+    errorHandling: errorHandling as ConnectorPropertyMap,
   };
 }
 

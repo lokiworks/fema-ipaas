@@ -1,5 +1,5 @@
-import { isNil } from '@fema-ipaas/core-utils'
 import { DefaultProjectRole } from '@fema-ipaas/shared'
+import { personName } from '../helper/person-name'
 
 export const projectDirectoryUtils = {
     resolveRole({ userId, ownerId, isTenantAdmin, membershipRole }: ResolveRoleParams): DefaultProjectRole | null {
@@ -12,7 +12,7 @@ export const projectDirectoryUtils = {
         return new Set([ownerId, ...memberUserIds]).size
     },
     displayName({ firstName, lastName, email }: { firstName: string | null, lastName: string | null, email: string | null }): string {
-        const full = [firstName, lastName].filter((part) => !isNil(part) && part.trim().length > 0).join(' ').trim()
+        const full = personName.format({ firstName, lastName })
         return full.length > 0 ? full : email ?? ''
     },
 }

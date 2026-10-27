@@ -18,6 +18,7 @@ import {
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { ExplainedErrorMessage } from '@/components/custom/explained-error-message';
 import { JsonViewer } from '@/components/custom/json-viewer';
 import { Button } from '@/components/ui/button';
 import { StepStatusIcon } from '@/features/executions/components/step-status-icon';
@@ -255,11 +256,14 @@ function ErrorCard({
           code: runLogUiUtils.errorCodeLabel(classified.errorCode),
         })}
       </div>
-      <p className="whitespace-pre-wrap break-words">
-        {classified.message.length > 0
-          ? classified.message
-          : t('The step failed without an error message.')}
-      </p>
+      {classified.message.length > 0 ? (
+        <ExplainedErrorMessage
+          message={classified.message}
+          messageClassName="font-mono text-xs"
+        />
+      ) : (
+        <p>{t('The step failed without an error message.')}</p>
+      )}
       {!isNil(classified.httpStatus) && (
         <span className="text-xs text-muted-foreground">
           {t('HTTP status {status}', { status: classified.httpStatus })}

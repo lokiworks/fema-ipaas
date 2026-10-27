@@ -46,7 +46,15 @@ function useRemoveMember() {
   });
 }
 
+function useInvalidateMembers() {
+  const queryClient = useQueryClient();
+  const projectId = authenticationSession.getProjectId();
+  return () =>
+    queryClient.invalidateQueries({ queryKey: membersQueryKey(projectId) });
+}
+
 export const projectMembersHooks = {
+  useInvalidateMembers,
   useMembers,
   useUpdateMemberRole,
   useRemoveMember,

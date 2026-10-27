@@ -258,6 +258,7 @@ function MappingTableEditor({
               entityName={table.name}
               targetName={table.name}
               isDanger
+              showToast
               mutationFn={async () => {
                 await deleteTable(table.id);
                 onDeleted();

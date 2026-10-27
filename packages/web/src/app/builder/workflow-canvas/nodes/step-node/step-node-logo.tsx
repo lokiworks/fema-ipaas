@@ -2,6 +2,8 @@ import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { ImageWithColorBackground } from '@/components/custom/image-with-color-background';
 import { cn } from '@/lib/utils';
 
+import { workflowScreenshotUtils } from '../../utils/workflow-screenshot-utils';
+
 const StepNodeLogo = ({
   isSkipped,
   logoUrl,
@@ -21,6 +23,10 @@ const StepNodeLogo = ({
   const isHorizontal = canvasOrientation === 'horizontal';
   return (
     <div
+      {...{
+        [workflowScreenshotUtils.SELECTED_STEP_ATTRIBUTE]:
+          !isHorizontal && isSelected ? 'true' : 'false',
+      }}
       className={cn(
         'flex shrink-0 items-center justify-center rounded-xl transition-shadow',
         {

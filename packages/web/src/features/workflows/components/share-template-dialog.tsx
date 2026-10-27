@@ -22,6 +22,7 @@ import { templatesApi } from '@/features/templates/api/templates-api';
 import { workflowsApi } from '@/features/workflows/api/workflows-api';
 import { userHooks } from '@/hooks/user-hooks';
 import { useNewWindow } from '@/lib/navigation-utils';
+import { personName } from '@/lib/person-name';
 
 const ShareTemplateSchema = z.object({
   description: z.string(),
@@ -53,7 +54,10 @@ const ShareTemplateDialog: React.FC<{
       });
 
       const author = currentUser
-        ? `${currentUser.firstName} ${currentUser.lastName}`
+        ? personName.format({
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
+          })
         : 'Unknown User';
 
       const workflowTemplate = await templatesApi.create({

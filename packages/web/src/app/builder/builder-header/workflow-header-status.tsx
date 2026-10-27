@@ -67,15 +67,8 @@ export function WorkflowStateTags() {
     draftChanged,
   });
 
-  const isUpToDate =
-    !project.releasesEnabled &&
-    hasDeployment &&
-    workflowVersion.state === WorkflowVersionState.DRAFT &&
-    draftChanged === false;
-
   return (
     <div className="flex shrink-0 items-center gap-1.5">
-      {isUpToDate && <StateTag tone="success">{t('Published')}</StateTag>}
       {hasUnpublishedChanges && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -186,7 +179,7 @@ function StateTag({
   tone,
   children,
 }: {
-  tone: 'primary' | 'warning' | 'info' | 'success' | 'outline';
+  tone: 'primary' | 'warning' | 'info' | 'outline';
   children: React.ReactNode;
 }) {
   return (
@@ -195,7 +188,6 @@ function StateTag({
         'shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] leading-4',
         tone === 'primary' && 'border-primary/40 bg-primary/10 text-primary',
         tone === 'warning' && 'border-warning/40 bg-warning/10 text-warning',
-        tone === 'success' && 'border-success/40 bg-success/10 text-success',
         tone === 'info' && 'border-blue-500/40 bg-blue-500/10 text-blue-600',
         tone === 'outline' && 'border-border text-muted-foreground',
       )}

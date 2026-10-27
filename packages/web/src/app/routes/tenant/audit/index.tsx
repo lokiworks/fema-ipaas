@@ -92,9 +92,26 @@ export default function AuditLogPage() {
       ),
     [data?.data],
   );
-  const workflowNames = auditEventsHooks.useWorkflowNames({
+  const fetchedWorkflowNames = auditEventsHooks.useWorkflowNames({
     projectIds: projectIdsNeedingNames,
   });
+  const workflowNames = useMemo(
+    () => ({
+      ...auditEventUtils.learnWorkflowNames({ events: data?.data ?? [] }),
+      ...fetchedWorkflowNames,
+    }),
+    [data?.data, fetchedWorkflowNames],
+  );
+  const userNames = useMemo(
+    () =>
+      Object.fromEntries(
+        (membersData?.members ?? []).map((member) => [
+          member.id,
+          tenantAccessUtils.memberDisplayName(member),
+        ]),
+      ),
+    [membersData?.members],
+  );
 
   const exportCsv = async () => {
     setExporting(true);
@@ -113,7 +130,7 @@ export default function AuditLogPage() {
           dayjs(event.created).format('YYYY-MM-DD HH:mm:ss'),
           event.userEmail ?? '',
           auditEventUtils.actionLabel(event.action),
-          auditEventUtils.summarize({ event, workflowNames }),
+          auditEventUtils.summarize({ event, workflowNames, userNames }),
           projectLabelOf({ event, projectNameById }),
           event.ip ? displayIp(event.ip) : '',
         ]),
@@ -261,6 +278,7 @@ export default function AuditLogPage() {
                   key={event.id}
                   event={event}
                   workflowNames={workflowNames}
+                  userNames={userNames}
                   projectNameById={projectNameById}
                 />
               ))}
@@ -293,13 +311,19 @@ export default function AuditLogPage() {
 function AuditRow({
   event,
   workflowNames,
+  userNames,
   projectNameById,
 }: {
   event: ApplicationEvent;
   workflowNames: Record<string, string>;
+  userNames: Record<string, string>;
   projectNameById: Map<string, string>;
 }) {
-  const summary = auditEventUtils.summarize({ event, workflowNames });
+  const summary = auditEventUtils.summarize({
+    event,
+    workflowNames,
+    userNames,
+  });
   const projectLabel = projectLabelOf({ event, projectNameById });
   const runId = auditEventUtils.runIdOf(event);
   const runPath =
@@ -352,6 +376,9 @@ function projectLabelOf({
   event: ApplicationEvent;
   projectNameById: Map<string, string>;
 }): string {
+  if (auditEventUtils.isPlatformLevel(event.action)) {
+    return t('Platform-level');
+  }
   if (event.projectDisplayName) {
     return event.projectDisplayName;
   }

@@ -15,8 +15,9 @@ import {
   useBuilderStore,
 } from '@/app/builder/builder-hooks';
 import { LeftSideBarType } from '@/app/builder/types';
-import { executionUtils } from '@/features/executions';
 import { useAuthorization } from '@/hooks/authorization-hooks';
+
+import { debugRunProgressUtils } from './debug-run-progress-utils';
 
 export function useDebugRunProgress({
   returnsToEditing,
@@ -77,27 +78,23 @@ export function useDebugRunProgress({
     },
     onUpdateRun: (response: UpdateRunProgressRequest) => {
       assertNotNullOrUndefined(response.execution, 'execution');
-      const currentRun = builderStore.getState().run;
-      const previousSteps = currentRun?.steps ?? {};
-      const startTime = response.execution.startTime ?? currentRun?.startTime;
-      const steps = isNil(response.step)
-        ? previousSteps
-        : executionUtils.updateRunSteps(
-            previousSteps,
-            response.step.name,
-            response.step.path,
-            response.step.output,
-          );
-      const nextRun = { ...response.execution, startTime, steps };
+      if (
+        debugRunProgressUtils.isAfterReturnToEditing({
+          returnedRunId: finishedRunId.current,
+          runId: response.execution.id,
+        })
+      ) {
+        return;
+      }
+      const nextRun = debugRunProgressUtils.mergeProgress({
+        response,
+        currentRun: builderStore.getState().run,
+        lastRun: lastRun.current,
+      });
       lastRun.current = nextRun;
       setRun(nextRun, workflowVersion);
       const succeeded = response.execution.status === ExecutionStatus.SUCCEEDED;
-      if (
-        returnsToEditing &&
-        isDraft &&
-        succeeded &&
-        finishedRunId.current !== response.execution.id
-      ) {
+      if (returnsToEditing && isDraft && succeeded) {
         finishedRunId.current = response.execution.id;
         returnToEditing();
       }

@@ -26,6 +26,7 @@ import { templatesApi } from '@/features/templates';
 import { templateUtils } from '@/features/workflows';
 import { userHooks } from '@/hooks/user-hooks';
 import { api } from '@/lib/api';
+import { personName } from '@/lib/person-name';
 
 import { Textarea } from '../../../../../components/ui/textarea';
 
@@ -69,7 +70,7 @@ export const CreateTemplateDialog = ({
     mutationFn: () => {
       const formValue = form.getValues();
       const author = currentUser
-        ? `${currentUser.firstName} ${currentUser.lastName}`
+        ? personName.format(currentUser)
         : 'Unknown User';
 
       const workflowTemplate: WorkflowVersionTemplate = {

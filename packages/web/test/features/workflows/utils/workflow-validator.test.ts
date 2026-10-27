@@ -499,8 +499,9 @@ describe('workflowValidator', () => {
       'UNKNOWN_TARGET',
     ]);
     expect(
-      issues.find((found) => found.params['mappingCode'] === 'REQUIRED_UNMAPPED')
-        ?.params['target'],
+      issues.find(
+        (found) => found.params['mappingCode'] === 'REQUIRED_UNMAPPED',
+      )?.params['target'],
     ).toBe('mobile');
   });
 
@@ -614,6 +615,57 @@ describe('untested write steps', () => {
         debugVerification: null,
       }),
     ).toEqual([ValidationCode.WRITE_NOT_TESTED]);
+  });
+});
+
+describe('HTTP request steps and write warnings', () => {
+  const httpSpec: ConnectorSpec = {
+    status: ConnectorSpecStatus.LOADED,
+    requiresAuth: false,
+    actions: {
+      send_request: {
+        requiresAuth: false,
+        classification: 'WRITE',
+        props: [],
+      },
+    },
+    triggers: {},
+  };
+  const httpTrigger = (method: string) =>
+    webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        connector: '@fema-ipaas/connector-http',
+        actionName: 'send_request',
+        input: { method, url: 'https://example.com' },
+      }),
+    });
+  const httpContext = (method: string) =>
+    context(httpTrigger(method), {
+      connectors: { '@fema-ipaas/connector-http': httpSpec },
+    });
+
+  it('treats GET and HEAD requests as reads', () => {
+    expect(codes(httpContext('GET'))).toEqual([]);
+    expect(codes(httpContext('head'))).toEqual([]);
+    expect(
+      workflowValidator.writeSteps({
+        trigger: httpTrigger('GET'),
+        connectors: { '@fema-ipaas/connector-http': httpSpec },
+      }),
+    ).toEqual([]);
+  });
+
+  it('keeps POST requests as writes', () => {
+    expect(codes(httpContext('POST'))).toEqual([
+      ValidationCode.WRITE_NOT_TESTED,
+    ]);
+    expect(
+      workflowValidator.writeSteps({
+        trigger: httpTrigger('POST'),
+        connectors: { '@fema-ipaas/connector-http': httpSpec },
+      }).length,
+    ).toBe(1);
   });
 });
 

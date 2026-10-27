@@ -22,6 +22,8 @@ import {
   workflowReferenceUtil,
 } from '@fema-ipaas/shared';
 
+import { stepClassification } from './step-classification';
+
 function validate(context: ValidationContext): ValidationResult {
   const steps = collectSteps(context.trigger);
   const stepNames = new Set(steps.map(({ step }) => step.name));
@@ -69,8 +71,13 @@ function writeSteps({
       if (connector?.status !== ConnectorSpecStatus.LOADED) {
         return [];
       }
-      const classification =
-        connector.actions[step.settings.actionName ?? '']?.classification;
+      const classification = stepClassification.effective({
+        connectorName: step.settings.connectorName,
+        actionName: step.settings.actionName,
+        input: step.settings.input,
+        classification:
+          connector.actions[step.settings.actionName ?? '']?.classification,
+      });
       return classification === WRITE_CLASSIFICATION ||
         classification === DESTRUCTIVE_CLASSIFICATION
         ? [
@@ -231,8 +238,13 @@ function untestedWriteIssues({
   if (connector?.status !== ConnectorSpecStatus.LOADED) {
     return [];
   }
-  const classification =
-    connector.actions[step.settings.actionName ?? '']?.classification;
+  const classification = stepClassification.effective({
+    connectorName: step.settings.connectorName,
+    actionName: step.settings.actionName,
+    input: step.settings.input,
+    classification:
+      connector.actions[step.settings.actionName ?? '']?.classification,
+  });
   if (
     classification !== WRITE_CLASSIFICATION &&
     classification !== DESTRUCTIVE_CLASSIFICATION

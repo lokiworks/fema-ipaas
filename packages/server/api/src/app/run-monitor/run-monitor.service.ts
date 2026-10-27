@@ -133,8 +133,9 @@ async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
         databaseConnection().query(
             `SELECT COUNT(*) AS failures, COUNT(DISTINCT e."issueId") AS issues FROM "execution" e
             WHERE ${SCOPE_SQL} AND e."issueId" IS NOT NULL AND e."rerunOfExecutionId" IS NULL
+                AND NOT (e.status = ANY($5::varchar[]))
                 AND e.created >= $3 AND e.created <= $4`,
-            [...scopeParams(scope), ...window],
+            [...scopeParams(scope), ...window, runMonitorUtils.nonFailureStatuses],
         ),
         databaseConnection().query(
             `SELECT ev.kind AS kind, ev."connectorName" AS "connectorName", ev."limitUnit" AS "limitUnit",

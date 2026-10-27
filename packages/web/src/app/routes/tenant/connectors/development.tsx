@@ -129,7 +129,7 @@ export default function ConnectorDevelopmentPage() {
             <EmptyMedia variant="icon">
               <TerminalIcon />
             </EmptyMedia>
-            <EmptyTitle>{t('Hi, create your first connector')}</EmptyTitle>
+            <EmptyTitle>{t('Create your first connector')}</EmptyTitle>
             <EmptyDescription>
               {t(
                 'Wrap an internal system or a service without an official connector so it can be used in workflows just like an official connector.',

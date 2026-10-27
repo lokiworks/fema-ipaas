@@ -50,6 +50,7 @@ import { CodeSettings } from './code-settings';
 import { ComponentSettings } from './component-settings';
 import { ConnectorSettings } from './connector-settings';
 import EditableStepName from './editable-step-name';
+import { errorTabVisibility } from './error-tab-visibility';
 import { JoinEdgesSection } from './join-edges-section';
 import { joinEdgesVisibility } from './join-edges-visibility';
 import { LoopsSettings } from './loops-settings';
@@ -228,6 +229,19 @@ const StepSettingsContainer = () => {
       modifiedStep.type === WorkflowActionType.COMPONENT ||
       (modifiedStep.type === WorkflowActionType.CONNECTOR && runAgentStep));
 
+  const connectorActionName =
+    modifiedStep.type === WorkflowActionType.CONNECTOR
+      ? modifiedStep.settings.actionName
+      : undefined;
+  const errorTabVisible = errorTabVisibility.shouldShow({
+    stepType: modifiedStep.type,
+    isModelLoading: isNil(connectorModel),
+    connectorAction: isNil(connectorActionName)
+      ? undefined
+      : connectorModel?.actions[connectorActionName],
+    showActionErrorHandlingForm,
+  });
+
   useEffect(() => {
     //RHF doesn't automatically trigger validation when the form is rendered, so we need to trigger it manually
     form.trigger();
@@ -302,7 +316,11 @@ const StepSettingsContainer = () => {
             {stepMetadata && (
               <StepOperationSummary
                 step={modifiedStep}
-                connectorDisplayName={t('Core Components')}
+                connectorDisplayName={
+                  modifiedStep.type === WorkflowActionType.COMPONENT
+                    ? t('Core Components')
+                    : t('Utility')
+                }
                 logoUrl={stepMetadata.logoUrl}
                 operationDisplayName={stepMetadata.displayName}
                 readonly={readonly}
@@ -347,7 +365,14 @@ const StepSettingsContainer = () => {
 
   const settingsForm = (
     <Tabs
-      value={isManualTrigger ? 'action' : stepPanelTab ?? initialTab}
+      value={
+        isManualTrigger
+          ? 'action'
+          : errorTabVisibility.resolveActiveTab({
+              requestedTab: stepPanelTab ?? initialTab,
+              errorTabVisible,
+            })
+      }
       onValueChange={setStepPanelTab}
       className="flex h-full w-full flex-col"
     >
@@ -367,14 +392,16 @@ const StepSettingsContainer = () => {
               />
             </TabsTrigger>
             <TabsTrigger value="output">{t('Output')}</TabsTrigger>
-            <TabsTrigger value="error" className="gap-1.5">
-              {modifiedStep.type === WorkflowTriggerType.CONNECTOR
-                ? t('Run settings')
-                : t('Error Handling')}
-              <TabErrorDot
-                show={tabsWithErrors.includes(ValidationTab.ERROR)}
-              />
-            </TabsTrigger>
+            {errorTabVisible && (
+              <TabsTrigger value="error" className="gap-1.5">
+                {modifiedStep.type === WorkflowTriggerType.CONNECTOR
+                  ? t('Run settings')
+                  : t('Error Handling')}
+                <TabErrorDot
+                  show={tabsWithErrors.includes(ValidationTab.ERROR)}
+                />
+              </TabsTrigger>
+            )}
           </>
         )}
       </TabsList>
@@ -412,7 +439,7 @@ const StepSettingsContainer = () => {
                   saving={saving}
                 />
               </div>
-              <div className="shrink-0 border-t p-2">
+              <div className="shrink-0 border-t p-2 empty:hidden">
                 <TestStepCTAButton />
               </div>
             </>

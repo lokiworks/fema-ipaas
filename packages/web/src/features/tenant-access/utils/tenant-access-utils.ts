@@ -12,6 +12,8 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
+import { personName } from '@/lib/person-name';
+
 function moduleLabel(module: TenantModule): string {
   switch (module) {
     case TenantModule.BUSINESS_INTEGRATION:
@@ -235,8 +237,10 @@ function memberDisplayName(member: {
   lastName: string;
   email: string;
 }): string {
-  const name = `${member.firstName} ${member.lastName}`.trim();
-  return name.length > 0 ? name : member.email;
+  return personName.formatWithFallback({
+    ...member,
+    fallback: member.email,
+  });
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

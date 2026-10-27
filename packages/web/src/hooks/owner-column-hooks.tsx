@@ -11,6 +11,7 @@ import {
 } from '@/components/custom/data-table';
 import { DataTableColumnHeader } from '@/components/custom/data-table/data-table-column-header';
 import { useEmbedding } from '@/components/providers/embed-provider';
+import { personName } from '@/lib/person-name';
 
 import { UserBadge } from '../components/custom/user-badge';
 
@@ -63,7 +64,7 @@ function useOwnerColumnFilter<
   }
 
   const ownersOptions = owners?.map((owner) => ({
-    label: `${owner.firstName} ${owner.lastName} (${owner.email})`,
+    label: `${personName.format(owner)} (${owner.email})`,
     value: owner.email,
   }));
   const ownerColumnFilter: DataTableFilters<keyof T & string> = {

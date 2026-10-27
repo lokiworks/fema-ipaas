@@ -5,6 +5,7 @@ import { authenticationUtils } from '../authentication/authentication-utils'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
+import { auditEventScope } from './audit-event-scope'
 import { networkUtils } from './network-utils'
 import { rejectedPromiseHandler } from './promise-handler'
 import { system } from './system/system'
@@ -70,7 +71,8 @@ async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, para
     if (isNil(meta)) {
         return undefined
     }
-    const project = isNil(meta.projectId) ? undefined : await projectService(log).getOne(meta.projectId)
+    const projectId = auditEventScope.projectIdFor({ action: params.action, projectId: meta.projectId })
+    const project = isNil(projectId) ? undefined : await projectService(log).getOne(projectId)
     const userId = meta.userId ?? project?.ownerId
     const { data: user } = await tryCatch(async () => isNil(userId) ? undefined : userService(log).getOneOrFail({ id: userId }))
     const identity = isNil(user?.identityId) ? undefined : await userIdentityService(log).getOneOrFail({ id: user.identityId })
@@ -80,7 +82,7 @@ async function enrichAuditEventParam(requestOrMeta: ApplicationEventSource, para
         updated: new Date().toISOString(),
         userId,
         userEmail: identity?.email,
-        projectId: meta.projectId,
+        projectId,
         projectDisplayName: project?.displayName,
         tenantId: meta.tenantId,
         ip: meta.ip,

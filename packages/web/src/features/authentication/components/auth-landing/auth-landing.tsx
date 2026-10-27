@@ -4,6 +4,7 @@ import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
+import { FullLogo } from '@/components/custom/full-logo';
 import { SetupWizard } from '@/features/setup-wizard';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -65,14 +66,25 @@ export function AuthLanding({ initialMode }: AuthLandingProps) {
   );
 }
 
-export function AuthSplitLayout({ children }: { children: React.ReactNode }) {
+export function AuthSplitLayout({
+  children,
+  showMobileBrand = false,
+}: {
+  children: React.ReactNode;
+  showMobileBrand?: boolean;
+}) {
   return (
     <div className="relative grid min-h-dvh w-full grid-cols-1 bg-background lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <div className="absolute right-4 top-4 z-10">
         <AuthThemeSwitch />
       </div>
       <BrandPanel />
-      <main className="flex flex-col items-center justify-center gap-4 overflow-y-auto p-4 lg:flex-row lg:items-start lg:justify-start lg:p-16">
+      <main className="flex flex-col items-center justify-center gap-4 overflow-y-auto p-4 lg:p-16">
+        {showMobileBrand && (
+          <div className="lg:hidden">
+            <FullLogo className="h-7" />
+          </div>
+        )}
         {children}
       </main>
     </div>

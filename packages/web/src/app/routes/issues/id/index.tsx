@@ -17,9 +17,10 @@ import {
   RotateCcw,
   Sparkles,
 } from 'lucide-react';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import { ExplainedErrorMessage } from '@/components/custom/explained-error-message';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { ResourceNotFound } from '@/components/custom/resource-not-found';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
@@ -43,6 +44,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { executionUtils } from '@/features/executions';
 import {
   IssueReplayDialog,
@@ -81,6 +87,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
   const canReplay = checkAccess(Permission.WRITE_RUN);
   const { assignable, nameOf } = issueMembersHooks.useIssueMembers();
   const { mutate: update } = issuesHooks.useUpdateIssue(issue.id);
+  const workflowStopped = issuesHooks.useWorkflowStopped(issue.workflowId);
   const [replayStrategy, setReplayStrategy] =
     useState<WorkflowRetryStrategy | null>(null);
   const muted =
@@ -230,6 +237,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
           <InsightCard
             issue={issue}
             canReplay={canReplay}
+            workflowStopped={workflowStopped}
             canWrite={canWrite}
             onReplay={setReplayStrategy}
             onIgnore={() => update({ status: IssueStatus.IGNORED })}
@@ -252,6 +260,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
                 <AffectedRunsCard
                   issueId={issue.id}
                   canReplay={canReplay}
+                  workflowStopped={workflowStopped}
                   onReplay={setReplayStrategy}
                 />
               </>
@@ -354,12 +363,14 @@ function IssueBanners({
 function InsightCard({
   issue,
   canReplay,
+  workflowStopped,
   canWrite,
   onReplay,
   onIgnore,
 }: {
   issue: IssueWithSeverity;
   canReplay: boolean;
+  workflowStopped: boolean;
   canWrite: boolean;
   onReplay: (strategy: WorkflowRetryStrategy) => void;
   onIgnore: () => void;
@@ -394,11 +405,11 @@ function InsightCard({
       },
       [IssueFixKind.REPLAY_FROM_FAILED_STEP]: {
         run: () => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP),
-        allowed: canReplay,
+        allowed: canReplay && !workflowStopped,
       },
       [IssueFixKind.REPLAY_FULL]: {
         run: () => onReplay(WorkflowRetryStrategy.ON_LATEST_VERSION),
-        allowed: canReplay,
+        allowed: canReplay && !workflowStopped,
       },
       [IssueFixKind.OPEN_RUN]: {
         run: () =>
@@ -451,30 +462,40 @@ function InsightCard({
                     workflows: issue.affectedWorkflows,
                   })}
             </p>
-            <div className="rounded-md bg-muted/50 p-3 font-mono text-xs break-words">
-              {issueUiUtils.messageText(issue.message)}
+            <div className="rounded-md bg-muted/50 p-3 text-sm break-words">
+              <ExplainedErrorMessage
+                message={issueUiUtils.messageText(issue.message)}
+                messageClassName="font-mono text-xs"
+              />
             </div>
             <div className="flex flex-wrap gap-2">
               {insight.fixes.map((fix) => (
-                <Button
+                <DisabledReasonTooltip
                   key={fix.kind}
-                  size="sm"
-                  variant={
-                    fix.kind === insight.fixes[0].kind ? 'default' : 'outline'
-                  }
-                  disabled={!!fix.disabledReason || !handlers[fix.kind].allowed}
-                  title={
+                  reason={
                     fix.disabledReason
                       ? issueUiUtils.replayReasonLabel(
                           fix.disabledReason,
                           insight.blockedUntil,
                         )
-                      : undefined
+                      : workflowStopped && REPLAY_FIXES.includes(fix.kind)
+                      ? t('The workflow is stopped. Start it before rerunning')
+                      : null
                   }
-                  onClick={handlers[fix.kind].run}
                 >
-                  {issueUiUtils.fixLabel(fix.kind)}
-                </Button>
+                  <Button
+                    size="sm"
+                    variant={
+                      fix.kind === insight.fixes[0].kind ? 'default' : 'outline'
+                    }
+                    disabled={
+                      !!fix.disabledReason || !handlers[fix.kind].allowed
+                    }
+                    onClick={handlers[fix.kind].run}
+                  >
+                    {issueUiUtils.fixLabel(fix.kind)}
+                  </Button>
+                </DisabledReasonTooltip>
               ))}
             </div>
             {insight.fixes.some((fix) => fix.disabledReason) && (
@@ -492,6 +513,26 @@ function InsightCard({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function DisabledReasonTooltip({
+  reason,
+  children,
+}: {
+  reason: string | null;
+  children: ReactNode;
+}) {
+  if (reason === null) {
+    return children;
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span tabIndex={0}>{children}</span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-64">{reason}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -599,10 +640,12 @@ function TrendCard({ issueId }: { issueId: string }) {
 function AffectedRunsCard({
   issueId,
   canReplay,
+  workflowStopped,
   onReplay,
 }: {
   issueId: string;
   canReplay: boolean;
+  workflowStopped: boolean;
   onReplay: (strategy: WorkflowRetryStrategy) => void;
 }) {
   const [cursor, setCursor] = useState<string | undefined>(undefined);
@@ -615,15 +658,23 @@ function AffectedRunsCard({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{t('Affected runs')}</CardTitle>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!canReplay}
-          onClick={() => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP)}
+        <DisabledReasonTooltip
+          reason={
+            workflowStopped
+              ? t('The workflow is stopped. Start it before rerunning')
+              : null
+          }
         >
-          <RotateCcw className="size-4 mr-1" />
-          {t('Rerun from the failed step')}
-        </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!canReplay || workflowStopped}
+            onClick={() => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP)}
+          >
+            <RotateCcw className="size-4 mr-1" />
+            {t('Rerun from the failed step')}
+          </Button>
+        </DisabledReasonTooltip>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <ul className="flex flex-col divide-y">
@@ -861,6 +912,10 @@ const FAILURE_ALERT_KINDS: AlertRecordKind[] = [
   AlertRecordKind.NEW,
   AlertRecordKind.REOPENED,
   AlertRecordKind.STILL_FAILING,
+];
+const REPLAY_FIXES: IssueFixKind[] = [
+  IssueFixKind.REPLAY_FROM_FAILED_STEP,
+  IssueFixKind.REPLAY_FULL,
 ];
 const RUNS_PAGE_SIZE = 8;
 const RUN_SHORT_ID_LENGTH = 6;

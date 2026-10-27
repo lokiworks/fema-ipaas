@@ -27,6 +27,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
+import { useIsNarrowDesktop } from '@/hooks/use-mobile';
 import { useTimeAgo } from '@/hooks/use-time-ago';
 
 import { AddWorkerDialog } from './add-worker-dialog';
@@ -34,6 +35,7 @@ import { AddWorkerDialog } from './add-worker-dialog';
 export function NodesTab() {
   const { data: fleet, isLoading } = tenantAccessHooks.useWorkerFleet();
   const [addOpen, setAddOpen] = useState(false);
+  const compact = useIsNarrowDesktop();
   const nodes = tenantAccessUtils.dedupeWorkerNodes(fleet?.nodes ?? []);
   const online = nodes.filter(
     (node) => node.status === WorkerNodeStatus.ONLINE,
@@ -73,15 +75,17 @@ export function NodesTab() {
       {isLoading ? (
         <Skeleton className="h-48 w-full" />
       ) : (
-        <Table className="min-w-[48rem]">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead>{t('Worker')}</TableHead>
-              <TableHead className="w-28">{t('Status')}</TableHead>
-              <TableHead className="w-32">{t('Version')}</TableHead>
-              <TableHead className="w-40">{t('Labels')}</TableHead>
-              <TableHead className="w-28">{t('Busy / concurrency')}</TableHead>
-              <TableHead className="w-28">{t('CPU / memory')}</TableHead>
+              <TableHead className="w-24">{t('Status')}</TableHead>
+              <TableHead className="w-24">{t('Version')}</TableHead>
+              {!compact && (
+                <TableHead className="w-40">{t('Labels')}</TableHead>
+              )}
+              <TableHead className="w-24">{t('Busy / concurrency')}</TableHead>
+              <TableHead className="w-24">{t('CPU / memory')}</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -100,6 +104,7 @@ export function NodesTab() {
                 key={node.id}
                 node={node}
                 appVersion={fleet?.appVersion ?? ''}
+                compact={compact}
               />
             ))}
           </TableBody>
@@ -114,12 +119,30 @@ export function NodesTab() {
   );
 }
 
+function NodeLabels({ labels }: { labels: string[] }) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {labels.length === 0 ? (
+        <span className="text-muted-foreground">—</span>
+      ) : (
+        labels.map((label) => (
+          <Badge key={label} variant="outline">
+            {label}
+          </Badge>
+        ))
+      )}
+    </div>
+  );
+}
+
 function NodeRow({
   node,
   appVersion,
+  compact,
 }: {
   node: WorkerNode;
   appVersion: string;
+  compact: boolean;
 }) {
   const heartbeat = useTimeAgo(new Date(node.lastHeartbeatAt));
   const {
@@ -137,6 +160,9 @@ function NodeRow({
             {t('Last heartbeat {time}', { time: heartbeat })}
             {node.workerGroupId && ` · ${node.workerGroupId}`}
           </span>
+          {compact && node.labels.length > 0 && (
+            <NodeLabels labels={node.labels} />
+          )}
         </div>
       </TableCell>
       <TableCell>
@@ -172,19 +198,11 @@ function NodeRow({
           )}
         </span>
       </TableCell>
-      <TableCell>
-        <div className="flex flex-wrap gap-1">
-          {node.labels.length === 0 ? (
-            <span className="text-muted-foreground">—</span>
-          ) : (
-            node.labels.map((label) => (
-              <Badge key={label} variant="outline">
-                {label}
-              </Badge>
-            ))
-          )}
-        </div>
-      </TableCell>
+      {!compact && (
+        <TableCell>
+          <NodeLabels labels={node.labels} />
+        </TableCell>
+      )}
       <TableCell>
         {offline ? '—' : `${node.busySandboxes} / ${node.concurrency}`}
       </TableCell>

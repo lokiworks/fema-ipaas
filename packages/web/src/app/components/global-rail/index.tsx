@@ -157,14 +157,14 @@ function buildItems({
         !path.endsWith('/connections') &&
         !MCP_MODULE_PATTERN.test(path) &&
         !PROJECT_ISSUES_PATTERN.test(path) &&
-        !PROJECT_RUNS_PATTERN.test(path),
+        !PROJECT_RUN_LIST_PATTERN.test(path),
     },
     {
       to: '/logs',
       label: t('Logs'),
       icon: ScrollTextIcon,
       isActive: (path) =>
-        path.startsWith('/logs') || PROJECT_RUNS_PATTERN.test(path),
+        path.startsWith('/logs') || PROJECT_RUN_LIST_PATTERN.test(path),
     },
     {
       to: '/issue-center',
@@ -330,7 +330,7 @@ function currentModuleKeyOf(pathname: string): ModuleEntry['key'] {
 const CONNECTORS_MODULE_PREFIX = '/tenant/connectors';
 const MCP_MODULE_PATTERN = /^\/projects\/[^/]+\/mcp-services/;
 const PROJECT_ISSUES_PATTERN = /^\/projects\/[^/]+\/issues(\/|$)/;
-const PROJECT_RUNS_PATTERN = /^\/projects\/[^/]+\/runs(\/|$)/;
+const PROJECT_RUN_LIST_PATTERN = /^\/projects\/[^/]+\/runs\/?$/;
 
 type RailItem = {
   to: string;

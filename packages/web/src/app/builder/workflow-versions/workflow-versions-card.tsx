@@ -40,6 +40,7 @@ import { VersionReleaseInfo } from '@/features/releases';
 import { WorkflowVersionStateDot, workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { personName } from '@/lib/person-name';
 
 import { OverwriteDraftDialog } from './overwrite-draft-dialog';
 import { RollbackVersionDialog } from './rollback-version-dialog';
@@ -89,11 +90,10 @@ const WorkflowVersionDetailsCard = React.memo(
           <UserAvatar
             size={45}
             withoutBorder={true}
-            name={
-              workflowVersion.updatedByUser.firstName +
-              ' ' +
-              workflowVersion.updatedByUser.lastName
-            }
+            name={personName.format({
+              firstName: workflowVersion.updatedByUser.firstName,
+              lastName: workflowVersion.updatedByUser.lastName,
+            })}
             email={workflowVersion.updatedByUser.email}
           />
         )}
@@ -254,7 +254,10 @@ function VersionPublisher({
     return editor ? (
       <p className="text-xs text-muted-foreground">
         {t('Last edited by {name}', {
-          name: `${editor.firstName} ${editor.lastName}`.trim(),
+          name: personName.format({
+            firstName: editor.firstName,
+            lastName: editor.lastName,
+          }),
         })}
       </p>
     ) : null;

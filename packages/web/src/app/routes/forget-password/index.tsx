@@ -2,7 +2,7 @@ import { AuthSplitLayout, ResetPasswordForm } from '@/features/authentication';
 
 const ResetPasswordPage = () => {
   return (
-    <AuthSplitLayout>
+    <AuthSplitLayout showMobileBrand>
       <ResetPasswordForm />
     </AuthSplitLayout>
   );

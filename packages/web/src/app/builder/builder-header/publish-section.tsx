@@ -172,19 +172,21 @@ function SingleEnvironmentPublishSection({
     !isNil(workflow.publishedVersionId) &&
     workflow.publishedVersionId === workflowVersion.id;
 
+  const isBusy = isPublishing || isDiscardingChanges || isSaving;
+  const isUpToDateWithLive =
+    isNil(run) &&
+    !isNil(workflow.publishedVersionId) &&
+    !isBusy &&
+    (isViewingPublishedVersion || hasNoChanges);
+
+  if (isUpToDateWithLive) {
+    return <PublishedIndicator />;
+  }
+
   if (!canPublish) {
-    if (isNil(run) && isViewingPublishedVersion) {
-      return (
-        <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
-          <CircleCheck className="size-3.5 text-success" />
-          {t('Published')}
-        </span>
-      );
-    }
     return null;
   }
 
-  const isBusy = isPublishing || isDiscardingChanges || isSaving;
   const statusText = pickStatusText({
     isDiscardingChanges,
     isPublishing,
@@ -267,6 +269,15 @@ function SingleEnvironmentPublishSection({
         onConfirm={publish}
       />
     </div>
+  );
+}
+
+function PublishedIndicator() {
+  return (
+    <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+      <CircleCheck className="size-3.5 text-success" />
+      {t('Published')}
+    </span>
   );
 }
 

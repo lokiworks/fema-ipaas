@@ -1,7 +1,11 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 
-import { ApplicationEvent, ApplicationEventName } from '@fema-ipaas/shared';
+import {
+  ApplicationEvent,
+  ApplicationEventName,
+  WorkflowCreatedEvent,
+} from '@fema-ipaas/shared';
 import i18n from 'i18next';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -65,5 +69,139 @@ describe('auditEventUtils.summarize for failed sign-ins', () => {
         event: signInFailed('OIDC: STATE_MISMATCH - expired'),
       }),
     ).toBe('a@corp.test · OIDC: STATE_MISMATCH - expired');
+  });
+});
+
+function baseEvent() {
+  return {
+    id: 'e1',
+    tenantId: 't1',
+    created: '2025-06-15T12:00:00Z',
+    updated: '2025-06-15T12:00:00Z',
+    ip: '127.0.0.1',
+  };
+}
+
+function finishedRun(status: string): ApplicationEvent {
+  return {
+    ...baseEvent(),
+    action: ApplicationEventName.EXECUTION_FINISHED,
+    data: {
+      execution: {
+        id: 'abcdef123',
+        workflowId: 'w1',
+        workflowVersionId: 'v1',
+        environment: 'PRODUCTION',
+        workflowDisplayName: '同步人员',
+        status,
+      },
+    },
+  };
+}
+
+describe('auditEventUtils.summarize in Chinese', () => {
+  beforeAll(async () => {
+    const zh = JSON.parse(
+      readFileSync(
+        path.resolve(__dirname, '../../../public/locales/zh/translation.json'),
+        'utf-8',
+      ),
+    );
+    i18n.addResourceBundle('zh', 'translation', zh, true, true);
+    await i18n.changeLanguage('zh');
+  });
+
+  afterAll(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it('reports the final status of a finished run', () => {
+    expect(auditEventUtils.summarize({ event: finishedRun('SUCCEEDED') })).toBe(
+      '工作流「同步人员」运行 abcdef 已完成',
+    );
+    expect(auditEventUtils.summarize({ event: finishedRun('FAILED') })).toBe(
+      '工作流「同步人员」运行 abcdef 失败',
+    );
+    expect(auditEventUtils.summarize({ event: finishedRun('CANCELED') })).toBe(
+      '工作流「同步人员」运行 abcdef 已停止',
+    );
+  });
+
+  it('names how a user signed up', () => {
+    const event: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.USER_SIGNED_UP,
+      userEmail: 'a@corp.test',
+      data: { source: 'credentials' },
+    };
+    expect(auditEventUtils.summarize({ event })).toBe(
+      '用户 a@corp.test 通过邮箱和密码注册',
+    );
+  });
+
+  it('resolves removed members to names, emails or a placeholder', () => {
+    const removed = (userId: string, email?: string): ApplicationEvent => ({
+      ...baseEvent(),
+      action: ApplicationEventName.MEMBER_REMOVED,
+      data: { member: { userId, role: 'Operator', email } },
+    });
+    const userNames = { u1: '张三' };
+    expect(auditEventUtils.summarize({ event: removed('u1'), userNames })).toBe(
+      '张三 已被移出项目',
+    );
+    expect(
+      auditEventUtils.summarize({
+        event: removed('u2', 'b@corp.test'),
+        userNames,
+      }),
+    ).toBe('b@corp.test 已被移出项目');
+    expect(auditEventUtils.summarize({ event: removed('u3'), userNames })).toBe(
+      '已删除的用户 已被移出项目',
+    );
+  });
+
+  it('resolves tenant user removals and keeps the transfer target', () => {
+    const event: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.TENANT_USER_REMOVED,
+      data: { target: 'gone', detail: '3 resources to u1' },
+    };
+    expect(
+      auditEventUtils.summarize({ event, userNames: { u1: '张三' } }),
+    ).toBe('已移除用户 已删除的用户，其名下 3 项资源已转交给 张三');
+  });
+
+  it('shows the workflow name carried by the created event', () => {
+    const event = WorkflowCreatedEvent.parse({
+      ...baseEvent(),
+      action: ApplicationEventName.WORKFLOW_CREATED,
+      data: {
+        workflow: {
+          id: 'w1',
+          externalId: 'w1',
+          created: '2025-06-15T12:00:00Z',
+          updated: '2025-06-15T12:00:00Z',
+          version: { displayName: '人员同步' },
+        },
+      },
+    });
+    expect(auditEventUtils.summarize({ event })).toBe(
+      '已创建工作流「人员同步」',
+    );
+  });
+
+  it('treats sign-in events as platform level', () => {
+    expect(
+      auditEventUtils.isPlatformLevel(ApplicationEventName.USER_SIGNED_IN),
+    ).toBe(true);
+    expect(
+      auditEventUtils.isPlatformLevel(ApplicationEventName.WORKFLOW_CREATED),
+    ).toBe(false);
+  });
+
+  it('phrases every action label as a verb phrase without a trailing status', () => {
+    Object.values(ApplicationEventName).forEach((name) => {
+      expect(auditEventUtils.actionLabel(name)).not.toMatch(/^已/);
+    });
   });
 });

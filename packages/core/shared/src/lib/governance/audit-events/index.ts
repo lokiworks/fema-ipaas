@@ -279,7 +279,9 @@ export const WorkflowCreatedEvent = z.object({
     ...BaseAuditEventProps,
     action: z.literal(ApplicationEventName.WORKFLOW_CREATED),
     data: z.object({
-        workflow: Workflow.pick({ id: true, externalId: true, created: true, updated: true }),
+        workflow: Workflow.pick({ id: true, externalId: true, created: true, updated: true }).extend({
+            version: WorkflowVersion.pick({ displayName: true }).optional(),
+        }),
         project: z.object({
             displayName: z.string(),
             externalId: Nullable(z.string()),
@@ -389,6 +391,7 @@ const MemberEventData = z.object({
     member: z.object({
         userId: z.string(),
         role: z.string(),
+        email: z.string().optional(),
     }),
 })
 
@@ -953,3 +956,10 @@ function convertUpdateActionToDetails(event: WorkflowUpdatedEvent) {
     }
 }
 
+export const PLATFORM_LEVEL_AUDIT_ACTIONS: ApplicationEventName[] = [
+    ApplicationEventName.USER_SIGNED_UP,
+    ApplicationEventName.USER_SIGNED_IN,
+    ApplicationEventName.USER_SIGN_IN_FAILED,
+    ApplicationEventName.USER_PASSWORD_RESET,
+    ApplicationEventName.USER_EMAIL_VERIFIED,
+]

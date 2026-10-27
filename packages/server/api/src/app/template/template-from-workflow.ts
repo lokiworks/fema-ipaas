@@ -1,6 +1,7 @@
 import { isNil } from '@fema-ipaas/core-utils'
 import { CreateTemplateRequestBody, GenerateTemplateFromWorkflowRequestBody, templateConnectionUtils, TemplateType, WorkflowVersion, WorkflowVersionTemplate } from '@fema-ipaas/shared'
 
+import { personName } from '../helper/person-name'
 import { workflowTransferTables } from '../project-workspace/workflow-transfer-tables'
 
 export const templateFromWorkflow = {
@@ -30,7 +31,7 @@ export const templateFromWorkflow = {
         }
     },
     authorName({ firstName, lastName, email }: AuthorNameParams): string {
-        const fullName = [firstName, lastName].map((part) => part?.trim() ?? '').filter((part) => part !== '').join(' ')
+        const fullName = personName.format({ firstName, lastName })
         return fullName === '' ? email : fullName
     },
 }

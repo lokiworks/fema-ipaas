@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { personName } from '@/lib/person-name';
 
 import { workflowsApi } from '../api/workflows-api';
 
@@ -125,8 +126,11 @@ const ChangeOwnerDialog = ({
                               key={member.userId}
                               value={member.userId}
                             >
-                              {member.user.firstName} {member.user.lastName} (
-                              {member.user.email})
+                              {personName.format({
+                                firstName: member.user.firstName,
+                                lastName: member.user.lastName,
+                              })}{' '}
+                              ({member.user.email})
                             </SelectItem>
                           ))}
                       </SelectGroup>

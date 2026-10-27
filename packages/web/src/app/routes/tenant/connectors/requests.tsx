@@ -32,6 +32,7 @@ import {
   connectorDemandMutations,
 } from '@/features/connector-demands';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
+import { personName } from '@/lib/person-name';
 
 export default function ConnectorRequestsPage() {
   const isTenantAdmin = useIsTenantAdmin();
@@ -120,8 +121,10 @@ export default function ConnectorRequestsPage() {
               <TableRow key={demand.id}>
                 <TableCell>
                   {demand.requester
-                    ? `${demand.requester.firstName} ${demand.requester.lastName}`.trim() ||
-                      demand.requester.email
+                    ? personName.formatWithFallback({
+                        ...demand.requester,
+                        fallback: demand.requester.email,
+                      })
                     : t('Deleted user')}
                 </TableCell>
                 <TableCell className="font-medium">{demand.appName}</TableCell>

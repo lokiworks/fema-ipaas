@@ -36,6 +36,9 @@ export function MonitorStatCards({
       <MonitorStatCard
         label={t('Run count')}
         value={number(stats.runs)}
+        help={t(
+          'Counts production runs started in the selected period; debug runs are not counted. Usage and limits uses the same rule.',
+        )}
         delta={
           change === null
             ? t('No runs in the previous period')

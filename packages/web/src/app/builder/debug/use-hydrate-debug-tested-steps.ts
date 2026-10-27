@@ -13,7 +13,10 @@ export function useHydrateDebugTestedSteps() {
   ]);
   useQuery({
     queryKey: ['debug-tested-steps', workflowId],
-    staleTime: Infinity,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const page = await executionsApi.list({
         workflowId: [workflowId],

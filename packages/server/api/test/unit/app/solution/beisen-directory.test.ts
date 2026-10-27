@@ -22,4 +22,10 @@ describe('beisenDirectorySolutions', () => {
         const text = JSON.stringify(beisenDirectorySolutions.people({ target: 'wecom' }).package)
         expect(text).toContain('员工离职停用企业微信账号')
     })
+    it('keeps the dingtalk repair workflow free of suspend wording and honest about reading beisen', () => {
+        const repair = beisenDirectorySolutions.people({ target: 'dingtalk' }).package.workflows.find((workflow) => workflow.key === 'repair')
+        expect(repair?.description).not.toContain('暂停')
+        expect(repair?.description).toContain('本流程自身不再读取北森')
+        expect(JSON.stringify(repair)).not.toContain('离职暂停')
+    })
 })

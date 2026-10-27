@@ -6,6 +6,7 @@ import {
     HomeTodo,
     isExecutionStateTerminal,
 } from '@fema-ipaas/shared'
+import { personName } from '../helper/person-name'
 import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 
 function resolveSince({ since, now }: { since: string, now: Date }): Date {
@@ -64,7 +65,7 @@ function countAffectedWorkflows({ usages, externalId, projectIds }: { usages: Wo
 }
 
 function displayName({ firstName, lastName, email }: { firstName: string | null, lastName: string | null, email: string | null }): string | null {
-    const full = [firstName, lastName].filter((part): part is string => !isNil(part) && part.trim().length > 0).join(' ')
+    const full = personName.format({ firstName, lastName })
     if (full.length > 0) {
         return full
     }

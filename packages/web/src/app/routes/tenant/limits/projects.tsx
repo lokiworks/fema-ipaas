@@ -36,7 +36,7 @@ export default function ProjectLimitsPage() {
       {isLoading ? (
         <Skeleton className="h-48 w-full" />
       ) : (
-        <Table className="min-w-[44rem]">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead>{t('Project')}</TableHead>
@@ -50,8 +50,10 @@ export default function ProjectLimitsPage() {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.projectId}>
-                <TableCell className="font-medium">{row.displayName}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
+                <TableCell className="min-w-28 font-medium">
+                  {row.displayName}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                   {row.ownerName ?? '—'}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
@@ -73,6 +75,7 @@ export default function ProjectLimitsPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
+                    className="whitespace-nowrap"
                     variant="ghost"
                     size="sm"
                     onClick={() => setEditing(row)}
@@ -120,8 +123,12 @@ function LimitCell({
   inherited: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <LimitUsageBar used={used} limit={limit} />
+    <div className="flex flex-col items-start gap-1">
+      <LimitUsageBar
+        used={used}
+        limit={limit}
+        className="flex-wrap gap-x-2 gap-y-0.5"
+      />
       {inherited && (
         <Badge variant="outline" className="shrink-0 text-xs font-normal">
           {t('Instance limit')}

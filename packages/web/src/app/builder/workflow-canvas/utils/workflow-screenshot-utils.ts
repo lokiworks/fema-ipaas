@@ -170,8 +170,17 @@ async function cloneViewportWithCapturedStyles(
     }
   });
   elementsToRemove.forEach((element) => element.remove());
+  clearSelectionOutline(clonedViewport);
   overlapEdgeSegments(clonedViewport);
   return clonedViewport;
+}
+
+function clearSelectionOutline(clonedViewport: HTMLElement): void {
+  clonedViewport
+    .querySelectorAll<HTMLElement>(`[${SELECTED_STEP_ATTRIBUTE}="true"]`)
+    .forEach((element) => {
+      element.style.boxShadow = IDLE_STEP_LOGO_SHADOW;
+    });
 }
 
 function overlapEdgeSegments(clonedViewport: HTMLElement): void {
@@ -221,8 +230,12 @@ function calculateNodesBoundsFromDom(nodes: Node[]): Bounds | null {
       {
         left: node.position.x,
         top: node.position.y,
-        right: node.position.x + nodeElement.offsetWidth,
-        bottom: node.position.y + nodeElement.offsetHeight,
+        right:
+          node.position.x +
+          Math.max(nodeElement.offsetWidth, nodeElement.scrollWidth),
+        bottom:
+          node.position.y +
+          Math.max(nodeElement.offsetHeight, nodeElement.scrollHeight),
       },
     ];
   });
@@ -436,6 +449,8 @@ const PREFERRED_PIXEL_SCALE = 2;
 const STYLE_READ_CHUNK_SIZE = 400;
 const IMAGE_CACHE_MAX_ENTRIES = 200;
 const SCREENSHOT_EXCLUDE_ATTRIBUTE = 'data-workflow-screenshot-exclude';
+const SELECTED_STEP_ATTRIBUTE = 'data-step-selected';
+const IDLE_STEP_LOGO_SHADOW = '0 1px 4px rgba(31, 35, 41, 0.12)';
 const POWERED_BY_BRANDING_ATTRIBUTE = 'data-powered-by-branding';
 const POWERED_BY_LOGO_VIEWBOX = 24;
 const POWERED_BY_LOGO_SIZE = 15;
@@ -552,6 +567,7 @@ const EXCLUDE_PROPS = { [SCREENSHOT_EXCLUDE_ATTRIBUTE]: 'ignore-me' };
 export const workflowScreenshotUtils = {
   downloadWorkflowAsImage,
   SCREENSHOT_EXCLUDE_ATTRIBUTE,
+  SELECTED_STEP_ATTRIBUTE,
   EXCLUDE_PROPS,
 };
 

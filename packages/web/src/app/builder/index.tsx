@@ -244,6 +244,10 @@ function constructContainerKey({
     step?.type === WorkflowActionType.CONNECTOR
       ? step?.settings.connectorVersion
       : undefined;
+  const componentType =
+    step?.type === WorkflowActionType.COMPONENT
+      ? step.settings.componentType
+      : undefined;
   //we need to re-render the step settings form when the step is skipped, so when the user edits the settings after setting it to skipped the changes are reflected in the update request
   const isSkipped =
     step?.type != WorkflowTriggerType.EMPTY &&
@@ -251,7 +255,7 @@ function constructContainerKey({
     step?.skip;
   return `${workflowVersionId}-${stepName ?? ''}-${triggerOrActionName ?? ''}-${
     connectorName ?? ''
-  }-${connectorVersion ?? ''}-${'skipped-' + !!isSkipped}-${
-    hasConnectorModelLoaded ? 'loaded' : 'not-loaded'
-  }-${historyNonce}`;
+  }-${connectorVersion ?? ''}-${componentType ?? ''}-${
+    'skipped-' + !!isSkipped
+  }-${hasConnectorModelLoaded ? 'loaded' : 'not-loaded'}-${historyNonce}`;
 }

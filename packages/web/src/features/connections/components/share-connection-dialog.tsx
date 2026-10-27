@@ -46,6 +46,7 @@ import {
   connectionsMutations,
   connectionsQueries,
 } from '@/features/connections/hooks/connections-hooks';
+import { personName } from '@/lib/person-name';
 
 import { DialogLoadingBody } from './dialog-loading-body';
 
@@ -205,7 +206,7 @@ function MemberRow({
   email?: string;
   trailing: ReactNode;
 }) {
-  const name = [firstName, lastName].filter(Boolean).join(' ');
+  const name = personName.format({ firstName, lastName });
   return (
     <div className="flex items-center gap-3 rounded-sm px-1 py-2">
       <UserBadge
@@ -332,8 +333,10 @@ function AddShareForm({
                 onValueChange={(value) => field.onChange(value)}
                 items={candidates.map((user) => ({
                   value: user.id,
-                  label:
-                    `${user.firstName} ${user.lastName}`.trim() || user.email,
+                  label: personName.formatWithFallback({
+                    ...user,
+                    fallback: user.email,
+                  }),
                 }))}
               >
                 <MultiSelectTrigger>

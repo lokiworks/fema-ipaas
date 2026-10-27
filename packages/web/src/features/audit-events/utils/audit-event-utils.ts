@@ -1,10 +1,15 @@
 import {
   ApplicationEvent,
   ApplicationEventName,
+  DefaultProjectRole,
+  ExecutionStatus,
+  PLATFORM_LEVEL_AUDIT_ACTIONS,
   WorkflowOperationType,
   summarizeApplicationEvent,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
+
+import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
 
 function summarizeWorkflowUpdate({
   event,
@@ -139,9 +144,11 @@ function summarizeWorkflowUpdate({
 function summarize({
   event,
   workflowNames = {},
+  userNames = {},
 }: {
   event: ApplicationEvent;
   workflowNames?: Record<string, string>;
+  userNames?: Record<string, string>;
 }): string {
   switch (event.action) {
     case ApplicationEventName.WORKFLOW_UPDATED:
@@ -159,6 +166,7 @@ function summarize({
         workflowNames,
         named: 'auditRunFinishedNamed',
         unnamed: 'auditRunFinished',
+        outcome: runOutcomeOf(event.data.execution.status),
       });
     case ApplicationEventName.EXECUTION_RESUMED:
       return summarizeRun({
@@ -175,7 +183,9 @@ function summarize({
         unnamed: 'auditRunRetried',
       });
     case ApplicationEventName.WORKFLOW_CREATED: {
-      const name = workflowNames[event.data.workflow.id];
+      const name =
+        event.data.workflow.version?.displayName ??
+        workflowNames[event.data.workflow.id];
       return name
         ? t('auditWorkflowCreatedNamed', { name })
         : t('auditWorkflowCreated', {
@@ -298,7 +308,7 @@ function summarize({
     case ApplicationEventName.USER_SIGNED_UP:
       return t('auditUserSignedUp', {
         user: event.userEmail,
-        source: event.data.source,
+        source: event.data.source ?? 'code',
       });
     case ApplicationEventName.CONNECTOR_PUBLISHED:
       return t('auditConnectorPublished', {
@@ -307,11 +317,53 @@ function summarize({
       });
     case ApplicationEventName.MEMBER_ADDED:
       return t('auditMemberAdded', {
-        user: event.data.member.userId,
-        role: event.data.member.role,
+        user: userLabel({
+          id: event.data.member.userId,
+          email: event.data.member.email,
+          userNames,
+        }),
+        role: projectRoleLabels.label(
+          Object.values(DefaultProjectRole).find(
+            (role) => role === event.data.member.role,
+          ),
+        ),
       });
     case ApplicationEventName.MEMBER_REMOVED:
-      return t('auditMemberRemoved', { user: event.data.member.userId });
+      return t('auditMemberRemoved', {
+        user: userLabel({
+          id: event.data.member.userId,
+          email: event.data.member.email,
+          userNames,
+        }),
+      });
+    case ApplicationEventName.TENANT_USER_REMOVED:
+      return summarizeUserRemoved({
+        target: event.data.target,
+        detail: event.data.detail,
+        userNames,
+      });
+    case ApplicationEventName.TENANT_USER_PASSWORD_RESET:
+      return t('auditUserPasswordResetByAdmin', {
+        user: userLabel({ id: event.data.target, userNames }),
+      });
+    case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
+      return summarizeAccessChanged({
+        target: event.data.target,
+        detail: event.data.detail,
+        userNames,
+      });
+    case ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED:
+      return summarizeOwnershipTransferred({
+        target: event.data.target,
+        detail: event.data.detail,
+        userNames,
+      });
+    case ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED:
+      return summarizeRequestDecided({
+        target: event.data.target,
+        detail: event.data.detail,
+        userNames,
+      });
     case ApplicationEventName.DATA_STORE_CREATED:
       return t('auditDataStoreCreated', { name: event.data.dataStore.name });
     case ApplicationEventName.DATA_STORE_UPDATED:
@@ -370,12 +422,7 @@ function summarize({
         detail: event.data.detail,
       });
     case ApplicationEventName.TENANT_USERS_INVITED:
-    case ApplicationEventName.TENANT_USER_ACCESS_CHANGED:
-    case ApplicationEventName.TENANT_USER_REMOVED:
-    case ApplicationEventName.TENANT_USER_PASSWORD_RESET:
-    case ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED:
     case ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED:
-    case ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED:
     case ApplicationEventName.LOGIN_SETTINGS_UPDATED:
     case ApplicationEventName.SSO_SETTINGS_UPDATED:
     case ApplicationEventName.WORKER_STATE_CHANGED:
@@ -397,6 +444,8 @@ export const auditEventUtils = {
   actionsForSources,
   needsWorkflowName,
   runIdOf,
+  isPlatformLevel,
+  learnWorkflowNames,
 };
 
 function summarizeRun({
@@ -404,17 +453,157 @@ function summarizeRun({
   workflowNames,
   named,
   unnamed,
+  outcome = 'finished',
 }: {
   execution: { id: string; workflowId: string; workflowDisplayName?: string };
   workflowNames: Record<string, string>;
   named: string;
   unnamed: string;
+  outcome?: RunOutcome;
 }): string {
   const workflow =
     execution.workflowDisplayName ?? workflowNames[execution.workflowId];
   return workflow
-    ? t(named, { workflow, run: shortId(execution.id) })
-    : t(unnamed, { run: shortId(execution.id) });
+    ? t(named, { workflow, run: shortId(execution.id), outcome })
+    : t(unnamed, { run: shortId(execution.id), outcome });
+}
+
+function runOutcomeOf(status: string): RunOutcome {
+  switch (status) {
+    case ExecutionStatus.SUCCEEDED:
+      return 'succeeded';
+    case ExecutionStatus.FAILED:
+    case ExecutionStatus.INTERNAL_ERROR:
+    case ExecutionStatus.TIMEOUT:
+    case ExecutionStatus.MEMORY_LIMIT_EXCEEDED:
+    case ExecutionStatus.LOG_SIZE_EXCEEDED:
+      return 'failed';
+    case ExecutionStatus.CANCELED:
+      return 'canceled';
+    default:
+      return 'finished';
+  }
+}
+
+function userLabel({
+  id,
+  email,
+  userNames,
+}: {
+  id: string;
+  email?: string;
+  userNames: Record<string, string>;
+}): string {
+  const known = userNames[id];
+  if (known) {
+    return known;
+  }
+  if (email) {
+    return email;
+  }
+  return id.includes('@') ? id : t('Deleted user');
+}
+
+function summarizeUserRemoved({
+  target,
+  detail,
+  userNames,
+}: {
+  target: string;
+  detail: string | undefined;
+  userNames: Record<string, string>;
+}): string {
+  const user = userLabel({ id: target, userNames });
+  const transfer = detail ? TRANSFER_DETAIL_PATTERN.exec(detail) : null;
+  if (!transfer) {
+    return t('auditUserRemoved', { user });
+  }
+  const [, count, receiver] = transfer;
+  return t('auditUserRemovedWithTransfer', {
+    user,
+    count: Number(count),
+    receiver: userLabel({ id: receiver, userNames }),
+  });
+}
+
+function summarizeAccessChanged({
+  target,
+  detail,
+  userNames,
+}: {
+  target: string;
+  detail: string | undefined;
+  userNames: Record<string, string>;
+}): string {
+  const user = userLabel({ id: target, userNames });
+  switch (detail) {
+    case 'disabled':
+      return t('auditUserDisabled', { user });
+    case 'enabled':
+      return t('auditUserEnabled', { user });
+    default:
+      return t('auditUserAccessChanged', { user });
+  }
+}
+
+function summarizeOwnershipTransferred({
+  target,
+  detail,
+  userNames,
+}: {
+  target: string;
+  detail: string | undefined;
+  userNames: Record<string, string>;
+}): string {
+  const matched = detail ? RESOURCE_COUNT_PATTERN.exec(detail) : null;
+  return t('auditOwnershipTransferred', {
+    user: userLabel({ id: target, userNames }),
+    count: matched ? Number(matched[1]) : 0,
+  });
+}
+
+function summarizeRequestDecided({
+  target,
+  detail,
+  userNames,
+}: {
+  target: string;
+  detail: string | undefined;
+  userNames: Record<string, string>;
+}): string {
+  const [userId = '', module = ''] = target.split(' ');
+  return t('auditAccessRequestDecided', {
+    user: userLabel({ id: userId, userNames }),
+    module,
+    approved: String(detail === 'approved'),
+  });
+}
+
+function isPlatformLevel(action: ApplicationEventName): boolean {
+  return PLATFORM_LEVEL_AUDIT_ACTIONS.includes(action);
+}
+
+function learnWorkflowNames({
+  events,
+}: {
+  events: ApplicationEvent[];
+}): Record<string, string> {
+  return Object.fromEntries(
+    [...events].reverse().flatMap((event) => {
+      switch (event.action) {
+        case ApplicationEventName.WORKFLOW_UPDATED:
+        case ApplicationEventName.WORKFLOW_DELETED:
+        case ApplicationEventName.WORKFLOW_PUBLISHED:
+        case ApplicationEventName.WORKFLOW_ACTIVATED:
+        case ApplicationEventName.WORKFLOW_DEACTIVATED:
+          return event.data.workflowVersion.displayName
+            ? [[event.data.workflow.id, event.data.workflowVersion.displayName]]
+            : [];
+        default:
+          return [];
+      }
+    }),
+  );
 }
 
 function needsWorkflowName(event: ApplicationEvent): boolean {
@@ -537,89 +726,114 @@ function withReason({
 }
 
 const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
-  [ApplicationEventName.WORKFLOW_CREATED]: () => t('Workflow created'),
-  [ApplicationEventName.WORKFLOW_DELETED]: () => t('Workflow deleted'),
-  [ApplicationEventName.WORKFLOW_UPDATED]: () => t('Workflow updated'),
-  [ApplicationEventName.WORKFLOW_PUBLISHED]: () => t('Workflow published'),
-  [ApplicationEventName.WORKFLOW_ACTIVATED]: () => t('Workflow activated'),
-  [ApplicationEventName.WORKFLOW_DEACTIVATED]: () => t('Workflow deactivated'),
-  [ApplicationEventName.EXECUTION_RESUMED]: () => t('Run resumed'),
-  [ApplicationEventName.EXECUTION_STARTED]: () => t('Run started'),
-  [ApplicationEventName.EXECUTION_FINISHED]: () => t('Run finished'),
-  [ApplicationEventName.EXECUTION_RETRIED]: () => t('Run retried'),
-  [ApplicationEventName.FOLDER_CREATED]: () => t('Folder created'),
-  [ApplicationEventName.FOLDER_UPDATED]: () => t('Folder updated'),
-  [ApplicationEventName.FOLDER_DELETED]: () => t('Folder deleted'),
-  [ApplicationEventName.CONNECTION_UPSERTED]: () => t('Connection updated'),
-  [ApplicationEventName.CONNECTION_DELETED]: () => t('Connection deleted'),
-  [ApplicationEventName.VARIABLE_UPSERTED]: () => t('Variable updated'),
-  [ApplicationEventName.VARIABLE_DELETED]: () => t('Variable deleted'),
+  [ApplicationEventName.WORKFLOW_CREATED]: () =>
+    t('auditActionWorkflowCreated'),
+  [ApplicationEventName.WORKFLOW_DELETED]: () =>
+    t('auditActionWorkflowDeleted'),
+  [ApplicationEventName.WORKFLOW_UPDATED]: () =>
+    t('auditActionWorkflowUpdated'),
+  [ApplicationEventName.WORKFLOW_PUBLISHED]: () =>
+    t('auditActionWorkflowPublished'),
+  [ApplicationEventName.WORKFLOW_ACTIVATED]: () =>
+    t('auditActionWorkflowActivated'),
+  [ApplicationEventName.WORKFLOW_DEACTIVATED]: () =>
+    t('auditActionWorkflowDeactivated'),
+  [ApplicationEventName.EXECUTION_RESUMED]: () => t('auditActionRunResumed'),
+  [ApplicationEventName.EXECUTION_STARTED]: () => t('auditActionRunStarted'),
+  [ApplicationEventName.EXECUTION_FINISHED]: () => t('auditActionRunFinished'),
+  [ApplicationEventName.EXECUTION_RETRIED]: () => t('auditActionRunRetried'),
+  [ApplicationEventName.FOLDER_CREATED]: () => t('auditActionFolderCreated'),
+  [ApplicationEventName.FOLDER_UPDATED]: () => t('auditActionFolderUpdated'),
+  [ApplicationEventName.FOLDER_DELETED]: () => t('auditActionFolderDeleted'),
+  [ApplicationEventName.CONNECTION_UPSERTED]: () =>
+    t('auditActionConnectionUpserted'),
+  [ApplicationEventName.CONNECTION_DELETED]: () =>
+    t('auditActionConnectionDeleted'),
+  [ApplicationEventName.VARIABLE_UPSERTED]: () =>
+    t('auditActionVariableUpserted'),
+  [ApplicationEventName.VARIABLE_DELETED]: () =>
+    t('auditActionVariableDeleted'),
   [ApplicationEventName.VARIABLE_VALUE_REVEALED]: () =>
-    t('Variable value revealed'),
+    t('auditActionVariableRevealed'),
   [ApplicationEventName.EXECUTION_PAYLOAD_REVEALED]: () =>
-    t('Run payload revealed'),
+    t('auditActionPayloadRevealed'),
   [ApplicationEventName.EXECUTION_PAYLOAD_REVEAL_DENIED]: () =>
-    t('Run payload reveal denied'),
-  [ApplicationEventName.ISSUE_REPLAYED]: () => t('Issue runs replayed'),
-  [ApplicationEventName.RUNS_RERUN]: () => t('Runs rerun'),
+    t('auditActionPayloadRevealDenied'),
+  [ApplicationEventName.ISSUE_REPLAYED]: () => t('auditActionIssueReplayed'),
+  [ApplicationEventName.RUNS_RERUN]: () => t('auditActionRunsRerun'),
   [ApplicationEventName.PRIVACY_SETTINGS_UPDATED]: () =>
-    t('Privacy settings updated'),
+    t('auditActionPrivacyUpdated'),
   [ApplicationEventName.AGENT_APPROVAL_DECIDED]: () =>
-    t('Agent tool call reviewed'),
+    t('auditActionAgentApproval'),
   [ApplicationEventName.CONNECTION_SHARE_UPDATED]: () =>
-    t('Connection sharing changed'),
-  [ApplicationEventName.MCP_TOOL_TRIED]: () => t('MCP tool tried'),
+    t('auditActionConnectionShare'),
+  [ApplicationEventName.MCP_TOOL_TRIED]: () => t('auditActionMcpToolTried'),
   [ApplicationEventName.CONNECTOR_DEMAND_SUBMITTED]: () =>
-    t('Connector request submitted'),
-  [ApplicationEventName.MCP_SERVICE_CHANGED]: () => t('MCP service changed'),
+    t('auditActionConnectorDemand'),
+  [ApplicationEventName.MCP_SERVICE_CHANGED]: () =>
+    t('auditActionMcpServiceChanged'),
   [ApplicationEventName.PERSONAL_DATA_ERASURE]: () =>
-    t('Personal data erasure'),
-  [ApplicationEventName.USER_SIGNED_UP]: () => t('User signed up'),
-  [ApplicationEventName.USER_SIGNED_IN]: () => t('User signed in'),
-  [ApplicationEventName.USER_SIGN_IN_FAILED]: () => t('Sign-in failed'),
-  [ApplicationEventName.USER_PASSWORD_RESET]: () => t('Password reset'),
-  [ApplicationEventName.USER_EMAIL_VERIFIED]: () => t('Email verified'),
-  [ApplicationEventName.CONNECTOR_PUBLISHED]: () => t('Connector published'),
-  [ApplicationEventName.MEMBER_ADDED]: () => t('Member added'),
-  [ApplicationEventName.MEMBER_REMOVED]: () => t('Member removed'),
-  [ApplicationEventName.DATA_STORE_CREATED]: () => t('Data store created'),
-  [ApplicationEventName.DATA_STORE_UPDATED]: () => t('Data store updated'),
-  [ApplicationEventName.DATA_STORE_DELETED]: () => t('Data store deleted'),
-  [ApplicationEventName.DATA_STORE_CLEARED]: () => t('Data store cleared'),
+    t('auditActionPersonalDataErasure'),
+  [ApplicationEventName.USER_SIGNED_UP]: () => t('auditActionSignedUp'),
+  [ApplicationEventName.USER_SIGNED_IN]: () => t('auditActionSignedIn'),
+  [ApplicationEventName.USER_SIGN_IN_FAILED]: () =>
+    t('auditActionSignInFailed'),
+  [ApplicationEventName.USER_PASSWORD_RESET]: () =>
+    t('auditActionPasswordReset'),
+  [ApplicationEventName.USER_EMAIL_VERIFIED]: () =>
+    t('auditActionEmailVerified'),
+  [ApplicationEventName.CONNECTOR_PUBLISHED]: () =>
+    t('auditActionConnectorPublished'),
+  [ApplicationEventName.MEMBER_ADDED]: () => t('auditActionMemberAdded'),
+  [ApplicationEventName.MEMBER_REMOVED]: () => t('auditActionMemberRemoved'),
+  [ApplicationEventName.DATA_STORE_CREATED]: () =>
+    t('auditActionDataStoreCreated'),
+  [ApplicationEventName.DATA_STORE_UPDATED]: () =>
+    t('auditActionDataStoreUpdated'),
+  [ApplicationEventName.DATA_STORE_DELETED]: () =>
+    t('auditActionDataStoreDeleted'),
+  [ApplicationEventName.DATA_STORE_CLEARED]: () =>
+    t('auditActionDataStoreCleared'),
   [ApplicationEventName.DATA_STORE_RECORD_DELETED]: () =>
-    t('Data store key deleted'),
+    t('auditActionDataStoreKeyDeleted'),
   [ApplicationEventName.PERSONAL_ACCESS_TOKEN_CREATED]: () =>
-    t('Access token created'),
+    t('auditActionTokenCreated'),
   [ApplicationEventName.PERSONAL_ACCESS_TOKEN_REVOKED]: () =>
-    t('Access token revoked'),
-  [ApplicationEventName.RELEASE_DEPLOYED_TO_TEST]: () => t('Deployed to test'),
-  [ApplicationEventName.RELEASE_REQUESTED]: () => t('Promotion requested'),
-  [ApplicationEventName.RELEASE_APPROVED]: () => t('Promotion approved'),
-  [ApplicationEventName.RELEASE_REJECTED]: () => t('Promotion rejected'),
-  [ApplicationEventName.RELEASE_WITHDRAWN]: () => t('Promotion withdrawn'),
-  [ApplicationEventName.RELEASE_ROLLED_BACK]: () =>
-    t('Rolled back in production'),
-  [ApplicationEventName.ENVIRONMENTS_UPDATED]: () => t('Environments updated'),
-  [ApplicationEventName.TENANT_USERS_INVITED]: () => t('Users added'),
+    t('auditActionTokenRevoked'),
+  [ApplicationEventName.RELEASE_DEPLOYED_TO_TEST]: () =>
+    t('auditActionDeployedToTest'),
+  [ApplicationEventName.RELEASE_REQUESTED]: () =>
+    t('auditActionPromotionRequested'),
+  [ApplicationEventName.RELEASE_APPROVED]: () =>
+    t('auditActionPromotionApproved'),
+  [ApplicationEventName.RELEASE_REJECTED]: () =>
+    t('auditActionPromotionRejected'),
+  [ApplicationEventName.RELEASE_WITHDRAWN]: () =>
+    t('auditActionPromotionWithdrawn'),
+  [ApplicationEventName.RELEASE_ROLLED_BACK]: () => t('auditActionRolledBack'),
+  [ApplicationEventName.ENVIRONMENTS_UPDATED]: () =>
+    t('auditActionEnvironmentsUpdated'),
+  [ApplicationEventName.TENANT_USERS_INVITED]: () => t('auditActionUsersAdded'),
   [ApplicationEventName.TENANT_USER_ACCESS_CHANGED]: () =>
-    t('User permissions changed'),
-  [ApplicationEventName.TENANT_USER_REMOVED]: () => t('User removed'),
+    t('auditActionUserAccessChanged'),
+  [ApplicationEventName.TENANT_USER_REMOVED]: () => t('auditActionUserRemoved'),
   [ApplicationEventName.TENANT_USER_PASSWORD_RESET]: () =>
-    t('Password reset by admin'),
+    t('auditActionUserPasswordReset'),
   [ApplicationEventName.MODULE_ACCESS_REQUEST_DECIDED]: () =>
-    t('Permission request reviewed'),
+    t('auditActionAccessRequestDecided'),
   [ApplicationEventName.MODULE_ACCESS_SETTINGS_UPDATED]: () =>
-    t('Permission settings changed'),
+    t('auditActionAccessSettings'),
   [ApplicationEventName.RESOURCES_OWNERSHIP_TRANSFERRED]: () =>
-    t('Resource ownership transferred'),
+    t('auditActionOwnershipTransferred'),
   [ApplicationEventName.LOGIN_SETTINGS_UPDATED]: () =>
-    t('Sign-in settings changed'),
+    t('auditActionLoginSettings'),
   [ApplicationEventName.SSO_SETTINGS_UPDATED]: () =>
-    t('Single sign-on settings changed'),
-  [ApplicationEventName.WORKER_STATE_CHANGED]: () => t('Worker changed'),
-  [ApplicationEventName.AUDIT_LOG_EXPORTED]: () => t('Audit log exported'),
+    t('auditActionSsoSettings'),
+  [ApplicationEventName.WORKER_STATE_CHANGED]: () =>
+    t('auditActionWorkerChanged'),
+  [ApplicationEventName.AUDIT_LOG_EXPORTED]: () => t('auditActionLogExported'),
   [ApplicationEventName.PROJECT_LIMITS_UPDATED]: () =>
-    t('Project limits updated'),
+    t('auditActionProjectLimits'),
 };
 
 function actionsForSources(sources: string[]): string[] | undefined {
@@ -641,6 +855,10 @@ function actionsForSources(sources: string[]): string[] | undefined {
 
 const SIGN_IN_DETAIL_PATTERN = /^(password|email code): ([A-Z_]+)$/;
 
+const TRANSFER_DETAIL_PATTERN = /^(\d+) resources to (.+)$/;
+
+const RESOURCE_COUNT_PATTERN = /^(\d+) resources$/;
+
 const SYSTEM_EVENT_NAMES: string[] = [
   ApplicationEventName.EXECUTION_STARTED,
   ApplicationEventName.EXECUTION_FINISHED,
@@ -652,3 +870,5 @@ export const AUDIT_EVENT_SOURCE = {
   HUMAN: 'human',
   SYSTEM: 'system',
 } as const;
+
+type RunOutcome = 'succeeded' | 'failed' | 'canceled' | 'finished';

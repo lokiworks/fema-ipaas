@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { userHooks } from '@/hooks/user-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
+import { personName } from '@/lib/person-name';
 import { cn } from '@/lib/utils';
 
 export function SidebarUser() {
@@ -56,7 +57,7 @@ export function SidebarUser() {
               className={cn('size-full object-cover', {
                 'scale-150': isNil(user.imageUrl),
               })}
-              name={user.firstName + ' ' + user.lastName}
+              name={personName.format(user)}
               email={user.email}
               imageUrl={user.imageUrl}
               size={28}
@@ -76,7 +77,7 @@ export function SidebarUser() {
             <div className="size-8 shrink-0 overflow-hidden rounded-full">
               <UserAvatar
                 className="size-full object-cover"
-                name={user.firstName + ' ' + user.lastName}
+                name={personName.format(user)}
                 email={user.email}
                 imageUrl={user.imageUrl}
                 size={32}
@@ -86,7 +87,7 @@ export function SidebarUser() {
 
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">
-                {user.firstName + ' ' + user.lastName}
+                {personName.format(user)}
               </span>
               <span className="truncate text-xs">{user.email}</span>
             </div>

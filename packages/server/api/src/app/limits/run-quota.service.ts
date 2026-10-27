@@ -37,31 +37,17 @@ export const runQuota = (log: FastifyBaseLogger) => ({
         if (projectIds.length === 0) {
             return new Map()
         }
-        const month = runQuotaUtils.monthOf(dayjsUtil())
-        const { data, error } = await tryCatch(async () => {
-            await Promise.all(projectIds.map((projectId) => ensureSeeded({ month, projectId })))
-            const redis = await redisConnections.useExisting()
-            const values = await redis.mget(...projectIds.map((projectId) => projectCounterKey({ month, projectId })))
-            return new Map(projectIds.map((projectId, index) => [projectId, Number(values[index] ?? 0)]))
-        })
-        if (error) {
-            log.warn({ error: String(error) }, '[runQuota#usageThisMonth] Falling back to counting runs in the database')
-            return countProjectsFromDatabase({ projectIds, since: runQuotaUtils.monthStart(dayjsUtil()) })
-        }
-        return data
+        const now = dayjsUtil()
+        const counts = await countProjectsFromDatabase({ projectIds, since: runQuotaUtils.monthStart(now) })
+        await tryCatch(() => syncProjectCounters({ month: runQuotaUtils.monthOf(now), counts }))
+        return counts
     },
 
     async instanceUsageThisMonth(): Promise<number> {
-        const month = runQuotaUtils.monthOf(dayjsUtil())
-        const { data, error } = await tryCatch(async () => {
-            await ensureInstanceSeeded({ month })
-            const redis = await redisConnections.useExisting()
-            return Number(await redis.get(instanceCounterKey({ month })) ?? 0)
-        })
-        if (error) {
-            return countInstanceFromDatabase({ since: runQuotaUtils.monthStart(dayjsUtil()) })
-        }
-        return data
+        const now = dayjsUtil()
+        const count = await countInstanceFromDatabase({ since: runQuotaUtils.monthStart(now) })
+        await tryCatch(() => syncInstanceCounter({ month: runQuotaUtils.monthOf(now), count }))
+        return count
     },
 
     async invalidateProjectLimit({ projectId }: { projectId: ProjectId }): Promise<void> {
@@ -132,6 +118,16 @@ async function ensureInstanceSeeded({ month }: { month: string }): Promise<void>
     }
     const count = await countInstanceFromDatabase({ since: runQuotaUtils.monthStartOf(month) })
     await redis.set(key, String(count), 'EX', COUNTER_TTL_SECONDS, 'NX')
+}
+
+async function syncProjectCounters({ month, counts }: { month: string, counts: Map<ProjectId, number> }): Promise<void> {
+    const redis = await redisConnections.useExisting()
+    await Promise.all([...counts].map(([projectId, count]) => redis.set(projectCounterKey({ month, projectId }), String(count), 'EX', COUNTER_TTL_SECONDS)))
+}
+
+async function syncInstanceCounter({ month, count }: { month: string, count: number }): Promise<void> {
+    const redis = await redisConnections.useExisting()
+    await redis.set(instanceCounterKey({ month }), String(count), 'EX', COUNTER_TTL_SECONDS)
 }
 
 async function countProjectsFromDatabase({ projectIds, since }: { projectIds: ProjectId[], since: string }): Promise<Map<ProjectId, number>> {

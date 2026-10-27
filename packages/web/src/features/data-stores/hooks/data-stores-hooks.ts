@@ -71,7 +71,6 @@ function useDeleteDataStore() {
     mutationFn: (id: string) => dataStoresApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [DATA_STORES_KEY] });
-      toast.success(t('Data store deleted'));
     },
     onError: showErrorToast,
   });

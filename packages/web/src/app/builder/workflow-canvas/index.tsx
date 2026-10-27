@@ -34,6 +34,7 @@ import {
 } from './context-menu/canvas-context-menu';
 import { DeleteNodesDialog } from './delete-nodes-dialog';
 import { workflowCanvasHooks } from './hooks';
+import { canvasElementTypes } from './utils/canvas-element-types';
 import { workflowCanvasConsts } from './utils/consts';
 import { workflowCanvasUtils } from './utils/workflow-canvas-utils';
 import { AboveWorkflowWidgets } from './widgets';
@@ -240,9 +241,9 @@ export const WorkflowCanvas = React.memo(
                 reactFlowStore.getState().unselectNodesAndEdges();
               }}
               translateExtent={translateExtent}
-              nodeTypes={workflowCanvasConsts.nodeTypes}
+              nodeTypes={canvasElementTypes.nodeTypes}
               nodes={graph.nodes}
-              edgeTypes={workflowCanvasConsts.edgeTypes}
+              edgeTypes={canvasElementTypes.edgeTypes}
               edges={graph.edges}
               draggable={false}
               edgesFocusable={false}

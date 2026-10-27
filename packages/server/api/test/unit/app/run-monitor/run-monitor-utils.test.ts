@@ -146,3 +146,11 @@ describe('runMonitorUtils calendar windows', () => {
         expect(iso(runMonitorUtils.calendarMonthStart({ now, timezone: 'UTC' }))).toBe('2026-10-01T00:00:00.000Z')
     })
 })
+
+describe('runMonitorUtils.nonFailureStatuses', () => {
+    it('lists exactly the statuses that the failed card does not count', () => {
+        const statuses = Object.values(ExecutionStatus)
+        const outsideFailedGroup = statuses.filter((status) => runMonitorUtils.statusGroup(status) !== RunMonitorStatusGroup.FAILED)
+        expect([...runMonitorUtils.nonFailureStatuses].sort()).toEqual([...outsideFailedGroup].sort())
+    })
+})

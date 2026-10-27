@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   BatchUpdateIssuesRequestBody,
   IssueReplayRequestBody,
@@ -6,6 +7,7 @@ import {
   IssueTrendGranularity,
   ListIssuesRequestQuery,
   UpdateIssueRequestBody,
+  WorkflowStatus,
 } from '@fema-ipaas/shared';
 import {
   keepPreviousData,
@@ -18,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { internalErrorToast } from '@/components/ui/sonner';
+import { workflowsApi } from '@/features/workflows';
 import { api } from '@/lib/api';
 
 import { issuesApi } from '../api/issues-api';
@@ -58,6 +61,16 @@ function useIssue(id: string) {
     queryFn: () => issuesApi.get(id),
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
   });
+}
+
+function useWorkflowStopped(workflowId: string | null | undefined) {
+  const { data } = useQuery({
+    queryKey: [ISSUES_KEY, 'workflow-stopped', workflowId],
+    queryFn: () => workflowsApi.get(workflowId ?? ''),
+    enabled: !isNil(workflowId),
+    select: (workflow) => workflow.status !== WorkflowStatus.ENABLED,
+  });
+  return data === true;
 }
 
 function useActivities(id: string) {
@@ -268,6 +281,7 @@ export const issuesHooks = {
   useOverview,
   useSummary,
   useIssue,
+  useWorkflowStopped,
   useActivities,
   useExecutions,
   useTrend,

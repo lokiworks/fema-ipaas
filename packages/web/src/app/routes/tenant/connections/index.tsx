@@ -43,8 +43,11 @@ import {
 } from '@/features/connectors';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
 import { tenantConnectionsQueries } from '@/features/tenant-admin/hooks/tenant-connections-hooks';
+import { useIsNarrowDesktop } from '@/hooks/use-mobile';
+import { personName } from '@/lib/person-name';
 
 export default function TenantConnectionsPage() {
+  const compact = useIsNarrowDesktop();
   const {
     data: connections,
     isLoading,
@@ -193,9 +196,7 @@ export default function TenantConnectionsPage() {
         if (!owner) {
           return <span className="text-muted-foreground">{t('N/A')}</span>;
         }
-        const fullName = [owner.firstName, owner.lastName]
-          .filter(Boolean)
-          .join(' ');
+        const fullName = personName.format(owner);
         const label = fullName || owner.email;
         return (
           <TextWithTooltip tooltipMessage={owner.email}>
@@ -238,7 +239,7 @@ export default function TenantConnectionsPage() {
           'Connections created in any project on this tenant will appear here.',
         )}
         emptyStateIcon={<Unplug className="size-14" />}
-        columns={columns}
+        columns={compact ? compactColumns({ columns }) : columns}
         page={connections}
         isLoading={isLoading}
         isError={isError}
@@ -246,6 +247,25 @@ export default function TenantConnectionsPage() {
       />
     </ConsolePage>
   );
+}
+
+function compactColumns({
+  columns,
+}: {
+  columns: ColumnDef<RowDataWithActions<TenantConnectionsListItem>>[];
+}): ColumnDef<RowDataWithActions<TenantConnectionsListItem>>[] {
+  return columns
+    .filter(
+      (column) =>
+        !('accessorKey' in column) || column.accessorKey !== 'updated',
+    )
+    .map((column) => ({
+      ...column,
+      size:
+        'accessorKey' in column
+          ? COMPACT_COLUMN_SIZES[String(column.accessorKey)] ?? column.size
+          : column.size,
+    }));
 }
 
 const ScopeBadge = ({ scope }: { scope: ConnectionScope }) => {
@@ -302,4 +322,12 @@ const ProjectsCell = ({
       </TooltipContent>
     </Tooltip>
   );
+};
+
+const COMPACT_COLUMN_SIZES: Record<string, number> = {
+  displayName: 190,
+  status: 110,
+  projects: 150,
+  scope: 90,
+  owner: 130,
 };

@@ -7,6 +7,7 @@ import {
   HoverCardContent,
 } from '@/components/ui/hover-card';
 import { userHooks } from '@/hooks/user-hooks';
+import { personName } from '@/lib/person-name';
 import { cn } from '@/lib/utils';
 
 import { UserAvatar } from './user-avatar';
@@ -38,7 +39,7 @@ export const UserBadge = ({
       {includeAvatar && (
         <div className="shrink-0">
           <UserAvatar
-            name={`${user.firstName} ${user.lastName}`}
+            name={personName.format(user)}
             email={user.email}
             imageUrl={user.imageUrl}
             size={avatarSize}
@@ -52,7 +53,7 @@ export const UserBadge = ({
             'text-xss opacity-75': size === 'xsmall',
           })}
         >
-          {`${user.firstName} ${user.lastName}`.trim()}
+          {personName.format(user)}
         </span>
       )}
     </div>
@@ -73,7 +74,7 @@ export const UserBadge = ({
       >
         <div className="flex items-center gap-3">
           <UserAvatar
-            name={`${user.firstName} ${user.lastName}`}
+            name={personName.format(user)}
             email={user.email}
             imageUrl={user.imageUrl}
             size={36}
@@ -82,7 +83,7 @@ export const UserBadge = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <h4 className="text-sm font-semibold leading-none truncate">
-                {user.firstName} {user.lastName}
+                {personName.format(user)}
               </h4>
             </div>
             <div className="flex items-center gap-2 mt-1.5">

@@ -11,6 +11,8 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
+import { personName } from '@/lib/person-name';
+
 function statusLabel(status: WorkflowReleaseStatus): string {
   switch (status) {
     case WorkflowReleaseStatus.PENDING:
@@ -213,10 +215,10 @@ function isWebhookTrigger(trigger: WorkflowTrigger): boolean {
 }
 
 function memberName(member: ProjectMemberWithUser): string {
-  const fullName = `${member.user.firstName ?? ''} ${
-    member.user.lastName ?? ''
-  }`.trim();
-  return fullName.length > 0 ? fullName : member.user.email;
+  return personName.formatWithFallback({
+    ...member.user,
+    fallback: member.user.email,
+  });
 }
 
 const APPROVER_ROLES: DefaultProjectRole[] = [

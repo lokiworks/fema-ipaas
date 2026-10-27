@@ -1,5 +1,7 @@
 import { DefaultProjectRole, ProjectMemberWithUser } from '@fema-ipaas/shared';
 
+import { personName } from '@/lib/person-name';
+
 function build({
   members,
   ownerId,
@@ -12,9 +14,10 @@ function build({
   const rows = members.map((member) => ({
     id: member.id,
     userId: member.userId,
-    name:
-      `${member.user.firstName ?? ''} ${member.user.lastName ?? ''}`.trim() ||
-      member.user.email,
+    name: personName.formatWithFallback({
+      ...member.user,
+      fallback: member.user.email,
+    }),
     email: member.user.email,
     role: member.role,
     implicit: false,

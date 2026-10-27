@@ -6,6 +6,8 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
+import { personName } from '@/lib/person-name';
+
 function setPreference({
   preferences,
   event,
@@ -65,7 +67,7 @@ function displayName({
   firstName: string;
   lastName: string;
 }): string {
-  return `${firstName} ${lastName}`.trim();
+  return personName.format({ firstName, lastName });
 }
 
 function isExpired({

@@ -170,6 +170,15 @@ export const stepUtils = {
         return {
           ...metadata,
           errorHandlingOptions: mapErrorHandlingOptions(connector, step),
+          reliability:
+            step.type === WorkflowActionType.CONNECTOR
+              ? connector.actions[step.settings.actionName ?? '']?.reliability
+              : undefined,
+          classification:
+            step.type === WorkflowActionType.CONNECTOR
+              ? connector.actions[step.settings.actionName ?? '']
+                  ?.classification
+              : undefined,
           actionOrTriggerOrAgentDescription: actionOrTriggerDescription,
           actionOrTriggerOrAgentDisplayName: actionOrTriggerDisplayName,
         };

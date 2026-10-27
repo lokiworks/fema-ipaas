@@ -10,7 +10,8 @@
     "openpgp": "^6.2.0",
     "zod": "4.3.6",
     "@fema-ipaas/connector-types": "workspace:*",
-    "@fema-ipaas/core-utils": "workspace:*"
+    "@fema-ipaas/core-utils": "workspace:*",
+    "tslib": "2.6.2"
   },
   "scripts": {
     "build": "tsc -p tsconfig.lib.json && cp package.json dist/ && mkdir -p dist/src/i18n && cp src/i18n/*.json dist/src/i18n/",
@@ -19,7 +20,6 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "vitest": "3.2.6",
-    "tslib": "2.6.2"
+    "vitest": "3.2.6"
   }
 }

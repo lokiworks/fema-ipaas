@@ -116,9 +116,9 @@ describe('System Jobs', () => {
         expect(matching.length).toBeGreaterThanOrEqual(1)
     })
 
-    it('should remove stale schedulers when the cron pattern changes', async () => {
-        const jobId = 'test-pattern-change'
-        await systemJobsQueue.add(SystemJobName.FILE_CLEANUP_TRIGGER, {} as never, {
+    it('should replace a legacy scheduler with the canonical system job when the cron pattern changes', async () => {
+        const jobId = SystemJobName.FILE_CLEANUP_TRIGGER
+        await legacyQueue.add(SystemJobName.FILE_CLEANUP_TRIGGER, {}, {
             repeat: { pattern: '*/59 23 * * *', tz: 'UTC' },
             jobId,
         })

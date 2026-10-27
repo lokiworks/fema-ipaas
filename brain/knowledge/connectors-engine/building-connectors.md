@@ -17,6 +17,8 @@ How to build, test, and publish custom connectors. Connectors are npm packages w
 Authentication, triggers (polling/webhook), properties + validation, workflow control, persistent storage, files, external libraries, connector versioning, examples, custom API calls, output schema, i18n.
 
 ## Gotchas
+- `tsc` 的 `importHelpers` 会在编译产物里生成 `require("tslib")`。SDK、common 和连接器都必须把 `tslib` 声明为运行依赖；放在 `devDependencies` 时，本地构建正常，镜像的 `bun install --production` 后会在启动或加载连接器时退出。
+- 北森 `GetEmployeeOfOrganization` 返回每位员工的一条任职记录；模拟时间窗保留的历史事件不能直接当全量名单返回，否则正常调岗会被误判为重复身份。组织名单的模拟先按员工 UserID 选当前记录，再按部门范围筛选，并覆盖未来生效记录的场景。接口契约见 [北森 API](https://apifox.com/apidoc/docs-site/436023/api-6342608)。
 - **Connector archive integrity checking existed with no way to run it.** `POST /v1/connectors/integrity/verify` re-hashes every installed connector archive against the checksum recorded at install and reports VERIFIED / MISMATCH / UNVERIFIABLE per connector — a supply-chain tamper signal with no button anywhere. It is now 校验完整性 in the tenant connectors toolbar: a toast on a clean result, a dialog listing only the problems otherwise. It reads `connector_metadata`, which is empty when connectors come from `FEMA_DEV_CONNECTORS`, so a dev install honestly reports 0 checked.
 
 

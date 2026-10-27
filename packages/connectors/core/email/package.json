@@ -12,10 +12,10 @@
     "@fema-ipaas/connector-sdk": "workspace:*",
     "zod": "4.3.6",
     "@fema-ipaas/connector-common": "workspace:*",
-    "nodemailer": "9.0.1"
+    "nodemailer": "9.0.1",
+    "tslib": "2.6.2"
   },
   "devDependencies": {
-    "tslib": "2.6.2",
     "vitest": "3.2.6",
     "@types/nodemailer": "6.4.9"
   }

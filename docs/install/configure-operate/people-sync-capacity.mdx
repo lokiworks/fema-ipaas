@@ -9,6 +9,8 @@ The earlier local baseline, measured before proactive connector limits, processe
 
 Current contact writes share a tenant/application bucket across workers. At one write per second, 2,000 account creations alone need at least 33 minutes; workflows that also update each account need at least 67 minutes, before reads, notices and retries. More workers cannot raise the provider's shared quota. Use measured endpoint limits from your own tenant before changing a declaration.
 
+A local PostgreSQL/Redis correctness run on 2026-10-27 used two workers with five slots each: 2,000 hires and 640 transfers completed in 5,504 seconds, with 2,000 accounts, 2,000 notices and exactly 2,640 terminal audit events. It made 4,640 contact writes against the shared one-per-second bucket. Sampled API peak RSS was 442 MB; worker process trees peaked at 1,652 and 1,699 MB; the database occupied 55.8 MiB. Other acceptance drills and a Linux image build ran on the same Mac during this test, so the elapsed time is not an idle-server capacity benchmark.
+
 Run organization sync before the onboarding batch. Keep the organization convergence workflow at concurrency one. The local mock regression covers a 300-department tree, a second run with zero new writes, rename/move/archive and the bulk archive gate. It does not establish real-tenant throughput.
 
 For acceptance, record source/target counts, elapsed time, API RSS, the whole worker process tree, queue wait time, rate-limit events and database size. Exercise late source visibility, duplicate events, ambiguous write failures, Redis restart and worker loss. Verify one terminal audit event per run, then run full reconciliation. The 10,000-to-10,000 scan and two-host deployment remain separate acceptance measurements.

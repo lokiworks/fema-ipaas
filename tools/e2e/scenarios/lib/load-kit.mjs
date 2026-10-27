@@ -7,6 +7,7 @@ const EMAIL = process.env.E2E_EMAIL ?? 'dev@ap.com'
 const PASSWORD = process.env.E2E_PASSWORD ?? '12345678'
 const SOLUTION_ID = 'official-beisen-feishu'
 const FIRST_DEPARTMENT_OID = 20301
+const TARGET = process.env.E2E_TARGET ?? 'feishu'
 
 export const loadKit = {
   connect,
@@ -33,18 +34,25 @@ export const loadKit = {
   makeChecker,
   fmt,
   session: () => session,
+  target: targetProfile,
   mobileOf,
   jobNumberOf,
 }
 
 let session = null
+let targetDepartmentIds = []
 
-async function connect() {
+async function connect({ projectId } = {}) {
   const signIn = await fetchJson({ method: 'POST', url: `${API}/authentication/sign-in`, body: { email: EMAIL, password: PASSWORD } })
   if (!signIn.ok) {
     throw new Error(`sign-in failed: ${JSON.stringify(signIn.body)}`)
   }
-  session = { token: signIn.body.token, projectId: signIn.body.projectId }
+  session = { token: signIn.body.token, projectId: projectId ?? signIn.body.projectId }
+  if (TARGET !== 'feishu') {
+    const response = await fetchJson({ method: 'GET', url: `${MOCK}/__admin/${TARGET}` })
+    if (!response.ok) throw new Error(`Cannot read ${TARGET} fixture departments`)
+    targetDepartmentIds = Array.from({ length: 20 }, (_, index) => response.body.departments.find((department) => department.name === `Load department ${index + 1}`)?.id)
+  }
   return session
 }
 
@@ -63,6 +71,17 @@ async function apiRaw({ method, path, body, timeoutMs }) {
 }
 
 async function mock({ method, path, body }) {
+  if (TARGET !== 'feishu' && method === 'GET' && ['/__admin/users', '/__admin/state', '/__admin/summary'].includes(path)) {
+    const directory = (await fetchJson({ method, url: `${MOCK}/__admin/${TARGET}` })).body
+    const users = directory.users.map((user) => ({ ...user, open_id: user.userid, employee_no: user.employee_no ?? user.userid, is_frozen: user.enable === 0 }))
+    if (path === '/__admin/users') return { users }
+    const original = (await fetchJson({ method, url: `${MOCK}${path}`, body })).body
+    if (path === '/__admin/state') return { ...original, feishuUsers: users, messages: directory.messages }
+    const createAttempts = Object.values(directory.createAttemptsByUser ?? {})
+    const employeeNos = users.map((user) => user.employee_no)
+    const messageKeys = directory.messages.map((message) => JSON.stringify([message.recipients, message.content]))
+    return { ...original, users: users.length, createCalls: createAttempts.reduce((sum, count) => sum + count, 0), createAttemptsExtra: createAttempts.reduce((sum, count) => sum + Math.max(0, count - 1), 0), rejectedDuplicateCreates: directory.rejectedDuplicateCreates ?? 0, duplicateEmployeeNos: employeeNos.length - new Set(employeeNos).size, messages: directory.messages.length, duplicateMessageExtra: messageKeys.length - new Set(messageKeys).size, suppressedNotices: directory.suppressedNotices ?? 0 }
+  }
   return (await fetchJson({ method, url: `${MOCK}${path}`, body })).body
 }
 
@@ -85,6 +104,12 @@ async function fetchJson({ method, url, body, token, timeoutMs = 120000 }) {
 }
 
 async function setupMainLine({ departments = 20, hrChatId = 'oc_hr_notice', itChatId = 'oc_it_desk', publish = true } = {}) {
+  if (TARGET !== 'feishu') {
+    const { directorySetup } = await import('./directory-setup.mjs')
+    const installed = await directorySetup.run({ target: TARGET, departments, hrChatId, itChatId, publish, upsertConnection })
+    targetDepartmentIds = installed.departmentIds
+    return installed
+  }
   await mock({ method: 'POST', path: '/__admin/reset' })
   await mock({ method: 'POST', path: '/__admin/departments', body: { ids: Array.from({ length: departments }, (_, index) => departmentOpenId({ index })) } })
   await upsertConnection({ externalId: 'beisen-main', displayName: '北森', connectorName: '@fema-ipaas/connector-beisen', props: { appKey: 'mock-key', appSecret: 'mock-secret' } })
@@ -117,7 +142,7 @@ async function setupMainLine({ departments = 20, hrChatId = 'oc_hr_notice', itCh
   if (publish) {
     await republishWorkflows({ workflowIds })
   }
-  return { workflowIds, tableId: table.id }
+  return { workflowIds, tableId: table.id, onboardId: installed.workflows.find((workflow) => workflow.key === 'onboard')?.workflowId }
 }
 
 async function setupOrgSync({ connections, rootOrganizationId, itChatId, archiveParentId = '' }) {
@@ -169,6 +194,7 @@ function departmentOid({ index }) {
 }
 
 function departmentOpenId({ index }) {
+  if (TARGET !== 'feishu') return targetDepartmentIds[index]
   return `od-d${String(index + 1).padStart(2, '0')}`
 }
 
@@ -314,4 +340,14 @@ function fmt({ value }) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function targetProfile() {
+  return {
+    name: TARGET,
+    createPath: TARGET === 'feishu' ? '/contact/v3/users$' : TARGET === 'wecom' ? '/cgi-bin/user/create$' : '/topapi/v2/user/create$',
+    messagePath: TARGET === 'feishu' ? '/im/v1/messages$' : TARGET === 'wecom' ? '/cgi-bin/message/send$' : '/topapi/message/corpconversation/asyncsend_v2$',
+    rateLimitPayload: TARGET === 'feishu' ? { code: 99991400, msg: 'request trigger frequency limit' } : { errcode: TARGET === 'wecom' ? 45009 : 90002, errmsg: 'API frequency limit exceeded' },
+    onboardName: `员工入职开通${TARGET === 'feishu' ? '飞书' : TARGET === 'wecom' ? '企业微信' : '钉钉'}账号`,
+  }
 }

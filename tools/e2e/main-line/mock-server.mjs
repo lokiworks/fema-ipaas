@@ -26,7 +26,7 @@ const state = {
   replayedCreates: 0,
   faults: [],
   faultsServed: 0,
-  latencyMs: { feishu: 0, beisen: 0 },
+  latencyMs: { feishu: 0, beisen: 0, wecom: 0, dingtalk: 0 },
   beisenQuirks: { duplicateRate: 0, shuffle: false },
   requestCounts: {},
   inflight: 0,
@@ -111,7 +111,7 @@ const ROUTES = {
     return ok({ faults: state.faults.length })
   },
   'POST /__admin/latency': ({ body }) => {
-    state.latencyMs = { feishu: Number(body.feishu ?? 0), beisen: Number(body.beisen ?? 0) }
+    state.latencyMs = { feishu: Number(body.feishu ?? 0), beisen: Number(body.beisen ?? 0), wecom: Number(body.wecom ?? 0), dingtalk: Number(body.dingtalk ?? 0) }
     return ok({ latencyMs: state.latencyMs })
   },
   'POST /__admin/beisen-quirks': ({ body }) => {
@@ -137,7 +137,7 @@ const ROUTES = {
     state.timeWindowRequests = []
     state.faults = []
     state.faultsServed = 0
-    state.latencyMs = { feishu: 0, beisen: 0 }
+    state.latencyMs = { feishu: 0, beisen: 0, wecom: 0, dingtalk: 0 }
     state.beisenQuirks = { duplicateRate: 0, shuffle: false }
     state.requestCounts = {}
     state.inflightMax = 0

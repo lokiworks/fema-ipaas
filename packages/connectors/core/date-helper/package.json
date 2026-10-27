@@ -10,8 +10,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "vitest": "3.2.6",
-    "tslib": "2.6.2"
+    "vitest": "3.2.6"
   },
   "dependencies": {
     "@fema-ipaas/connector-common": "workspace:*",
@@ -19,6 +18,7 @@
     "dayjs": "1.11.9",
     "zod": "4.3.6",
     "@fema-ipaas/connector-types": "workspace:*",
-    "@fema-ipaas/core-utils": "workspace:*"
+    "@fema-ipaas/core-utils": "workspace:*",
+    "tslib": "2.6.2"
   }
 }

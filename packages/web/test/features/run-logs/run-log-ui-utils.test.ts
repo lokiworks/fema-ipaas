@@ -1,5 +1,6 @@
 import {
   GenericStepOutput,
+  ReliabilityEventKind,
   RunLogScope,
   RunRerunBlockReason,
   StepOutputStatus,
@@ -10,6 +11,11 @@ import { describe, expect, it } from 'vitest';
 import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
 
 describe('runLogUiUtils', () => {
+  it('labels every reliability outcome including withheld retries', () => {
+    for (const kind of Object.values(ReliabilityEventKind)) {
+      expect(runLogUiUtils.handledKindLabel(kind).length).toBeGreaterThan(0);
+    }
+  });
   it('labels every rerun block reason', () => {
     Object.values(RunRerunBlockReason).forEach((reason) => {
       expect(runLogUiUtils.blockReasonLabel(reason).length).toBeGreaterThan(0);

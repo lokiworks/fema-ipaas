@@ -31,6 +31,8 @@ export type ConnectorStepMetadata = BaseStepMetadata & {
   connectorType: ConnectorType;
   auth: ConnectorAuthProperty | ConnectorAuthProperty[] | undefined;
   errorHandlingOptions?: ErrorHandlingOptionsParam;
+  reliability?: ActionBase['reliability'];
+  classification?: ActionBase['classification'];
 };
 
 export type PrimitiveStepMetadata = BaseStepMetadata & {

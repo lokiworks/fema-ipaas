@@ -6027,5 +6027,6 @@
   "failureHintDepartmentSlash": "department names must not contain a slash",
   "Schedule": "Schedule",
   "Select": "Select",
-  "Reconciliation rules": "Reconciliation rules"
+  "Reconciliation rules": "Reconciliation rules",
+  "Automatic retry withheld": "Automatic retry withheld"
 }

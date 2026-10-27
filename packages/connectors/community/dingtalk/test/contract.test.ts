@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { connectorContract } from '@fema-ipaas/connector-sdk';
+import { connectorContract, ConnectionType } from '@fema-ipaas/connector-sdk';
 import { dingtalk } from '../src';
 import { dingtalkErrorTable } from '../src/lib/common/error-table';
 
@@ -13,7 +13,7 @@ describe('DingTalk reliability contract', () => {
     const spy = vi.spyOn(dingtalkCommon, 'callApi').mockImplementation(async (params) => params.path.endsWith('/get') ? { userid: 'employee', dept_id_list: [99] } : {});
     const { createMockActionContext } = await import('@fema-ipaas/connector-sdk');
     const action = dingtalk.actions()['suspend_user'];
-    const result = await action.run({ ...createMockActionContext({ propsValue: { userid: 'employee', pendingDepartmentId: '99' } }), auth: { props: { appKey: 'key', appSecret: 'secret' } } });
+    const result = await action.run({ ...createMockActionContext({ propsValue: { userid: 'employee', pendingDepartmentId: '99' } }), auth: { type: ConnectionType.CUSTOM_AUTH, props: { appKey: 'key', appSecret: 'secret' } } });
     expect(result).toEqual({ userid: 'employee', moved: true, suspended: false, pendingAdminAction: 'RESIGN' });
     expect(spy.mock.calls.map(([params]) => params.path)).toEqual(['/topapi/v2/user/update', '/topapi/v2/user/get']);
     spy.mockRestore();

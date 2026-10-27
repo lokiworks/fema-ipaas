@@ -1,4 +1,3 @@
-import { outboundIp } from './outbound-ip'
 import { EntityId, isNil, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import { wideEvent } from '@fema-ipaas/server-utils'
 import { ApplicationError, ApplicationEventName, ConnectionOwners, ConnectionScope, ConnectionStatus, ConnectionType, ConnectionWithoutSensitiveData, ErrorCode, GetOAuth2AuthorizationUrlRequestBody, GetOAuth2AuthorizationUrlResponse, ListConnectionOwnersRequestQuery, ListConnectionsRequestQuery, MCP_CONNECTOR_NAME, PLACEHOLDER_CONNECTION_TYPE, PrincipalType, ReplaceConnectionsRequestBody, SERVICE_KEY_SECURITY_OPENAPI, UpdateConnectionValueRequestBody, UpsertConnectionRequestBody } from '@fema-ipaas/shared'
@@ -16,6 +15,7 @@ import { connectionReferenceService } from './connection-reference.service'
 import { connectionService } from './connection-service/connection-service'
 import { oauth2Util } from './connection-service/oauth2/oauth2-util'
 import { ConnectionEntity } from './connection.entity'
+import { outboundIp } from './outbound-ip'
 
 export const connectionController: FastifyPluginCallbackZod = (app, _opts, done) => {
     app.get('/outbound-ip', { config: { security: securityAccess.unscoped([PrincipalType.USER]) }, schema: { response: { 200: z.object({ address: z.string().nullable() }) } } }, async () => outboundIp.get())

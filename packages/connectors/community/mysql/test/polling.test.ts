@@ -1,3 +1,4 @@
+import { expect, it } from 'vitest';
 import { mysqlPolling } from '../src/lib/triggers/new-row';
 
 it('uses a composite cursor so rows sharing an update time continue after the last unique key', () => {

@@ -28,3 +28,15 @@ it('preserves repeatable events without an execution finish key', async () => {
     await auditEventService(app.log).record(event)
     expect(await auditEventRepo().countBy({ tenantId: ctx.tenant.id, projectId: ctx.project.id })).toBe(2)
 })
+
+it('keeps exactly one finish event per execution across two thousand repeated deliveries', async () => {
+    const ctx = await createTestContext(app)
+    const executionIds = Array.from({ length: 2000 }, () => generateId())
+    for (let index = 0; index < executionIds.length; index += 50) {
+        await Promise.all(executionIds.slice(index, index + 50).flatMap((id) => {
+            const event = { tenantId: ctx.tenant.id, projectId: ctx.project.id, action: ApplicationEventName.EXECUTION_FINISHED, data: { execution: { id } } }
+            return [auditEventService(app.log).record(event), auditEventService(app.log).record(event)]
+        }))
+    }
+    expect(await auditEventRepo().countBy({ tenantId: ctx.tenant.id, projectId: ctx.project.id, action: ApplicationEventName.EXECUTION_FINISHED })).toBe(2000)
+}, 60000)

@@ -1,1 +1,21 @@
-{}
+{
+  "Organization Sync": "Organization Sync",
+  "Plan safe changes to a department tree": "Plan safe changes to a department tree",
+  "Plan department synchronization": "Plan department synchronization",
+  "Resolve department change": "Resolve department change",
+  "Compare department trees and return parent-first changes without writing to either system": "Compare department trees and return parent-first changes without writing to either system",
+  "Resolve a planned change against the latest bindings": "Resolve a planned change against the latest bindings",
+  "Source departments": "Source departments",
+  "Target departments": "Target departments",
+  "Department bindings": "Department bindings",
+  "Source root": "Source root",
+  "Target root": "Target root",
+  "Archive department": "Archive department",
+  "Maximum departments to archive": "Maximum departments to archive",
+  "Stop when a source parent chain is broken": "Stop when a source parent chain is broken",
+  "Maximum departments to move": "Maximum departments to move",
+  "Planned change": "Planned change",
+  "Latest bindings": "Latest bindings",
+  "Changes": "Changes",
+  "Gate exceeded": "Gate exceeded"
+}

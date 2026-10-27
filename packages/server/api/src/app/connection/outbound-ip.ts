@@ -6,8 +6,12 @@ async function get(): Promise<{ address: string | null }> {
     if (cached && cached.expires > Date.now()) return { address: cached.address }
     if (pending) return pending
     pending = request()
-    try { return await pending }
-    finally { pending = null }
+    try {
+        return await pending
+    }
+    finally {
+        pending = null
+    }
 }
 
 async function request(): Promise<{ address: string | null }> {

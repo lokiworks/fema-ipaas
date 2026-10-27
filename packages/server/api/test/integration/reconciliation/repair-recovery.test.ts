@@ -8,7 +8,7 @@ import * as executions from '../../../src/app/workflows/execution/execution-serv
 import { reconciliationRepair } from '../../../src/app/reconciliation/reconciliation-repair'
 import { reconciliationDifferenceRepo, reconciliationRuleRepo } from '../../../src/app/reconciliation/reconciliation.service'
 import { db } from '../../helpers/db'
-import { createMockExecution, createMockWorkflow, createMockWorkflowVersion } from '../../helpers/mocks'
+import { createMockConnectorMetadata, createMockExecution, createMockWorkflow, createMockWorkflowVersion } from '../../helpers/mocks'
 import { createTestContext } from '../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
@@ -32,7 +32,7 @@ it('persists the repair ID before dispatch and recovers the same ID after a disp
     const difference = await reconciliationDifferenceRepo().save({ id: generateId(), projectId: ctx.project.id, ruleId: rule.id, businessKey: 'person', aspect: 'account', kind: 'MISSING_IN_TARGET', expected: true, actual: null, status: 'OPEN', firstSeenRunId: runId, lastSeenRunId: runId, repairExecutionId: null, resolvedAt: null })
     const action = createAction({ name: 'get', displayName: 'Get', description: '', classification: 'READ', requireAuth: false, props: { id: Property.ShortText({ displayName: 'ID', required: true }) }, run: async () => undefined })
     const originalMetadata = metadata.connectorMetadataService
-    vi.spyOn(metadata, 'connectorMetadataService').mockImplementation((log) => ({ ...originalMetadata(log), getOrThrow: async () => ({ actions: { get: action } }) }))
+    vi.spyOn(metadata, 'connectorMetadataService').mockImplementation((log) => ({ ...originalMetadata(log), getOrThrow: async () => createMockConnectorMetadata({ actions: { get: action } }) }))
     const originalActions = actions.actionRunService
     vi.spyOn(actions, 'actionRunService').mockImplementation((log) => ({ ...originalActions(log), runConnectorAction: async () => ({ status: actions.ActionRunStatus.SUCCEEDED, output: { id: 'person' }, durationMs: 0, neverStarted: false, errorMessage: null }) }))
     const originalExecutions = executions.executionService

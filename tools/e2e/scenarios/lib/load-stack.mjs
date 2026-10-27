@@ -15,7 +15,7 @@ const LOAD_DIR = path.join(STATE_DIR, 'load')
 const PID_FILE = path.join(LOAD_DIR, 'pids.json')
 const REDIS_BIN = process.env.E2E_REDIS_BIN ?? '/opt/homebrew/opt/redis/bin/redis-server'
 const REDIS_CLI = path.join(path.dirname(REDIS_BIN), 'redis-cli')
-const CONNECTORS = 'beisen,feishu,mysql,postgres,ai,connections,crypto,csv,data-mapper,org-sync,email,wecom,dingtalk,data-summarizer,date-helper,file-helper,forms,http,manual-trigger,math-helper,mcp,schedule,store,subflows,tags,text-helper,webhook,xml'
+const CONNECTORS = process.env.E2E_CONNECTORS ?? 'beisen,feishu,mysql,postgres,ai,connections,crypto,csv,data-mapper,org-sync,email,wecom,dingtalk,data-summarizer,date-helper,file-helper,forms,http,manual-trigger,math-helper,mcp,schedule,store,subflows,tags,text-helper,webhook,xml'
 const JWT_SECRET = `e2e-slot-${SLOT}-secret`
 const SNAPSHOT_DIR = path.join(process.env.E2E_STATE_ROOT ?? '/tmp/fema-e2e', `snap-${SLOT}`)
 
@@ -49,6 +49,7 @@ async function up({ db = 'pglite', redis = 'memory', workers = 1, web = false, c
   if (clean) {
     await down({ keepState: false })
     rmSync(STATE_DIR, { recursive: true, force: true })
+    if (process.env.E2E_NO_SNAPSHOT !== '1') prepareSnapshot({ refresh: true })
   }
   mkdirSync(LOAD_DIR, { recursive: true })
   mkdirSync(path.join(STATE_DIR, 'config'), { recursive: true })
@@ -74,9 +75,10 @@ async function up({ db = 'pglite', redis = 'memory', workers = 1, web = false, c
 
 async function down({ keepState = true } = {}) {
   const pids = readPids()
-  for (const name of Object.keys(pids)) {
-    await stopProc({ name })
-  }
+  const workers = Object.keys(pids).filter((name) => name.startsWith('worker'))
+  await Promise.all(workers.map((name) => stopProc({ name })))
+  await stopProc({ name: 'api' })
+  for (const name of Object.keys(pids).filter((name) => !workers.includes(name) && name !== 'api')) await stopProc({ name })
   for (const port of [API_PORT, WEB_PORT, MOCK_PORT, PG_PORT, REDIS_PORT]) {
     const out = spawnSync('lsof', ['-nP', '-tiTCP:' + port, '-sTCP:LISTEN'], { encoding: 'utf8' }).stdout.trim()
     for (const pid of out.split('\n').filter(Boolean)) {
@@ -98,6 +100,9 @@ function baseEnv() {
     ...process.env,
     FEMA_PORT: String(API_PORT),
     FEMA_ENVIRONMENT: 'dev',
+    FEMA_LOG_LEVEL: process.env.FEMA_LOG_LEVEL ?? 'info',
+    FEMA_CONNECTORS_SYNC_MODE: 'NONE',
+    FEMA_TELEMETRY_ENABLED: 'false',
     FEMA_EXECUTION_MODE: 'UNSANDBOXED',
     FEMA_FRONTEND_URL: `http://localhost:${WEB_PORT}`,
     FEMA_DEV_CONNECTORS: CONNECTORS,
@@ -169,6 +174,8 @@ function startApi({ db, redis, apiEnv = {} }) {
 }
 
 function startWorker({ index, workerEnv = {} }) {
+  const existing = pidOf({ name: `worker${index}` })
+  if (existing && isAlive({ pid: existing })) return existing
   const cache = path.join(STATE_DIR, `worker-cache-${index}`)
   mkdirSync(cache, { recursive: true })
   const token = execFileSync(process.execPath, ['-e', 'const jwt=require("jsonwebtoken");process.stdout.write(jwt.sign({id:"e2e-worker-"+process.env.IDX,type:"WORKER"},process.env.JWT_SECRET,{algorithm:"HS256",issuer:"fema",expiresIn:"30d",keyid:"1"}))'], { cwd: ROOT, env: { ...process.env, JWT_SECRET, IDX: String(index) }, encoding: 'utf8' })
@@ -187,7 +194,10 @@ function prepareSnapshot({ refresh = false } = {}) {
   rmSync(SNAPSHOT_DIR, { recursive: true, force: true })
   mkdirSync(path.join(SNAPSHOT_DIR, 'packages', 'connectors'), { recursive: true })
   for (const entry of readdirSync(ROOT)) {
-    if (entry !== 'packages' && entry !== '.git') {
+    if (entry === 'dist') {
+      cpSync(path.join(ROOT, 'dist', 'packages', 'engine'), path.join(SNAPSHOT_DIR, 'dist', 'packages', 'engine'), { recursive: true })
+    }
+    else if (entry !== 'packages' && entry !== '.git') {
       symlinkSync(path.join(ROOT, entry), path.join(SNAPSHOT_DIR, entry))
     }
   }
@@ -243,9 +253,7 @@ async function stopProc({ name, graceMs = 20000 }) {
   while (Date.now() < deadline && isAlive({ pid })) {
     await sleep(200)
   }
-  if (isAlive({ pid })) {
-    process.kill(pid, 'SIGKILL')
-  }
+  if (isAlive({ pid })) killProc({ name })
   writePids(omit({ pids: readPids(), name }))
 }
 
@@ -350,23 +358,21 @@ async function waitApi({ timeoutMs = 240000 } = {}) {
 }
 
 async function waitWorkerOnline({ count, timeoutMs = 120000 }) {
+  const signedIn = await fetch(`http://127.0.0.1:${API_PORT}/api/v1/authentication/sign-in`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email: process.env.E2E_EMAIL ?? 'dev@ap.com', password: process.env.E2E_PASSWORD ?? '12345678' }),
+  })
+  if (!signedIn.ok) throw new Error(`Worker readiness sign-in failed: ${signedIn.status}`)
+  const session = await signedIn.json()
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
-    const log = Array.from({ length: count }, (_, i) => readLog({ name: `worker${i + 1}` })).join('\n')
-    if ((log.match(/Worker settings|connected|Starting worker|socket/gi) ?? []).length >= count) {
-      return
-    }
+    const response = await fetch(`http://127.0.0.1:${API_PORT}/api/v1/worker-machines`, { headers: { authorization: `Bearer ${session.token}` } })
+    if (!response.ok) throw new Error(`Worker readiness failed: ${response.status}`)
+    const workers = await response.json()
+    if (Array.isArray(workers) && workers.filter((worker) => worker.status === 'ONLINE').length >= count) return
     await sleep(1000)
   }
-}
-
-function readLog({ name }) {
-  try {
-    return readFileSync(logFile({ name }), 'utf8')
-  }
-  catch {
-    return ''
-  }
+  throw new Error(`Expected ${count} online workers`)
 }
 
 function processTable() {

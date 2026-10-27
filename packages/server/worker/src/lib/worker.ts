@@ -156,6 +156,7 @@ export const worker = {
         stopSandboxInfoSampling()
         stopCacheSweeper()
         await drainInFlightJobs()
+        connectionGeneration++
         if (runtime) {
             await runtime.shutdown(logger)
             runtime = null
@@ -251,7 +252,7 @@ async function pollAndExecute(apiClient: WorkerToApiContract, runtime: Runtime, 
             continue
         }
 
-        if (!job) {
+        if (!job || !polling || connectionGeneration !== generation) {
             workerLog.debug('Poll returned null, re-polling')
             continue
         }
@@ -272,8 +273,13 @@ async function pollAndExecute(apiClient: WorkerToApiContract, runtime: Runtime, 
             }, 30_000)
 
             const { data: result, error: execError } = await tryCatch(() =>
-                executeJob(apiClient, job, runtime, workerIndex),
+                executeJob({ apiClient, job, runtime, workerIndex, generation }),
             )
+
+            if (connectionGeneration !== generation) {
+                clearInterval(lockExtensionInterval)
+                continue
+            }
 
             const { error: completeError } = await tryCatch(() =>
                 apiClient.completeJob({
@@ -329,7 +335,7 @@ function abortInFlightRuntime(): void {
     })
 }
 
-async function executeJob(apiClient: WorkerToApiContract, job: ConsumeJobRequest, runtime: Runtime, workerIndex: number): Promise<JobResult> {
+async function executeJob({ apiClient, job, runtime, workerIndex, generation }: { apiClient: WorkerToApiContract, job: ConsumeJobRequest, runtime: Runtime, workerIndex: number, generation: number }): Promise<JobResult> {
     const rawData = job.jobData
     const jobData = JobData.parse(rawData)
     const jobLogger = createLogger({
@@ -369,6 +375,7 @@ async function executeJob(apiClient: WorkerToApiContract, job: ConsumeJobRequest
                 internalApiUrl,
                 publicApiUrl,
                 log,
+                isAbandoned: () => connectionGeneration !== generation,
             }
             try {
                 const handler = await getHandler(jobData.jobType)

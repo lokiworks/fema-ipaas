@@ -1,11 +1,14 @@
 import { createHmac } from 'node:crypto'
 
-export function createDirectoryOfficial({ target, kit }) {
+export function createDirectoryOfficial({ target, kit, now = Date.now }) {
   let users = new Map()
   let departments = new Map([['1', { id: '1', name: 'Company', parentId: '0', customId: null }]])
   let messages = []
   let writes = 0
   let deletes = 0
+  let createAttemptsByUser = new Map()
+  let rejectedDuplicateCreates = 0
+  let suppressedNotices = 0
   let sequence = 10
   let denied = false
   let minimumIntervalMs = 0
@@ -38,7 +41,8 @@ export function createDirectoryOfficial({ target, kit }) {
   }
   function memberCreate({ body, query, headers }) {
     const error = guard({ query, headers, write: true }); if (error) return error
-    if (users.has(body.userid)) return fail(ding ? 60102 : 60102)
+    createAttemptsByUser.set(body.userid, (createAttemptsByUser.get(body.userid) ?? 0) + 1)
+    if (users.has(body.userid)) { rejectedDuplicateCreates++; return fail(60102) }
     if ([...users.values()].some((user) => user.mobile && user.mobile === body.mobile)) return fail(60104)
     const ids = (ding ? body.dept_id_list : body.department)?.map(String) ?? []
     if (!ids.length || ids.some((id) => !departments.has(id))) return fail(60003)
@@ -101,19 +105,23 @@ export function createDirectoryOfficial({ target, kit }) {
     const recipients = ding ? body.userid_list : body.touser
     const content = robot ? body.text?.content : ding ? body.msg?.text?.content : body.text?.content
     if (!robot && (!recipients || !body[ding ? 'agent_id' : 'agentid'])) return fail(40035)
-    const key = JSON.stringify([recipients, content])
+    const key = JSON.stringify([robot, body[ding ? 'agent_id' : 'agentid'], recipients, content])
     const previous = messageKeys.get(key)
-    if (!ding && body.enable_duplicate_check && previous && Date.now() - previous < Math.min(14400, body.duplicate_check_interval ?? 1800) * 1000) return ok({ msgid: 'duplicate' })
+    const interval = ding && !robot ? 86400 : !ding && body.enable_duplicate_check ? Math.min(14400, body.duplicate_check_interval ?? 1800) : 0
+    if (interval && previous !== undefined && now() - previous < interval * 1000) {
+      suppressedNotices++
+      return ok(ding ? { task_id: messages.length } : { msgid: 'duplicate' })
+    }
     messages.push({ recipients, content, robot })
-    messageKeys.set(key, Date.now())
+    messageKeys.set(key, now())
     return ok(ding ? { task_id: messages.length } : { msgid: String(messages.length) })
   }
   function routes() {
     const read = ding ? 'POST' : 'GET'
     const prefix = ding ? '/topapi/v2' : '/cgi-bin'
     return {
-      [`POST /__admin/${target}`]: ({ body }) => { if (body.reset) { users = new Map(); departments = new Map([['1', { id: '1', name: 'Company', parentId: '0', customId: null }]]); messages = []; writes = 0; deletes = 0; sequence = 10; messageKeys.clear() }; if (body.departments) departments = new Map(body.departments.map((department) => [String(department.id), { ...department, id: String(department.id), parentId: String(department.parentId), customId: department.customId ?? null }])); denied = body.denied ?? false; minimumIntervalMs = body.minimumIntervalMs ?? 0; return kit.ok({ ok: true }) },
-      [`GET /__admin/${target}`]: () => kit.ok({ users: [...users.values()], departments: [...departments.values()], messages, writes, deletes }),
+      [`POST /__admin/${target}`]: ({ body }) => { if (body.reset) { users = new Map(); departments = new Map([['1', { id: '1', name: 'Company', parentId: '0', customId: null }]]); messages = []; writes = 0; deletes = 0; sequence = 10; createAttemptsByUser = new Map(); rejectedDuplicateCreates = 0; suppressedNotices = 0; messageKeys.clear() }; if (body.departments) departments = new Map(body.departments.map((department) => [String(department.id), { ...department, id: String(department.id), parentId: String(department.parentId), customId: department.customId ?? null }])); denied = body.denied ?? false; minimumIntervalMs = body.minimumIntervalMs ?? 0; return kit.ok({ ok: true }) },
+      [`GET /__admin/${target}`]: () => kit.ok({ users: [...users.values()], departments: [...departments.values()], messages, writes, deletes, createAttemptsByUser: Object.fromEntries(createAttemptsByUser), rejectedDuplicateCreates, suppressedNotices }),
       [`${ding ? 'POST' : 'GET'} ${base}${ding ? '/v1.0/oauth2/accessToken' : '/cgi-bin/gettoken'}`]: ({ body, query }) => ding ? kit.ok({ accessToken: `${target}-token-${body.appKey}`, expireIn: 7200 }) : kit.ok({ errcode: 0, access_token: `${target}-token-${query.get('corpsecret')}`, expires_in: 7200 }),
       [`${read} ${base}${prefix}/user/get`]: memberGet,
       [`POST ${base}${prefix}/user/${ding ? 'getbymobile' : 'getuserid'}`]: memberFind,

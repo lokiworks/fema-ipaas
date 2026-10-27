@@ -1,0 +1,21 @@
+{
+  "Organization Sync": "组织同步",
+  "Plan safe changes to a department tree": "规划部门树的安全变更",
+  "Plan department synchronization": "规划部门同步",
+  "Resolve department change": "解析部门变更",
+  "Compare department trees and return parent-first changes without writing to either system": "比较部门树，按父部门优先的顺序生成变更，不向源或目标系统写入",
+  "Resolve a planned change against the latest bindings": "根据最新绑定解析计划中的变更",
+  "Source departments": "源部门",
+  "Target departments": "目标部门",
+  "Department bindings": "部门绑定",
+  "Source root": "源根部门",
+  "Target root": "目标根部门",
+  "Archive department": "归档部门",
+  "Maximum departments to archive": "最多归档部门数",
+  "Stop when a source parent chain is broken": "源部门父级链断开时停止",
+  "Maximum departments to move": "最多移动部门数",
+  "Planned change": "计划变更",
+  "Latest bindings": "最新绑定",
+  "Changes": "变更",
+  "Gate exceeded": "超出安全阈值"
+}

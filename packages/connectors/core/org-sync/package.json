@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@fema-ipaas/connector-sdk": "workspace:*",
-    "zod": "4.3.6"
+    "zod": "4.3.6",
+    "tslib": "2.6.2"
   },
   "devDependencies": {
-    "tslib": "2.6.2",
     "vitest": "3.2.6"
   }
 }

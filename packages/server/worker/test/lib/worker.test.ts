@@ -9,7 +9,7 @@ import {
     EngineResponseStatus,
     WebsocketServerEvent,
 } from '@fema-ipaas/shared'
-import { JobResultKind } from '../../src/lib/execute/types'
+import { JobContext, JobResultKind } from '../../src/lib/execute/types'
 import type {
     WorkerToApiContract,
     ExecuteExtractConnectorMetadataJobData,
@@ -257,6 +257,33 @@ describe('worker integration', () => {
         expect(completeJobCalls[0].jobId).toBe('job-fail')
         expect(completeJobCalls[0].status).toBe(EngineResponseStatus.INTERNAL_ERROR)
         expect(completeJobCalls[0].errorMessage).toBe('boom')
+    }, 15_000)
+
+    it('abandons a job after the drain deadline without reporting an internal failure', async () => {
+        const completeJob = vi.fn()
+        let received = false
+        let jobContext: JobContext | undefined
+        let rejectExecution: (error: Error) => void = () => undefined
+        const pending = new Promise<never>((_resolve, reject) => { rejectExecution = reject })
+        mockGetHandler.mockReturnValue({
+            jobType: WorkerJobType.EXECUTE_EXTRACT_CONNECTOR_INFORMATION,
+            execute: (ctx: JobContext) => { jobContext = ctx; return pending },
+        })
+        registerRpcServer({ poll: vi.fn(async () => { if (received) return null; received = true; return buildConsumeJobRequest() }), completeJob })
+        await worker.start({ apiUrl: `http://127.0.0.1:${port}/api/`, socketUrl: { url: `http://127.0.0.1:${port}`, path: '/api/socket.io' }, workerToken: 'test-token' })
+        await waitFor(() => jobContext !== undefined)
+        expect(jobContext?.isAbandoned?.()).toBe(false)
+        createdRuntimes[0].shutdown.mockImplementation(async () => { rejectExecution(new Error('Runtime stopped')) })
+        vi.useFakeTimers({ toFake: ['Date'] })
+        try {
+            const stopped = worker.stop()
+            vi.setSystemTime(Date.now() + 26000)
+            await stopped
+            await new Promise((resolve) => setTimeout(resolve, 100))
+            expect(jobContext?.isAbandoned?.()).toBe(true)
+            expect(completeJob).not.toHaveBeenCalled()
+        }
+        finally { vi.useRealTimers() }
     }, 15_000)
 
     it('forwards response from job handler to completeJob', async () => {

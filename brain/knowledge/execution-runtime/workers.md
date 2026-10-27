@@ -13,6 +13,7 @@ The deep `Resolver`/`Runtime` concurrency and bundle-caching model lives on the 
 - Jobs are **pulled** via `poll()`, not pushed. Handing out a job moves it to BullMQ `active`, so the app records it under the polling `socket.id` (`jobAssignmentTracker`, keyed queue+jobId). Worker executes → periodic `extendLock` → `completeJob` clears the assignment.
 - On disconnect, `connectionGeneration++` stops the loops; the app returns that socket's still-held jobs to the queue (`releaseConnectionJobs(socket.id)`) so they don't sit orphaned in `active` (the "Job stalled" storm); the worker aborts its in-flight runtime. Reconnect recreates the runtime fresh (kills any lingering job rather than colliding on the reused box).
 - Graceful `stop()` (SIGTERM) drains in-flight jobs first (≤25s); the stalled-scan is the backstop for abrupt death.
+- After the drain deadline or a disconnect, the old connection generation no longer owns its jobs. Runtime shutdown must not report those jobs as internal failures or complete them; disconnect returns them to the queue. Keep `JobContext.isAbandoned` and the completion generation check together so stale runtime failures cannot overwrite recovery state or page on-call during a deploy.
 
 ### Config & routing
 - `FEMA_CONTAINER_TYPE` (`APP` / `WORKER` / `WORKER_AND_APP`) picks what `docker-entrypoint.sh` starts. `FEMA_REUSE_SANDBOX` reuses the engine process between jobs.

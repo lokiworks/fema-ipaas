@@ -17,5 +17,9 @@
   "HTML": "HTML",
   "Attachments": "附件",
   "File": "文件",
-  "Message ID": "邮件 ID"
+  "Message ID": "邮件 ID",
+  "Send workflow email": "在工作流中发送邮件",
+  "Send an email using SMTP or the platform mail service": "使用自有 SMTP 或平台邮件服务发送邮件",
+  "Choose your SMTP server, or the platform mail service configured by the administrator in System settings. Private SMTP IPs must be explicitly allowed in FEMA_SSRF_ALLOW_LIST. TLS certificates are always verified.": "选择自有 SMTP 服务器，或管理员在系统设置中配置的平台邮件服务。私网 SMTP 地址需要管理员在 FEMA_SSRF_ALLOW_LIST 中明确允许。始终校验 TLS 证书。",
+  "Ask the administrator to configure the mail service in System settings if this option is unavailable.": "如果此选项不可用，请联系管理员在系统设置中配置邮件服务。"
 }

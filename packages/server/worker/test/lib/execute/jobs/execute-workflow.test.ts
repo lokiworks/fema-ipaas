@@ -118,6 +118,22 @@ describe('executeWorkflowJob', () => {
         vi.clearAllMocks()
     })
 
+    it('leaves an abandoned execution recoverable when the runtime is stopped', async () => {
+        const ctx = makeMockContext()
+        ctx.isAbandoned = () => true
+        ctx.runtime.execute.mockRejectedValue(new Error('Worker runtime stopped'))
+        await expect(executeWorkflowJob.execute(ctx, makeResumeJobData())).rejects.toThrow('Worker runtime stopped')
+        expect(ctx.apiClient.uploadRunLog).not.toHaveBeenCalled()
+    })
+
+    it('reports an actual runtime failure while the worker still owns the execution', async () => {
+        const ctx = makeMockContext()
+        ctx.isAbandoned = () => false
+        ctx.runtime.execute.mockRejectedValue(new Error('Engine failed'))
+        await expect(executeWorkflowJob.execute(ctx, makeResumeJobData())).rejects.toThrow('Engine failed')
+        expect(ctx.apiClient.uploadRunLog).toHaveBeenCalledWith(expect.objectContaining({ status: ExecutionStatus.INTERNAL_ERROR }))
+    })
+
     describe('payload pass-through (no worker-side fetch)', () => {
         it('forwards the JobPayload ref unchanged to the engine for BEGIN', async () => {
             const ctx = makeMockContext()

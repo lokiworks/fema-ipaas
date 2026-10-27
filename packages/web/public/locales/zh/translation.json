@@ -6027,5 +6027,6 @@
   "failureHintDepartmentSlash": "部门名称不能包含斜杠，请修正源组织名称。",
   "Schedule": "调度计划",
   "Select": "请选择",
-  "Reconciliation rules": "全量对账规则"
+  "Reconciliation rules": "全量对账规则",
+  "Automatic retry withheld": "已阻止自动重试"
 }

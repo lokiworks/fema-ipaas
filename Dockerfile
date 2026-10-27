@@ -61,6 +61,8 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 ### STAGE 1: Build ###
 FROM base AS build
 
+ARG TURBO_CONCURRENCY=2
+
 WORKDIR /usr/src/app
 
 # Copy dependency files and workspace package.json files for resolution
@@ -75,10 +77,10 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 COPY . .
 
 # Build frontend, engine, server API, and worker
-RUN npx turbo run build --filter=web --filter=@fema-ipaas/engine --filter=api --filter=worker
+RUN npx turbo run build --concurrency="${TURBO_CONCURRENCY}" --filter=web --filter=@fema-ipaas/engine --filter=api --filter=worker
 
 # Build the first-party connectors shipped in the image, in a separate step to keep peak memory flat
-RUN npx turbo run build --filter='./packages/connectors/core/*' --filter='./packages/connectors/community/*'
+RUN npx turbo run build --concurrency="${TURBO_CONCURRENCY}" --filter='./packages/connectors/core/*' --filter='./packages/connectors/community/*'
 
 # The web build emits hidden source maps (vite build.sourcemap='hidden') used to
 # symbolicate production stack traces in Sentry/BetterStack error tracking. Upload
@@ -97,10 +99,9 @@ RUN node -e "\
 # Remove workspaces not needed at runtime: web/cli/tests-e2e whose deps (react & friends)
 # would otherwise land in the runtime node_modules. dist/packages/web is already built and kept.
 # packages/connectors stays: its built dist folders are the built-in connectors.
-# Then drop the removed entries from the root workspaces list and regenerate bun.lock.
 RUN rm -rf packages/web packages/cli packages/tests-e2e && \
     node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.workspaces=p.workspaces.filter(w=>fs.existsSync(w.replace('/*','')));fs.writeFileSync('package.json',JSON.stringify(p,null,2))" && \
-    rm -f bun.lock && bun install
+    bun install --lockfile-only
 
 ### STAGE 2: Run ###
 FROM base AS run
@@ -125,7 +126,6 @@ COPY --from=build /usr/src/app/packages ./packages
 # Copy built engine
 COPY --from=build /usr/src/app/dist/packages/engine/ ./dist/packages/engine/
 
-# Regenerate lockfile and install production dependencies (pieces were trimmed from workspace)
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --production
 

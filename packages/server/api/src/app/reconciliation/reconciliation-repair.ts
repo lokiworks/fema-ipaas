@@ -1,4 +1,3 @@
-import { reconciliationInputs } from './reconciliation-inputs'
 import { ApplicationError, chunk, ErrorCode, generateId, isNil, isObject } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, ExecutionType, isExecutionStateTerminal, reconciliationDiff, RunEnvironment, StreamStepProgress } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
@@ -7,9 +6,10 @@ import { actionRunService, ActionRunStatus } from '../action-run/action-run.serv
 import { connectorMetadataService } from '../connectors/metadata/connector-metadata-service'
 import { distributedLock } from '../database/redis-connections'
 import { projectService } from '../project/project-service'
-import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { jobQueue } from '../workers/job-queue/job-queue'
+import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
+import { reconciliationInputs } from './reconciliation-inputs'
 import { reconciliationDifferenceRepo, reconciliationService } from './reconciliation.service'
 
 export const reconciliationRepair = (log: FastifyBaseLogger) => ({
@@ -49,7 +49,10 @@ export const reconciliationRepair = (log: FastifyBaseLogger) => ({
                 tenantId, projectId, connectorName: rule.source.connectorName, actionName: rule.repair.readActionName,
                 input: { ...rule.source.input, auth: reconciliationInputs.authReference(rule.source.connectionExternalId), [rule.repair.keyInput]: difference.businessKey },
             })
-            if (current.status !== ActionRunStatus.SUCCEEDED) throw new Error('reconciliation.sourceReadFailed')
+            if (current.status !== ActionRunStatus.SUCCEEDED) {
+                log.warn({ projectId, ruleId: rule.id, connectorName: rule.source.connectorName, actionName: rule.repair.readActionName, status: current.status, error: current.errorMessage }, 'Reconciliation repair source read failed')
+                throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: 'reconciliation.sourceReadFailed' } })
+            }
             const samePerson = { projectId, ruleId: rule.id, businessKey: difference.businessKey, status: In(['OPEN', 'REPAIRING']) }
             if (isNil(current.output)) {
                 await reconciliationDifferenceRepo().update(samePerson, { status: 'RESOLVED', resolvedAt: new Date().toISOString() })

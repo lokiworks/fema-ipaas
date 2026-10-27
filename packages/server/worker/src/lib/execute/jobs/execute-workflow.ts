@@ -165,6 +165,9 @@ function toInternalError(source: RunInternalErrorSource, error: unknown): RunInt
 }
 
 async function reportWorkflowStatus({ ctx, data, status, internalError, failedStep }: ReportWorkflowStatusParams): Promise<void> {
+    if (ctx.isAbandoned?.()) {
+        return
+    }
     // A status report has no log file of its own; carry logsFileId only for an internalError the server may
     // persist into one (see uploadRunLog). Sending it on a plain status report would dangle execution.logsFileId.
     await ctx.apiClient.uploadRunLog({

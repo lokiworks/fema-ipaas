@@ -189,6 +189,19 @@ export function createBeisenOfficial({ state, kit }) {
     return descendantsOf({ oId: orgOId }).some((org) => org.oId === Number(departmentOId))
   }
 
+  function currentEmployees({ body }) {
+    const reference = body.queryDate ? kit.beisenTimeToEpoch(body.queryDate) : Date.now()
+    const byUser = new Map()
+    for (const employee of state.employees) {
+      const start = kit.beisenTimeToEpoch(employee.recordInfo.startDate)
+      if (body.isGetLatestRecord === false && Number.isFinite(start) && start > reference) continue
+      const key = String(employee.employeeInfo.userID)
+      const previous = byUser.get(key)
+      if (!previous || employee.changedAt >= previous.changedAt) byUser.set(key, employee)
+    }
+    return [...byUser.values()]
+  }
+
   function employeesOfOrganization({ body, headers }) {
     const denied = gate({ headers })
     if (denied) {
@@ -205,7 +218,7 @@ export function createBeisenOfficial({ state, kit }) {
     if (!official.orgs.has(orgOId)) {
       return kit.ok({ scrollId: null, isLastData: false, total: 0, data: null, code: '417', message: '组织单元不存在' })
     }
-    const matched = state.employees
+    const matched = currentEmployees({ body })
       .filter((employee) => departmentUnder({ orgOId, departmentOId: employee.recordInfo.oIdDepartment, includeSub: body.includeSubOrg === true }))
       .filter((employee) => kit.statusAllowed({ employee, body }))
     const result = scrollPage({ matched, body, fingerprint: JSON.stringify([orgOId, body.includeSubOrg, body.empStatus, body.withDisabled]) })

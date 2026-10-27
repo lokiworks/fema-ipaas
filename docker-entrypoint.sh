@@ -1,11 +1,21 @@
 #!/bin/sh
 
+export FEMA_CONTAINER_TYPE="${FEMA_CONTAINER_TYPE:-WORKER_AND_APP}"
+export FEMA_PORT="${FEMA_PORT:-80}"
+redis_type_default=MEMORY
+db_type_default=PGLITE
+if [ -n "${FEMA_REDIS_URL:+x}${FEMA_REDIS_HOST:+x}${FEMA_REDIS_PORT:+x}${FEMA_REDIS_USER:+x}${FEMA_REDIS_PASSWORD:+x}" ]; then
+    redis_type_default=STANDALONE
+fi
+if [ -n "${FEMA_POSTGRES_URL:+x}${FEMA_POSTGRES_HOST:+x}${FEMA_POSTGRES_PORT:+x}${FEMA_POSTGRES_USERNAME:+x}${FEMA_POSTGRES_PASSWORD:+x}${FEMA_POSTGRES_DATABASE:+x}" ]; then
+    db_type_default=POSTGRES
+fi
+export FEMA_REDIS_TYPE="${FEMA_REDIS_TYPE:-$redis_type_default}"
+export FEMA_DB_TYPE="${FEMA_DB_TYPE:-$db_type_default}"
+
 if [ "$#" -gt 0 ]; then
     exec "$@"
 fi
-
-export FEMA_CONTAINER_TYPE="${FEMA_CONTAINER_TYPE:-WORKER_AND_APP}"
-export FEMA_PORT="${FEMA_PORT:-80}"
 
 echo "FEMA_CONTAINER_TYPE: $FEMA_CONTAINER_TYPE"
 echo "FEMA_PORT: $FEMA_PORT"

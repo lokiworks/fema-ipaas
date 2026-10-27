@@ -308,8 +308,8 @@ const StepSettingsContainer = () => {
             disabled={readonly}
             unsafeWrite={
               stepMetadata.type === WorkflowActionType.CONNECTOR &&
-              'reliability' in stepMetadata &&
-              stepMetadata.reliability?.writeSafety === 'UNSAFE'
+              !['READ', 'SEARCH'].includes(stepMetadata.classification ?? '') &&
+              (stepMetadata.reliability?.writeSafety ?? 'UNSAFE') === 'UNSAFE'
             }
             hideRetryOnFailure={
               stepMetadata.type === WorkflowActionType.CONNECTOR

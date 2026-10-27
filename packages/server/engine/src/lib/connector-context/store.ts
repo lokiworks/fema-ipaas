@@ -1,7 +1,8 @@
 import { URL } from 'node:url'
 import { Store, StoreScope } from '@fema-ipaas/connector-sdk'
 import { isNil, WorkflowId } from '@fema-ipaas/core-utils'
-import { DeleteStoreEntryRequest, ExecutionError, FetchError, PutStoreEntryRequest, StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE, StoreEntry } from '@fema-ipaas/shared'
+import { DeleteStoreEntryRequest, ExecutionError, FetchError, PutStoreEntryRequest, StorageError, StorageInvalidKeyError, StorageLimitError, STORE_KEY_MAX_LENGTH, STORE_VALUE_MAX_SIZE } from '@fema-ipaas/shared'
+import { z } from 'zod'
 import { retryFetch } from '../api/retry-fetch'
 import { utils } from '../utils'
 
@@ -34,7 +35,7 @@ export function createContextStore({ apiUrl, prefix, workflowId, engineToken }: 
 
 function createStoreClient({ engineToken, apiUrl }: CreateStoreClientParams): StoreClient {
     return {
-        async get(key: string): Promise<StoreEntry | null> {
+        async get(key: string): Promise<StoreResponse | null> {
             if (isNil(key) || key.length === 0) {
                 throw new StorageInvalidKeyError(key)
             }
@@ -53,7 +54,7 @@ function createStoreClient({ engineToken, apiUrl }: CreateStoreClientParams): St
                     })
                 }
 
-                return response.json()
+                return STORE_RESPONSE.parse(await response.json())
             }))
 
             if (storeEntryError) {
@@ -65,7 +66,7 @@ function createStoreClient({ engineToken, apiUrl }: CreateStoreClientParams): St
             return storeEntry
         },
 
-        async put(request: PutStoreEntryRequest): Promise<StoreEntry | null> {
+        async put(request: PutStoreEntryRequest): Promise<StoreResponse | null> {
             const url = buildUrl(apiUrl)
 
             const { data: storeEntry, error: storeEntryError } = await utils.tryCatchAndThrowOnEngineError((async () => {
@@ -89,7 +90,7 @@ function createStoreClient({ engineToken, apiUrl }: CreateStoreClientParams): St
                     })
                 }
 
-                return response.json()
+                return STORE_RESPONSE.parse(await response.json())
             }))
 
             if (storeEntryError) {
@@ -181,14 +182,17 @@ const handleResponseError = async ({ key, response }: HandleResponseErrorParams)
     throw new StorageError(key, cause)
 }
 
+const STORE_RESPONSE = z.object({ key: z.string(), value: z.unknown() })
+type StoreResponse = z.infer<typeof STORE_RESPONSE>
+
 type CreateStoreClientParams = {
     engineToken: string
     apiUrl: string
 }
 
 type StoreClient = {
-    get(key: string): Promise<StoreEntry | null>
-    put(request: PutStoreEntryRequest): Promise<StoreEntry | null>
+    get(key: string): Promise<StoreResponse | null>
+    put(request: PutStoreEntryRequest): Promise<StoreResponse | null>
     delete(request: DeleteStoreEntryRequest): Promise<null>
 }
 

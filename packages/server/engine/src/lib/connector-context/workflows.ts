@@ -1,11 +1,12 @@
-import { ListWorkflowsContextParams, WorkflowsContext } from '@fema-ipaas/connector-sdk'
+import { ListWorkflowsContextParams, PopulatedWorkflowSummary, WorkflowsContext } from '@fema-ipaas/connector-sdk'
 import { SeekPage } from '@fema-ipaas/core-utils'
-import { FetchError, PopulatedWorkflow } from '@fema-ipaas/shared'
+import { FetchError } from '@fema-ipaas/workflow-core'
+import { z } from 'zod'
 import { retryFetch } from '../api/retry-fetch'
 
 export const createWorkflowsContext = ({ engineToken, internalApiUrl, workflowId, workflowVersionId }: CreateWorkflowsServiceParams): WorkflowsContext => {
     return {
-        async list(params: ListWorkflowsContextParams): Promise<SeekPage<PopulatedWorkflow>> {
+        async list(params: ListWorkflowsContextParams): Promise<SeekPage<PopulatedWorkflowSummary>> {
             const queryParams = new URLSearchParams()
             if (params?.externalIds) {
                 queryParams.set('externalIds', params.externalIds.join(','))
@@ -20,7 +21,7 @@ export const createWorkflowsContext = ({ engineToken, internalApiUrl, workflowId
             if (!response.ok) {
                 throw new FetchError(url, `status=${response.status}`)
             }
-            return response.json()
+            return WORKFLOWS_RESPONSE.parse(await response.json())
         },
         current: {
             id: workflowId,
@@ -30,6 +31,14 @@ export const createWorkflowsContext = ({ engineToken, internalApiUrl, workflowId
         },
     }
 }
+
+const WORKFLOWS_RESPONSE = z.looseObject({
+    data: z.array(z.looseObject({
+        id: z.string(), externalId: z.string().optional(), projectId: z.string().optional(), status: z.string().optional(),
+        version: z.looseObject({ id: z.string(), displayName: z.string(), valid: z.boolean() }),
+    })),
+    next: z.string().nullable(), previous: z.string().nullable(),
+})
 
 type CreateWorkflowsServiceParams = {
     engineToken: string

@@ -1,4 +1,3 @@
-import { OutboundIpNotice } from './outbound-ip-notice';
 import {
   getAuthPropertyForValue,
   ConnectorAuthProperty,
@@ -64,6 +63,7 @@ import { CustomAuthConnectionSettings } from './custom-auth-connection-settings'
 import { MutliAuthList, AuthListItem } from './multi-auth-list';
 import { OAuth2ConnectionSettings } from './oauth2-connection-settings';
 import { OIDCConnectionSettings } from './oidc-connection-settings';
+import { OutboundIpNotice } from './outbound-ip-notice';
 import { SecretTextConnectionSettings } from './secret-text-connection-settings';
 
 function CreateOrEditConnectionSection({
@@ -360,8 +360,12 @@ function ConnectionSettings({
     case PropertyType.CUSTOM_AUTH:
       return (
         <>
-          {connector.name === '@fema-ipaas/connector-wecom' && <OutboundIpNotice />}
-          <CustomAuthConnectionSettings authProperty={selectedAuth.authProperty} />
+          {connector.name === '@fema-ipaas/connector-wecom' && (
+            <OutboundIpNotice />
+          )}
+          <CustomAuthConnectionSettings
+            authProperty={selectedAuth.authProperty}
+          />
         </>
       );
     case PropertyType.OIDC:

@@ -249,7 +249,7 @@ const ReplayCheckRequest = {
     schema: {
         tags: ['issues'],
         params: IdParams,
-        body: z.object({ strategy: z.enum(WorkflowRetryStrategy).optional() }).optional(),
+        body: z.object({ strategy: z.enum(WorkflowRetryStrategy).optional() }).nullish(),
         response: { [StatusCodes.OK]: ReplayCheckResult },
     },
 }

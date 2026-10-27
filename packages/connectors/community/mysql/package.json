@@ -9,7 +9,8 @@
     "promise-mysql": "5.2.0",
     "sqlstring": "2.3.3",
     "@fema-ipaas/connector-types": "workspace:*",
-    "@fema-ipaas/core-utils": "workspace:*"
+    "@fema-ipaas/core-utils": "workspace:*",
+    "tslib": "2.6.2"
   },
   "scripts": {
     "build": "tsc -p tsconfig.lib.json && cp package.json dist/ && mkdir -p dist/src/i18n && cp src/i18n/*.json dist/src/i18n/",
@@ -19,7 +20,6 @@
   },
   "devDependencies": {
     "@types/sqlstring": "2.3.2",
-    "tslib": "2.6.2",
     "vitest": "3.2.6"
   }
 }

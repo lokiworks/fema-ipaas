@@ -1,6 +1,7 @@
 import { ActionContext, backwardCompatabilityContextUtils, Connector, ConnectorAuthProperty, ConnectorPropertyMap, InputPropertyMap, SetScheduleRequest, StaticPropsValue, TagsManager } from '@fema-ipaas/connector-sdk'
+import { ScheduleOptions, TriggerSourceScheduleType } from '@fema-ipaas/connector-types'
 import { isNil, isObject } from '@fema-ipaas/core-utils'
-import { AUTHENTICATION_PROPERTY_NAME, EngineGenericError, InvalidCronExpressionError, InvalidScheduleIntervalError, ScheduleOptions, TriggerSourceScheduleType } from '@fema-ipaas/shared'
+import { AUTHENTICATION_PROPERTY_NAME, EngineGenericError, InvalidCronExpressionError, InvalidScheduleIntervalError } from '@fema-ipaas/workflow-core'
 import { isValidCron } from 'cron-validator'
 import { retryFetch } from '../../api/retry-fetch'
 import { createFileUploader } from '../../connector-context/file-uploader'

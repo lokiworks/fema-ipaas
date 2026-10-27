@@ -11,7 +11,7 @@ const BATCHES = Number(process.env.LOAD_BATCHES ?? 10)
 const BATCH_GAP_MS = Number(process.env.LOAD_BATCH_GAP_MS ?? 20000)
 const DEPARTMENTS = 20
 const KEEP_STACK = process.env.LOAD_KEEP === '1'
-const RESULT_DIR = '/tmp/fema-e2e/results'
+const RESULT_DIR = process.env.E2E_RESULT_DIR ?? '/tmp/fema-e2e/results'
 const { check, assert, summary } = kit.makeChecker()
 
 mkdirSync(RESULT_DIR, { recursive: true })
@@ -95,7 +95,15 @@ await check('运行监控的计数与数据库里的实际一致，没有把积�
   assert(monitor.handled.caughtUpEvents === 0, `没有宕机，监控却记了 ${monitor.handled.caughtUpEvents} 个宕机后补上的事件`)
   return { runs: monitor.stats.runs, caughtUpEvents: monitor.handled.caughtUpEvents, duplicateEvents: monitor.handled.duplicateEvents }
 })
+await check('每个运行恰好一条结束审计事件', async () => {
+  assert(DB === 'real', '结束审计的数据库校验需要 LOAD_DB=real')
+  const audit = Number(loadStack.psql({ sql: `SELECT COUNT(*) FROM audit_event WHERE action='workflow.run.finished' AND "projectId"='${kit.session().projectId}'` }))
+  assert(audit === progress.total, `结束审计 ${audit}，运行 ${progress.total}`)
+  return { audit, runs: progress.total }
+})
 await check('没有失败的运行、没有未处理的问题', async () => {
+  assert(finished && progress.unfinished === 0, `规模测试尚未收敛：未完成 ${progress.unfinished}`)
+  assert(progress.total === plan.expectedRuns, `运行 ${progress.total}，预期 ${plan.expectedRuns}`)
   assert(progress.failed === 0 && progress.openIssues === 0, `失败 ${progress.failed}，未处理问题 ${progress.openIssues}`)
   return { failed: progress.failed, issues: progress.issues }
 })
@@ -139,7 +147,8 @@ function planOf({ people, batches }) {
       ],
     }
   })
-  return { batches: result, expected, expectedUsers: expected.size }
+  const expectedRuns = result.reduce((count, batch) => count + batch.steps[0].records.length + batch.steps[2].records.length + batch.steps[3].records.length, 0)
+  return { batches: result, expected, expectedUsers: expected.size, expectedRuns }
 }
 
 function judge({ users, expected }) {

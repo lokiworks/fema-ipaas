@@ -1,3 +1,4 @@
+import { ConnectionType } from '@fema-ipaas/connector-sdk';
 import { httpClient } from '@fema-ipaas/connector-common';
 import { isObject } from '@fema-ipaas/connector-sdk';
 import { wecomContacts } from '../src/lib/common/contacts';
@@ -39,7 +40,8 @@ it('does not interpret a visibility denial as a missing user', async () => {
 it('keeps engine auth properties from overriding the extracted connection credentials', async () => {
   const { wecom } = await import('../src');
   const { createMockActionContext } = await import('@fema-ipaas/connector-sdk');
-  const context = { ...createMockActionContext({ propsValue: { userid: 'employee-3', name: 'Employee', mobile: '13800000003', departmentId: '2', auth: { props: auth } } }), auth: { props: auth } };
-  const result = await wecom.actions()['provision_user'].run(context);
+  const action = wecom.actions()['provision_user'];
+  const context: Parameters<typeof action.run>[0] = { ...createMockActionContext({ propsValue: { userid: 'employee-3', name: 'Employee', mobile: '13800000003', departmentId: '2', auth: { type: ConnectionType.CUSTOM_AUTH, props: auth } } }), auth: { type: ConnectionType.CUSTOM_AUTH, props: auth } };
+  const result = await action.run(context);
   expect(result).toMatchObject({ userid: 'employee-3', created: true });
 });

@@ -310,6 +310,17 @@ check('beisen roster by organization: root includes every unit below, a unit inc
   assert.equal(missing.payload.code, '417')
 })
 
+check('beisen organization returns one current record per employee and excludes future changes', async () => {
+  const record = (department, startDate) => employee(501, { recordInfo: { userID: 501, jobNumber: 'E501', oIdDepartment: department, employeeStatus: '2', approvalStatus: 4, startDate } })
+  await admin('/__admin/employees', { records: [record(20301, '2020-01-01T00:00:00')] })
+  await admin('/__admin/employees', { records: [record(20302, '2020-02-01T00:00:00')] })
+  await admin('/__admin/employees', { records: [record(20301, '2099-01-01T00:00:00')] })
+  const current = await beisen({ route: '/Employee/GetEmployeeOfOrganization', body: { orgOId: 900100000, includeSubOrg: true, capacity: 300, isGetLatestRecord: false } })
+  assert.deepEqual(current.payload.data.map((item) => item.recordInfo.oIdDepartment), [20302])
+  const old = await beisen({ route: '/Employee/GetEmployeeOfOrganization', body: { orgOId: 20301, includeSubOrg: false, capacity: 300, isGetLatestRecord: false } })
+  assert.equal(old.payload.data.length, 0)
+})
+
 function runReal(extra = {}) {
   const result = spawnSync('node', [path.join(here, 'run-real.mjs')], {
     encoding: 'utf8',

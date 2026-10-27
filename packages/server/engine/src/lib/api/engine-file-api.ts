@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream'
 import { promisify } from 'node:util'
 import { zstdDecompress as zstdDecompressCallback } from 'node:zlib'
+import { isObject } from '@fema-ipaas/core-utils'
 import { EngineFileNotFoundError, EngineGenericError, FileCompression, FileType, isZstdCompressed } from '@fema-ipaas/shared'
 import { retryFetch } from './retry-fetch'
 
@@ -17,14 +18,14 @@ export const engineFileApi = {
         if (data instanceof Readable) {
             // No Content-Length → the server streams straight to storage instead of a
             // presigned redirect (which needs a length). A stream can't be replayed, so no retry.
-            const response = await global.fetch(putUrl, {
+            const request: RequestInit & { duplex: 'half' } = {
                 method: 'PUT',
-                // @ts-expect-error -- undici streams a Node web ReadableStream body; the DOM fetch types omit it
-                body: Readable.toWeb(data),
+                body: uploadStream(data),
                 headers: buildPutHeaders({ type, fileName, compression }),
                 duplex: 'half',
-            })
-            return resolveUploadReadUrl(fileId, response)
+            }
+            const response = await global.fetch(putUrl, request)
+            return resolveUploadReadUrl({ fileId, response })
         }
 
         const headers = buildPutHeaders({ type, fileName, compression, contentLength: data.length })
@@ -60,7 +61,7 @@ export const engineFileApi = {
             return { fileId, readUrl: readUrlFromHeader }
         }
 
-        return resolveUploadReadUrl(fileId, initial)
+        return resolveUploadReadUrl({ fileId, response: initial })
     },
     async download({ engineToken, apiUrl, fileId }: DownloadFileParams): Promise<Uint8Array> {
         const response = await retryFetch(`${apiUrl}v1/files/${fileId}?token=${encodeURIComponent(engineToken)}`, {
@@ -94,7 +95,24 @@ export const engineFileApi = {
     },
 }
 
-async function resolveUploadReadUrl(fileId: string, response: Response): Promise<UploadResult> {
+function uploadStream(data: Readable): ReadableStream<Uint8Array> {
+    const reader = Readable.toWeb(data).getReader()
+    return new ReadableStream<Uint8Array>({
+        async pull(controller) {
+            const result = await reader.read()
+            const value: unknown = result.value
+            if (result.done) controller.close()
+            else if (value instanceof Uint8Array) controller.enqueue(value)
+            else if (typeof value === 'string') controller.enqueue(new TextEncoder().encode(value))
+            else throw new EngineGenericError('EngineFileUploadError', 'Upload stream produced an unsupported chunk')
+        },
+        async cancel(reason: unknown) {
+            await reader.cancel(reason)
+        },
+    })
+}
+
+async function resolveUploadReadUrl({ fileId, response }: { fileId: string, response: UploadResponse }): Promise<UploadResult> {
     if (!response.ok) {
         throw new EngineGenericError(
             'EngineFileUploadError',
@@ -105,11 +123,11 @@ async function resolveUploadReadUrl(fileId: string, response: Response): Promise
     if (readUrlFromHeader) {
         return { fileId, readUrl: readUrlFromHeader }
     }
-    const body = await response.json() as { readUrl?: unknown }
-    if (typeof body.readUrl !== 'string') {
+    const body: unknown = await response.json()
+    if (!isObject(body) || typeof body['readUrl'] !== 'string') {
         throw new EngineGenericError('EngineFileUploadError', 'Upload response missing readUrl')
     }
-    return { fileId, readUrl: body.readUrl }
+    return { fileId, readUrl: body['readUrl'] }
 }
 
 function buildPutHeaders({ type, fileName, compression, contentLength }: BuildHeadersParams): Record<string, string> {
@@ -137,6 +155,14 @@ function stripApHeaders(headers: Record<string, string>): Record<string, string>
         }
     }
     return result
+}
+
+type UploadResponse = {
+    ok: boolean
+    status: number
+    statusText: string
+    headers: { get(name: string): string | null }
+    json(): Promise<unknown>
 }
 
 type UploadParams = {

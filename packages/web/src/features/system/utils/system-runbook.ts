@@ -122,7 +122,8 @@ function rollbackSteps({
       {
         id: 'stop',
         title: t('Stop the app and workers'),
-        command: 'kubectl -n fema scale deployment -l app.kubernetes.io/instance=fema --replicas=0',
+        command:
+          'kubectl -n fema scale deployment -l app.kubernetes.io/instance=fema --replicas=0',
       },
       {
         id: 'restore',
@@ -284,10 +285,28 @@ function restoreFromBackupSteps({
   return [
     stop,
     ...(keyDiffers ? [key] : []),
-    { id: 'check', title: t('Run the restore precheck'), description: t('restore.commandPrecheck'), command: `${restoreCommand} --check` },
-    { id: 'restore', title: t('Restore the database'), description: t(engine === BackupEngine.PGLITE ? 'restore.commandPglite' : 'restore.commandPostgres'), command: restoreCommand },
+    {
+      id: 'check',
+      title: t('Run the restore precheck'),
+      description: t('restore.commandPrecheck'),
+      command: `${restoreCommand} --check`,
+    },
+    {
+      id: 'restore',
+      title: t('Restore the database'),
+      description: t(
+        engine === BackupEngine.PGLITE
+          ? 'restore.commandPglite'
+          : 'restore.commandPostgres',
+      ),
+      command: restoreCommand,
+    },
     start,
-    { id: 'reconcile', title: t('restore.reconcileTitle'), description: t('restore.reconcileDescription') },
+    {
+      id: 'reconcile',
+      title: t('restore.reconcileTitle'),
+      description: t('restore.reconcileDescription'),
+    },
   ];
 }
 

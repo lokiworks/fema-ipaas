@@ -57,4 +57,9 @@ describe('organization tree convergence', () => {
     it('treats the chosen root as an anchor when it is renamed', () => {
         expect(orgTreePlan.build({ source: [node({ key: 'root', parentKey: null, name: 'new' })], target: [], bindings: {}, rootSourceKey: 'root', rootTargetId: '0' }).ops).toEqual([])
     })
+    it('rejects source siblings with the same name and bindings sharing one target', () => {
+        expect(() => plan({ source: [node({ key: 'a', name: 'same' }), node({ key: 'b', name: 'same' })] })).toThrow()
+        expect(() => plan({ source: [node({ key: 'a' }), node({ key: 'b' })], target: [department({ id: 'shared' })], bindings: { a: 'shared', b: 'shared' } })).toThrow()
+    })
+
 })

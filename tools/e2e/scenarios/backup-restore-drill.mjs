@@ -8,13 +8,16 @@ if (!process.env.E2E_STATE_ROOT) throw new Error('Set E2E_STATE_ROOT to an isola
 const beforeCount = Number(process.env.DRILL_BEFORE ?? 200)
 const afterCount = Number(process.env.DRILL_AFTER ?? 50)
 const connectors = 'beisen,feishu,data-mapper,org-sync,schedule,store,subflows,http,webhook'
-await loadStack.up({ db: 'pglite', redis: 'memory', workers: 1, apiEnv: { FEMA_DEV_CONNECTORS: connectors, FEMA_CONNECTORS_SYNC_MODE: 'NONE' }, workerEnv: { FEMA_DEV_CONNECTORS: connectors } })
-await kit.connect()
-await kit.setupMainLine({ departments: 5 })
-await kit.inject({ records: Array.from({ length: beforeCount }, (_, index) => kit.hireOf({ n: index + 1, departmentIndex: index % 5 })) })
+if (process.env.LOAD_REUSE !== '1') {
+  await loadStack.up({ db: 'pglite', redis: 'memory', workers: 1, apiEnv: { FEMA_DEV_CONNECTORS: connectors, FEMA_CONNECTORS_SYNC_MODE: 'NONE' }, workerEnv: { FEMA_DEV_CONNECTORS: connectors } })
+  await kit.connect()
+  await kit.setupMainLine({ departments: 5 })
+  await kit.inject({ records: Array.from({ length: beforeCount }, (_, index) => kit.hireOf({ n: index + 1, departmentIndex: index % 5 })) })
+}
+else await kit.connect()
 await waitForPeople(beforeCount)
 process.stdout.write(`PASS before backup: ${beforeCount} accounts and notices\n`)
-const backup = await kit.api({ method: 'POST', path: '/backups', body: { note: 'Isolated people synchronization restore drill' } })
+const backup = await kit.api({ method: 'POST', path: '/backups', body: { note: 'People restore drill' } })
 const completed = await kit.waitFor({ probe: async () => { const list = await kit.api({ method: 'GET', path: '/backups' }); const row = list.find((item) => item.id === backup.id); if (row?.status === 'FAILED') throw new Error(row.error); return row?.status === 'SUCCEEDED' ? row : null }, timeoutMs: 120000 })
 await kit.inject({ records: Array.from({ length: afterCount }, (_, index) => kit.hireOf({ n: beforeCount + index + 1, departmentIndex: index % 5 })) })
 await waitForPeople(beforeCount + afterCount)

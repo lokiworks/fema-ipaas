@@ -10,13 +10,13 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "vitest": "3.2.6",
-    "tslib": "2.6.2"
+    "vitest": "3.2.6"
   },
   "dependencies": {
     "@fema-ipaas/connector-common": "workspace:*",
     "@fema-ipaas/connector-sdk": "workspace:*",
     "@fema-ipaas/connector-types": "workspace:*",
-    "@fema-ipaas/core-utils": "workspace:*"
+    "@fema-ipaas/core-utils": "workspace:*",
+    "tslib": "2.6.2"
   }
 }

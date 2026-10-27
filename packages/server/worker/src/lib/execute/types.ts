@@ -17,6 +17,7 @@ export type JobContext = {
     internalApiUrl: string
     publicApiUrl: string
     log: Logger
+    isAbandoned?: () => boolean
 }
 
 export type FireAndForgetJobResult = {

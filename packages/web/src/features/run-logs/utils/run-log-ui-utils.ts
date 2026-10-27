@@ -84,6 +84,8 @@ function handledKindLabel(kind: ReliabilityEventKind): string {
   switch (kind) {
     case ReliabilityEventKind.RATE_LIMIT_QUEUED:
       return t('Waited out a rate limit');
+    case ReliabilityEventKind.RETRY_WITHHELD:
+      return t('Automatic retry withheld');
     case ReliabilityEventKind.AUTO_RETRY:
       return t('Retried automatically');
     case ReliabilityEventKind.CATCH_UP:

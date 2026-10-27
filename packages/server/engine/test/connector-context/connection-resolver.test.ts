@@ -84,7 +84,7 @@ describe('connection-resolver service', () => {
     it('V0 other types returns connection.value', async () => {
         const connection = makeConnection({
             type: ConnectionType.OAUTH2,
-            value: { type: ConnectionType.OAUTH2, access_token: 'tok' },
+            value: { type: ConnectionType.OAUTH2, access_token: 'tok', client_id: 'client', token_type: 'Bearer', claimed_at: 0, refresh_token: 'refresh', scope: '', token_url: 'https://example.com/token', data: {}, client_secret: 'secret', redirect_url: 'https://example.com/callback' },
         })
         vi.spyOn(global, 'fetch').mockResolvedValue(new Response(
             JSON.stringify(connection),
@@ -95,6 +95,11 @@ describe('connection-resolver service', () => {
         const result = await resolver.obtain('my-connection')
 
         expect(result).toEqual(connection.value)
+    })
+
+    it('rejects a malformed successful connection response before returning credentials', async () => {
+        vi.spyOn(global, 'fetch').mockResolvedValue(new Response(JSON.stringify({ connectorName: 'connector', status: 'ACTIVE', value: { type: 'CUSTOM_AUTH', props: 'invalid' } }), { status: 200 }))
+        await expect(createConnectionResolver(RESOLVER_PARAMS).obtain('invalid')).rejects.toThrow(FetchError)
     })
 
     it('throws ConnectionNotFoundError on 404', async () => {

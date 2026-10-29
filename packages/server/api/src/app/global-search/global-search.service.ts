@@ -21,7 +21,9 @@ import { mappingTableRepo } from '../mapping-table/mapping-table.service'
 import { mcpServerService } from '../mcp-server/mcp-server.service'
 import { mcpServiceService } from '../mcp-service/mcp-service.service'
 import { projectRepo } from '../project/project-repo'
+import { tenantAccessUtils } from '../tenant-access/tenant-access.utils'
 import { TemplateEntity } from '../template/template.entity'
+import { userRepo } from '../user/user-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { globalSearchUtils } from './global-search-utils'
 
@@ -29,6 +31,8 @@ const templateSearchRepo = repoFactory(TemplateEntity)
 
 export const globalSearchService = (log: FastifyBaseLogger) => ({
     async search({ tenantId, userId, query }: SearchParams): Promise<GlobalSearchResponse> {
+        const user = await userRepo().findOneBy({ id: userId, tenantId })
+        const hidden = isNil(user) ? GLOBAL_SEARCH_ALL_TYPES : globalSearchUtils.hiddenTypes({ modules: tenantAccessUtils.effectiveModules({ tenantRole: user.tenantRole, storedModules: user.modules ?? [] }) })
         const projectIds = await connectionAccessService(log).memberProjectIds({ userId, tenantId })
         const projects = projectIds.length === 0 ? [] : await projectRepo().find({ where: { id: In(projectIds), tenantId, deleted: IsNull() }, select: ['id', 'displayName'] })
         const context: SearchContext = {
@@ -52,7 +56,8 @@ export const globalSearchService = (log: FastifyBaseLogger) => ({
             [GlobalSearchResultType.MAPPING_TABLE, searchMappingTables],
             [GlobalSearchResultType.MCP_SERVER, searchMcpServers],
         ]
-        const groups = await Promise.all(searchers.map(async ([type, searcher]): Promise<GlobalSearchGroup> => {
+        const visibleSearchers = searchers.filter(([type]) => !hidden.includes(type))
+        const groups = await Promise.all(visibleSearchers.map(async ([type, searcher]): Promise<GlobalSearchGroup> => {
             const { data, error } = await tryCatch(() => searcher(context))
             if (!isNil(error)) {
                 log.warn({ error, search: { type } }, '[globalSearchService#search] Search group failed')
@@ -119,7 +124,7 @@ async function searchConnectors(ctx: SearchContext): Promise<GlobalSearchItem[]>
 }
 
 async function searchMcpServices(ctx: SearchContext): Promise<GlobalSearchItem[]> {
-    const services = await mcpServiceService(ctx.log).list({ tenantId: ctx.tenantId, userId: ctx.userId, query: { search: ctx.query } })
+    const services = await mcpServiceService(ctx.log).list({ tenantId: ctx.tenantId, userId: ctx.userId, projectId: null, query: { search: ctx.query } })
     return services
         .slice(0, globalSearchUtils.fetchSize)
         .map((service) => item({ ctx, type: GlobalSearchResultType.MCP_SERVICE, id: service.id, label: service.name, subtitle: service.description, projectId: service.projectId }))
@@ -166,7 +171,7 @@ async function searchIssues(ctx: SearchContext): Promise<GlobalSearchItem[]> {
         .orderBy('issue."lastSeenAt"', 'DESC')
         .limit(globalSearchUtils.fetchSize)
         .getMany()
-    return issues.map((issue) => item({ ctx, type: GlobalSearchResultType.ISSUE, id: issue.id, label: issue.title, projectId: issue.projectId }))
+    return issues.map((issue) => ({ ...item({ ctx, type: GlobalSearchResultType.ISSUE, id: issue.id, label: issue.title, projectId: issue.projectId }), issueStatus: issue.status }))
 }
 
 async function searchMappingTables(ctx: SearchContext): Promise<GlobalSearchItem[]> {
@@ -199,10 +204,12 @@ function item({ ctx, type, id, label, subtitle, projectId }: ItemParams): Global
         subtitle: isNil(subtitle) || subtitle.length === 0 ? null : subtitle,
         projectId: projectId ?? null,
         projectName: isNil(projectId) ? null : ctx.projectNames.get(projectId) ?? null,
+        issueStatus: null,
     }
 }
 
 const CONNECTION_FETCH_SIZE = 12
+const GLOBAL_SEARCH_ALL_TYPES = Object.values(GlobalSearchResultType)
 
 type SearchParams = {
     tenantId: string

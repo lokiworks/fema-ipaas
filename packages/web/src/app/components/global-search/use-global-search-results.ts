@@ -1,6 +1,7 @@
 import {
   GlobalSearchGroup,
   GlobalSearchResultType,
+  IssueStatus,
   PROJECT_COLOR_PALETTE,
 } from '@fema-ipaas/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
@@ -367,6 +368,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
                 ?.displayName ?? name,
           }),
           projectName: row.projectName,
+          issueStatus: row.issueStatus,
         })),
       isLoading: false,
     }));
@@ -421,6 +423,7 @@ export type SearchResultItem = {
   iconLetter?: string;
   pageIcon?: StaticPage['icon'];
   projectName?: string | null;
+  issueStatus?: IssueStatus | null;
 };
 
 export type SearchResultGroup = {

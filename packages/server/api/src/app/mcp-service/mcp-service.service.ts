@@ -81,7 +81,13 @@ export const mcpServiceService = (log: FastifyBaseLogger) => ({
                 builder.andWhere(marketplace, { userId })
                 break
             default:
-                builder.andWhere(`(${inProject} OR (${obtained}))`, { projectId, userId })
+                if (isNil(projectId)) {
+                    const memberProjectIds = await connectionAccessService(log).memberProjectIds({ userId, tenantId })
+                    builder.andWhere(`(service."ownerId" = :userId OR service."projectId" = ANY(:memberProjectIds) OR (${obtained}) OR (${marketplace}))`, { userId, memberProjectIds })
+                }
+                else {
+                    builder.andWhere(`(${inProject} OR (${obtained}))`, { projectId, userId })
+                }
         }
         if (!isNil(query.search) && query.search.trim().length > 0) {
             builder.andWhere('(service.name ILIKE :search OR service.key ILIKE :search OR service.description ILIKE :search)', { search: `%${query.search.trim()}%` })
@@ -620,8 +626,8 @@ GROUP BY "serviceId"`
 type ListParams = {
     tenantId: string
     userId: string
-    projectId: string
-    query: ListMcpServicesRequestQuery
+    projectId: string | null
+    query: Pick<ListMcpServicesRequestQuery, 'tab' | 'search'>
 }
 
 type ServiceRef = {

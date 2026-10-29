@@ -121,3 +121,70 @@ describe('dataSelectorUtils.filterBy — searchable value of containers', () => 
     ).toHaveLength(1);
   });
 });
+
+const failureTarget: WorkflowAction = {
+  name: 'step_2',
+  type: WorkflowActionType.CODE,
+  displayName: 'Notify',
+  valid: true,
+  lastUpdatedDate: '2024-01-01T00:00:00.000Z',
+  settings: {
+    sourceCode: { code: '', packageJson: '{}' },
+    input: {},
+  },
+};
+
+const branchingStep: WorkflowAction & { dfsIndex: number } = {
+  ...codeStep,
+  settings: {
+    ...codeStep.settings,
+    errorHandlingOptions: {
+      continueOnFailure: { value: true },
+      retryOnFailure: { value: false },
+    },
+  },
+  continueOnFailureBranches: { onFailure: failureTarget },
+};
+
+function leafNames(node: TreeNode): string[] {
+  return (node.children ?? []).map((child) =>
+    child.data.type === 'value' ? child.data.displayName : child.data.type,
+  );
+}
+
+describe('dataSelectorUtils.traverseStep — failure branch', () => {
+  it('offers the error code, message and time instead of the success output', () => {
+    const tree = dataSelectorUtils.traverseStep(
+      branchingStep,
+      { step_1: { userId: 'u1' } },
+      false,
+      'step_2',
+    );
+
+    expect(leafNames(tree)).toEqual([
+      'Failure error code',
+      'Failure error message',
+      'Failure time',
+    ]);
+    expect(collectPropertyPaths(tree)).toContain(
+      "step_1['output']['errorMessage']",
+    );
+    expect(collectPropertyPaths(tree)).not.toContain(
+      "step_1['output']['userId']",
+    );
+  });
+
+  it('shows the error fields even before the failing step is tested', () => {
+    const untested = {
+      ...branchingStep,
+      settings: { ...branchingStep.settings, sampleData: {} },
+    };
+    const tree = dataSelectorUtils.traverseStep(untested, {}, false, 'step_2');
+
+    expect(leafNames(tree)).toEqual([
+      'Failure error code',
+      'Failure error message',
+      'Failure time',
+    ]);
+  });
+});

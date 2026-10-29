@@ -4,10 +4,18 @@ import {
   RunMonitorHandled,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { ShieldCheck } from 'lucide-react';
+import { ChevronDown, ShieldCheck } from 'lucide-react';
+import { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +27,7 @@ export function MonitorHandledCard({
   handled,
   rangeLabel,
   connectorName,
+  duplicateTargets,
   onOpenDuplicates,
   onOpenIssues,
   onOpenHandled,
@@ -26,7 +35,8 @@ export function MonitorHandledCard({
   handled: RunMonitorHandled;
   rangeLabel: string;
   connectorName: (name: string) => string;
-  onOpenDuplicates: (() => void) | null;
+  duplicateTargets: MonitorDuplicateTarget[];
+  onOpenDuplicates: (projectId: string) => void;
   onOpenIssues: () => void;
   onOpenHandled: (kind: ReliabilityEventKind) => void;
 }) {
@@ -54,10 +64,24 @@ export function MonitorHandledCard({
             'The trigger saw the same event again and did not process it a second time.',
           )}
           actionLabel={t('See the deduplicated triggers')}
-          disabledHint={t(
-            'Deduplicated triggers are listed per project. Filter by exactly one project to see them.',
-          )}
-          onAction={onOpenDuplicates}
+          disabledHint={
+            duplicateTargets.length === 0
+              ? t('No trigger was deduplicated in this period.')
+              : null
+          }
+          onAction={
+            duplicateTargets.length === 1
+              ? () => onOpenDuplicates(duplicateTargets[0].projectId)
+              : null
+          }
+          action={
+            duplicateTargets.length > 1 ? (
+              <DuplicateProjectPicker
+                targets={duplicateTargets}
+                onPick={onOpenDuplicates}
+              />
+            ) : undefined
+          }
         />
         <HandledItem
           testId="handled-merged"
@@ -162,6 +186,49 @@ function rateLimitUnitLabel(unit: RateLimitUnit): string {
   }
 }
 
+function DuplicateProjectPicker({
+  targets,
+  onPick,
+}: {
+  targets: MonitorDuplicateTarget[];
+  onPick: (projectId: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="link"
+          size="sm"
+          className="gap-1 px-0"
+          data-testid="handled-duplicates-pick"
+        >
+          {t('See the deduplicated triggers')}
+          <ChevronDown className="size-3.5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="max-w-72">
+        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+          {t('Deduplicated triggers are listed per project. Pick one:')}
+        </DropdownMenuLabel>
+        {targets.map((target) => (
+          <DropdownMenuItem
+            key={target.projectId}
+            onSelect={() => onPick(target.projectId)}
+            className="flex items-center justify-between gap-3"
+          >
+            <span className="truncate">{target.displayName}</span>
+            {target.count !== null && (
+              <span className="shrink-0 tabular-nums text-muted-foreground">
+                {formatUtils.formatNumber(target.count)}
+              </span>
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function HandledItem({
   testId,
   value,
@@ -171,6 +238,7 @@ function HandledItem({
   actionLabel,
   disabledHint,
   onAction,
+  action,
 }: {
   testId: string;
   value: string;
@@ -180,6 +248,7 @@ function HandledItem({
   actionLabel: string;
   disabledHint: string | null;
   onAction: (() => void) | null;
+  action?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1 rounded-md border p-3">
@@ -197,7 +266,9 @@ function HandledItem({
         </span>
       )}
       <div>
-        {onAction === null && disabledHint !== null ? (
+        {action ? (
+          action
+        ) : onAction === null && disabledHint !== null ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <span tabIndex={0} className="inline-block">
@@ -228,3 +299,9 @@ function HandledItem({
     </div>
   );
 }
+
+export type MonitorDuplicateTarget = {
+  projectId: string;
+  displayName: string;
+  count: number | null;
+};

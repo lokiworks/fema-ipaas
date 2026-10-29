@@ -79,7 +79,11 @@ const LoopIterationInput = ({ stepName }: { stepName: string }) => {
     setLoopIndex(stepName, parsedValue - 1);
   }
 
-  if (isNil(run) || stepType !== WorkflowActionType.LOOP_ON_ITEMS) {
+  if (
+    isNil(run) ||
+    stepType !== WorkflowActionType.LOOP_ON_ITEMS ||
+    totalIterations === 0
+  ) {
     return <></>;
   }
 

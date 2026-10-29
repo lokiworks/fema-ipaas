@@ -19,6 +19,7 @@ icon: 🧯
 - **错误码按最后一次失败计算**：每次重试后重新匹配规则，重试次数取命中规则的设置；单步测试（`stepNameToTest`）不重试也不继续。
 - **AI 节点默认「重试后终止」只对新建节点生效**：默认值在前端 `connector-selector-utils` 创建节点时写入，已有节点没有 `strategy`，保持原样。
 - **HTTP 状态优先取连接器友好错误里的 `status`**：以前问题中心只在文案里找 3 位数字，「Route not found」这类 404 会被归为 `STEP_FAILED`；现在归为 `HTTP_404`，问题签名会随之变化。
+- **走异常处理分支时，引擎把失败步骤的出参改写成 `{ errorCode, errorMessage, errorTime }`**（`workflow-executor.ts` 的 `recordFailureDetails`，错误码和可读信息来自 `classifyErrorMessage`），分支里用 `{{step_x['output']['errorCode']}}` 引用；数据选择器在失败分支里只给这三个字段。老的 `{{step_x.error.message}}` 仍然能解析。单步测试不走分支，所以测试分支里的步骤时这些引用是空的。
 
 ## Key files
 - `packages/core/execution/src/lib/workflows/actions/` — `ErrorStrategy`、`ErrorHandlingRule`、`errorHandlingUtils`

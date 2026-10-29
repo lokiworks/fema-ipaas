@@ -28,6 +28,8 @@ icon: 📋
 - 模板源（`TEMPLATES_SOURCE_URL`）没配置时官方模板列表为空，不报错；源里的模板不在库中，使用次数无法累加。
 - 导入模板时新工作流的名字取创建时服务端去重后的名字（`version.displayName`），不是模板里的原名。
 
+- 官方模板默认为空，官方方案有内容。模板中心「推荐」页签（已登录、未搜索、未选分类时）和首页「从模板新建工作流」在没有推荐模板时改为展示官方方案（`solutionsHooks.useOfficialSolutions` + `OfficialSolutionsGrid`），点卡片进 `/solutions/:id` 走安装向导；两套数据和路由不合并。
+
 ### Key files
 Entry point: `templateController`（`/v1/templates`）。
 

@@ -395,7 +395,12 @@ function applyContinueOnFailureView({
       ...stepNode,
       data:
         stepNode.data.type === 'value'
-          ? { ...stepNode.data, insertable: false }
+          ? {
+              ...stepNode.data,
+              insertable: false,
+              badge: undefined,
+              structureOnly: undefined,
+            }
           : stepNode.data,
       children: failureLeaves,
     };

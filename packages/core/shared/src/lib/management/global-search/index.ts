@@ -1,5 +1,6 @@
 import { Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
+import { IssueStatus } from '../../automation/issue/issue'
 
 export enum GlobalSearchResultType {
     WORKFLOW = 'WORKFLOW',
@@ -26,6 +27,7 @@ export const GlobalSearchItem = z.object({
     subtitle: Nullable(z.string()),
     projectId: Nullable(z.string()),
     projectName: Nullable(z.string()),
+    issueStatus: Nullable(z.enum(IssueStatus)),
 })
 export type GlobalSearchItem = z.infer<typeof GlobalSearchItem>
 

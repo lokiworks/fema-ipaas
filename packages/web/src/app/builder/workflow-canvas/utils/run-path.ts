@@ -25,7 +25,9 @@ function runPathOf({
   );
   const branches = steps
     .filter(isAction)
-    .flatMap((step) => branchDecisionsOf({ step, executed, outputOf }));
+    .flatMap((step) =>
+      branchDecisionsOf({ step, executed, finished, outputOf }),
+    );
   const insideSkippedBranch = new Set(
     branches
       .filter((branch) => branch.state === 'skipped')
@@ -80,6 +82,7 @@ function branchOfEdgeId(edgeId: string): EdgeBranch | null {
       branchIndex: Number(index),
       failureBranch: !isNil(cof),
     }),
+    stepName,
     branchIndex: Number(index),
     isEnd: end === 'end',
     carriesTrunk: isNil(bigButton) && Number(index) === 0,
@@ -103,7 +106,10 @@ function edgeStateOf({
   const branch = branchOfEdgeId(edgeId);
   if (!isNil(branch)) {
     const state = path.branchStates[branch.key];
-    if (state === 'skipped' && !branch.carriesTrunk) {
+    if (
+      path.notExecuted.has(branch.stepName) ||
+      (state === 'skipped' && !branch.carriesTrunk)
+    ) {
       return 'off';
     }
     return state === 'taken' && !branch.isEnd ? 'on' : 'neutral';
@@ -143,10 +149,12 @@ function routerHitBranchNames({
 function branchDecisionsOf({
   step,
   executed,
+  finished,
   outputOf,
 }: {
   step: WorkflowAction;
   executed: Set<string>;
+  finished: boolean;
   outputOf: (stepName: string) => RunStepOutput | undefined;
 }): BranchDecision[] {
   const stepOutput = outputOf(step.name);
@@ -195,6 +203,7 @@ function branchDecisionsOf({
       ];
       const failed = stepOutput?.status === StepOutputStatus.FAILED;
       const succeeded = stepOutput?.status === StepOutputStatus.SUCCEEDED;
+      const anyBranchRan = heads.some(ranInside);
       return heads.map((head, index) => ({
         key: branchKey({
           stepName: step.name,
@@ -204,8 +213,12 @@ function branchDecisionsOf({
         head,
         state: decide({
           stepRan: !isNil(stepOutput),
-          decided: failed || succeeded,
-          taken: ranInside(head) || (index === 0 ? succeeded : failed),
+          decided: anyBranchRan || finished,
+          taken:
+            ranInside(head) ||
+            (!anyBranchRan &&
+              isNil(head) &&
+              (index === 0 ? succeeded : failed)),
         }),
       }));
     }
@@ -284,6 +297,7 @@ type BranchDecision = {
 
 type EdgeBranch = {
   key: string;
+  stepName: string;
   branchIndex: number;
   isEnd: boolean;
   carriesTrunk: boolean;

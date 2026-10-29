@@ -5,7 +5,7 @@ icon: 🔌
 
 # MCP 服务
 
-把连接器操作和已发布的子流程工作流打包成 MCP 服务，给 Claude Code、Cursor 等助手调用。服务属于一个项目（工具只能来自这个项目的工作流，连接器操作在这个项目里执行），列表按租户展示：我开发的、我所在项目的、我获取的、企业 MCP 市场里对我开放的。
+把连接器操作和已发布的子流程工作流打包成 MCP 服务，给 Claude Code、Cursor 等助手调用。服务属于一个项目（工具只能来自这个项目的工作流，连接器操作在这个项目里执行），项目里的列表只看当前项目：全部服务、我开发的按当前项目过滤，我获取的跨项目列出，另有「企业 MCP 市场」页签列出全租户已上架且对我开放的服务；卡片标出所属项目。
 
 **服务唯一标识** —— `key`，小写字母开头、≤ 40、全局唯一、创建后不改，服务地址是 `/api/mcp/{key}`。老服务没有 key，仍走 `/api/v1/mcp/:id`。
 **个人 API Key** —— `mcp_sk_` + 14 位，每个成员（所有者自动、其他人「获取」时）一把，存 SHA-256 做查找、加密原文供本人复制。Key 标识调用者，所以才有「客户端上下文」和按人的连接。_Avoid_：「服务 Token」（旧的服务级 Token 只剩老服务在用）
@@ -14,6 +14,7 @@ icon: 🔌
 **连接模式** —— 开发者固定连接（所有者选、必须分享给所有者且在服务项目可用）/ 服务使用者配置 / 用户首次调用时授权（成员在服务页选自己拥有的连接）。
 
 ## Gotchas
+- **`GET /v1/mcp-services` 按项目授权。** 安全配置是 `securityAccess.project(READ_MCP_SERVICE, QUERY)`，服务端用授权后的 `request.projectId` 过滤，不认客户端传的值；全局搜索直接调 `mcpServiceService.list({ projectId: null })` 走全租户可见范围。
 - **子流程工具是同步等回调。** 端点用 `webhookService.handleWebhook` 异步触发子流程，并把 `/v1/mcp-callbacks/:serverId/:requestId?token=` 作为 `callbackUrl` 传进去；子流程里的「Return Response」回调后经 `engineResponseWatcher` 的 pubsub 回到等待的那台 API，token 只在内存里比对。110 秒没回应就告诉助手「已启动但没返回」，不要自动重试。
 - **Webhook 工作流工具保留兼容**：走同步 Webhook 路径，要有「返回响应」步骤；HMAC 签名或鉴权值含表达式的不能当工具。
 - **连接器操作工具走单操作执行（`actionRunService`，EXECUTE_ACTION），不创建运行记录**；超时要区分「没开始」和「可能已执行」，见 action runs 的 `neverStarted`。

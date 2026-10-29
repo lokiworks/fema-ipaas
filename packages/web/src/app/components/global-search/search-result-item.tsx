@@ -1,4 +1,4 @@
-import { GlobalSearchResultType } from '@fema-ipaas/shared';
+import { GlobalSearchResultType, IssueStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   ArrowRight,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { TableIcon } from '@/components/icons/table';
+import { issueUiUtils } from '@/features/issues/utils/issue-ui-utils';
 import { WorkflowIcon } from '@/components/icons/workflow';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -194,6 +195,14 @@ export function SearchResultRow({
       {item.status === 'ENABLED' && (
         <span className="shrink-0 rounded-full bg-green-500/10 px-1.5 py-0.5 text-[10px] font-medium text-green-600">
           {t('Running')}
+        </span>
+      )}
+      {item.issueStatus && item.issueStatus !== IssueStatus.OPEN && (
+        <span
+          className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+          data-testid="search-issue-status"
+        >
+          {issueUiUtils.statusLabel(item.issueStatus)}
         </span>
       )}
       {item.subtitle && (

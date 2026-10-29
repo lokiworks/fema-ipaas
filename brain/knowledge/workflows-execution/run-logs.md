@@ -15,6 +15,8 @@ icon: 📜
 
 ## Gotchas
 
+- **单步测试以前不写开始时间，调试日志的耗时显示「—」。** 引擎只在从触发器开始的运行里上报 `startTime`，单步测试（`stepNameToTest`）走 `workflowExecutor.execute`，`durationOf` 拿不到开始时间就是空。现在 `executeSingleStepOrWorkflow` 在执行被测步骤前先 `sendUpdate` 一次带上开始时间；修复前留下的旧记录仍然没有耗时。
+- **切页签或改筛选条件要清空勾选。** `DataTable` 的选中行按 `rowSelection` 记忆，换数据后不会自己清；运行日志用整个列表查询（含游标）做表格的 `key`，换条件就重新挂载。
 - **窄屏（小于 1024 宽）运行日志折叠次要列。** 只留创建时间、工作流、状态、操作；业务标识、项目、环境或类型、版本、耗时、错误数合并进工作流列的第二行（`CompactWorkflowCell`），所以状态和操作不再需要横向滚动才能看到。宽屏仍是完整的列。
 - **限流受阻的运行不可重跑，到点才可以。** 失败信息带还没到期的 `[blocked-until=…]`（问题中心同一套标记）时，`runRerunUtils.blockReason` 给 `BLOCKED_UNTIL`，行里的重跑按钮置灰、提示写明解除时间（`RunLogRow.blockedUntil`），批量重跑按「不能重跑」跳过，服务端批量重跑时再判一次；时间一过自动回到可重跑。从问题里批量重跑弹窗也是同一套判断，受阻的归「被拦下」，没有可勾选的项。
 - **筛选条件「平台已处理」（`handled`）按运行是否有对应的可靠性事件过滤**：等过限流、自动重试过、宕机后补上的事件，用 `EXISTS run_reliability_event` 查，运行监控的下钻就是带着这个条件过来的。

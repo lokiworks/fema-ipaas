@@ -4,6 +4,7 @@ import {
   GlobalSearchItem,
   GlobalSearchResultType,
   IssueKind,
+  IssueStatus,
   TenantModule,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -121,6 +122,7 @@ function toRows({
       item.type === GlobalSearchResultType.PROJECT
         ? null
         : item.projectName ?? null,
+    issueStatus: item.issueStatus ?? null,
     href: itemHref({ item, currentProjectId }),
   }));
   if (!group.hasMore) {
@@ -249,5 +251,6 @@ export type GlobalSearchRow = {
   label: string;
   subtitle: string | null;
   projectName: string | null;
+  issueStatus: IssueStatus | null;
   href: string;
 };

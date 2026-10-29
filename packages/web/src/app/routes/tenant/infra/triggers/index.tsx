@@ -271,12 +271,14 @@ export default function TriggerHealthPage() {
   return (
     <ConsolePage
       title={t('Trigger Health Status')}
-      description={t('Monitor the health and performance of your triggers')}
+      description={t(
+        'How often triggers of enabled workflows ran on the workers in the last 14 days, by connector. Each check of a schedule or polling trigger counts once, and so does each call a webhook trigger receives. This counts runs, not configured triggers.',
+      )}
     >
       <DataTable
-        emptyStateTextTitle={t('No trigger data available')}
+        emptyStateTextTitle={t('No trigger ran in the last 14 days')}
         emptyStateTextDescription={t(
-          'Trigger health information will appear here',
+          'Schedule and polling triggers of enabled workflows show up after their first check, webhook triggers after their first call. Debug runs in the editor are not counted.',
         )}
         emptyStateIcon={<CheckCircle className="size-14" />}
         hidePagination={true}

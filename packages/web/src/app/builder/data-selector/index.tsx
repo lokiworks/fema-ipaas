@@ -414,12 +414,14 @@ const DataSelector = ({
 
   const stepStructure =
     viewMode === 'friendly' ? friendlyStructure : advancedStructure;
-  const currentStructure = [
-    ...loopVariableNodes,
-    ...(selectedStepIsLoop
-      ? listOnlyNodes({ nodes: stepStructure })
-      : stepStructure),
-  ];
+  const visibleStepStructure = selectedStepIsLoop
+    ? listOnlyNodes({ nodes: stepStructure })
+    : stepStructure;
+  const showNoListHint =
+    selectedStepIsLoop &&
+    searchTerm.length === 0 &&
+    !containsInsertableList({ nodes: visibleStepStructure });
+  const currentStructure = [...loopVariableNodes, ...visibleStepStructure];
   const [debouncedSearchTerm] = useDebounce(searchTerm, 250);
   const filteredNodes = useMemo(
     () => dataSelectorUtils.filterBy(currentStructure, debouncedSearchTerm),
@@ -603,6 +605,13 @@ const DataSelector = ({
                 </TabsList>
               </Tabs>
             </div>
+            {showNoListHint && (
+              <div className="mx-5 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                {t(
+                  'No list fields in the upstream steps. Loop items need a list, such as the employees returned by a search step.',
+                )}
+              </div>
+            )}
             <ScrollArea className="transition-all flex-1 w-full ">
               <VirtualizedList
                 items={rows}
@@ -617,17 +626,7 @@ const DataSelector = ({
                   ></DataSelectorNode>
                 )}
               />
-              {filteredNodes.length === 0 &&
-                selectedStepIsLoop &&
-                debouncedSearchTerm.length === 0 && (
-                  <div className="mx-5 mt-5 text-sm text-muted-foreground">
-                    {t(
-                      'No list fields in the upstream steps. Loop items need a list, such as the employees returned by a search step.',
-                    )}
-                  </div>
-                )}
-              {filteredNodes.length === 0 &&
-                !(selectedStepIsLoop && debouncedSearchTerm.length === 0) && (
+              {filteredNodes.length === 0 && !showNoListHint && (
                 <div className="flex items-center justify-center gap-2 mt-5  flex-col">
                   <SearchXIcon className="w-[35px] h-[35px]"></SearchXIcon>
                   <div className="text-center font-semibold text-md">
@@ -747,6 +746,20 @@ function listOnlyNodes({
       },
     ];
   });
+}
+
+function containsInsertableList({
+  nodes,
+}: {
+  nodes: DataSelectorTreeNode[];
+}): boolean {
+  return nodes.some(
+    (node) =>
+      (node.data.type === 'value' &&
+        node.data.insertable &&
+        (Array.isArray(node.data.value) || node.data.listField === true)) ||
+      containsInsertableList({ nodes: node.children ?? [] }),
+  );
 }
 
 function fitAroundNode({

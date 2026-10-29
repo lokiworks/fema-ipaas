@@ -21,6 +21,9 @@ icon: 🛠️
 
 ## Gotchas
 
+- **健康状态按浏览器时区分日。** 「运行健康度」图表和 30 天健康条用请求里的 `timezone`（与运行监控同一个 `runMonitorUtils.safeTimezone`）做 `AT TIME ZONE` 分组，报告缓存键也带时区；不传就按 UTC。
+- **备份计划存的是服务器时区的星期和小时。** 备份页按浏览器时区换算后显示，保存时再换回去（`backupTime.shiftPlan`，跨零点时星期也会跟着变）；两个时区差不是整小时就退回显示服务器时区。
+- **「项目与上限」已并入「项目」。** 上限列和「调整上限」在 `/tenant/projects`，旧路由 `/tenant/limits/projects` 重定向过去；租户级的人统一叫「成员」，「全部连接」改名「连接总览」以区别于「全局连接」。
 - **单点登录按「最早的租户」认租户。** 公开的 `/providers`、`/start` 和密码登录一样靠 `getTenantIdForRequest`，同一实例有多个租户时只有最早的租户能用单点登录；多租户按域名分流没有做。
 - **回调用的是前端地址。** 重定向地址是 `FEMA_FRONTEND_URL` + `/api/v1/authn/sso/callback`，要原样登记在身份提供方；浏览器绑定 Cookie 的路径是 `/api/v1/authn/sso`，反向代理改了前缀就会收到 `BROWSER_MISMATCH`。
 - **身份提供方要放行回环或内网地址时设 `FEMA_SSRF_ALLOW_LIST`。** 发现文档、密钥集、令牌端点都走 `safeHttp`。

@@ -89,10 +89,12 @@ import {
 import { useMenuHint } from '@/features/project-workspace/components/action-menu';
 import { projectCollectionUtils } from '@/features/projects';
 import { useElementSize } from '@/hooks/use-element-size';
-import { useIsNarrowDesktop } from '@/hooks/use-mobile';
+import { useIsMobile, useIsNarrowDesktop } from '@/hooks/use-mobile';
 
 const COMPACT_TABLE_WIDTH = 1080;
+const MOBILE_TABLE_WIDTH = 560;
 const COMPACT_HIDDEN_COLUMNS = ['ownerId', 'updated'];
+const MOBILE_VISIBLE_COLUMNS = ['displayName', 'status'];
 
 const OWNERSHIP_OPTIONS: { value: ConnectionOwnershipFilter; label: string }[] =
   [
@@ -117,6 +119,7 @@ function ConnectionsPage() {
   const tableRef = useRef<HTMLDivElement>(null);
   const { width: tableWidth } = useElementSize(tableRef);
   const narrowWindow = useIsNarrowDesktop();
+  const mobileWindow = useIsMobile();
   const [missingConnectionWarning, setMissingConnectionWarning] =
     useState(false);
 
@@ -272,6 +275,8 @@ function ConnectionsPage() {
 
   const compact =
     tableWidth > 0 ? tableWidth < COMPACT_TABLE_WIDTH : narrowWindow;
+  const mobile =
+    tableWidth > 0 ? tableWidth < MOBILE_TABLE_WIDTH : mobileWindow;
 
   const activeConnection = connections?.data.find(
     (connection) => connection.id === activeDialog?.connectionId,
@@ -283,7 +288,7 @@ function ConnectionsPage() {
   >[] = [
     {
       accessorKey: 'displayName',
-      size: compact ? 240 : 220,
+      size: mobile ? 190 : compact ? 240 : 220,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -335,7 +340,7 @@ function ConnectionsPage() {
     },
     {
       accessorKey: 'status',
-      size: 120,
+      size: mobile ? 100 : 120,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -433,7 +438,7 @@ function ConnectionsPage() {
     },
     {
       id: 'actions',
-      size: compact ? 120 : 180,
+      size: mobile ? 52 : compact ? 120 : 180,
       cell: ({ row }) => {
         const connection = row.original;
         const manage = connectionAccessUtils.canManage(connection.myPermission);
@@ -447,7 +452,7 @@ function ConnectionsPage() {
             className="flex items-center justify-end gap-2"
             onClick={(e) => e.stopPropagation()}
           >
-            {primaryAction === 'view' && (
+            {!mobile && primaryAction === 'view' && (
               <Button
                 variant="link"
                 className="h-auto p-0"
@@ -456,7 +461,7 @@ function ConnectionsPage() {
                 {t('View')}
               </Button>
             )}
-            {primaryAction === 'reconnect' && (
+            {!mobile && primaryAction === 'reconnect' && (
               <Button
                 variant="link"
                 className="h-auto p-0"
@@ -470,7 +475,7 @@ function ConnectionsPage() {
                 {t('Reconnect')}
               </Button>
             )}
-            {primaryAction === 'edit' && (
+            {!mobile && primaryAction === 'edit' && (
               <Button
                 variant="link"
                 className="h-auto p-0"
@@ -496,7 +501,7 @@ function ConnectionsPage() {
               </Button>
             )}
             <MoreActionsMenu>
-              {manage && compact && (
+              {manage && (compact || mobile) && (
                 <DropdownMenuItem
                   onSelect={() =>
                     setActiveDialog({
@@ -586,7 +591,13 @@ function ConnectionsPage() {
       },
     },
   ];
-  const columns = compact
+  const columns = mobile
+    ? allColumns.filter(
+        (column) =>
+          !('accessorKey' in column) ||
+          MOBILE_VISIBLE_COLUMNS.includes(String(column.accessorKey)),
+      )
+    : compact
     ? allColumns.filter(
         (column) =>
           !('accessorKey' in column) ||

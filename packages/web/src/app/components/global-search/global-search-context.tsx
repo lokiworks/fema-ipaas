@@ -140,11 +140,15 @@ function GlobalSearchDialogContent({
       commandValue={commandValue}
       onCommandValueChange={setCommandValue}
       className="sm:max-w-[620px] h-[70vh] flex flex-col"
+      title={t('Search')}
+      description={t(
+        'Search workflows, issues, connections, projects, MCP services and pages',
+      )}
     >
       <div className="relative">
         <CommandInput
           placeholder={t(
-            'Search workflows, projects, connections, connectors, MCP services or pages',
+            'Search workflows, issues, connections, projects, MCP services and pages',
           )}
           value={search}
           onValueChange={setSearch}

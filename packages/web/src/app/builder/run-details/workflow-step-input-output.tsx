@@ -318,7 +318,9 @@ const RouterHitSummary = ({
   if (!isActionStep(step)) {
     return null;
   }
-  const names = runPathUtils.routerHitBranchNames({ step, output });
+  const names = runPathUtils
+    .routerHitBranchNames({ step, output })
+    ?.map((name) => (name === 'Otherwise' ? t('Otherwise') : name));
   if (isNil(names)) {
     return null;
   }

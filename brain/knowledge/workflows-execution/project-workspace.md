@@ -28,6 +28,9 @@ icon: 🗂️
 - 映射表 id 在复制后会变：工作流入参里等于旧表 id 的字符串会被整体替换成新 id（`workflowTransferUtils.remapIds`）。
 - 批量删除会先把这些工作流待审批的推广申请改成「已撤回」，再逐个删除。
 - 申请接口 `POST /v1/project-access-requests` 用 `publicTenant` 放行（申请人还不是成员），项目归属在服务里按 `tenantId` 校验，别的租户或个人项目一律当作不存在；审批接口靠 `ProjectResourceType.TABLE` 从申请行取 `projectId` 做权限校验。
+- **个人项目不能加成员。** 邀请接口对个人项目返回 `VALIDATION` + `messageKey: personalProjectHasNoMembers`（`tenantGuards.assertTeamProject`），先校验权限再校验类型，免得非成员借此探测项目类型。前端所有「分享 / 邀请」入口用 `projectSharingUtils.isPersonal` 禁用并说明原因，成员弹窗对个人项目不请求 `user-invitations`，只显示「新建团队项目」。目录接口 `ProjectDirectoryItem` 没有 `type`，全部项目页靠项目集合（`projectCollectionUtils.useAll`）判断哪行是个人项目。
+- **全部项目页的「分享」就地弹出成员弹窗**：`ProjectSettingsDialog` 带 `projectId` 时只显示成员页签，成员、邀请、权限的 hooks 都按这个 `projectId` 请求，不切换当前项目。
+- **角色名**：`DefaultProjectRole.ADMIN` 显示为「管理员」，只有 `project.ownerId` 那个人显示「所有者」（`projectRoleLabels.memberLabel`），邀请和审批下拉里选的是「管理员」。
 - 「他人正在编辑」这一项校验还没做：写这块时平台还没有编辑锁。
 - 最近一次运行只看最近 30 天，避免 `DISTINCT ON` 扫完整张 execution 表。
 

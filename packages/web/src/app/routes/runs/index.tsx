@@ -6,11 +6,12 @@ import {
   runLogFilterUtils,
   RunLogMatch,
   RunLogRow,
+  RunLogScopeProject,
   RunLogType,
   WorkflowRetryStrategy,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Archive, CopyMinus, RefreshCw } from 'lucide-react';
+import { Archive, ChevronDown, CopyMinus, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   Link,
@@ -25,6 +26,13 @@ import {
   LIMIT_QUERY_PARAM,
 } from '@/components/custom/data-table';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Tooltip,
@@ -93,7 +101,14 @@ const RunsPage = () => {
     },
   });
   const maxRetention = scope ? runLogUiUtils.maxRetentionDays(scope) : null;
-  const dedupeProjectId = presetProjectId ?? singleProject(state);
+  const dedupeCandidates = dedupeProjectCandidates({
+    state,
+    projects: scope?.projects ?? [],
+  });
+  const dedupeProjectId =
+    presetProjectId ??
+    singleProject(state) ??
+    (dedupeCandidates.length === 1 ? dedupeCandidates[0].id : null);
 
   const applyState = (next: RunLogFilterState) =>
     setSearchParams(
@@ -206,6 +221,34 @@ const RunsPage = () => {
           </>
         )}
         <div className="ml-auto flex items-center gap-3">
+          {isNil(dedupeProjectId) && dedupeCandidates.length > 1 ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" variant="outline" size="sm">
+                  <CopyMinus className="size-4" />
+                  {t('Deduplicated triggers')}
+                  <ChevronDown className="size-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="max-w-72">
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                  {t('Deduplicated triggers are listed per project. Pick one:')}
+                </DropdownMenuLabel>
+                {dedupeCandidates.map((project) => (
+                  <DropdownMenuItem
+                    key={project.id}
+                    onSelect={() =>
+                      navigate(
+                        `/projects/${project.id}/runs?${VIEW_PARAM}=${DEDUPED_VIEW}`,
+                      )
+                    }
+                  >
+                    <span className="truncate">{project.displayName}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
           <Tooltip>
             <TooltipTrigger asChild>
               <span>
@@ -225,15 +268,12 @@ const RunsPage = () => {
               </span>
             </TooltipTrigger>
             <TooltipContent className="max-w-64">
-              {isNil(dedupeProjectId)
-                ? t(
-                    'Deduplicated triggers are listed per project. Filter by exactly one project to see them.',
-                  )
-                : t(
-                    'Triggers that were dropped as duplicates and never ran. Switch back to see run logs.',
-                  )}
+              {t(
+                'Triggers that were dropped as duplicates and never ran. Switch back to see run logs.',
+              )}
             </TooltipContent>
           </Tooltip>
+          )}
           {scope && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -308,6 +348,22 @@ const RunsPage = () => {
     </ConsolePage>
   );
 };
+
+function dedupeProjectCandidates({
+  state,
+  projects,
+}: {
+  state: RunLogFilterState;
+  projects: RunLogScopeProject[];
+}): RunLogScopeProject[] {
+  const condition = state.conditions.find(
+    (candidate) => candidate.field === RunLogConditionField.PROJECT,
+  );
+  if (isNil(condition) || condition.field !== RunLogConditionField.PROJECT) {
+    return projects;
+  }
+  return projects.filter((project) => condition.values.includes(project.id));
+}
 
 function singleProject(state: RunLogFilterState): string | null {
   const project = state.conditions.find(

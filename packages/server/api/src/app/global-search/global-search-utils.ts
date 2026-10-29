@@ -1,4 +1,4 @@
-import { GLOBAL_SEARCH_GROUP_LIMIT, GLOBAL_SEARCH_GROUP_ORDER, GlobalSearchGroup, GlobalSearchItem, GlobalSearchResultType } from '@fema-ipaas/shared'
+import { GLOBAL_SEARCH_GROUP_LIMIT, GLOBAL_SEARCH_GROUP_ORDER, GlobalSearchGroup, GlobalSearchItem, GlobalSearchResultType, TenantModule } from '@fema-ipaas/shared'
 
 function toGroup({ type, items }: { type: GlobalSearchResultType, items: GlobalSearchItem[] }): GlobalSearchGroup {
     return {
@@ -23,7 +23,16 @@ function matches({ query, values }: { query: string, values: (string | null | un
     return values.some((value) => typeof value === 'string' && value.toLowerCase().includes(needle))
 }
 
+function hiddenTypes({ modules }: { modules: TenantModule[] }): GlobalSearchResultType[] {
+    if (modules.includes(TenantModule.PLATFORM_ADMIN)) {
+        return []
+    }
+    const adminOnly = [GlobalSearchResultType.CONNECTOR, GlobalSearchResultType.MCP_SERVER]
+    return modules.includes(TenantModule.MCP_SERVICES) ? adminOnly : [...adminOnly, GlobalSearchResultType.MCP_SERVICE]
+}
+
 export const globalSearchUtils = {
+    hiddenTypes,
     toGroup,
     arrange,
     likePattern,

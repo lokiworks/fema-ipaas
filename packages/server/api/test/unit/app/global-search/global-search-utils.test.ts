@@ -1,4 +1,4 @@
-import { GlobalSearchItem, GlobalSearchResultType } from '@fema-ipaas/shared'
+import { GlobalSearchItem, GlobalSearchResultType, TenantModule } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { globalSearchUtils } from '../../../../src/app/global-search/global-search-utils'
 
@@ -30,5 +30,11 @@ describe('globalSearchUtils', () => {
     it('matches case-insensitively and ignores empty values', () => {
         expect(globalSearchUtils.matches({ query: 'HR', values: [null, 'Onboarding hr sync'] })).toBe(true)
         expect(globalSearchUtils.matches({ query: 'finance', values: [undefined, 'Onboarding'] })).toBe(false)
+    })
+
+    it('hides admin-only results from members and MCP services from members without the module', () => {
+        expect(globalSearchUtils.hiddenTypes({ modules: [TenantModule.BUSINESS_INTEGRATION, TenantModule.PLATFORM_ADMIN] })).toEqual([])
+        expect(globalSearchUtils.hiddenTypes({ modules: [TenantModule.BUSINESS_INTEGRATION, TenantModule.MCP_SERVICES] })).toEqual([GlobalSearchResultType.CONNECTOR, GlobalSearchResultType.MCP_SERVER])
+        expect(globalSearchUtils.hiddenTypes({ modules: [TenantModule.BUSINESS_INTEGRATION] })).toEqual([GlobalSearchResultType.CONNECTOR, GlobalSearchResultType.MCP_SERVER, GlobalSearchResultType.MCP_SERVICE])
     })
 })

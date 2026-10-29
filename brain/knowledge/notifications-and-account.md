@@ -26,6 +26,7 @@ icon: 🔔
 
 ## Gotchas
 
+- **全局搜索在服务端也按模块隐藏结果。** `globalSearchUtils.hiddenTypes` 按用户的有效模块决定：非平台管理员看不到连接器和 MCP 服务器，没有「MCP 服务」模块的看不到 MCP 服务，这些分组根本不查。问题结果带 `issueStatus`，非待处理的在结果里标状态。
 - 容量告警（`CAPACITY_THRESHOLD`）站内通知发给项目所有者和租户管理员，**链接按收件人区分**：租户管理员去 `/tenant/limits/usage`，不是管理员的所有者去 `/projects/<id>/automations`（租户页对他们会被静默重定向回首页）。
 - 通知列表里的时间用 `formatUtils.formatDate`（本地化），`formatDateToAgo` 是写死英文的；正文里的角色名、连接器名在前端换成本地化名称，库里存的仍是枚举值和包名。
 - 通知永远排除触发它的人（`actorId`），审批人自己申请的发布不会通知自己。

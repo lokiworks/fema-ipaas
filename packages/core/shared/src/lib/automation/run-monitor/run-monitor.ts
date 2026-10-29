@@ -123,7 +123,7 @@ export type RunMonitorDuplicateProject = z.infer<typeof RunMonitorDuplicateProje
 
 export const RunMonitorHandled = z.object({
     duplicateEvents: z.number(),
-    duplicateProjects: z.array(RunMonitorDuplicateProject).default([]),
+    duplicateProjects: z.array(RunMonitorDuplicateProject).optional(),
     mergedFailures: z.number(),
     mergedIssues: z.number(),
     rateLimitWaits: z.number(),

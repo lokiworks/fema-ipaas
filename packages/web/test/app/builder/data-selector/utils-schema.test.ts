@@ -874,3 +874,65 @@ describe('schemaTreeUtils.buildTreeFromSchema — search terms', () => {
     expect(matchedLeafNames('mobilephone')).toEqual(['手机号']);
   });
 });
+
+describe('schemaTreeUtils.buildStructureFromSchema — untested steps', () => {
+  const schema: OutputSchema = {
+    fields: [
+      {
+        key: 'employeeInfo',
+        label: 'Employee',
+        children: [
+          { key: 'name', label: 'Name' },
+          { key: 'mobilePhone', label: 'Mobile' },
+        ],
+      },
+      {
+        key: 'records',
+        label: 'Employees',
+        listItems: [{ key: 'name', label: 'Name' }],
+      },
+    ],
+  };
+
+  it('lays out the nested fields from the schema without sample data', () => {
+    const tree = schemaTreeUtils.buildStructureFromSchema({
+      stepName: 'step_1',
+      displayName: '1. Beisen',
+      schema,
+      badge: 'Not tested',
+    });
+
+    const employee = tree.children?.[0];
+    expect(tree.data.type === 'value' && tree.data.badge).toBe('Not tested');
+    expect(
+      employee?.children?.map((child) =>
+        child.data.type === 'value' ? child.data.propertyPath : '',
+      ),
+    ).toEqual([
+      "step_1['output']['employeeInfo']['name']",
+      "step_1['output']['employeeInfo']['mobilePhone']",
+    ]);
+    expect(
+      employee?.children?.every(
+        (child) => child.data.type === 'value' && child.data.structureOnly,
+      ),
+    ).toBe(true);
+  });
+
+  it('marks list fields so the loop selector can keep them', () => {
+    const tree = schemaTreeUtils.buildStructureFromSchema({
+      stepName: 'step_1',
+      displayName: '1. Beisen',
+      schema,
+      badge: 'Not tested',
+    });
+
+    const list = tree.children?.[1];
+    expect(list?.data.type === 'value' && list.data.listField).toBe(true);
+    const firstItemField = list?.children?.[0]?.children?.[0];
+    expect(
+      firstItemField?.data.type === 'value' &&
+        firstItemField.data.propertyPath,
+    ).toBe("step_1['output']['records'][0]['name']");
+  });
+});

@@ -1,3 +1,4 @@
+import { WorkflowAction, WorkflowActionType } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { textMentionUtils } from '@/app/builder/connector-properties/text-input-with-mentions/text-input-utils';
@@ -102,5 +103,65 @@ describe('textMentionUtils.convertTextToTipTapJsonContent', () => {
       });
       expect(back).toBe(input);
     });
+  });
+});
+
+describe('textMentionUtils.parseLabelFromMention — friendly field names', () => {
+  const step = {
+    name: 'step_2',
+    type: WorkflowActionType.CODE,
+    displayName: 'Read employee',
+    valid: true,
+    lastUpdatedDate: '2024-01-01T00:00:00.000Z',
+    settings: { sourceCode: { code: '', packageJson: '{}' }, input: {} },
+  } satisfies WorkflowAction;
+  const metadata = {
+    type: WorkflowActionType.CODE,
+    displayName: 'Code',
+    logoUrl: '',
+    description: '',
+    stepDisplayName: 'Read employee',
+    stepNumber: 2,
+    outputSchema: {
+      fields: [
+        {
+          key: 'employeeInfo',
+          label: '员工信息',
+          children: [
+            { key: 'name', label: '姓名' },
+            { key: 'mobilePhone', label: '手机号' },
+          ],
+        },
+      ],
+    },
+  } satisfies Parameters<typeof textMentionUtils.parseLabelFromMention>[2][number];
+
+  it('labels the reference with the step number and schema labels', () => {
+    const label = textMentionUtils.parseLabelFromMention(
+      "{{step_2['output']['employeeInfo']['name']}}",
+      [step],
+      [metadata],
+    );
+    expect(label.displayText).toBe('2.员工信息.姓名');
+    expect(label.leafText).toBe('姓名');
+    expect(label.fullText).toBe('2. Read employee · 员工信息 · 姓名');
+  });
+
+  it('tells two sibling fields apart by their own label', () => {
+    const phone = textMentionUtils.parseLabelFromMention(
+      "{{step_2['output']['employeeInfo']['mobilePhone']}}",
+      [step],
+      [metadata],
+    );
+    expect(phone.displayText).toBe('2.员工信息.手机号');
+  });
+
+  it('falls back to the raw key when the schema does not describe it', () => {
+    const label = textMentionUtils.parseLabelFromMention(
+      "{{step_2['output']['extra']['x']}}",
+      [step],
+      [metadata],
+    );
+    expect(label.displayText).toBe('2.extra.x');
   });
 });

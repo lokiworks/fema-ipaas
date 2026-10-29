@@ -22,6 +22,7 @@ The core (all-editions) auth layer: user identity creation, sign-in, and JWT ses
 
 ### Gotchas
 - **A user with no project at all gets a fresh personal project at sign-in.** Deleting your own personal project, or leaving every project, used to make `getProjectAndToken` reject the login as "No project found". Such a user is exactly who needs to sign in and request access to a project. Account status (unverified, inactive) is checked before this step, so a disabled account never gets a project recreated.
+- **登录后的回跳地址只认 `loginRedirect`（`packages/web/src/lib/login-redirect.ts`）。** 未登录被拦下时守卫用 `loginRedirect.signInPath` 带上 `from`，登录成功统一走 `useRedirectAfterLogin` → `loginRedirect.consume`，只放行站内相对路径，`//host`、`/\host`、绝对地址和登录类页面都退回首页。守卫里不能调 `authenticationSession.logOut()`，它会直接 `window.location.href = '/sign-in'`，把 `from` 丢掉。SSO/OIDC/飞书登录要离开站点，点按钮时先 `rememberForExternalSignIn` 存进 sessionStorage，回到 `/sso/complete` 再取出来。
 - Email-auth checks and domain allow-listing guards are **skipped on Community** edition.
 - OTP verification only sent on Cloud production; CE/EE and Cloud-dev (`FEMA_ENVIRONMENT=development`) auto-verify the identity.
 - Telemetry PII (email/name) sent only on Cloud; CE/EE send non-PII fields (`pickTelemetryPii`). Sign-in telemetry covers password sign-in only, not SSO.

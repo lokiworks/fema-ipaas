@@ -46,9 +46,10 @@ import {
 } from '@/components/ui/tooltip';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 import { tenantUserMutations } from '@/features/tenant-admin/hooks/tenant-user-hooks';
-import { useIsNarrowDesktop } from '@/hooks/use-mobile';
+import { useIsMobile, useIsNarrowDesktop } from '@/hooks/use-mobile';
 import { authenticationSession } from '@/lib/authentication-session';
 import { personName } from '@/lib/person-name';
+import { cn } from '@/lib/utils';
 
 import { AddUsersDialog } from './add-users-dialog';
 import { EditAccessDialog } from './edit-access-dialog';
@@ -58,6 +59,8 @@ import { ResetPasswordDialog } from './reset-password-dialog';
 export default function UsersPage() {
   const { data, isLoading, refetch } = tenantAccessHooks.useMembers();
   const compact = useIsNarrowDesktop();
+  const mobile = useIsMobile();
+  const columnCount = mobile ? 4 : compact ? 6 : 7;
   const { mutate: setEnabled } = tenantAccessHooks.useSetEnabled();
   const bulk = tenantAccessHooks.useBulkSetEnabled();
   const [selected, setSelected] = useState<string[]>([]);
@@ -212,8 +215,14 @@ export default function UsersPage() {
               </TableHead>
               <TableHead>{t('Member')}</TableHead>
               <TableHead className="w-24">{t('Status')}</TableHead>
-              <TableHead className="w-24">{t('Platform role')}</TableHead>
-              <TableHead className="w-40">{t('Module permissions')}</TableHead>
+              {!mobile && (
+                <TableHead className="w-24">{t('Platform role')}</TableHead>
+              )}
+              {!mobile && (
+                <TableHead className="w-40">
+                  {t('Module permissions')}
+                </TableHead>
+              )}
               {!compact && (
                 <TableHead className="w-28">{t('Last active')}</TableHead>
               )}
@@ -224,7 +233,7 @@ export default function UsersPage() {
             {visible.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={compact ? 6 : 7}
+                  colSpan={columnCount}
                   className="text-muted-foreground"
                 >
                   {t('No members match these filters')}
@@ -246,7 +255,7 @@ export default function UsersPage() {
                     data-testid={`select-user-${member.email}`}
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell className={cn(mobile && 'max-w-40')}>
                   <div className="flex min-w-0 flex-col gap-0.5">
                     <div className="flex min-w-0 items-center gap-1.5">
                       <TextWithTooltip
@@ -268,20 +277,32 @@ export default function UsersPage() {
                     <span className="truncate text-xs text-muted-foreground">
                       {member.email}
                     </span>
+                    {mobile && (
+                      <span className="text-xs text-muted-foreground">
+                        {tenantAccessUtils.roleLabel({
+                          tenantRole: member.tenantRole,
+                          isOwner: member.isOwner,
+                        })}
+                      </span>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={member.status} />
                 </TableCell>
-                <TableCell>
-                  {tenantAccessUtils.roleLabel({
-                    tenantRole: member.tenantRole,
-                    isOwner: member.isOwner,
-                  })}
-                </TableCell>
-                <TableCell>
-                  <ModuleBadges modules={member.modules} />
-                </TableCell>
+                {!mobile && (
+                  <TableCell>
+                    {tenantAccessUtils.roleLabel({
+                      tenantRole: member.tenantRole,
+                      isOwner: member.isOwner,
+                    })}
+                  </TableCell>
+                )}
+                {!mobile && (
+                  <TableCell>
+                    <ModuleBadges modules={member.modules} />
+                  </TableCell>
+                )}
                 {!compact && (
                   <TableCell className="text-muted-foreground">
                     {member.lastActiveDate ? (

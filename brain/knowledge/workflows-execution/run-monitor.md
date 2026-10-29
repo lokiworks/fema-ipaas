@@ -15,6 +15,7 @@ icon: 📈
 **AI 用量** —— 来自 `ai_usage`：`AGENT` / `ASK_MODEL` 按关联运行的环境分为工作流运行和调试运行，`COPILOT` 是编辑器 AI 助手，`AUTO_MAPPING` 是自动映射，`GENERATE_WORKFLOW` 是 AI 生成工作流。单价只存在浏览器 localStorage，估算费用不是账单。
 
 ## Gotchas
+- 「被去重的触发」只能按单个项目看（`/projects/:id/runs?view=deduped`），所以 `handled.duplicateProjects` 带各项目的去重数：只有一个项目有数据就直接跳过去，多个就弹出项目选择；运行日志页的同名按钮也一样。
 - 生产运行由 `runsMetadataQueue` 异步落库，刚触发的运行要过一小会儿才出现在监控里。
 - 峰值并发只回看范围起点前 24 小时内创建的运行；跨天仍在跑的超长运行可能漏算。
 - 「用了 AI 的运行」靠 `ai_usage.executionId` 关联回范围内的生产运行，只有工作流里的 AI 节点会带运行 ID；编辑器里的 AI 功能不进这个比例，但计入 Token 总量。

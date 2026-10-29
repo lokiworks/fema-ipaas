@@ -1,6 +1,8 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   ReliabilityEventKind,
   RunMonitorBucket,
+  RunMonitorHandled,
   RunMonitorMetric,
   RunMonitorViewConfig,
   RunMonitorWorkflowRow,
@@ -15,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { connectorsHooks } from '@/features/connectors/hooks/connectors-hooks';
 import {
   MonitorAiUsage,
+  MonitorDuplicateTarget,
   MonitorHandledCard,
   MonitorStatCards,
   MonitorStatusCard,
@@ -307,17 +310,23 @@ export function MonitorPage() {
             rangeLabel={rangeLabel}
             connectorName={connectorName}
             onOpenHandled={openHandledLogs}
-            onOpenDuplicates={
-              dedupedProjectId === null
-                ? null
-                : () =>
-                    navigate(
-                      `/projects/${dedupedProjectId}/runs?view=deduped${
-                        effective.workflowIds.length === 1
-                          ? `&workflowId=${effective.workflowIds[0]}`
-                          : ''
-                      }`,
-                    )
+            duplicateTargets={duplicateTargets({
+              handled: summary.handled,
+              singleProjectId: dedupedProjectId,
+              scopeProjects: (options?.projects ?? []).filter(
+                (project) =>
+                  effective.projectIds.length === 0 ||
+                  effective.projectIds.includes(project.id),
+              ),
+            })}
+            onOpenDuplicates={(projectId) =>
+              navigate(
+                `/projects/${projectId}/runs?view=deduped${
+                  effective.workflowIds.length === 1
+                    ? `&workflowId=${effective.workflowIds[0]}`
+                    : ''
+                }`,
+              )
             }
             onOpenIssues={() => navigate('/issue-center')}
           />
@@ -358,6 +367,42 @@ export function MonitorPage() {
       />
     </ConsolePage>
   );
+}
+
+function duplicateTargets({
+  handled,
+  singleProjectId,
+  scopeProjects,
+}: {
+  handled: RunMonitorHandled;
+  singleProjectId: string | null;
+  scopeProjects: { id: string; displayName: string }[];
+}): MonitorDuplicateTarget[] {
+  const projectName = (id: string) =>
+    scopeProjects.find((project) => project.id === id)?.displayName ?? id;
+  if (singleProjectId !== null) {
+    return [
+      {
+        projectId: singleProjectId,
+        displayName: projectName(singleProjectId),
+        count: handled.duplicateEvents,
+      },
+    ];
+  }
+  if (isNil(handled.duplicateProjects)) {
+    return handled.duplicateEvents === 0
+      ? []
+      : scopeProjects.map((project) => ({
+          projectId: project.id,
+          displayName: project.displayName,
+          count: null,
+        }));
+  }
+  return handled.duplicateProjects.map((row) => ({
+    projectId: row.projectId,
+    displayName: projectName(row.projectId),
+    count: row.count,
+  }));
 }
 
 function metricLabel(metric: RunMonitorMetric): string {

@@ -95,28 +95,33 @@ const NewConnectionDialog = React.memo(
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <ScrollArea className="grow overflow-y-auto ">
-              <div className="grid grid-cols-4 gap-4">
-                {(isLoading ||
-                  (filteredConnectors && filteredConnectors.length === 0)) && (
-                  <div className="text-center">{t('No connectors found')}</div>
-                )}
+            <ScrollArea className="min-h-0 grow overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3 pb-1 sm:grid-cols-4">
                 {!isLoading &&
                   filteredConnectors &&
-                  filteredConnectors.map((connector, index) => (
-                    <div
-                      key={index}
+                  filteredConnectors.length === 0 && (
+                    <div className="col-span-full text-sm text-muted-foreground">
+                      {t('No connectors found')}
+                    </div>
+                  )}
+                {!isLoading &&
+                  filteredConnectors &&
+                  filteredConnectors.map((connector) => (
+                    <button
+                      type="button"
+                      key={connector.name}
                       onClick={() => clickConnector(connector.name)}
-                      className="border p-2 h-[150px] w-[150px] flex flex-col items-center justify-center hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-lg"
+                      className="flex h-[108px] w-full flex-col items-center justify-center gap-2 rounded-lg border p-2 hover:bg-accent hover:text-accent-foreground"
                     >
                       <img
-                        className="w-[40px] h-[40px]"
+                        className="size-9"
                         src={connector.logoUrl}
+                        alt=""
                       ></img>
-                      <div className="mt-2 text-center text-md">
+                      <span className="line-clamp-2 text-center text-sm">
                         {connector.displayName}
-                      </div>
-                    </div>
+                      </span>
+                    </button>
                   ))}
               </div>
             </ScrollArea>

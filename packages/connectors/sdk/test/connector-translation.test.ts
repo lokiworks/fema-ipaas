@@ -80,3 +80,52 @@ describe('connectorTranslation.translateConnector', () => {
     });
   });
 });
+
+describe('connectorTranslation.translateConnector output schemas', () => {
+  it('translates nested output field labels and keeps the source label', () => {
+    const translated = connectorTranslation.translateConnector<ConnectorMetadataModel>({
+      connector: JSON.parse(JSON.stringify({
+        ...connectorWithTwoAuths,
+        actions: {
+          read: {
+            name: 'read',
+            displayName: 'Read',
+            props: {},
+            outputSchema: {
+              fields: [
+                {
+                  key: 'recordInfo',
+                  label: 'Employment Record',
+                  children: [{ key: 'jobNumber', label: 'Job Number', description: 'The employee number.' }],
+                },
+                { key: 'records', label: 'Employees', listItems: [{ key: 'mobile', label: 'Mobile' }] },
+                { key: 'untranslated', label: 'Untranslated' },
+              ],
+            },
+          },
+        },
+        i18n: {
+          [LocalesEnum.CHINESE_SIMPLIFIED]: {
+            'Employment Record': '任职记录',
+            'Job Number': '工号',
+            'The employee number.': '员工的工号。',
+            Employees: '员工列表',
+            Mobile: '手机号',
+          },
+        },
+      })),
+      locale: LocalesEnum.CHINESE_SIMPLIFIED,
+    });
+
+    expect(translated.actions['read'].outputSchema?.fields).toEqual([
+      {
+        key: 'recordInfo',
+        label: '任职记录',
+        sourceLabel: 'Employment Record',
+        children: [{ key: 'jobNumber', label: '工号', sourceLabel: 'Job Number', description: '员工的工号。' }],
+      },
+      { key: 'records', label: '员工列表', sourceLabel: 'Employees', listItems: [{ key: 'mobile', label: '手机号', sourceLabel: 'Mobile' }] },
+      { key: 'untranslated', label: 'Untranslated' },
+    ]);
+  });
+});

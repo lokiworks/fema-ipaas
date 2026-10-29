@@ -10,6 +10,7 @@ import {
   FlagId,
   ConnectionScope,
   ConnectionType,
+  ConnectionPrefill,
   ConnectionWithoutSensitiveData,
   BOTH_CLIENT_CREDENTIALS_AND_AUTHORIZATION_CODE,
   UpsertConnectionRequestBody,
@@ -69,6 +70,7 @@ import { SecretTextConnectionSettings } from './secret-text-connection-settings'
 function CreateOrEditConnectionSection({
   connector,
   reconnectConnection,
+  reconnectPrefill,
   isGlobalConnection,
   externalIdComingFromSdk,
   setOpen,
@@ -108,6 +110,7 @@ function CreateOrEditConnectionSection({
           grantType: selectedAuth.grantType,
           redirectUrl: redirectUrl ?? '',
           projectId: projectIdOverride ?? undefined,
+          prefill: reconnectPrefill ?? null,
         }),
         ...(isGlobalConnection ? { scope: ConnectionScope.TENANT } : {}),
         projectIds: reconnectConnection?.projectIds ?? [],
@@ -176,6 +179,16 @@ function CreateOrEditConnectionSection({
             }
           >
             {' '}
+            {reconnectConnection && reconnectPrefill && (
+              <p
+                className="mb-3 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground"
+                data-testid="reconnect-prefill-note"
+              >
+                {t(
+                  'The fields you filled last time are kept. For security, passwords and keys are never shown again, so enter them once more.',
+                )}
+              </p>
+            )}
             <Markdown
               markdown={selectedAuth.authProperty.description}
               variables={{
@@ -454,6 +467,7 @@ function CreateOrEditConnectionDialog({
   open,
   setOpen,
   reconnectConnection,
+  reconnectPrefill,
   isGlobalConnection,
   externalIdComingFromSdk,
   projectId: projectIdOverride,
@@ -500,6 +514,7 @@ function CreateOrEditConnectionDialog({
             connectorsOAuth2AppsMap={connectorsOAuth2AppsMap ?? {}}
             setOpen={setOpen}
             reconnectConnection={reconnectConnection}
+            reconnectPrefill={reconnectPrefill}
             isGlobalConnection={isGlobalConnection}
             externalIdComingFromSdk={externalIdComingFromSdk}
             projectId={projectIdOverride}
@@ -623,6 +638,7 @@ type ConnectionDialogProps = {
   open: boolean;
   setOpen: (open: boolean, connection?: ConnectionWithoutSensitiveData) => void;
   reconnectConnection: ConnectionWithoutSensitiveData | null;
+  reconnectPrefill?: ConnectionPrefill | null;
   isGlobalConnection: boolean;
   externalIdComingFromSdk?: string | null;
   projectId?: string | null;
@@ -634,6 +650,7 @@ type CreateOrEditConnectionDialogContentProps = {
   connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   connectorsOAuth2AppsMap: ConnectorsOAuth2AppsMap;
   reconnectConnection: ConnectionWithoutSensitiveData | null;
+  reconnectPrefill?: ConnectionPrefill | null;
   isGlobalConnection: boolean;
   externalIdComingFromSdk?: string | null;
   setOpen: (open: boolean, connection?: ConnectionWithoutSensitiveData) => void;

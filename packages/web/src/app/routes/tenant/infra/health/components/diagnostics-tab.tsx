@@ -4,6 +4,7 @@ import { t } from 'i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SkeletonList } from '@/components/ui/skeleton';
 
+import { healthFormat } from '../lib/health-format';
 import { healthMetricsQueries } from '../lib/health-metrics-hooks';
 
 export function DiagnosticsTab({ enabled }: { enabled: boolean }) {
@@ -35,11 +36,13 @@ export function DiagnosticsTab({ enabled }: { enabled: boolean }) {
         <CardContent className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
           <Fact
             label={t('Execution mode')}
-            value={orUnknown(data.config.executionMode)}
+            value={healthFormat.executionModeLabel(data.config.executionMode)}
           />
           <Fact
             label={t('File storage location')}
-            value={orUnknown(data.config.fileStorageLocation)}
+            value={healthFormat.fileStorageLabel(
+              data.config.fileStorageLocation,
+            )}
           />
           <Fact
             label={t('Sandbox memory limit')}
@@ -112,7 +115,9 @@ export function DiagnosticsTab({ enabled }: { enabled: boolean }) {
               className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-2 text-sm"
             >
               <span className="font-medium">{machine.workerId}</span>
-              <span className="text-muted-foreground">{machine.status}</span>
+              <span className="text-muted-foreground">
+                {healthFormat.workerStatusLabel(machine.status)}
+              </span>
               <span className="text-muted-foreground tabular-nums">
                 CPU {formatPercentage(machine.cpuUsagePercentage)} · {t('RAM')}{' '}
                 {formatPercentage(machine.ramUsagePercentage)}

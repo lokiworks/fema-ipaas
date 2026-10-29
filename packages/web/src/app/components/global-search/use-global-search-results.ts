@@ -10,6 +10,7 @@ import { useEmbedding } from '@/components/providers/embed-provider';
 import { connectorsHooks } from '@/features/connectors/hooks/connectors-hooks';
 import { foldersApi } from '@/features/folders';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
+import { tenantAccessHooks } from '@/features/tenant-access';
 import { workflowsApi } from '@/features/workflows';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -58,6 +59,11 @@ function pageMatchesQuery({
 export function useGlobalSearchResults(query: string, open: boolean) {
   const projectId = authenticationSession.getProjectId() ?? '';
   const isTenantAdmin = useIsTenantAdmin();
+  const { data: access } = tenantAccessHooks.useMyAccess();
+  const hiddenTypes = globalSearchUtils.hiddenResultTypes({
+    isTenantAdmin,
+    modules: access?.modules ?? null,
+  });
   const { embedState } = useEmbedding();
   const hideTables = embedState.hideTables;
   const { data: allProjects = [] } = projectCollectionUtils.useAll();
@@ -117,6 +123,9 @@ export function useGlobalSearchResults(query: string, open: boolean) {
   const matchedPages = STATIC_PAGES.filter(
     (p) =>
       (!p.requiresTenantAdmin || isTenantAdmin) &&
+      (p.module === undefined ||
+        isTenantAdmin ||
+        (access?.modules ?? []).includes(p.module)) &&
       (!p.projectScoped || !!projectId) &&
       (!hasQuery || pageMatchesQuery({ page: p, query })),
   ).slice(0, SEARCH_LIMIT);
@@ -329,6 +338,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
   const serverGroups: SearchResultGroup[] = (
     globalSearchQuery.data?.groups ?? []
   )
+    .filter((group) => !hiddenTypes.includes(group.type))
     .map((group) =>
       globalSearchUtils.prioritizeCurrentProject({
         group,

@@ -2,7 +2,11 @@ import { isNil } from '@fema-ipaas/core-utils';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 import { openQueryErrorDialog } from '@/components/custom/error-dialog/error-dialog-store';
-import { internalErrorToast } from '@/components/ui/sonner';
+import {
+  internalErrorToast,
+  permissionDeniedToast,
+} from '@/components/ui/sonner';
+import { api } from '@/lib/api';
 import { notFoundError } from '@/lib/not-found-error';
 import { queryRetry } from '@/lib/query-retry';
 
@@ -23,6 +27,10 @@ export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (err: Error, _, __, mutation) => {
       if (!isNil(mutation.options.onError)) {
+        return;
+      }
+      if (api.isPermissionError(err)) {
+        permissionDeniedToast();
         return;
       }
       internalErrorToast();

@@ -18,6 +18,7 @@ Project-scoped, encrypted secret values (API keys, tokens) users create once and
 
 ### Gotchas
 - The create/rotate dialog value field is deliberately **NOT** `type="password"` (Chrome's leaked-password breach check + password-manager prompt, GIT-1619). It's `type="text"` masked with CSS `-webkit-text-security: disc`, `autoComplete="off"`, `spellCheck={false}`. Firefox < 118 renders unmasked (acceptable — only holds text being typed).
+- The list API never returns plaintext, not even for the "current value" column. That column masks the value and reveals one row on click through `POST /:id/reveal`, so viewers and API keys never see values and every look is audited.
 - Every reveal fires `VARIABLE_VALUE_REVEALED` (audit event `variable.value.revealed`) — use it for "who pulled variable X and when". Also `VARIABLE_UPSERTED`, `VARIABLE_DELETED`.
 
 ### Key files

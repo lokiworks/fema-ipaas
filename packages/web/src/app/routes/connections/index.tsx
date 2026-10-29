@@ -21,7 +21,7 @@ import {
   Workflow,
   X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import { NewConnectionDialog } from '@/app/connections/new-connection-dialog';
@@ -88,6 +88,11 @@ import {
 } from '@/features/connectors';
 import { useMenuHint } from '@/features/project-workspace/components/action-menu';
 import { projectCollectionUtils } from '@/features/projects';
+import { useElementSize } from '@/hooks/use-element-size';
+import { useIsNarrowDesktop } from '@/hooks/use-mobile';
+
+const COMPACT_TABLE_WIDTH = 1080;
+const COMPACT_HIDDEN_COLUMNS = ['ownerId', 'updated'];
 
 const OWNERSHIP_OPTIONS: { value: ConnectionOwnershipFilter; label: string }[] =
   [
@@ -109,6 +114,9 @@ function ConnectionsPage() {
     searchParams.get('search') ?? '',
   );
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const { width: tableWidth } = useElementSize(tableRef);
+  const narrowWindow = useIsNarrowDesktop();
   const [missingConnectionWarning, setMissingConnectionWarning] =
     useState(false);
 
@@ -262,17 +270,20 @@ function ConnectionsPage() {
     );
   };
 
+  const compact =
+    tableWidth > 0 ? tableWidth < COMPACT_TABLE_WIDTH : narrowWindow;
+
   const activeConnection = connections?.data.find(
     (connection) => connection.id === activeDialog?.connectionId,
   );
 
-  const columns: ColumnDef<
+  const allColumns: ColumnDef<
     RowDataWithActions<AccessibleConnection>,
     unknown
   >[] = [
     {
       accessorKey: 'displayName',
-      size: 220,
+      size: compact ? 240 : 220,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -299,6 +310,22 @@ function ConnectionsPage() {
               {accountIdentifier && (
                 <span className="truncate text-xs text-muted-foreground">
                   {accountIdentifier}
+                </span>
+              )}
+              {compact && (
+                <span
+                  className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
+                  data-testid="connection-compact-meta"
+                >
+                  <UserBadge
+                    id={row.original.ownerId ?? null}
+                    size="xsmall"
+                    includeName
+                  />
+                  <span aria-hidden>·</span>
+                  <span className="shrink-0">
+                    <FormattedDate date={new Date(row.original.updated)} />
+                  </span>
                 </span>
               )}
             </div>
@@ -406,7 +433,7 @@ function ConnectionsPage() {
     },
     {
       id: 'actions',
-      size: 180,
+      size: compact ? 120 : 180,
       cell: ({ row }) => {
         const connection = row.original;
         const manage = connectionAccessUtils.canManage(connection.myPermission);
@@ -454,7 +481,7 @@ function ConnectionsPage() {
                 {t('Edit Connection')}
               </Button>
             )}
-            {manage && (
+            {manage && !compact && (
               <Button
                 variant="link"
                 className="h-auto p-0"
@@ -469,6 +496,18 @@ function ConnectionsPage() {
               </Button>
             )}
             <MoreActionsMenu>
+              {manage && compact && (
+                <DropdownMenuItem
+                  onSelect={() =>
+                    setActiveDialog({
+                      type: 'share',
+                      connectionId: connection.id,
+                    })
+                  }
+                >
+                  {t('Share')}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onSelect={() => setDetailId(connection.id)}>
                 {t('View Details')}
               </DropdownMenuItem>
@@ -547,6 +586,13 @@ function ConnectionsPage() {
       },
     },
   ];
+  const columns = compact
+    ? allColumns.filter(
+        (column) =>
+          !('accessorKey' in column) ||
+          !COMPACT_HIDDEN_COLUMNS.includes(String(column.accessorKey)),
+      )
+    : allColumns;
 
   return (
     <ConsolePage
@@ -565,134 +611,143 @@ function ConnectionsPage() {
         </NewConnectionDialog>
       }
     >
-      <ConsoleTableFrame>
-        <DataTable
-          emptyStateTextTitle={
-            filtering
-              ? t('No connections match these filters')
-              : t('No connections yet')
-          }
-          emptyStateTextDescription={
-            filtering
-              ? t('Try a different search, or clear the filters and try again.')
-              : t(
-                  'Create a connection so workflow steps can call this account.',
-                )
-          }
-          emptyStateIcon={<Link2 className="size-14" />}
-          columns={columns}
-          page={connections}
-          isLoading={connectionsLoading}
-          isError={connectionsError}
-          onRowClick={(row) => setDetailId(row.id)}
-          getRowClassName={(row) => (row.id === detailId ? 'bg-accent/40' : '')}
-          customFilters={[
-            <Input
-              key="search"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder={t('Search by name, account or connector')}
-              className="w-64"
-            />,
-            <Select
-              key="connectorName"
-              value={connectorName ?? 'ALL'}
-              onValueChange={(value) =>
-                setFilterParam('connectorName', value === 'ALL' ? null : value)
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder={t('App')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t('All Apps')}</SelectItem>
-                {connectorOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>,
-            <Select
-              key="statusGroup"
-              value={statusGroup ?? 'ALL'}
-              onValueChange={(value) =>
-                setFilterParam('statusGroup', value === 'ALL' ? null : value)
-              }
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder={t('Status')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t('All')}</SelectItem>
-                <SelectItem value="ACTIVE">{t('Connected')}</SelectItem>
-                <SelectItem value="BROKEN">{t('Needs action')}</SelectItem>
-              </SelectContent>
-            </Select>,
-            <Select
-              key="availableInProjectId"
-              value={availableInProjectId ?? 'ALL'}
-              onValueChange={(value) =>
-                setFilterParam(
-                  'availableInProjectId',
-                  value === 'ALL' ? null : value,
-                )
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder={t('Available Projects')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t('All Projects')}</SelectItem>
-                {myProjects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.displayName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>,
-            ...(filtering
-              ? [
+      <div ref={tableRef} className="min-w-0">
+        <ConsoleTableFrame>
+          <DataTable
+            emptyStateTextTitle={
+              filtering
+                ? t('No connections match these filters')
+                : t('No connections yet')
+            }
+            emptyStateTextDescription={
+              filtering
+                ? t(
+                    'Try a different search, or clear the filters and try again.',
+                  )
+                : t(
+                    'Create a connection so workflow steps can call this account.',
+                  )
+            }
+            emptyStateIcon={<Link2 className="size-14" />}
+            columns={columns}
+            page={connections}
+            isLoading={connectionsLoading}
+            isError={connectionsError}
+            onRowClick={(row) => setDetailId(row.id)}
+            getRowClassName={(row) =>
+              row.id === detailId ? 'bg-accent/40' : ''
+            }
+            customFilters={[
+              <Input
+                key="search"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder={t('Search by name, account or connector')}
+                className="w-64"
+              />,
+              <Select
+                key="connectorName"
+                value={connectorName ?? 'ALL'}
+                onValueChange={(value) =>
+                  setFilterParam(
+                    'connectorName',
+                    value === 'ALL' ? null : value,
+                  )
+                }
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder={t('App')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{t('All Apps')}</SelectItem>
+                  {connectorOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>,
+              <Select
+                key="statusGroup"
+                value={statusGroup ?? 'ALL'}
+                onValueChange={(value) =>
+                  setFilterParam('statusGroup', value === 'ALL' ? null : value)
+                }
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder={t('Status')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{t('All')}</SelectItem>
+                  <SelectItem value="ACTIVE">{t('Connected')}</SelectItem>
+                  <SelectItem value="BROKEN">{t('Needs action')}</SelectItem>
+                </SelectContent>
+              </Select>,
+              <Select
+                key="availableInProjectId"
+                value={availableInProjectId ?? 'ALL'}
+                onValueChange={(value) =>
+                  setFilterParam(
+                    'availableInProjectId',
+                    value === 'ALL' ? null : value,
+                  )
+                }
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder={t('Available Projects')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{t('All Projects')}</SelectItem>
+                  {myProjects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.displayName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>,
+              ...(filtering
+                ? [
+                    <Button
+                      key="clear"
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                    >
+                      <X className="mr-1 h-3.5 w-3.5" />
+                      {t('Clear Filters')}
+                    </Button>,
+                  ]
+                : []),
+            ]}
+            toolbarButtons={[
+              <div
+                key="ownership"
+                className="flex items-center gap-1 rounded-md bg-muted p-1"
+              >
+                {OWNERSHIP_OPTIONS.map((option) => (
                   <Button
-                    key="clear"
-                    variant="ghost"
+                    key={option.value}
+                    type="button"
                     size="sm"
-                    onClick={clearFilters}
+                    variant={ownership === option.value ? 'secondary' : 'ghost'}
+                    className="h-7"
+                    onClick={() =>
+                      setFilterParam(
+                        'ownership',
+                        option.value === ConnectionOwnershipFilter.ALL
+                          ? null
+                          : option.value,
+                      )
+                    }
                   >
-                    <X className="mr-1 h-3.5 w-3.5" />
-                    {t('Clear Filters')}
-                  </Button>,
-                ]
-              : []),
-          ]}
-          toolbarButtons={[
-            <div
-              key="ownership"
-              className="flex items-center gap-1 rounded-md bg-muted p-1"
-            >
-              {OWNERSHIP_OPTIONS.map((option) => (
-                <Button
-                  key={option.value}
-                  type="button"
-                  size="sm"
-                  variant={ownership === option.value ? 'secondary' : 'ghost'}
-                  className="h-7"
-                  onClick={() =>
-                    setFilterParam(
-                      'ownership',
-                      option.value === ConnectionOwnershipFilter.ALL
-                        ? null
-                        : option.value,
-                    )
-                  }
-                >
-                  {option.label}
-                </Button>
-              ))}
-            </div>,
-          ]}
-        />
-      </ConsoleTableFrame>
+                    {option.label}
+                  </Button>
+                ))}
+              </div>,
+            ]}
+          />
+        </ConsoleTableFrame>
+      </div>
       {missingConnectionWarning && (
         <div>
           <Alert variant="warning">

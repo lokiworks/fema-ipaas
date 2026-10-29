@@ -19,6 +19,7 @@ import { DiagnosticsTab } from './components/diagnostics-tab';
 import { QueueTab } from './components/queue-tab';
 import { RunsTab } from './components/runs-tab';
 import { SystemHealthTab } from './components/system-health-tab';
+import { healthFormat } from './lib/health-format';
 import { healthMetricsQueries } from './lib/health-metrics-hooks';
 
 type TabValue = 'components' | 'system' | 'runs' | 'queue' | 'diagnostics';
@@ -31,7 +32,7 @@ function buildMonthOptions(): MonthOption[] {
     const month = now.subtract(index, 'month');
     return {
       value: month.format('YYYY-MM'),
-      label: month.format('MMMM YYYY'),
+      label: healthFormat.monthLabel(month.toDate()),
     };
   });
 }

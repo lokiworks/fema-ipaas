@@ -4,6 +4,7 @@ import {
   AddConnectionSharesRequestBody,
   ConnectionDetail,
   ConnectionOwners,
+  ConnectionPrefill,
   ConnectionScopeImpact,
   ConnectionScopeImpactRequestBody,
   ConnectionShare,
@@ -93,6 +94,9 @@ export const connectionsApi = {
   },
   getDetail(id: string): Promise<ConnectionDetail> {
     return api.get<ConnectionDetail>(`/v1/connections/${id}/detail`);
+  },
+  getPrefill(id: string): Promise<ConnectionPrefill> {
+    return api.get<ConnectionPrefill>(`/v1/connections/${id}/prefill`);
   },
   addShares(
     id: string,

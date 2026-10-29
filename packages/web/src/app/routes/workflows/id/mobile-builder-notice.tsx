@@ -5,7 +5,6 @@ import {
   WorkflowActionType,
   WorkflowStatus,
   WorkflowTrigger,
-  WorkflowVersionState,
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -13,10 +12,14 @@ import { ArrowLeft, Monitor, ScrollText } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+import { workflowStatusLabels } from '@/app/builder/builder-header/workflow-status-labels';
+import { versionNumbers } from '@/app/builder/workflow-versions/version-numbers';
 import { ImageWithColorBackground } from '@/components/custom/image-with-color-background';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { buttonVariants } from '@/components/ui/button';
 import { stepsHooks } from '@/features/connectors';
+import { projectCollectionUtils } from '@/features/projects';
+import { workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +30,27 @@ const MobileBuilderNotice = ({ workflow }: { workflow: PopulatedWorkflow }) => {
     () => buildStepEntries({ trigger: workflow.version.trigger }),
     [workflow.version.trigger],
   );
-  const versionLabel = findVersionLabel({ workflow });
+  const { project } = projectCollectionUtils.useCurrentProject();
+  const { data: versions } = workflowHooks.useListWorkflowVersions(workflow.id);
+  const numbers = useMemo(
+    () => versionNumbers.numberVersions(versions?.data ?? []),
+    [versions],
+  );
+  const runStateLabel = workflowStatusLabels.runState({
+    running: workflow.status === WorkflowStatus.ENABLED,
+    hasProduction: !isNil(workflow.publishedVersionId),
+  });
+  const deploymentLabel = workflowStatusLabels.deployment({
+    releasesEnabled: project.releasesEnabled,
+    testLabel: versionNumbers.label({
+      numbers,
+      versionId: workflow.testVersionId,
+    }),
+    productionLabel: versionNumbers.label({
+      numbers,
+      versionId: workflow.publishedVersionId,
+    }),
+  });
   const showNavigation = !embedState.disableNavigationInBuilder;
   const showRunLogs = showNavigation && checkAccess(Permission.READ_RUN);
 
@@ -38,12 +61,8 @@ const MobileBuilderNotice = ({ workflow }: { workflow: PopulatedWorkflow }) => {
           {workflow.version.displayName}
         </h1>
         <div className="flex flex-wrap items-center gap-1.5">
-          {!isNil(versionLabel) && <StatusTag>{versionLabel}</StatusTag>}
-          <StatusTag>
-            {workflow.status === WorkflowStatus.ENABLED
-              ? t('Enabled')
-              : t('Disabled')}
-          </StatusTag>
+          <StatusTag>{runStateLabel}</StatusTag>
+          {!isNil(deploymentLabel) && <StatusTag>{deploymentLabel}</StatusTag>}
         </div>
       </div>
 
@@ -184,20 +203,6 @@ function collectBranchLabels({
     );
   });
   return Object.fromEntries(pairs);
-}
-
-function findVersionLabel({
-  workflow,
-}: {
-  workflow: PopulatedWorkflow;
-}): string | null {
-  if (workflow.version.state === WorkflowVersionState.DRAFT) {
-    return t('Draft');
-  }
-  if (workflow.publishedVersionId === workflow.version.id) {
-    return t('Published');
-  }
-  return null;
 }
 
 const MAX_VISIBLE_INDENT_DEPTH = 4;

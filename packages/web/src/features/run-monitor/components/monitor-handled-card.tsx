@@ -63,10 +63,10 @@ export function MonitorHandledCard({
           testId="handled-merged"
           value={number(handled.mergedFailures)}
           label={t('Failures merged into problems')}
-          description={t(
-            '{failures, plural, =1 {1 failed run was} other {# failed runs were}} grouped into {issues, plural, =1 {1 problem} other {# problems}}, so one alert covers each cause.',
-            { failures: handled.mergedFailures, issues: handled.mergedIssues },
-          )}
+          description={t('monitorMergedFailuresDescription', {
+            failures: handled.mergedFailures,
+            issues: handled.mergedIssues,
+          })}
           actionLabel={t('See the problems')}
           disabledHint={null}
           onAction={onOpenIssues}

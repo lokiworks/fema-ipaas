@@ -1,3 +1,4 @@
+import { WorkflowOperationType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { Button } from '@/components/ui/button';
@@ -17,25 +18,53 @@ import { useDeleteConfirmation } from './utils/delete-confirmation-store';
 
 export function DeleteNodesDialog() {
   const { pending, close } = useDeleteConfirmation();
-  const [applyOperation, selectedStep, exitStepSettings] =
-    useBuilderStateContext((state) => [
-      state.applyOperation,
-      state.selectedStep,
-      state.exitStepSettings,
-    ]);
+  const [
+    applyOperation,
+    selectedStep,
+    exitStepSettings,
+    selectStepByName,
+    setSelectedBranchIndex,
+  ] = useBuilderStateContext((state) => [
+    state.applyOperation,
+    state.selectedStep,
+    state.exitStepSettings,
+    state.selectStepByName,
+    state.setSelectedBranchIndex,
+  ]);
+  const branch = pending?.branch ?? null;
   const dependentNames =
     pending?.dependents.map((step) => step.displayName) ?? [];
   const shownNames = dependentNames.slice(0, MAX_NAMES_SHOWN);
+  const removedNames =
+    branch?.removedSteps.map((step) => step.displayName) ?? [];
+  const shownRemovedNames = removedNames.slice(0, MAX_NAMES_SHOWN);
   return (
     <Dialog open={pending !== null} onOpenChange={(open) => !open && close()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('Delete the selected steps?')}</DialogTitle>
+          <DialogTitle>
+            {branch === null
+              ? t('Delete the selected steps?')
+              : t('Delete this branch and the steps in it?')}
+          </DialogTitle>
           <DialogDescription>
             {t('You can undo this afterwards')}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 text-sm">
+          {removedNames.length > 0 && (
+            <p>
+              {t(
+                'These steps in the branch are deleted too ({count, plural, =1 {1 step} other {# steps}}): {names}',
+                {
+                  count: removedNames.length,
+                  names: `${shownRemovedNames.join(', ')}${
+                    removedNames.length > MAX_NAMES_SHOWN ? '…' : ''
+                  }`,
+                },
+              )}
+            </p>
+          )}
           {pending !== null && pending.nestedCount > 0 && (
             <p>
               {t(
@@ -63,6 +92,19 @@ export function DeleteNodesDialog() {
             variant="destructive"
             onClick={() => {
               if (pending === null) {
+                return;
+              }
+              if (branch !== null) {
+                setSelectedBranchIndex(null);
+                applyOperation({
+                  type: WorkflowOperationType.DELETE_BRANCH,
+                  request: {
+                    stepName: branch.stepName,
+                    branchIndex: branch.branchIndex,
+                  },
+                });
+                selectStepByName(branch.stepName);
+                close();
                 return;
               }
               deleteSelectedNodes({

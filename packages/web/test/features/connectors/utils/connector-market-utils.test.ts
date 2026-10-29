@@ -1,4 +1,9 @@
-import { ConnectorCategory, ConnectorSource, ConnectorType, PackageType } from '@fema-ipaas/shared';
+import {
+  ConnectorCategory,
+  ConnectorSource,
+  ConnectorType,
+  PackageType,
+} from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { connectorMarketUtils } from '@/features/connectors/utils/connector-market-utils';
@@ -81,6 +86,28 @@ describe('connectorMarketUtils', () => {
     expect(counts.hr).toBe(1);
     expect(counts.crm).toBe(1);
     expect(counts.database).toBe(0);
+  });
+
+  it('puts database connectors in the database group', () => {
+    const connectors = [
+      connector({
+        name: '@fema-ipaas/connector-mysql',
+        categories: [ConnectorCategory.DEVELOPER_TOOLS],
+      }),
+      connector({
+        name: '@fema-ipaas/connector-postgres',
+        categories: [ConnectorCategory.DEVELOPER_TOOLS],
+      }),
+    ];
+    expect(connectorMarketUtils.groupsOf(connectors[0])).toEqual(['database']);
+    const counts = connectorMarketUtils.countByCategory(connectors);
+    expect(counts.database).toBe(2);
+    expect(
+      connectorMarketUtils.matchesCategory({
+        connector: connectors[1],
+        category: 'database',
+      }),
+    ).toBe(true);
   });
 
   it('treats built-in and official sources as official', () => {

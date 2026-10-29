@@ -159,3 +159,9 @@ export const resolveValueFromProps = (props: Record<string, unknown> | undefined
     })
     return resolvedScope
 }
+
+export const ConnectionPrefill = z.object({
+    props: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
+    username: Nullable(z.string()),
+}).describe('Non-secret values of a connection, used to fill the form when reconnecting.')
+export type ConnectionPrefill = z.infer<typeof ConnectionPrefill>

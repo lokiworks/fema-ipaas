@@ -23,6 +23,8 @@ import {
 import { cn } from '../../../../lib/utils';
 import { useBuilderStateContext } from '../../builder-hooks';
 import { workflowCanvasConsts } from '../utils/consts';
+import { useDeleteConfirmation } from '../utils/delete-confirmation-store';
+import { deleteImpactUtils } from '../utils/delete-impact';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
 import { workflowScreenshotUtils } from '../utils/workflow-screenshot-utils';
 
@@ -52,6 +54,7 @@ const BranchLabel = (props: BaseBranchLabel) => {
     applyOperation,
     readonly,
     canvasOrientation,
+    workflowVersion,
   ] = useBuilderStateContext((state) => [
     state.selectedStep,
     state.selectedBranchIndex,
@@ -64,6 +67,7 @@ const BranchLabel = (props: BaseBranchLabel) => {
     state.applyOperation,
     state.readonly,
     state.canvasOrientation,
+    state.workflowVersion,
   ]);
   const isHorizontal = canvasOrientation === 'horizontal';
 
@@ -187,7 +191,14 @@ const BranchLabel = (props: BaseBranchLabel) => {
                           copySuffix: defaultStepNames.copySuffix(),
                         },
                       });
+                      setIsDropdownMenuOpen(false);
+                      selectStepByName(props.sourceNodeName);
                       setSelectedBranchIndex(branchIndex + 1);
+                      fitView(
+                        workflowCanvasUtils.createFocusStepInGraphParams(
+                          props.sourceNodeName,
+                        ),
+                      );
                     }}
                   >
                     <div className="flex cursor-pointer  flex-row gap-2 items-center">
@@ -202,6 +213,16 @@ const BranchLabel = (props: BaseBranchLabel) => {
                       e.preventDefault();
                       e.stopPropagation();
                       if (branchIndex === null) return;
+                      const impact = deleteImpactUtils.branchImpactOf({
+                        trigger: workflowVersion.trigger,
+                        stepName: props.sourceNodeName,
+                        branchIndex,
+                      });
+                      if (deleteImpactUtils.needsConfirmation({ impact })) {
+                        setIsDropdownMenuOpen(false);
+                        useDeleteConfirmation.getState().open(impact);
+                        return;
+                      }
                       setSelectedBranchIndex(null);
                       applyOperation({
                         type: WorkflowOperationType.DELETE_BRANCH,

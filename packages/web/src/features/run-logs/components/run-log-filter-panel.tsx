@@ -13,19 +13,17 @@ import {
   RUN_LOG_TEXT_MAX_LENGTH,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Clock, ListFilter, Plus, X } from 'lucide-react';
-import { useState } from 'react';
-
 import {
-  MultiSelect,
-  MultiSelectContent,
-  MultiSelectEmpty,
-  MultiSelectItem,
-  MultiSelectList,
-  MultiSelectSearch,
-  MultiSelectTrigger,
-  MultiSelectValue,
-} from '@/components/custom/multi-select';
+  Check,
+  ChevronsUpDown,
+  Clock,
+  ListFilter,
+  Plus,
+  Search,
+  X,
+} from 'lucide-react';
+import { useRef, useState } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,7 +48,7 @@ import {
 import { executionUtils } from '@/features/executions/utils/execution-utils';
 import { cn } from '@/lib/utils';
 
-import { runLogUiUtils } from '../utils/run-log-ui-utils';
+import { RunLogPickerOption, runLogUiUtils } from '../utils/run-log-ui-utils';
 
 export function RunLogFilterPanel({
   state,
@@ -417,10 +415,7 @@ function ConditionValue({
         <ValuePicker
           values={condition.values}
           placeholder={t('Select or search projects')}
-          options={(scope?.projects ?? []).map((project) => ({
-            value: project.id,
-            label: project.displayName,
-          }))}
+          options={runLogUiUtils.projectOptions(scope)}
           onChange={(values) => onChange({ ...condition, values })}
         />
       );
@@ -429,10 +424,7 @@ function ConditionValue({
         <ValuePicker
           values={condition.values}
           placeholder={t('Select or search workflows')}
-          options={(scope?.workflows ?? []).map((workflow) => ({
-            value: workflow.id,
-            label: workflow.displayName,
-          }))}
+          options={runLogUiUtils.workflowOptions(scope)}
           onChange={(values) => onChange({ ...condition, values })}
         />
       );
@@ -441,9 +433,11 @@ function ConditionValue({
         <ValuePicker
           values={condition.values}
           placeholder={t('Select run statuses')}
+          searchable={false}
           options={Object.values(ExecutionStatus).map((status) => ({
             value: status,
             label: executionUtils.getStatusLabel(status),
+            hint: null,
           }))}
           onChange={(values) =>
             onChange({
@@ -460,9 +454,11 @@ function ConditionValue({
         <ValuePicker
           values={condition.values}
           placeholder={t('Select what the platform handled')}
+          searchable={false}
           options={HANDLED_KINDS.map((kind) => ({
             value: kind,
             label: runLogUiUtils.handledKindLabel(kind),
+            hint: null,
           }))}
           onChange={(values) =>
             onChange({
@@ -484,6 +480,7 @@ function ConditionValue({
           options={(scope?.connectors ?? []).map((name) => ({
             value: name,
             label: connectorName(name),
+            hint: null,
           }))}
           onChange={(values) => onChange({ ...condition, values })}
         />
@@ -540,37 +537,155 @@ function ValuePicker({
   values,
   options,
   placeholder,
+  searchable = true,
   onChange,
 }: {
   values: string[];
-  options: { value: string; label: string }[];
+  options: RunLogPickerOption[];
   placeholder: string;
+  searchable?: boolean;
   onChange: (values: string[]) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [query, setQuery] = useState('');
+  const composing = useRef(false);
+  const visible = options.filter((option) =>
+    runLogUiUtils.matchesOption({ option, query }),
+  );
+  const selected = values
+    .map((value) => options.find((option) => option.value === value))
+    .filter((option): option is RunLogPickerOption => option !== undefined);
+  const toggle = (value: string) =>
+    onChange(
+      values.includes(value)
+        ? values.filter((item) => item !== value)
+        : [...values, value],
+    );
   return (
-    <MultiSelect
-      value={values}
-      onValueChange={onChange}
-      items={options.map((option) => ({
-        value: option.value,
-        label: option.label,
-      }))}
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) {
+          setText('');
+          setQuery('');
+        }
+      }}
     >
-      <MultiSelectTrigger>
-        <MultiSelectValue placeholder={placeholder} />
-      </MultiSelectTrigger>
-      <MultiSelectContent>
-        <MultiSelectSearch placeholder={t('Search...')} />
-        <MultiSelectList>
-          <MultiSelectEmpty>{t('No results')}</MultiSelectEmpty>
-          {options.map((option) => (
-            <MultiSelectItem key={option.value} value={option.value}>
-              {option.label}
-            </MultiSelectItem>
-          ))}
-        </MultiSelectList>
-      </MultiSelectContent>
-    </MultiSelect>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            'flex min-h-9 w-full items-center gap-2 rounded-sm border border-input bg-transparent px-3 py-1 text-left text-sm',
+            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+          )}
+        >
+          <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+            {selected.length === 0 ? (
+              <span className="text-muted-foreground">{placeholder}</span>
+            ) : (
+              selected.map((option) => (
+                <Badge
+                  key={option.value}
+                  variant="outline"
+                  className="max-w-full gap-1 rounded-full pr-1.5"
+                >
+                  <span className="truncate">{option.label}</span>
+                  {option.hint && (
+                    <span className="truncate text-muted-foreground">
+                      {option.hint}
+                    </span>
+                  )}
+                  <span
+                    role="button"
+                    tabIndex={-1}
+                    aria-label={t('Remove {name}', { name: option.label })}
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      toggle(option.value);
+                    }}
+                  >
+                    <X className="size-3" />
+                  </span>
+                </Badge>
+              ))
+            )}
+          </span>
+          <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="min-w-64 p-1"
+        style={{ width: 'var(--radix-popover-trigger-width)' }}
+      >
+        {searchable && (
+          <div className="flex items-center gap-2 border-b px-2 pb-1">
+            <Search className="size-4 shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              value={text}
+              aria-label={t('Search...')}
+              placeholder={t('Search...')}
+              className="h-8 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              onCompositionStart={() => {
+                composing.current = true;
+              }}
+              onCompositionEnd={(event) => {
+                composing.current = false;
+                setQuery(event.currentTarget.value);
+              }}
+              onChange={(event) => {
+                setText(event.target.value);
+                if (!composing.current) {
+                  setQuery(event.target.value);
+                }
+              }}
+            />
+          </div>
+        )}
+        <div
+          role="listbox"
+          aria-multiselectable
+          className="flex max-h-60 flex-col overflow-y-auto py-1"
+        >
+          {visible.map((option) => {
+            const checked = values.includes(option.value);
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={checked}
+                className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                onClick={() => toggle(option.value)}
+              >
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+                {option.hint && (
+                  <span className="max-w-[45%] shrink-0 truncate text-xs text-muted-foreground">
+                    {option.hint}
+                  </span>
+                )}
+                <Check
+                  className={cn(
+                    'size-4 shrink-0',
+                    checked ? 'opacity-100' : 'opacity-0',
+                  )}
+                />
+              </button>
+            );
+          })}
+          {visible.length === 0 && (
+            <span className="px-2 py-3 text-center text-sm text-muted-foreground">
+              {t('No results')}
+            </span>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 

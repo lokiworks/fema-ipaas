@@ -46,7 +46,7 @@ describe('homeUtils.successRate', () => {
   it('formats as a percentage with one decimal', () => {
     expect(homeUtils.formatRate(0.75)).toBe('75%');
     expect(homeUtils.formatRate(2 / 3)).toBe('66.7%');
-    expect(homeUtils.formatRate(null)).toBe('-');
+    expect(homeUtils.formatRate(null)).toBe('—');
   });
 });
 

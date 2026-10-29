@@ -21,6 +21,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 
+import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
 import { tenantAccessUtils } from '@/features/tenant-access/utils/tenant-access-utils';
 
 function headline(notification: Notification): string {
@@ -50,6 +51,12 @@ function headline(notification: Notification): string {
       return t('Your access request was rejected');
     case NotificationType.PROJECT_MEMBER_ADDED:
       return t('You were added to a project');
+    case NotificationType.PROJECT_ACCESS_REQUESTED:
+      return t('{actor} asks to join a project', { actor });
+    case NotificationType.PROJECT_ACCESS_APPROVED:
+      return t('Your project access request was approved');
+    case NotificationType.PROJECT_ACCESS_REJECTED:
+      return t('Your project access request was rejected');
     case NotificationType.RUN_FAILED:
       return t('A workflow run failed');
     case NotificationType.CONNECTION_BROKEN:
@@ -87,6 +94,8 @@ function bodyText({
   switch (notification.type) {
     case NotificationType.PROJECT_MEMBER_ADDED:
       return isProjectRole(body) ? t(body) : body;
+    case NotificationType.PROJECT_ACCESS_APPROVED:
+      return isProjectRole(body) ? projectRoleLabels.label(body) : body;
     case NotificationType.CONNECTION_BROKEN:
     case NotificationType.CONNECTION_REAUTH_REQUESTED:
       return connectorDisplayName ?? body;
@@ -118,7 +127,11 @@ function icon(type: NotificationType): NotificationIcon {
     case NotificationType.MODULE_ACCESS_REJECTED:
       return { icon: ShieldCheck, className: 'text-info' };
     case NotificationType.PROJECT_MEMBER_ADDED:
+    case NotificationType.PROJECT_ACCESS_REQUESTED:
+    case NotificationType.PROJECT_ACCESS_APPROVED:
       return { icon: UserPlus, className: 'text-info' };
+    case NotificationType.PROJECT_ACCESS_REJECTED:
+      return { icon: CircleX, className: 'text-muted-foreground' };
     case NotificationType.RUN_FAILED:
       return { icon: CircleX, className: 'text-destructive' };
     case NotificationType.CAPACITY_THRESHOLD:

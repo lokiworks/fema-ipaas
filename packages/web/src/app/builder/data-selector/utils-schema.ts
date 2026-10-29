@@ -15,17 +15,31 @@ import {
   DataSelectorTreeNodeDataUnion,
 } from './type';
 
-function buildFieldNode({
+function buildFieldNode(
+  params: BuildFieldNodeParams,
+): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> {
+  const node = buildFieldNodeShape(params);
+  if (node.data.type !== 'value') {
+    return node;
+  }
+  const searchTerms = fieldSearchTerms(params.field);
+  return searchTerms.length === 0
+    ? node
+    : { ...node, data: { ...node.data, searchTerms } };
+}
+
+function fieldSearchTerms(field: OutputSchemaField): string[] {
+  return [field.sourceLabel, field.key, field.value].filter(
+    (term): term is string => !isNil(term) && term.length > 0,
+  );
+}
+
+function buildFieldNodeShape({
   basePath,
   field,
   sampleData,
   itemLabelTemplate,
-}: {
-  basePath: string;
-  field: OutputSchemaField;
-  sampleData: unknown;
-  itemLabelTemplate?: string;
-}): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> {
+}: BuildFieldNodeParams): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> {
   const rawValuePath = field.value ?? field.key;
   const { value, resolvedPath: valuePath } =
     pathUtils.resolvePathWithWrapperFallback(sampleData, rawValuePath);
@@ -489,4 +503,11 @@ export const schemaTreeUtils = {
   buildTreeFromArray,
   buildTreeFromArrayWithSchema,
   selectArrayTreeKind,
+};
+
+type BuildFieldNodeParams = {
+  basePath: string;
+  field: OutputSchemaField;
+  sampleData: unknown;
+  itemLabelTemplate?: string;
 };

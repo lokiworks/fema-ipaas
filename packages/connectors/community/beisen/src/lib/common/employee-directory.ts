@@ -14,7 +14,12 @@ async function page({ auth, rateLimit, rootOrganizationId, pageToken, pageSize }
     path: '/TenantBaseExternal/api/v5/Employee/GetEmployeeOfOrganization',
     body: { orgOId: root, includeSubOrg: true, isWithDisable: true, withDisabled: true, isWithDeleted: false, isGetLatestRecord: false, employType: [0, 2], serviceType: [0], capacity: pageSize, scrollId: cursor?.scrollId ?? '', queryDate: null },
   });
-  if (result.code !== undefined && !beisenCommon.isSuccessCode(result.code)) throw beisenCommon.businessError({ code: result.code, message: result.message });
+  if (result.code !== undefined && !beisenCommon.isSuccessCode(result.code)) {
+    if (String(result.code) === MISSING_ORGANIZATION_CODE && (result.message ?? '').includes(MISSING_ORGANIZATION_MESSAGE)) {
+      throw new Error(fixOwnerMarker.attach({ message: `The organization in Root organization OId does not exist: ${root} (Beisen code ${MISSING_ORGANIZATION_CODE} ${MISSING_ORGANIZATION_MESSAGE}). Pick the root organization again.`, owner: 'WORKFLOW_OWNER' }));
+    }
+    throw beisenCommon.businessError({ code: result.code, message: result.message });
+  }
   const items = result.data ?? [];
   if (cursor && items.length === 0) throw new Error(fixOwnerMarker.attach({ message: 'The employee scroll ended before the promised next page. The cursor may have expired; restart the full scan.', owner: 'WAIT' }));
   const nextPageToken = items.length > 0 && result.scrollId && !result.isLastData ? Buffer.from(JSON.stringify({ scrollId: result.scrollId, issuedAt: Date.now(), rootOrganizationId })).toString('base64url') : null;
@@ -48,6 +53,8 @@ function decode({ value, rootOrganizationId }: { value: string; rootOrganization
 
 export const beisenEmployeeDirectory = { page, find };
 
+const MISSING_ORGANIZATION_CODE = '417';
+const MISSING_ORGANIZATION_MESSAGE = '组织单元不存在';
 const Cursor = z.object({ scrollId: z.string(), issuedAt: z.number(), rootOrganizationId: z.string() });
 type PageParams = { auth: BeisenAuthValue; rateLimit?: RateLimitContext; rootOrganizationId: string; pageToken?: string; pageSize: number };
 type DirectoryPage = { items: Record<string, unknown>[]; nextPageToken: string | null };

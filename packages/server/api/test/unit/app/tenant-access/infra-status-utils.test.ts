@@ -47,4 +47,11 @@ describe('infrastructure status utils', () => {
         expect(componentHealthUtils.hostOf('https://registry.example.com/v1')).toBe('registry.example.com')
         expect(componentHealthUtils.hostOf('not a url')).toBeNull()
     })
+
+    it('answers with the pending placeholder when a slow check runs past its budget', async () => {
+        const slow = new Promise<string>((resolve) => setTimeout(() => resolve('done'), 200))
+        await expect(componentHealthUtils.withinBudget({ work: slow, budgetMs: 10, pending: 'pending' })).resolves.toBe('pending')
+        await expect(componentHealthUtils.withinBudget({ work: Promise.resolve('fast'), budgetMs: 100, pending: 'pending' })).resolves.toBe('fast')
+        await expect(componentHealthUtils.withinBudget({ work: Promise.reject(new Error('x')), budgetMs: 100, pending: 'pending' })).resolves.toBe('pending')
+    })
 })

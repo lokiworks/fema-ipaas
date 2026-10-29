@@ -1,20 +1,20 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import { WorkflowStatus } from '@fema-ipaas/shared';
-import { t } from 'i18next';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { useLiveWorkflowStatus } from '@/app/builder/use-live-workflow-status';
 import { cn } from '@/lib/utils';
 
+import { workflowStatusLabels } from './workflow-status-labels';
+
 export function RunStateChip() {
   const workflow = useBuilderStateContext((state) => state.workflow);
   const status = useLiveWorkflowStatus();
   const running = status === WorkflowStatus.ENABLED;
-  const label = running
-    ? t('Running')
-    : isNil(workflow.publishedVersionId)
-    ? t('Not run')
-    : t('Stopped');
+  const label = workflowStatusLabels.runState({
+    running,
+    hasProduction: !isNil(workflow.publishedVersionId),
+  });
 
   return (
     <span

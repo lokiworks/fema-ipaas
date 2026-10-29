@@ -1,3 +1,4 @@
+import { TenantModule } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   ActivityIcon,
@@ -6,6 +7,7 @@ import {
   LayoutGridIcon,
   LayoutTemplateIcon,
   Link2Icon,
+  LockIcon,
   PackageIcon,
   PuzzleIcon,
   ScrollTextIcon,
@@ -28,6 +30,7 @@ import {
 import { HelpMenu } from '@/features/help';
 import { issuesHooks } from '@/features/issues';
 import { NotificationBell } from '@/features/notifications';
+import { tenantAccessHooks } from '@/features/tenant-access';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -213,7 +216,10 @@ function ModuleSwitcher({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const { data: access } = tenantAccessHooks.useMyAccess();
   const currentModuleKey = currentModuleKeyOf(pathname);
+  const isLocked = (module: TenantModule) =>
+    !isTenantAdmin && access !== undefined && !access.modules.includes(module);
   const modules: ModuleEntry[] = [
     {
       key: 'integration',
@@ -223,6 +229,7 @@ function ModuleSwitcher({
       color: 'bg-primary',
       to: '/',
       show: true,
+      locked: false,
     },
     {
       key: 'connectors',
@@ -230,8 +237,11 @@ function ModuleSwitcher({
       description: t('Browse connectors and build your own'),
       icon: PuzzleIcon,
       color: 'bg-success',
-      to: '/tenant/connectors',
+      to: isTenantAdmin
+        ? '/tenant/connectors'
+        : '/tenant/connectors/development',
       show: true,
+      locked: isLocked(TenantModule.CONNECTOR_DEVELOPMENT),
     },
     {
       key: 'mcp',
@@ -241,6 +251,7 @@ function ModuleSwitcher({
       color: 'bg-sky-500',
       to: projectPath('/mcp-services'),
       show: true,
+      locked: isLocked(TenantModule.MCP_SERVICES),
     },
     {
       key: 'admin',
@@ -250,6 +261,7 @@ function ModuleSwitcher({
       color: 'bg-neutral-500',
       to: '/tenant/projects',
       show: isTenantAdmin,
+      locked: false,
     },
   ];
   return (
@@ -279,6 +291,11 @@ function ModuleSwitcher({
                 key={entry.key}
                 type="button"
                 aria-current={entry.key === currentModuleKey}
+                aria-label={
+                  entry.locked
+                    ? t('{module} (no access)', { module: entry.label })
+                    : undefined
+                }
                 className={cn(
                   'relative flex flex-col items-start gap-1.5 rounded-md p-2.5 text-left hover:bg-accent',
                   entry.key === currentModuleKey && 'bg-accent',
@@ -292,19 +309,35 @@ function ModuleSwitcher({
                   className={cn(
                     'flex size-8 items-center justify-center rounded-md text-white',
                     entry.color,
+                    entry.locked && 'opacity-50',
                   )}
                 >
                   <entry.icon className="size-[18px]" />
                 </span>
+                {entry.locked && (
+                  <span className="absolute right-2 top-2 flex items-center gap-1 text-xs text-muted-foreground">
+                    <LockIcon className="size-3.5" />
+                    {t('No access')}
+                  </span>
+                )}
                 {entry.key === currentModuleKey && (
                   <span className="absolute right-2 top-2 flex items-center gap-1 text-xs font-medium text-primary">
                     <CheckIcon className="size-3.5" />
                     {t('Current')}
                   </span>
                 )}
-                <span className="text-sm font-medium">{entry.label}</span>
+                <span
+                  className={cn(
+                    'text-sm font-medium',
+                    entry.locked && 'text-muted-foreground',
+                  )}
+                >
+                  {entry.label}
+                </span>
                 <span className="text-xs text-muted-foreground">
-                  {entry.description}
+                  {entry.locked
+                    ? t('Open to see who can give you access')
+                    : entry.description}
                 </span>
               </button>
             ))}
@@ -348,4 +381,5 @@ type ModuleEntry = {
   color: string;
   to: string;
   show: boolean;
+  locked: boolean;
 };

@@ -32,6 +32,26 @@ vi.mock('@/features/connectors', () => ({
     }),
   },
 }));
+vi.mock('@/features/projects', () => ({
+  projectCollectionUtils: {
+    useCurrentProject: () => ({ project: { releasesEnabled: false } }),
+  },
+}));
+vi.mock('@/features/workflows', () => ({
+  workflowHooks: {
+    useListWorkflowVersions: () => ({
+      data: {
+        data: [
+          {
+            id: 'version-1',
+            created: '2026-10-01T00:00:00.000Z',
+            state: WorkflowVersionState.LOCKED,
+          },
+        ],
+      },
+    }),
+  },
+}));
 vi.mock('@/hooks/authorization-hooks', () => ({
   useAuthorization: () => ({ checkAccess: () => environment.canReadRuns }),
 }));
@@ -92,12 +112,12 @@ describe('MobileBuilderNotice', () => {
 
     const text = container.textContent ?? '';
     expect(container.querySelector('h1')?.textContent).toBe('Beisen to Feishu');
-    expect(text).toContain('Draft');
-    expect(text).toContain('Disabled');
+    expect(text).toContain('Not run');
+    expect(text).not.toContain('Live version');
     expect(text).toContain('Please edit on a computer');
   });
 
-  it('shows Published and Enabled for the live version', async () => {
+  it('shows the same run state and live version as the desktop header', async () => {
     const workflow = workflowFixture.buildWorkflow({
       state: WorkflowVersionState.LOCKED,
       status: WorkflowStatus.ENABLED,
@@ -106,9 +126,9 @@ describe('MobileBuilderNotice', () => {
     await renderNotice({ workflow });
 
     const text = container.textContent ?? '';
-    expect(text).toContain('Published');
-    expect(text).toContain('Enabled');
-    expect(text).not.toContain('Draft');
+    expect(text).toContain('Running');
+    expect(text).toContain('Live version');
+    expect(text).not.toContain('Not run');
   });
 
   it('lists every step in execution order, branches and loops included', async () => {

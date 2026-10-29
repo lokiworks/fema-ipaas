@@ -15,6 +15,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatUtils } from '@/lib/format-utils';
 
+import { healthFormat } from '../lib/health-format';
+
 const SERIES: Array<{ status: ExecutionStatus; label: string; color: string }> =
   [
     { status: ExecutionStatus.SUCCEEDED, label: 'Succeeded', color: '#22c55e' },
@@ -156,10 +158,7 @@ export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
                 minTickGap={32}
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                 tickFormatter={(value) =>
-                  new Date(value).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })
+                  healthFormat.axisDayLabel(new Date(value))
                 }
               />
               <YAxis
@@ -176,11 +175,7 @@ export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
+                      healthFormat.dayLabel(new Date(value))
                     }
                   />
                 }

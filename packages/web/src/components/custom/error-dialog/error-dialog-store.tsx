@@ -22,6 +22,19 @@ export const useApErrorDialogStore = create<ErrorDialogStore>((set) => ({
 
 export function openQueryErrorDialog(error: unknown, queryKey: unknown): void {
   const { openDialog } = useApErrorDialogStore.getState();
+  if (api.isPermissionError(error)) {
+    openDialog({
+      title: t('You do not have permission to perform this action'),
+      description: t(
+        'Ask the project owner or an administrator for access, then try again.',
+      ),
+      error: {
+        queryKey,
+        details: error.response?.data,
+      },
+    });
+    return;
+  }
   openDialog({
     title: t('Failed to load data'),
     description: t(

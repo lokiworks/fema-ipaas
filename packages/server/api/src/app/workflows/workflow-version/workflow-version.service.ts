@@ -31,6 +31,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         let operations: WorkflowOperationRequest[] = []
         let mutatedWorkflowVersion: WorkflowVersion = workflowVersion
         let stepDatesSource: WorkflowVersion | undefined
+        let testedStepsSource: WorkflowVersion | undefined
 
         switch (userOperation.type) {
             case WorkflowOperationType.USE_AS_DRAFT: {
@@ -80,6 +81,11 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
                 }]
                 break
             }
+            case WorkflowOperationType.IMPORT_WORKFLOW: {
+                testedStepsSource = workflowVersion
+                operations = [userOperation]
+                break
+            }
             default: {
                 operations = [userOperation]
                 break
@@ -104,6 +110,9 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
         }
         if (!isNil(stepDatesSource)) {
             mutatedWorkflowVersion = workflowStepDates.keepFrom({ workflowVersion: mutatedWorkflowVersion, source: stepDatesSource })
+        }
+        if (!isNil(testedStepsSource)) {
+            mutatedWorkflowVersion = workflowStepDates.keepTestedFrom({ workflowVersion: mutatedWorkflowVersion, source: testedStepsSource })
         }
 
         mutatedWorkflowVersion.updated = dayjs().toISOString()

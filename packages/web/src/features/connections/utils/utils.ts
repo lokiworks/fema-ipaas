@@ -13,6 +13,7 @@ import {
   generateId,
 } from '@fema-ipaas/core-utils';
 import {
+  ConnectionPrefill,
   ConnectionType,
   ConnectionWithoutSensitiveData,
   UpsertConnectionRequestBody,
@@ -187,6 +188,7 @@ export const newConnectionUtils = {
     oauth2App,
     redirectUrl,
     projectId: projectIdOverride,
+    prefill,
   }: DefaultValuesParams): Partial<UpsertConnectionRequestBody> {
     const projectId = projectIdOverride ?? authenticationSession.getProjectId();
     assertNotNullOrUndefined(projectId, 'projectId');
@@ -216,7 +218,7 @@ export const newConnectionUtils = {
           type: ConnectionType.BASIC_AUTH,
           value: {
             type: ConnectionType.BASIC_AUTH,
-            username: '',
+            username: prefill?.username ?? '',
             password: '',
           },
         };
@@ -228,7 +230,7 @@ export const newConnectionUtils = {
             type: ConnectionType.CUSTOM_AUTH,
             props: formUtils.getDefaultValueForProperties({
               props: auth.props ?? {},
-              existingInput: {},
+              existingInput: prefill?.props ?? {},
             }),
           },
         };
@@ -364,4 +366,5 @@ type DefaultValuesParams = {
   oauth2App: OAuth2App | null;
   grantType: OAuth2GrantType | null;
   projectId?: string;
+  prefill?: ConnectionPrefill | null;
 };

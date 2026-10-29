@@ -79,6 +79,7 @@ export const connectionAccessQueryKeys = {
     ...extraKeys,
   ],
   detail: (connectionId: string) => ['connection-detail', connectionId],
+  prefill: (connectionId: string) => ['connection-prefill', connectionId],
   accessImpact: (params: {
     connectionId: string;
     allProjects: boolean;
@@ -566,6 +567,22 @@ export const connectionsQueries = {
       queryKey: connectionAccessQueryKeys.detail(connectionId ?? ''),
       queryFn: () => connectionsApi.getDetail(connectionId!),
       enabled: !isNil(connectionId) && (enabled ?? true),
+    });
+  },
+
+  useConnectionPrefill: ({
+    connectionId,
+    enabled,
+  }: {
+    connectionId: string;
+    enabled: boolean;
+  }) => {
+    return useQuery({
+      queryKey: connectionAccessQueryKeys.prefill(connectionId),
+      queryFn: () => connectionsApi.getPrefill(connectionId),
+      enabled,
+      staleTime: 0,
+      gcTime: 0,
     });
   },
 

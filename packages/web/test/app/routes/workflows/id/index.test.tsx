@@ -26,8 +26,16 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/hooks/use-mobile', () => ({ useIsMobile: () => mocks.isMobile }));
+vi.mock('@/features/projects', () => ({
+  projectCollectionUtils: {
+    useCurrentProject: () => ({ project: { releasesEnabled: false } }),
+  },
+}));
 vi.mock('@/features/workflows', () => ({
   workflowsApi: { get: mocks.getWorkflow },
+  workflowHooks: {
+    useListWorkflowVersions: () => ({ data: { data: [] } }),
+  },
   sampleDataHooks: {
     useSampleDataForWorkflow: mocks.useSampleData,
     useSampleDataInputForWorkflow: mocks.useSampleData,

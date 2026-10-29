@@ -293,6 +293,71 @@ function conditionLabel({
   }
 }
 
+function projectOptions(scope: RunLogScope | undefined): RunLogPickerOption[] {
+  return sortOptions(
+    (scope?.projects ?? []).map((project) => ({
+      value: project.id,
+      label: project.displayName,
+      hint: null,
+    })),
+  );
+}
+
+function workflowOptions(scope: RunLogScope | undefined): RunLogPickerOption[] {
+  const workflows = scope?.workflows ?? [];
+  const projectName = (projectId: string) =>
+    scope?.projects.find((project) => project.id === projectId)?.displayName ??
+    t('Project unavailable');
+  const sameName = (displayName: string) =>
+    workflows.filter((workflow) => workflow.displayName === displayName);
+  return sortOptions(
+    workflows.map((workflow) => {
+      const twins = sameName(workflow.displayName);
+      if (twins.length < 2) {
+        return { value: workflow.id, label: workflow.displayName, hint: null };
+      }
+      const sameProject =
+        twins.filter((twin) => twin.projectId === workflow.projectId).length >
+        1;
+      const project = projectName(workflow.projectId);
+      return {
+        value: workflow.id,
+        label: workflow.displayName,
+        hint: sameProject
+          ? t('{project} · ID {id}', {
+              project,
+              id: workflow.id.slice(-6),
+            })
+          : project,
+      };
+    }),
+  );
+}
+
+function matchesOption({
+  option,
+  query,
+}: {
+  option: RunLogPickerOption;
+  query: string;
+}): boolean {
+  const normalized = query.trim().toLowerCase();
+  if (normalized.length === 0) {
+    return true;
+  }
+  return [option.label, option.hint ?? '', option.value].some((text) =>
+    text.toLowerCase().includes(normalized),
+  );
+}
+
+function sortOptions(options: RunLogPickerOption[]): RunLogPickerOption[] {
+  return [...options].sort(
+    (left, right) =>
+      OPTION_COLLATOR.compare(left.label, right.label) ||
+      OPTION_COLLATOR.compare(left.hint ?? '', right.hint ?? ''),
+  );
+}
+
 function stepNodes({
   trigger,
   steps,
@@ -337,6 +402,15 @@ export const runLogUiUtils = {
   connectionStatusLabel,
   conditionLabel,
   stepNodes,
+  projectOptions,
+  workflowOptions,
+  matchesOption,
+};
+
+export type RunLogPickerOption = {
+  value: string;
+  label: string;
+  hint: string | null;
 };
 
 export type RunLogStepNode = {
@@ -348,6 +422,8 @@ export type RunLogStepNode = {
   input: unknown;
   output: unknown;
 };
+
+const OPTION_COLLATOR = new Intl.Collator('zh-Hans-CN', { numeric: true });
 
 const HTTP_CODE_PATTERN = /^HTTP_(\d{3})$/;
 

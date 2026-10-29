@@ -19,7 +19,11 @@ import {
 
 const DATE = '2026-05-02T00:00:00.000Z';
 
-function action(name: string, text = ''): WorkflowAction {
+function action(
+  name: string,
+  text = '',
+  sampleData?: { sampleDataFileId: string; lastTestDate: string },
+): WorkflowAction {
   return {
     name,
     type: WorkflowActionType.CONNECTOR,
@@ -33,6 +37,7 @@ function action(name: string, text = ''): WorkflowAction {
       input: { text },
       propertySettings: {},
       errorHandlingOptions: undefined,
+      sampleData,
     },
   };
 }
@@ -231,5 +236,57 @@ describe('undoHistory', () => {
     expect(
       undoHistory.operationsToReach({ current: revalidated, target: start }),
     ).toEqual([]);
+  });
+  it('keeps the test results of unchanged steps after a structural undo', () => {
+    const sampleData = {
+      sampleDataFileId: 'file-1',
+      lastTestDate: '2026-05-03T00:00:00.000Z',
+    };
+    const start = version(action('step_1', 'x', sampleData));
+    const added = workflowOperations.apply(start, {
+      type: WorkflowOperationType.ADD_ACTION,
+      request: {
+        parentStep: 'step_1',
+        stepLocationRelativeToParent: StepLocationRelativeToParent.AFTER,
+        action: action('step_2', 'y'),
+      },
+    });
+    const undone = replay({
+      start: added,
+      operations: undoHistory.operationsToReach({
+        current: added,
+        target: version(action('step_1', 'x')),
+      }),
+    });
+    expect(
+      workflowStructureUtil.getStep('step_1', undone.trigger)?.settings
+        .sampleData?.sampleDataFileId,
+    ).toBeUndefined();
+    const kept = undoHistory.keepTestedSteps({
+      workflowVersion: undone,
+      source: added,
+    });
+    const step = workflowStructureUtil.getStep('step_1', kept.trigger);
+    expect(step?.settings.sampleData).toEqual(sampleData);
+    expect(step?.lastUpdatedDate).toBe(DATE);
+    expect(
+      workflowStructureUtil.getStep('trigger', kept.trigger)?.lastUpdatedDate,
+    ).toBe(DATE);
+  });
+
+  it('leaves a step that the undo really changed untested', () => {
+    const sampleData = {
+      sampleDataFileId: 'file-1',
+      lastTestDate: '2026-05-03T00:00:00.000Z',
+    };
+    const current = version(action('step_1', 'x', sampleData));
+    const kept = undoHistory.keepTestedSteps({
+      workflowVersion: version(action('step_1', 'changed')),
+      source: current,
+    });
+    expect(
+      workflowStructureUtil.getStep('step_1', kept.trigger)?.settings
+        .sampleData,
+    ).toBeUndefined();
   });
 });

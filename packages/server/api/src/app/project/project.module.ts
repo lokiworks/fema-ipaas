@@ -1,4 +1,5 @@
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
+import { projectAccessRequestController } from './project-access-request.controller'
 import { projectDirectoryController } from './project-directory.controller'
 import { projectMemberController } from './project-member.controller'
 import { projectWorkerController } from './project-worker-controller'
@@ -8,5 +9,6 @@ export const projectModule: FastifyPluginAsyncZod = async (app) => {
     await app.register(projectController, { prefix: '/v1/projects' })
     await app.register(projectDirectoryController, { prefix: '/v1/projects' })
     await app.register(projectMemberController, { prefix: '/v1/project-members' })
+    await app.register(projectAccessRequestController, { prefix: '/v1/project-access-requests' })
     await app.register(projectWorkerController, { prefix: '/v1/worker/project' })
 }

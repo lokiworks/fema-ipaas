@@ -3,6 +3,7 @@ import { Project, ProjectType, ProjectWithLimits, Tenant } from '@fema-ipaas/sha
 import { WorkflowStatus } from '@fema-ipaas/workflow-core'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
+import { IsNull, Not } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobsSchedule } from '../helper/system-jobs/system-job'
@@ -71,15 +72,16 @@ export const projectSideEffects = (log: FastifyBaseLogger) => ({
     },
 
     async deletePersonalProjectForUser({ userId, tenantId }: DeletePersonalProjectParams): Promise<void> {
+        const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
+        await projectRepo().update(
+            { ownerId: userId, tenantId, deleted: Not(IsNull()) },
+            { ownerId: tenant.ownerId },
+        )
         const personalProjects = await projectRepo().findBy({
             ownerId: userId,
             tenantId,
             type: ProjectType.PERSONAL,
         })
-        if (personalProjects.length === 0) {
-            return
-        }
-        const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
         for (const project of personalProjects) {
             await projectRepo().update({ id: project.id }, { ownerId: tenant.ownerId })
             await projectRepo().softDelete({ id: project.id })

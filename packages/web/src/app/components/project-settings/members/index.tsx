@@ -23,7 +23,9 @@ import {
   userInvitationMutations,
   userInvitationsHooks,
 } from '@/features/invitations';
+import { PendingAccessRequests } from '@/features/project-access-requests';
 import { projectMembersHooks } from '@/features/project-members';
+import { DisabledReason } from '@/features/project-workspace/components/disabled-reason';
 import {
   MemberRow,
   memberRows,
@@ -33,14 +35,6 @@ import { projectDirectoryHooks } from '@/features/projects/api/project-directory
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 
 import { InviteMemberDialog } from './invite-member-dialog';
-
-const ROLE_DESCRIPTIONS: Record<DefaultProjectRole, string> = {
-  [DefaultProjectRole.ADMIN]: 'Full control of the project',
-  [DefaultProjectRole.DEVELOPER]: 'Build and publish workflows',
-  [DefaultProjectRole.OPERATOR]:
-    'Run and replay workflows, handle issues, manage connections',
-  [DefaultProjectRole.VIEWER]: 'Read-only access',
-};
 
 export function MembersSettings({ readonly }: { readonly: boolean }) {
   const { data: members, isLoading } = projectMembersHooks.useMembers();
@@ -77,6 +71,7 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {!readonly && <PendingAccessRequests projectId={project.id} />}
       <div className="flex items-center justify-end">
         <InviteMemberDialog disabled={readonly} />
       </div>
@@ -145,34 +140,44 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
                         <div className="flex flex-col">
                           <span>{projectRoleLabels.label(role)}</span>
                           <span className="text-xs text-muted-foreground">
-                            {t(ROLE_DESCRIPTIONS[role])}
+                            {projectRoleLabels.description(role)}
                           </span>
                         </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <ConfirmationDeleteDialog
-                  title={t('Remove from project')}
-                  message={t(
-                    'They lose access to every workflow and connection in this project.',
-                  )}
-                  mutationFn={async () => {
-                    await removeMember(member.id);
-                    toast.success(
-                      t('Removed {name} from the project', {
-                        name: member.name,
-                      }),
-                    );
-                  }}
-                  entityName={member.name}
-                  targetName={member.name}
-                  buttonText={t('removeMemberAction')}
+                <DisabledReason
+                  reason={
+                    readonly
+                      ? t(
+                          'Only the project owner or an admin can remove members',
+                        )
+                      : null
+                  }
                 >
-                  <Button variant="ghost" size="sm" disabled={readonly}>
-                    <Trash className="size-4" />
-                  </Button>
-                </ConfirmationDeleteDialog>
+                  <ConfirmationDeleteDialog
+                    title={t('Remove from project')}
+                    message={t(
+                      'They lose access to every workflow and connection in this project.',
+                    )}
+                    mutationFn={async () => {
+                      await removeMember(member.id);
+                      toast.success(
+                        t('Removed {name} from the project', {
+                          name: member.name,
+                        }),
+                      );
+                    }}
+                    entityName={member.name}
+                    targetName={member.name}
+                    buttonText={t('removeMemberAction')}
+                  >
+                    <Button variant="ghost" size="sm" disabled={readonly}>
+                      <Trash className="size-4" />
+                    </Button>
+                  </ConfirmationDeleteDialog>
+                </DisabledReason>
               </div>
             )}
           </div>

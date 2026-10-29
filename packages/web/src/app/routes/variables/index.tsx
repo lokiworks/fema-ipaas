@@ -51,6 +51,8 @@ import { useAuthorization } from '@/hooks/authorization-hooks';
 import { ownerColumnHooks } from '@/hooks/owner-column-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
+import { VariableValueCell } from './variable-value-cell';
+
 const copyReferenceToClipboard = async (name: string) => {
   try {
     await navigator.clipboard.writeText(`{{variables['${name}']}}`);
@@ -168,6 +170,16 @@ function VariablesPage() {
         ),
       },
       {
+        id: 'value',
+        size: 280,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title={t('Current value')} />
+        ),
+        cell: ({ row }) => (
+          <VariableValueCell variable={row.original} canReveal={canWrite} />
+        ),
+      },
+      {
         accessorKey: 'updated',
         size: 180,
         header: ({ column }) => (
@@ -236,7 +248,7 @@ function VariablesPage() {
         ),
       },
     ],
-    2,
+    3,
   );
 
   const bulkActions: BulkAction<VariableWithoutSensitiveData>[] = useMemo(

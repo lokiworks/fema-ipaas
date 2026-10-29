@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RequestProjectAccessButton } from '@/features/project-access-requests';
 import { DisabledReason } from '@/features/project-workspace/components/disabled-reason';
 import { ProjectInfoDialog } from '@/features/project-workspace/components/project-info-dialog';
 import { ProjectMark } from '@/features/project-workspace/components/project-mark';
@@ -158,40 +159,42 @@ export function AllProjectsPage() {
                     {formatUtils.formatDateTime(new Date(item.updated))}
                   </TableCell>
                   <TableCell onClick={(event) => event.stopPropagation()}>
-                    <span className="flex items-center gap-1">
-                      <DisabledReason
-                        reason={member ? null : notMemberReason(item)}
-                      >
+                    {member ? (
+                      <span className="flex items-center gap-1">
                         <Button
                           type="button"
                           variant="link"
                           size="xs"
-                          disabled={!member}
                           onClick={() => open(item)}
                         >
                           {t('Open')}
                         </Button>
-                      </DisabledReason>
-                      <DisabledReason
-                        reason={
-                          !member
-                            ? notMemberReason(item)
-                            : canShare
-                            ? null
-                            : t('Viewers cannot share the project')
-                        }
-                      >
-                        <Button
-                          type="button"
-                          variant="link"
-                          size="xs"
-                          disabled={!canShare}
-                          onClick={() => open(item, '?share=1')}
+                        <DisabledReason
+                          reason={
+                            canShare
+                              ? null
+                              : t('Viewers cannot share the project')
+                          }
                         >
-                          {t('Share')}
-                        </Button>
-                      </DisabledReason>
-                    </span>
+                          <Button
+                            type="button"
+                            variant="link"
+                            size="xs"
+                            disabled={!canShare}
+                            onClick={() => open(item, '?share=1')}
+                          >
+                            {t('Share')}
+                          </Button>
+                        </DisabledReason>
+                      </span>
+                    ) : (
+                      <RequestProjectAccessButton
+                        projectId={item.id}
+                        projectName={item.displayName}
+                        variant="link"
+                        size="xs"
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               );
@@ -230,11 +233,6 @@ export function AllProjectsPage() {
 
 function notMemberReason(item: ProjectDirectoryItem): string {
   return item.ownerName
-    ? t(
-        'You are not a member of this project. Ask its owner {owner} to add you.',
-        { owner: item.ownerName },
-      )
-    : t(
-        'You are not a member of this project. Ask the project owner to share it with you.',
-      );
+    ? t('projectNotMemberRequestHintWithOwner', { owner: item.ownerName })
+    : t('projectNotMemberRequestHint');
 }

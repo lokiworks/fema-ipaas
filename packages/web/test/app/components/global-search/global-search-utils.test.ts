@@ -1,4 +1,4 @@
-import { GlobalSearchResultType } from '@fema-ipaas/shared';
+import { GlobalSearchResultType, TenantModule } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { globalSearchUtils } from '@/app/components/global-search/global-search-utils';
@@ -164,5 +164,30 @@ describe('globalSearchUtils.prioritizeCurrentProject', () => {
       currentProjectId: 'p1',
     });
     expect(rows[0].projectName).toBeNull();
+  });
+
+  it('hides results from modules the member cannot open', () => {
+    expect(
+      globalSearchUtils.hiddenResultTypes({
+        isTenantAdmin: false,
+        modules: [TenantModule.BUSINESS_INTEGRATION],
+      }),
+    ).toEqual([
+      GlobalSearchResultType.CONNECTOR,
+      GlobalSearchResultType.MCP_SERVER,
+      GlobalSearchResultType.MCP_SERVICE,
+    ]);
+    expect(
+      globalSearchUtils.hiddenResultTypes({
+        isTenantAdmin: false,
+        modules: [TenantModule.BUSINESS_INTEGRATION, TenantModule.MCP_SERVICES],
+      }),
+    ).not.toContain(GlobalSearchResultType.MCP_SERVICE);
+    expect(
+      globalSearchUtils.hiddenResultTypes({
+        isTenantAdmin: true,
+        modules: null,
+      }),
+    ).toEqual([]);
   });
 });

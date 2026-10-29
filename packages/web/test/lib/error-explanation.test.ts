@@ -19,6 +19,14 @@ describe('errorExplanation.explain', () => {
     ],
     ['read ECONNRESET', 'The connection was closed by the other system'],
     [
+      'The organization in Root organization OId does not exist: 123 (Beisen code 417 组织单元不存在). Pick the root organization again.',
+      'The organization in Root organization OId does not exist. Pick it again.',
+    ],
+    [
+      '组织单元不存在 (Beisen code 417)',
+      'The Beisen organization OId does not exist',
+    ],
+    [
       'self-signed certificate',
       'The security certificate could not be verified',
     ],

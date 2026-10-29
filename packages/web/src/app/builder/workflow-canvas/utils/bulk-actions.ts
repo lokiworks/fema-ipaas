@@ -19,6 +19,7 @@ import { BuilderState } from '../../builder-hooks';
 
 import { useDeleteConfirmation } from './delete-confirmation-store';
 import { deleteImpactUtils } from './delete-impact';
+import { pasteReferences } from './paste-references';
 
 type CopyActionsRequest = {
   type: 'COPY_ACTIONS';
@@ -137,16 +138,25 @@ export async function pasteNodes({
   applyOperations: BuilderState['applyOperations'];
 }) {
   const clipboardActions = await getActionsInClipboard();
-  const { actions, clearedStepNames } = await removeUnavailableConnections(
-    clipboardActions,
-  );
-  const addOperations = workflowOperations.getOperationsForPaste(
-    actions,
+  const { actions: connectedActions, clearedStepNames } =
+    await removeUnavailableConnections(clipboardActions);
+  const beforePaste = pasteReferences.clearMissingBeforePaste({
+    actions: connectedActions,
     workflowVersion,
-    location,
-    defaultStepNames.copySuffix(),
-  );
+  });
+  const afterPaste = pasteReferences.clearNonUpstreamAfterPaste({
+    operations: workflowOperations.getOperationsForPaste(
+      beforePaste.actions,
+      workflowVersion,
+      location,
+      defaultStepNames.copySuffix(),
+    ),
+    workflowVersion,
+  });
+  const addOperations = afterPaste.operations;
   applyOperations(addOperations);
+  const clearedReferenceCount =
+    beforePaste.clearedCount + afterPaste.clearedCount;
   if (addOperations.length === 0) {
     toast(t('No Steps Pasted'), {
       description: t(
@@ -154,6 +164,19 @@ export async function pasteNodes({
       ),
     });
     return;
+  }
+  if (clearedReferenceCount > 0) {
+    toast(t('References cleared'), {
+      description: t(
+        'Pasted {stepCount, plural, =1 {1 step} other {# steps}}; {referenceCount, plural, =1 {1 reference points} other {# references point}} to an upstream step that does not exist here and {referenceCount, plural, =1 {was} other {were}} cleared. Pick the data again.',
+        {
+          stepCount: addOperations.filter(
+            (operation) => operation.type === WorkflowOperationType.ADD_ACTION,
+          ).length,
+          referenceCount: clearedReferenceCount,
+        },
+      ),
+    });
   }
   if (clearedStepNames.length > 0) {
     toast(t('Connections cleared'), {

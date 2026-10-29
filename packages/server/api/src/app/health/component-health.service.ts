@@ -25,9 +25,9 @@ export const componentHealthService = (log: FastifyBaseLogger) => ({
             checkDatabase(log),
             checkQueue(log),
             countTriggers({ tenantId, log }),
-            checkFileStorage(log),
+            withinBudget({ work: checkFileStorage(log), budgetMs: SLOW_CHECK_BUDGET_MS, pending: pendingCheck(HealthComponent.FILE_STORAGE) }),
             checkBackup(log),
-            checkVersion(),
+            withinBudget({ work: checkVersion(), budgetMs: SLOW_CHECK_BUDGET_MS, pending: pendingVersionCheck() }),
             summarizeWorkers(log),
         ])
         const noWorkers = workers.online === 0
@@ -195,6 +195,31 @@ async function summarizeWorkers(log: FastifyBaseLogger): Promise<WorkerSummary> 
     }
 }
 
+function withinBudget<T>({ work, budgetMs, pending }: WithinBudgetParams<T>): Promise<T> {
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(pending), budgetMs)
+        void work.then((value) => {
+            clearTimeout(timer)
+            resolve(value)
+        }, () => {
+            clearTimeout(timer)
+            resolve(pending)
+        })
+    })
+}
+
+function pendingCheck(component: HealthComponent): ComponentHealthCheck {
+    return { component, level: ComponentHealthLevel.OK, facts: { pending: true } }
+}
+
+function pendingVersionCheck(): ComponentHealthCheck {
+    return {
+        component: HealthComponent.VERSION,
+        level: ComponentHealthLevel.OK,
+        facts: { current: versionUtil.getCurrentRelease(), latest: null, updateCheckFailed: false, pending: true },
+    }
+}
+
 function triggerLevel({ registered, onlineWorkers, queueOk }: TriggerLevelParams): ComponentHealthLevel {
     if (!queueOk) {
         return ComponentHealthLevel.ERROR
@@ -226,8 +251,10 @@ function hostOf(url: string): string | null {
 }
 
 const BACKUP_FLAG_ID = 'BACKUP_CONFIRMATION'
+const SLOW_CHECK_BUDGET_MS = 2000
 
 export const componentHealthUtils = {
+    withinBudget,
     triggerLevel,
     workersLevel,
     backupLevel,
@@ -243,6 +270,12 @@ type WorkerSummary = {
     draining: number
     offline: number
     versionMismatched: number
+}
+
+type WithinBudgetParams<T> = {
+    work: Promise<T>
+    budgetMs: number
+    pending: T
 }
 
 type TriggerLevelParams = {

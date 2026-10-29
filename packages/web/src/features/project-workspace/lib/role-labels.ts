@@ -16,10 +16,23 @@ function label(role: DefaultProjectRole | null | undefined): string {
   }
 }
 
+function description(role: DefaultProjectRole): string {
+  switch (role) {
+    case DefaultProjectRole.ADMIN:
+      return t('Everything, plus managing members and project settings');
+    case DefaultProjectRole.DEVELOPER:
+      return t('Build, test and publish workflows');
+    case DefaultProjectRole.OPERATOR:
+      return t('Run and replay workflows, handle issues, manage connections');
+    case DefaultProjectRole.VIEWER:
+      return t('View workflows, runs and issues without changing anything');
+  }
+}
+
 function viewerHint(): string {
   return t(
     'You have "Can view" access in this project, so you can view workflows but not create or change them',
   );
 }
 
-export const projectRoleLabels = { label, viewerHint };
+export const projectRoleLabels = { label, description, viewerHint };

@@ -87,7 +87,8 @@ export function ModuleDeniedPanel({
 }) {
   const [open, setOpen] = useState(false);
   const moduleName = tenantAccessUtils.moduleLabel(module);
-  const canApply = deniedHint === PermissionDeniedHint.APPLY && allowRequests;
+  const canApply =
+    allowRequests && module !== TenantModule.BUSINESS_INTEGRATION;
   return (
     <div
       className={cn(

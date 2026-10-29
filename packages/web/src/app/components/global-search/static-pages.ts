@@ -1,3 +1,4 @@
+import { TenantModule } from '@fema-ipaas/shared';
 import {
   ActivityIcon,
   Link2Icon,
@@ -31,6 +32,7 @@ export type StaticPage = {
   icon: ComponentType<{ className?: string; size?: number }>;
   requiresTenantAdmin?: boolean;
   projectScoped?: boolean;
+  module?: TenantModule;
 };
 
 export const STATIC_PAGES: StaticPage[] = [
@@ -65,6 +67,7 @@ export const STATIC_PAGES: StaticPage[] = [
     href: '/mcp-services',
     icon: ServerCogIcon,
     projectScoped: true,
+    module: TenantModule.MCP_SERVICES,
   },
   {
     id: 'page-explore',

@@ -73,13 +73,15 @@ export function HomeTodayRunsCard({
           <Stat value={homeUtils.formatRate(rate)} label={t('Success rate')} />
         </ProjectRunsLink>
       </div>
-      <HourlySparkline
-        values={homeUtils.visibleHourly({
-          hourly: runs.hourly,
-          since: new Date(runs.since),
-          now,
-        })}
-      />
+      {runs.total > 0 && (
+        <HourlySparkline
+          values={homeUtils.visibleHourly({
+            hourly: runs.hourly,
+            since: new Date(runs.since),
+            now,
+          })}
+        />
+      )}
     </SideCard>
   );
 }

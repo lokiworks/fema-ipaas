@@ -112,7 +112,7 @@ function ProjectInfoForm({
       onOpenChange(false);
     }, handleError);
   const { mutate: save, isPending: isSaving } =
-    projectWorkspaceHooks.useSaveProjectInfo();
+    projectWorkspaceHooks.useSaveProjectInfo({ onError: handleError });
 
   const handleSubmit = (values: SaveProjectInfoRequestBody) => {
     form.clearErrors('root.serverError');
@@ -137,7 +137,6 @@ function ProjectInfoForm({
           toast.success(t('Saved {name}', { name: values.displayName }));
           onOpenChange(false);
         },
-        onError: handleError,
       },
     );
   };

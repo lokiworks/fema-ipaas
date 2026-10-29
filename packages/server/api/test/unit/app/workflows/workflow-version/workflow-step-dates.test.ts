@@ -6,7 +6,7 @@ import { workflowStepDates } from '../../../../../src/app/workflows/workflow-ver
 const OLD = '2024-01-01T00:00:00.000Z'
 const NEW = '2026-10-28T00:00:00.000Z'
 
-function versionWith({ date, extraStep = false }: { date: string, extraStep?: boolean }): WorkflowVersion {
+function versionWith({ date, extraStep = false, sampleData, stepDisplayName = 'Code' }: VersionWithParams): WorkflowVersion {
     const tail = extraStep
         ? {
             nextAction: {
@@ -35,10 +35,10 @@ function versionWith({ date, extraStep = false }: { date: string, extraStep?: bo
             nextAction: {
                 name: 'step_1',
                 valid: true,
-                displayName: 'Code',
+                displayName: stepDisplayName,
                 lastUpdatedDate: date,
                 type: WorkflowActionType.CODE,
-                settings: { sourceCode: { code: '', packageJson: '{}' }, input: {} },
+                settings: { sourceCode: { code: '', packageJson: '{}' }, input: {}, sampleData },
                 ...tail,
             },
         },
@@ -74,3 +74,36 @@ describe('workflowStepDates.keepFrom', () => {
         expect(result.trigger.nextAction?.nextAction?.lastUpdatedDate).toBe(NEW)
     })
 })
+
+describe('workflowStepDates.keepTestedFrom', () => {
+    const SAMPLE = { sampleDataFileId: 'file-1', lastTestDate: OLD }
+
+    it('restores the sample data and date of steps that did not change', () => {
+        const result = workflowStepDates.keepTestedFrom({
+            workflowVersion: versionWith({ date: NEW, extraStep: true }),
+            source: versionWith({ date: OLD, sampleData: SAMPLE }),
+        })
+
+        expect(result.trigger.nextAction?.settings.sampleData).toEqual(SAMPLE)
+        expect(result.trigger.nextAction?.lastUpdatedDate).toBe(OLD)
+        expect(result.trigger.nextAction?.nextAction?.settings.sampleData).toBeUndefined()
+        expect(result.trigger.nextAction?.nextAction?.lastUpdatedDate).toBe(NEW)
+    })
+
+    it('leaves a step that really changed untested', () => {
+        const result = workflowStepDates.keepTestedFrom({
+            workflowVersion: versionWith({ date: NEW, stepDisplayName: 'Renamed' }),
+            source: versionWith({ date: OLD, sampleData: SAMPLE }),
+        })
+
+        expect(result.trigger.nextAction?.settings.sampleData).toBeUndefined()
+        expect(result.trigger.nextAction?.lastUpdatedDate).toBe(NEW)
+    })
+})
+
+type VersionWithParams = {
+    date: string
+    extraStep?: boolean
+    sampleData?: { sampleDataFileId: string, lastTestDate: string }
+    stepDisplayName?: string
+}

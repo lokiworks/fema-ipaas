@@ -4,6 +4,7 @@ import {
   DefaultProjectRole,
   ExecutionStatus,
   PLATFORM_LEVEL_AUDIT_ACTIONS,
+  ProjectAccessRequestStatus,
   WorkflowOperationType,
   summarizeApplicationEvent,
 } from '@fema-ipaas/shared';
@@ -430,6 +431,27 @@ function summarize({
     case ApplicationEventName.PROJECT_CREATED:
       return t('auditProjectCreated', {
         name: event.data.createdProject.displayName,
+      });
+    case ApplicationEventName.PROJECT_ACCESS_REQUESTED:
+      return t('auditProjectAccessRequested', {
+        user: userLabel({
+          id: event.data.accessRequest.userId,
+          email: event.data.accessRequest.email,
+          userNames,
+        }),
+      });
+    case ApplicationEventName.PROJECT_ACCESS_DECIDED:
+      return t('auditProjectAccessDecided', {
+        user: userLabel({
+          id: event.data.accessRequest.userId,
+          email: event.data.accessRequest.email,
+          userNames,
+        }),
+        approved: String(
+          event.data.accessRequest.status ===
+            ProjectAccessRequestStatus.APPROVED,
+        ),
+        role: invitationRoleLabel(event.data.accessRequest.role),
       });
     case ApplicationEventName.MAPPING_TABLE_CREATED:
       return t('auditMappingTableCreated', {
@@ -903,6 +925,10 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.PROJECT_LIMITS_UPDATED]: () =>
     t('auditActionProjectLimits'),
   [ApplicationEventName.PROJECT_CREATED]: () => t('auditActionProjectCreated'),
+  [ApplicationEventName.PROJECT_ACCESS_REQUESTED]: () =>
+    t('auditActionProjectAccessRequested'),
+  [ApplicationEventName.PROJECT_ACCESS_DECIDED]: () =>
+    t('auditActionProjectAccessDecided'),
   [ApplicationEventName.MAPPING_TABLE_CREATED]: () =>
     t('auditActionMappingTableCreated'),
   [ApplicationEventName.MAPPING_TABLE_UPDATED]: () =>

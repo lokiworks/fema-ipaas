@@ -6,7 +6,7 @@ import {
   WorkerNodeStatus,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { FormattedDate } from '@/components/custom/formatted-date';
@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
+import { formatUtils } from '@/lib/format-utils';
 
 export function ComponentHealthTab() {
   const { data, isLoading, refetch, isFetching } =
@@ -32,7 +33,25 @@ export function ComponentHealthTab() {
     ? countWorkers(tenantAccessUtils.dedupeWorkerNodes(fleet.nodes))
     : null;
   if (isLoading || !data) {
-    return <Skeleton className="mt-4 h-96 w-full" />;
+    return (
+      <div
+        className="flex flex-col gap-3 pt-4"
+        data-testid="component-health-loading"
+      >
+        <Skeleton className="h-10 w-64" />
+        {COMPONENT_ORDER.map((component) => (
+          <Item key={component} variant="outline">
+            <ItemContent>
+              <ItemTitle>
+                {componentLabel(component)}
+                <CheckingBadge />
+              </ItemTitle>
+              <Skeleton className="h-4 w-72" />
+            </ItemContent>
+          </Item>
+        ))}
+      </div>
+    );
   }
   const attention = data.checks.filter(
     (check) =>
@@ -68,14 +87,18 @@ export function ComponentHealthTab() {
           <ItemContent>
             <ItemTitle>
               {componentLabel(check.component)}
-              {isUpdateCheckUnavailable(check) ? (
+              {isCheckPending(check) ? (
+                <CheckingBadge />
+              ) : isUpdateCheckUnavailable(check) ? (
                 <Badge variant="outline">{t('Cannot check')}</Badge>
               ) : (
                 <LevelBadge level={check.level} />
               )}
             </ItemTitle>
             <ItemDescription>
-              {describe({ check, workerCounts })}
+              {isCheckPending(check)
+                ? t('Still checking, the result will appear here shortly')
+                : describe({ check, workerCounts })}
             </ItemDescription>
           </ItemContent>
           <ItemActions>
@@ -104,6 +127,19 @@ export function ComponentHealthTab() {
         </Item>
       ))}
     </div>
+  );
+}
+
+function isCheckPending(check: ComponentHealthCheck): boolean {
+  return check.facts.pending === true;
+}
+
+function CheckingBadge() {
+  return (
+    <Badge variant="outline" className="gap-1">
+      <Loader2 className="size-3 animate-spin" />
+      {t('Checking')}
+    </Badge>
   );
 }
 
@@ -278,10 +314,10 @@ function backupText({
     (confirmedAt === null || new Date(platformAt) >= new Date(confirmedAt));
   return platformIsNewest
     ? t('Last backup made by the platform on {date}.', {
-        date: new Date(platformAt).toLocaleDateString(),
+        date: formatUtils.formatDateOnly(new Date(platformAt)),
       })
     : t('Last backup you confirmed on {date}.', {
-        date: new Date(confirmedAt ?? '').toLocaleDateString(),
+        date: formatUtils.formatDateOnly(new Date(confirmedAt ?? '')),
       });
 }
 
@@ -300,6 +336,19 @@ function linkFor(component: HealthComponent): string | null {
       return null;
   }
 }
+
+const COMPONENT_ORDER: HealthComponent[] = [
+  HealthComponent.DATABASE,
+  HealthComponent.QUEUE,
+  HealthComponent.TRIGGER_SCHEDULING,
+  HealthComponent.WEBHOOK_INTAKE,
+  HealthComponent.FILE_STORAGE,
+  HealthComponent.CONNECTOR_REGISTRY,
+  HealthComponent.SMTP,
+  HealthComponent.BACKUP,
+  HealthComponent.VERSION,
+  HealthComponent.WORKERS,
+];
 
 type WorkerCounts = {
   online: number;

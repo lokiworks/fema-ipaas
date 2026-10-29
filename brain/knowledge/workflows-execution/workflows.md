@@ -59,7 +59,7 @@ Workflows are the core automation primitive: a versioned directed graph of trigg
 - **规划弹窗从首页输入框带着描述打开时会自动规划**；项目页的「新建工作流」弹窗里点「用 AI 生成」，要由调用方（项目概览、工作流侧栏）切到 AI 弹窗，因为它们用条件渲染挂弹窗，关掉新建弹窗会把里面嵌的弹窗一起卸掉。
 - 验证脚本 `tools/e2e/scenarios/s1-ai-build.mjs`：自己起隔离栈、起本机模拟模型，覆盖三个入口、规则和模型两条路径、失败数据，调试真的写入模拟飞书，服务端发布校验、推荐答案、步骤移除、建映射表、深色对比度和窄窗口。必须用全新的栈跑（默认就是），复用旧栈时前几次运行留下的模型连接和工作流会让断言失效。
 - **助手「修改」只能产出四种可校验的变更**（加 app 节点 / 改入参 / 删节点 / 改名），服务端 `copilot-proposal.ts` 逐条在本地 `workflowOperations.apply` 预演，失败的进 `rejected`；前端在编辑器的正常 `applyOperations` 路径里执行，所以整批修改是一次可撤销的历史记录。
-- **撤销是快照历史**：`undo-history.ts` 记 before/after，撤销时能用 UPDATE_* 定点还原就定点还原，结构变了就发 `IMPORT_WORKFLOW`（会丢掉被还原动作节点的样例数据引用）。撤销/重做后节点面板靠 `historyNonce` 重挂载，否则表单会把旧值自动保存回去。
+- **撤销是快照历史**：`undo-history.ts` 记 before/after，撤销时能用 UPDATE_* 定点还原就定点还原，结构变了就发 `IMPORT_WORKFLOW`。导入本身会清空样例数据（控制器 `cleanOperation` 不信任客户端传来的文件引用），所以两头都要按步骤名把没改动的步骤的 `sampleData` 和 `lastUpdatedDate` 合回来：前端 `undoHistory.keepTestedSteps`，服务端 `workflowStepDates.keepTestedFrom`（只认当前草稿里的引用）。只有内容真的变了的步骤才变回「未测试」。撤销/重做后节点面板靠 `historyNonce` 重挂载，否则表单会把旧值自动保存回去。
 - **编辑锁**：Redis 值里记 `lastActiveAt`，只有真实保存才刷新；闲置超过 2 小时别人可直接拿锁。强制接管只允许项目 Admin（所有者），原编辑者通过 `RESOURCE_LOCKED` 事件里的 `previousUserId` 收到提示；「请求编辑」用 `REQUEST_RESOURCE_EDIT` 通知持锁人。`LOCK_AND_PUBLISH`（非回滚）和 `deploy-to-test` 在锁被他人持有时直接拒绝。
 
 ### Editions

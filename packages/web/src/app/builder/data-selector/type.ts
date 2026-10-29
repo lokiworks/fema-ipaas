@@ -16,6 +16,7 @@ export type DataSelectorTreeNodeData = {
   hideStepIcon?: boolean;
   displayNameClassName?: string;
   stepName?: string;
+  searchTerms?: string[];
 };
 
 export type DataSelectorTestNodeData = {

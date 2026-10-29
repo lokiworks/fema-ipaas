@@ -4,6 +4,7 @@ import {
     AddConnectionSharesRequestBody,
     ApplicationEventName,
     ConnectionDetail,
+    ConnectionPrefill,
     ConnectionScopeImpact,
     ConnectionScopeImpactRequestBody,
     ConnectionShare,
@@ -20,6 +21,9 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
+import { connectionAccessService } from './connection-access.service'
+import { connectionPrefillService } from './connection-service/connection-prefill'
+import { connectionService } from './connection-service/connection-service'
 import { connectionShareService } from './connection-share.service'
 
 export const connectionShareController: FastifyPluginAsyncZod = async (app) => {
@@ -45,6 +49,16 @@ export const connectionShareController: FastifyPluginAsyncZod = async (app) => {
             userId: request.principal.id,
             id: request.params.id,
         })
+    })
+
+    app.get('/:id/prefill', PrefillRequest, async (request): Promise<ConnectionPrefill> => {
+        const connection = await connectionService(request.log).getOneOrThrowWithoutValue({
+            id: request.params.id,
+            tenantId: request.principal.tenant.id,
+            projectId: null,
+        })
+        await connectionAccessService(request.log).assertCanManage({ connection, principal: principalOf(request.principal) })
+        return connectionPrefillService(request.log).get({ id: connection.id, tenantId: request.principal.tenant.id })
     })
 
     app.post('/:id/remind-reauth', RemindReauthRequest, async (request): Promise<RemindConnectionOwnerResponse> => {
@@ -185,6 +199,16 @@ const DetailRequest = {
         description: 'Get a connection with its references and the members it is shared with.',
         params: IdParams,
         response: { [StatusCodes.OK]: ConnectionDetail },
+    },
+}
+
+const PrefillRequest = {
+    config: { security: userOnly },
+    schema: {
+        tags: ['connections'],
+        description: 'Get the non-secret values of a connection to fill the reconnect form. Secrets are never returned.',
+        params: IdParams,
+        response: { [StatusCodes.OK]: ConnectionPrefill },
     },
 }
 

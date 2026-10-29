@@ -1,8 +1,9 @@
 import { HomeTodo, HomeTodoType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Bot, Rocket } from 'lucide-react';
+import { Bot, Rocket, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { projectAccessRequestUtils } from '@/features/project-access-requests/utils/project-access-request-utils';
 import { formatUtils } from '@/lib/format-utils';
 
 import { SideCard, SideRow } from './side-card';
@@ -21,6 +22,9 @@ export function HomeTodosCard({
   const approvalProject = todos.find(
     (todo) => todo.type === HomeTodoType.AGENT_APPROVAL,
   )?.projectId;
+  const accessProject = todos.find(
+    (todo) => todo.type === HomeTodoType.PROJECT_ACCESS,
+  )?.projectId;
   return (
     <SideCard
       title={t('Waiting on me')}
@@ -32,9 +36,7 @@ export function HomeTodosCard({
     >
       {todos.length === 0 ? (
         <span className="text-xs text-muted-foreground">
-          {t(
-            'Release approvals and agent confirmations assigned to you show up here.',
-          )}
+          {t('homeTodoEmptyHint')}
         </span>
       ) : (
         <div className="flex flex-col gap-0.5">
@@ -60,6 +62,14 @@ export function HomeTodosCard({
                   {t('Agent confirmations')}
                 </Link>
               )}
+              {accessProject && (
+                <Link
+                  to={projectAccessRequestUtils.membersLink(accessProject)}
+                  className="text-primary hover:underline"
+                >
+                  {t('projectAccessRequestsLink')}
+                </Link>
+              )}
             </div>
           )}
         </div>
@@ -70,13 +80,27 @@ export function HomeTodosCard({
 
 function TodoRow({ todo }: { todo: HomeTodo }) {
   const when = formatUtils.formatDate(new Date(todo.created));
+  if (todo.type === HomeTodoType.PROJECT_ACCESS) {
+    return (
+      <SideRow
+        icon={UserPlus}
+        iconClassName="text-primary"
+        title={t('projectAccessTodoTitle', {
+          name: todo.requesterName ?? t('Someone'),
+          project: todo.subject ?? '',
+        })}
+        subtitle={t('projectAccessTodoSubtitle', { when })}
+        to={projectAccessRequestUtils.membersLink(todo.projectId)}
+      />
+    );
+  }
   if (todo.type === HomeTodoType.RELEASE) {
     return (
       <SideRow
         icon={Rocket}
         iconClassName="text-primary"
         title={t('Promote "{name}" to production', {
-          name: todo.workflowDisplayName,
+          name: todo.workflowDisplayName ?? '',
         })}
         subtitle={
           todo.requesterName
@@ -96,8 +120,8 @@ function TodoRow({ todo }: { todo: HomeTodo }) {
       iconClassName="text-primary"
       title={
         todo.subject
-          ? `${todo.workflowDisplayName}: ${todo.subject}`
-          : todo.workflowDisplayName
+          ? `${todo.workflowDisplayName ?? ''}: ${todo.subject}`
+          : todo.workflowDisplayName ?? ''
       }
       subtitle={t('Agent waiting for confirmation · {when}', { when })}
       to={

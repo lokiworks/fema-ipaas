@@ -17,9 +17,11 @@ import {
     WorkflowOperationStatus,
     WorkflowReleaseStatus,
 } from '@fema-ipaas/shared'
+import { FastifyBaseLogger } from 'fastify'
 import { ArrayContains, Brackets, In, MoreThan, SelectQueryBuilder } from 'typeorm'
 import { agentApprovalRepo } from '../agent-approval/agent-approval.service'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
+import { projectAccessRequestService } from '../project/project-access-request.service'
 import { projectRepo } from '../project/project-repo'
 import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 import { workflowReleaseRepo } from '../release/workflow-release.service'
@@ -30,7 +32,7 @@ import { workflowVersionRepo } from '../workflows/workflow-version/workflow-vers
 import { homeAggregation, HourlyBucketRow, ProjectStatusCountRow, WorkflowConnectionUsage } from './home-aggregation'
 
 export const homeService = {
-    async summary({ userId, tenantId, since }: SummaryParams): Promise<HomeSummary> {
+    async summary({ userId, tenantId, since, log }: SummaryParams): Promise<HomeSummary> {
         const from = homeAggregation.resolveSince({ since, now: new Date() })
         const projectIds = await accessibleProjectIds({ userId, tenantId })
         if (projectIds.length === 0) {
@@ -41,7 +43,7 @@ export const homeService = {
             hourlyCounts({ projectIds, from }),
             latestFailedRuns({ projectIds, from }),
             brokenConnectionsFor({ projectIds, tenantId }),
-            pendingTodos({ projectIds, userId }),
+            pendingTodos({ projectIds, userId, tenantId, log }),
         ])
         const totals = homeAggregation.summarizeStatusCounts(statusRows)
         return {
@@ -183,8 +185,8 @@ async function workflowConnectionUsages({ projectIds, externalIds }: { projectId
     return rows.map((row) => ({ workflowId: row.id, projectId: row.projectId, connectionIds: row.connectionIds ?? [] }))
 }
 
-async function pendingTodos({ projectIds, userId }: { projectIds: string[], userId: UserId }): Promise<{ items: HomeTodo[], total: number }> {
-    const [releases, approvals] = await Promise.all([
+async function pendingTodos({ projectIds, userId, tenantId, log }: PendingTodosParams): Promise<{ items: HomeTodo[], total: number }> {
+    const [releases, approvals, accessRequests] = await Promise.all([
         workflowReleaseRepo().find({
             where: { projectId: In(projectIds), status: WorkflowReleaseStatus.PENDING, approverIds: ArrayContains([userId]) },
             order: { created: 'DESC' },
@@ -195,6 +197,7 @@ async function pendingTodos({ projectIds, userId }: { projectIds: string[], user
             order: { created: 'DESC' },
             take: TODO_SCAN_LIMIT,
         }),
+        projectAccessRequestService(log).listPendingForApprover({ tenantId, userId }),
     ])
     const decidable = releases.filter((release) => homeAggregation.canDecideRelease({ approverIds: release.approverIds, requestedById: release.requestedById, userId }))
     const shownReleases = decidable.slice(0, HOME_TODO_LIMIT)
@@ -228,7 +231,18 @@ async function pendingTodos({ projectIds, userId }: { projectIds: string[], user
         subject: approval.tool,
         created: new Date(approval.created).toISOString(),
     }))
-    return { items: [...releaseTodos, ...approvalTodos], total: decidable.length + approvals.length }
+    const accessTodos: HomeTodo[] = accessRequests.slice(0, HOME_TODO_LIMIT).map((request) => ({
+        type: HomeTodoType.PROJECT_ACCESS,
+        id: request.id,
+        projectId: request.projectId,
+        workflowId: null,
+        workflowDisplayName: null,
+        executionId: null,
+        requesterName: homeAggregation.displayName({ firstName: request.userFirstName ?? null, lastName: request.userLastName ?? null, email: request.userEmail ?? null }),
+        subject: request.projectDisplayName,
+        created: new Date(request.created).toISOString(),
+    }))
+    return { items: [...releaseTodos, ...approvalTodos, ...accessTodos], total: decidable.length + approvals.length + accessRequests.length }
 }
 
 async function versionDisplayNames({ releaseVersionIds, workflowIds }: { releaseVersionIds: string[], workflowIds: string[] }): Promise<VersionNames> {
@@ -299,6 +313,14 @@ type SummaryParams = {
     userId: UserId
     tenantId: string
     since: string
+    log: FastifyBaseLogger
+}
+
+type PendingTodosParams = {
+    projectIds: string[]
+    userId: UserId
+    tenantId: string
+    log: FastifyBaseLogger
 }
 
 type VersionNames = {

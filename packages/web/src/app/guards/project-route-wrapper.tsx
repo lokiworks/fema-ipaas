@@ -1,8 +1,8 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { Lock } from 'lucide-react';
 import React from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 
+import { ProjectNoAccessPage } from '@/features/project-access-requests';
 import { projectCollectionUtils } from '@/features/projects';
 import {
   FROM_QUERY_PARAM,
@@ -11,7 +11,6 @@ import {
 
 import { authenticationSession } from '../../lib/authentication-session';
 import { AllowOnlyLoggedInUserOnlyGuard } from '../components/allow-logged-in-user-only-guard';
-import NotFoundPage from '../routes/404-page';
 
 export const TokenCheckerWrapper: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -27,14 +26,7 @@ export const TokenCheckerWrapper: React.FC<{ children: React.ReactNode }> = ({
     projectCollectionUtils.useHasAccessToProject(projectIdFromParams);
 
   if (!hasAccessToProject) {
-    return (
-      <NotFoundPage
-        title="You are not a member of this project"
-        description="Ask the project owner or an administrator to add you, or go back to the home page."
-        buttonText="Go to home"
-        icon={Lock}
-      />
-    );
+    return <ProjectNoAccessPage projectId={projectIdFromParams} />;
   }
 
   authenticationSession.switchToProject(projectIdFromParams);

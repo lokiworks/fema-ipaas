@@ -44,7 +44,7 @@ function successRate({
 
 function formatRate(rate: number | null): string {
   if (rate === null) {
-    return '-';
+    return '—';
   }
   const percent = Math.round(rate * 1000) / 10;
   return `${percent}%`;

@@ -25,6 +25,16 @@ export function internalErrorToast() {
   });
 }
 
+export function permissionDeniedToast() {
+  toast.error(t('You do not have permission to perform this action'), {
+    description: t(
+      'Ask the project owner or an administrator for access, then try again.',
+    ),
+    duration: 4000,
+    id: 'permission-denied',
+  });
+}
+
 export function unsavedChangesToast() {
   toast.error(t('Unsaved Changes'), {
     description: t(

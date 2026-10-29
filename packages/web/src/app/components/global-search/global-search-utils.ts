@@ -4,6 +4,7 @@ import {
   GlobalSearchItem,
   GlobalSearchResultType,
   IssueKind,
+  TenantModule,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
@@ -210,7 +211,28 @@ function displaySubtitle({
   return row.subtitle;
 }
 
+function hiddenResultTypes({
+  isTenantAdmin,
+  modules,
+}: {
+  isTenantAdmin: boolean;
+  modules: TenantModule[] | null;
+}): GlobalSearchResultType[] {
+  if (isTenantAdmin) {
+    return [];
+  }
+  const adminOnly = [
+    GlobalSearchResultType.CONNECTOR,
+    GlobalSearchResultType.MCP_SERVER,
+  ];
+  if (modules !== null && modules.includes(TenantModule.MCP_SERVICES)) {
+    return adminOnly;
+  }
+  return [...adminOnly, GlobalSearchResultType.MCP_SERVICE];
+}
+
 export const globalSearchUtils = {
+  hiddenResultTypes,
   prioritizeCurrentProject,
   displayLabel,
   displaySubtitle,

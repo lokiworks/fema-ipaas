@@ -19,6 +19,7 @@ import { In } from 'typeorm'
 import { connectionAccessService } from '../connection/connection-access.service'
 import { databaseConnection } from '../database/database-connection'
 import { projectRepo } from '../project/project-repo'
+import { failureFunnel, FailureFunnelCounts } from './failure-funnel'
 import { MonitorWindow, runMonitorUtils } from './run-monitor-utils'
 
 export const runMonitorService = (log: FastifyBaseLogger) => ({
@@ -122,7 +123,7 @@ async function statusCounts(scope: MonitorScope): Promise<StatusStepsRow[]> {
 
 async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
     const window = [isoOf(scope.window.from), isoOf(scope.window.to)]
-    const [duplicates, merged, platformEvents]: [{ count: string }[], { failures: string, issues: string }[], PlatformEventRow[]] = await Promise.all([
+    const [duplicates, merged, platformEvents]: [{ count: string }[], FailureFunnelCounts, PlatformEventRow[]] = await Promise.all([
         databaseConnection().query(
             `SELECT COUNT(*) AS count FROM deduped_event d
             WHERE d."projectId" = ANY($1::varchar[])
@@ -130,13 +131,7 @@ async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
                 AND d.created >= $3 AND d.created <= $4`,
             [...scopeParams(scope), ...window],
         ),
-        databaseConnection().query(
-            `SELECT COUNT(*) AS failures, COUNT(DISTINCT e."issueId") AS issues FROM "execution" e
-            WHERE ${SCOPE_SQL} AND e."issueId" IS NOT NULL AND e."rerunOfExecutionId" IS NULL
-                AND NOT (e.status = ANY($5::varchar[]))
-                AND e.created >= $3 AND e.created <= $4`,
-            [...scopeParams(scope), ...window, runMonitorUtils.nonFailureStatuses],
-        ),
+        failureFunnel.count({ projectIds: scope.projectIds, workflowIds: scope.workflowIds, from: scope.window.from, to: scope.window.to }),
         databaseConnection().query(
             `SELECT ev.kind AS kind, ev."connectorName" AS "connectorName", ev."limitUnit" AS "limitUnit",
                 COUNT(*) AS events, COUNT(DISTINCT ev."executionId") AS runs
@@ -149,8 +144,8 @@ async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
     ])
     return {
         duplicateEvents: Number(duplicates[0]?.count ?? 0),
-        mergedFailures: Number(merged[0]?.failures ?? 0),
-        mergedIssues: Number(merged[0]?.issues ?? 0),
+        mergedFailures: merged.failures,
+        mergedIssues: merged.issues,
         ...platformEventCounts(platformEvents),
     }
 }

@@ -412,11 +412,17 @@ function filterBy(
       }
       const searchableValue = getSearchableValue(item);
 
+      const normalizedQuery = query.toLowerCase();
       const displayName =
         item.data.type === 'value' ? item.data.displayName.toLowerCase() : '';
+      const searchTerms =
+        item.data.type === 'value' ? item.data.searchTerms ?? [] : [];
       const matchDisplayNameOrValue =
-        displayName.toLowerCase().includes(query.toLowerCase()) ||
-        searchableValue.toLowerCase().includes(query.toLowerCase());
+        displayName.includes(normalizedQuery) ||
+        searchableValue.toLowerCase().includes(normalizedQuery) ||
+        searchTerms.some((term) =>
+          term.toLowerCase().includes(normalizedQuery),
+        );
       if (matchDisplayNameOrValue) {
         return item;
       }

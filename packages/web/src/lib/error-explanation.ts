@@ -110,6 +110,25 @@ const RULES: ExplanationRule[] = [
         'No response was received. Check that the URL is correct, the other system is running, and the platform server can reach it (internal addresses may need to be allowed by the administrator).',
       ),
   },
+  {
+    patterns: [/root organization oid does not exist/],
+    headline: () =>
+      t(
+        'The organization in Root organization OId does not exist. Pick it again.',
+      ),
+    hint: () =>
+      t(
+        'Beisen found no organization unit with this OId (Beisen code 417). Open the step input and pick the root organization from the list again.',
+      ),
+  },
+  {
+    patterns: [/组织单元不存在/],
+    headline: () => t('The Beisen organization OId does not exist'),
+    hint: () =>
+      t(
+        'Beisen found no organization unit with the OId this step sent (Beisen code 417). Check the organization field in the step input and pick an existing organization.',
+      ),
+  },
 ];
 
 type ExplanationRule = {

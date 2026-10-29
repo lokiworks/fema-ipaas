@@ -1,5 +1,4 @@
 import { TenantMetricsReport } from '@fema-ipaas/shared';
-import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { CheckCircle2, ListChecks } from 'lucide-react';
 import { ReactNode } from 'react';
@@ -7,6 +6,8 @@ import { ReactNode } from 'react';
 import { MetricCard } from '@/components/custom/metric-card';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
+
+import { healthFormat } from '../lib/health-format';
 
 import { InternalErrorsTable } from './internal-errors-table';
 import { StatusLineChart } from './status-line-chart';
@@ -40,7 +41,7 @@ export function RunsTab({ report, isLoading }: RunsTabProps) {
       {report && (
         <p className="px-5 text-xs text-muted-foreground">
           {t('Showing cached data · next refresh after {time}', {
-            time: dayjs(report.nextRefreshAt).format('MMM D, h:mm A'),
+            time: healthFormat.dateTimeLabel(new Date(report.nextRefreshAt)),
           })}
         </p>
       )}

@@ -20,13 +20,24 @@ export function ReconnectConnectionDialog({
     connectionId,
     enabled: open,
   });
+  const { data: prefill, isLoading: isPrefillLoading } =
+    connectionsQueries.useConnectionPrefill({
+      connectionId,
+      enabled: open,
+    });
   const { connectorModel, isLoading } = connectorsHooks.useConnector({
     name: connection?.connectorName ?? '',
     version: connection?.connectorVersion,
     enabled: open && !isNil(connection),
   });
 
-  if (!open || isNil(connection) || isLoading || !connectorModel) {
+  if (
+    !open ||
+    isNil(connection) ||
+    isLoading ||
+    isPrefillLoading ||
+    !connectorModel
+  ) {
     return null;
   }
 
@@ -34,6 +45,7 @@ export function ReconnectConnectionDialog({
     <CreateOrEditConnectionDialog
       key={`reconnect-${connection.id}-${open}`}
       reconnectConnection={connection}
+      reconnectPrefill={prefill ?? null}
       isGlobalConnection={connection.scope === ConnectionScope.TENANT}
       connector={connectorModel}
       open={open}

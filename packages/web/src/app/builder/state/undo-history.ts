@@ -165,6 +165,37 @@ function operationsToReach({
   ];
 }
 
+function keepTestedSteps({
+  workflowVersion,
+  source,
+}: {
+  workflowVersion: WorkflowVersion;
+  source: WorkflowVersion;
+}): WorkflowVersion {
+  const sourceSteps = new Map(
+    workflowStructureUtil
+      .getAllSteps(source.trigger)
+      .map((step) => [step.name, step]),
+  );
+  return workflowStructureUtil.transferWorkflow(workflowVersion, (step) => {
+    const sourceStep = sourceSteps.get(step.name);
+    if (
+      isNil(sourceStep) ||
+      !deepEqual(comparableStep(sourceStep), comparableStep(step))
+    ) {
+      return step;
+    }
+    return {
+      ...step,
+      lastUpdatedDate: sourceStep.lastUpdatedDate,
+      settings: {
+        ...step.settings,
+        sampleData: sourceStep.settings.sampleData,
+      },
+    };
+  });
+}
+
 function updateOperation(
   step: WorkflowAction | WorkflowTrigger,
 ): WorkflowOperationRequest {
@@ -359,6 +390,7 @@ export const undoHistory = {
   takeRedo,
   mergeKeyOf,
   operationsToReach,
+  keepTestedSteps,
 };
 
 export const UNDO_MAX_HISTORY = 41;

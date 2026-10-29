@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
+import { healthFormat } from '../lib/health-format';
 import { healthMetricsQueries } from '../lib/health-metrics-hooks';
 
 function isHealthy(day: TenantMetricsHealthDay): boolean {
@@ -82,7 +83,7 @@ export function DailyHealthStrip({ onSeeRuns }: DailyHealthStripProps) {
                   </TooltipTrigger>
                   <TooltipContent className="flex flex-col gap-1.5 min-w-[14rem] p-3 text-sm">
                     <span className="text-sm font-semibold">
-                      {dayjs(day.day).format('MMM DD, YYYY')}
+                      {healthFormat.dayLabel(dayjs(day.day).toDate())}
                     </span>
                     {healthy ? (
                       <span className="text-muted-foreground">

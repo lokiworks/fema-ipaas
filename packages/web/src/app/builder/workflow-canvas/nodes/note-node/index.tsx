@@ -3,7 +3,7 @@ import { Note, NoteColorVariant } from '@fema-ipaas/shared';
 import { Editor } from '@tiptap/core';
 import { NodeProps, NodeResizeControl } from '@xyflow/react';
 import { t } from 'i18next';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 import { MarkdownInput } from '@/components/custom/markdown-input';
@@ -120,10 +120,13 @@ const NoteContent = ({ note, isDragging }: NoteContentProps) => {
   const { id, ownerId: creatorId, color, size } = note;
   const { width, height } = size;
   const [localNote, setLocalNote] = useState(note);
-  const [updateContent, readonly] = useBuilderStateContext((state) => [
-    state.updateContent,
-    state.readonly,
-  ]);
+  const [updateContent, readonly, noteToEdit, clearNoteToEdit] =
+    useBuilderStateContext((state) => [
+      state.updateContent,
+      state.readonly,
+      state.noteToEdit,
+      state.clearNoteToEdit,
+    ]);
   const debouncedUpdateContent = useDebouncedCallback(
     (id: string, content: string) => {
       updateContent(id, content);
@@ -132,6 +135,22 @@ const NoteContent = ({ note, isDragging }: NoteContentProps) => {
   );
 
   const editorRef = useRef<Editor | null>(null);
+  const shouldStartEditing = noteToEdit === id && !isDragging && !readonly;
+  useEffect(() => {
+    if (!shouldStartEditing) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      const editor = editorRef.current;
+      if (editor === null) {
+        return;
+      }
+      editor.setEditable(true);
+      editor.commands.focus('end');
+      clearNoteToEdit();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [shouldStartEditing, clearNoteToEdit]);
   return (
     <div
       id={id}
@@ -196,9 +215,10 @@ const NoteContent = ({ note, isDragging }: NoteContentProps) => {
                   NoteColorVariantClassName[color],
                 )}
                 onChange={(value: string) => {
-                  if (value !== localNote.content) {
-                    setLocalNote({ ...localNote, content: value });
-                    debouncedUpdateContent(id, value);
+                  const content = isBlankNoteContent(value) ? '' : value;
+                  if (content !== localNote.content) {
+                    setLocalNote({ ...localNote, content });
+                    debouncedUpdateContent(id, content);
                   }
                 }}
               />
@@ -215,6 +235,10 @@ const NoteContent = ({ note, isDragging }: NoteContentProps) => {
     </div>
   );
 };
+function isBlankNoteContent(value: string): boolean {
+  return value.replaceAll('<br>', '').trim() === '';
+}
+
 export { NoteCanvasNode, NoteContent };
 type NoteContentProps = {
   note: Note;

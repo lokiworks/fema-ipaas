@@ -25,11 +25,17 @@ const CATEGORY_GROUP_BY_CONNECTOR_CATEGORY: Partial<
 };
 
 function groupsOf(
-  connector: Pick<ConnectorMetadataModelSummary, 'categories' | 'source'>,
+  connector: Pick<
+    ConnectorMetadataModelSummary,
+    'name' | 'categories' | 'source'
+  >,
 ): MarketCategoryValue[] {
-  const fromCategories = (connector.categories ?? [])
+  const mapped = (connector.categories ?? [])
     .map((category) => CATEGORY_GROUP_BY_CONNECTOR_CATEGORY[category])
     .filter((value): value is MarketCategoryValue => value !== undefined);
+  const fromCategories = isDatabaseConnector(connector.name)
+    ? ['database' as const, ...mapped.filter((group) => group !== 'dev')]
+    : mapped;
   const groups =
     connector.source === ConnectorSource.PRIVATE
       ? [...fromCategories, 'custom' as const]
@@ -37,11 +43,20 @@ function groupsOf(
   return groups.length > 0 ? Array.from(new Set(groups)) : ['builtin'];
 }
 
+function isDatabaseConnector(name: string): boolean {
+  return DATABASE_CONNECTOR_NAMES.includes(
+    name.replace(CONNECTOR_PACKAGE_PREFIX, ''),
+  );
+}
+
 function matchesCategory({
   connector,
   category,
 }: {
-  connector: Pick<ConnectorMetadataModelSummary, 'categories' | 'source'>;
+  connector: Pick<
+    ConnectorMetadataModelSummary,
+    'name' | 'categories' | 'source'
+  >;
   category: MarketCategoryValue;
 }): boolean {
   if (category === 'all') {
@@ -51,7 +66,10 @@ function matchesCategory({
 }
 
 function countByCategory(
-  connectors: Pick<ConnectorMetadataModelSummary, 'categories' | 'source'>[],
+  connectors: Pick<
+    ConnectorMetadataModelSummary,
+    'name' | 'categories' | 'source'
+  >[],
 ): Record<MarketCategoryValue, number> {
   const counts: Record<MarketCategoryValue, number> = {
     all: 0,
@@ -162,6 +180,22 @@ export const connectorMarketUtils = {
   isMarketKindFilter,
   isMarketSort,
 };
+
+const CONNECTOR_PACKAGE_PREFIX = /^@[^/]+\/(connector|piece)-/;
+const DATABASE_CONNECTOR_NAMES = [
+  'mysql',
+  'postgres',
+  'postgresql',
+  'sql-server',
+  'microsoft-sql-server',
+  'mongodb',
+  'oracle-database',
+  'mariadb',
+  'snowflake',
+  'clickhouse',
+  'redis',
+  'supabase',
+];
 
 export const MARKET_CATEGORIES = [
   { value: 'all', icon: 'LayoutGrid' },

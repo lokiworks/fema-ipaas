@@ -28,7 +28,7 @@ export function MobileNavBar({
   return (
     <div className="flex h-12 shrink-0 items-center gap-2 border-b bg-background px-2">
       {showMenu && (
-        <Sheet key={location.pathname}>
+        <Sheet key={`menu-${location.pathname}`}>
           <SheetTrigger asChild>
             <Button
               type="button"
@@ -56,7 +56,9 @@ export function MobileNavBar({
         <MobileTenantNav key={`tenant-${location.pathname}`} />
       )}
       {showProjectNav && (
-        <MobileProjectNav key={`${location.pathname}${location.search}`} />
+        <MobileProjectNav
+          key={`project-${location.pathname}${location.search}`}
+        />
       )}
       {!showProjectNav && !showTenantMenu && (
         <MobilePageTitle pathname={location.pathname} />

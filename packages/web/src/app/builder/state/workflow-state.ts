@@ -107,8 +107,9 @@ export const createWorkflowState = (
   ) => debouncer.schedule({ key, task: updateRequest });
   const historyControl = { suspended: false };
   const replayToward = (target: WorkflowVersion) => {
+    const current = get().workflowVersion;
     const operations = undoHistory.operationsToReach({
-      current: get().workflowVersion,
+      current,
       target,
     });
     historyControl.suspended = true;
@@ -117,6 +118,12 @@ export const createWorkflowState = (
     } finally {
       historyControl.suspended = false;
     }
+    set({
+      workflowVersion: undoHistory.keepTestedSteps({
+        workflowVersion: get().workflowVersion,
+        source: current,
+      }),
+    });
   };
   return {
     history: undoHistory.emptyHistory(),

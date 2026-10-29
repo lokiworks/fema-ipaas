@@ -36,6 +36,7 @@ import { internalErrorToast } from '@/components/ui/sonner';
 import { userInvitationMutations } from '@/features/invitations';
 import { invitationUtils } from '@/features/invitations/utils/invitation-utils';
 import { projectMembersHooks } from '@/features/project-members';
+import { DisabledReason } from '@/features/project-workspace/components/disabled-reason';
 import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
@@ -47,9 +48,17 @@ export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button size="sm" disabled={disabled} onClick={() => setOpen(true)}>
-        {t('Invite member')}
-      </Button>
+      <DisabledReason
+        reason={
+          disabled
+            ? t('Only the project owner or an admin can invite members')
+            : null
+        }
+      >
+        <Button size="sm" disabled={disabled} onClick={() => setOpen(true)}>
+          {t('Invite member')}
+        </Button>
+      </DisabledReason>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('Invite member')}</DialogTitle>
@@ -84,7 +93,7 @@ function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
         projectRole: z.enum(DefaultProjectRole),
       }),
     ),
-    defaultValues: { email: '', projectRole: DefaultProjectRole.OPERATOR },
+    defaultValues: { email: '', projectRole: DefaultProjectRole.VIEWER },
   });
 
   const invalidateMembers = projectMembersHooks.useInvalidateMembers();
@@ -166,16 +175,29 @@ function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
               <Label htmlFor="inviteRole">{t('Role')}</Label>
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger id="inviteRole">
-                  <SelectValue />
+                  <SelectValue>
+                    {projectRoleLabels.label(field.value)}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(DefaultProjectRole).map((role) => (
+                  {INVITE_ROLE_ORDER.map((role) => (
                     <SelectItem key={role} value={role}>
-                      {projectRoleLabels.label(role)}
+                      <div className="flex flex-col">
+                        <span>{projectRoleLabels.label(role)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {projectRoleLabels.description(role)}
+                        </span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p
+                className="text-xs text-muted-foreground"
+                data-testid="invite-role-description"
+              >
+                {projectRoleLabels.description(field.value)}
+              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -192,6 +214,13 @@ function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
     </Form>
   );
 }
+
+const INVITE_ROLE_ORDER: DefaultProjectRole[] = [
+  DefaultProjectRole.VIEWER,
+  DefaultProjectRole.OPERATOR,
+  DefaultProjectRole.DEVELOPER,
+  DefaultProjectRole.ADMIN,
+];
 
 type InviteFormValues = {
   email: string;

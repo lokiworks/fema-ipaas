@@ -34,6 +34,7 @@ import { databaseConnection } from '../database/database-connection'
 import { distributedLock } from '../database/redis-connections'
 import { likePatternUtils } from '../helper/like-pattern'
 import { projectAccess } from '../project/project-access'
+import { failureFunnel } from '../run-monitor/failure-funnel'
 import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
@@ -309,12 +310,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
         const active = issues.filter((issue) => !isMuted({ issue, now: now.toISOString() }))
         const open = active.filter((issue) => issue.status === IssueStatus.OPEN)
         const investigating = active.filter((issue) => issue.status === IssueStatus.INVESTIGATING)
-        const failuresLast7Days = await executionRepo().createQueryBuilder('execution')
-            .innerJoin('issue', 'issue', 'issue.id = execution."issueId"')
-            .where('issue."projectId" = :projectId', { projectId })
-            .andWhere('execution."rerunOfExecutionId" IS NULL')
-            .andWhere('execution.created >= :since', { since: weekAgo.toISOString() })
-            .getCount()
+        const funnel = await failureFunnel.count({ projectIds: [projectId], workflowIds: [], from: weekAgo.valueOf(), to: now.valueOf() })
         return {
             open: open.length,
             openHighSeverity: open.filter((issue) => issueUtils.severityOf(issue) === IssueSeverity.HIGH).length,
@@ -322,8 +318,8 @@ export const issueService = (log: FastifyBaseLogger) => ({
             investigatingAssignedToMe: investigating.filter((issue) => issue.assigneeId === currentUserId).length,
             newOrReopenedToday: active.filter((issue) => isNewOrReopenedSince({ issue, since: startOfDay.toISOString() })).length,
             muted: muted.length,
-            failuresLast7Days,
-            issuesLast7Days: issues.filter((issue) => !dayjsUtil(issue.lastSeenAt).isBefore(weekAgo)).length,
+            failuresLast7Days: funnel.failures,
+            issuesLast7Days: funnel.issues,
             alertsLast7Days: 0,
         }
     },

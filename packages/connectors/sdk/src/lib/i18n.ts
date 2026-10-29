@@ -19,6 +19,7 @@ export const connectorTranslation = {
       connectorTranslation.pathsToValuesToTranslate.forEach(key => {
         translateProperty(translatedConnector, key, target)
       })
+      translateOutputSchemas(translatedConnector, target)
       return translatedConnector
     }
     catch (err) {
@@ -108,6 +109,53 @@ function translateProperty(connectorModelOrProperty: Record<string, unknown>, pa
   }
 }
 
+function translateOutputSchemas(connector: Record<string, unknown>, i18n: Record<string, string>) {
+  OUTPUT_SCHEMA_GROUPS.forEach(group => {
+    const entries = connector[group]
+    if (!isRecord(entries)) {
+      return
+    }
+    Object.values(entries).forEach(entry => {
+      const outputSchema = isRecord(entry) ? entry['outputSchema'] : undefined
+      const fields = isRecord(outputSchema) ? outputSchema['fields'] : undefined
+      if (Array.isArray(fields)) {
+        fields.forEach(field => translateOutputField(field, i18n))
+      }
+    })
+  })
+}
+
+function translateOutputField(field: unknown, i18n: Record<string, string>) {
+  if (!isRecord(field)) {
+    return
+  }
+  const label = field['label']
+  if (typeof label === 'string') {
+    const translatedLabel = i18n[label.slice(0, MAX_KEY_LENGTH_FOR_CORWDIN)]
+    if (translatedLabel && translatedLabel !== label) {
+      field['sourceLabel'] = label
+      field['label'] = translatedLabel
+    }
+  }
+  const description = field['description']
+  if (typeof description === 'string') {
+    const translatedDescription = i18n[description.slice(0, MAX_KEY_LENGTH_FOR_CORWDIN)]
+    if (translatedDescription) {
+      field['description'] = translatedDescription
+    }
+  }
+  OUTPUT_SCHEMA_NESTED_KEYS.forEach(key => {
+    const nested = field[key]
+    if (Array.isArray(nested)) {
+      nested.forEach(child => translateOutputField(child, i18n))
+    }
+  })
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 async function fileExists(filePath: string) {
   try {
     await fs.access(filePath);
@@ -135,6 +183,9 @@ const readLocaleFile = async (locale: LocalesEnum, connectorOutputPath: string) 
     return null;
   }
 }
+
+const OUTPUT_SCHEMA_GROUPS = ['actions', 'triggers']
+const OUTPUT_SCHEMA_NESTED_KEYS = ['children', 'listItems']
 
 type TranslateConnectorParams<T extends ConnectorMetadataModelSummary | ConnectorMetadataModel> = {
   connector: T

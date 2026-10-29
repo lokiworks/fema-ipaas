@@ -183,6 +183,18 @@ export const api = {
   isError(error: unknown): error is HttpError {
     return isAxiosError(error);
   },
+  isPermissionError(error: unknown): error is HttpError {
+    if (!isAxiosError(error)) {
+      return false;
+    }
+    const code = responseCode(error.response?.data);
+    return (
+      code === ErrorCode.PERMISSION_DENIED || code === ErrorCode.AUTHORIZATION
+    );
+  },
+  permissionDeniedMessage(): string {
+    return t('You do not have permission to perform this action');
+  },
   extractServerErrorMessage(error: unknown, fallback: string): string {
     if (api.isError(error)) {
       const data = error.response?.data as ApplicationErrorParams | undefined;
@@ -195,6 +207,9 @@ export const api = {
             ? params.messageParams
             : undefined;
         return t(messageKey, interpolationValues(messageParams));
+      }
+      if (api.isPermissionError(error)) {
+        return api.permissionDeniedMessage();
       }
       const message =
         params && 'message' in params ? params.message : undefined;
@@ -264,6 +279,13 @@ export const api = {
     }),
   httpStatus: HttpStatusCode,
 };
+
+function responseCode(data: unknown): unknown {
+  if (typeof data !== 'object' || data === null || !('code' in data)) {
+    return undefined;
+  }
+  return data.code;
+}
 
 function interpolationValues(value: unknown): Record<string, string | number> {
   if (typeof value !== 'object' || value === null) {

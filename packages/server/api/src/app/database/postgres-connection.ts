@@ -38,6 +38,7 @@ import { AddExecutionSearchHashesIndex1791204000001 } from './migration/postgres
 import { AddReliabilityRetryReason1793031942377 } from './migration/postgres/1793031942377-AddReliabilityRetryReason'
 import { AddReconciliation1793033278791 } from './migration/postgres/1793033278791-AddReconciliation'
 import { DedupeExecutionFinishedAudit1793034284291 } from './migration/postgres/1793034284291-DedupeExecutionFinishedAudit'
+import { AddProjectAccessRequests1793120000000 } from './migration/postgres/1793120000000-AddProjectAccessRequests'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -83,6 +84,7 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddReliabilityRetryReason1793031942377,
         AddReconciliation1793033278791,
         DedupeExecutionFinishedAudit1793034284291,
+        AddProjectAccessRequests1793120000000,
     ]
 }
 

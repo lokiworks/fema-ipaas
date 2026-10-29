@@ -9,6 +9,7 @@ export const homeController: FastifyPluginAsyncZod = async (app) => {
             userId: request.principal.id,
             tenantId: request.principal.tenant.id,
             since: request.query.since,
+            log: request.log,
         })
     })
 }

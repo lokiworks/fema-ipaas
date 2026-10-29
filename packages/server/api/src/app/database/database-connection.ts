@@ -29,6 +29,7 @@ import { McpServiceEntity, McpServiceMemberEntity, McpServiceUsageEntity } from 
 import { NotificationEntity } from '../notification/notification.entity'
 import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
+import { ProjectAccessRequestEntity } from '../project/project-access-request.entity'
 import { ProjectEntity } from '../project/project-entity'
 import { ProjectMemberEntity } from '../project/project-member.entity'
 import { ReconciliationDifferenceEntity, ReconciliationRuleEntity, ReconciliationRunEntity } from '../reconciliation/reconciliation.entity'
@@ -124,6 +125,7 @@ function getEntities(): EntitySchema<unknown>[] {
         ReconciliationRuleEntity,
         ReconciliationRunEntity,
         ReconciliationDifferenceEntity,
+        ProjectAccessRequestEntity,
     ]
 }
 

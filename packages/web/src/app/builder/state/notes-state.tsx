@@ -35,6 +35,8 @@ export type NotesState = {
   ) => void;
   getNoteById: (id: string) => Note | null;
   draggedNoteOffset: { x: number; y: number } | null;
+  noteToEdit: string | null;
+  clearNoteToEdit: () => void;
 };
 
 export const createNotesState = (
@@ -75,9 +77,12 @@ export const createNotesState = (
           },
           draggedNote: null,
           noteDragOverlayMode: null,
+          noteToEdit: id,
         };
       });
     },
+    noteToEdit: null,
+    clearNoteToEdit: () => set({ noteToEdit: null }),
     updateContent: (id: string, content: string) => {
       const note = get().getNoteById(id);
       if (!note) {

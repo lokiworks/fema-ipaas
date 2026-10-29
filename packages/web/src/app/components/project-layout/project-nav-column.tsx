@@ -192,7 +192,9 @@ function ProjectSidebar({ className }: { className?: string }) {
       key: 'edit',
       label: t('Edit basic info'),
       icon: Info,
-      disabledReason: canEdit ? null : t('Viewers cannot change the project'),
+      disabledReason: isOwner
+        ? null
+        : t('Only the project owner or an admin can change it'),
       onSelect: () => setDialog('edit'),
     },
     {

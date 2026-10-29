@@ -190,9 +190,14 @@ function useDeleteFolder() {
   });
 }
 
-function useSaveProjectInfo() {
+function useSaveProjectInfo({
+  onError,
+}: {
+  onError: (error: unknown) => void;
+}) {
   const invalidate = useInvalidateWorkspace();
   return useMutation({
+    onError,
     mutationFn: ({
       projectId,
       request,

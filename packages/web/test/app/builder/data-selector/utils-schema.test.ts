@@ -4,6 +4,7 @@ vi.mock('i18next', () => ({
   t: (key: string) => key,
 }));
 
+import { dataSelectorUtils } from '@/app/builder/data-selector/utils';
 import { schemaTreeUtils } from '@/app/builder/data-selector/utils-schema';
 import type { OutputSchema } from '@/components/custom/smart-output-viewer/types';
 
@@ -832,5 +833,44 @@ describe('schemaTreeUtils.selectArrayTreeKind', () => {
   it('returns "plain" when there is no schema', () => {
     expect(schemaTreeUtils.selectArrayTreeKind(null)).toBe('plain');
     expect(schemaTreeUtils.selectArrayTreeKind(undefined)).toBe('plain');
+  });
+});
+
+describe('schemaTreeUtils.buildTreeFromSchema — search terms', () => {
+  const schema: OutputSchema = {
+    fields: [
+      {
+        key: 'recordInfo',
+        label: '任职记录',
+        sourceLabel: 'Employment Record',
+        children: [
+          { key: 'jobNumber', label: '工号', sourceLabel: 'Job Number' },
+          { key: 'mobilePhone', label: '手机号', sourceLabel: 'Mobile' },
+        ],
+      },
+    ],
+  };
+  const tree = schemaTreeUtils.buildTreeFromSchema({
+    stepName: 'step_1',
+    displayName: '1. 读取员工当前任职记录',
+    schema,
+    sampleData: { recordInfo: { jobNumber: 'E001', mobilePhone: '138' } },
+  });
+
+  function matchedLeafNames(query: string): string[] {
+    const [step] = dataSelectorUtils.filterBy([tree], query);
+    return (step?.children?.[0]?.children ?? []).map((child) =>
+      child.data.type === 'value' ? child.data.displayName : '',
+    );
+  }
+
+  it('finds a field by its Chinese label', () => {
+    expect(matchedLeafNames('工号')).toEqual(['工号']);
+    expect(matchedLeafNames('手机')).toEqual(['手机号']);
+  });
+
+  it('finds a field by its English source label or its key', () => {
+    expect(matchedLeafNames('job number')).toEqual(['工号']);
+    expect(matchedLeafNames('mobilephone')).toEqual(['手机号']);
   });
 });

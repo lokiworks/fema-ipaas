@@ -2,6 +2,7 @@ import { BaseModelSchema, DateOrString, isNil, Nullable, OptionalArrayFromQuery 
 import { Folder, Workflow, WorkflowOperationRequest, WorkflowOperationType, WorkflowVersion } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 import { UserWithMetaInformation } from '../../core/user/user'
+import { ProjectAccessRequestStatus } from '../../management/project/project-access-request'
 export const ListAuditEventsRequest = z.object({
     limit: z.coerce.number().optional(),
     cursor: z.string().optional(),
@@ -83,6 +84,8 @@ export enum ApplicationEventName {
     RELEASE_ROLLED_BACK = 'release.rolled_back',
     ENVIRONMENTS_UPDATED = 'release.environments.updated',
     PROJECT_CREATED = 'project.created',
+    PROJECT_ACCESS_REQUESTED = 'project.access.requested',
+    PROJECT_ACCESS_DECIDED = 'project.access.decided',
     MAPPING_TABLE_CREATED = 'mapping_table.created',
     MAPPING_TABLE_UPDATED = 'mapping_table.updated',
     MAPPING_TABLE_DELETED = 'mapping_table.deleted',
@@ -701,6 +704,24 @@ export const ProjectCreatedEvent = z.object({
 })
 export type ProjectCreatedEvent = z.infer<typeof ProjectCreatedEvent>
 
+export const ProjectAccessRequestEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.PROJECT_ACCESS_REQUESTED),
+        z.literal(ApplicationEventName.PROJECT_ACCESS_DECIDED),
+    ]),
+    data: z.object({
+        accessRequest: z.object({
+            id: z.string(),
+            userId: z.string(),
+            email: z.string().optional(),
+            status: z.enum(ProjectAccessRequestStatus),
+            role: z.string().optional(),
+        }),
+    }),
+})
+export type ProjectAccessRequestEvent = z.infer<typeof ProjectAccessRequestEvent>
+
 export const MappingTableEvent = z.object({
     ...BaseAuditEventProps,
     action: z.union([
@@ -793,6 +814,7 @@ export const ApplicationEvent = z.union([
     PersonalAccessTokenEvent,
     WorkflowReleaseEvent,
     ProjectCreatedEvent,
+    ProjectAccessRequestEvent,
     MappingTableEvent,
 ])
 
@@ -924,6 +946,10 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return event.data.environmentsEnabled === true ? 'Test and production environments were turned on or updated' : 'Test and production environments were turned off'
         case ApplicationEventName.PROJECT_CREATED:
             return `Project "${event.data.createdProject.displayName}" was created`
+        case ApplicationEventName.PROJECT_ACCESS_REQUESTED:
+            return `User ${event.data.accessRequest.email ?? event.data.accessRequest.userId} requested access to the project`
+        case ApplicationEventName.PROJECT_ACCESS_DECIDED:
+            return `Access request of ${event.data.accessRequest.email ?? event.data.accessRequest.userId} was ${event.data.accessRequest.status === ProjectAccessRequestStatus.APPROVED ? `approved as ${event.data.accessRequest.role ?? ''}` : 'rejected'}`
         case ApplicationEventName.MAPPING_TABLE_CREATED:
             return `Mapping table "${event.data.mappingTable.name}" was created`
         case ApplicationEventName.MAPPING_TABLE_UPDATED:

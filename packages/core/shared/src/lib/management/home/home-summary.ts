@@ -49,14 +49,15 @@ export type HomeBrokenConnection = z.infer<typeof HomeBrokenConnection>
 export enum HomeTodoType {
     RELEASE = 'RELEASE',
     AGENT_APPROVAL = 'AGENT_APPROVAL',
+    PROJECT_ACCESS = 'PROJECT_ACCESS',
 }
 
 export const HomeTodo = z.object({
     type: z.enum(HomeTodoType),
     id: z.string(),
     projectId: z.string(),
-    workflowId: z.string(),
-    workflowDisplayName: z.string(),
+    workflowId: Nullable(z.string()),
+    workflowDisplayName: Nullable(z.string()),
     executionId: Nullable(z.string()),
     requesterName: Nullable(z.string()),
     subject: Nullable(z.string()),

@@ -97,4 +97,24 @@ describe('notificationUiUtils', () => {
     expect(notificationUiUtils.badgeLabel(7)).toBe('7');
     expect(notificationUiUtils.badgeLabel(120)).toBe('99+');
   });
+
+  it('shows the granted role of an approved project access request', () => {
+    expect(
+      notificationUiUtils.bodyText({
+        notification: notification({
+          type: NotificationType.PROJECT_ACCESS_APPROVED,
+          body: DefaultProjectRole.VIEWER,
+        }),
+        connectorDisplayName: undefined,
+      }),
+    ).toBe('Can view');
+    expect(
+      notificationUiUtils.headline(
+        notification({
+          type: NotificationType.PROJECT_ACCESS_REQUESTED,
+          actorName: 'Zhang',
+        }),
+      ),
+    ).toBe('Zhang asks to join a project');
+  });
 });

@@ -140,3 +140,72 @@ describe('deleteImpactUtils.impactOf', () => {
     expect(deleteImpactUtils.needsConfirmation({ impact })).toBe(true);
   });
 });
+
+describe('deleteImpactUtils.branchImpactOf', () => {
+  function router({
+    branches,
+    nextAction,
+  }: {
+    branches: (WorkflowAction | null)[];
+    nextAction?: WorkflowAction;
+  }): WorkflowAction {
+    return {
+      name: 'router',
+      type: WorkflowActionType.ROUTER,
+      valid: true,
+      displayName: 'Router',
+      lastUpdatedDate: DATE,
+      settings: {
+        executionType: RouterExecutionType.EXECUTE_FIRST_MATCH,
+        branches: branches.map((_, index) => ({
+          branchName: `Branch ${index + 1}`,
+          branchType: BranchExecutionType.FALLBACK,
+        })),
+      },
+      children: branches,
+      nextAction,
+    };
+  }
+
+  it('lists the steps inside the branch and the steps that read them', () => {
+    const impact = deleteImpactUtils.branchImpactOf({
+      trigger: trigger(
+        router({
+          branches: [
+            action({ name: 'step_1', nextAction: action({ name: 'step_2' }) }),
+            null,
+          ],
+          nextAction: action({
+            name: 'step_3',
+            input: { text: '{{step_2.output.id}}' },
+          }),
+        }),
+      ),
+      stepName: 'router',
+      branchIndex: 0,
+    });
+    expect(impact.branch?.removedSteps).toEqual([
+      { name: 'step_1', displayName: 'Name step_1' },
+      { name: 'step_2', displayName: 'Name step_2' },
+    ]);
+    expect(impact.dependents).toEqual([
+      { name: 'step_3', displayName: 'Name step_3' },
+    ]);
+    expect(deleteImpactUtils.needsConfirmation({ impact })).toBe(true);
+  });
+
+  it('needs no confirmation for an empty branch', () => {
+    const impact = deleteImpactUtils.branchImpactOf({
+      trigger: trigger(
+        router({
+          branches: [null, null],
+          nextAction: action({ name: 'step_3' }),
+        }),
+      ),
+      stepName: 'router',
+      branchIndex: 0,
+    });
+    expect(impact.branch?.removedSteps).toEqual([]);
+    expect(deleteImpactUtils.needsConfirmation({ impact })).toBe(false);
+  });
+});

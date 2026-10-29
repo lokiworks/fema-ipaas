@@ -14,6 +14,7 @@ export type FieldFormat =
 export type OutputSchemaField = {
   key: string;
   label?: string;
+  sourceLabel?: string;
   value?: string;
   format?: FieldFormat;
   description?: string;

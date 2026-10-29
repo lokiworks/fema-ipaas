@@ -4,6 +4,8 @@ import path from 'path';
 import {
   ApplicationEvent,
   ApplicationEventName,
+  DefaultProjectRole,
+  ProjectAccessRequestStatus,
   WorkflowCreatedEvent,
 } from '@fema-ipaas/shared';
 import i18n from 'i18next';
@@ -304,6 +306,59 @@ describe('auditEventUtils.summarize in Chinese', () => {
     );
     expect(auditEventUtils.summarize({ event: rowsAdded })).toBe(
       '已向映射表「部门映射」添加 2 行',
+    );
+  });
+
+  it('describes project access requests and decisions', () => {
+    const requested: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.PROJECT_ACCESS_REQUESTED,
+      data: {
+        accessRequest: {
+          id: 'r1',
+          userId: 'u2',
+          email: 'zhang@corp.test',
+          status: ProjectAccessRequestStatus.PENDING,
+        },
+      },
+    };
+    const approved: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.PROJECT_ACCESS_DECIDED,
+      data: {
+        accessRequest: {
+          id: 'r1',
+          userId: 'u2',
+          email: 'zhang@corp.test',
+          status: ProjectAccessRequestStatus.APPROVED,
+          role: DefaultProjectRole.VIEWER,
+        },
+      },
+    };
+    const rejected: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.PROJECT_ACCESS_DECIDED,
+      data: {
+        accessRequest: {
+          id: 'r1',
+          userId: 'u2',
+          status: ProjectAccessRequestStatus.REJECTED,
+        },
+      },
+    };
+    expect(auditEventUtils.eventActionLabel(requested)).toBe('申请项目权限');
+    expect(auditEventUtils.eventActionLabel(approved)).toBe('审批项目权限申请');
+    expect(auditEventUtils.summarize({ event: requested })).toBe(
+      'zhang@corp.test 申请加入项目',
+    );
+    expect(
+      auditEventUtils.summarize({
+        event: approved,
+        userNames: { u2: '张三' },
+      }),
+    ).toBe('已通过 张三 的项目权限申请，授予「可查看」');
+    expect(auditEventUtils.summarize({ event: rejected })).toContain(
+      '已拒绝',
     );
   });
 

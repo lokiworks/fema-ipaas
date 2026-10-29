@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 
 import { unpublishedChanges } from './unpublished-changes';
 import { useActualDraft, useDraftChanged } from './use-draft-changed';
+import { workflowStatusLabels } from './workflow-status-labels';
 
 export function WorkflowStateTags() {
   const [workflow, editLockHolder] = useBuilderStateContext((state) => [
@@ -134,6 +135,11 @@ export function WorkflowMetaLine() {
     numbers,
     versionId: workflow.testVersionId,
   });
+  const deploymentLabel = workflowStatusLabels.deployment({
+    releasesEnabled: project.releasesEnabled,
+    testLabel,
+    productionLabel,
+  });
 
   return (
     <div className="flex min-w-0 items-center gap-2 text-[11px] text-muted-foreground">
@@ -160,21 +166,9 @@ export function WorkflowMetaLine() {
           )}
         </span>
       )}
-      {isNil(snapshotVersionId) &&
-        (project.releasesEnabled ? (
-          <span className="shrink-0">
-            {t('Test {test} · Production {production}', {
-              test: testLabel ?? t('not published'),
-              production: productionLabel ?? t('not published'),
-            })}
-          </span>
-        ) : (
-          productionLabel && (
-            <span className="shrink-0">
-              {t('Live version {version}', { version: productionLabel })}
-            </span>
-          )
-        ))}
+      {isNil(snapshotVersionId) && !isNil(deploymentLabel) && (
+        <span className="shrink-0">{deploymentLabel}</span>
+      )}
     </div>
   );
 }

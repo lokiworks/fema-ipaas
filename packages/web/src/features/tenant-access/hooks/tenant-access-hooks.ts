@@ -381,7 +381,12 @@ function useComponentHealth() {
   return useQuery({
     queryKey: tenantAccessKeys.componentHealth,
     queryFn: () => tenantAccessApi.getComponentHealth(),
-    refetchInterval: 30 * 1000,
+    refetchInterval: (query) =>
+      (query.state.data?.checks ?? []).some(
+        (check) => check.facts.pending === true,
+      )
+        ? 3 * 1000
+        : 30 * 1000,
   });
 }
 

@@ -20,7 +20,7 @@ import {
   UserCheck,
   Workflow,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
@@ -55,6 +55,8 @@ import {
 } from '@/features/issues';
 import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
 import { useAuthorization } from '@/hooks/authorization-hooks';
+import { useElementSize } from '@/hooks/use-element-size';
+import { useIsNarrowDesktop } from '@/hooks/use-mobile';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
 
@@ -66,6 +68,11 @@ function IssuesPage() {
   const canWrite = checkAccess(Permission.WRITE_ISSUE);
   const { assignable, nameOf } = issueMembersHooks.useIssueMembers();
   const [selectedRows, setSelectedRows] = useState<IssueWithSeverity[]>([]);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const { width: tableWidth } = useElementSize(tableRef);
+  const narrowWindow = useIsNarrowDesktop();
+  const compact =
+    tableWidth > 0 ? tableWidth < COMPACT_TABLE_WIDTH : narrowWindow;
 
   const view = readEnum({
     value: searchParams.get('view'),
@@ -155,11 +162,11 @@ function IssuesPage() {
   ];
 
   const columns: ColumnDef<RowDataWithActions<IssueWithSeverity>, unknown>[] =
-    useMemo(
-      () => [
+    useMemo(() => {
+      const all: ColumnDef<RowDataWithActions<IssueWithSeverity>, unknown>[] = [
         {
           accessorKey: 'title',
-          size: 380,
+          size: compact ? 320 : 380,
           header: ({ column }) => (
             <DataTableColumnHeader
               column={column}
@@ -188,6 +195,17 @@ function IssuesPage() {
                       )}`
                     : ''}
                 </span>
+                {compact && (
+                  <span
+                    className="text-xs text-muted-foreground truncate"
+                    data-testid="issue-compact-meta"
+                  >
+                    {issueUiUtils.impactText(row.original)}
+                    {' · '}
+                    {t('Last seen')}{' '}
+                    <FormattedDate date={new Date(row.original.lastSeenAt)} />
+                  </span>
+                )}
               </div>
             </div>
           ),
@@ -222,7 +240,7 @@ function IssuesPage() {
         },
         {
           accessorKey: 'status',
-          size: 150,
+          size: compact ? 96 : 150,
           header: ({ column }) => (
             <DataTableColumnHeader column={column} title={t('Status')} />
           ),
@@ -236,12 +254,12 @@ function IssuesPage() {
         },
         {
           accessorKey: 'assigneeId',
-          size: 120,
+          size: compact ? 96 : 120,
           header: ({ column }) => (
             <DataTableColumnHeader column={column} title={t('Assignee')} />
           ),
           cell: ({ row }) => (
-            <span className="text-sm">
+            <span className="block truncate text-sm">
               {row.original.assigneeId
                 ? nameOf(row.original.assigneeId)
                 : t('Unassigned')}
@@ -250,7 +268,7 @@ function IssuesPage() {
         },
         {
           accessorKey: 'severity',
-          size: 90,
+          size: compact ? 72 : 90,
           header: ({ column }) => (
             <DataTableColumnHeader column={column} title={t('Severity')} />
           ),
@@ -258,9 +276,15 @@ function IssuesPage() {
             <IssueSeverityBadge severity={row.original.severity} />
           ),
         },
-      ],
-      [nameOf],
-    );
+      ];
+      return compact
+        ? all.filter(
+            (column) =>
+              !('accessorKey' in column) ||
+              !COMPACT_HIDDEN_COLUMNS.includes(String(column.accessorKey)),
+          )
+        : all;
+    }, [nameOf, compact]);
 
   const bulkActions: BulkAction<IssueWithSeverity>[] = [
     {
@@ -375,15 +399,15 @@ function IssuesPage() {
     >
       {summary && (
         <>
-          <p className="text-sm text-muted-foreground">
-            {t(
-              'Last 7 days: {failures} failures → {issues} issues → {alerts} alerts',
-              {
-                failures: summary.failuresLast7Days,
-                issues: summary.issuesLast7Days,
-                alerts: summary.alertsLast7Days,
-              },
-            )}
+          <p
+            className="text-sm text-muted-foreground"
+            data-testid="issue-funnel"
+          >
+            {t('issueFunnelSummary', {
+              failures: summary.failuresLast7Days,
+              issues: summary.issuesLast7Days,
+              alerts: summary.alertsLast7Days,
+            })}
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <SummaryCard
@@ -421,33 +445,35 @@ function IssuesPage() {
           </div>
         </>
       )}
-      <ConsoleTableFrame>
-        <DataTable
-          emptyStateTextTitle={t('No issues')}
-          emptyStateTextDescription={t(
-            'Failed production runs are grouped here by cause, so one problem only alerts once.',
-          )}
-          emptyStateIcon={<Siren className="size-14" />}
-          columns={columns}
-          page={page}
-          isLoading={isLoading}
-          isError={isError}
-          filters={filters}
-          selectColumn={canWrite}
-          onSelectedRowsChange={setSelectedRows}
-          bulkActions={bulkActions}
-          onRowClick={(row, newWindow) => {
-            const path = authenticationSession.appendProjectRoutePrefix(
-              `/issues/${row.id}`,
-            );
-            if (newWindow) {
-              window.open(path, '_blank');
-              return;
-            }
-            navigate(path);
-          }}
-        />
-      </ConsoleTableFrame>
+      <div ref={tableRef} className="min-w-0">
+        <ConsoleTableFrame>
+          <DataTable
+            emptyStateTextTitle={t('No issues')}
+            emptyStateTextDescription={t(
+              'Failed production runs are grouped here by cause, so one problem only alerts once.',
+            )}
+            emptyStateIcon={<Siren className="size-14" />}
+            columns={columns}
+            page={page}
+            isLoading={isLoading}
+            isError={isError}
+            filters={filters}
+            selectColumn={canWrite}
+            onSelectedRowsChange={setSelectedRows}
+            bulkActions={bulkActions}
+            onRowClick={(row, newWindow) => {
+              const path = authenticationSession.appendProjectRoutePrefix(
+                `/issues/${row.id}`,
+              );
+              if (newWindow) {
+                window.open(path, '_blank');
+                return;
+              }
+              navigate(path);
+            }}
+          />
+        </ConsoleTableFrame>
+      </div>
     </ConsolePage>
   );
 }
@@ -523,6 +549,8 @@ function isMuted(mutedUntil: string | null | undefined): boolean {
 }
 
 const DEFAULT_LIMIT = 20;
+const COMPACT_TABLE_WIDTH = 980;
+const COMPACT_HIDDEN_COLUMNS = ['occurrences', 'lastSeenAt'];
 const MUTE_HOURS = [1, 4, 24] as const;
 const VIEW_ORDER = [
   IssueListView.UNRESOLVED,

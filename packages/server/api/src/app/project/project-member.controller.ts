@@ -34,13 +34,7 @@ export const projectMemberController: FastifyPluginAsyncZod = async (app) => {
             userId: request.body.userId,
             role: request.body.role,
         })
-        applicationEvents(request.log).sendUserEvent(request, {
-            action: ApplicationEventName.MEMBER_ADDED,
-            data: { member: { userId: member.userId, role: member.role, email: target.email } },
-        })
-        if (!alreadyMember) {
-            await projectMemberSideEffects(request.log).onMemberAdded({ projectId: member.projectId, userId: member.userId, role: member.role, actorId: request.principal.id })
-        }
+        await projectMemberSideEffects(request.log).recordMemberUpserted({ request, member, email: target.email, alreadyMember })
         return member
     })
 

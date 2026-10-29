@@ -12,6 +12,7 @@ icon: 🗂️
 **批量发布** — 三步：`POST /batch/publish-check` 校验 → 填发布描述（≤300，存到 `workflow_version.publishNote`）→ `POST /batch/publish` 看结果。双环境项目里批量发布就是部署到测试（`workflowReleaseService.deployToTest`）。
 **导出 / 导入** — 导出文件 `format: workflow-export, version: 1`，连接和样例数据都剥掉；导入只认这个格式，重名自动加后缀，导入后是草稿。
 **复制项目** — `POST /v1/projects/:id/copy`：复制文件夹层级、项目配置、映射表（含数据）、数据存储结构、环境开关（审批人改成自己）、两端都是租户级连接的连接替换、全部工作流（草稿）。不复制成员、版本、推广记录、日志。
+**项目权限申请** — 租户内的非成员对团队项目发起「申请权限」（`project_access_request`，理由可选，≤200 字），同一人同一项目只保留一条待审批；项目所有者、项目管理员（`MEMBER:MANAGE`）和租户管理员审批，通过时选角色（默认「可查看」）并走加成员逻辑，拒绝只改状态。入口在全部项目、无权限项目页、项目成员页顶部和首页「待我处理」。
 
 ## 权限对照
 - 新建项目：任何租户成员都可以，创建人自动成为所有者（Admin）。
@@ -26,12 +27,14 @@ icon: 🗂️
 - 复制项目时，只有租户级（`scope = TENANT`）连接算可用，项目级连接一律清空，因为新项目不在任何连接的 `projectIds` 里。
 - 映射表 id 在复制后会变：工作流入参里等于旧表 id 的字符串会被整体替换成新 id（`workflowTransferUtils.remapIds`）。
 - 批量删除会先把这些工作流待审批的推广申请改成「已撤回」，再逐个删除。
+- 申请接口 `POST /v1/project-access-requests` 用 `publicTenant` 放行（申请人还不是成员），项目归属在服务里按 `tenantId` 校验，别的租户或个人项目一律当作不存在；审批接口靠 `ProjectResourceType.TABLE` 从申请行取 `projectId` 做权限校验。
 - 「他人正在编辑」这一项校验还没做：写这块时平台还没有编辑锁。
 - 最近一次运行只看最近 30 天，避免 `DISTINCT ON` 扫完整张 execution 表。
 
 ## Key files
 - `packages/server/api/src/app/project-workspace/` — 树、统计、批量操作、导入导出（`projectWorkspaceModule`）
-- `packages/server/api/src/app/project/` — `projectDirectoryService`、`projectCopyService`、`projectDirectoryController`
+- `packages/server/api/src/app/project/` — `projectDirectoryService`、`projectCopyService`、`projectDirectoryController`、`projectAccessRequestService`
+- `packages/web/src/features/project-access-requests/` — 申请按钮、无权限页、成员页的待审批列表
 - `packages/server/api/src/app/workflows/workflow/workflow-naming.ts` — 名称去重和上限检查
 - `packages/core/shared/src/lib/automation/project-workspace/` — 请求 / 响应类型和导出文件格式
 - `packages/web/src/features/project-workspace/` — 侧栏工作流树、各种弹窗、概览卡片

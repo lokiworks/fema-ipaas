@@ -7,7 +7,7 @@ import { beisenCommon, type BeisenAuthValue } from './index';
 function rootOrganization() {
   return Property.Dropdown({
     displayName: 'Root organization OId',
-    description: 'Pick the organization to search under, usually the company root. Switch the field to manual input to type an OId instead.',
+    description: 'Pick the organization to search under, usually the company root. To type an OId instead, set the value type in the top-right corner of the field to String.',
     auth: beisenAuth,
     required: true,
     refreshers: [],
@@ -17,7 +17,7 @@ function rootOrganization() {
 
 async function listOptions({ auth }: { auth: BeisenAuthValue | undefined }): Promise<DropdownState<string>> {
   if (!auth) {
-    return { disabled: true, options: [], placeholder: 'Connect Beisen first' };
+    return { disabled: true, options: [], placeholder: 'Select a Beisen connection first' };
   }
   const { data, error } = await tryCatch(() => beisenCommon.callBusinessApi<Record<string, unknown>[]>({
     auth,
@@ -26,7 +26,7 @@ async function listOptions({ auth }: { auth: BeisenAuthValue | undefined }): Pro
     body: { oIds: [0], isWithDisable: false, isWithSelf: false, isWithDeleted: false },
   }));
   if (error) {
-    return { disabled: true, options: [], placeholder: 'Could not list Beisen organizations, switch to manual input and type the OId' };
+    return { disabled: true, options: [], placeholder: 'Could not list Beisen organizations, set the value type to String and type the OId' };
   }
   const options = organizationOptions({ records: data ?? [] });
   if (options.length === 0) {

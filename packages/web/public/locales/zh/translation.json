@@ -6540,5 +6540,7 @@
   "variablesPageDescription": "项目配置保存工作流共用的值，例如群 ID、阈值、回调地址或 API 密钥。值加密保存、列表里打码，可编辑的成员才能查看，每次查看都会记入审计日志。在步骤输入的数据选择面板里插入引用。",
   "signInEmailRequired": "请输入邮箱",
   "signInPasswordRequired": "请输入密码",
-  "{count} runs in 7 days": "近 7 天 {count} 次运行"
+  "{count} runs in 7 days": "近 7 天 {count} 次运行",
+  "Matched branch: {names}": "命中分支：{names}",
+  "No branch matched, so none of the branches ran": "没有命中任何分支，分支里的节点都未执行"
 }

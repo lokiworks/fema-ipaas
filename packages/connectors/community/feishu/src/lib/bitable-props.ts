@@ -19,7 +19,7 @@ export const bitableProps = {
     refreshers: ['appToken'],
     options: async ({ auth, appToken }) => {
       if (!auth) {
-        return { disabled: true, options: [], placeholder: 'Connect your Feishu app first' };
+        return { disabled: true, options: [], placeholder: 'Select a Feishu connection first' };
       }
       if (typeof appToken !== 'string' || appToken.length === 0) {
         return { disabled: true, options: [], placeholder: 'Fill in the App Token first' };

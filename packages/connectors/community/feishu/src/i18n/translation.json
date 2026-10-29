@@ -8,7 +8,7 @@
   "Send a message to a Feishu group chat the bot has joined": "Send a message to a Feishu group chat the bot has joined",
   "Group Chat": "Group Chat",
   "Only chats the app bot has joined are listed. If the chat you want is missing, add the app to that chat first.": "Only chats the app bot has joined are listed. If the chat you want is missing, add the app to that chat first.",
-  "Connect your Feishu app first": "Connect your Feishu app first",
+  "Select a Feishu connection first": "Select a Feishu connection first",
   "The bot has not joined any group chat yet": "The bot has not joined any group chat yet",
   "Message Type": "Message Type",
   "Plain text": "Plain text",

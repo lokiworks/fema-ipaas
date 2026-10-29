@@ -125,8 +125,8 @@
   "Last Work Date": "最后工作日",
   "Current Record": "当前记录",
   "Manager User ID": "直属上级用户 ID",
-  "Pick the organization to search under, usually the company root. Switch the field to manual input to type an OId instead.": "选择要在其下查找的组织，通常是公司根组织。也可以把该字段切换为手动输入，直接填写 OId。",
-  "Connect Beisen first": "请先建立北森连接",
-  "Could not list Beisen organizations, switch to manual input and type the OId": "无法读取北森组织列表，请切换为手动输入并填写 OId",
+  "Pick the organization to search under, usually the company root. To type an OId instead, set the value type in the top-right corner of the field to String.": "选择要在其下查找的组织，通常是公司根组织。也可以把该字段右上角的「值类型」改为「字符串」，直接填写 OId。",
+  "Select a Beisen connection first": "请先选择北森连接",
+  "Could not list Beisen organizations, set the value type to String and type the OId": "无法读取北森组织列表，请把值类型改为「字符串」后填写 OId",
   "Beisen returned no organization units": "北森没有返回任何组织单元"
 }

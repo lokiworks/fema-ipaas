@@ -125,8 +125,8 @@
   "Last Work Date": "Last Work Date",
   "Current Record": "Current Record",
   "Manager User ID": "Manager User ID",
-  "Pick the organization to search under, usually the company root. Switch the field to manual input to type an OId instead.": "Pick the organization to search under, usually the company root. Switch the field to manual input to type an OId instead.",
-  "Connect Beisen first": "Connect Beisen first",
-  "Could not list Beisen organizations, switch to manual input and type the OId": "Could not list Beisen organizations, switch to manual input and type the OId",
+  "Pick the organization to search under, usually the company root. To type an OId instead, set the value type in the top-right corner of the field to String.": "Pick the organization to search under, usually the company root. To type an OId instead, set the value type in the top-right corner of the field to String.",
+  "Select a Beisen connection first": "Select a Beisen connection first",
+  "Could not list Beisen organizations, set the value type to String and type the OId": "Could not list Beisen organizations, set the value type to String and type the OId",
   "Beisen returned no organization units": "Beisen returned no organization units"
 }

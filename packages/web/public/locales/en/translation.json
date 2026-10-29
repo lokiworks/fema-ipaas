@@ -6540,5 +6540,7 @@
   "variablesPageDescription": "Project configuration holds values shared by workflows, such as group IDs, thresholds, callback URLs or API keys. Values are stored encrypted and masked in the list; members who can edit can reveal them, and every reveal is audited. Insert them into step inputs from the data selector.",
   "signInEmailRequired": "Enter your email",
   "signInPasswordRequired": "Enter your password",
-  "{count} runs in 7 days": "{count, plural, =1 {1 run in 7 days} other {# runs in 7 days}}"
+  "{count} runs in 7 days": "{count, plural, =1 {1 run in 7 days} other {# runs in 7 days}}",
+  "Matched branch: {names}": "Matched branch: {names}",
+  "No branch matched, so none of the branches ran": "No branch matched, so none of the branches ran"
 }

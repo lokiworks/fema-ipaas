@@ -29,7 +29,7 @@ export const sendGroupMessage = createAction({
       refreshers: [],
       options: async ({ auth }) => {
         if (!auth) {
-          return { disabled: true, options: [], placeholder: 'Connect your Feishu app first' };
+          return { disabled: true, options: [], placeholder: 'Select a Feishu connection first' };
         }
         const items = await feishuCommon.collectPages<{ chat_id: string; name: string }>({
           auth,

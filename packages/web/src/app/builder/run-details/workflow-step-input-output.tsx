@@ -12,9 +12,11 @@ import {
   LogSliceRef,
   StepOutputType,
   RunInternalError,
+  WorkflowAction,
+  WorkflowTrigger,
 } from '@fema-ipaas/shared';
-import { t } from 'i18next';
-import { Download, Info, ShieldAlert } from 'lucide-react';
+import i18next, { t } from 'i18next';
+import { Download, Info, ShieldAlert, Split } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { StepOutputSkeleton } from '@/app/components/step-output-skeleton';
@@ -36,6 +38,7 @@ import { DataDisplayTabs } from '../data-display/data-display-tabs';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
 import { FriendlyErrorView } from '../data-display/friendly-error-view';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
+import { runPathUtils } from '../workflow-canvas/utils/run-path';
 
 import { truncatedInputUtils } from './truncated-input-utils';
 
@@ -267,7 +270,13 @@ export const WorkflowStepInputOutput = () => {
             </TabsContent>
           )}
 
-          <TabsContent value="output">
+          <TabsContent value="output" className="flex flex-col gap-3">
+            {!isStepRunning && (
+              <RouterHitSummary
+                step={selectedStep}
+                output={selectedStepOutput.output}
+              />
+            )}
             {isStepRunning ? (
               <StepOutputSkeleton className="p-4" />
             ) : slicedOutputRef ? (
@@ -298,6 +307,42 @@ export const WorkflowStepInputOutput = () => {
     </div>
   );
 };
+
+const RouterHitSummary = ({
+  step,
+  output,
+}: {
+  step: WorkflowAction | WorkflowTrigger;
+  output: unknown;
+}) => {
+  if (!workflowStructureUtil.isAction(step.type) || !isActionStep(step)) {
+    return null;
+  }
+  const names = runPathUtils.routerHitBranchNames({ step, output });
+  if (isNil(names)) {
+    return null;
+  }
+  return (
+    <div className="flex items-start gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+      <Split className="mt-0.5 size-4 shrink-0 text-primary" />
+      <span className="min-w-0 break-words">
+        {names.length === 0
+          ? t('No branch matched, so none of the branches ran')
+          : t('Matched branch: {names}', {
+              names: new Intl.ListFormat(i18next.language, {
+                type: 'conjunction',
+              }).format(names),
+            })}
+      </span>
+    </div>
+  );
+};
+
+function isActionStep(
+  step: WorkflowAction | WorkflowTrigger,
+): step is WorkflowAction {
+  return workflowStructureUtil.isAction(step.type);
+}
 
 const InternalErrorPanel = ({
   internalError,

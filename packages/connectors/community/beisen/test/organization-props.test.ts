@@ -53,7 +53,7 @@ describe('Beisen root organization dropdown', () => {
   it('asks for a connection before listing', async () => {
     const state = await beisenOrganizationProps.listOptions({ auth: undefined });
 
-    expect(state).toMatchObject({ disabled: true, placeholder: 'Connect Beisen first' });
+    expect(state).toMatchObject({ disabled: true, placeholder: 'Select a Beisen connection first' });
   });
 
   it('names the root organization field when Beisen says the organization does not exist', async () => {

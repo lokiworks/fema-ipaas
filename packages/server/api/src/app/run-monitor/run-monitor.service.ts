@@ -123,12 +123,14 @@ async function statusCounts(scope: MonitorScope): Promise<StatusStepsRow[]> {
 
 async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
     const window = [isoOf(scope.window.from), isoOf(scope.window.to)]
-    const [duplicates, merged, platformEvents]: [{ count: string }[], FailureFunnelCounts, PlatformEventRow[]] = await Promise.all([
+    const [duplicates, merged, platformEvents]: [{ projectId: string, count: string }[], FailureFunnelCounts, PlatformEventRow[]] = await Promise.all([
         databaseConnection().query(
-            `SELECT COUNT(*) AS count FROM deduped_event d
+            `SELECT d."projectId" AS "projectId", COUNT(*) AS count FROM deduped_event d
             WHERE d."projectId" = ANY($1::varchar[])
                 AND (cardinality($2::varchar[]) = 0 OR d."workflowId" = ANY($2::varchar[]))
-                AND d.created >= $3 AND d.created <= $4`,
+                AND d.created >= $3 AND d.created <= $4
+            GROUP BY d."projectId"
+            ORDER BY count DESC`,
             [...scopeParams(scope), ...window],
         ),
         failureFunnel.count({ projectIds: scope.projectIds, workflowIds: scope.workflowIds, from: scope.window.from, to: scope.window.to }),
@@ -143,7 +145,8 @@ async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
         ),
     ])
     return {
-        duplicateEvents: Number(duplicates[0]?.count ?? 0),
+        duplicateEvents: duplicates.reduce((sum, row) => sum + Number(row.count), 0),
+        duplicateProjects: duplicates.map((row) => ({ projectId: row.projectId, count: Number(row.count) })),
         mergedFailures: merged.failures,
         mergedIssues: merged.issues,
         ...platformEventCounts(platformEvents),
@@ -328,7 +331,7 @@ const PEAK_LOOKBACK_MS = 24 * 60 * 60 * 1000
 const MAX_WORKFLOW_OPTIONS = 2000
 
 const EMPTY_HANDLED: RunMonitorHandled = {
-    withheldRetries: 0, duplicateEvents: 0, mergedFailures: 0, mergedIssues: 0, rateLimitWaits: 0, rateLimitedRuns: 0, rateLimitSources: [], autoRetries: 0, retriedRuns: 0, caughtUpEvents: 0 }
+    withheldRetries: 0, duplicateEvents: 0, duplicateProjects: [], mergedFailures: 0, mergedIssues: 0, rateLimitWaits: 0, rateLimitedRuns: 0, rateLimitSources: [], autoRetries: 0, retriedRuns: 0, caughtUpEvents: 0 }
 
 const EMPTY_STATS: RunMonitorStats = {
     runs: 0,

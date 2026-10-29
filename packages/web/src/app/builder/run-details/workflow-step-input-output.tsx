@@ -315,7 +315,7 @@ const RouterHitSummary = ({
   step: WorkflowAction | WorkflowTrigger;
   output: unknown;
 }) => {
-  if (!workflowStructureUtil.isAction(step.type) || !isActionStep(step)) {
+  if (!isActionStep(step)) {
     return null;
   }
   const names = runPathUtils.routerHitBranchNames({ step, output });

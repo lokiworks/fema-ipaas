@@ -115,8 +115,15 @@ export const RunMonitorRateLimitSource = z.object({
 })
 export type RunMonitorRateLimitSource = z.infer<typeof RunMonitorRateLimitSource>
 
+export const RunMonitorDuplicateProject = z.object({
+    projectId: z.string(),
+    count: z.number(),
+})
+export type RunMonitorDuplicateProject = z.infer<typeof RunMonitorDuplicateProject>
+
 export const RunMonitorHandled = z.object({
     duplicateEvents: z.number(),
+    duplicateProjects: z.array(RunMonitorDuplicateProject).default([]),
     mergedFailures: z.number(),
     mergedIssues: z.number(),
     rateLimitWaits: z.number(),

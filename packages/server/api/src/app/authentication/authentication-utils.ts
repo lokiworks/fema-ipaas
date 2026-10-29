@@ -3,12 +3,15 @@ import { AuthenticationResponse, EndpointScope, PasswordType, PrincipalType, Pro
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { distributedLock } from '../database/redis-connections'
 import { telemetry } from '../helper/telemetry.utils'
+import { projectRepo } from '../project/project-repo'
 import { projectService } from '../project/project-service'
 import { TenantEntity } from '../tenant/tenant.entity'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
 import { accessTokenManager } from './lib/access-token-manager'
+import { signupNames } from './lib/signup-names'
 import { userIdentityService } from './user-identity/user-identity-service'
 
 // Its own repo rather than tenantService: tenant.service imports these helpers, and the cycle
@@ -61,17 +64,6 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             userId: params.userId,
             isPrivileged: userService(log).isUserPrivileged(user),
         })
-        const project = isNil(params.projectId)
-            ? findPersonalProject(projects, params.userId) ?? projects?.[0]
-            : projects.find((project) => project.id === params.projectId)
-        if (isNil(project)) {
-            throw new ApplicationError({
-                code: ErrorCode.INVITATION_ONLY_SIGN_UP,
-                params: {
-                    message: 'No project found for user',
-                },
-            })
-        }
         const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
         if (!identity.verified) {
             throw new ApplicationError({
@@ -86,6 +78,17 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
                 code: ErrorCode.USER_IS_INACTIVE,
                 params: {
                     email: identity.email,
+                },
+            })
+        }
+        const project = isNil(params.projectId)
+            ? findPersonalProject(projects, params.userId) ?? projects[0] ?? await restorePersonalProject({ user, identity, tenantId: params.tenantId, log })
+            : projects.find((project) => project.id === params.projectId)
+        if (isNil(project)) {
+            throw new ApplicationError({
+                code: ErrorCode.INVITATION_ONLY_SIGN_UP,
+                params: {
+                    message: 'No project found for user',
                 },
             })
         }
@@ -213,6 +216,26 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
     },
 })
 
+async function restorePersonalProject({ user, identity, tenantId, log }: RestorePersonalProjectParams): Promise<Project> {
+    return distributedLock(log).runExclusive({
+        key: `restore-personal-project-${user.id}`,
+        timeoutInSeconds: 30,
+        fn: async () => {
+            const existing = await projectRepo().findOneBy({ ownerId: user.id, tenantId, type: ProjectType.PERSONAL })
+            if (!isNil(existing)) {
+                return existing
+            }
+            log.info({ user: { id: user.id }, tenant: { id: tenantId } }, '[authenticationUtils] restoring personal project for a user with no projects')
+            return projectService(log).create({
+                displayName: signupNames.personalProjectName({ ownerName: signupNames.fullNameOf({ firstName: identity.firstName, lastName: identity.lastName }) }),
+                ownerId: user.id,
+                tenantId,
+                type: ProjectType.PERSONAL,
+            })
+        },
+    })
+}
+
 function findPersonalProject(projects: Project[], userId: string): Project | undefined {
     return projects.find((project) => project.ownerId === userId && project.type === ProjectType.PERSONAL)
 }
@@ -259,6 +282,13 @@ type AssertUserIsInvitedToTenantOrProjectParams = {
 
 type GetOnboardingResponseParams = {
     identityId: string
+}
+
+type RestorePersonalProjectParams = {
+    user: User
+    identity: UserIdentity
+    tenantId: string
+    log: FastifyBaseLogger
 }
 
 type GetProjectAndTokenParams = {

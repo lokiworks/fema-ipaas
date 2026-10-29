@@ -21,6 +21,7 @@ The core (all-editions) auth layer: user identity creation, sign-in, and JWT ses
 - **Passwordless sign-in** (`EMAIL_LOGIN`) is a typed 6-digit code on the same OTP primitive, offered only when `FlagId.SMTP_CONFIGURED` is true, with password as the fallback path. See [000027](../decisions/000027-email-sign-in-is-a-typed-code-on-the-existing-otp-primitive.md) for the code-not-link, edition-reach and anti-enumeration reasoning.
 
 ### Gotchas
+- **A user with no project at all gets a fresh personal project at sign-in.** Deleting your own personal project, or leaving every project, used to make `getProjectAndToken` reject the login as "No project found". Such a user is exactly who needs to sign in and request access to a project. Account status (unverified, inactive) is checked before this step, so a disabled account never gets a project recreated.
 - Email-auth checks and domain allow-listing guards are **skipped on Community** edition.
 - OTP verification only sent on Cloud production; CE/EE and Cloud-dev (`FEMA_ENVIRONMENT=development`) auto-verify the identity.
 - Telemetry PII (email/name) sent only on Cloud; CE/EE send non-PII fields (`pickTelemetryPii`). Sign-in telemetry covers password sign-in only, not SSO.

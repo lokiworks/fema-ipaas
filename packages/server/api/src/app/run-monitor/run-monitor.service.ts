@@ -153,7 +153,7 @@ async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
     }
 }
 
-function platformEventCounts(rows: PlatformEventRow[]): Omit<RunMonitorHandled, 'duplicateEvents' | 'mergedFailures' | 'mergedIssues'> {
+function platformEventCounts(rows: PlatformEventRow[]): Omit<RunMonitorHandled, 'duplicateEvents' | 'duplicateProjects' | 'mergedFailures' | 'mergedIssues'> {
     const ofKind = (kind: ReliabilityEventKind) => rows.filter((row) => row.kind === kind)
     const events = (kind: ReliabilityEventKind) => ofKind(kind).reduce((sum, row) => sum + Number(row.events), 0)
     const runs = (kind: ReliabilityEventKind) => ofKind(kind).reduce((sum, row) => sum + Number(row.runs), 0)

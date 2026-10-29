@@ -34,7 +34,7 @@ export function SensitiveOutputToggle({ readonly }: { readonly: boolean }) {
               'Every field of this output is masked in run logs, and the same values (4 characters or longer) are masked wherever later steps show them. Viewing the original needs permission and is audited.',
             )
           : t(
-              'Phone numbers, ID numbers, bank cards, emails and secrets are already masked by the platform rules. Turn this on when the whole output is sensitive.',
+              'In run logs, phone numbers, ID numbers, bank cards, emails and secrets are masked by the platform rules. Test samples in the editor stay unmasked so you can map fields. Turn this on when the whole output is sensitive.',
             )}
       </p>
     </div>

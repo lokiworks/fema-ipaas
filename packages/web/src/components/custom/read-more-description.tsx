@@ -1,4 +1,7 @@
+import { t } from 'i18next';
 import { useState } from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface ReadMoreProps {
   text: string;
@@ -27,7 +30,7 @@ export const ReadMoreDescription = ({
         <>
           {!isExpanded && <span>... </span>}
           <span
-            className={`${!isExpanded && 'hidden'} whitespace-pre-wrap`}
+            className={cn('whitespace-pre-wrap', !isExpanded && 'hidden')}
             aria-hidden={!isExpanded}
           >
             {endText}
@@ -40,7 +43,7 @@ export const ReadMoreDescription = ({
             onKeyDown={handleKeyboard}
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            {isExpanded ? 'show less' : 'show more'}
+            {isExpanded ? t('Show less') : t('Show more')}
           </span>
         </>
       )}

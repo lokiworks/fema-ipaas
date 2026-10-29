@@ -330,7 +330,7 @@ function SchemaFieldRow({ field, json, depth }: SchemaFieldRowProps) {
             isDynamicMap ||
             isGenericObject ? (
             <span
-              className="text-muted-foreground truncate"
+              className="block text-muted-foreground truncate"
               title={
                 isNil(value) || typeof value !== 'object'
                   ? undefined

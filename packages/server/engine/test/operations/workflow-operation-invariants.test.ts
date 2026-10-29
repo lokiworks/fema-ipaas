@@ -650,4 +650,21 @@ describe('workflow operation invariants', () => {
             })
         })
     })
+
+    describe('single step test timing', () => {
+        it('records a start time so a tested step reports its duration', async () => {
+            mockSendUpdate.mockClear()
+            const operation = makeBeginOperation({
+                workflowVersion: makeWorkflowVersionWithTwoApprovals(),
+                stepNameToTest: 'step_1',
+            })
+
+            await workflowOperation.execute(operation)
+
+            const startTimes = mockSendUpdate.mock.calls
+                .map(([params]) => params.startTime)
+                .filter((startTime) => typeof startTime === 'string')
+            expect(startTimes.length).toBeGreaterThan(0)
+        })
+    })
 })

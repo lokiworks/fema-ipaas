@@ -1,5 +1,9 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { SolutionCheckResults, SolutionInstallInput } from '@fema-ipaas/shared';
+import {
+  SolutionCheckResults,
+  SolutionInstallInput,
+  SolutionProvider,
+} from '@fema-ipaas/shared';
 import {
   useMutation,
   useQueries,
@@ -21,6 +25,20 @@ function useSolutions() {
     queryKey: [SOLUTIONS_KEY, 'list'],
     queryFn: () => solutionsApi.list(),
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
+  });
+}
+
+function useOfficialSolutions({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [SOLUTIONS_KEY, 'list', 'official'],
+    queryFn: async () => {
+      const solutions = await solutionsApi.list();
+      return solutions.filter(
+        (solution) => solution.provider === SolutionProvider.OFFICIAL,
+      );
+    },
+    enabled,
+    staleTime: 60 * 1000,
   });
 }
 
@@ -231,6 +249,7 @@ const SOLUTIONS_KEY = 'solutions';
 
 export const solutionsHooks = {
   useSolutions,
+  useOfficialSolutions,
   useSolution,
   useInstalls,
   useSlotConnections,

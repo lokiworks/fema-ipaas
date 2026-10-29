@@ -15,6 +15,7 @@ import qs from 'qs';
 
 import { authenticationSession } from '@/lib/authentication-session';
 import { chatDebug } from '@/lib/chat-debug-logger';
+import { loginRedirect } from '@/lib/login-redirect';
 export const isRunningCloudInDevMode = import.meta.env.MODE === 'cloud';
 
 export const API_BASE_URL = isRunningCloudInDevMode
@@ -55,8 +56,10 @@ function globalErrorHandler(error: AxiosError) {
       errorCode === ErrorCode.SESSION_EXPIRED ||
       errorCode === ErrorCode.INVALID_BEARER_TOKEN
     ) {
-      authenticationSession.logOut();
-      window.location.href = '/sign-in';
+      authenticationSession.clearSession();
+      window.location.href = loginRedirect.signInPath(
+        `${window.location.pathname}${window.location.search}`,
+      );
     }
   }
 }

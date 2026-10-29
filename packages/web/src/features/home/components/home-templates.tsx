@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { OfficialSolutionsGrid, solutionsHooks } from '@/features/solutions';
 import {
   TemplateCard,
   TemplateDetailDrawer,
@@ -18,6 +19,57 @@ import { HomeSection } from './home-section';
 
 export function HomeTemplates({ projectId }: { projectId: string | null }) {
   const { templates, isLoading } = templatesHooks.useRecommendedTemplates();
+  const noTemplates = !isLoading && templates.length === 0;
+  const { data: solutions, isLoading: solutionsLoading } =
+    solutionsHooks.useOfficialSolutions({ enabled: noTemplates });
+  if (noTemplates && (solutionsLoading || (solutions ?? []).length > 0)) {
+    return (
+      <HomeSection
+        title={t('Start from an official solution')}
+        description={t(
+          'A solution is a set of ready-made workflows. Install it into a project and the wizard walks you through connections and settings.',
+        )}
+        action={
+          <Link
+            to="/solutions"
+            className="text-xs text-primary hover:underline"
+          >
+            {t('Solution library')}
+          </Link>
+        }
+      >
+        {solutionsLoading ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: HOME_TEMPLATE_BATCH_SIZE }, (_, index) => (
+              <Skeleton key={index} className="h-36 w-full" />
+            ))}
+          </div>
+        ) : (
+          <OfficialSolutionsGrid
+            solutions={(solutions ?? []).slice(0, HOME_TEMPLATE_BATCH_SIZE)}
+          />
+        )}
+      </HomeSection>
+    );
+  }
+  return (
+    <HomeTemplateList
+      projectId={projectId}
+      templates={templates}
+      isLoading={isLoading}
+    />
+  );
+}
+
+function HomeTemplateList({
+  projectId,
+  templates,
+  isLoading,
+}: {
+  projectId: string | null;
+  templates: Template[];
+  isLoading: boolean;
+}) {
   const [batch, setBatch] = useState(0);
   const [picked, setPicked] = useState<Template | null>(null);
   const shown = homeUtils

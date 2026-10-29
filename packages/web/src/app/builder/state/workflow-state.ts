@@ -26,7 +26,9 @@ import { PromiseQueue } from '@/lib/promise-queue';
 import { BuilderState } from '../builder-hooks';
 import { workflowCanvasUtils } from '../workflow-canvas/utils/workflow-canvas-utils';
 
+import { stepTestRelevance } from './step-test-relevance';
 import { UndoHistory, undoHistory } from './undo-history';
+import { workflowUpdateScheduler } from './workflow-update-scheduler';
 
 export type WorkflowState = {
   workflow: PopulatedWorkflow;
@@ -97,14 +99,10 @@ export const createWorkflowState = (
   set: StoreApi<BuilderState>['setState'],
 ): WorkflowState => {
   const workflowUpdatesQueue = new PromiseQueue();
-  const debouncer = createKeyedDebouncer({
+  const scheduler = workflowUpdateScheduler.createScheduler({
     wait: 1000,
     onFire: (updateRequest) => workflowUpdatesQueue.add(updateRequest),
   });
-  const debouncedAddToWorkflowUpdatesQueue = (
-    key: string,
-    updateRequest: () => Promise<void>,
-  ) => debouncer.schedule({ key, task: updateRequest });
   const historyControl = { suspended: false };
   const replayToward = (target: WorkflowVersion) => {
     const current = get().workflowVersion;
@@ -264,10 +262,18 @@ export const createWorkflowState = (
           console.warn('Cannot apply operation while readonly');
           return state;
         }
-        const newWorkflowVersion = workflowOperations.apply(
+        const appliedWorkflowVersion = workflowOperations.apply(
           state.workflowVersion,
           operation,
         );
+        const newWorkflowVersion = STEP_UPDATE_OPERATIONS.includes(
+          operation.type,
+        )
+          ? stepTestRelevance.keepTestedSteps({
+              workflowVersion: appliedWorkflowVersion,
+              source: state.workflowVersion,
+            })
+          : appliedWorkflowVersion;
         const shouldRecord =
           !historyControl.suspended &&
           undoHistory.isUndoable(operation) &&
@@ -334,52 +340,22 @@ export const createWorkflowState = (
           }
         };
 
-        switch (operation.type) {
-          case WorkflowOperationType.SAVE_SAMPLE_DATA: {
-            debouncer.flush();
-            workflowUpdatesQueue.add(updateRequest);
-            break;
-          }
-          case WorkflowOperationType.UPDATE_TRIGGER:
-          case WorkflowOperationType.UPDATE_ACTION: {
-            debouncedAddToWorkflowUpdatesQueue(
-              operation.request.name,
-              updateRequest,
-            );
-            break;
-          }
-          case WorkflowOperationType.UPDATE_NOTE:
-          case WorkflowOperationType.DELETE_NOTE:
-          case WorkflowOperationType.ADD_NOTE: {
-            debouncedAddToWorkflowUpdatesQueue(
-              operation.request.id,
-              updateRequest,
-            );
-            break;
-          }
-          case WorkflowOperationType.DELETE_ACTION: {
-            const inputSampleData = { ...state.inputSampleData };
-            const outputSampleData = { ...state.outputSampleData };
-            operation.request.names.forEach((name) => {
-              delete inputSampleData[name];
-              delete outputSampleData[name];
-              state.removeStepTestListener(name);
-            });
-            set(() => {
-              return {
-                inputSampleData,
-                outputSampleData,
-              };
-            });
-            debouncer.flush();
-            workflowUpdatesQueue.add(updateRequest);
-            break;
-          }
-          default: {
-            debouncer.flush();
-            workflowUpdatesQueue.add(updateRequest);
-          }
+        if (operation.type === WorkflowOperationType.DELETE_ACTION) {
+          const inputSampleData = { ...state.inputSampleData };
+          const outputSampleData = { ...state.outputSampleData };
+          operation.request.names.forEach((name) => {
+            delete inputSampleData[name];
+            delete outputSampleData[name];
+            state.removeStepTestListener(name);
+          });
+          set(() => {
+            return {
+              inputSampleData,
+              outputSampleData,
+            };
+          });
         }
+        scheduler.submit({ operation, task: updateRequest });
 
         return { workflowVersion: newWorkflowVersion, history };
       }),
@@ -550,40 +526,6 @@ export const createWorkflowState = (
     },
   };
 };
-function createKeyedDebouncer({
-  wait,
-  onFire,
-}: {
-  wait: number;
-  onFire: (task: () => Promise<void>) => void;
-}) {
-  const pending = new Map<
-    string,
-    { timer: ReturnType<typeof setTimeout>; task: () => Promise<void> }
-  >();
-  const fire = (key: string) => {
-    const entry = pending.get(key);
-    if (isNil(entry)) {
-      return;
-    }
-    clearTimeout(entry.timer);
-    pending.delete(key);
-    onFire(entry.task);
-  };
-  return {
-    schedule: ({ key, task }: { key: string; task: () => Promise<void> }) => {
-      const existing = pending.get(key);
-      if (!isNil(existing)) {
-        clearTimeout(existing.timer);
-      }
-      pending.set(key, { timer: setTimeout(() => fire(key), wait), task });
-    },
-    flush: () => {
-      [...pending.keys()].forEach(fire);
-    },
-  };
-}
-
 /**Because the server creates the sample data files ids and we need to update the local workflow version with the new sample data files ids so when an update happens again in the future it doesn't get unset */
 const handleUpdatingSampleDataForStepLocallyAfterServerUpdate = ({
   operation,
@@ -617,3 +559,8 @@ const handleUpdatingSampleDataForStepLocallyAfterServerUpdate = ({
     },
   });
 };
+
+const STEP_UPDATE_OPERATIONS: WorkflowOperationType[] = [
+  WorkflowOperationType.UPDATE_ACTION,
+  WorkflowOperationType.UPDATE_TRIGGER,
+];

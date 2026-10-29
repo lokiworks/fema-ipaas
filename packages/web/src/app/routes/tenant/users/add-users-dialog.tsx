@@ -106,7 +106,7 @@ function AddUsersForm({
         )}
       >
         <DialogHeader>
-          <DialogTitle>{t('Add users')}</DialogTitle>
+          <DialogTitle>{t('Add members')}</DialogTitle>
           <DialogDescription>
             {t(
               'Add up to 10 people at a time. They can sign in after activating their account from the invitation.',
@@ -211,7 +211,7 @@ function AddUsersForm({
             {t('Cancel')}
           </Button>
           <Button type="submit" loading={isPending}>
-            {t('addUsersCount', { count: emails.length })}
+            {t('addMembersCount', { count: emails.length })}
           </Button>
         </DialogFooter>
       </form>
@@ -230,7 +230,7 @@ function InviteResult({
     <div className="flex flex-col gap-4">
       <DialogHeader>
         <DialogTitle>
-          {t('invitedUsersCount', { count: result.invited.length })}
+          {t('invitedMembersCount', { count: result.invited.length })}
         </DialogTitle>
         <DialogDescription>
           {result.emailSent

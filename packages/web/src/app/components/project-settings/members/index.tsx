@@ -1,6 +1,11 @@
-import { DefaultProjectRole, InvitationStatus } from '@fema-ipaas/shared';
+import {
+  DefaultProjectRole,
+  InvitationStatus,
+  ProjectWithLimits,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Trash } from 'lucide-react';
+import { Info, Plus, Trash } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
@@ -24,8 +29,12 @@ import {
   userInvitationsHooks,
 } from '@/features/invitations';
 import { PendingAccessRequests } from '@/features/project-access-requests';
-import { projectMembersHooks } from '@/features/project-members';
+import {
+  projectMembersHooks,
+  projectSharingUtils,
+} from '@/features/project-members';
 import { DisabledReason } from '@/features/project-workspace/components/disabled-reason';
+import { ProjectInfoDialog } from '@/features/project-workspace/components/project-info-dialog';
 import {
   MemberRow,
   memberRows,
@@ -36,21 +45,33 @@ import { projectCollectionUtils } from '@/features/projects/stores/project-colle
 
 import { InviteMemberDialog } from './invite-member-dialog';
 
-export function MembersSettings({ readonly }: { readonly: boolean }) {
-  const { data: members, isLoading } = projectMembersHooks.useMembers();
-  const { project } = projectCollectionUtils.useCurrentProject();
+export function MembersSettings({
+  project,
+  readonly,
+  onCreatedTeamProject,
+}: MembersSettingsProps) {
+  const projectId = project.id;
+  const personal = projectSharingUtils.isPersonal(project);
+  const { data: members, isLoading } = projectMembersHooks.useMembers({
+    projectId,
+  });
   const { data: directory } = projectDirectoryHooks.useDirectory();
-  const { mutate: updateRole } = projectMembersHooks.useUpdateMemberRole();
-  const { mutateAsync: removeMember } = projectMembersHooks.useRemoveMember();
+  const { mutate: updateRole } = projectMembersHooks.useUpdateMemberRole({
+    projectId,
+  });
+  const { mutateAsync: removeMember } = projectMembersHooks.useRemoveMember({
+    projectId,
+  });
 
   const { invitations, isLoading: isLoadingInvitations } =
-    userInvitationsHooks.useInvitations();
+    userInvitationsHooks.useInvitations({ projectId, enabled: !personal });
   const { mutateAsync: revokeInvitation } =
     userInvitationMutations.useRevokeInvitation({
+      projectId,
       onSuccess: () => toast.success(t('Invitation revoked')),
     });
 
-  if (isLoading || isLoadingInvitations) {
+  if (isLoading || (!personal && isLoadingInvitations)) {
     return <SkeletonList numberOfItems={3} className="h-12" />;
   }
 
@@ -71,10 +92,16 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {!readonly && <PendingAccessRequests projectId={project.id} />}
-      <div className="flex items-center justify-end">
-        <InviteMemberDialog disabled={readonly} />
-      </div>
+      {personal ? (
+        <PersonalProjectNotice onCreated={onCreatedTeamProject} />
+      ) : (
+        <>
+          {!readonly && <PendingAccessRequests projectId={projectId} />}
+          <div className="flex items-center justify-end">
+            <InviteMemberDialog projectId={projectId} disabled={readonly} />
+          </div>
+        </>
+      )}
       {rows.length === 0 && (
         <p className="text-sm text-muted-foreground">
           {t('No one has been added to this project yet.')}
@@ -98,7 +125,10 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
             </div>
             {member.implicit ? (
               <span className="shrink-0 pr-3 text-sm text-muted-foreground">
-                {projectRoleLabels.label(member.role)}
+                {projectRoleLabels.memberLabel({
+                  role: member.role,
+                  isOwner: member.isOwner,
+                })}
               </span>
             ) : isSoleOwner(member) ? (
               <Tooltip>
@@ -107,18 +137,23 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
                     tabIndex={0}
                     className="shrink-0 cursor-default pr-3 text-sm text-muted-foreground"
                   >
-                    {projectRoleLabels.label(member.role)}
+                    {projectRoleLabels.memberLabel({
+                      role: member.role,
+                      isOwner: member.isOwner,
+                    })}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t('A project needs at least one owner.')}
+                  {member.isOwner
+                    ? t('The project owner always has full access.')
+                    : t('A project needs at least one admin.')}
                 </TooltipContent>
               </Tooltip>
             ) : (
               <div className="flex shrink-0 items-center gap-2">
                 <Select
                   value={member.role}
-                  disabled={readonly}
+                  disabled={readonly || personal}
                   onValueChange={(value) => {
                     const role = Object.values(DefaultProjectRole).find(
                       (candidate) => candidate === value,
@@ -233,3 +268,51 @@ export function MembersSettings({ readonly }: { readonly: boolean }) {
     </div>
   );
 }
+
+function PersonalProjectNotice({ onCreated }: { onCreated: () => void }) {
+  const [creating, setCreating] = useState(false);
+  return (
+    <div
+      className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-muted/30 p-3"
+      data-testid="personal-project-notice"
+    >
+      <div className="flex min-w-0 items-start gap-2 text-sm">
+        <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="font-medium">
+            {t('This is your personal project')}
+          </span>
+          <span className="text-muted-foreground">
+            {projectSharingUtils.personalReason()}
+          </span>
+        </div>
+      </div>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={() => setCreating(true)}
+      >
+        <Plus className="size-4" />
+        {t('New team project')}
+      </Button>
+      <ProjectInfoDialog
+        open={creating}
+        onOpenChange={setCreating}
+        onCreated={(created) => {
+          onCreated();
+          projectCollectionUtils.setCurrentProject(
+            created.id,
+            `/projects/${created.id}/home`,
+          );
+        }}
+      />
+    </div>
+  );
+}
+
+type MembersSettingsProps = {
+  project: Pick<ProjectWithLimits, 'id' | 'type' | 'ownerId'>;
+  readonly: boolean;
+  onCreatedTeamProject: () => void;
+};

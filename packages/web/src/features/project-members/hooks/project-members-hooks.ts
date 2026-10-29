@@ -10,18 +10,18 @@ const membersQueryKey = (projectId: string | null) => [
   projectId,
 ];
 
-function useMembers({ enabled = true }: UseMembersParams = {}) {
-  const projectId = authenticationSession.getProjectId();
+function useMembers({ enabled = true, projectId }: UseMembersParams = {}) {
+  const resolvedProjectId = resolveProjectId(projectId);
   return useQuery({
-    queryKey: membersQueryKey(projectId),
-    queryFn: () => projectMembersApi.list(projectId!),
-    enabled: enabled && !!projectId,
+    queryKey: membersQueryKey(resolvedProjectId),
+    queryFn: () => projectMembersApi.list(resolvedProjectId!),
+    enabled: enabled && !!resolvedProjectId,
   });
 }
 
-function useUpdateMemberRole() {
+function useUpdateMemberRole({ projectId }: ProjectScope = {}) {
   const queryClient = useQueryClient();
-  const projectId = authenticationSession.getProjectId();
+  const resolvedProjectId = resolveProjectId(projectId);
   return useMutation({
     mutationFn: ({
       userId,
@@ -29,28 +29,43 @@ function useUpdateMemberRole() {
     }: {
       userId: string;
       role: DefaultProjectRole;
-    }) => projectMembersApi.upsert({ projectId: projectId!, userId, role }),
+    }) =>
+      projectMembersApi.upsert({
+        projectId: resolvedProjectId!,
+        userId,
+        role,
+      }),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: membersQueryKey(projectId) }),
+      queryClient.invalidateQueries({
+        queryKey: membersQueryKey(resolvedProjectId),
+      }),
   });
 }
 
-function useRemoveMember() {
+function useRemoveMember({ projectId }: ProjectScope = {}) {
   const queryClient = useQueryClient();
-  const projectId = authenticationSession.getProjectId();
+  const resolvedProjectId = resolveProjectId(projectId);
   return useMutation({
     mutationFn: (id: string) =>
-      projectMembersApi.delete({ id, projectId: projectId! }),
+      projectMembersApi.delete({ id, projectId: resolvedProjectId! }),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: membersQueryKey(projectId) }),
+      queryClient.invalidateQueries({
+        queryKey: membersQueryKey(resolvedProjectId),
+      }),
   });
 }
 
-function useInvalidateMembers() {
+function useInvalidateMembers({ projectId }: ProjectScope = {}) {
   const queryClient = useQueryClient();
-  const projectId = authenticationSession.getProjectId();
+  const resolvedProjectId = resolveProjectId(projectId);
   return () =>
-    queryClient.invalidateQueries({ queryKey: membersQueryKey(projectId) });
+    queryClient.invalidateQueries({
+      queryKey: membersQueryKey(resolvedProjectId),
+    });
+}
+
+function resolveProjectId(projectId: string | undefined): string | null {
+  return projectId ?? authenticationSession.getProjectId();
 }
 
 export const projectMembersHooks = {
@@ -60,6 +75,10 @@ export const projectMembersHooks = {
   useRemoveMember,
 };
 
-type UseMembersParams = {
+type ProjectScope = {
+  projectId?: string;
+};
+
+type UseMembersParams = ProjectScope & {
   enabled?: boolean;
 };

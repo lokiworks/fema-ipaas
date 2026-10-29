@@ -1,6 +1,10 @@
 import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils';
 import { FEMA_FUNCTIONS, formulaEvaluator } from '@fema-ipaas/expression';
-import { WorkflowAction, WorkflowTrigger } from '@fema-ipaas/shared';
+import {
+  WorkflowAction,
+  WorkflowTrigger,
+  workflowCanvasUtils,
+} from '@fema-ipaas/shared';
 import { MentionNodeAttrs } from '@tiptap/extension-mention';
 import { JSONContent } from '@tiptap/react';
 import { t } from 'i18next';
@@ -11,6 +15,11 @@ import {
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import { schemaUtils } from '@/components/custom/smart-output-viewer/resolve-schema';
+import {
+  OutputSchema,
+  OutputSchemaField,
+} from '@/components/custom/smart-output-viewer/types';
 import { StepMetadata } from '@/features/connectors';
 
 import {
@@ -47,6 +56,8 @@ const keysWithinPath = (path: string) => {
 type StepMentionAttrs = {
   logoUrl?: string;
   displayText: string;
+  fullText?: string;
+  leafText?: string;
   serverValue: string;
   isVariable?: boolean;
   isBroken?: boolean;
@@ -60,9 +71,18 @@ enum TipTapNodeTypes {
   mention = 'mention',
 }
 
-type StepMetadataWithDisplayName = StepMetadata & { stepDisplayName: string };
+type StepMetadataWithDisplayName = StepMetadata & {
+  stepDisplayName: string;
+  stepNumber?: number;
+  outputSchema?: OutputSchema | null;
+};
 
 const ZWS = '\u200B';
+const FAILURE_FIELD_LABELS: Record<string, string> = {
+  errorCode: 'Failure error code',
+  errorMessage: 'Failure error message',
+  errorTime: 'Failure time',
+};
 const CURRENT_ITEM_ROOT = 'item';
 
 type ExprToken =
@@ -365,26 +385,98 @@ function parseLabelFromMention(
     };
   }
   const stepMetadata = stepsMetadata[stepIdx];
-  const friendlyPath = collapseEngineReservedPath(path);
-  const name = stepMetadata?.stepDisplayName ?? steps[stepIdx].displayName;
+  const step = steps[stepIdx];
+  const labels = friendlyLabelsOf({
+    path,
+    step,
+    schema: stepMetadata?.outputSchema ?? null,
+  });
+  const name = stepMetadata?.stepDisplayName ?? step.displayName;
+  const prefix = isNil(stepMetadata?.stepNumber)
+    ? undefined
+    : `${stepMetadata.stepNumber}`;
+  const leafText = labels.length > 0 ? labels[labels.length - 1] : undefined;
   return {
-    displayText:
-      friendlyPath.length > 0 ? `${name} .${friendlyPath.join('.')}` : name,
+    displayText: mentionDisplayText({ prefix, name, labels }),
+    fullText: [isNil(prefix) ? name : `${prefix}. ${name}`, ...labels].join(
+      ' · ',
+    ),
+    leafText,
     serverValue: mention,
     logoUrl: stepMetadata?.logoUrl,
   };
 }
 
-function collapseEngineReservedPath(path: string[]): string[] {
-  // Engine error channel: {{step.error.message}} → display as "Error message"
+function mentionDisplayText({
+  prefix,
+  name,
+  labels,
+}: {
+  prefix: string | undefined;
+  name: string;
+  labels: string[];
+}): string {
+  if (isNil(prefix)) {
+    return labels.length > 0 ? `${name} .${labels.join('.')}` : name;
+  }
+  return labels.length > 0
+    ? `${prefix}.${labels.join('.')}`
+    : `${prefix}.${name}`;
+}
+
+function friendlyLabelsOf({
+  path,
+  step,
+  schema,
+}: {
+  path: string[];
+  step: WorkflowAction | WorkflowTrigger;
+  schema: OutputSchema | null;
+}): string[] {
   if (path.length === 2 && path[0] === 'error' && path[1] === 'message') {
-    return ['Error message'];
+    return [t('Failure error message')];
   }
-  // Engine output channel: {{step.output.foo}} → hide the leading 'output'
-  if (path[0] === 'output') {
-    return path.slice(1);
+  const outputPath = path[0] === 'output' ? path.slice(1) : path;
+  const failureLabel =
+    outputPath.length === 1 &&
+    workflowCanvasUtils.hasContinueOnFailureBranches(step)
+      ? FAILURE_FIELD_LABELS[outputPath[0]]
+      : undefined;
+  if (!isNil(failureLabel)) {
+    return [t(failureLabel)];
   }
-  return path;
+  return labelSegments({ segments: outputPath, fields: schema?.fields ?? [] });
+}
+
+function labelSegments({
+  segments,
+  fields,
+}: {
+  segments: string[];
+  fields: OutputSchemaField[];
+}): string[] {
+  if (segments.length === 0) {
+    return [];
+  }
+  const [segment, ...rest] = segments;
+  const field = fields.find(
+    (candidate) => (candidate.value ?? candidate.key) === segment,
+  );
+  if (isNil(field)) {
+    return [segment, ...labelSegments({ segments: rest, fields: [] })];
+  }
+  const listItems = field.listItems ?? [];
+  if (listItems.length > 0 && rest.length > 0 && /^\d+$/.test(rest[0])) {
+    return [
+      schemaUtils.resolveFieldLabel(field),
+      rest[0],
+      ...labelSegments({ segments: rest.slice(1), fields: listItems }),
+    ];
+  }
+  return [
+    schemaUtils.resolveFieldLabel(field),
+    ...labelSegments({ segments: rest, fields: field.children ?? [] }),
+  ];
 }
 
 function createMentionNodeFromText(
@@ -519,14 +611,40 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
     mentionElement.appendChild(emptyImagePlaceHolder);
   }
 
-  const mentionText = document.createElement('span');
-  mentionText.className = 'min-w-0 truncate whitespace-nowrap';
-  mentionText.textContent = stepMentionAttrs.displayText;
-  mentionElement.title = stepMentionAttrs.displayText;
+  mentionElement.title =
+    stepMentionAttrs.fullText ?? stepMentionAttrs.displayText;
   mentionElement.setAttribute('serverValue', stepMentionAttrs.serverValue);
-
-  mentionElement.appendChild(mentionText);
+  buildMentionTextElements(stepMentionAttrs).forEach((element) =>
+    mentionElement.appendChild(element),
+  );
   return mentionElement;
+};
+
+const buildMentionTextElements = ({
+  displayText,
+  leafText,
+}: StepMentionAttrs): HTMLElement[] => {
+  const keepsLeaf =
+    !isNil(leafText) &&
+    leafText.length > 0 &&
+    displayText.length > leafText.length &&
+    displayText.endsWith(leafText);
+  if (!keepsLeaf) {
+    const mentionText = document.createElement('span');
+    mentionText.className = 'min-w-0 truncate whitespace-nowrap';
+    mentionText.textContent = displayText;
+    return [mentionText];
+  }
+  const prefixText = document.createElement('span');
+  prefixText.className = 'min-w-0 truncate whitespace-nowrap';
+  prefixText.textContent = displayText.slice(0, -leafText.length);
+  const leafElement = document.createElement('span');
+  leafElement.className = 'shrink-0 max-w-full truncate whitespace-nowrap';
+  leafElement.textContent = leafText;
+  const wrapper = document.createElement('span');
+  wrapper.className = 'flex min-w-0 items-center';
+  wrapper.append(prefixText, leafElement);
+  return [wrapper];
 };
 
 const inputWithMentionsCssClass = 'ap-text-with-mentions';

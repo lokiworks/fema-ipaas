@@ -10,7 +10,7 @@ function runState({
   if (running) {
     return t('Running');
   }
-  return hasProduction ? t('Stopped') : t('Not run');
+  return hasProduction ? t('Stopped') : t('Not running in production');
 }
 
 function deployment({

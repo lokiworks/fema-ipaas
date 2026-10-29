@@ -8,7 +8,7 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 
-import { versionDiff } from '@/features/releases/utils/version-diff';
+import { stepTestRelevance } from './step-test-relevance';
 
 function testedStepsOf({
   run,
@@ -85,8 +85,8 @@ function testedStepOf({
   const editedAfterRun =
     new Date(currentStep.lastUpdatedDate).getTime() >
     new Date(testedAt).getTime();
-  const signature = versionDiff.stepSignature(ranStep);
-  if (editedAfterRun || signature !== versionDiff.stepSignature(currentStep)) {
+  const signature = stepTestRelevance.signatureOf(ranStep);
+  if (editedAfterRun || signature !== stepTestRelevance.signatureOf(currentStep)) {
     return null;
   }
   return { testedAt, signature, failed };

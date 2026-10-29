@@ -20,7 +20,7 @@ export function QueueTab({ live, isLoading }: QueueTabProps) {
           icon={Activity}
           title={t('Running')}
           value={isLoading ? '—' : formatUtils.formatNumber(live?.running ?? 0)}
-          description={t('Jobs currently executing on workers')}
+          description={t('Runs currently executing on workers')}
           iconColor="text-blue-500"
           iconBgColor="bg-blue-500/10"
         />
@@ -28,7 +28,7 @@ export function QueueTab({ live, isLoading }: QueueTabProps) {
           icon={Loader2}
           title={t('Queued')}
           value={isLoading ? '—' : formatUtils.formatNumber(live?.queued ?? 0)}
-          description={t('Jobs waiting in the queue')}
+          description={t('Runs waiting in the queue')}
           iconColor="text-amber-500"
           iconBgColor="bg-amber-500/10"
         />

@@ -8,3 +8,4 @@ export { SolutionConnectorIcons } from './components/solution-connector-icons';
 export { SolutionDetailView } from './components/solution-detail-view';
 export { SolutionInstallsList } from './components/solution-installs-list';
 export { SolutionLibrary } from './components/solution-library';
+export { OfficialSolutionsGrid } from './components/official-solutions-shelf';

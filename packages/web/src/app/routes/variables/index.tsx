@@ -296,9 +296,7 @@ function VariablesPage() {
   return (
     <ConsolePage
       title={t('Project config')}
-      description={t(
-        'Project configuration holds values shared by workflows, such as group IDs, thresholds or callback URLs. Reference them as config.key.',
-      )}
+      description={t('variablesPageDescription')}
       actions={
         <PermissionNeededTooltip hasPermission={canWrite}>
           <Button

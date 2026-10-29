@@ -1,8 +1,18 @@
 import { t } from 'i18next';
+import { LinkIcon } from 'lucide-react';
 import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { LoadingSpinner } from '@/components/custom/spinner';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { AuthSplitLayout } from '@/features/authentication';
 
 import { userInvitationQueries } from '../hooks/user-invitations-hooks';
 
@@ -35,34 +45,70 @@ const AcceptInvitation = () => {
 
   if (!invitationToken || isError) {
     return (
-      <div className="container mx-auto mt-10 max-w-md">
-        <p className="mt-4 text-lg text-center text-destructive">
-          {t('Invalid invitation token. Please try again.')}
-        </p>
-      </div>
+      <AuthSplitLayout showMobileBrand>
+        <InvalidInvitationCard />
+      </AuthSplitLayout>
     );
   }
 
   if (registered === undefined) {
     return (
-      <div className="w-screen h-screen flex justify-center items-center">
+      <AuthSplitLayout showMobileBrand>
         <LoadingSpinner isLarge={true}></LoadingSpinner>
-      </div>
+      </AuthSplitLayout>
     );
   }
 
   return (
-    <div className="container mx-auto mt-10 max-w-md">
-      <p className="text-2xl font-bold text-center">
-        {t('Team Invitation Accepted')}
-      </p>
-      <p className="mt-4 text-lg text-center text-gray-700">
-        {t(
-          'Thank you for accepting the invitation. We are redirecting you right now...',
-        )}
-      </p>
-    </div>
+    <AuthSplitLayout showMobileBrand>
+      <Card className="w-full max-w-md rounded-sm drop-shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-2xl">
+            {t('Team Invitation Accepted')}
+          </CardTitle>
+          <CardDescription>
+            {t(
+              'Thank you for accepting the invitation. We are redirecting you right now...',
+            )}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    </AuthSplitLayout>
   );
 };
 AcceptInvitation.displayName = 'AcceptInvitation';
+
+function InvalidInvitationCard() {
+  return (
+    <Card
+      className="w-full max-w-md rounded-sm drop-shadow-xl"
+      data-testid="invitation-invalid"
+    >
+      <CardHeader>
+        <div className="mb-2 flex size-10 items-center justify-center rounded-md bg-muted">
+          <LinkIcon className="size-5 text-muted-foreground" />
+        </div>
+        <CardTitle className="text-2xl">
+          {t('This invitation link no longer works')}
+        </CardTitle>
+        <CardDescription>
+          {t(
+            'The link has expired, was already used, or the invitation was revoked. Ask the administrator who invited you to send a new invitation.',
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <p className="text-sm text-muted-foreground">
+          {t(
+            'If you already joined, sign in with the email address the invitation was sent to.',
+          )}
+        </p>
+        <Button asChild className="w-full">
+          <Link to="/sign-in">{t('Go to sign in')}</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export { AcceptInvitation };

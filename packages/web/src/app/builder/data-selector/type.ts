@@ -17,6 +17,10 @@ export type DataSelectorTreeNodeData = {
   displayNameClassName?: string;
   stepName?: string;
   searchTerms?: string[];
+  structureOnly?: boolean;
+  listField?: boolean;
+  badge?: string;
+  dimmed?: boolean;
 };
 
 export type DataSelectorTestNodeData = {

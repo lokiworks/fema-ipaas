@@ -74,7 +74,7 @@ export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium">
-          {t('Jobs Per Month')}
+          {t('Runs per day')}
         </CardTitle>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
           {SERIES.map((item) => (

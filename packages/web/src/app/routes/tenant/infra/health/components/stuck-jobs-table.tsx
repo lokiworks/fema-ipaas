@@ -29,7 +29,7 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
-          {t('Stuck jobs')}
+          {t('Stuck runs')}
           {jobs.length > 0 && (
             <Badge variant="destructive" className="gap-1">
               <TriangleAlert className="size-3" />
@@ -44,7 +44,7 @@ export function StuckJobsTable({ stuckJobs, isLoading }: StuckJobsTableProps) {
         ) : jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
             <CircleCheck className="size-8 text-emerald-500" />
-            <p className="text-sm">{t('No stuck jobs')}</p>
+            <p className="text-sm">{t('No stuck runs')}</p>
           </div>
         ) : (
           <Table>

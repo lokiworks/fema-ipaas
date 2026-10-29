@@ -10,6 +10,7 @@ import { TriangleAlert } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { useDraftChanged } from '@/app/builder/builder-header/use-draft-changed';
+import { stepTestRelevance } from '@/app/builder/state/step-test-relevance';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
 import { InvalidStepIcon } from '@/components/custom/alert-icon';
@@ -20,7 +21,6 @@ import {
 } from '@/components/ui/tooltip';
 import { connectorSelectorUtils } from '@/features/connectors';
 import { StepStatusIcon, executionUtils } from '@/features/executions';
-import { versionDiff } from '@/features/releases/utils/version-diff';
 import {
   ValidationCode,
   ValidationSeverity,
@@ -171,7 +171,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     },
   };
   const currentSignature = useMemo(
-    () => (isNil(step) ? null : versionDiff.stepSignature(step)),
+    () => (isNil(step) ? null : stepTestRelevance.signatureOf(step)),
     [step],
   );
   const isTestedByDebug =

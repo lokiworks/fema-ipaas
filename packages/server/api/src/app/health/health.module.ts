@@ -1,5 +1,5 @@
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
-import { ComponentHealthCheck, ComponentHealthReport, DiagnosticsBundle, GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, ServiceCheckRequest, ServiceCheckResult, SetupChecklist, SetupStatus, SystemOverview, TenantMetricsHealthHistory, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
+import { ComponentHealthCheck, ComponentHealthReport, DiagnosticsBundle, GetDiagnosticsResponse, GetSystemHealthChecksResponse, PrincipalType, ServiceCheckRequest, ServiceCheckResult, SetupChecklist, SetupStatus, SystemOverview, TenantMetricsHealthHistory, TenantMetricsHistoryRequest, TenantMetricsLive, TenantMetricsReport, TenantMetricsReportRequest } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
@@ -48,8 +48,8 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/run-metrics', GetRunMetricsRequest, async (request) => {
         const { tenant } = request.principal
-        const { createdAfter, createdBefore } = request.query
-        return healthMetricsService(request.log).getRunMetrics(tenant.id, { createdAfter, createdBefore })
+        const { createdAfter, createdBefore, timezone } = request.query
+        return healthMetricsService(request.log).getRunMetrics({ tenantId: tenant.id, window: { createdAfter, createdBefore }, timezone })
     })
 
     app.get('/queue-metrics', GetQueueMetricsRequest, async (request) => {
@@ -60,7 +60,7 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/history', GetHealthHistoryRequest, async (request) => {
         const { tenant } = request.principal
-        return healthMetricsService(request.log).getHealthHistory(tenant.id)
+        return healthMetricsService(request.log).getHealthHistory({ tenantId: tenant.id, timezone: request.query.timezone })
     })
 
     app.get('/diagnostics', GetDiagnosticsRequest, async (request) => {
@@ -172,6 +172,7 @@ const GetHealthHistoryRequest = {
     },
     schema: {
         tags: ['health'],
+        querystring: TenantMetricsHistoryRequest,
         response: {
             200: TenantMetricsHealthHistory,
         },

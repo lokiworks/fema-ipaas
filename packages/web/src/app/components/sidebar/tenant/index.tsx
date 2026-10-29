@@ -2,7 +2,6 @@ import { TenantModule } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import {
   BoxesIcon,
-  FolderKanbanIcon,
   GaugeIcon,
   InboxIcon,
   ShieldQuestionIcon,
@@ -60,7 +59,7 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
         },
         {
           to: '/tenant/users',
-          label: t('Users'),
+          label: t('Members'),
           icon: UsersIcon,
         },
         {
@@ -76,18 +75,13 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
         },
         {
           to: '/tenant/connections',
-          label: t('All connections'),
+          label: t('Connection overview'),
           icon: UnplugIcon,
         },
         {
           to: '/tenant/resources',
           label: t('Integration resources'),
           icon: BoxesIcon,
-        },
-        {
-          to: '/tenant/limits/projects',
-          label: t('Projects and limits'),
-          icon: FolderKanbanIcon,
         },
       ],
     },

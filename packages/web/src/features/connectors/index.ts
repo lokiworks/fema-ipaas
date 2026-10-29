@@ -12,7 +12,10 @@ export {
   connectorCacheUtils,
 } from './hooks/connectors-hooks';
 export { stepsHooks } from './hooks/steps-hooks';
-export { useConnectorOutputSchema } from './hooks/use-connector-output-schema';
+export {
+  useConnectorOutputSchema,
+  useStepOutputSchemas,
+} from './hooks/use-connector-output-schema';
 export {
   useConnectorSearchContext,
   ConnectorSearchProvider,

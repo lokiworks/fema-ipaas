@@ -40,10 +40,10 @@ export function DailyHealthStrip({ onSeeRuns }: DailyHealthStripProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-1">
             <CardTitle className="text-base font-medium">
-              {t('Daily job health')}
+              {t('Daily run health')}
             </CardTitle>
             <CardDescription>
-              {t('Stability of tenant jobs over the last 30 days.')}
+              {t('Stability of tenant runs over the last 30 days.')}
             </CardDescription>
           </div>
           <Tooltip>
@@ -109,7 +109,7 @@ export function DailyHealthStrip({ onSeeRuns }: DailyHealthStripProps) {
                         </div>
                         <div className="flex items-center justify-between gap-6">
                           <span className="text-muted-foreground">
-                            {t('Stuck jobs')}
+                            {t('Stuck runs')}
                           </span>
                           <span className="font-medium tabular-nums">
                             {day.stuckJobs}

@@ -112,16 +112,14 @@ const serverAuthNone = { type: McpServerAuthType.NONE }
 const serviceBasicCases: MatrixCase[] = [
     {
         id: 'GET /v1/mcp-services',
-        access: { type: 'custom', allow: EVERY_TENANT_USER },
-        forbiddenIds: integrationsCommon.selfTenantForbiddenIds,
+        access: { type: 'project', permission: Permission.READ_MCP_SERVICE },
+        scopedRead: true,
         prepare: async ({ world, scope }) => {
             const service = await integrationsSeed.mcpService({ world, scope, listed: false })
-            return { request: { method: 'GET', url: '/v1/mcp-services' }, state: { serviceId: service.id } }
+            return { request: { method: 'GET', url: '/v1/mcp-services', query: { projectId: world.scopes[scope].project.id } }, state: { serviceId: service.id } }
         },
-        afterAllowed: async ({ identity, response, prepared }) => {
-            const seen = response.text.includes(String(prepared.state?.serviceId))
-            const expected: readonly Identity[] = ['tenantAdmin', 'projectAdmin', 'developer', 'operator', 'viewer']
-            expect(seen).toBe(expected.includes(identity))
+        afterAllowed: async ({ response, prepared }) => {
+            expect(response.text.includes(String(prepared.state?.serviceId))).toBe(true)
         },
     },
     {

@@ -105,14 +105,14 @@ export default function UsersPage() {
 
   return (
     <ConsolePage
-      title={t('Users')}
+      title={t('Members')}
       description={t(
         'Assign module permissions to members. Business integration is granted to everyone and cannot be removed.',
       )}
       actions={
         <Button onClick={() => setAddOpen(true)}>
           <UserPlus className="size-4" />
-          {t('Add users')}
+          {t('Add members')}
         </Button>
       }
     >
@@ -124,9 +124,9 @@ export default function UsersPage() {
           }
         >
           <TabsList>
-            <TabsTrigger value="all">{t('All users')}</TabsTrigger>
+            <TabsTrigger value="all">{t('All members')}</TabsTrigger>
             <TabsTrigger value="external">
-              {t('External users only')}
+              {t('External members only')}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -166,16 +166,16 @@ export default function UsersPage() {
           data-testid="bulk-bar"
         >
           <span>
-            {t('{count} users selected', { count: selectedVisible.length })}
+            {t('{count} members selected', { count: selectedVisible.length })}
           </span>
           <ConfirmationDeleteDialog
             open={bulkOpen}
             onOpenChange={setBulkOpen}
-            title={t('Disable the selected users')}
+            title={t('Disable the selected members')}
             message={t(
               'They are signed out right away and cannot sign in again until you enable them. Their workflows and connections stay where they are, so transfer them first if someone else should take over.',
             )}
-            entityName={t('{count} users', { count: selectedVisible.length })}
+            entityName={t('{count} members', { count: selectedVisible.length })}
             buttonText={t('Disable')}
             isDanger
             mutationFn={async () => {
@@ -210,7 +210,7 @@ export default function UsersPage() {
                   data-testid="select-all-users"
                 />
               </TableHead>
-              <TableHead>{t('User')}</TableHead>
+              <TableHead>{t('Member')}</TableHead>
               <TableHead className="w-24">{t('Status')}</TableHead>
               <TableHead className="w-24">{t('Platform role')}</TableHead>
               <TableHead className="w-40">{t('Module permissions')}</TableHead>
@@ -227,7 +227,7 @@ export default function UsersPage() {
                   colSpan={compact ? 6 : 7}
                   className="text-muted-foreground"
                 >
-                  {t('No users match these filters')}
+                  {t('No members match these filters')}
                 </TableCell>
               </TableRow>
             )}
@@ -424,7 +424,7 @@ function MemberActions({
   const resetDisabledReason = !emailAuthEnabled
     ? t('Email and password sign-in is not enabled')
     : member.status !== TenantMemberStatus.ACTIVE
-    ? t('Only active users can have their password reset')
+    ? t('Only active members can have their password reset')
     : null;
   return (
     <DropdownMenu modal={false}>
@@ -457,7 +457,7 @@ function MemberActions({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={onRemove}>
-          {t('Remove user')}
+          {t('Remove member')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

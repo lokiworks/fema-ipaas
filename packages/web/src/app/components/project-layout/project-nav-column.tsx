@@ -26,6 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { projectSharingUtils } from '@/features/project-members';
 import {
   ActionMenu,
   ActionMenuEntry,
@@ -175,6 +176,9 @@ function ProjectSidebar({ className }: { className?: string }) {
       key: 'share',
       label: canEdit ? t('Share') : t('View members'),
       icon: canEdit ? Share2 : Users,
+      disabledReason: projectSharingUtils.isPersonal(project)
+        ? projectSharingUtils.personalReason()
+        : null,
       onSelect: () => setDialog('members'),
     },
     ...(hasProjectSettings

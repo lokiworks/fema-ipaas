@@ -1,6 +1,7 @@
 import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
+import { useEdgeRunStyle } from '../use-run-path';
 import { workflowCanvasConsts } from '../utils/consts';
 import { StraightLineEdge } from '../utils/types';
 
@@ -14,7 +15,9 @@ export const StraightLineCanvasEdge = ({
   targetY,
   data,
   id,
+  source,
 }: EdgeProps & StraightLineEdge) => {
+  const edgeStyle = useEdgeRunStyle({ edgeId: id, source });
   const { layoutSource, layoutTarget, toCanvasPath } = useEdgeLayoutSpace({
     sourceX,
     sourceY,
@@ -35,7 +38,7 @@ export const StraightLineCanvasEdge = ({
     <>
       <BaseEdge
         path={path}
-        style={{ strokeWidth: `${workflowCanvasConsts.LINE_WIDTH}px` }}
+        style={edgeStyle}
       />
       {!data.hideAddButton && (
         <foreignObject

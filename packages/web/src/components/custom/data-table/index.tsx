@@ -171,9 +171,9 @@ export function DataTable<
       ? columnsWithSelect.concat([
           {
             accessorKey: '__actions',
-            size: 60,
-            minSize: 60,
-            maxSize: 60,
+            size: actionsColumnWidth(actions.length),
+            minSize: actionsColumnWidth(actions.length),
+            maxSize: actionsColumnWidth(actions.length),
             header: ({ column }) => (
               <DataTableColumnHeader column={column} title="" />
             ),
@@ -764,4 +764,8 @@ export function DataTable<
       )}
     </div>
   );
+}
+
+function actionsColumnWidth(count: number): number {
+  return Math.max(60, count * 48 + 12);
 }

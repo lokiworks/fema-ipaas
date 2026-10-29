@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useEmbedding } from '@/components/providers/embed-provider';
+import { loginRedirect } from '@/lib/login-redirect';
 
 export const useNewWindow = () => {
   const { embedState } = useEmbedding();
@@ -34,7 +35,6 @@ export const useDefaultRedirectPath = () => {
 export const useRedirectAfterLogin = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const defaultRedirectPath = useDefaultRedirectPath();
-  const from = searchParams.get(FROM_QUERY_PARAM) ?? defaultRedirectPath;
-  return () => navigate(from);
+  const requested = searchParams.get(FROM_QUERY_PARAM);
+  return () => navigate(loginRedirect.consume({ requested }));
 };

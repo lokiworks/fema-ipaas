@@ -7,6 +7,7 @@ import { distributedStore } from '../database/redis-connections'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { projectService } from '../project/project-service'
+import { runMonitorUtils } from '../run-monitor/run-monitor-utils'
 import { executionRepo } from '../workflows/execution/execution-service'
 
 type ReportWindow = {
@@ -14,8 +15,8 @@ type ReportWindow = {
     createdBefore: string
 }
 
-function buildReportCacheKey(tenantId: TenantId, window: ReportWindow): string {
-    return `${REPORT_CACHE_PREFIX}:${tenantId}:${window.createdAfter}:${window.createdBefore}`
+function buildReportCacheKey({ tenantId, window, timezone }: { tenantId: TenantId, window: ReportWindow, timezone: string }): string {
+    return `${REPORT_CACHE_PREFIX}:${tenantId}:${timezone}:${window.createdAfter}:${window.createdBefore}`
 }
 
 async function countsByStatus(projectIds: string[], window: ReportWindow): Promise<Map<ExecutionStatus, number>> {
@@ -33,9 +34,9 @@ async function countsByStatus(projectIds: string[], window: ReportWindow): Promi
     return new Map(rows.map((row) => [row.status, Number(row.count)]))
 }
 
-async function buildStatusTimeseries(projectIds: string[], window: ReportWindow): Promise<TenantMetricsStatusPoint[]> {
+async function buildStatusTimeseries({ projectIds, window, timezone }: { projectIds: string[], window: ReportWindow, timezone: string }): Promise<TenantMetricsStatusPoint[]> {
     const rows: Array<{ day: Date, status: ExecutionStatus, count: string }> = await executionRepo().query(`
-        SELECT DATE_TRUNC('day', created) AS day, status, COUNT(*) AS count
+        SELECT DATE_TRUNC('day', created AT TIME ZONE $5) AT TIME ZONE $5 AS day, status, COUNT(*) AS count
         FROM execution
         WHERE "projectId" = ANY($1)
           AND environment = $2
@@ -44,7 +45,7 @@ async function buildStatusTimeseries(projectIds: string[], window: ReportWindow)
           AND created <= $4
         GROUP BY day, status
         ORDER BY day ASC
-    `, [projectIds, RunEnvironment.PRODUCTION, window.createdAfter, window.createdBefore])
+    `, [projectIds, RunEnvironment.PRODUCTION, window.createdAfter, window.createdBefore, timezone])
     return rows.map((row) => ({
         day: dayjs(row.day).toISOString(),
         status: row.status,
@@ -150,20 +151,30 @@ async function buildStuckJobs(projectIds: string[], window: ReportWindow): Promi
     }))
 }
 
-function buildEmptyHealthHistory(): TenantMetricsHealthDay[] {
-    return Array.from({ length: HEALTH_HISTORY_DAYS }, (_unused, index) => ({
-        day: dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1 - index, 'day').toISOString(),
+function historyDayStarts({ timezone }: { timezone: string }): number[] {
+    return runMonitorUtils.dayStarts({ count: HEALTH_HISTORY_DAYS, now: Date.now(), timezone })
+}
+
+function localDayKey({ instant, timezone }: { instant: number, timezone: string }): string {
+    const wall = runMonitorUtils.wallClock({ instant, timezone })
+    return `${wall.year}-${String(wall.month).padStart(2, '0')}-${String(wall.day).padStart(2, '0')}`
+}
+
+function buildEmptyHealthHistory({ timezone }: { timezone: string }): TenantMetricsHealthDay[] {
+    return historyDayStarts({ timezone }).map((start) => ({
+        day: new Date(start).toISOString(),
         internalErrors: 0,
         affectedWorkflows: 0,
         stuckJobs: 0,
     }))
 }
 
-async function buildHealthHistory(projectIds: string[]): Promise<TenantMetricsHealthDay[]> {
-    const windowStart = dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1, 'day').toISOString()
+async function buildHealthHistory({ projectIds, timezone }: { projectIds: string[], timezone: string }): Promise<TenantMetricsHealthDay[]> {
+    const starts = historyDayStarts({ timezone })
+    const windowStart = new Date(starts[0]).toISOString()
 
-    const errorRows: Array<{ day: Date, internalErrors: string, affectedWorkflows: string }> = await executionRepo().query(`
-        SELECT DATE_TRUNC('day', created) AS day,
+    const errorRows: Array<{ day: string, internalErrors: string, affectedWorkflows: string }> = await executionRepo().query(`
+        SELECT TO_CHAR(created AT TIME ZONE $5, 'YYYY-MM-DD') AS day,
                COUNT(*) AS "internalErrors",
                COUNT(DISTINCT "workflowId") AS "affectedWorkflows"
         FROM execution
@@ -173,10 +184,10 @@ async function buildHealthHistory(projectIds: string[]): Promise<TenantMetricsHe
           AND status = $3
           AND created >= $4
         GROUP BY day
-    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, windowStart])
+    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.INTERNAL_ERROR, windowStart, timezone])
 
-    const stuckRows: Array<{ day: Date, stuckJobs: string }> = await executionRepo().query(`
-        SELECT DATE_TRUNC('day', "startTime") AS day, COUNT(*) AS "stuckJobs"
+    const stuckRows: Array<{ day: string, stuckJobs: string }> = await executionRepo().query(`
+        SELECT TO_CHAR("startTime" AT TIME ZONE $6, 'YYYY-MM-DD') AS day, COUNT(*) AS "stuckJobs"
         FROM execution
         WHERE "projectId" = ANY($1)
           AND environment = $2
@@ -187,18 +198,17 @@ async function buildHealthHistory(projectIds: string[]): Promise<TenantMetricsHe
           AND "startTime" >= $4
           AND "startTime" < $5
         GROUP BY day
-    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, windowStart, stuckBeforeIso()])
+    `, [projectIds, RunEnvironment.PRODUCTION, ExecutionStatus.RUNNING, windowStart, stuckBeforeIso(), timezone])
 
-    const errorByDay = new Map(errorRows.map((row) => [dayjs(row.day).format('YYYY-MM-DD'), row]))
-    const stuckByDay = new Map(stuckRows.map((row) => [dayjs(row.day).format('YYYY-MM-DD'), row]))
+    const errorByDay = new Map(errorRows.map((row) => [row.day, row]))
+    const stuckByDay = new Map(stuckRows.map((row) => [row.day, row]))
 
-    return Array.from({ length: HEALTH_HISTORY_DAYS }, (_unused, index) => {
-        const date = dayjs().startOf('day').subtract(HEALTH_HISTORY_DAYS - 1 - index, 'day')
-        const key = date.format('YYYY-MM-DD')
+    return starts.map((start) => {
+        const key = localDayKey({ instant: start, timezone })
         const error = errorByDay.get(key)
         const stuck = stuckByDay.get(key)
         return {
-            day: date.toISOString(),
+            day: new Date(start).toISOString(),
             internalErrors: Number(error?.internalErrors ?? 0),
             affectedWorkflows: Number(error?.affectedWorkflows ?? 0),
             stuckJobs: Number(stuck?.stuckJobs ?? 0),
@@ -207,8 +217,9 @@ async function buildHealthHistory(projectIds: string[]): Promise<TenantMetricsHe
 }
 
 export const healthMetricsService = (log: FastifyBaseLogger) => ({
-    getRunMetrics: async (tenantId: TenantId, window: ReportWindow): Promise<TenantMetricsReport> => {
-        const cacheKey = buildReportCacheKey(tenantId, window)
+    getRunMetrics: async ({ tenantId, window, timezone: requestedTimezone }: { tenantId: TenantId, window: ReportWindow, timezone?: string }): Promise<TenantMetricsReport> => {
+        const timezone = runMonitorUtils.safeTimezone(requestedTimezone)
+        const cacheKey = buildReportCacheKey({ tenantId, window, timezone })
         const cached = await distributedStore.get<TenantMetricsReport>(cacheKey)
         if (cached) {
             return cached
@@ -223,7 +234,7 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
         const [currentCounts, previousCounts, statusTimeseries, internalErrors] = await Promise.all([
             countsByStatus(projectIds, window),
             countsByStatus(projectIds, previousWindow(window)),
-            buildStatusTimeseries(projectIds, window),
+            buildStatusTimeseries({ projectIds, window, timezone }),
             buildInternalErrorImpact(projectIds, window),
         ])
 
@@ -258,12 +269,13 @@ export const healthMetricsService = (log: FastifyBaseLogger) => ({
             stuckJobs,
         }
     },
-    getHealthHistory: async (tenantId: TenantId): Promise<TenantMetricsHealthHistory> => {
+    getHealthHistory: async ({ tenantId, timezone: requestedTimezone }: { tenantId: TenantId, timezone?: string }): Promise<TenantMetricsHealthHistory> => {
+        const timezone = runMonitorUtils.safeTimezone(requestedTimezone)
         const projectIds = await projectService(log).getProjectIdsByTenant(tenantId)
         if (projectIds.length === 0) {
-            return { days: buildEmptyHealthHistory() }
+            return { days: buildEmptyHealthHistory({ timezone }) }
         }
-        return { days: await buildHealthHistory(projectIds) }
+        return { days: await buildHealthHistory({ projectIds, timezone }) }
     },
 })
 

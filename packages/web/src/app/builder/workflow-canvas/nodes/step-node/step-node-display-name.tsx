@@ -45,6 +45,7 @@ const StepNodeDisplayName = ({
       </div>
       <StepNodeRunDurationAndConnectorName
         stepName={stepName}
+        stepDisplayName={stepDisplayName}
         connectorDisplayName={connectorDisplayName}
       />
     </div>

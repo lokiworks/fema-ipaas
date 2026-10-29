@@ -123,9 +123,11 @@ export const testStepHooks = {
   usePollTrigger: ({
     setErrorMessage,
     onSuccess,
+    onEmpty,
   }: {
     setErrorMessage: (msg: string | undefined) => void;
     onSuccess: () => void;
+    onEmpty: () => void;
   }) => {
     const { form, builderState } = useRequiredStateToTestSteps();
     const workflowId = builderState.workflow.id;
@@ -152,7 +154,9 @@ export const testStepHooks = {
       onSuccess: async (data) => {
         if (data.length > 0) {
           onSuccess();
+          return;
         }
+        onEmpty();
       },
       onError: (error) => {
         if (api.isError(error)) {

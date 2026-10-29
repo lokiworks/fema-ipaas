@@ -86,9 +86,7 @@ function list(): HelpArticle[] {
       icon: SlidersHorizontal,
       title: t('Environments and project configuration'),
       body: [
-        t(
-          'Project configuration holds values shared by workflows, such as group IDs, thresholds or callback URLs. Reference them as config.key.',
-        ),
+        t('variablesPageDescription'),
         t(
           'Projects only have production by default. Turn on test and production environments to give configuration values per environment and to swap connections for test accounts.',
         ),

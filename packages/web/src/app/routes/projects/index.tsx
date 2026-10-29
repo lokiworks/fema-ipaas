@@ -4,6 +4,7 @@ import { Lock, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { ProjectSettingsDialog } from '@/app/components/project-settings';
 import {
   ConsolePage,
   ConsoleTableFrame,
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RequestProjectAccessButton } from '@/features/project-access-requests';
+import { projectSharingUtils } from '@/features/project-members';
 import { DisabledReason } from '@/features/project-workspace/components/disabled-reason';
 import { ProjectInfoDialog } from '@/features/project-workspace/components/project-info-dialog';
 import { ProjectMark } from '@/features/project-workspace/components/project-mark';
@@ -31,15 +33,24 @@ import {
   projectDirectoryUtils,
 } from '@/features/projects/api/project-directory-api';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
+import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 
 export function AllProjectsPage() {
   const [tab, setTab] = useState<'mine' | 'all'>('mine');
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
+  const [sharingId, setSharingId] = useState<string | null>(null);
   const { data, isLoading } = projectDirectoryHooks.useDirectory({
     primary: true,
   });
+  const { data: accessibleProjects } = projectCollectionUtils.useAll();
+  const personalIds = new Set(
+    accessibleProjects
+      .filter((project) => projectSharingUtils.isPersonal(project))
+      .map((project) => project.id),
+  );
+  const me = authenticationSession.getCurrentUserId();
   const items = data ?? [];
   const mineCount = projectsListUtils.filter({
     items,
@@ -53,14 +64,14 @@ export function AllProjectsPage() {
   }).length;
   const shown = projectsListUtils.filter({ items, tab, query });
 
-  const open = (item: ProjectDirectoryItem, suffix = '') => {
+  const open = (item: ProjectDirectoryItem) => {
     if (!projectDirectoryUtils.isMember(item)) {
       toast.warning(notMemberReason(item));
       return;
     }
     projectCollectionUtils.setCurrentProject(
       item.id,
-      `/projects/${item.id}/home${suffix}`,
+      `/projects/${item.id}/home`,
     );
   };
 
@@ -117,7 +128,10 @@ export function AllProjectsPage() {
           <TableBody>
             {shown.map((item) => {
               const member = projectDirectoryUtils.isMember(item);
-              const canShare = projectDirectoryUtils.canEdit(item);
+              const shareReason = shareDisabledReason({
+                item,
+                personal: personalIds.has(item.id),
+              });
               return (
                 <TableRow
                   key={item.id}
@@ -150,7 +164,12 @@ export function AllProjectsPage() {
                     {item.workflowCount}
                   </TableCell>
                   <TableCell>
-                    {member ? projectRoleLabels.label(item.myRole) : '—'}
+                    {member
+                      ? projectRoleLabels.memberLabel({
+                          role: item.myRole,
+                          isOwner: item.ownerId === me,
+                        })
+                      : '—'}
                   </TableCell>
                   <TableCell className="max-w-0 truncate">
                     {item.ownerName ?? '—'}
@@ -169,19 +188,13 @@ export function AllProjectsPage() {
                         >
                           {t('Open')}
                         </Button>
-                        <DisabledReason
-                          reason={
-                            canShare
-                              ? null
-                              : t('Viewers cannot share the project')
-                          }
-                        >
+                        <DisabledReason reason={shareReason}>
                           <Button
                             type="button"
                             variant="link"
                             size="xs"
-                            disabled={!canShare}
-                            onClick={() => open(item, '?share=1')}
+                            disabled={Boolean(shareReason)}
+                            onClick={() => setSharingId(item.id)}
                           >
                             {t('Share')}
                           </Button>
@@ -217,6 +230,14 @@ export function AllProjectsPage() {
       <span className="text-xs text-muted-foreground">
         {t('{count} projects in total', { count: shown.length })}
       </span>
+      {sharingId && (
+        <ProjectSettingsDialog
+          open
+          onClose={() => setSharingId(null)}
+          initialTab="members"
+          projectId={sharingId}
+        />
+      )}
       <ProjectInfoDialog
         open={creating}
         onOpenChange={setCreating}
@@ -229,6 +250,21 @@ export function AllProjectsPage() {
       />
     </ConsolePage>
   );
+}
+
+function shareDisabledReason({
+  item,
+  personal,
+}: {
+  item: ProjectDirectoryItem;
+  personal: boolean;
+}): string | null {
+  if (personal) {
+    return projectSharingUtils.personalReason();
+  }
+  return projectDirectoryUtils.canEdit(item)
+    ? null
+    : t('Viewers cannot share the project');
 }
 
 function notMemberReason(item: ProjectDirectoryItem): string {

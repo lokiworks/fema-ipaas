@@ -1,7 +1,11 @@
-import { ProjectType, ProjectWithLimits } from '@fema-ipaas/shared';
+import {
+  ProjectLimitsRow,
+  ProjectType,
+  ProjectWithLimits,
+} from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import { CheckIcon, Package, Pencil, Trash } from 'lucide-react';
+import { CheckIcon, Gauge, Package, Pencil, Trash } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,20 +25,26 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { globalConnectionsQueries } from '@/features/connections';
-import { limitsHooks } from '@/features/limits';
+import { EditProjectLimitsDialog, limitsHooks } from '@/features/limits';
 import {
   CreateProjectButton,
   EditProjectDialog,
   projectCollectionUtils,
 } from '@/features/projects';
 import { SetupChecklistCard } from '@/features/system';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { validationUtils } from '@/lib/validation-utils';
 
 import { projectsTableColumns } from './columns';
+import { TenantProjectRow } from './tenant-project-row';
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const compact = useIsMobile();
   const [searchParams] = useSearchParams();
+  const [editingLimits, setEditingLimits] = useState<ProjectLimitsRow | null>(
+    null,
+  );
   const { project: currentProject } =
     projectCollectionUtils.useCurrentProject();
 
@@ -63,36 +73,32 @@ export default function ProjectsPage() {
       extraKeys: [],
     });
   const { data: projectLimits } = limitsHooks.useProjectLimits();
-  const memberCountByProjectId = useMemo(
+  const limitsByProjectId = useMemo(
     () =>
-      new Map(
-        (projectLimits?.data ?? []).map((row) => [
-          row.projectId,
-          row.memberCount,
-        ]),
-      ),
+      new Map((projectLimits?.data ?? []).map((row) => [row.projectId, row])),
     [projectLimits?.data],
   );
-  const allProjectsWithGlobalConnectionsCount = useMemo(() => {
-    return allProjects.map((project) => ({
-      ...project,
-      analytics: {
-        ...project.analytics,
-        members:
-          memberCountByProjectId.get(project.id) ??
-          Math.max(1, project.analytics.members),
-      },
-      globalConnectionsCount:
-        allGlobalConnectionsPage?.data?.filter((connection) =>
-          connection.projectIds.includes(project.id),
-        ).length ?? 0,
-    }));
-  }, [allProjects, allGlobalConnectionsPage?.data, memberCountByProjectId]);
-  const columns = useMemo(() => projectsTableColumns(), []);
+  const tenantProjectRows: TenantProjectRow[] = useMemo(() => {
+    return allProjects.map((project) => {
+      const limits = limitsByProjectId.get(project.id) ?? null;
+      return {
+        ...project,
+        analytics: {
+          ...project.analytics,
+          members: limits?.memberCount ?? Math.max(1, project.analytics.members),
+        },
+        globalConnectionsCount:
+          allGlobalConnectionsPage?.data?.filter((connection) =>
+            connection.projectIds.includes(project.id),
+          ).length ?? 0,
+        limits,
+      };
+    });
+  }, [allProjects, allGlobalConnectionsPage?.data, limitsByProjectId]);
+  const columns = useMemo(() => projectsTableColumns({ compact }), [compact]);
 
-  const columnsWithCheckbox: ColumnDef<
-    RowDataWithActions<ProjectWithLimits & { globalConnectionsCount: number }>
-  >[] = [
+  const columnsWithCheckbox: ColumnDef<RowDataWithActions<TenantProjectRow>>[] =
+    [
     {
       id: 'select',
       accessorKey: 'select',
@@ -291,7 +297,34 @@ export default function ProjectsPage() {
   };
 
   const actions = [
-    (row: ProjectWithLimits) => {
+    (row: TenantProjectRow) => {
+      const limits = row.limits;
+      if (!limits) {
+        return null;
+      }
+      return (
+        <div className="flex items-end justify-end">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                aria-label={t('Adjust limits')}
+                className="size-8 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setEditingLimits(limits);
+                }}
+              >
+                <Gauge className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('Adjust limits')}</TooltipContent>
+          </Tooltip>
+        </div>
+      );
+    },
+    (row: TenantProjectRow) => {
       return (
         <div className="flex items-end justify-end">
           <Tooltip>
@@ -326,7 +359,9 @@ export default function ProjectsPage() {
   return (
     <ConsolePage
       title={t('Projects')}
-      description={t('Manage your automation projects')}
+      description={t(
+        'Every project on this tenant, with its members, workflows and monthly run limits. Once a project reaches its monthly limit, new runs are refused and recorded in the run log.',
+      )}
     >
       <div className="mb-4">
         <SetupChecklistCard />
@@ -364,9 +399,9 @@ export default function ProjectsPage() {
             icon: CheckIcon,
           },
         ]}
-        columns={columnsWithCheckbox}
+        columns={compact ? columns : columnsWithCheckbox}
         page={{
-          data: allProjectsWithGlobalConnectionsCount,
+          data: tenantProjectRows,
           next: null,
           previous: null,
         }}
@@ -383,6 +418,16 @@ export default function ProjectsPage() {
         }}
         initialValues={editDialogInitialValues}
         projectId={editDialogProjectId}
+      />
+      <EditProjectLimitsDialog
+        row={editingLimits}
+        workflowsCeiling={projectLimits?.workflowsCeiling ?? 0}
+        monthlyRunsCeiling={projectLimits?.monthlyRunsCeiling ?? 0}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingLimits(null);
+          }
+        }}
       />
     </ConsolePage>
   );

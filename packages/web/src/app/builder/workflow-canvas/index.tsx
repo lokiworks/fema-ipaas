@@ -79,6 +79,7 @@ export const WorkflowCanvas = React.memo(
     useShowChevronNextToSelection();
     workflowCanvasHooks.useFocusOnStep();
     workflowCanvasHooks.useFocusOnAddedStep();
+    workflowCanvasHooks.useKeepSelectedStepInView();
     workflowCanvasHooks.useShiftForLeftPanel();
     useHandleKeyPressOnCanvas();
     workflowCanvasHooks.useResizeCanvas(

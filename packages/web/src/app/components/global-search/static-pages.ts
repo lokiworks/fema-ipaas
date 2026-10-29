@@ -83,21 +83,21 @@ export const STATIC_PAGES: StaticPage[] = [
   },
   {
     id: 'page-tenant-projects',
-    label: 'Tenant Admin — Projects',
+    label: 'Tenant Admin — Projects and limits',
     href: '/tenant/projects',
     icon: LayoutGridIcon,
     requiresTenantAdmin: true,
   },
   {
     id: 'page-tenant-users',
-    label: 'Tenant Admin — Users',
+    label: 'Tenant Admin — Members',
     href: '/tenant/users',
     icon: UsersIcon,
     requiresTenantAdmin: true,
   },
   {
     id: 'page-tenant-connections',
-    label: 'Tenant Admin — Connections',
+    label: 'Tenant Admin — Connection overview',
     href: '/tenant/connections',
     icon: UnplugIcon,
     requiresTenantAdmin: true,
@@ -198,13 +198,6 @@ export const STATIC_PAGES: StaticPage[] = [
     label: 'Tenant Admin — Triggers',
     href: '/tenant/infra/triggers',
     icon: MousePointerClickIcon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-project-limits',
-    label: 'Tenant Admin — Projects and limits',
-    href: '/tenant/limits/projects',
-    icon: LayoutGridIcon,
     requiresTenantAdmin: true,
   },
   {

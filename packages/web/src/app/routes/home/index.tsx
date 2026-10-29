@@ -10,10 +10,11 @@ import {
   Users,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { GenerateWorkflowDialog } from '@/features/ai/components/generate-workflow-dialog';
+import { projectSharingUtils } from '@/features/project-members';
 import { DisabledReason } from '@/features/project-workspace/components/disabled-reason';
 import { OverviewSideCards } from '@/features/project-workspace/components/overview-side-cards';
 import { OverviewStatCards } from '@/features/project-workspace/components/overview-stat-cards';
@@ -28,6 +29,7 @@ import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels'
 import { projectDirectoryHooks } from '@/features/projects/api/project-directory-api';
 import { projectCollectionUtils } from '@/features/projects/stores/project-collection';
 import { releasesHooks } from '@/features/releases/hooks/releases-hooks';
+import { OfficialSolutionsGrid, solutionsHooks } from '@/features/solutions';
 import {
   TemplateCard,
   TemplateDetailDrawer,
@@ -49,6 +51,9 @@ export function HomePage() {
   const close = () => setDialog(null);
   const { canEdit } = context.permissions;
   const viewerReason = canEdit ? null : projectRoleLabels.viewerHint();
+  const shareReason = projectSharingUtils.isPersonal(project)
+    ? projectSharingUtils.personalReason()
+    : null;
   const createReason =
     viewerReason ??
     (context.limitReached
@@ -57,14 +62,17 @@ export function HomePage() {
 
   const actions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => setDialog('share')}
-      >
-        {canEdit ? <Share2 /> : <Users />}
-        {canEdit ? t('Share') : t('View members')}
-      </Button>
+      <DisabledReason reason={shareReason}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={Boolean(shareReason)}
+          onClick={() => setDialog('share')}
+        >
+          {canEdit ? <Share2 /> : <Users />}
+          {canEdit ? t('Share') : t('View members')}
+        </Button>
+      </DisabledReason>
       <DisabledReason reason={createReason}>
         <Button
           type="button"
@@ -135,6 +143,7 @@ export function HomePage() {
       <EmptyProjectLanding
         context={context}
         createReason={createReason}
+        shareReason={shareReason}
         onAction={setDialog}
         dialogs={dialogs}
       />
@@ -262,17 +271,27 @@ function ProjectOverview({
 function EmptyProjectLanding({
   context,
   createReason,
+  shareReason,
   onAction,
   dialogs,
 }: {
   context: WorkspaceContext;
   createReason: string | null;
+  shareReason: string | null;
   onAction: (dialog: OverviewDialog) => void;
   dialogs: React.ReactNode;
 }) {
   const [batch, setBatch] = useState(0);
   const [picked, setPicked] = useState<Template | null>(null);
-  const { templates } = templatesHooks.useRecommendedTemplates();
+  const { templates, isLoading: templatesLoading } =
+    templatesHooks.useRecommendedTemplates();
+  const noTemplates = !templatesLoading && templates.length === 0;
+  const { data: officialSolutions } = solutionsHooks.useOfficialSolutions({
+    enabled: noTemplates,
+  });
+  const solutionsShown = noTemplates
+    ? (officialSolutions ?? []).slice(0, 4)
+    : [];
   const shown = rotate({ items: templates, batch, size: 4 });
   const { canEdit } = context.permissions;
   return (
@@ -318,15 +337,18 @@ function EmptyProjectLanding({
               {t('Create with AI')}
             </Button>
           </DisabledReason>
-          <Button
-            type="button"
-            size="lg"
-            variant="outline"
-            onClick={() => onAction('share')}
-          >
-            {canEdit ? <Share2 /> : <Users />}
-            {canEdit ? t('Share project') : t('View members')}
-          </Button>
+          <DisabledReason reason={shareReason}>
+            <Button
+              type="button"
+              size="lg"
+              variant="outline"
+              disabled={Boolean(shareReason)}
+              onClick={() => onAction('share')}
+            >
+              {canEdit ? <Share2 /> : <Users />}
+              {canEdit ? t('Share project') : t('View members')}
+            </Button>
+          </DisabledReason>
         </div>
         {!canEdit && (
           <p className="text-xs text-muted-foreground">
@@ -336,39 +358,56 @@ function EmptyProjectLanding({
           </p>
         )}
       </section>
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-medium">
-            {t('Create a workflow from a template')}
-          </h2>
-          {templates.length > 0 && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              disabled={templates.length <= 4}
-              onClick={() => setBatch((current) => current + 1)}
+      {solutionsShown.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-sm font-medium">
+              {t('Start from an official solution')}
+            </h2>
+            <Link
+              to="/solutions"
+              className="text-xs text-primary hover:underline"
             >
-              <RefreshCw />
-              {t('Show others')}
-            </Button>
-          )}
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {shown.map((template) => (
-            <TemplateCard
-              key={template.id}
-              template={template}
-              onClick={setPicked}
-            />
-          ))}
-          {shown.length === 0 && (
-            <span className="text-sm text-muted-foreground">
-              {t('No templates yet')}
-            </span>
-          )}
-        </div>
-      </section>
+              {t('Solution library')}
+            </Link>
+          </div>
+          <OfficialSolutionsGrid solutions={solutionsShown} />
+        </section>
+      ) : (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-medium">
+              {t('Create a workflow from a template')}
+            </h2>
+            {templates.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                disabled={templates.length <= 4}
+                onClick={() => setBatch((current) => current + 1)}
+              >
+                <RefreshCw />
+                {t('Show others')}
+              </Button>
+            )}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {shown.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onClick={setPicked}
+              />
+            ))}
+            {shown.length === 0 && (
+              <span className="text-sm text-muted-foreground">
+                {t('No templates yet')}
+              </span>
+            )}
+          </div>
+        </section>
+      )}
       <TemplateDetailDrawer
         template={picked}
         open={picked !== null}

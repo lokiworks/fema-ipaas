@@ -93,7 +93,6 @@ function bodyText({
   }
   switch (notification.type) {
     case NotificationType.PROJECT_MEMBER_ADDED:
-      return isProjectRole(body) ? t(body) : body;
     case NotificationType.PROJECT_ACCESS_APPROVED:
       return isProjectRole(body) ? projectRoleLabels.label(body) : body;
     case NotificationType.CONNECTION_BROKEN:

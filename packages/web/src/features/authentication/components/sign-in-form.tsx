@@ -1,7 +1,6 @@
 import { ErrorCode, isNil } from '@fema-ipaas/core-utils';
 import {
   FlagId,
-  formErrors,
   OtpType,
   AuthenticationResponse,
   SignInRequest,
@@ -34,9 +33,9 @@ const SignInSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, formErrors.required)
-    .regex(formatUtils.emailRegex, t('Email is invalid')),
-  password: z.string().min(1, t('Password is required')),
+    .min(1, 'signInEmailRequired')
+    .regex(formatUtils.emailRegex, 'Email is invalid'),
+  password: z.string().min(1, 'signInPasswordRequired'),
 });
 
 type SignInSchema = z.infer<typeof SignInSchema>;

@@ -30,13 +30,20 @@ import {
   Underline,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
 import { useEmbedding } from '@/components/providers/embed-provider';
 import { Button } from '@/components/ui/button';
 import { inputClass } from '@/components/ui/input';
-import { stepsHooks } from '@/features/connectors';
+import { stepsHooks, useStepOutputSchemas } from '@/features/connectors';
 import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
@@ -253,14 +260,41 @@ export const TiptapEditor = ({
         : workflowStructureUtil.findPathToStep(trigger, selectedStepName),
     [trigger, selectedStepName],
   );
+  const stepNumbers = useMemo(
+    () =>
+      new Map(
+        workflowStructureUtil
+          .getAllSteps(trigger)
+          .map((step, index) => [step.name, index + 1]),
+      ),
+    [trigger],
+  );
+  const outputSchemas = useStepOutputSchemas({ steps });
   const stepsMetadata = stepsHooks
     .useStepsMetadata(steps)
     .map(({ data: metadata }, index) => {
       if (metadata) {
-        return { ...metadata, stepDisplayName: steps[index].displayName };
+        return {
+          ...metadata,
+          stepDisplayName: steps[index].displayName,
+          stepNumber: stepNumbers.get(steps[index].name),
+          outputSchema: outputSchemas[steps[index].name] ?? null,
+        };
       }
       return undefined;
     });
+  const mentionLabelKey = stepsMetadata
+    .map((metadata) =>
+      isNil(metadata)
+        ? '-'
+        : `${metadata.stepNumber}:${metadata.stepDisplayName}:${
+            metadata.logoUrl
+          }:${isNil(metadata.outputSchema) ? 0 : 1}`,
+    )
+    .join('|');
+  const mentionSourcesRef = useRef({ steps, stepsMetadata });
+  mentionSourcesRef.current = { steps, stepsMetadata };
+  const relabelingRef = useRef(false);
 
   const sampleData = useBuilderStateContext((state) => state.outputSampleData);
   const [
@@ -559,7 +593,7 @@ export const TiptapEditor = ({
       const textResult = isHtml
         ? serializeHtmlWithMentions(e)
         : textMentionUtils.convertTiptapJsonToText(editorContent);
-      if (onChange) onChange(textResult);
+      if (onChange && !relabelingRef.current) onChange(textResult);
       const nowHasFunctions = docHasFunctions(e);
       setHasFunctions(nowHasFunctions);
       setTypeErrors(collectTypeErrors(editorContent));
@@ -605,6 +639,17 @@ export const TiptapEditor = ({
   useEffect(() => {
     editorRef.current = editor;
   }, [editor]);
+
+  useEffect(() => {
+    if (!editor || isHtml) return;
+    relabelMentions({
+      editor,
+      steps: mentionSourcesRef.current.steps,
+      stepsMetadata: mentionSourcesRef.current.stepsMetadata,
+      variableByName,
+      relabelingRef,
+    });
+  }, [editor, isHtml, mentionLabelKey, variableByName]);
 
   useEffect(() => {
     if (!editor) return;
@@ -930,6 +975,45 @@ function serializeHtmlWithMentions(
     element.replaceWith(parsed.createTextNode(serverValue));
   });
   return parsed.body.innerHTML;
+}
+
+function relabelMentions({
+  editor,
+  steps,
+  stepsMetadata,
+  variableByName,
+  relabelingRef,
+}: {
+  editor: import('@tiptap/react').Editor;
+  steps: CreateMentionArgs[1];
+  stepsMetadata: CreateMentionArgs[2];
+  variableByName: CreateMentionArgs[3];
+  relabelingRef: MutableRefObject<boolean>;
+}): void {
+  const tr = editor.state.tr;
+  editor.state.doc.descendants((node, pos) => {
+    if (node.type.name !== 'mention' || typeof node.attrs.id !== 'string') {
+      return;
+    }
+    const label = JSON.stringify(
+      textMentionUtils.parseLabelFromMention(
+        node.attrs.id,
+        steps,
+        stepsMetadata,
+        variableByName,
+      ),
+    );
+    if (label !== node.attrs.label) {
+      tr.setNodeMarkup(pos, undefined, { ...node.attrs, label });
+    }
+  });
+  if (!tr.docChanged) {
+    return;
+  }
+  tr.setMeta('addToHistory', false);
+  relabelingRef.current = true;
+  editor.view.dispatch(tr);
+  relabelingRef.current = false;
 }
 
 // HTML input: TipTap parses the saved HTML to a doc with {{...}} as plain text;

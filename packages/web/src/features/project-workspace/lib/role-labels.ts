@@ -4,7 +4,7 @@ import { t } from 'i18next';
 function label(role: DefaultProjectRole | null | undefined): string {
   switch (role) {
     case DefaultProjectRole.ADMIN:
-      return t('Owner');
+      return t('Admin');
     case DefaultProjectRole.DEVELOPER:
       return t('Can edit');
     case DefaultProjectRole.OPERATOR:
@@ -14,6 +14,16 @@ function label(role: DefaultProjectRole | null | undefined): string {
     default:
       return t('No access');
   }
+}
+
+function memberLabel({
+  role,
+  isOwner,
+}: {
+  role: DefaultProjectRole | null | undefined;
+  isOwner: boolean;
+}): string {
+  return isOwner ? t('Owner') : label(role);
 }
 
 function description(role: DefaultProjectRole): string {
@@ -35,4 +45,9 @@ function viewerHint(): string {
   );
 }
 
-export const projectRoleLabels = { label, description, viewerHint };
+export const projectRoleLabels = {
+  label,
+  memberLabel,
+  description,
+  viewerHint,
+};

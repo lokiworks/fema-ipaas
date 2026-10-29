@@ -1,12 +1,12 @@
 import { WorkflowActionType, WorkflowTriggerType, WorkflowVersionState } from '@fema-ipaas/shared'
-import type { WorkflowVersion } from '@fema-ipaas/shared'
+import type { ActionErrorHandlingOptions, WorkflowVersion } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { workflowStepDates } from '../../../../../src/app/workflows/workflow-version/workflow-step-dates'
 
 const OLD = '2024-01-01T00:00:00.000Z'
 const NEW = '2026-10-28T00:00:00.000Z'
 
-function versionWith({ date, extraStep = false, sampleData, stepDisplayName = 'Code' }: VersionWithParams): WorkflowVersion {
+function versionWith({ date, extraStep = false, sampleData, stepDisplayName = 'Code', code = '', errorHandlingOptions }: VersionWithParams): WorkflowVersion {
     const tail = extraStep
         ? {
             nextAction: {
@@ -38,7 +38,7 @@ function versionWith({ date, extraStep = false, sampleData, stepDisplayName = 'C
                 displayName: stepDisplayName,
                 lastUpdatedDate: date,
                 type: WorkflowActionType.CODE,
-                settings: { sourceCode: { code: '', packageJson: '{}' }, input: {}, sampleData },
+                settings: { sourceCode: { code, packageJson: '{}' }, input: {}, sampleData, errorHandlingOptions },
                 ...tail,
             },
         },
@@ -99,6 +99,25 @@ describe('workflowStepDates.keepTestedFrom', () => {
         expect(result.trigger.nextAction?.settings.sampleData).toBeUndefined()
         expect(result.trigger.nextAction?.lastUpdatedDate).toBe(NEW)
     })
+
+    it('keeps a step tested when only its error handling changed', () => {
+        const result = workflowStepDates.keepTestedFrom({
+            workflowVersion: versionWith({ date: NEW, errorHandlingOptions: { retryOnFailure: { value: true } } }),
+            source: versionWith({ date: OLD, sampleData: SAMPLE }),
+        })
+
+        expect(result.trigger.nextAction?.settings.sampleData).toEqual(SAMPLE)
+        expect(result.trigger.nextAction?.lastUpdatedDate).toBe(OLD)
+    })
+
+    it('leaves a step untested when its code changed', () => {
+        const result = workflowStepDates.keepTestedFrom({
+            workflowVersion: versionWith({ date: NEW, code: 'return 1' }),
+            source: versionWith({ date: OLD, sampleData: SAMPLE }),
+        })
+
+        expect(result.trigger.nextAction?.lastUpdatedDate).toBe(NEW)
+    })
 })
 
 type VersionWithParams = {
@@ -106,4 +125,6 @@ type VersionWithParams = {
     extraStep?: boolean
     sampleData?: { sampleDataFileId: string, lastTestDate: string }
     stepDisplayName?: string
+    code?: string
+    errorHandlingOptions?: ActionErrorHandlingOptions
 }

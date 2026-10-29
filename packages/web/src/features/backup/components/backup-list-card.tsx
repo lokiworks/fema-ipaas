@@ -51,8 +51,8 @@ export function BackupListCard({ overview }: { overview: BackupOverview }) {
         <CardTitle>{t('Backups')}</CardTitle>
         <CardDescription>
           {t(
-            'Check a backup before relying on it. The check never changes any data. Times are in the server time zone ({zone}).',
-            { zone: overview.serverTimezone },
+            'Check a backup before relying on it. The check never changes any data. Times are in your time zone ({zone}).',
+            { zone: backupTime.localZone() },
           )}
         </CardDescription>
       </CardHeader>
@@ -80,10 +80,7 @@ export function BackupListCard({ overview }: { overview: BackupOverview }) {
                   <TableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
                       <span>
-                        {backupTime.inServerZone({
-                          iso: backup.startedAt,
-                          zone: overview.serverTimezone,
-                        })}
+                        {backupTime.local({ iso: backup.startedAt })}
                       </span>
                       {backup.note && (
                         <span className="text-xs text-muted-foreground">
@@ -161,7 +158,6 @@ export function BackupListCard({ overview }: { overview: BackupOverview }) {
         <RestorePrecheckDialog
           key={checking.id}
           backup={checking}
-          zone={overview.serverTimezone}
           onClose={() => setChecking(null)}
         />
       )}

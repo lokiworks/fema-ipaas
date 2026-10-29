@@ -11,6 +11,7 @@ export const healthMetricsApi = {
   getRunMetrics(range: {
     createdAfter: string;
     createdBefore: string;
+    timezone: string;
   }): Promise<TenantMetricsReport> {
     return api.get<TenantMetricsReport>('/v1/health/run-metrics', range);
   },
@@ -23,7 +24,9 @@ export const healthMetricsApi = {
   getDiagnostics(): Promise<GetDiagnosticsResponse> {
     return api.get<GetDiagnosticsResponse>('/v1/health/diagnostics');
   },
-  getHealthHistory(): Promise<TenantMetricsHealthHistory> {
-    return api.get<TenantMetricsHealthHistory>('/v1/health/history');
+  getHealthHistory(query: {
+    timezone: string;
+  }): Promise<TenantMetricsHealthHistory> {
+    return api.get<TenantMetricsHealthHistory>('/v1/health/history', query);
   },
 };

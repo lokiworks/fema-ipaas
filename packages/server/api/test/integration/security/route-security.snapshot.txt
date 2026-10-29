@@ -156,7 +156,7 @@ GET /v1/mapping-tables/coverage | PROJECT | USER | WORKFLOW:READ | QUERY:project
 GET /v1/mcp-servers | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-servers/:id | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-servers/:id/usage | TENANT_ANY_MEMBER | USER | - | -
-GET /v1/mcp-services | TENANT_ANY_MEMBER | USER | - | -
+GET /v1/mcp-services | PROJECT | USER | MCP_SERVICE:READ | QUERY:projectId
 GET /v1/mcp-services/:id | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/:id/issues | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/mcp-services/:id/membership | TENANT_ANY_MEMBER | USER | - | -

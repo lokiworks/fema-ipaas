@@ -22,15 +22,21 @@ import { api, API_URL } from '@/lib/api';
 import { mcpServicesApi } from '../api/mcp-services-api';
 
 function useServices({
+  projectId,
   tab,
   search,
+  enabled = true,
 }: {
+  projectId: string;
   tab: McpServiceListTab;
   search: string;
+  enabled?: boolean;
 }) {
   return useQuery({
-    queryKey: [MCP_SERVICES_KEY, 'list', tab, search],
-    queryFn: () => mcpServicesApi.list({ tab, search: search || undefined }),
+    queryKey: [MCP_SERVICES_KEY, 'list', projectId, tab, search],
+    queryFn: () =>
+      mcpServicesApi.list({ projectId, tab, search: search || undefined }),
+    enabled: enabled && projectId.length > 0,
     meta: { showErrorDialog: true, loadSubsetOptions: {} },
   });
 }

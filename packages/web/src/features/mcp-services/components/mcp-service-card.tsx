@@ -1,14 +1,22 @@
 import { McpService, McpServiceStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Server } from 'lucide-react';
+import { FolderKanban, Server } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { UserBadge } from '@/components/custom/user-badge';
 import { Badge } from '@/components/ui/badge';
 import { authenticationSession } from '@/lib/authentication-session';
+import { cn } from '@/lib/utils';
 
-function McpServiceCard({ service }: { service: McpService }) {
+function McpServiceCard({
+  service,
+  currentProjectId,
+}: {
+  service: McpService;
+  currentProjectId: string;
+}) {
+  const projectName = service.projectDisplayName ?? t('Unknown project');
   const navigate = useNavigate();
   const status = statusInfo(service.status);
   return (
@@ -41,6 +49,21 @@ function McpServiceCard({ service }: { service: McpService }) {
       <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">
         {service.description}
       </p>
+      <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+        <FolderKanban className="size-3.5 shrink-0" />
+        <TextWithTooltip tooltipMessage={projectName}>
+          <span
+            className={cn(
+              'truncate',
+              service.projectId !== currentProjectId && 'text-foreground',
+            )}
+          >
+            {service.projectId === currentProjectId
+              ? t('Project: {name} (this project)', { name: projectName })
+              : t('Project: {name}', { name: projectName })}
+          </span>
+        </TextWithTooltip>
+      </div>
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <span>
           {t('{count, plural, =0 {No tools} =1 {1 tool} other {# tools}}', {

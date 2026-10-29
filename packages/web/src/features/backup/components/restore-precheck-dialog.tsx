@@ -31,11 +31,9 @@ import { backupTime } from '../utils/backup-time';
 
 export function RestorePrecheckDialog({
   backup,
-  zone,
   onClose,
 }: {
   backup: BackupListItem;
-  zone: string;
   onClose: () => void;
 }) {
   const { data, isLoading, error } = backupHooks.usePrecheck({ id: backup.id });
@@ -45,7 +43,7 @@ export function RestorePrecheckDialog({
         <DialogHeader>
           <DialogTitle>
             {t('Restore check: {time}', {
-              time: backupTime.inServerZone({ iso: backup.startedAt, zone }),
+              time: backupTime.local({ iso: backup.startedAt }),
             })}
           </DialogTitle>
           <DialogDescription>

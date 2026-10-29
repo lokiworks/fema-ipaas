@@ -39,19 +39,29 @@ interface ProjectSettingsDialogProps {
   open: boolean;
   onClose: () => void;
   initialTab?: TabId;
+  projectId?: string;
 }
 
 export function ProjectSettingsDialog({
   open,
   onClose,
   initialTab = 'general',
+  projectId,
 }: ProjectSettingsDialogProps) {
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
-  const { checkAccess } = useAuthorization();
-  const { project } = projectCollectionUtils.useCurrentProject();
+  const { project: currentProject } =
+    projectCollectionUtils.useCurrentProject();
+  const { data: accessibleProjects } = projectCollectionUtils.useAll();
+  const target = accessibleProjects.find(
+    (candidate) => candidate.id === (projectId ?? currentProject.id),
+  );
+  const project = target ?? currentProject;
+  const isCurrentProject = project.id === currentProject.id;
+  const { checkAccess } = useAuthorization({ projectId: project.id });
   const previousOpenRef = useRef(open);
 
-  const hasGeneralSettings = projectSettingsHooks.useHasGeneralSettings();
+  const hasGeneralSettings =
+    projectSettingsHooks.useHasGeneralSettings() && isCurrentProject;
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -118,7 +128,9 @@ export function ProjectSettingsDialog({
       case 'members':
         return (
           <MembersSettings
+            project={project}
             readonly={!checkAccess(Permission.WRITE_PROJECT_MEMBER)}
+            onCreatedTeamProject={onClose}
           />
         );
       default:
@@ -161,6 +173,10 @@ export function ProjectSettingsDialog({
       </div>
     );
   };
+
+  if (!target) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

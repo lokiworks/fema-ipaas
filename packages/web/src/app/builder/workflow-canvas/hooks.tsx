@@ -252,6 +252,29 @@ export const useFocusOnAddedStep = () => {
   }, [stepNamesKey]);
 };
 
+export const useKeepSelectedStepInView = () => {
+  const [selectedStep, isRunInProgress] = useBuilderStateContext((state) => [
+    state.selectedStep,
+    !isNil(state.run) &&
+      !isExecutionStateTerminal({
+        status: state.run.status,
+        ignoreInternalError: false,
+      }),
+  ]);
+  const reactFlow = useReactFlow();
+
+  useEffect(() => {
+    if (isNil(selectedStep) || isRunInProgress) {
+      return;
+    }
+    workflowCanvasUtils.ensureStepInViewAfterLayout({
+      reactFlow,
+      stepName: selectedStep,
+      marginRatio: SELECTED_STEP_MARGIN_RATIO,
+    });
+  }, [selectedStep]);
+};
+
 export const useShiftForLeftPanel = () => {
   const leftSidebar = useBuilderStateContext((state) => state.leftSidebar);
   const reactFlow = useReactFlow();
@@ -317,8 +340,11 @@ export const workflowCanvasHooks = {
   useIsFocusInsideListMapperModeInput,
   useFocusOnStep,
   useFocusOnAddedStep,
+  useKeepSelectedStepInView,
   useShiftForLeftPanel,
   useResizeCanvas,
   useSwitchToDraft,
   useListenToExistingRun,
 };
+
+const SELECTED_STEP_MARGIN_RATIO = 0.06;

@@ -1,6 +1,7 @@
 import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
+import { useEdgeRunStyle } from '../use-run-path';
 import { workflowCanvasConsts } from '../utils/consts';
 import { LoopStartEdge } from '../utils/types';
 
@@ -16,6 +17,11 @@ export const LoopStartLineCanvasEdge = ({
   source,
   id,
 }: EdgeProps & LoopStartEdge) => {
+  const edgeStyle = useEdgeRunStyle({
+    edgeId: id,
+    source,
+    dimOnly: true,
+  });
   const { isHorizontal, layout, layoutSource, layoutTarget, toCanvasPath } =
     useEdgeLayoutSpace({ sourceX, sourceY, targetX, targetY });
 
@@ -51,7 +57,7 @@ export const LoopStartLineCanvasEdge = ({
     <>
       <BaseEdge
         path={path}
-        style={{ strokeWidth: `${workflowCanvasConsts.LINE_WIDTH}px` }}
+        style={edgeStyle}
         className="relative"
       ></BaseEdge>
       {!data.isLoopEmpty && (

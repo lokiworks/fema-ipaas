@@ -23,7 +23,7 @@ function BuilderLayoutInner({ children }: { children: React.ReactNode }) {
     <SidebarProvider defaultOpen={false} className="h-svh min-h-0">
       {!embedState.isEmbedded && !isCompact && <GlobalRail />}
       {!embedState.isEmbedded && !isCompact && (
-        <ProjectNavColumn className="max-xl:hidden" />
+        <ProjectNavColumn className="max-[1439px]:hidden" />
       )}
       <div
         id={BUILDER_CONTENT_ID}

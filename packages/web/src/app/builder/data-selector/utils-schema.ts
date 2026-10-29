@@ -491,6 +491,124 @@ function buildTreeFromArrayWithSchema({
   };
 }
 
+function buildStructureFromSchema({
+  stepName,
+  displayName,
+  schema,
+  badge,
+}: {
+  stepName: string;
+  displayName: string;
+  schema: OutputSchema;
+  badge: string;
+}): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> {
+  const basePath = pathHelpers.propertyPathStarter(stepName);
+  const children = (schema.fields ?? []).map((field, index) => ({
+    ...buildStructureField({ basePath, field }),
+    key: `${basePath}_structure_${index}`,
+  }));
+  return {
+    key: stepName,
+    data: {
+      type: 'value',
+      value: '',
+      displayName,
+      propertyPath: basePath,
+      insertable: true,
+      stepName,
+      badge,
+      structureOnly: true,
+    },
+    children,
+  };
+}
+
+function buildStructureField({
+  basePath,
+  field,
+}: {
+  basePath: string;
+  field: OutputSchemaField;
+}): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> {
+  const valuePath = field.value ?? field.key;
+  const propertyPath = pathHelpers.appendValuePathToPropertyPath(
+    basePath,
+    valuePath,
+  );
+  const label = schemaUtils.resolveFieldLabel(field);
+  const searchTerms = fieldSearchTerms(field);
+  const listItems = field.listItems ?? [];
+  if (listItems.length > 0) {
+    const itemBase = pathHelpers.appendValuePathToPropertyPath(
+      basePath,
+      `${valuePath}[0]`,
+    );
+    return {
+      key: propertyPath,
+      data: {
+        type: 'value',
+        value: [],
+        displayName: label,
+        propertyPath,
+        insertable: true,
+        structureOnly: true,
+        listField: true,
+        searchTerms,
+      },
+      children: [
+        {
+          key: `${propertyPath}_item_0`,
+          data: {
+            type: 'value',
+            value: {},
+            displayName: `${label} 1`,
+            propertyPath: itemBase,
+            insertable: false,
+            structureOnly: true,
+          },
+          children: listItems.map((child, childIdx) => ({
+            ...buildStructureField({ basePath: itemBase, field: child }),
+            key: `${itemBase}_structure_${childIdx}`,
+          })),
+        },
+      ],
+    };
+  }
+  const children = field.children ?? [];
+  if (children.length > 0) {
+    return {
+      key: propertyPath,
+      data: {
+        type: 'value',
+        value: {},
+        displayName: label,
+        propertyPath,
+        insertable: true,
+        structureOnly: true,
+        searchTerms,
+        format: field.format,
+      },
+      children: children.map((child, childIdx) => ({
+        ...buildStructureField({ basePath: propertyPath, field: child }),
+        key: `${propertyPath}_structure_${childIdx}`,
+      })),
+    };
+  }
+  return {
+    key: propertyPath,
+    data: {
+      type: 'value',
+      value: field.dynamicKey === true ? {} : '',
+      displayName: label,
+      propertyPath,
+      insertable: true,
+      structureOnly: true,
+      searchTerms,
+      format: field.format,
+    },
+  };
+}
+
 function selectArrayTreeKind(
   schema: OutputSchema | null | undefined,
 ): 'wrapper' | 'perItem' | 'plain' {
@@ -500,6 +618,7 @@ function selectArrayTreeKind(
 
 export const schemaTreeUtils = {
   buildTreeFromSchema,
+  buildStructureFromSchema,
   buildTreeFromArray,
   buildTreeFromArrayWithSchema,
   selectArrayTreeKind,

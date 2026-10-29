@@ -4,6 +4,8 @@ import { KeyRound, MessageCircle, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { loginRedirect } from '@/lib/login-redirect';
+import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
 
 import { ssoUtils } from '../utils/sso-utils';
 
@@ -22,6 +24,13 @@ function SsoLoginOptions({ providers, withDivider }: SsoLoginOptionsProps) {
         >
           <a
             href={ssoUtils.startUrl(option.provider)}
+            onClick={() =>
+              loginRedirect.rememberForExternalSignIn(
+                new URLSearchParams(window.location.search).get(
+                  FROM_QUERY_PARAM,
+                ),
+              )
+            }
             data-testid={`sso-start-${option.provider.toLowerCase()}`}
           >
             {providerIcon(option.provider)}

@@ -1,5 +1,5 @@
 import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { Principal, PrincipalType, ProjectType, TenantRole } from '@fema-ipaas/shared'
+import { Principal, PrincipalType, Project, ProjectType, TenantRole } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { projectService } from '../../project/project-service'
 import { userService } from '../../user/user-service'
@@ -24,10 +24,20 @@ export const tenantGuards = {
             return
         }
         const project = await projectService(log).getOne(projectId)
-        if (isNil(project) || project.type !== ProjectType.TEAM) {
+        tenantGuards.assertTeamProject({ project })
+    },
+
+    assertTeamProject({ project }: { project: Pick<Project, 'type'> | null }): void {
+        if (isNil(project)) {
             throw new ApplicationError({
                 code: ErrorCode.AUTHORIZATION,
                 params: { message: 'Operation is only allowed on team projects' },
+            })
+        }
+        if (project.type !== ProjectType.TEAM) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: { message: PERSONAL_PROJECT_HAS_NO_MEMBERS, messageKey: PERSONAL_PROJECT_HAS_NO_MEMBERS },
             })
         }
     },
@@ -42,3 +52,5 @@ type ProjectParams = {
     projectId: string | undefined | null
     log: FastifyBaseLogger
 }
+
+export const PERSONAL_PROJECT_HAS_NO_MEMBERS = 'personalProjectHasNoMembers'

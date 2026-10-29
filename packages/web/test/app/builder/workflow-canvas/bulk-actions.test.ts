@@ -125,3 +125,37 @@ describe('canvasBulkActions.cutSelectedNodes', () => {
     ]);
   });
 });
+
+describe('canvasBulkActions.getActionsInClipboard', () => {
+  const stubClipboard = (readText: () => Promise<string>) =>
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { readText },
+      configurable: true,
+    });
+
+  it.each([
+    ['an empty clipboard', () => Promise.resolve('')],
+    ['plain text', () => Promise.resolve('hello')],
+    ['a denied permission', () => Promise.reject(new Error('denied'))],
+  ])('returns nothing quietly for %s', async (_label, readText) => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {
+      return undefined;
+    });
+    stubClipboard(readText);
+    await expect(canvasBulkActions.getActionsInClipboard()).resolves.toEqual(
+      [],
+    );
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it('reads copied steps back', async () => {
+    const step = codeStep({ name: 'step_1' });
+    stubClipboard(() =>
+      Promise.resolve(JSON.stringify({ type: 'COPY_ACTIONS', actions: [step] })),
+    );
+    await expect(canvasBulkActions.getActionsInClipboard()).resolves.toEqual([
+      step,
+    ]);
+  });
+});

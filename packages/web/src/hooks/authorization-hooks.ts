@@ -7,8 +7,10 @@ import { userHooks } from '@/hooks/user-hooks';
 import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 
-export const useProjectRole = () => {
-  const projectId = authenticationSession.getProjectId();
+export const useProjectRole = ({
+  projectId: scopedProjectId,
+}: ProjectScope = {}) => {
+  const projectId = scopedProjectId ?? authenticationSession.getProjectId();
   return useQuery({
     queryKey: ['project-member-role', projectId],
     queryFn: () =>
@@ -18,8 +20,8 @@ export const useProjectRole = () => {
   });
 };
 
-export const useAuthorization = () => {
-  const { data, isLoading } = useProjectRole();
+export const useAuthorization = ({ projectId }: ProjectScope = {}) => {
+  const { data, isLoading } = useProjectRole({ projectId });
   const granted = useMemo(
     () => new Set(data?.permissions ?? []),
     [data?.permissions],
@@ -39,4 +41,8 @@ export const useIsTenantAdmin = () => {
 export type MyProjectRole = {
   role: DefaultProjectRole | null;
   permissions: string[];
+};
+
+type ProjectScope = {
+  projectId?: string;
 };

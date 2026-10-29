@@ -9,7 +9,6 @@ import { Sparkles, Timer } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { executionUtils } from '@/features/executions';
 import { formatUtils } from '@/lib/format-utils';
@@ -36,9 +35,11 @@ const StepNodeRunDuration = ({
 
 const StepNodeRunDurationAndConnectorName = ({
   stepName,
+  stepDisplayName,
   connectorDisplayName,
 }: {
   stepName: string;
+  stepDisplayName: string;
   connectorDisplayName: string;
 }) => {
   const [run, loopIndexes, workflowVersion, canvasOrientation] =
@@ -49,7 +50,6 @@ const StepNodeRunDurationAndConnectorName = ({
       state.canvasOrientation,
     ]);
   const isHorizontal = canvasOrientation === 'horizontal';
-  const displayNumber = useStepDisplayNumbers()[stepName];
   const pendingReview = useBuilderStateContext((state) => {
     const step = workflowStructureUtil.getStep(
       stepName,
@@ -64,7 +64,10 @@ const StepNodeRunDurationAndConnectorName = ({
   const aiGenerated = useBuilderStateContext(
     (state) => state.workflow.metadata?.['aiGenerated'] === true,
   );
-  const subtitle = displayNumber ?? connectorDisplayName;
+  const subtitle =
+    connectorDisplayName.trim() === stepDisplayName.trim()
+      ? ''
+      : connectorDisplayName;
   const selectedStepOutput = useMemo(() => {
     return run && run.steps
       ? executionUtils.extractStepOutput(stepName, loopIndexes, run.steps)

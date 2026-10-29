@@ -66,6 +66,37 @@ describe('error handling strategies', () => {
         expect(result.getStepOutput('echo_step')?.status).toBe(StepOutputStatus.SUCCEEDED)
     })
 
+    it('exposes the error code, message and time of the failed step to the failure branch', async () => {
+        const result = await run(failingStep({
+            errorHandlingOptions: { strategy: { mode: ErrorStrategyMode.BRANCH }, continueOnFailure: { value: true } },
+            onFailure: buildCodeAction({
+                name: 'echo_step_1',
+                input: {
+                    code: "{{runtime['output']['errorCode']}}",
+                    message: "{{runtime['output']['errorMessage']}}",
+                    time: "{{runtime['output']['errorTime']}}",
+                },
+            }),
+        }))
+
+        const echoed = result.getStepOutput('echo_step_1')?.output
+        expect(echoed).toEqual({ code: 'STEP_FAILED', message: expect.any(String), time: expect.any(String) })
+        expect(result.getStepOutput('runtime')?.status).toBe(StepOutputStatus.FAILED)
+        expect(result.getStepOutput('runtime')?.output).toEqual({ errorCode: 'STEP_FAILED', errorMessage: expect.any(String), errorTime: expect.any(String) })
+    })
+
+    it('leaves the failed step output alone when the success branch is taken', async () => {
+        const result = await run(failingStep({
+            errorHandlingOptions: {
+                strategy: { mode: ErrorStrategyMode.BRANCH },
+                rules: [{ id: 'r1', name: 'ignore generic failures', operator: ErrorCodeOperator.EQUALS_ANY, codes: ['STEP_FAILED'], strategy: { mode: ErrorStrategyMode.IGNORE } }],
+            },
+            onSuccess: buildCodeAction({ name: 'echo_step_1', input: {} }),
+        }))
+
+        expect(result.getStepOutput('runtime')?.output).toBeUndefined()
+    })
+
     it('takes the success branch when a rule ignores the error even though branches exist', async () => {
         const result = await run(failingStep({
             errorHandlingOptions: {

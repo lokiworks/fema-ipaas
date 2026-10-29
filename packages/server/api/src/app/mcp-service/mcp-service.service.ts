@@ -62,22 +62,26 @@ export const mcpServiceMemberRepo = repoFactory(McpServiceMemberEntity)
 export const mcpServiceUsageRepo = repoFactory(McpServiceUsageEntity)
 
 export const mcpServiceService = (log: FastifyBaseLogger) => ({
-    async list({ tenantId, userId, query }: ListParams): Promise<McpService[]> {
-        const memberProjectIds = await connectionAccessService(log).memberProjectIds({ userId, tenantId })
+    async list({ tenantId, userId, projectId, query }: ListParams): Promise<McpService[]> {
         const builder = mcpServiceRepo()
             .createQueryBuilder('service')
             .innerJoin('project', 'project', 'project.id = service."projectId"')
             .where('project."tenantId" = :tenantId AND project.deleted IS NULL', { tenantId })
-        const membership = 'EXISTS (SELECT 1 FROM "mcp_service_member" "viewer_member" WHERE "viewer_member"."serviceId" = service.id AND "viewer_member"."userId" = :userId)'
+        const inProject = 'service."projectId" = :projectId'
+        const obtained = `EXISTS (SELECT 1 FROM "mcp_service_member" "viewer_member" WHERE "viewer_member"."serviceId" = service.id AND "viewer_member"."userId" = :userId) AND (service."ownerId" IS NULL OR service."ownerId" <> :userId)`
+        const marketplace = `service.listed = true AND (service.availability->>'mode' = 'ALL' OR service.availability->'userIds' ? :userId)`
         switch (query.tab ?? McpServiceListTab.ALL) {
             case McpServiceListTab.MINE:
-                builder.andWhere('service."ownerId" = :userId', { userId })
+                builder.andWhere(`${inProject} AND service."ownerId" = :userId`, { projectId, userId })
                 break
             case McpServiceListTab.OBTAINED:
-                builder.andWhere(`${membership} AND (service."ownerId" IS NULL OR service."ownerId" <> :userId)`, { userId })
+                builder.andWhere(obtained, { userId })
+                break
+            case McpServiceListTab.MARKETPLACE:
+                builder.andWhere(marketplace, { userId })
                 break
             default:
-                builder.andWhere(`(service."ownerId" = :userId OR service."projectId" = ANY(:memberProjectIds) OR ${membership} OR (service.listed = true AND (service.availability->>'mode' = 'ALL' OR service.availability->'userIds' ? :userId)))`, { userId, memberProjectIds })
+                builder.andWhere(`(${inProject} OR (${obtained}))`, { projectId, userId })
         }
         if (!isNil(query.search) && query.search.trim().length > 0) {
             builder.andWhere('(service.name ILIKE :search OR service.key ILIKE :search OR service.description ILIKE :search)', { search: `%${query.search.trim()}%` })
@@ -616,6 +620,7 @@ GROUP BY "serviceId"`
 type ListParams = {
     tenantId: string
     userId: string
+    projectId: string
     query: ListMcpServicesRequestQuery
 }
 

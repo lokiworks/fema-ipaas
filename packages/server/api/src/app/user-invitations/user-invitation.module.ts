@@ -25,8 +25,8 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
         const { email, type } = request.body
         switch (type) {
             case InvitationType.PROJECT:
-                await tenantGuards.assertProjectIsTeamType({ projectId: request.body.projectId, log: request.log })
                 await assertPrincipalHasPermissionToProject({ request, projectId: request.body.projectId, permission: Permission.WRITE_INVITATION })
+                await tenantGuards.assertProjectIsTeamType({ projectId: request.body.projectId, log: request.log })
                 break
             case InvitationType.TENANT:
                 await tenantGuards.assertPrincipalIsTenantAdmin({ principal: request.principal, log: request.log })
@@ -60,10 +60,10 @@ const invitationController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/', ListUserInvitationsRequestParams, async (request, reply) => {
-        if (!isNil(request.query.projectId) && request.query.type === InvitationType.PROJECT) {
-            await tenantGuards.assertProjectIsTeamType({ projectId: request.query.projectId, log: request.log })
-        }
         const projectId = await getProjectIdAndAssertPermission({ request, requestQuery: request.query })
+        if (!isNil(projectId) && request.query.type === InvitationType.PROJECT) {
+            await tenantGuards.assertProjectIsTeamType({ projectId, log: request.log })
+        }
         const invitations = await userInvitationsService(request.log).list({
             tenantId: request.principal.tenant.id,
             projectId: request.query.type === InvitationType.PROJECT ? projectId : null,

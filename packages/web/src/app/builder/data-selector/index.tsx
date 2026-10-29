@@ -42,6 +42,7 @@ import {
 import { pathHelpers } from './path-helpers';
 import { DataSelectorTreeNode } from './type';
 import { dataSelectorUtils } from './utils';
+import { useDebugRunSamples } from './use-debug-run-samples';
 import { schemaTreeUtils } from './utils-schema';
 import { VariablesTab } from './variables-tab';
 
@@ -157,8 +158,31 @@ const DataSelector = ({
   const [viewMode, setViewMode] = useState<'friendly' | 'advanced'>('friendly');
   const [showDataSelector, setShowDataSelector] = useState(false);
 
-  const { steps, sampleData, isFocusInsideListMapperModeInput } =
-    useBuilderStateContext(getStepsAndData);
+  const {
+    steps: pathSteps,
+    sampleData: testedSampleData,
+    isFocusInsideListMapperModeInput,
+  } = useBuilderStateContext(getStepsAndData);
+  const debugSamples = useDebugRunSamples({ steps: pathSteps });
+  const steps = useMemo(
+    () =>
+      pathSteps.map((step) =>
+        withDebugTestDate({ step, testedAt: debugSamples.testedAt[step.name] }),
+      ),
+    [pathSteps, debugSamples],
+  );
+  const sampleData = useMemo(
+    () => ({ ...debugSamples.outputs, ...definedEntries(testedSampleData) }),
+    [debugSamples, testedSampleData],
+  );
+  const selectedStepIsLoop = useBuilderStateContext(
+    (state) =>
+      !isNil(state.selectedStep) &&
+      workflowStructureUtil.getStep(
+        state.selectedStep,
+        state.workflowVersion.trigger,
+      )?.type === WorkflowActionType.LOOP_ON_ITEMS,
+  );
   const isTriggerSelected = useBuilderStateContext(
     (state) => state.selectedStep === 'trigger',
   );
@@ -310,35 +334,56 @@ const DataSelector = ({
           // A whole-output wrapper schema (single value:'' field) names the
           // array itself — render it object-style so the wrapper field sits at
           // the top with rows beneath, instead of wrapping each row in Item N.
-          if (schema && arrayKind === 'wrapper') {
-            return schemaTreeUtils.buildTreeFromSchema({
+          const arrayTree =
+            schema && arrayKind === 'wrapper'
+              ? schemaTreeUtils.buildTreeFromSchema({
+                  stepName: step.name,
+                  displayName,
+                  schema,
+                  sampleData: stepData,
+                })
+              : schema && arrayKind === 'perItem'
+              ? schemaTreeUtils.buildTreeFromArrayWithSchema({
+                  stepName: step.name,
+                  displayName,
+                  schema,
+                  items: stepData,
+                })
+              : schemaTreeUtils.buildTreeFromArray({
+                  stepName: step.name,
+                  displayName,
+                  items: stepData,
+                });
+          return dataSelectorUtils.applyContinueOnFailureView({
+            step,
+            stepNode: arrayTree,
+            targetStepName: selectedStepName,
+          });
+        }
+
+        if (schema && dataSelectorUtils.stepNeedsTesting(step)) {
+          return dataSelectorUtils.applyContinueOnFailureView({
+            step,
+            stepNode: schemaTreeUtils.buildStructureFromSchema({
               stepName: step.name,
               displayName,
               schema,
-              sampleData: stepData,
-            });
-          }
-          if (schema && arrayKind === 'perItem') {
-            return schemaTreeUtils.buildTreeFromArrayWithSchema({
-              stepName: step.name,
-              displayName,
-              schema,
-              items: stepData,
-            });
-          }
-          return schemaTreeUtils.buildTreeFromArray({
-            stepName: step.name,
-            displayName,
-            items: stepData,
+              badge: t('Not tested · sample structure'),
+            }),
+            targetStepName: selectedStepName,
           });
         }
 
         if (schema) {
-          return schemaTreeUtils.buildTreeFromSchema({
-            stepName: step.name,
-            displayName,
-            schema,
-            sampleData: stepData,
+          return dataSelectorUtils.applyContinueOnFailureView({
+            step,
+            stepNode: schemaTreeUtils.buildTreeFromSchema({
+              stepName: step.name,
+              displayName,
+              schema,
+              sampleData: stepData,
+            }),
+            targetStepName: selectedStepName,
           });
         }
         try {
@@ -367,9 +412,13 @@ const DataSelector = ({
     ],
   );
 
+  const stepStructure =
+    viewMode === 'friendly' ? friendlyStructure : advancedStructure;
   const currentStructure = [
     ...loopVariableNodes,
-    ...(viewMode === 'friendly' ? friendlyStructure : advancedStructure),
+    ...(selectedStepIsLoop
+      ? listOnlyNodes({ nodes: stepStructure })
+      : stepStructure),
   ];
   const [debouncedSearchTerm] = useDebounce(searchTerm, 250);
   const filteredNodes = useMemo(
@@ -568,7 +617,17 @@ const DataSelector = ({
                   ></DataSelectorNode>
                 )}
               />
-              {filteredNodes.length === 0 && (
+              {filteredNodes.length === 0 &&
+                selectedStepIsLoop &&
+                debouncedSearchTerm.length === 0 && (
+                  <div className="mx-5 mt-5 text-sm text-muted-foreground">
+                    {t(
+                      'No list fields in the upstream steps. Loop items need a list, such as the employees returned by a search step.',
+                    )}
+                  </div>
+                )}
+              {filteredNodes.length === 0 &&
+                !(selectedStepIsLoop && debouncedSearchTerm.length === 0) && (
                 <div className="flex items-center justify-center gap-2 mt-5  flex-col">
                   <SearchXIcon className="w-[35px] h-[35px]"></SearchXIcon>
                   <div className="text-center font-semibold text-md">
@@ -632,6 +691,62 @@ function buildLoopVariableNodes({
       children,
     },
   ];
+}
+
+function withDebugTestDate({
+  step,
+  testedAt,
+}: {
+  step: StepInfo;
+  testedAt: string | undefined;
+}): StepInfo {
+  if (isNil(testedAt)) {
+    return step;
+  }
+  const settings = {
+    ...step.settings,
+    sampleData: { ...step.settings.sampleData, lastTestDate: testedAt },
+  };
+  return Object.assign({}, step, { settings });
+}
+
+function definedEntries(
+  record: Record<string, unknown>,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(record).filter(([, value]) => value !== undefined),
+  );
+}
+
+function listOnlyNodes({
+  nodes,
+}: {
+  nodes: DataSelectorTreeNode[];
+}): DataSelectorTreeNode[] {
+  return nodes.flatMap((node) => {
+    if (node.data.type !== 'value') {
+      const children = listOnlyNodes({ nodes: node.children ?? [] });
+      return node.data.type === 'test' || children.length > 0
+        ? [{ ...node, children: node.children ? children : undefined }]
+        : [];
+    }
+    const isList =
+      Array.isArray(node.data.value) || node.data.listField === true;
+    if (isList) {
+      return [{ ...node, children: undefined }];
+    }
+    const children = listOnlyNodes({ nodes: node.children ?? [] });
+    if (children.length === 0) {
+      return [];
+    }
+    return [
+      {
+        ...node,
+        data: { ...node.data, insertable: false },
+        children,
+      },
+    ];
+  });
 }
 
 function fitAroundNode({

@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { limitsHooks } from '@/features/limits';
 import { projectMembersHooks } from '@/features/project-members/hooks/project-members-hooks';
+import { projectSharingUtils } from '@/features/project-members/utils/project-sharing-utils';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -36,6 +37,7 @@ export function OverviewSideCards({
     ownerName: directoryItem?.ownerName,
   });
   const me = authenticationSession.getCurrentUserId();
+  const personal = projectSharingUtils.isPersonal(project);
   const workflowsLimit = context.workflowsLimit;
   const { data: limitsUsage, isLoading: usageLoading } =
     limitsHooks.useProjectUsage(project.id);
@@ -47,7 +49,7 @@ export function OverviewSideCards({
       <Card
         title={t('Project members')}
         action={
-          permissions.canEdit ? (
+          permissions.canEdit && !personal ? (
             <Button type="button" variant="ghost" size="xs" onClick={onShare}>
               <UserPlus />
               {t('Share')}
@@ -69,13 +71,21 @@ export function OverviewSideCards({
                 {member.userId === me ? ` ${t('(you)')}` : ''}
               </span>
               <span className="text-xs text-muted-foreground">
-                {projectRoleLabels.label(member.role)}
+                {projectRoleLabels.memberLabel({
+                  role: member.role,
+                  isOwner: member.isOwner,
+                })}
               </span>
             </div>
           ))}
           {members.length === 0 && (
             <span className="text-sm text-muted-foreground">
               {t('No members yet')}
+            </span>
+          )}
+          {personal && (
+            <span className="text-xs text-muted-foreground">
+              {projectSharingUtils.personalReason()}
             </span>
           )}
           {members.length > MEMBERS_SHOWN && (
@@ -96,7 +106,12 @@ export function OverviewSideCards({
           <dt className="text-muted-foreground">{t('Owner')}</dt>
           <dd className="truncate">{directoryItem?.ownerName ?? '—'}</dd>
           <dt className="text-muted-foreground">{t('My access')}</dt>
-          <dd>{projectRoleLabels.label(context.role)}</dd>
+          <dd>
+            {projectRoleLabels.memberLabel({
+              role: context.role,
+              isOwner: project.ownerId === me,
+            })}
+          </dd>
           <dt className="text-muted-foreground">{t('Environments')}</dt>
           <dd>
             <Button

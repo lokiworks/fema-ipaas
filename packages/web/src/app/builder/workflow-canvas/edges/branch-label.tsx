@@ -22,9 +22,11 @@ import {
 } from '../../../../components/ui/dropdown-menu';
 import { cn } from '../../../../lib/utils';
 import { useBuilderStateContext } from '../../builder-hooks';
+import { useRunPath } from '../use-run-path';
 import { workflowCanvasConsts } from '../utils/consts';
 import { useDeleteConfirmation } from '../utils/delete-confirmation-store';
 import { deleteImpactUtils } from '../utils/delete-impact';
+import { runPathUtils } from '../utils/run-path';
 import { workflowCanvasUtils } from '../utils/workflow-canvas-utils';
 import { workflowScreenshotUtils } from '../utils/workflow-screenshot-utils';
 
@@ -97,6 +99,16 @@ const BranchLabel = (props: BaseBranchLabel) => {
     branchIndex === selectedBranchIndex;
   const { fitView } = useReactFlow();
   const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false);
+  const runPath = useRunPath();
+  const branchRunState = isNil(runPath)
+    ? null
+    : runPath.branchStates[
+        runPathUtils.branchKey({
+          stepName: props.sourceNodeName,
+          branchIndex: branchIndex ?? (isOnFailureBranch ? 1 : 0),
+          failureBranch: isCofBranch,
+        })
+      ] ?? null;
 
   if (isNil(step)) {
     return <></>;
@@ -115,7 +127,9 @@ const BranchLabel = (props: BaseBranchLabel) => {
       }}
     >
       <div
-        className="bg-builder-background pointer-events-auto"
+        className={cn('bg-builder-background pointer-events-auto', {
+          'opacity-40': branchRunState === 'skipped',
+        })}
         style={{
           paddingTop: workflowCanvasConsts.LABEL_VERTICAL_PADDING / 2 + 'px',
           paddingBottom: workflowCanvasConsts.LABEL_VERTICAL_PADDING / 2 + 'px',
@@ -125,7 +139,9 @@ const BranchLabel = (props: BaseBranchLabel) => {
           className={cn(
             'flex items-center justify-center gap-0.5 select-none transition-all rounded-md  text-sm border  border-solid bg-primary-100/30 dark:bg-primary-100/15  border-primary/50   px-2 text-primary/80 dark:text-primary/90   hover:text-primary hover:border-primary',
             {
-              'border-primary text-primary': isBranchSelected,
+              'border-primary text-primary':
+                isBranchSelected || branchRunState === 'taken',
+              'ring-2 ring-primary/40': branchRunState === 'taken',
               'bg-border/60 text-foreground/70 dark:text-foreground/70  border-border hover:text-foreground/70 hover:bg-border/60 hover:border-border cursor-default':
                 isOtherwiseBranch,
               'text-success-800 bg-success-50 border-success-200 dark:text-success-200 dark:bg-success-900 dark:border-success-800 hover:text-success-800 hover:bg-success-50 hover:border-success-200 cursor-default':

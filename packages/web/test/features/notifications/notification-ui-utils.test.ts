@@ -75,7 +75,7 @@ describe('notificationUiUtils', () => {
         }),
         connectorDisplayName: undefined,
       }),
-    ).toBe('Developer');
+    ).toBe('Can edit');
     expect(
       notificationUiUtils.bodyText({
         notification: notification({ body: null }),

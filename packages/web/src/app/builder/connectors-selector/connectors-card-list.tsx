@@ -157,6 +157,7 @@ export const ConnectorsCardList: React.FC<ConnectorsCardListProps> = ({
                       <ConnectorGridItem
                         key={connectorMetadata.displayName}
                         connectorMetadata={connectorMetadata}
+                        operation={operation}
                         isTemporaryDisabledUntilNextCursorMove={!mouseMoved}
                       />
                     ))}

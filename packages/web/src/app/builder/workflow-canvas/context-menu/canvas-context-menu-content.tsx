@@ -471,7 +471,7 @@ export const CanvasContextMenuContent = ({
                   });
                 }}
               >
-                {t('Failure')}
+                {t('On failure')}
               </ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>

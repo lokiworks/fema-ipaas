@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   BACKUP_KEEP_MAX,
   BACKUP_KEEP_MIN,
@@ -40,27 +41,49 @@ import { backupText } from '../utils/backup-text';
 import { backupTime } from '../utils/backup-time';
 
 export function BackupPlanCard({ overview }: { overview: BackupOverview }) {
+  const shiftMinutes = backupTime.planShiftMinutes({
+    serverZone: overview.serverTimezone,
+    at: new Date(),
+  });
   return (
     <BackupPlanForm
-      key={JSON.stringify(overview.settings)}
+      key={JSON.stringify({ settings: overview.settings, shiftMinutes })}
       overview={overview}
+      shiftMinutes={shiftMinutes}
     />
   );
 }
 
-function BackupPlanForm({ overview }: { overview: BackupOverview }) {
+function BackupPlanForm({
+  overview,
+  shiftMinutes,
+}: {
+  overview: BackupOverview;
+  shiftMinutes: number | null;
+}) {
   const update = backupHooks.useUpdateSettings();
   const form = useForm<UpdateBackupSettingsRequestBody>({
     resolver: zodResolver(UpdateBackupSettingsRequestBody),
     mode: 'onChange',
-    defaultValues: overview.settings,
+    defaultValues: isNil(shiftMinutes)
+      ? overview.settings
+      : backupTime.shiftPlan({
+          plan: overview.settings,
+          minutes: shiftMinutes,
+        }),
   });
+  const submit = (values: UpdateBackupSettingsRequestBody) =>
+    update.mutate(
+      isNil(shiftMinutes)
+        ? values
+        : backupTime.shiftPlan({ plan: values, minutes: -shiftMinutes }),
+    );
   const enabled = form.watch('enabled');
   const frequency = form.watch('frequency');
   const keepOptions = keepOptionsOf({ saved: overview.settings.keep });
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((values) => update.mutate(values))}>
+      <form onSubmit={form.handleSubmit(submit)}>
         <Card>
           <CardHeader className="flex flex-row items-start justify-between gap-4">
             <div className="flex flex-col gap-1.5">
@@ -181,9 +204,13 @@ function BackupPlanForm({ overview }: { overview: BackupOverview }) {
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      {t('Server time zone: {zone}', {
-                        zone: overview.serverTimezone,
-                      })}
+                      {isNil(shiftMinutes)
+                        ? t('Server time zone: {zone}', {
+                            zone: overview.serverTimezone,
+                          })
+                        : t('Your time zone: {zone}', {
+                            zone: backupTime.localZone(),
+                          })}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -285,10 +312,7 @@ function nextRunText({ overview }: { overview: BackupOverview }): string {
     return t('No scheduled backup is planned.');
   }
   return t('Next scheduled backup: {time}', {
-    time: backupTime.inServerZone({
-      iso: overview.nextRunAt,
-      zone: overview.serverTimezone,
-    }),
+    time: backupTime.local({ iso: overview.nextRunAt }),
   });
 }
 

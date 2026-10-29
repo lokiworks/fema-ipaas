@@ -70,7 +70,11 @@ const DataSelectorNodeContent = ({
     node.data.type === 'value' && Array.isArray(node.data.value)
       ? (node.data.value as unknown[])
       : null;
-  const showArrayCount = isExpandable && arrayValue !== null;
+  const structureOnly =
+    node.data.type === 'value' && node.data.structureOnly === true;
+  const dimmed = node.data.type === 'value' && node.data.dimmed === true;
+  const badge = node.data.type === 'value' ? node.data.badge : undefined;
+  const showArrayCount = isExpandable && arrayValue !== null && !structureOnly;
 
   const handleClick = (e: React.MouseEvent) => {
     if (isExpandable) {
@@ -84,7 +88,8 @@ const DataSelectorNodeContent = ({
     }
   };
 
-  const showValuePreview = (isLeafValue || isPrimitiveStepRoot) && isInsertable;
+  const showValuePreview =
+    (isLeafValue || isPrimitiveStepRoot) && isInsertable && !structureOnly;
   const valuePreview =
     showValuePreview && node.data.type === 'value'
       ? formatValuePreview(node.data.value)
@@ -136,10 +141,17 @@ const DataSelectorNodeContent = ({
                 isStepRoot
                   ? 'font-medium text-foreground text-sm'
                   : 'text-foreground text-sm',
+                dimmed && 'text-muted-foreground',
                 node.data.displayNameClassName,
               )}
             >
               {node.data.displayName}
+            </span>
+          )}
+
+          {badge && (
+            <span className="shrink-0 rounded-sm bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground">
+              {badge}
             </span>
           )}
 

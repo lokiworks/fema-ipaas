@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { runMonitorUtils } from '@/features/run-monitor';
+
 import { healthMetricsApi } from './health-metrics-api';
 
 const LIVE_REFETCH_INTERVAL_MS = 15 * 1000;
@@ -9,13 +11,15 @@ export const healthMetricsQueries = {
     range: { createdAfter: string; createdBefore: string },
     enabled = true,
   ) => {
+    const timezone = runMonitorUtils.browserTimezone();
     return useQuery({
       queryKey: [
         'tenant-metrics-report',
         range.createdAfter,
         range.createdBefore,
+        timezone,
       ],
-      queryFn: () => healthMetricsApi.getRunMetrics(range),
+      queryFn: () => healthMetricsApi.getRunMetrics({ ...range, timezone }),
       enabled,
       meta: { showErrorDialog: true, loadSubsetOptions: {} },
     });
@@ -44,9 +48,10 @@ export const healthMetricsQueries = {
     });
   },
   useHealthHistory: (enabled = true) => {
+    const timezone = runMonitorUtils.browserTimezone();
     return useQuery({
-      queryKey: ['tenant-metrics-health-history'],
-      queryFn: () => healthMetricsApi.getHealthHistory(),
+      queryKey: ['tenant-metrics-health-history', timezone],
+      queryFn: () => healthMetricsApi.getHealthHistory({ timezone }),
       enabled,
     });
   },

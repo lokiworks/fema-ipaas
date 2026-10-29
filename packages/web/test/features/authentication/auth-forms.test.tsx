@@ -122,7 +122,7 @@ describe('auth forms', () => {
       await clickButton('Sign in');
 
       expect(pageText()).toContain('Email is invalid');
-      expect(pageText()).toContain('Password is required');
+      expect(pageText()).toContain('Enter your password');
       expect(pageText()).not.toContain('must match pattern');
       expect(pageText()).not.toContain('Too small');
       expect(mocks.signIn).not.toHaveBeenCalled();
@@ -133,7 +133,8 @@ describe('auth forms', () => {
 
       await clickButton('Sign in');
 
-      expect(pageText()).toContain('Required');
+      expect(pageText()).toContain('Enter your email');
+      expect(pageText()).toContain('Enter your password');
       expect(pageText()).not.toContain('Email is invalid');
       expect(mocks.signIn).not.toHaveBeenCalled();
     });

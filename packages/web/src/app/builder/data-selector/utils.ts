@@ -8,6 +8,7 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
+import { FieldFormat } from '@/components/custom/smart-output-viewer/types';
 import { connectorSelectorUtils } from '@/features/connectors';
 
 import { pathHelpers } from './path-helpers';
@@ -21,6 +22,13 @@ import {
 type PathSegment = string | number;
 
 const JOINED_VALUES_MAX_LENGTH = 32;
+
+const FAILURE_FIELDS: { key: string; label: string; format?: FieldFormat }[] =
+  [
+    { key: 'errorCode', label: 'Failure error code' },
+    { key: 'errorMessage', label: 'Failure error message' },
+    { key: 'errorTime', label: 'Failure time', format: 'datetime' },
+  ];
 
 function buildTestStepNode(
   displayName: string,
@@ -273,6 +281,19 @@ function getSearchableValue(
   return '';
 }
 
+function stepNeedsTesting(
+  step: (WorkflowAction | WorkflowTrigger) & { dfsIndex: number },
+): boolean {
+  return (
+    isNil(step.settings.sampleData?.lastTestDate) &&
+    (step.type !== WorkflowTriggerType.CONNECTOR ||
+      !connectorSelectorUtils.isManualTrigger({
+        connectorName: step.settings.connectorName,
+        triggerName: step.settings.triggerName ?? '',
+      }))
+  );
+}
+
 function traverseStep(
   step: (WorkflowAction | WorkflowTrigger) & { dfsIndex: number },
   sampleData: Record<string, unknown>,
@@ -280,15 +301,12 @@ function traverseStep(
   targetStepName: string,
 ): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> {
   const displayName = `${step.dfsIndex + 1}. ${step.displayName}`;
-  const stepNeedsTesting =
-    isNil(step.settings.sampleData?.lastTestDate) &&
-    (step.type !== WorkflowTriggerType.CONNECTOR ||
-      !connectorSelectorUtils.isManualTrigger({
-        connectorName: step.settings.connectorName,
-        triggerName: step.settings.triggerName ?? '',
-      }));
-  if (stepNeedsTesting) {
-    return buildTestStepNode(displayName, step.name);
+  if (stepNeedsTesting(step)) {
+    return applyContinueOnFailureView({
+      step,
+      stepNode: buildTestStepNode(displayName, step.name),
+      targetStepName,
+    });
   }
   if (step.type === WorkflowActionType.LOOP_ON_ITEMS) {
     const copiedSampleData = JSON.parse(JSON.stringify(sampleData[step.name]));
@@ -317,77 +335,116 @@ function traverseStep(
   if (stepNode.data.type === 'value') {
     stepNode.data = { ...stepNode.data, stepName: step.name };
   }
+  const branch = workflowCanvasUtils.hasContinueOnFailureBranches(step)
+    ? workflowCanvasUtils.getStepBranchRelativeTo(step, targetStepName)
+    : null;
+  const wrapsPrimitiveOutput =
+    !isNil(branch) &&
+    branch !== 'on-failure' &&
+    isNil(stepNode.children) &&
+    stepNode.data.type === 'value';
+  const nodeWithOutputLeaf: DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> =
+    wrapsPrimitiveOutput && stepNode.data.type === 'value'
+      ? {
+          ...stepNode,
+          data: { ...stepNode.data, insertable: false },
+          children: [
+            {
+              key: `${step.name}_output`,
+              data: {
+                type: 'value',
+                displayName: t('Output'),
+                propertyPath: pathHelpers.propertyPathStarter(step.name),
+                value: stepNode.data.value,
+                insertable: true,
+                hideStepIcon: true,
+              },
+            },
+          ],
+        }
+      : stepNode;
+  return applyContinueOnFailureView({
+    step,
+    stepNode: nodeWithOutputLeaf,
+    targetStepName,
+  });
+}
 
-  const cofEnabled = workflowCanvasUtils.hasContinueOnFailureBranches(step);
-  if (cofEnabled) {
-    const branch = workflowCanvasUtils.getStepBranchRelativeTo(
-      step,
-      targetStepName,
-    );
-    if (
-      branch !== 'on-failure' &&
-      isNil(stepNode.children) &&
-      stepNode.data.type === 'value'
-    ) {
-      const outputLeaf: DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> = {
-        key: `${step.name}_output`,
-        data: {
-          type: 'value',
-          displayName: t('Output'),
-          propertyPath: pathHelpers.propertyPathStarter(step.name),
-          value: stepNode.data.value,
-          insertable: true,
-          hideStepIcon: true,
-        },
-      };
-      stepNode.data = { ...stepNode.data, insertable: false };
-      stepNode.children = [outputLeaf];
-    }
-
-    const errorMessageLeaf: DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> =
-      {
-        key: `${step.name}_error_message`,
-        data: {
-          type: 'value',
-          displayName: t('Error message'),
-          propertyPath: `${step.name}['error']['message']`,
-          value: '---runtime error message---',
-          insertable: true,
-        },
-      };
-
-    if (branch === 'on-failure') {
-      if (stepNode.data.type === 'value') {
-        stepNode.data = { ...stepNode.data, insertable: false };
-      }
-      stepNode.children = [errorMessageLeaf];
-    } else if (branch !== 'on-success') {
-      const onSuccessNode: DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> =
-        {
-          key: `${step.name}_on_success`,
-          data: {
-            type: 'chunk',
-            displayName: t('On success'),
-            displayNameClassName: 'text-success-800 dark:text-success-200',
-          },
-          children: stepNode.children,
-        };
-      const onFailureNode: DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> =
-        {
-          key: `${step.name}_on_failure`,
-          data: {
-            type: 'chunk',
-            displayName: t('On failure'),
-            displayNameClassName:
-              'text-destructive-800 dark:text-destructive-200',
-          },
-          children: [errorMessageLeaf],
-        };
-      stepNode.children = [onSuccessNode, onFailureNode];
-    }
+function applyContinueOnFailureView({
+  step,
+  stepNode,
+  targetStepName,
+}: {
+  step: WorkflowAction | WorkflowTrigger;
+  stepNode: DataSelectorTreeNode<DataSelectorTreeNodeDataUnion>;
+  targetStepName: string;
+}): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion> {
+  if (!workflowCanvasUtils.hasContinueOnFailureBranches(step)) {
+    return stepNode;
   }
+  const branch = workflowCanvasUtils.getStepBranchRelativeTo(
+    step,
+    targetStepName,
+  );
+  if (branch === 'on-success') {
+    return stepNode;
+  }
+  const failureLeaves = buildFailureLeaves(step.name);
+  if (branch === 'on-failure') {
+    return {
+      ...stepNode,
+      data:
+        stepNode.data.type === 'value'
+          ? { ...stepNode.data, insertable: false }
+          : stepNode.data,
+      children: failureLeaves,
+    };
+  }
+  return {
+    ...stepNode,
+    children: [
+      {
+        key: `${step.name}_on_success`,
+        data: {
+          type: 'chunk',
+          displayName: t('On success'),
+          displayNameClassName: 'text-success-800 dark:text-success-200',
+        },
+        children: stepNode.children,
+      },
+      {
+        key: `${step.name}_on_failure`,
+        data: {
+          type: 'chunk',
+          displayName: t('On failure'),
+          displayNameClassName: 'text-destructive-800 dark:text-destructive-200',
+        },
+        children: failureLeaves,
+      },
+    ],
+  };
+}
 
-  return stepNode;
+function buildFailureLeaves(
+  stepName: string,
+): DataSelectorTreeNode<DataSelectorTreeNodeDataUnion>[] {
+  return FAILURE_FIELDS.map(({ key, label, format }) => ({
+    key: `${stepName}_failure_${key}`,
+    data: {
+      type: 'value',
+      displayName: t(label),
+      propertyPath: pathHelpers.convertValuePathToPropertyPath(stepName, key),
+      value: '',
+      insertable: true,
+      structureOnly: true,
+      format,
+    },
+  }));
+}
+
+function failureFieldLabelOf(key: string): string | null {
+  const field = FAILURE_FIELDS.find((candidate) => candidate.key === key);
+  return isNil(field) ? null : t(field.label);
 }
 
 function filterBy(
@@ -490,6 +547,9 @@ export const dataSelectorUtils = {
   ): node is DataSelectorTreeNode<DataSelectorTestNodeData> =>
     node.data.type === 'test',
   traverseStep,
+  stepNeedsTesting,
+  applyContinueOnFailureView,
+  failureFieldLabelOf,
   filterBy,
   flattenVisibleRows,
 };

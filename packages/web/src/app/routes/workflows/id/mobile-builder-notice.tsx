@@ -189,18 +189,33 @@ function collectBranchLabels({
 }: {
   steps: Step[];
 }): Record<string, string | undefined> {
-  const pairs = steps.flatMap((step) => {
-    if (
-      step.type !== WorkflowActionType.ROUTER &&
-      step.type !== WorkflowActionType.PARALLEL
-    ) {
-      return [];
+  const pairs = steps.flatMap((step): [string, string | undefined][] => {
+    switch (step.type) {
+      case WorkflowActionType.ROUTER:
+      case WorkflowActionType.PARALLEL:
+        return step.children.flatMap(
+          (child, index): [string, string | undefined][] =>
+            isNil(child)
+              ? []
+              : [[child.name, step.settings.branches[index]?.branchName]],
+        );
+      case WorkflowActionType.CODE:
+      case WorkflowActionType.CONNECTOR:
+      case WorkflowActionType.COMPONENT: {
+        const onSuccess = step.continueOnFailureBranches?.onSuccess;
+        const onFailure = step.continueOnFailureBranches?.onFailure;
+        return [
+          ...(isNil(onSuccess)
+            ? []
+            : [[onSuccess.name, t('Success')] satisfies [string, string]]),
+          ...(isNil(onFailure)
+            ? []
+            : [[onFailure.name, t('On failure')] satisfies [string, string]]),
+        ];
+      }
+      default:
+        return [];
     }
-    return step.children.flatMap((child, index) =>
-      isNil(child)
-        ? []
-        : [[child.name, step.settings.branches[index]?.branchName]],
-    );
   });
   return Object.fromEntries(pairs);
 }

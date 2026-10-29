@@ -10,12 +10,18 @@ import {
   ConnectorAction,
   ConnectorTrigger,
   PropertyExecutionType,
+  WorkflowActionType,
+  WorkflowTrigger,
+  WorkflowTriggerType,
+  workflowStructureUtil,
 } from '@fema-ipaas/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Plus, Globe, Cable, Check, Unplug, X, LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { AutoFormFieldWrapper } from '@/app/builder/connector-properties/auto-form-field-wrapper';
 import { CreateOrEditConnectionDialog } from '@/app/connections/create-edit-connection-dialog';
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
@@ -58,6 +64,10 @@ function ConnectionSelect(params: ConnectionSelectProps) {
     version: reconnectConnection?.connectorVersion ?? params.connector.version,
   });
   const form = useFormContext<ConnectorAction | ConnectorTrigger>();
+  const queryClient = useQueryClient();
+  const trigger = useBuilderStateContext(
+    (state) => state.workflowVersion.trigger,
+  );
   const hasPermissionToCreateConnection = useAuthorization().checkAccess(
     Permission.WRITE_CONNECTION,
   );
@@ -123,7 +133,7 @@ function ConnectionSelect(params: ConnectionSelectProps) {
       name={'settings.input.auth'}
       render={({ field }) => (
         <>
-          <AutoPickSingleConnection
+          <AutoPickConnection
             enabled={
               !params.disabled &&
               !isLoadingConnections &&
@@ -131,6 +141,12 @@ function ConnectionSelect(params: ConnectionSelectProps) {
               !dynamicInputModeToggled
             }
             connections={connections?.data ?? []}
+            preferredExternalId={reusedConnectionOf({
+              trigger,
+              connectorName: params.connector.name,
+              stepName: form.getValues().name,
+              connections: connections?.data ?? [],
+            })}
             onPick={(externalId) => field.onChange(addBrackets(externalId))}
           />
           {(isLoadingConnections || !connectorWithCorrectVersion) && (
@@ -172,6 +188,9 @@ function ConnectionSelect(params: ConnectionSelectProps) {
                     setConnectionDialogOpen(open);
                     if (connection) {
                       refetch();
+                      void queryClient.invalidateQueries({
+                        queryKey: ['connections'],
+                      });
                       field.onChange(addBrackets(connection.externalId));
                     }
                   }}
@@ -376,25 +395,71 @@ type ConnectionSelectProps = {
   connector: ConnectorMetadataModelSummary | ConnectorMetadataModel;
   isTrigger: boolean;
 };
-function AutoPickSingleConnection({
+function AutoPickConnection({
   enabled,
   connections,
+  preferredExternalId,
   onPick,
 }: {
   enabled: boolean;
   connections: ConnectionWithoutSensitiveData[];
+  preferredExternalId: string | null;
   onPick: (externalId: string) => void;
 }) {
   const picked = useRef(false);
-  const only = connectionUtils.onlyUsableConnection(connections);
+  const pick =
+    preferredExternalId ??
+    connectionUtils.onlyUsableConnection(connections)?.externalId ??
+    null;
   useEffect(() => {
-    if (!enabled || picked.current || isNil(only)) {
+    if (!enabled || picked.current || isNil(pick)) {
       return;
     }
     picked.current = true;
-    onPick(only.externalId);
-  }, [enabled, only, onPick]);
+    onPick(pick);
+  }, [enabled, pick, onPick]);
   return null;
+}
+
+function reusedConnectionOf({
+  trigger,
+  connectorName,
+  stepName,
+  connections,
+}: {
+  trigger: WorkflowTrigger;
+  connectorName: string;
+  stepName: string;
+  connections: ConnectionWithoutSensitiveData[];
+}): string | null {
+  const usable = new Set(
+    connections
+      .filter((connection) => connection.status === ConnectionStatus.ACTIVE)
+      .map((connection) => connection.externalId),
+  );
+  const candidates = workflowStructureUtil
+    .getAllSteps(trigger)
+    .flatMap((step) => {
+      const isSameConnector =
+        (step.type === WorkflowActionType.CONNECTOR ||
+          step.type === WorkflowTriggerType.CONNECTOR) &&
+        step.settings.connectorName === connectorName &&
+        step.name !== stepName;
+      const auth = isSameConnector ? step.settings.input?.auth : undefined;
+      const externalId =
+        typeof auth === 'string' ? removeBrackets(auth) : undefined;
+      return !isNil(externalId) && usable.has(externalId)
+        ? [{ externalId, updatedAt: step.lastUpdatedDate ?? '' }]
+        : [];
+    });
+  const latest = candidates.reduce<
+    { externalId: string; updatedAt: string } | undefined
+  >(
+    (best, candidate) =>
+      isNil(best) || candidate.updatedAt > best.updatedAt ? candidate : best,
+    undefined,
+  );
+  return latest?.externalId ?? null;
 }
 
 function addBrackets(str: string) {

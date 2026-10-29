@@ -1,5 +1,6 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { EngineGenericError, EngineResponse, EngineResponseStatus, ExecuteTriggerResponse, ExecuteWorkflowOperation, ExecutionError, ExecutionErrorType, ExecutionState, ExecutionStatus, ExecutionType, GenericStepOutput, LoopStepOutput, ResumePayload, ResumeReason, StepOutput, StepOutputStatus, TriggerHookType, TriggerPayload, WorkflowActionType, workflowStructureUtil } from '@fema-ipaas/shared'
+import dayjs from 'dayjs'
 import { engineFileApi } from '../api/engine-file-api'
 import { triggerRunner } from '../core/connector/trigger-runner'
 import { EngineConstants, ResolvedBeginExecuteWorkflowOperation, ResolvedExecuteWorkflowOperation } from '../handler/context/engine-constants'
@@ -103,6 +104,11 @@ const executeSingleStepOrWorkflow = async (input: ResolvedExecuteWorkflowOperati
         if (executionState.verdict.status !== ExecutionStatus.RUNNING) {
             return executionState
         }
+        await executionProgressReporter.sendUpdate({
+            engineConstants: constants,
+            workflowExecutorContext: executionState,
+            startTime: dayjs().toISOString(),
+        })
         return workflowExecutor.execute({
             action: step,
             executionState,

@@ -1,19 +1,23 @@
 import {
   ConnectorIcon,
+  ConnectorSelectorOperation,
   StepMetadataWithSuggestions,
 } from '@/features/connectors';
 import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../builder-hooks';
 
+import { usePickConnector } from './use-pick-connector';
+
 export function ConnectorGridItem({
   connectorMetadata,
+  operation,
   isTemporaryDisabledUntilNextCursorMove,
 }: ConnectorGridItemProps) {
-  const [selected, setSelected] = useBuilderStateContext((state) => [
-    state.selectedConnectorMetadataInConnectorSelector,
-    state.setSelectedConnectorMetadataInConnectorSelector,
-  ]);
+  const selected = useBuilderStateContext(
+    (state) => state.selectedConnectorMetadataInConnectorSelector,
+  );
+  const pickConnector = usePickConnector({ operation });
   const isSelected = selected?.displayName === connectorMetadata.displayName;
 
   return (
@@ -23,7 +27,7 @@ export function ConnectorGridItem({
       data-testid={connectorMetadata.displayName}
       title={connectorMetadata.displayName}
       disabled={isTemporaryDisabledUntilNextCursorMove}
-      onClick={() => setSelected(connectorMetadata)}
+      onClick={() => pickConnector(connectorMetadata)}
       className={cn(
         'flex h-full w-full flex-col items-center justify-start gap-1.5 rounded-md px-1 py-2',
         'transition-colors hover:bg-muted',
@@ -51,5 +55,6 @@ export const CONNECTOR_GRID_ROW_HEIGHT = 78;
 
 export type ConnectorGridItemProps = {
   connectorMetadata: StepMetadataWithSuggestions;
+  operation: ConnectorSelectorOperation;
   isTemporaryDisabledUntilNextCursorMove: boolean;
 };

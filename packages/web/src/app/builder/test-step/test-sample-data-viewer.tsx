@@ -1,11 +1,12 @@
 import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
 import { WorkflowAction } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Loader2, Play } from 'lucide-react';
+import { CircleAlert, Loader2, Play } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { SmartOutputViewer } from '@/components/custom/smart-output-viewer';
 import type { OutputSchema } from '@/components/custom/smart-output-viewer/types';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,7 @@ import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 
 import { JsonTreeSkeleton } from './json-tree-skeleton';
 import { TestButtonTooltip } from './test-step-tooltip';
+import { testStepUtils } from './utils/test-step-utils';
 
 type TestSampleDataViewerProps = {
   isValid: boolean;
@@ -31,6 +33,7 @@ type TestSampleDataViewerProps = {
   explanationContext?: ErrorExplanationContext;
   connectorDisplayName?: string;
   connectorSchema?: OutputSchema | null;
+  retestLabel?: string;
 } & (
   | {
       hideCancel: true;
@@ -77,6 +80,7 @@ export const TestSampleDataViewer = React.memo(
       explanationContext,
       connectorDisplayName,
       connectorSchema,
+      retestLabel,
     } = props;
     const [requestedTab, setActiveTab] = useState<ActiveTab>('Output');
     const hasInput = !isNil(sampleDataInput);
@@ -106,10 +110,15 @@ export const TestSampleDataViewer = React.memo(
         : outputData;
 
     const showAgentView = false;
+    const knownError =
+      !isTesting && activeTab === 'Output'
+        ? testStepUtils.knownStepErrorOf(errorMessage)
+        : null;
     const friendlyError =
-      !isTesting && !showAgentView && activeTab === 'Output'
+      !isTesting && !showAgentView && activeTab === 'Output' && !knownError
         ? tryParseFriendlyConnectorError(errorMessage)
         : null;
+    const showToolbar = !showAgentView && (hasInput || hasLogs);
 
     return (
       <div className="flex flex-col h-full w-full min-h-0">
@@ -120,7 +129,7 @@ export const TestSampleDataViewer = React.memo(
               {t('Errors are not saved on refresh')}
             </div>
           )}
-          {!showAgentView && (
+          {showToolbar && (
             <TestPanelToolbar
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -133,6 +142,12 @@ export const TestSampleDataViewer = React.memo(
           <div className="flex-1 min-h-0 px-3 pb-3 overflow-auto">
             {isTesting && !showAgentView ? (
               <TestingPreviewContent data={activeData} />
+            ) : knownError ? (
+              <Alert variant="destructive" className="mt-2">
+                <CircleAlert className="size-4" />
+                <AlertTitle>{t(knownError.title)}</AlertTitle>
+                <AlertDescription>{t(knownError.hint)}</AlertDescription>
+              </Alert>
             ) : friendlyError ? (
               <FriendlyErrorView
                 error={friendlyError}
@@ -167,6 +182,7 @@ export const TestSampleDataViewer = React.memo(
             disabled={!isValid || isSaving}
             isValid={isValid}
             isSaving={isSaving}
+            label={retestLabel ?? t('Retest Step')}
           />
         )}
       </div>
@@ -274,6 +290,7 @@ type RetestActionBarProps = {
   disabled: boolean;
   isValid: boolean;
   isSaving: boolean;
+  label: string;
 };
 
 const RetestActionBar = ({
@@ -281,6 +298,7 @@ const RetestActionBar = ({
   disabled,
   isValid,
   isSaving,
+  label,
 }: RetestActionBarProps) => (
   <div
     data-test-panel-trigger
@@ -301,7 +319,7 @@ const RetestActionBar = ({
         size="sm"
       >
         <Play className="size-4 fill-current" />
-        {t('Retest Step')}
+        {label}
       </Button>
     </TestButtonTooltip>
   </div>

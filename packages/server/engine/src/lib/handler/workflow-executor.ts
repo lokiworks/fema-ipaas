@@ -184,11 +184,35 @@ async function runContinueOnFailureBranchIfNeeded({ action, executionState, cons
     if (isNil(branchHead)) {
         return executionState
     }
+    const branchState = takeFailureBranch ? await recordFailureDetails({ action, executionState }) : executionState
     return workflowExecutor.execute({
         action: branchHead,
-        executionState,
+        executionState: branchState,
         constants,
     })
+}
+
+async function recordFailureDetails({ action, executionState }: {
+    action: WorkflowAction
+    executionState: WorkflowExecutorContext
+}): Promise<WorkflowExecutorContext> {
+    const stepOutput = executionState.getStepOutput(action.name)
+    if (isNil(stepOutput)) {
+        return executionState
+    }
+    const { errorCode, message } = errorHandlingUtils.classifyErrorMessage({ message: stepOutput.errorMessage })
+    return executionState.upsertStep(action.name, new GenericStepOutput({
+        type: action.type,
+        status: stepOutput.status,
+        input: stepOutput.input,
+        duration: stepOutput.duration,
+        errorMessage: stepOutput.errorMessage,
+        output: {
+            errorCode,
+            errorMessage: message,
+            errorTime: dayjs().toISOString(),
+        },
+    }))
 }
 
 function applyNodeLimitIfExceeded(workflowExecutionContext: WorkflowExecutorContext, action: WorkflowAction): WorkflowExecutorContext {

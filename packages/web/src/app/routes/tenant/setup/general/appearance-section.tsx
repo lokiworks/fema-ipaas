@@ -1,5 +1,6 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import {
+  FlagId,
   formErrors,
   HEX_COLOR_PATTERN,
   TENANT_BRANDING_LIMITS,
@@ -91,6 +92,9 @@ const THEME_COLOR_FIELDS: { name: FieldPath<FromSchema>; label: string }[] = [
 export const AppearanceSection = () => {
   const { tenant } = tenantHooks.useCurrentTenant();
   const branding = flagsHooks.useWebsiteBranding();
+  const { data: openSignUpEnabled } = flagsHooks.useFlag<boolean>(
+    FlagId.OPEN_SIGN_UP_ENABLED,
+  );
 
   const form = useForm<FromSchema>({
     defaultValues: {
@@ -385,6 +389,7 @@ export const AppearanceSection = () => {
               iconPreview ?? tenant?.logoIconUrl ?? branding.logos.logoIconUrl
             }
             emailAuthEnabled={tenant?.emailAuthEnabled ?? true}
+            openSignUpEnabled={openSignUpEnabled ?? true}
           />
         </div>
       </div>

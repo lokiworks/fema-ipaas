@@ -32,15 +32,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { internalErrorToast } from '@/components/ui/sonner';
+import { internalErrorMessage } from '@/components/ui/sonner';
 import { userInvitationMutations } from '@/features/invitations';
 import { invitationUtils } from '@/features/invitations/utils/invitation-utils';
 import { projectMembersHooks } from '@/features/project-members';
 import { DisabledReason } from '@/features/project-workspace/components/disabled-reason';
 import { projectRoleLabels } from '@/features/project-workspace/lib/role-labels';
 import { flagsHooks } from '@/hooks/flags-hooks';
+import { api } from '@/lib/api';
 
-export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
+export function InviteMemberDialog({
+  projectId,
+  disabled,
+}: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const { data: smtpConfigured } = flagsHooks.useFlag<boolean>(
     FlagId.SMTP_CONFIGURED,
@@ -74,6 +78,7 @@ export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
         </DialogHeader>
         <InviteMemberForm
           key={open ? 'open' : 'closed'}
+          projectId={projectId}
           emailConfigured={smtpConfigured !== false}
           onDone={() => setOpen(false)}
         />
@@ -82,7 +87,11 @@ export function InviteMemberDialog({ disabled }: InviteMemberDialogProps) {
   );
 }
 
-function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
+function InviteMemberForm({
+  projectId,
+  onDone,
+  emailConfigured,
+}: InviteMemberFormProps) {
   const [sentWithoutEmail, setSentWithoutEmail] =
     useState<UserInvitationWithLink | null>(null);
   const form = useForm<InviteFormValues>({
@@ -96,9 +105,17 @@ function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
     defaultValues: { email: '', projectRole: DefaultProjectRole.VIEWER },
   });
 
-  const invalidateMembers = projectMembersHooks.useInvalidateMembers();
+  const invalidateMembers = projectMembersHooks.useInvalidateMembers({
+    projectId,
+  });
   const { mutate: invite, isPending } =
     userInvitationMutations.useInviteToProject({
+      projectId,
+      onError: (error) =>
+        form.setError('root.serverError', {
+          type: 'manual',
+          message: api.extractServerErrorMessage(error, internalErrorMessage()),
+        }),
       onSuccess: (invitation) => {
         if (invitation.status === InvitationStatus.ACCEPTED) {
           void invalidateMembers();
@@ -144,9 +161,10 @@ function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
     <Form {...form}>
       <form
         className="grid space-y-4"
-        onSubmit={form.handleSubmit((values) =>
-          invite(values, { onError: () => internalErrorToast() }),
-        )}
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          invite(values);
+        })}
       >
         <FormField
           control={form.control}
@@ -202,6 +220,15 @@ function InviteMemberForm({ onDone, emailConfigured }: InviteMemberFormProps) {
             </FormItem>
           )}
         />
+        {form.formState.errors.root?.serverError && (
+          <p
+            className="text-sm font-medium text-destructive"
+            role="alert"
+            data-testid="invite-server-error"
+          >
+            {form.formState.errors.root.serverError.message}
+          </p>
+        )}
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onDone}>
             {t('Cancel')}
@@ -228,10 +255,12 @@ type InviteFormValues = {
 };
 
 type InviteMemberFormProps = {
+  projectId: string;
   onDone: () => void;
   emailConfigured: boolean;
 };
 
 type InviteMemberDialogProps = {
+  projectId: string;
   disabled: boolean;
 };

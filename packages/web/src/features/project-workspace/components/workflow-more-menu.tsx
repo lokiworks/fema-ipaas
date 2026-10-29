@@ -1,5 +1,6 @@
 import {
   ProjectTreeWorkflow,
+  RunLogType,
   WorkflowOperationType,
   WorkflowStatus,
 } from '@fema-ipaas/shared';
@@ -149,7 +150,11 @@ export function WorkflowMoreMenu({
     icon: ScrollText,
     disabledReason: permissions.canReadRuns ? null : t('No access'),
     onSelect: () =>
-      navigate(`/projects/${projectId}/runs?workflowId=${workflow.id}`),
+      navigate(
+        workflow.published
+          ? `/projects/${projectId}/runs?workflowId=${workflow.id}`
+          : `/projects/${projectId}/runs?workflowId=${workflow.id}&type=${RunLogType.ALL}`,
+      ),
   };
   const infoItem: ActionMenuEntry = {
     key: 'info',

@@ -126,7 +126,7 @@ function RemoveUserBody({
       )}
       <p className="text-xs text-muted-foreground">
         {t(
-          'After removal the user can no longer sign in and is taken out of every project.',
+          'After removal the member can no longer sign in and is taken out of every project.',
         )}
       </p>
       <DialogFooter>

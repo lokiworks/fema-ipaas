@@ -16,6 +16,7 @@ export function LoginPagePreview({
   color,
   iconUrl,
   emailAuthEnabled,
+  openSignUpEnabled,
 }: LoginPagePreviewProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -73,7 +74,9 @@ export function LoginPagePreview({
                 <>
                   <AuthHeading title={t('Welcome back')} />
                   <SignInForm />
-                  <AuthModeSwitch mode="signin" onSwitch={noop} />
+                  {openSignUpEnabled && (
+                    <AuthModeSwitch mode="signin" onSwitch={noop} />
+                  )}
                 </>
               ) : (
                 <>
@@ -122,4 +125,5 @@ type LoginPagePreviewProps = {
   color: string;
   iconUrl: string;
   emailAuthEnabled: boolean;
+  openSignUpEnabled: boolean;
 };

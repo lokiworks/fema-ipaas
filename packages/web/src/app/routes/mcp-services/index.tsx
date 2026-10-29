@@ -5,7 +5,7 @@ import {
   TenantModule,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Plus, SearchX, Server } from 'lucide-react';
+import { Plus, SearchX, Server, Store } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -33,7 +33,7 @@ import { ModuleGate } from '@/features/tenant-access';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
-type ListTab = 'ALL' | 'MINE' | 'OBTAINED';
+type ListTab = 'ALL' | 'MINE' | 'OBTAINED' | 'MARKETPLACE';
 
 function McpServicesPage() {
   return (
@@ -61,10 +61,21 @@ function McpServicesContent() {
     actionName: string;
   } | null>(null);
 
-  const { data: services, isLoading } = mcpServicesHooks.useServices({
-    tab: McpServiceListTab.ALL,
-    search: '',
-  });
+  const { data: services, isLoading: isServicesLoading } =
+    mcpServicesHooks.useServices({
+      projectId,
+      tab: McpServiceListTab.ALL,
+      search: '',
+    });
+  const { data: marketplace, isLoading: isMarketplaceLoading } =
+    mcpServicesHooks.useServices({
+      projectId,
+      tab: McpServiceListTab.MARKETPLACE,
+      search: '',
+      enabled: tab === 'MARKETPLACE',
+    });
+  const isLoading =
+    tab === 'MARKETPLACE' ? isMarketplaceLoading : isServicesLoading;
 
   useEffect(() => {
     const newTool = searchParams.get('newTool');
@@ -81,6 +92,7 @@ function McpServicesContent() {
   }, []);
 
   const all = services ?? [];
+  const marketplaceServices = marketplace ?? [];
   const query = search.trim().toLowerCase();
   const matchesQuery = (service: McpService) =>
     !query ||
@@ -94,22 +106,26 @@ function McpServicesContent() {
     service: McpService;
     tabKey: ListTab;
   }) => {
-    if (tabKey === 'MINE') return service.canEdit;
+    if (tabKey === 'MARKETPLACE') return true;
     if (tabKey === 'OBTAINED') return service.obtained && !service.canEdit;
+    if (service.projectId !== projectId) return false;
+    if (tabKey === 'MINE') return service.canEdit;
     return true;
   };
   const searched = all.filter(matchesQuery);
   const counts = {
-    ALL: searched.length,
+    ALL: searched.filter((service) => matchesTab({ service, tabKey: 'ALL' }))
+      .length,
     MINE: searched.filter((service) => matchesTab({ service, tabKey: 'MINE' }))
       .length,
     OBTAINED: searched.filter((service) =>
       matchesTab({ service, tabKey: 'OBTAINED' }),
     ).length,
   };
-  const list = searched.filter((service) =>
-    matchesTab({ service, tabKey: tab }),
-  );
+  const list =
+    tab === 'MARKETPLACE'
+      ? marketplaceServices.filter(matchesQuery)
+      : searched.filter((service) => matchesTab({ service, tabKey: tab }));
 
   const myEditableServices = all.filter(
     (service) => service.canEdit && service.projectId === projectId,
@@ -146,6 +162,9 @@ function McpServicesContent() {
             <TabsTrigger value="OBTAINED">
               {t('Obtained by me ({count})', { count: counts.OBTAINED })}
             </TabsTrigger>
+            <TabsTrigger value="MARKETPLACE">
+              {t('Enterprise MCP marketplace')}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
         <Input
@@ -173,6 +192,18 @@ function McpServicesContent() {
                 )}
               </EmptyDescription>
             </EmptyHeader>
+          ) : tab === 'MARKETPLACE' ? (
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Store />
+              </EmptyMedia>
+              <EmptyTitle>{t('Nothing is listed on the marketplace yet')}</EmptyTitle>
+              <EmptyDescription>
+                {t(
+                  'Services that any project lists on the enterprise MCP marketplace appear here, so you can obtain them.',
+                )}
+              </EmptyDescription>
+            </EmptyHeader>
           ) : tab === 'OBTAINED' ? (
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -181,7 +212,7 @@ function McpServicesContent() {
               <EmptyTitle>{t('No services obtained yet')}</EmptyTitle>
               <EmptyDescription>
                 {t(
-                  'Open a service listed on the enterprise MCP marketplace and click Obtain to start using it in your AI assistant.',
+                  'Open a service in the enterprise MCP marketplace tab and click Obtain to start using it in your AI assistant.',
                 )}
               </EmptyDescription>
             </EmptyHeader>
@@ -216,9 +247,13 @@ function McpServicesContent() {
       {!isLoading && list.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((service) => (
-            <McpServiceCard key={service.id} service={service} />
+            <McpServiceCard
+              key={service.id}
+              service={service}
+              currentProjectId={projectId}
+            />
           ))}
-          {!query && tab !== 'OBTAINED' && (
+          {!query && (tab === 'ALL' || tab === 'MINE') && (
             <PermissionNeededTooltip hasPermission={canWrite}>
               <button
                 type="button"

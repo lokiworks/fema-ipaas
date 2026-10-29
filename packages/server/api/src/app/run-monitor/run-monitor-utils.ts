@@ -198,6 +198,7 @@ export const runMonitorUtils = {
     wallClock,
     instantOf,
     bucketStarts,
+    dayStarts,
     calendarDaysStart,
     calendarMonthStart,
     timeWindow,

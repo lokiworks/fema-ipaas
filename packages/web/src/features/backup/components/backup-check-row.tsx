@@ -63,10 +63,7 @@ function backupView({ overview }: { overview: SystemOverview }): BackupView {
           ),
     };
   }
-  const time = backupTime.inServerZone({
-    iso: backup.latestSuccessAt,
-    zone: backup.serverTimezone,
-  });
+  const time = backupTime.local({ iso: backup.latestSuccessAt });
   if (!backup.matchesCurrentVersion) {
     return {
       level: 'warning',

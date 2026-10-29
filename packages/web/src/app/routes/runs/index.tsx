@@ -65,6 +65,7 @@ const RunsPage = () => {
     cursor: searchParams.get(CURSOR_QUERY_PARAM) ?? undefined,
     limit: Number.isInteger(limit) && limit > 0 ? limit : DEFAULT_LIMIT,
   };
+  const selectionScope = JSON.stringify(query);
   const { data: scope } = runLogsHooks.useScope();
   const {
     data: page,
@@ -273,6 +274,7 @@ const RunsPage = () => {
             onClear={clearConditions}
           />
           <RunLogsTable
+            key={selectionScope}
             page={page}
             hideProjectColumn={presetProjectId !== null}
             isLoading={isLoading}

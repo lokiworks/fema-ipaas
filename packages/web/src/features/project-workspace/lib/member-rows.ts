@@ -21,6 +21,7 @@ function build({
     email: member.user.email,
     role: member.role,
     implicit: false,
+    isOwner: member.userId === ownerId,
   }));
   const ownerListed = rows.some((row) => row.userId === ownerId);
   if (ownerListed || !ownerId || !ownerName) {
@@ -34,6 +35,7 @@ function build({
       email: null,
       role: DefaultProjectRole.ADMIN,
       implicit: true,
+      isOwner: true,
     },
     ...rows,
   ];
@@ -48,4 +50,5 @@ export type MemberRow = {
   email: string | null;
   role: DefaultProjectRole;
   implicit: boolean;
+  isOwner: boolean;
 };

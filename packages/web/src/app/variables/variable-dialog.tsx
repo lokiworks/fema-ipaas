@@ -163,9 +163,7 @@ function VariableForm(props: VariableFormProps) {
             {isEdit ? t('Edit variable') : t('New variable')}
           </DialogTitle>
           <DialogDescription>
-            {t(
-              'Store non-sensitive settings such as group IDs, thresholds and callback URLs. Keep keys and tokens in connections instead.',
-            )}
+            {t('variableDialogDescription')}
           </DialogDescription>
         </DialogHeader>
         <FormField

@@ -14,11 +14,17 @@ import React, {
 } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { connectorSelectorUtils, connectorsHooks } from '@/features/connectors';
+import { useBuilderValidation } from '@/app/builder/validation/validation-context';
+import {
+  connectorSelectorUtils,
+  connectorsHooks,
+  stepsHooks,
+} from '@/features/connectors';
 
 import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
 
 import TestWebhookDialog from './custom-test-step/test-webhook-dialog';
+import { TestWriteConfirmDialog } from './test-write-confirm-dialog';
 import {
   TestType,
   triggerEventUtils,
@@ -51,20 +57,43 @@ const ActionTestRunnerProvider = ({
   const canFireTest =
     step.valid !== false && !isTesting && !isLoadingDynamicProperties;
 
-  const fireTest = useCallback(() => {
-    if (!canFireTest) return;
+  const { writeSteps } = useBuilderValidation();
+  const writeStep = writeSteps.find(
+    (candidate) => candidate.stepName === step.name,
+  );
+  const { stepMetadata } = stepsHooks.useStepMetadata({ step });
+  const [confirmWriteOpen, setConfirmWriteOpen] = useState(false);
+
+  const runTest = useCallback(() => {
     if (isReturnResponseAndWaitForWebhook(step)) {
       setShowWebhookDialog(true);
     } else {
       testAction(undefined);
     }
-  }, [canFireTest, step, testAction]);
+  }, [step, testAction]);
+
+  const fireTest = useCallback(() => {
+    if (!canFireTest) return;
+    if (writeStep) {
+      setConfirmWriteOpen(true);
+      return;
+    }
+    runTest();
+  }, [canFireTest, writeStep, runTest]);
 
   return (
     <ActionTestRunnerContext.Provider
       value={{ fireTest, isTesting, canFireTest }}
     >
       {children}
+      <TestWriteConfirmDialog
+        open={confirmWriteOpen}
+        onOpenChange={setConfirmWriteOpen}
+        onConfirm={runTest}
+        stepDisplayName={step.displayName}
+        appName={stepMetadata?.displayName ?? step.displayName}
+        destructive={writeStep?.destructive ?? false}
+      />
       {showWebhookDialog && (
         <TestWebhookDialog
           testingMode="returnResponseAndWaitForNextWebhook"
@@ -92,6 +121,7 @@ const TriggerTestRunnerProvider = ({
     undefined,
   );
   const [isTestingDialogOpen, setIsTestingDialogOpen] = useState(false);
+  const [pollReturnedEmpty, setPollReturnedEmpty] = useState(false);
   const abortControllerRef = useRef<AbortController>(new AbortController());
 
   const workflowVersionId = useBuilderStateContext(
@@ -139,7 +169,10 @@ const TriggerTestRunnerProvider = ({
 
   const { mutate: saveMockAsSampleData, isPending: isSavingMockdata } =
     testStepHooks.useSaveMockData({
-      onSuccess: onTestSuccess,
+      onSuccess: async () => {
+        setPollReturnedEmpty(false);
+        await onTestSuccess();
+      },
     });
 
   const {
@@ -158,6 +191,7 @@ const TriggerTestRunnerProvider = ({
     testStepHooks.usePollTrigger({
       setErrorMessage,
       onSuccess: onTestSuccess,
+      onEmpty: () => setPollReturnedEmpty(true),
     });
 
   const isTesting =
@@ -181,6 +215,7 @@ const TriggerTestRunnerProvider = ({
         simulateTrigger(abortControllerRef.current.signal);
         break;
       case 'polling':
+        setPollReturnedEmpty(false);
         pollTrigger();
         break;
       case 'mcp-tool':
@@ -203,6 +238,7 @@ const TriggerTestRunnerProvider = ({
         isSimulating,
         isSavingMockdata,
         isPollingTesting,
+        pollReturnedEmpty,
         errorMessage,
         setErrorMessage,
         isTestingDialogOpen,
@@ -257,6 +293,7 @@ type TriggerTestRunnerContextValue = {
   isSimulating: boolean;
   isSavingMockdata: boolean;
   isPollingTesting: boolean;
+  pollReturnedEmpty: boolean;
   errorMessage: string | undefined;
   setErrorMessage: (msg: string | undefined) => void;
   isTestingDialogOpen: boolean;

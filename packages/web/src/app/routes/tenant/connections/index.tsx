@@ -223,7 +223,7 @@ export default function TenantConnectionsPage() {
 
   return (
     <ConsolePage
-      title={t('All connections')}
+      title={t('Connection overview')}
       description={t('All app connections across every project on this tenant')}
     >
       {owners?.truncated && (

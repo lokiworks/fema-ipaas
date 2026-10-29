@@ -1,3 +1,4 @@
+import { isNil, tryCatch, tryCatchSync } from '@fema-ipaas/core-utils';
 import {
   WorkflowAction,
   workflowOperations,
@@ -114,18 +115,16 @@ export async function cutSelectedNodes({
 }
 
 export async function getActionsInClipboard(): Promise<WorkflowAction[]> {
-  try {
-    const clipboardText = await navigator.clipboard.readText();
-    const request: CopyActionsRequest = JSON.parse(clipboardText);
-    if (request && request.type === 'COPY_ACTIONS') {
-      return request.actions;
-    }
-  } catch (error) {
-    console.error('Error getting actions in clipboard', error);
+  const { data: clipboardText } = await tryCatch(() =>
+    navigator.clipboard.readText(),
+  );
+  if (isNil(clipboardText) || clipboardText.trim().length === 0) {
     return [];
   }
-
-  return [];
+  const { data: parsed } = tryCatchSync<unknown>(() =>
+    JSON.parse(clipboardText),
+  );
+  return isCopyActionsRequest(parsed) ? parsed.actions : [];
 }
 
 export async function pasteNodes({
@@ -231,6 +230,17 @@ export function toggleSkipSelectedNodes({
       skip: !areAllStepsSkipped,
     },
   });
+}
+
+function isCopyActionsRequest(value: unknown): value is CopyActionsRequest {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === 'COPY_ACTIONS' &&
+    'actions' in value &&
+    Array.isArray(value.actions)
+  );
 }
 
 async function removeUnavailableConnections(

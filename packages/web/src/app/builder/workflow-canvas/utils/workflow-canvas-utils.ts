@@ -308,9 +308,11 @@ function focusStepAfterLayout({
 function ensureStepInViewAfterLayout({
   reactFlow,
   stepName,
+  marginRatio = VIEW_SAFE_MARGIN_RATIO,
 }: {
   reactFlow: ReactFlowInstance;
   stepName: string;
+  marginRatio?: number;
 }) {
   window.setTimeout(() => {
     const nodeElement = document.querySelector<HTMLElement>(
@@ -322,8 +324,8 @@ function ensureStepInViewAfterLayout({
     }
     const node = nodeElement.getBoundingClientRect();
     const canvas = canvasElement.getBoundingClientRect();
-    const marginX = canvas.width * VIEW_SAFE_MARGIN_RATIO;
-    const marginY = canvas.height * VIEW_SAFE_MARGIN_RATIO;
+    const marginX = canvas.width * marginRatio;
+    const marginY = canvas.height * marginRatio;
     const isInsideSafeArea =
       node.left >= canvas.left + marginX &&
       node.right <= canvas.right - marginX &&
@@ -607,7 +609,7 @@ const buildContinueOnFailureBranchesGraph = ({
     },
     {
       branch: branches?.onFailure,
-      label: t('Failure'),
+      label: t('On failure'),
       location: StepLocationRelativeToParent.INSIDE_ON_FAILURE_BRANCH as const,
     },
   ];

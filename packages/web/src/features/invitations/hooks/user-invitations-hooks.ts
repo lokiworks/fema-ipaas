@@ -13,8 +13,11 @@ import { userInvitationApi } from '../api/user-invitation';
 const userInvitationsQueryKey = 'user-invitations';
 
 export const userInvitationsHooks = {
-  useInvitations: () => {
-    const projectId = authenticationSession.getProjectId();
+  useInvitations: ({
+    projectId: scopedProjectId,
+    enabled = true,
+  }: UseInvitationsParams = {}) => {
+    const projectId = scopedProjectId ?? authenticationSession.getProjectId();
     const query = useQuery<UserInvitation[]>({
       queryFn: () => {
         return userInvitationApi
@@ -28,6 +31,7 @@ export const userInvitationsHooks = {
       },
       queryKey: [userInvitationsQueryKey, projectId],
       staleTime: 0,
+      enabled: enabled && !!projectId,
     });
     return {
       invitations: query.data,
@@ -57,12 +61,16 @@ export const userInvitationQueries = {
 
 export const userInvitationMutations = {
   useInviteToProject: ({
+    projectId: scopedProjectId,
     onSuccess,
+    onError,
   }: {
+    projectId?: string;
     onSuccess: (invitation: UserInvitationWithLink) => void;
+    onError: (error: Error) => void;
   }) => {
     const queryClient = useQueryClient();
-    const projectId = authenticationSession.getProjectId();
+    const projectId = scopedProjectId ?? authenticationSession.getProjectId();
     return useMutation({
       mutationFn: ({ email, projectRole }: InviteToProjectParams) =>
         userInvitationApi.invite({
@@ -77,11 +85,18 @@ export const userInvitationMutations = {
         });
         onSuccess(invitation);
       },
+      onError,
     });
   },
-  useRevokeInvitation: ({ onSuccess }: { onSuccess: () => void }) => {
+  useRevokeInvitation: ({
+    projectId: scopedProjectId,
+    onSuccess,
+  }: {
+    projectId?: string;
+    onSuccess: () => void;
+  }) => {
     const queryClient = useQueryClient();
-    const projectId = authenticationSession.getProjectId();
+    const projectId = scopedProjectId ?? authenticationSession.getProjectId();
     return useMutation({
       mutationFn: (id: string) => userInvitationApi.delete(id),
       onSuccess: () => {
@@ -97,4 +112,9 @@ export const userInvitationMutations = {
 type InviteToProjectParams = {
   email: string;
   projectRole: DefaultProjectRole;
+};
+
+type UseInvitationsParams = {
+  projectId?: string;
+  enabled?: boolean;
 };

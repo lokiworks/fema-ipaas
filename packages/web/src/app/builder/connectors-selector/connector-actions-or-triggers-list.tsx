@@ -66,6 +66,18 @@ export const convertStepMetadataToConnectorSelectorItems = (
   }
 };
 
+export const directPickItemOf = (
+  stepMetadataWithSuggestions: StepMetadataWithSuggestions,
+): ConnectorSelectorItem | null => {
+  if (!DIRECT_PICK_TYPES.includes(stepMetadataWithSuggestions.type)) {
+    return null;
+  }
+  const items = convertStepMetadataToConnectorSelectorItems(
+    stepMetadataWithSuggestions,
+  );
+  return items.length === 1 ? items[0] : null;
+};
+
 export const ConnectorActionsOrTriggersList: React.FC<
   ConnectorActionsOrTriggersListProps
 > = ({
@@ -131,3 +143,10 @@ export const ConnectorActionsOrTriggersList: React.FC<
     </ScrollArea>
   );
 };
+
+const DIRECT_PICK_TYPES: string[] = [
+  WorkflowActionType.CODE,
+  WorkflowActionType.LOOP_ON_ITEMS,
+  WorkflowActionType.ROUTER,
+  WorkflowActionType.PARALLEL,
+];

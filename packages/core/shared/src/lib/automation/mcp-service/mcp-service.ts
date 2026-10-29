@@ -107,6 +107,7 @@ export enum McpServiceListTab {
     ALL = 'ALL',
     MINE = 'MINE',
     OBTAINED = 'OBTAINED',
+    MARKETPLACE = 'MARKETPLACE',
 }
 
 export enum McpServiceIssueLevel {
@@ -227,7 +228,7 @@ export const McpServiceApiKey = z.object({
 export type McpServiceApiKey = z.infer<typeof McpServiceApiKey>
 
 export const ListMcpServicesRequestQuery = z.object({
-    projectId: z.string().optional(),
+    projectId: z.string(),
     tab: z.enum(McpServiceListTab).optional(),
     search: z.string().optional(),
 })

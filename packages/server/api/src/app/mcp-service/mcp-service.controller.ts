@@ -35,7 +35,7 @@ import { mcpServiceService } from './mcp-service.service'
 
 export const mcpServiceController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListRequest, async (request): Promise<McpService[]> => {
-        return mcpServiceService(request.log).list({ tenantId: request.principal.tenant.id, userId: request.principal.id, query: request.query })
+        return mcpServiceService(request.log).list({ tenantId: request.principal.tenant.id, userId: request.principal.id, projectId: request.projectId, query: request.query })
     })
 
     app.get('/candidates', CandidatesRequest, async (request): Promise<McpWorkflowToolCandidate[]> => {
@@ -172,7 +172,7 @@ const userOnly = securityAccess.publicTenant([PrincipalType.USER])
 const tags = ['mcp-services']
 
 const ListRequest = {
-    config: { security: userOnly },
+    config: { security: securityAccess.project([PrincipalType.USER], Permission.READ_MCP_SERVICE, { type: ProjectResourceType.QUERY }) },
     schema: { tags, querystring: ListMcpServicesRequestQuery, response: { [StatusCodes.OK]: z.array(McpService) } },
 }
 

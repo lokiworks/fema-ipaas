@@ -44,7 +44,7 @@ export function RequestProjectAccessButton({
         }}
       >
         <KeyRound />
-        {t('Request access')}
+        {t('projectAccessRequestButton')}
       </Button>
       <RequestProjectAccessDialog
         open={open}

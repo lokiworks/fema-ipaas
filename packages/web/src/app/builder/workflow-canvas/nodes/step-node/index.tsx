@@ -17,6 +17,7 @@ import { RightSideBarType } from '@/app/builder/types';
 import { stepsHooks } from '@/features/connectors';
 import { cn } from '@/lib/utils';
 
+import { useRunPath } from '../../use-run-path';
 import { workflowCanvasConsts } from '../../utils/consts';
 import { StepNode } from '../../utils/types';
 import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';
@@ -64,6 +65,8 @@ const StepCanvasNode = React.memo(
         : 'blocked',
     ]);
     const isHorizontal = canvasOrientation === 'horizontal';
+    const runPath = useRunPath();
+    const isNotExecutedInRun = runPath?.notExecuted.has(step.name) ?? false;
     const { stepMetadata } = stepsHooks.useStepMetadata({
       step,
     });
@@ -167,6 +170,7 @@ const StepCanvasNode = React.memo(
             'ring-2 ring-primary/60 ring-offset-2':
               isHorizontal && (isHighlighted || referenceState === 'allowed'),
             'opacity-40': referenceState === 'blocked',
+            'opacity-45 grayscale': isNotExecutedInRun,
           },
           'focus-visible:outline-none',
           {

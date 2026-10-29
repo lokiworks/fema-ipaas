@@ -14,10 +14,7 @@ export function BackupStats({ overview }: { overview: BackupOverview }) {
       id: 'latest',
       label: t('Latest successful backup'),
       value: latest
-        ? backupTime.inServerZone({
-            iso: latest.finishedAt,
-            zone: overview.serverTimezone,
-          })
+        ? backupTime.local({ iso: latest.finishedAt })
         : t('None yet'),
       note: latest
         ? latest.matchesCurrentVersion
@@ -39,13 +36,12 @@ export function BackupStats({ overview }: { overview: BackupOverview }) {
       label: t('Next scheduled backup'),
       value:
         overview.settings.enabled && overview.nextRunAt
-          ? backupTime.inServerZone({
-              iso: overview.nextRunAt,
-              zone: overview.serverTimezone,
-            })
+          ? backupTime.local({ iso: overview.nextRunAt })
           : t('Off'),
       note: overview.settings.enabled
-        ? t('Server time zone: {zone}', { zone: overview.serverTimezone })
+        ? t('Shown in your time zone ({zone})', {
+            zone: backupTime.localZone(),
+          })
         : t('The schedule is switched off'),
       tone: overview.settings.enabled ? 'ok' : 'warning',
     },

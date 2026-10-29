@@ -13,6 +13,7 @@ import {
 import { useBuilderStateContext } from '../builder-hooks';
 
 import { ConnectorActionsOrTriggersList } from './connector-actions-or-triggers-list';
+import { usePickConnector } from './use-pick-connector';
 
 const ExploreTabContent = ({
   operation,
@@ -20,12 +21,10 @@ const ExploreTabContent = ({
   operation: ConnectorSelectorOperation;
 }) => {
   const { selectedTab } = useConnectorSelectorTabs();
-  const [selectedConnector, setSelectedConnector] = useBuilderStateContext(
-    (state) => [
-      state.selectedConnectorMetadataInConnectorSelector,
-      state.setSelectedConnectorMetadataInConnectorSelector,
-    ],
+  const selectedConnector = useBuilderStateContext(
+    (state) => state.selectedConnectorMetadataInConnectorSelector,
   );
+  const pickConnector = usePickConnector({ operation });
   const { data: categories, isLoading: isLoadingConnectors } =
     connectorsHooks.useConnectorsSearch({
       shouldCaptureEvent: false,
@@ -74,7 +73,7 @@ const ExploreTabContent = ({
                     type="button"
                     key={connectorMetadata.displayName}
                     title={connectorMetadata.displayName}
-                    onClick={() => setSelectedConnector(connectorMetadata)}
+                    onClick={() => pickConnector(connectorMetadata)}
                     className="flex flex-col items-center justify-start gap-1.5 rounded-md px-1 py-2 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <ConnectorIcon

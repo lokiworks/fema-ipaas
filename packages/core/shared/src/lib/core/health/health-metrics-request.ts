@@ -5,6 +5,11 @@ import { z } from 'zod'
 export const TenantMetricsReportRequest = z.object({
     createdAfter: z.string(),
     createdBefore: z.string(),
+    timezone: z.string().max(64).optional(),
+})
+
+export const TenantMetricsHistoryRequest = z.object({
+    timezone: z.string().max(64).optional(),
 })
 
 export const TenantMetricsSummary = z.object({
@@ -62,6 +67,7 @@ export const TenantMetricsHealthHistory = z.object({
 })
 
 export type TenantMetricsReportRequest = z.infer<typeof TenantMetricsReportRequest>
+export type TenantMetricsHistoryRequest = z.infer<typeof TenantMetricsHistoryRequest>
 export type TenantMetricsSummary = z.infer<typeof TenantMetricsSummary>
 export type TenantMetricsStatusPoint = z.infer<typeof TenantMetricsStatusPoint>
 export type InternalErrorImpactItem = z.infer<typeof InternalErrorImpactItem>

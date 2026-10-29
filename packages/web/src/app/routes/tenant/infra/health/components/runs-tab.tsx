@@ -48,11 +48,13 @@ export function RunsTab({ report, isLoading }: RunsTabProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <MetricCard
           icon={ListChecks}
-          title={t('Jobs done')}
+          title={t('Finished runs')}
           value={
             isLoading ? '—' : formatUtils.formatNumber(summary?.completed ?? 0)
           }
-          description={t('Completed jobs (success + failure) in the period')}
+          description={t(
+            'Runs that finished in the period, whether they succeeded or failed',
+          )}
           subtitle={
             summary
               ? renderDelta(summary.completed, summary.previousCompleted)
@@ -65,7 +67,7 @@ export function RunsTab({ report, isLoading }: RunsTabProps) {
           icon={CheckCircle2}
           title={t('Success rate')}
           value={isLoading ? '—' : `${(summary?.successRate ?? 0).toFixed(1)}%`}
-          description={t('Share of completed jobs that succeeded')}
+          description={t('Share of finished runs that succeeded')}
           subtitle={
             summary
               ? renderDelta(summary.successRate, summary.previousSuccessRate)

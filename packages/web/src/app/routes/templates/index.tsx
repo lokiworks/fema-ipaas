@@ -2,7 +2,7 @@ import { isNil } from '@fema-ipaas/core-utils';
 import { Template } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { ConsolePage } from '@/components/custom/console-page';
 import { SearchInput } from '@/components/custom/search-input';
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { OfficialSolutionsGrid, solutionsHooks } from '@/features/solutions';
 import {
   TemplateCard,
   TemplateCenterSort,
@@ -67,6 +68,16 @@ const TemplatesPage = () => {
     tab === TemplateCenterTab.RECOMMENDED && !searching && isNil(category)
       ? templateCenterUtils.featuredOf({ templates, userId })
       : [];
+
+  const showSolutions =
+    isAuthenticated &&
+    tab === TemplateCenterTab.RECOMMENDED &&
+    !searching &&
+    isNil(category);
+  const { data: officialSolutions } = solutionsHooks.useOfficialSolutions({
+    enabled: showSolutions,
+  });
+  const solutionsShown = showSolutions ? officialSolutions ?? [] : [];
 
   const openTemplate = (template: Template) => {
     setSelected(template);
@@ -155,8 +166,40 @@ const TemplatesPage = () => {
             ))}
           </div>
         )}
+        {solutionsShown.length > 0 && (
+          <section className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h2 className="text-base font-semibold">
+                  {t('Official solutions')}
+                </h2>
+                <span className="text-xs text-muted-foreground">
+                  {t(
+                    'A solution is a set of ready-made workflows. Install it into a project and the wizard walks you through connections and settings.',
+                  )}
+                </span>
+              </div>
+              <Link
+                to="/solutions"
+                className="text-xs text-primary hover:underline"
+              >
+                {t('Solution library')}
+              </Link>
+            </div>
+            <OfficialSolutionsGrid solutions={solutionsShown} />
+          </section>
+        )}
+        {solutionsShown.length > 0 && (
+          <h2 className="text-base font-semibold">{t('Workflow templates')}</h2>
+        )}
         {isLoading ? (
           <TemplateGridSkeleton />
+        ) : list.length === 0 && solutionsShown.length > 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {t(
+              'No workflow templates yet. Open the "···" menu of a published workflow and choose "Generate template" to create one.',
+            )}
+          </p>
         ) : list.length === 0 ? (
           <TemplateCenterEmpty tab={tab} searching={searching} />
         ) : (

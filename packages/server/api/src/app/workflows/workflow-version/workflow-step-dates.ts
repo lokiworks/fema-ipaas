@@ -36,7 +36,9 @@ function keepTestedFrom({ workflowVersion, source }: KeepFromParams): WorkflowVe
 }
 
 function comparableStep(step: WorkflowAction | WorkflowTrigger): unknown {
-    const { sampleData: _sampleData, displayNumber: _displayNumber, ...settings } = readRecord(step.settings)
+    const settings = Object.fromEntries(
+        Object.entries(readRecord(step.settings)).filter(([key]) => !SETTINGS_IGNORED_FOR_TESTING.includes(key)),
+    )
     return JSON.parse(JSON.stringify({
         name: step.name,
         type: step.type,
@@ -58,6 +60,17 @@ export const workflowStepDates = {
     keepFrom,
     keepTestedFrom,
 }
+
+export const SETTINGS_IGNORED_FOR_TESTING: string[] = [
+    'sampleData',
+    'displayNumber',
+    'errorHandlingOptions',
+    'customLogoUrl',
+    'pendingReview',
+    'sensitiveOutput',
+    'dedupe',
+    'concurrency',
+]
 
 type KeepFromParams = {
     workflowVersion: WorkflowVersion

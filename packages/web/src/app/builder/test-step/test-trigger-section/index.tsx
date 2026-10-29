@@ -9,6 +9,7 @@ import { Zap } from 'lucide-react';
 import React from 'react';
 
 import { triggerEventHooks } from '@/features/workflows';
+import { cn } from '@/lib/utils';
 
 import { useBuilderStateContext } from '../../builder-hooks';
 import { stepPropertiesSnapshotUtils } from '../../data-display/build-step-properties-snapshot';
@@ -18,6 +19,7 @@ import { JsonTreeSkeleton } from '../json-tree-skeleton';
 import { useTriggerTestRunner } from '../test-runner-context';
 import { TestSampleDataViewer } from '../test-sample-data-viewer';
 
+import { EmptyPollNotice } from './empty-poll-notice';
 import { FirstTimeTestingSection } from './first-time-testing-section';
 import { ManualWebhookTestButton } from './manual-webhook-test-button';
 import { SimulationNote } from './simulation-section';
@@ -75,6 +77,7 @@ const TestTriggerSection = React.memo(
       isSimulating,
       isSavingMockdata,
       isPollingTesting,
+      pollReturnedEmpty,
       errorMessage,
       isTestingDialogOpen,
       setIsTestingDialogOpen,
@@ -160,6 +163,14 @@ const TestTriggerSection = React.memo(
     };
 
     const isFirstTimeTesting = isPollingTesting || isTestingDialogOpen;
+    const emptyPollNotice =
+      pollReturnedEmpty && !isPollingTesting && !errorMessage ? (
+        <EmptyPollNotice
+          mockData={mockData}
+          isSaving={isSaving || isSavingMockdata}
+          onUseSampleData={saveMockAsSampleData}
+        />
+      ) : null;
 
     return (
       <div className="flex flex-col h-full">
@@ -176,7 +187,15 @@ const TestTriggerSection = React.memo(
           !isFirstTimeTesting && (
             <div className="flex flex-col h-full">
               <StepDataPanelHeader status="idle" />
-              <div className="grow flex flex-col items-center justify-center w-full px-6 py-10 gap-4 text-center">
+              {emptyPollNotice && (
+                <div className="px-3 pt-3">{emptyPollNotice}</div>
+              )}
+              <div
+                className={cn(
+                  'grow flex flex-col items-center justify-center w-full px-6 py-10 gap-4 text-center',
+                  emptyPollNotice && 'hidden',
+                )}
+              >
                 <div className="flex items-center justify-center size-12 rounded-full bg-primary/10 text-primary">
                   <Zap className="size-6" />
                 </div>
@@ -213,6 +232,7 @@ const TestTriggerSection = React.memo(
                 errorMessage={errorMessage ?? null}
                 lastTestDate={lastTestDate}
                 isSaving={isSaving}
+                retestLabel={t('Retest Trigger')}
                 connectorSchema={
                   connectorModel?.triggers[triggerName ?? '']?.outputSchema ??
                   null
@@ -220,6 +240,9 @@ const TestTriggerSection = React.memo(
                 explanationContext={explanationContext}
                 connectorDisplayName={connectorModel?.displayName}
               >
+                {emptyPollNotice && (
+                  <div className="px-3 pb-2">{emptyPollNotice}</div>
+                )}
                 {pollResults?.data && !errorMessage && (
                   <TriggerEventSelect
                     pollResults={pollResults}

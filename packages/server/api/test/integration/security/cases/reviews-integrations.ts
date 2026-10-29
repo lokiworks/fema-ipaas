@@ -38,7 +38,7 @@ export const integrationsReviews: Record<string, Review> = {
     'GET /v1/connector-blueprints/:id/projects': { verdict: 'needs-decision', note: 'CONNECTOR_DEVELOPMENT 模块开关 + 蓝图所有者 / 协作者校验；矩阵 integrations-connectors 按三种拥有关系逐路由验证；协作者能看到租户全部项目的 id、名称与是否成员，与项目目录一致，随项目目录的决定一起处理' },
     'DELETE /v1/mcp-services/:id': { verdict: 'ok', note: 'MCP_SERVICES 模块开关 + 服务所有者 / 成员 / 可用性模式校验，密钥只返回给本人；矩阵 integrations-mcp 验证' },
     'DELETE /v1/mcp-services/:id/obtain': { verdict: 'ok', note: 'MCP_SERVICES 模块开关 + 服务所有者 / 成员 / 可用性模式校验，密钥只返回给本人；矩阵 integrations-mcp 验证' },
-    'GET /v1/mcp-services': { verdict: 'ok', note: 'MCP_SERVICES 模块开关 + 服务所有者 / 成员 / 可用性模式校验，密钥只返回给本人；矩阵 integrations-mcp 验证' },
+    'GET /v1/mcp-services': { verdict: 'ok', note: 'PROJECT 权限 MCP_SERVICE:READ，按授权后的 projectId 过滤；「我获取的」「MCP 市场」按成员与可用性模式校验；矩阵 integrations-mcp 验证' },
     'GET /v1/mcp-services/:id': { verdict: 'ok', note: 'MCP_SERVICES 模块开关 + 服务所有者 / 成员 / 可用性模式校验，密钥只返回给本人；矩阵 integrations-mcp 验证' },
     'GET /v1/mcp-services/:id/issues': { verdict: 'ok', note: 'MCP_SERVICES 模块开关 + 服务所有者 / 成员 / 可用性模式校验，密钥只返回给本人；矩阵 integrations-mcp 验证' },
     'GET /v1/mcp-services/:id/membership': { verdict: 'ok', note: 'MCP_SERVICES 模块开关 + 服务所有者 / 成员 / 可用性模式校验，密钥只返回给本人；矩阵 integrations-mcp 验证' },

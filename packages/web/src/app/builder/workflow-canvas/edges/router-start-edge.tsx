@@ -1,6 +1,7 @@
 import { StepLocationRelativeToParent } from '@fema-ipaas/shared';
 import { BaseEdge, EdgeProps } from '@xyflow/react';
 
+import { useEdgeRunStyle } from '../use-run-path';
 import { workflowCanvasConsts } from '../utils/consts';
 import { RouterStartEdge } from '../utils/types';
 
@@ -23,6 +24,7 @@ export const RouterStartCanvasEdge = ({
   target,
   id,
 }: EdgeProps & Omit<RouterStartEdge, 'position'>) => {
+  const edgeStyle = useEdgeRunStyle({ edgeId: id, source });
   const { isHorizontal, layout, layoutSource, layoutTarget, toCanvasPath } =
     useEdgeLayoutSpace({ sourceX, sourceY, targetX, targetY });
 
@@ -156,7 +158,7 @@ export const RouterStartCanvasEdge = ({
     <>
       <BaseEdge
         path={path}
-        style={{ strokeWidth: `${workflowCanvasConsts.LINE_WIDTH}px` }}
+        style={edgeStyle}
       ></BaseEdge>
       {!data.isBranchEmpty && (
         <foreignObject

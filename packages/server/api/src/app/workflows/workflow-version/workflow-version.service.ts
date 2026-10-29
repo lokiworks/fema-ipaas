@@ -81,7 +81,9 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
                 }]
                 break
             }
-            case WorkflowOperationType.IMPORT_WORKFLOW: {
+            case WorkflowOperationType.IMPORT_WORKFLOW:
+            case WorkflowOperationType.UPDATE_ACTION:
+            case WorkflowOperationType.UPDATE_TRIGGER: {
                 testedStepsSource = workflowVersion
                 operations = [userOperation]
                 break

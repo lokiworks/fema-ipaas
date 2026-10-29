@@ -10,6 +10,7 @@ import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { userService } from '../../user/user-service'
 import { sampleDataService } from '../step-run/sample-data.service'
+import { workflowStepDates } from './workflow-step-dates'
 import { WorkflowVersionEntity } from './workflow-version-entity'
 import { workflowVersionMigrationService } from './workflow-version-migration.service'
 import { workflowVersionSideEffects } from './workflow-version-side-effects'
@@ -29,6 +30,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
     }: ApplyOperationParams): Promise<WorkflowVersion> {
         let operations: WorkflowOperationRequest[] = []
         let mutatedWorkflowVersion: WorkflowVersion = workflowVersion
+        let stepDatesSource: WorkflowVersion | undefined
 
         switch (userOperation.type) {
             case WorkflowOperationType.USE_AS_DRAFT: {
@@ -37,6 +39,7 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
                     versionId: userOperation.request.versionId,
                     removeConnectionsName: false,
                 })
+                stepDatesSource = previousVersion
                 operations = [{
                     type: WorkflowOperationType.IMPORT_WORKFLOW,
                     request: {
@@ -98,6 +101,9 @@ export const workflowVersionService = (log: FastifyBaseLogger) => ({
                     mutatedWorkflowVersion.notes[noteIndex] = { ...mutatedWorkflowVersion.notes[noteIndex], ownerId: userId }
                 }
             }
+        }
+        if (!isNil(stepDatesSource)) {
+            mutatedWorkflowVersion = workflowStepDates.keepFrom({ workflowVersion: mutatedWorkflowVersion, source: stepDatesSource })
         }
 
         mutatedWorkflowVersion.updated = dayjs().toISOString()

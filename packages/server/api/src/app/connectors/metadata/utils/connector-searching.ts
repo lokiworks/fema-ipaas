@@ -127,10 +127,17 @@ const filterBasedOnSearchQuery = ({ searchQuery, connectors, suggestionType, ori
         return {
             ...item,
             originalText: undefined,
-            actions: suggestedActions,
-            triggers: suggestedTriggers,
+            actions: orEveryEntry({ suggestions: suggestedActions, entries: item.actions }),
+            triggers: orEveryEntry({ suggestions: suggestedTriggers, entries: item.triggers }),
         }
     })
+}
+
+function orEveryEntry<T extends ActionBase | TriggerBase>({ suggestions, entries }: { suggestions: Record<string, T>, entries: (T & { originalText: string })[] }): Record<string, T> {
+    if (Object.keys(suggestions).length > 0) {
+        return suggestions
+    }
+    return Object.fromEntries(entries.map((entry) => [entry.name, { ...entry, originalText: undefined }]))
 }
 
 const filterBasedOnCategories = (categories: ConnectorCategory[] | undefined, connectors: ConnectorMetadataSchema[]): ConnectorMetadataSchema[] => {
@@ -160,6 +167,7 @@ function searchForSuggestion<T extends ActionBase | TriggerBase>(
         shouldSort: true,
         keys: ['connectorDisplayName', 'displayName', 'description', 'originalText'],
         threshold: 0.2,
+        ignoreLocation: true,
     })
     const suggestions = nestedFuse.search(searchQuery)
     return suggestions.reduce<Record<string, T>>(

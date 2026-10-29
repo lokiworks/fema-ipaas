@@ -221,4 +221,24 @@ describe('workflowVersionService.applyOperation - USE_AS_DRAFT', () => {
 
         expect(result.trigger.type).toBe(WorkflowTriggerType.EMPTY)
     })
+
+    it('keeps every step lastUpdatedDate from the version it was derived from', async () => {
+        const currentDraft = makeWorkflowVersion()
+        const previousVersion = makeWorkflowVersion({ id: 'fv-prev' })
+        mockRepoFindOne.mockResolvedValue(previousVersion)
+
+        const result = await workflowVersionService(mockLog).applyOperation({
+            projectId: 'proj-1',
+            tenantId: 'tenant-1',
+            userId: 'user-1',
+            workflowVersion: currentDraft,
+            userOperation: {
+                type: WorkflowOperationType.USE_AS_DRAFT,
+                request: { versionId: 'fv-prev' },
+            },
+        })
+
+        expect(result.trigger.lastUpdatedDate).toBe('2024-01-01T00:00:00Z')
+        expect(result.trigger.nextAction?.lastUpdatedDate).toBe('2024-01-01T00:00:00Z')
+    })
 })

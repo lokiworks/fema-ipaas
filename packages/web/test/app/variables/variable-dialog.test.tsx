@@ -102,19 +102,6 @@ function valueInput(): HTMLInputElement {
   return input;
 }
 
-function clickEyeToggle() {
-  const toggle = Array.from(container?.querySelectorAll('button') ?? []).find(
-    (b) =>
-      ['Show value', 'Hide value'].includes(b.getAttribute('aria-label') ?? ''),
-  );
-  if (!toggle) {
-    throw new Error('eye toggle not found');
-  }
-  act(() => {
-    toggle.click();
-  });
-}
-
 afterEach(() => {
   act(() => {
     root?.unmount();
@@ -132,12 +119,14 @@ describe('VariableDialog value field', () => {
     expect(input.matches('[spellcheck="false"]')).toBe(true);
   });
 
-  it('masks the value with CSS on eye toggle and reveals it on toggle back', () => {
+  it('offers no masking toggle for a non-sensitive value', () => {
     setup();
-    clickEyeToggle();
-    expect(valueInput().type).toBe('text');
-    expect(valueInput().className).toContain(MASK_CLASS);
-    clickEyeToggle();
+    const toggles = Array.from(
+      container?.querySelectorAll('button') ?? [],
+    ).filter((b) =>
+      ['Show value', 'Hide value'].includes(b.getAttribute('aria-label') ?? ''),
+    );
+    expect(toggles).toHaveLength(0);
     expect(valueInput().className).not.toContain(MASK_CLASS);
   });
 });

@@ -25,6 +25,7 @@ type TestSampleDataViewerProps = {
   sampleDataInput?: unknown | null;
   errorMessage: string | null;
   lastTestDate: string | undefined;
+  isStale?: boolean;
   children?: React.ReactNode;
   consoleLogs: string | null;
   explanationContext?: ErrorExplanationContext;
@@ -64,6 +65,7 @@ export const TestSampleDataViewer = React.memo(
       sampleData,
       errorMessage,
       lastTestDate,
+      isStale = false,
       currentStep,
       children,
       isSaving,
@@ -87,8 +89,10 @@ export const TestSampleDataViewer = React.memo(
 
     const isFailed = !isNil(errorMessage);
 
-    const status: 'success' | 'failed' | 'testing' | 'idle' = isTesting
+    const status: 'success' | 'failed' | 'testing' | 'stale' = isTesting
       ? 'testing'
+      : isStale
+      ? 'stale'
       : isFailed
       ? 'failed'
       : 'success';

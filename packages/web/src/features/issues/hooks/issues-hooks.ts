@@ -64,18 +64,25 @@ function useIssue(id: string) {
   });
 }
 
-function useWorkflowAvailability(workflowId: string | null | undefined) {
+function useWorkflowAvailability({
+  workflowId,
+  workflowDisplayName,
+}: {
+  workflowId: string | null | undefined;
+  workflowDisplayName: string | null | undefined;
+}) {
+  const knownDeleted = !isNil(workflowId) && isNil(workflowDisplayName);
   const { data, error } = useQuery({
     queryKey: [ISSUES_KEY, 'workflow-availability', workflowId],
     queryFn: () => workflowsApi.get(workflowId ?? ''),
-    enabled: !isNil(workflowId),
+    enabled: !isNil(workflowId) && !knownDeleted,
     retry: (failureCount, failure) =>
       !notFoundError.isNotFound(failure) && failureCount < 2,
     select: (workflow) => workflow.status,
   });
   return {
     stopped: data !== undefined && data !== WorkflowStatus.ENABLED,
-    deleted: notFoundError.isNotFound(error),
+    deleted: knownDeleted || notFoundError.isNotFound(error),
   };
 }
 
@@ -140,9 +147,11 @@ function useUpdateIssue(id: string) {
   return useMutation({
     mutationFn: (request: UpdateIssueRequestBody) =>
       issuesApi.update(id, request),
-    onSuccess: () => {
+    onSuccess: (_, request) => {
       void queryClient.invalidateQueries({ queryKey: [ISSUES_KEY] });
-      toast.success(t('Issue updated'));
+      if (request.status === undefined) {
+        toast.success(t('Issue updated'), { position: 'bottom-right' });
+      }
     },
     onError: (error) => {
       toast.error(

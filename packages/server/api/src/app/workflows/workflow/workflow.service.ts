@@ -20,6 +20,7 @@ import { projectService } from '../../project/project-service'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
 import { userRepo } from '../../user/user-service'
 import { workflowFolderService } from '../folder/folder.service'
+import { workflowStepDates } from '../workflow-version/workflow-step-dates'
 import { workflowVersionMigrationService } from '../workflow-version/workflow-version-migration.service'
 import { workflowVersionRepo, workflowVersionService } from '../workflow-version/workflow-version.service'
 import { workflowExecutionCache } from './workflow-execution-cache'
@@ -977,7 +978,7 @@ async function createNewDraftIfVersionIsPublished({
                     entityManager,
                 })
             }
-            return draftVersion
+            return workflowVersionRepo(entityManager).save(workflowStepDates.keepFrom({ workflowVersion: draftVersion, source: lockedVersion }))
         })
     }
     return { version: lastVersion, createdNewDraft }

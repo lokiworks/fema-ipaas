@@ -136,6 +136,11 @@ export const connectionsMutations = {
       onSuccess: (connection) => {
         setOpen(false, connection);
         setErrorMessage('');
+        toast.success(
+          isNil(reconnectConnection)
+            ? t('Created {name}', { name: connection.displayName })
+            : t('Saved {name}', { name: connection.displayName }),
+        );
       },
       onError: (err) => {
         if (err instanceof ConnectionNameAlreadyExists) {

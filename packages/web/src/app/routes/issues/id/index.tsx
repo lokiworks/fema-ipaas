@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { ExplainedErrorMessage } from '@/components/custom/explained-error-message';
 import { FormattedDate } from '@/components/custom/formatted-date';
@@ -87,7 +88,46 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
   const canReplay = checkAccess(Permission.WRITE_RUN);
   const { assignable, nameOf } = issueMembersHooks.useIssueMembers();
   const { mutate: update } = issuesHooks.useUpdateIssue(issue.id);
-  const workflow = issuesHooks.useWorkflowAvailability(issue.workflowId);
+  const changeStatus = (status: IssueStatus) => {
+    const previous = issue.status;
+    if (status === previous) {
+      return;
+    }
+    update(
+      { status },
+      {
+        onSuccess: () =>
+          toast.success(
+            t('Marked as {status}', {
+              status: issueUiUtils.statusLabel(status),
+            }),
+            {
+              position: 'bottom-right',
+              action: {
+                label: t('Undo'),
+                onClick: () =>
+                  update(
+                    { status: previous },
+                    {
+                      onSuccess: () =>
+                        toast.success(
+                          t('Restored to {status}', {
+                            status: issueUiUtils.statusLabel(previous),
+                          }),
+                          { position: 'bottom-right' },
+                        ),
+                    },
+                  ),
+              },
+            },
+          ),
+      },
+    );
+  };
+  const workflow = issuesHooks.useWorkflowAvailability({
+    workflowId: issue.workflowId,
+    workflowDisplayName: issue.workflowDisplayName,
+  });
   const [replayStrategy, setReplayStrategy] =
     useState<WorkflowRetryStrategy | null>(null);
   const muted =
@@ -205,7 +245,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
               {Object.values(IssueStatus).map((status) => (
                 <DropdownMenuItem
                   key={status}
-                  onSelect={() => update({ status })}
+                  onSelect={() => changeStatus(status)}
                 >
                   {issueUiUtils.statusLabel(status)}
                 </DropdownMenuItem>
@@ -216,7 +256,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             <Button
               size="sm"
               disabled={!canWrite}
-              onClick={() => update({ status: IssueStatus.RESOLVED })}
+              onClick={() => changeStatus(IssueStatus.RESOLVED)}
             >
               <CheckCircle2 className="size-4 mr-1" />
               {t('Mark resolved')}
@@ -228,7 +268,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
       <IssueBanners
         issue={issue}
         muted={muted}
-        onUnignore={() => update({ status: IssueStatus.OPEN })}
+        onUnignore={() => changeStatus(IssueStatus.OPEN)}
         canWrite={canWrite}
       />
 
@@ -240,7 +280,7 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
             workflow={workflow}
             canWrite={canWrite}
             onReplay={setReplayStrategy}
-            onIgnore={() => update({ status: IssueStatus.IGNORED })}
+            onIgnore={() => changeStatus(IssueStatus.IGNORED)}
           />
           {issue.kind === IssueKind.RECONCILIATION &&
             issue.message.startsWith('reconciliation:') && (
@@ -692,7 +732,9 @@ function AffectedRunsCard({
       <CardContent className="flex flex-col gap-2">
         {page && page.data.length === 0 && (
           <p className="py-2 text-sm text-muted-foreground">
-            {t('issueAffectedRunsEmpty')}
+            {workflow.deleted
+              ? t('issueAffectedRunsEmptyWorkflowDeleted')
+              : t('issueAffectedRunsEmpty')}
           </p>
         )}
         <ul className="flex flex-col divide-y">

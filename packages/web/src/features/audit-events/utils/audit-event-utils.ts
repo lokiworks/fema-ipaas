@@ -219,17 +219,23 @@ function summarize({
     case ApplicationEventName.FOLDER_DELETED:
       return t('auditFolderDeleted', { folder: event.data.folder.displayName });
     case ApplicationEventName.CONNECTION_UPSERTED:
-      return t('auditConnectionUpserted', {
-        connection: event.data.connection.displayName,
-        externalId: event.data.connection.externalId,
-      });
+      return isCreation(event.data.connection)
+        ? t('auditConnectionCreatedNamed', {
+            connection: event.data.connection.displayName,
+          })
+        : t('auditConnectionUpdatedNamed', {
+            connection: event.data.connection.displayName,
+          });
     case ApplicationEventName.CONNECTION_DELETED:
-      return t('auditConnectionDeleted', {
+      return t('auditConnectionDeletedNamed', {
         connection: event.data.connection.displayName,
-        externalId: event.data.connection.externalId,
       });
     case ApplicationEventName.VARIABLE_UPSERTED:
-      return t('auditVariableUpserted', { variable: event.data.variable.name });
+      return isCreation(event.data.variable)
+        ? t('auditVariableCreatedNamed', { variable: event.data.variable.name })
+        : t('auditVariableUpdatedNamed', {
+            variable: event.data.variable.name,
+          });
     case ApplicationEventName.VARIABLE_DELETED:
       return t('auditVariableDeleted', { variable: event.data.variable.name });
     case ApplicationEventName.VARIABLE_VALUE_REVEALED:
@@ -421,6 +427,25 @@ function summarize({
       return event.data.environmentsEnabled === true
         ? t('auditEnvironmentsOn')
         : t('auditEnvironmentsOff');
+    case ApplicationEventName.PROJECT_CREATED:
+      return t('auditProjectCreated', {
+        name: event.data.createdProject.displayName,
+      });
+    case ApplicationEventName.MAPPING_TABLE_CREATED:
+      return t('auditMappingTableCreated', {
+        name: event.data.mappingTable.name,
+      });
+    case ApplicationEventName.MAPPING_TABLE_UPDATED:
+      return event.data.addedRows === undefined
+        ? t('auditMappingTableUpdated', { name: event.data.mappingTable.name })
+        : t('auditMappingTableRowsAdded', {
+            name: event.data.mappingTable.name,
+            count: event.data.addedRows,
+          });
+    case ApplicationEventName.MAPPING_TABLE_DELETED:
+      return t('auditMappingTableDeleted', {
+        name: event.data.mappingTable.name,
+      });
     case ApplicationEventName.USER_SIGN_IN_FAILED:
       return summarizeSignInFailed({
         target: event.data.target,
@@ -443,9 +468,38 @@ function actionLabel(action: ApplicationEventName): string {
   return ACTION_LABELS[action]();
 }
 
+function eventActionLabel(event: ApplicationEvent): string {
+  switch (event.action) {
+    case ApplicationEventName.CONNECTION_UPSERTED:
+      return isCreation(event.data.connection)
+        ? t('auditActionConnectionCreated')
+        : t('auditActionConnectionUpdated');
+    case ApplicationEventName.VARIABLE_UPSERTED:
+      return isCreation(event.data.variable)
+        ? t('auditActionVariableCreated')
+        : t('auditActionVariableUpdated');
+    default:
+      return actionLabel(event.action);
+  }
+}
+
+function isCreation({
+  created,
+  updated,
+}: {
+  created: string | Date;
+  updated: string | Date;
+}): boolean {
+  return (
+    Math.abs(new Date(updated).getTime() - new Date(created).getTime()) <
+    CREATION_WINDOW_MS
+  );
+}
+
 export const auditEventUtils = {
   summarize,
   actionLabel,
+  eventActionLabel,
   actionsForSources,
   needsWorkflowName,
   runIdOf,
@@ -848,6 +902,13 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
   [ApplicationEventName.AUDIT_LOG_EXPORTED]: () => t('auditActionLogExported'),
   [ApplicationEventName.PROJECT_LIMITS_UPDATED]: () =>
     t('auditActionProjectLimits'),
+  [ApplicationEventName.PROJECT_CREATED]: () => t('auditActionProjectCreated'),
+  [ApplicationEventName.MAPPING_TABLE_CREATED]: () =>
+    t('auditActionMappingTableCreated'),
+  [ApplicationEventName.MAPPING_TABLE_UPDATED]: () =>
+    t('auditActionMappingTableUpdated'),
+  [ApplicationEventName.MAPPING_TABLE_DELETED]: () =>
+    t('auditActionMappingTableDeleted'),
 };
 
 function actionsForSources(sources: string[]): string[] | undefined {
@@ -866,6 +927,8 @@ function actionsForSources(sources: string[]): string[] | undefined {
     (name) => !SYSTEM_EVENT_NAMES.includes(name),
   );
 }
+
+const CREATION_WINDOW_MS = 1000;
 
 const SIGN_IN_DETAIL_PATTERN = /^(password|email code): ([A-Z_]+)$/;
 

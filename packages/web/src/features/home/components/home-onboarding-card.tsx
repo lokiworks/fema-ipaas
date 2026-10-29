@@ -1,3 +1,4 @@
+import { ProjectWithLimits } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Check, ChevronRight, Compass } from 'lucide-react';
 import React, { useState } from 'react';
@@ -22,7 +23,7 @@ export function HomeOnboardingCard({
   hasProject: boolean;
   hasWorkflow: boolean;
   canCreateWorkflow: boolean;
-  onProjectCreated: () => void;
+  onProjectCreated: (project: ProjectWithLimits) => void;
   onNewWorkflow: () => void;
   onStartTour: () => void;
 }) {

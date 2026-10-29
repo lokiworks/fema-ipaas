@@ -26,7 +26,9 @@ const StepNodeRunDuration = ({
     <div className="ml-2 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
       <Timer className="size-3" />
       <span>
-        {running ? `${t('Running')}...` : formatUtils.formatDuration(duration)}
+        {running
+          ? `${t('Executing')}...`
+          : formatUtils.formatDuration(duration)}
       </span>
     </div>
   );

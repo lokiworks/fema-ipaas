@@ -133,7 +133,7 @@ export default function AuditLogPage() {
         ...rows.map((event) => [
           dayjs(event.created).format('YYYY-MM-DD HH:mm:ss'),
           event.userEmail ?? '',
-          auditEventUtils.actionLabel(event.action),
+          auditEventUtils.eventActionLabel(event),
           auditEventUtils.summarize({ event, workflowNames, userNames }),
           projectLabelOf({ event, projectNameById }),
           event.ip ? displayIp(event.ip) : '',
@@ -244,14 +244,14 @@ export default function AuditLogPage() {
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : (
-          <Table className="min-w-[56rem]">
+          <Table className="min-w-[40rem] table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-44">{t('Time')}</TableHead>
-                <TableHead className="w-48">{t('Actor')}</TableHead>
-                <TableHead className="w-44">{t('Action')}</TableHead>
+                <TableHead className="w-28 xl:w-40">{t('Time')}</TableHead>
+                <TableHead className="w-24 xl:w-40">{t('Actor')}</TableHead>
+                <TableHead className="w-28 xl:w-36">{t('Action')}</TableHead>
                 <TableHead>{t('Audit target')}</TableHead>
-                <TableHead className="w-48">
+                <TableHead className="w-36 xl:w-44">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="inline-flex cursor-default items-center gap-1">
@@ -266,7 +266,7 @@ export default function AuditLogPage() {
                     </TooltipContent>
                   </Tooltip>
                 </TableHead>
-                <TableHead className="w-32">IP</TableHead>
+                <TableHead className="hidden w-32 xl:table-cell">IP</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -340,10 +340,10 @@ function AuditRow({
       : null;
   return (
     <TableRow>
-      <TableCell className="whitespace-nowrap">
+      <TableCell className="truncate whitespace-nowrap">
         <FormattedDate date={new Date(event.created)} />
       </TableCell>
-      <TableCell className="max-w-48">
+      <TableCell className="min-w-0">
         {event.userEmail && event.userEmail !== actorName ? (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -357,10 +357,10 @@ function AuditRow({
           </TextWithTooltip>
         )}
       </TableCell>
-      <TableCell className="whitespace-nowrap">
-        {auditEventUtils.actionLabel(event.action)}
+      <TableCell className="truncate whitespace-nowrap">
+        {auditEventUtils.eventActionLabel(event)}
       </TableCell>
-      <TableCell className="max-w-[28rem]">
+      <TableCell className="min-w-0">
         <TextWithTooltip tooltipMessage={summary}>
           {runPath ? (
             <Link
@@ -374,12 +374,15 @@ function AuditRow({
           )}
         </TextWithTooltip>
       </TableCell>
-      <TableCell className="max-w-48 text-muted-foreground">
+      <TableCell className="min-w-0 text-muted-foreground">
         <TextWithTooltip tooltipMessage={projectLabel}>
           <p className="truncate whitespace-nowrap">{projectLabel}</p>
         </TextWithTooltip>
+        <p className="truncate font-mono text-xs xl:hidden">
+          {displayIp(event.ip)}
+        </p>
       </TableCell>
-      <TableCell className="font-mono text-xs text-muted-foreground">
+      <TableCell className="hidden font-mono text-xs text-muted-foreground xl:table-cell">
         {displayIp(event.ip)}
       </TableCell>
     </TableRow>

@@ -34,17 +34,20 @@ function testedStepsOf({
   }
   const testedAt = run.finishTime ?? observedAt;
   return Object.fromEntries(
-    Object.entries(run.steps)
-      .filter(([, output]) => outputSucceeded(output))
-      .flatMap(([stepName]) => {
-        const tested = testedStepOf({
-          stepName,
-          testedAt,
-          runVersion,
-          currentVersion,
-        });
-        return isNil(tested) ? [] : [[stepName, tested]];
-      }),
+    Object.entries(run.steps).flatMap(([stepName, output]) => {
+      const status = finishedStatusOf(output);
+      if (isNil(status)) {
+        return [];
+      }
+      const tested = testedStepOf({
+        stepName,
+        testedAt,
+        runVersion,
+        currentVersion,
+        failed: status === StepOutputStatus.FAILED,
+      });
+      return isNil(tested) ? [] : [[stepName, tested]];
+    }),
   );
 }
 
@@ -63,11 +66,13 @@ function testedStepOf({
   testedAt,
   runVersion,
   currentVersion,
+  failed,
 }: {
   stepName: string;
   testedAt: string;
   runVersion: WorkflowVersion;
   currentVersion: WorkflowVersion;
+  failed: boolean;
 }): DebugTestedStep | null {
   const ranStep = workflowStructureUtil.getStep(stepName, runVersion.trigger);
   const currentStep = workflowStructureUtil.getStep(
@@ -84,16 +89,20 @@ function testedStepOf({
   if (editedAfterRun || signature !== versionDiff.stepSignature(currentStep)) {
     return null;
   }
-  return { testedAt, signature };
+  return { testedAt, signature, failed };
 }
 
-function outputSucceeded(output: unknown): boolean {
-  return (
-    typeof output === 'object' &&
-    output !== null &&
-    'status' in output &&
-    output.status === StepOutputStatus.SUCCEEDED
-  );
+function finishedStatusOf(output: unknown): StepOutputStatus | null {
+  if (typeof output !== 'object' || output === null || !('status' in output)) {
+    return null;
+  }
+  if (output.status === StepOutputStatus.SUCCEEDED) {
+    return StepOutputStatus.SUCCEEDED;
+  }
+  if (output.status === StepOutputStatus.FAILED) {
+    return StepOutputStatus.FAILED;
+  }
+  return null;
 }
 
 export const debugTestedStepsUtils = {
@@ -104,4 +113,5 @@ export const debugTestedStepsUtils = {
 export type DebugTestedStep = {
   testedAt: string;
   signature: string;
+  failed: boolean;
 };

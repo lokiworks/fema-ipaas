@@ -5,8 +5,8 @@ import { t } from 'i18next';
 import { useDraftChanged } from '@/app/builder/builder-header/use-draft-changed';
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { useDebugRunProgress } from '@/app/builder/debug/use-debug-run-progress';
+import { useLiveWorkflowStatus } from '@/app/builder/use-live-workflow-status';
 import { connectorSelectorUtils } from '@/features/connectors';
-import { projectWorkspaceHooks } from '@/features/project-workspace/hooks/project-workspace-hooks';
 import { workflowHooks } from '@/features/workflows';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 
@@ -20,11 +20,8 @@ const TestWorkflowWidget = () => {
       state.workflow,
       state.run,
     ]);
-  const { data: tree } = projectWorkspaceHooks.useTree(workflow.projectId);
   const publishedVersionId = workflow.publishedVersionId;
-  const workflowStatus =
-    tree?.workflows.find((row) => row.id === workflow.id)?.status ??
-    workflow.status;
+  const workflowStatus = useLiveWorkflowStatus();
 
   const { checkAccess } = useAuthorization();
   const userHasPermissionToRun = checkAccess(Permission.WRITE_RUN);

@@ -204,7 +204,7 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
                     required
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder={'********'}
+                    placeholder={t('Enter your password')}
                     className="rounded-sm pr-10"
                     tabIndex={2}
                     data-testid="sign-in-password"

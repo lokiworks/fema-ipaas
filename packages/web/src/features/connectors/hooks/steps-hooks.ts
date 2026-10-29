@@ -21,6 +21,7 @@ import {
   getCoreStepMetadata,
   stepUtils,
 } from '../utils/step-utils';
+import { supersededActions } from '../utils/superseded-actions';
 
 export const stepsHooks = {
   useStepMetadata: ({ step }: UseStepMetadata) => {
@@ -80,8 +81,19 @@ export const stepsHooks = {
             (type === 'trigger' && connector.triggers > 0),
         );
 
-        const connectorsMetadata = filteredConnectorsBySuggestionType.map(
-          (connector) => {
+        const connectorsMetadata = filteredConnectorsBySuggestionType
+          .map((connector) =>
+            type === 'action'
+              ? supersededActions.withoutSupersededActions(connector)
+              : connector,
+          )
+          .filter(
+            (connector) =>
+              type !== 'action' ||
+              connector.suggestedActions === undefined ||
+              connector.suggestedActions.length > 0,
+          )
+          .map((connector) => {
             const metadata = stepUtils.mapConnectorToMetadata({
               connector,
               type,
@@ -91,8 +103,7 @@ export const stepsHooks = {
               suggestedActions: connector.suggestedActions,
               suggestedTriggers: connector.suggestedTriggers,
             };
-          },
-        );
+          });
 
         switch (type) {
           case 'action': {

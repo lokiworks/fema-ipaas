@@ -148,7 +148,7 @@ export const executionUtils = {
         return {
           variant: 'default',
           Icon: Timer,
-          text: t('Running'),
+          text: t('Executing'),
           extraClassName: 'text-foreground',
         };
       case StepOutputStatus.PAUSED:
@@ -244,7 +244,7 @@ export const executionUtils = {
       case ExecutionStatus.FAILED:
         return t('Failed');
       case ExecutionStatus.RUNNING:
-        return t('Running');
+        return t('Executing');
       case ExecutionStatus.QUEUED:
         return t('Queued');
       case ExecutionStatus.PAUSED:

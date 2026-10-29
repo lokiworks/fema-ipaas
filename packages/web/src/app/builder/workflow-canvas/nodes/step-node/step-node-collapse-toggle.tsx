@@ -12,7 +12,13 @@ import { cn } from '@/lib/utils';
 
 import { workflowScreenshotUtils } from '../../utils/workflow-screenshot-utils';
 
-export function StepNodeCollapseToggle({ step }: { step: Step }) {
+export function StepNodeCollapseToggle({
+  step,
+  inline,
+}: {
+  step: Step;
+  inline: boolean;
+}) {
   const [isCollapsed, toggleCollapsedStep] = useBuilderStateContext((state) => [
     state.collapsedSteps.includes(step.name),
     state.toggleCollapsedStep,
@@ -42,7 +48,8 @@ export function StepNodeCollapseToggle({ step }: { step: Step }) {
         toggleCollapsedStep(step.name);
       }}
       className={cn(
-        'absolute bottom-1 right-1 z-10 flex h-4 items-center gap-0.5 rounded-sm border bg-background px-1 text-[10px] leading-none text-muted-foreground hover:text-foreground',
+        'z-10 flex h-4 shrink-0 items-center gap-0.5 rounded-sm border bg-background px-1 text-[10px] leading-none text-muted-foreground hover:text-foreground',
+        inline ? 'relative self-end mb-0.5' : 'absolute bottom-1 right-1',
         isCollapsed && 'border-primary/40 text-primary',
       )}
     >

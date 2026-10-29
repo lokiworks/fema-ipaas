@@ -262,7 +262,7 @@ const getDefaultStepValues = ({
               },
               {
                 branchType: BranchExecutionType.FALLBACK,
-                branchName: 'Otherwise',
+                branchName: defaultStepNames.fallbackBranchName(),
               },
             ],
           },

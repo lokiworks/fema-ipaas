@@ -5,7 +5,9 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { applicationEvents } from '../helper/application-events'
 import { userService } from '../user/user-service'
+import { projectAuditEvents } from './project-audit-events'
 import { projectMemberService } from './project-member.service'
 import { projectRepo, projectService } from './project-service'
 import { projectSideEffects } from './project-side-effects'
@@ -48,6 +50,7 @@ export const projectController: FastifyPluginAsyncZod = async (app) => {
         if (request.principal.type === PrincipalType.USER) {
             await projectMemberService(request.log).upsert({ projectId: project.id, userId: request.principal.id, role: DefaultProjectRole.ADMIN })
         }
+        applicationEvents(request.log).sendUserEvent(request, projectAuditEvents.created(project), { projectId: project.id })
         return reply.status(StatusCodes.CREATED).send(await projectSideEffects(request.log).enrich(project))
     })
 

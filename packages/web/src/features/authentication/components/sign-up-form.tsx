@@ -268,7 +268,7 @@ const SignUpForm = ({
                         required
                         id="password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder={'********'}
+                        placeholder={t('Enter your password')}
                         className="rounded-sm pr-16"
                         data-testid="sign-up-password"
                         onFocus={() => setIsPasswordFocused(true)}

@@ -42,12 +42,10 @@ export function HomeAttentionCard({
     }));
   return (
     <SideCard
-      title={t('Needs attention')}
-      description={
-        nothing
-          ? t('All good')
-          : t("Today's failed runs and unavailable connections")
-      }
+      title={t("Today's exceptions")}
+      description={t(
+        'Failed or timed out runs today, and unavailable connections',
+      )}
     >
       <div className="flex flex-col gap-0.5">
         {groupedFailedRuns.map(({ latest, count, timedOut }) => (
@@ -110,7 +108,7 @@ export function HomeAttentionCard({
         {nothing && (
           <div className="flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground">
             <CircleCheck className="size-4 text-success" />
-            {t('Nothing needs your attention')}
+            {t('No failed runs today, and all connections are available')}
           </div>
         )}
       </div>

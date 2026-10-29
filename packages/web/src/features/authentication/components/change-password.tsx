@@ -93,7 +93,7 @@ const ChangePasswordForm = () => {
                         required
                         id="newPassword"
                         type="password"
-                        placeholder={'********'}
+                        placeholder={t('Enter a new password')}
                         className="rounded-sm"
                         ref={inputRef}
                         onBlur={() => setPasswordFocused(false)}

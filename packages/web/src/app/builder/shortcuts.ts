@@ -25,6 +25,7 @@ export const useHandleKeyPressOnCanvas = () => {
     undo,
     redo,
     setHighlightedSteps,
+    isDragging,
   ] = useBuilderStateContext((state) => [
     state.selectedNodes,
     state.workflowVersion,
@@ -41,6 +42,7 @@ export const useHandleKeyPressOnCanvas = () => {
     state.undo,
     state.redo,
     state.setHighlightedSteps,
+    state.draggedNote !== null || state.activeDraggingStep !== null,
   ]);
 
   const handleKeyDown = useCallback(
@@ -134,8 +136,11 @@ export const useHandleKeyPressOnCanvas = () => {
           }
         },
         ExitDrag: () => {
-          setDraggedNote(null, null);
-          setDraggedStep(null);
+          if (isDragging) {
+            setDraggedNote(null, null);
+            setDraggedStep(null);
+            return;
+          }
           if (selectedStep) {
             exitStepSettings();
           }
@@ -192,6 +197,7 @@ export const useHandleKeyPressOnCanvas = () => {
       undo,
       redo,
       setHighlightedSteps,
+      isDragging,
     ],
   );
 

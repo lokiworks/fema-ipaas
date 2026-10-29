@@ -1,7 +1,12 @@
 import { isNil, Permission } from '@fema-ipaas/core-utils';
-import { ProjectDirectoryItem, rolePermissions } from '@fema-ipaas/shared';
+import {
+  ProjectDirectoryItem,
+  ProjectWithLimits,
+  rolePermissions,
+} from '@fema-ipaas/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useGlobalSearch } from '@/app/components/global-search/global-search-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,6 +47,7 @@ export function WorkspaceHomePage() {
   const [now] = useState(() => new Date());
   const since = homeUtils.localMidnight(now).toISOString();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { setOpen: setSearchOpen } = useGlobalSearch();
   const { data: user } = userHooks.useCurrentUser();
   const { tenant } = tenantHooks.useCurrentTenant();
@@ -72,8 +78,10 @@ export function WorkspaceHomePage() {
     memberProjectIds,
     limit: HOME_RECENT_LIMIT,
   });
-  const refreshProjects = () => {
+  const openCreatedProject = (created: ProjectWithLimits) => {
     queryClient.invalidateQueries({ queryKey: PROJECT_DIRECTORY_QUERY_KEY });
+    authenticationSession.switchToProject(created.id);
+    navigate(`/projects/${created.id}/home`);
   };
 
   return (
@@ -100,7 +108,7 @@ export function WorkspaceHomePage() {
           hasProject={projects.length > 0}
           hasWorkflow={projects.some((project) => project.workflowCount > 0)}
           canCreateWorkflow={hasEditable}
-          onProjectCreated={refreshProjects}
+          onProjectCreated={openCreatedProject}
           onNewWorkflow={() => setNewWorkflowOpen(true)}
           onStartTour={() => launchTour('console')}
         />
@@ -113,7 +121,7 @@ export function WorkspaceHomePage() {
           ) : (
             <HomeProjects
               projects={projects}
-              onProjectCreated={refreshProjects}
+              onProjectCreated={openCreatedProject}
             />
           )}
           <HomeTemplates projectId={targetProject?.id ?? null} />

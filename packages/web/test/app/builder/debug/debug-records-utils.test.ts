@@ -138,10 +138,40 @@ describe('debugRecordsUtils', () => {
       debugRecordsUtils.troubleshootingHints(
         'ReferenceError: setTimeout is not defined',
       ),
+    ).toEqual([DebugHint.CHECK_CODE_NAME]);
+    expect(
+      debugRecordsUtils.troubleshootingHints(
+        "TypeError: Cannot read properties of undefined (reading 'id')",
+      ),
     ).toEqual([DebugHint.CHECK_REFERENCE]);
-    expect(debugRecordsUtils.troubleshootingHints('something odd')).toEqual([
-      DebugHint.READ_MESSAGE,
-    ]);
+    expect(debugRecordsUtils.troubleshootingHints('something odd')).toEqual([]);
     expect(debugRecordsUtils.troubleshootingHints(null)).toEqual([]);
+  });
+
+  it('suggests the step time limit for a step timeout, not an empty reference', () => {
+    const friendly = JSON.stringify({
+      __apErrorVersion: 1,
+      errorName: 'StepTimeoutExceeded',
+      message:
+        'The step ran longer than 5 seconds and was stopped (FEMA_STEP_TIMEOUT)',
+      raw: 'value was undefined',
+    });
+    expect(debugRecordsUtils.troubleshootingHints(friendly)).toEqual([
+      DebugHint.STEP_TIMEOUT,
+    ]);
+    expect(
+      debugRecordsUtils.troubleshootingHints(
+        'The step ran longer than 5 seconds and was stopped (FEMA_STEP_TIMEOUT)',
+      ),
+    ).toEqual([DebugHint.STEP_TIMEOUT]);
+  });
+
+  it('reads the hint from the friendly message instead of the raw payload', () => {
+    const friendly = JSON.stringify({
+      __apErrorVersion: 1,
+      message: 'Something odd happened',
+      raw: 'Cannot read properties of undefined',
+    });
+    expect(debugRecordsUtils.troubleshootingHints(friendly)).toEqual([]);
   });
 });

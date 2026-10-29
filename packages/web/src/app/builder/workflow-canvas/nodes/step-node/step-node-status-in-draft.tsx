@@ -175,7 +175,9 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     [step],
   );
   const isTestedByDebug =
-    !isNil(debugTested) && debugTested.signature === currentSignature;
+    !isNil(debugTested) &&
+    debugTested.signature === currentSignature &&
+    (isNil(lastTestDate) || lastTestDate <= debugTested.testedAt);
   const hasValidationError = !isNil(firstError);
   const hasValidationWarning = !isNil(firstWarning);
   const status: DraftStepStatus = useMemo(() => {
@@ -185,7 +187,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     if (hasValidationWarning) return 'has-warning';
 
     if (isTestedByDebug) {
-      return hasError ? 'failed' : 'tested';
+      return hasError || debugTested?.failed ? 'failed' : 'tested';
     }
     if (isNil(lastTestDate)) {
       return isNil(debugTested) ? 'untested' : 'needs-test';

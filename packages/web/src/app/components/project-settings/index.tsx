@@ -75,7 +75,7 @@ export function ProjectSettingsDialog({
       );
       return;
     }
-    toast.success(t('Your changes have been saved.'), {
+    toast.success(t('Saved {name}', { name: project.displayName }), {
       duration: 3000,
     });
     onClose();

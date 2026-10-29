@@ -196,7 +196,7 @@ const StepCanvasNode = React.memo(
         <StepNodeStatusInRun stepName={step.name} />
         <StepNodeSkippedStatus stepName={step.name} />
         <StepNodeStatusInDraft stepName={step.name} />
-        <StepNodeCollapseToggle step={step} />
+        {isHorizontal && <StepNodeCollapseToggle step={step} inline={false} />}
         <div className="h-full w-full">
           {!isDragging && (
             <ConnectorSelector
@@ -246,6 +246,7 @@ const StepCanvasNode = React.memo(
                       connectorDisplayName={stepMetadata?.displayName ?? ''}
                       stepName={step.name}
                     />
+                    <StepNodeCollapseToggle step={step} inline={true} />
                     {!readonly && (
                       <div className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
                         <StepNodeChevron

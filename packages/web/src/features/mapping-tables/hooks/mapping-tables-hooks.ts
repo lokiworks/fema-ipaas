@@ -102,9 +102,13 @@ function useSaveMappingTable() {
       id === null
         ? mappingTablesApi.create(request)
         : mappingTablesApi.update(id, request),
-    onSuccess: () => {
+    onSuccess: (_, { id, request }) => {
       void queryClient.invalidateQueries({ queryKey: [MAPPING_TABLES_KEY] });
-      toast.success(t('Mapping table saved'));
+      toast.success(
+        id === null
+          ? t('Created {name}', { name: request.name })
+          : t('Saved {name}', { name: request.name }),
+      );
     },
     onError: (error) =>
       toast.error(

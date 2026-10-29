@@ -181,7 +181,7 @@ const TemplateDetailsPage = ({ template }: TemplateDetailsPageProps) => {
                     {t('About this template')}
                   </span>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {template.description}
+                    {template.description || t('No description')}
                   </p>
                 </div>
 

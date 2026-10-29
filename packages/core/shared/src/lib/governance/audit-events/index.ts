@@ -82,6 +82,10 @@ export enum ApplicationEventName {
     RELEASE_WITHDRAWN = 'release.withdrawn',
     RELEASE_ROLLED_BACK = 'release.rolled_back',
     ENVIRONMENTS_UPDATED = 'release.environments.updated',
+    PROJECT_CREATED = 'project.created',
+    MAPPING_TABLE_CREATED = 'mapping_table.created',
+    MAPPING_TABLE_UPDATED = 'mapping_table.updated',
+    MAPPING_TABLE_DELETED = 'mapping_table.deleted',
 }
 
 const BaseAuditEventProps = {
@@ -685,6 +689,35 @@ export const DataStoreEvent = z.object({
 })
 export type DataStoreEvent = z.infer<typeof DataStoreEvent>
 
+export const ProjectCreatedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.PROJECT_CREATED),
+    data: z.object({
+        createdProject: z.object({
+            id: z.string(),
+            displayName: z.string(),
+        }),
+    }),
+})
+export type ProjectCreatedEvent = z.infer<typeof ProjectCreatedEvent>
+
+export const MappingTableEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.union([
+        z.literal(ApplicationEventName.MAPPING_TABLE_CREATED),
+        z.literal(ApplicationEventName.MAPPING_TABLE_UPDATED),
+        z.literal(ApplicationEventName.MAPPING_TABLE_DELETED),
+    ]),
+    data: z.object({
+        mappingTable: z.object({
+            id: z.string(),
+            name: z.string(),
+        }),
+        addedRows: z.number().optional(),
+    }),
+})
+export type MappingTableEvent = z.infer<typeof MappingTableEvent>
+
 export const PersonalAccessTokenEvent = z.object({
     ...BaseAuditEventProps,
     action: z.union([
@@ -759,6 +792,8 @@ export const ApplicationEvent = z.union([
     DataStoreEvent,
     PersonalAccessTokenEvent,
     WorkflowReleaseEvent,
+    ProjectCreatedEvent,
+    MappingTableEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -887,6 +922,14 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `Workflow "${event.data.workflow?.displayName ?? ''}" was rolled back in production`
         case ApplicationEventName.ENVIRONMENTS_UPDATED:
             return event.data.environmentsEnabled === true ? 'Test and production environments were turned on or updated' : 'Test and production environments were turned off'
+        case ApplicationEventName.PROJECT_CREATED:
+            return `Project "${event.data.createdProject.displayName}" was created`
+        case ApplicationEventName.MAPPING_TABLE_CREATED:
+            return `Mapping table "${event.data.mappingTable.name}" was created`
+        case ApplicationEventName.MAPPING_TABLE_UPDATED:
+            return isNil(event.data.addedRows) ? `Mapping table "${event.data.mappingTable.name}" was updated` : `${event.data.addedRows} rows were added to mapping table "${event.data.mappingTable.name}"`
+        case ApplicationEventName.MAPPING_TABLE_DELETED:
+            return `Mapping table "${event.data.mappingTable.name}" was deleted`
     }
 }
 

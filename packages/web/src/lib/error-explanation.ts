@@ -8,13 +8,38 @@ function explain({ message }: { message: string }): ErrorExplanation | null {
   if (!rule) {
     return null;
   }
-  return { headline: rule.headline(), hint: rule.hint() };
+  return { headline: rule.headline(text), hint: rule.hint() };
+}
+
+function isStepTimeout(message: string): boolean {
+  const text = message.toLowerCase();
+  return STEP_TIMEOUT_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function stepTimeoutHeadline(text: string): string {
+  const seconds = STEP_TIMEOUT_SECONDS_PATTERN.exec(text)?.[1];
+  return seconds
+    ? t('The step ran longer than {seconds} seconds and was stopped', {
+        seconds,
+      })
+    : t('The step ran longer than its time limit and was stopped');
 }
 
 export const errorExplanation = {
   explain,
+  isStepTimeout,
   timeoutPatterns: () => TIMEOUT_PATTERNS,
+  stepTimeoutPatterns: () => STEP_TIMEOUT_PATTERNS,
 };
+
+const STEP_TIMEOUT_PATTERNS: RegExp[] = [
+  /\bfema_step_timeout\b/,
+  /\bsteptimeoutexceeded\b/,
+  /\bstep_timeout\b/,
+  /ran longer than \d+ seconds/,
+];
+
+const STEP_TIMEOUT_SECONDS_PATTERN = /longer than (\d+) seconds/;
 
 const TIMEOUT_PATTERNS: RegExp[] = [
   /\be(?:socket)?timedout\b/,
@@ -25,6 +50,14 @@ const TIMEOUT_PATTERNS: RegExp[] = [
 ];
 
 const RULES: ExplanationRule[] = [
+  {
+    patterns: STEP_TIMEOUT_PATTERNS,
+    headline: stepTimeoutHeadline,
+    hint: () =>
+      t(
+        'The platform stops a step that runs past the time limit. It usually queries or processes too much data at once, or waits on a slow system. Narrow the query or split the work into batches, or ask the platform administrator to raise the step time limit.',
+      ),
+  },
   {
     patterns: [/\beconnrefused\b/],
     headline: () => t('The other system refused the connection'),
@@ -81,7 +114,7 @@ const RULES: ExplanationRule[] = [
 
 type ExplanationRule = {
   patterns: RegExp[];
-  headline: () => string;
+  headline: (text: string) => string;
   hint: () => string;
 };
 

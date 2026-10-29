@@ -26,6 +26,13 @@ import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -252,19 +259,19 @@ function StorePanel({
   };
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
-      <div className="flex items-start justify-between gap-4">
+    <Card className="min-w-0">
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <TextWithTooltip tooltipMessage={store.name}>
-            <h2 className="text-sm font-semibold">{store.name}</h2>
+            <CardTitle className="truncate">{store.name}</CardTitle>
           </TextWithTooltip>
-          <p className="text-xs text-muted-foreground break-words">
+          <CardDescription className="break-words">
             {t('{description} · kept for {days} days · created by {owner}', {
               description: store.description ?? t('No description'),
               days: store.ttlDays,
               owner: store.ownerName ?? t('Unknown'),
             })}
-          </p>
+          </CardDescription>
         </div>
         <ViewOnlyTooltip canWrite={canWrite}>
           <DropdownMenu>
@@ -302,170 +309,174 @@ function StorePanel({
             </DropdownMenuContent>
           </DropdownMenu>
         </ViewOnlyTooltip>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="max-w-sm grow">
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder={t('Search keys')}
-          />
+      </CardHeader>
+      <CardContent className="flex min-w-0 flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <div className="max-w-sm grow">
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder={t('Search keys')}
+            />
+          </div>
+          <div className="grow" />
+          <ViewOnlyTooltip canWrite={canWrite}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!canWrite}
+              onClick={() => openRecordDialog(null)}
+            >
+              <Plus className="size-4 mr-1" />
+              {t('New record')}
+            </Button>
+          </ViewOnlyTooltip>
         </div>
-        <div className="grow" />
-        <ViewOnlyTooltip canWrite={canWrite}>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={!canWrite}
-            onClick={() => openRecordDialog(null)}
-          >
-            <Plus className="size-4 mr-1" />
-            {t('New record')}
-          </Button>
-        </ViewOnlyTooltip>
-      </div>
-      {isLoading ? (
-        <Skeleton className="h-48 w-full" />
-      ) : (
-        <Table className="table-fixed min-w-[640px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-44">{t('dataStoreKeyLabel')}</TableHead>
-              <TableHead>{t('Value')}</TableHead>
-              <TableHead className="w-36">{t('Updated at')}</TableHead>
-              <TableHead className="w-36">{t('Expires at')}</TableHead>
-              <TableHead className="w-14" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {records.map((record) => (
-              <TableRow key={record.key}>
-                <TableCell className="min-w-0">
-                  <TextWithTooltip tooltipMessage={record.key}>
-                    <p className="font-mono text-xs">{record.key}</p>
-                  </TextWithTooltip>
-                </TableCell>
-                <TableCell className="min-w-0">
-                  <TextWithTooltip
-                    tooltipMessage={dataStoreUtils.displayValue(record.value)}
-                  >
-                    <p className="font-mono text-xs text-muted-foreground">
-                      {dataStoreUtils.displayValue(record.value)}
-                    </p>
-                  </TextWithTooltip>
-                </TableCell>
-                <TableCell className="text-xs">
-                  <FormattedDate
-                    date={new Date(record.updated)}
-                    includeTime={true}
-                  />
-                </TableCell>
-                <TableCell className="text-xs">
-                  <ExpiryCell expiresAt={record.expiresAt ?? null} />
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        aria-label={t('More actions')}
-                      >
-                        <MoreHorizontal className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {canWrite && (
-                        <DropdownMenuItem
-                          onSelect={() => openRecordDialog(record)}
-                        >
-                          <Pencil className="size-4 mr-2" />
-                          {t('Edit')}
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onSelect={() => copyValue(record)}>
-                        <Copy className="size-4 mr-2" />
-                        {t('Copy value')}
-                      </DropdownMenuItem>
-                      {canWrite && <DropdownMenuSeparator />}
-                      {canWrite && (
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onSelect={() => setDeletingRecord(record)}
-                        >
-                          <Trash2 className="size-4 mr-2" />
-                          {t('Delete')}
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-            {records.length === 0 && (
+        {isLoading ? (
+          <Skeleton className="h-48 w-full" />
+        ) : (
+          <Table className="table-fixed md:min-w-[640px]">
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5}>
-                  <EmptyRecords searching={debouncedSearch.length > 0} />
-                </TableCell>
+                <TableHead className="w-28 sm:w-44">
+                  {t('dataStoreKeyLabel')}
+                </TableHead>
+                <TableHead>{t('Value')}</TableHead>
+                <TableHead className="hidden w-36 md:table-cell">
+                  {t('Updated at')}
+                </TableHead>
+                <TableHead className="hidden w-36 md:table-cell">
+                  {t('Expires at')}
+                </TableHead>
+                <TableHead className="w-14" />
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      )}
-      {total > records.length && (
-        <p className="text-xs text-muted-foreground">
-          {t('dataStoreRecordsTruncated', {
-            shown: records.length,
-            total,
-          })}
-        </p>
-      )}
-      <RecordDialog
-        open={recordDialogOpen}
-        onOpenChange={setRecordDialogOpen}
-        store={store}
-        record={editingRecord}
-      />
-      <ConfirmationDeleteDialog
-        title={t('Delete key "{key}"?', { key: deletingRecord?.key ?? '' })}
-        message={t('dataStoreDeleteRecordConsequences')}
-        entityName={deletingRecord?.key ?? ''}
-        buttonText={t('Delete')}
-        isDanger
-        showToast
-        open={deletingRecord !== null}
-        onOpenChange={(open) => {
-          if (!open) {
+            </TableHeader>
+            <TableBody>
+              {records.map((record) => (
+                <TableRow key={record.key}>
+                  <TableCell className="min-w-0">
+                    <TextWithTooltip tooltipMessage={record.key}>
+                      <p className="font-mono text-xs">{record.key}</p>
+                    </TextWithTooltip>
+                  </TableCell>
+                  <TableCell className="min-w-0">
+                    <TextWithTooltip
+                      tooltipMessage={dataStoreUtils.displayValue(record.value)}
+                    >
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {dataStoreUtils.displayValue(record.value)}
+                      </p>
+                    </TextWithTooltip>
+                  </TableCell>
+                  <TableCell className="hidden text-xs md:table-cell">
+                    <FormattedDate
+                      date={new Date(record.updated)}
+                      includeTime={true}
+                    />
+                  </TableCell>
+                  <TableCell className="hidden text-xs md:table-cell">
+                    <ExpiryCell expiresAt={record.expiresAt ?? null} />
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          aria-label={t('More actions')}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canWrite && (
+                          <DropdownMenuItem
+                            onSelect={() => openRecordDialog(record)}
+                          >
+                            <Pencil className="size-4 mr-2" />
+                            {t('Edit')}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onSelect={() => copyValue(record)}>
+                          <Copy className="size-4 mr-2" />
+                          {t('Copy value')}
+                        </DropdownMenuItem>
+                        {canWrite && <DropdownMenuSeparator />}
+                        {canWrite && (
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onSelect={() => setDeletingRecord(record)}
+                          >
+                            <Trash2 className="size-4 mr-2" />
+                            {t('Delete')}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+        {!isLoading && records.length === 0 && (
+          <EmptyRecords searching={debouncedSearch.length > 0} />
+        )}
+        {total > records.length && (
+          <p className="text-xs text-muted-foreground">
+            {t('dataStoreRecordsTruncated', {
+              shown: records.length,
+              total,
+            })}
+          </p>
+        )}
+        <RecordDialog
+          open={recordDialogOpen}
+          onOpenChange={setRecordDialogOpen}
+          store={store}
+          record={editingRecord}
+        />
+        <ConfirmationDeleteDialog
+          title={t('Delete key "{key}"?', { key: deletingRecord?.key ?? '' })}
+          message={t('dataStoreDeleteRecordConsequences')}
+          entityName={deletingRecord?.key ?? ''}
+          buttonText={t('Delete')}
+          isDanger
+          showToast
+          open={deletingRecord !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDeletingRecord(null);
+            }
+          }}
+          mutationFn={async () => {
+            if (!deletingRecord) {
+              return;
+            }
+            await deleteRecord({ id: store.id, key: deletingRecord.key });
             setDeletingRecord(null);
-          }
-        }}
-        mutationFn={async () => {
-          if (!deletingRecord) {
-            return;
-          }
-          await deleteRecord({ id: store.id, key: deletingRecord.key });
-          setDeletingRecord(null);
-        }}
-      />
-      <ConfirmationDeleteDialog
-        title={t('Clear all data?')}
-        message={t('dataStoreClearConsequences', {
-          name: store.name,
-          count: store.recordCount,
-        })}
-        entityName={store.name}
-        targetName={store.name}
-        buttonText={t('Clear')}
-        isDanger
-        open={clearing}
-        onOpenChange={setClearing}
-        mutationFn={async () => {
-          await clearStore(store.id);
-          setClearing(false);
-        }}
-      />
-    </div>
+          }}
+        />
+        <ConfirmationDeleteDialog
+          title={t('Clear all data?')}
+          message={t('dataStoreClearConsequences', {
+            name: store.name,
+            count: store.recordCount,
+          })}
+          entityName={store.name}
+          targetName={store.name}
+          buttonText={t('Clear')}
+          isDanger
+          open={clearing}
+          onOpenChange={setClearing}
+          mutationFn={async () => {
+            await clearStore(store.id);
+            setClearing(false);
+          }}
+        />
+      </CardContent>
+    </Card>
   );
 }
 

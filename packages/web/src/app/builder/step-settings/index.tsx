@@ -374,7 +374,7 @@ const StepSettingsContainer = () => {
             })
       }
       onValueChange={setStepPanelTab}
-      className="flex h-full w-full flex-col"
+      className="flex min-h-0 w-full flex-1 flex-col"
     >
       <TabsList className="mx-4 mt-1 flex shrink-0 justify-start gap-5 overflow-x-auto scrollbar-none">
         <TabsTrigger value="action" className="gap-1.5">

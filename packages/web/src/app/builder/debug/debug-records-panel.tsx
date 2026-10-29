@@ -273,7 +273,7 @@ function NodeRow({
       </span>
       {row.status === DebugNodeStatus.RUNNING && (
         <span className="shrink-0 text-[11px] text-muted-foreground">
-          {t('Running')}...
+          {t('Executing')}...
         </span>
       )}
       {row.status !== DebugNodeStatus.RUNNING && !isNil(row.durationMs) && (
@@ -315,17 +315,19 @@ function ErrorBlock({ errorText }: { errorText: string | null }) {
           {errorText}
         </pre>
       )}
-      <div className="flex flex-col gap-1.5">
-        <span className="flex items-center gap-1.5 text-sm font-medium">
-          <Lightbulb className="size-3.5 text-warning" />
-          {t('Where to look')}
-        </span>
-        <ul className="list-disc pl-5 text-sm text-muted-foreground">
-          {hints.map((hint) => (
-            <li key={hint}>{HINT_TEXT[hint]()}</li>
-          ))}
-        </ul>
-      </div>
+      {hints.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <span className="flex items-center gap-1.5 text-sm font-medium">
+            <Lightbulb className="size-3.5 text-warning" />
+            {t('Where to look')}
+          </span>
+          <ul className="list-disc pl-5 text-sm text-muted-foreground">
+            {hints.map((hint) => (
+              <li key={hint}>{HINT_TEXT[hint]()}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -362,7 +364,7 @@ const STATUS_FILTERS: {
   { value: 'ALL', label: () => t('All statuses') },
   { value: DebugNodeStatus.SUCCEEDED, label: () => t('Succeeded') },
   { value: DebugNodeStatus.FAILED, label: () => t('Failed') },
-  { value: DebugNodeStatus.RUNNING, label: () => t('Running') },
+  { value: DebugNodeStatus.RUNNING, label: () => t('Executing') },
   { value: DebugNodeStatus.NOT_RUN, label: () => t('Not run') },
 ];
 
@@ -405,6 +407,12 @@ const HINT_TEXT: Record<DebugHint, () => string> = {
     t(
       'A referenced value was empty. Check the upstream output and the reference path.',
     ),
-  [DebugHint.READ_MESSAGE]: () =>
-    t('Read the error message above, fix the step and debug again.'),
+  [DebugHint.CHECK_CODE_NAME]: () =>
+    t(
+      'The code uses a variable or function that does not exist. Check the spelling; globals such as setTimeout are not available in the code sandbox.',
+    ),
+  [DebugHint.STEP_TIMEOUT]: () =>
+    t(
+      'The step ran past its time limit. Narrow the query or split the work into batches, or ask the platform administrator to raise the step time limit.',
+    ),
 };

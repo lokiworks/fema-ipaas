@@ -105,10 +105,13 @@ export const DictionaryInput = ({
             value={key}
             disabled={disabled}
             placeholder={keyPlaceholder}
-            className={cn('basis-[50%] max-w-[50%]', keyInputClassName)}
+            className={cn(
+              'basis-[30%] max-w-[30%] shrink-0',
+              keyInputClassName,
+            )}
             onChange={(e) => onChangeValue(index, undefined, e.target.value)}
           />
-          <div className="basis-[50%] max-w-[50%]">
+          <div className="min-w-0 flex-1">
             {renderValueInput ? (
               renderValueInput({
                 value,

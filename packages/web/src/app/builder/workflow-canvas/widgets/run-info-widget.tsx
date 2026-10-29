@@ -61,7 +61,7 @@ function getStatusText({
     case ExecutionStatus.QUEUED:
       return t('Queued');
     case ExecutionStatus.RUNNING:
-      return t('Running');
+      return t('Executing');
     case ExecutionStatus.TIMEOUT:
       return t('Run exceeded {timeout} seconds, try to optimize your steps.', {
         timeout,

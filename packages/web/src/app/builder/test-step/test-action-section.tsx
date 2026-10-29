@@ -51,6 +51,8 @@ const TestStepSectionImplementation = React.memo(
     const onTestButtonClick = () => runner?.fireTest();
 
     const lastTestDate = currentStep.settings.sampleData?.lastTestDate;
+    const isStale =
+      !isNil(lastTestDate) && currentStep.lastUpdatedDate > lastTestDate;
 
     const sampleDataExists =
       !isNil(lastTestDate) ||
@@ -134,6 +136,7 @@ const TestStepSectionImplementation = React.memo(
             sampleData={sampleData}
             sampleDataInput={sampleDataInput ?? null}
             lastTestDate={lastTestDate}
+            isStale={isStale}
             isSaving={isSaving}
             onRetest={onTestButtonClick}
             errorMessage={errorMessage}

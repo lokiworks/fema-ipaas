@@ -16,6 +16,8 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { applicationEvents } from '../helper/application-events'
+import { mappingTableAuditEvents } from './mapping-table-audit-events'
 import { mappingTableCoverageService } from './mapping-table-coverage.service'
 import { MappingTableEntity } from './mapping-table.entity'
 import { mappingTableService } from './mapping-table.service'
@@ -27,6 +29,7 @@ export const mappingTableController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/', CreateRequest, async (request, reply) => {
         const table = await mappingTableService(request.log).create({ request: request.body, actorId: request.principal.id })
+        applicationEvents(request.log).sendUserEvent(request, mappingTableAuditEvents.created(table))
         await reply.status(StatusCodes.CREATED).send(table)
     })
 
@@ -39,7 +42,9 @@ export const mappingTableController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/:id', UpdateRequest, async (request): Promise<MappingTable> => {
-        return mappingTableService(request.log).update({ id: request.params.id, request: request.body, actorId: request.principal.id })
+        const table = await mappingTableService(request.log).update({ id: request.params.id, request: request.body, actorId: request.principal.id })
+        applicationEvents(request.log).sendUserEvent(request, mappingTableAuditEvents.updated(table))
+        return table
     })
 
     app.get('/:id/coverage', GetRequest, async (request): Promise<MappingCoverageSource[]> => {
@@ -47,11 +52,15 @@ export const mappingTableController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/:id/rows', AddRowsRequest, async (request): Promise<MappingTable> => {
-        return mappingTableService(request.log).addRows({ id: request.params.id, projectId: request.projectId, rows: request.body.rows, actorId: request.principal.id })
+        const table = await mappingTableService(request.log).addRows({ id: request.params.id, projectId: request.projectId, rows: request.body.rows, actorId: request.principal.id })
+        applicationEvents(request.log).sendUserEvent(request, mappingTableAuditEvents.rowsAdded({ id: table.id, name: table.name, count: request.body.rows.length }))
+        return table
     })
 
     app.delete('/:id', DeleteRequest, async (request, reply) => {
+        const table = await mappingTableService(request.log).getOneOrThrow({ id: request.params.id, projectId: request.projectId })
         await mappingTableService(request.log).delete({ id: request.params.id, projectId: request.projectId })
+        applicationEvents(request.log).sendUserEvent(request, mappingTableAuditEvents.deleted(table))
         await reply.status(StatusCodes.NO_CONTENT).send()
     })
 

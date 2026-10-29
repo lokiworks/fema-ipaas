@@ -116,3 +116,76 @@ describe('connectorSearching.search — original English text of a translated ca
         expect(results).toHaveLength(1)
     })
 })
+
+describe('connectorSearching.search — a connector matched by its own English name', () => {
+    const webhook = createMockConnectorMetadata({
+        name: '@fema-ipaas/connector-webhook',
+        displayName: '网址请求',
+        description: '接收网址请求',
+        actions: {
+            return_response: {
+                name: 'return_response',
+                displayName: '返回网址触发器响应',
+                description: '向发起请求的一方返回响应',
+                props: {},
+                requireAuth: false,
+            },
+        },
+    })
+    const englishWebhook = createMockConnectorMetadata({
+        name: '@fema-ipaas/connector-webhook',
+        displayName: 'Webhook',
+        description: 'Receive HTTP requests and trigger workflows using unique URLs.',
+        actions: {
+            return_response: {
+                name: 'return_response',
+                displayName: 'Return Response',
+                description: 'return a response',
+                props: {},
+                requireAuth: false,
+            },
+        },
+    })
+
+    it('offers every action of the connector when only the connector name matches', () => {
+        const results = connectorSearching.search({
+            categories: undefined,
+            searchQuery: 'webhook',
+            connectors: [webhook],
+            suggestionType: SuggestionType.ACTION,
+            originalTexts: connectorSearching.originalTextsOf([englishWebhook]),
+        })
+        expect(results.map((p) => p.name)).toEqual(['@fema-ipaas/connector-webhook'])
+        expect(Object.keys(results[0].actions)).toEqual(['return_response'])
+        expect(JSON.parse(JSON.stringify(results[0].actions.return_response))).not.toHaveProperty('originalText')
+    })
+
+    it('finds an action whose English text mentions the query far from the start', () => {
+        const longDescription = createMockConnectorMetadata({
+            name: '@fema-ipaas/connector-mixed',
+            displayName: '混合',
+            description: '混合',
+            actions: {
+                first: { name: 'first', displayName: '第一个', description: '第一个', props: {}, requireAuth: false },
+                second: { name: 'second', displayName: '第二个', description: '第二个', props: {}, requireAuth: false },
+            },
+        })
+        const english = createMockConnectorMetadata({
+            name: '@fema-ipaas/connector-mixed',
+            displayName: 'Mixed',
+            description: 'Mixed',
+            actions: {
+                first: { name: 'first', displayName: 'First', description: 'Plain', props: {}, requireAuth: false },
+                second: { name: 'second', displayName: 'Second', description: `${'x'.repeat(200)} webhook`, props: {}, requireAuth: false },
+            },
+        })
+        const results = connectorSearching.search({
+            categories: undefined,
+            searchQuery: 'webhook',
+            connectors: [longDescription],
+            suggestionType: SuggestionType.ACTION,
+            originalTexts: connectorSearching.originalTextsOf([english]),
+        })
+        expect(Object.keys(results[0].actions)).toEqual(['second'])
+    })
+})

@@ -2,6 +2,7 @@ import { LATEST_CONTEXT_VERSION } from '@fema-ipaas/connector-sdk'
 import { isNil, tryCatchSync } from '@fema-ipaas/core-utils'
 import { BranchCondition, BranchExecutionType, BranchOperator, EngineGenericError, ExecutionStatus, RouterAction, RouterActionSettings, RouterExecutionType, RouterStepOutput, StepOutputStatus } from '@fema-ipaas/shared'
 import dayjs, { Dayjs } from 'dayjs'
+import { executionProgressReporter } from '../helper/execution-progress-reporter'
 import { utils } from '../utils'
 import { BaseExecutor, failStep } from './base-executor'
 import { EngineConstants } from './context/engine-constants'
@@ -115,6 +116,13 @@ async function handleRouterExecution({ action, executionState, constants, censor
         })),
     }).setDuration(performance.now() - stepStartTime)
     executionState = await executionState.upsertStep(action.name, routerOutput)
+    await executionProgressReporter.sendUpdate({
+        engineConstants: constants,
+        workflowExecutorContext: executionState,
+        stepNameToUpdate: action.name,
+    }).catch((error) => {
+        console.error('Error sending update:', error)
+    })
 
     const { data: executionStateResult, error: executionStateError } = await utils.tryCatchAndThrowOnEngineError(async () => {
         for (let i = 0; i < resolvedInput.branches.length; i++) {

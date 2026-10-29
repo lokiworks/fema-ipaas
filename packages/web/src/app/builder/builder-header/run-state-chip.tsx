@@ -3,15 +3,12 @@ import { WorkflowStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { projectWorkspaceHooks } from '@/features/project-workspace/hooks/project-workspace-hooks';
+import { useLiveWorkflowStatus } from '@/app/builder/use-live-workflow-status';
 import { cn } from '@/lib/utils';
 
 export function RunStateChip() {
   const workflow = useBuilderStateContext((state) => state.workflow);
-  const { data: tree } = projectWorkspaceHooks.useTree(workflow.projectId);
-  const status =
-    tree?.workflows.find((row) => row.id === workflow.id)?.status ??
-    workflow.status;
+  const status = useLiveWorkflowStatus();
   const running = status === WorkflowStatus.ENABLED;
   const label = running
     ? t('Running')

@@ -2,6 +2,7 @@ import { isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -176,7 +177,12 @@ function DeleteConnectionContent({
             loading={isPending}
             onClick={() =>
               deleteConnection(connectionId, {
-                onSuccess: onDeleted,
+                onSuccess: () => {
+                  toast.success(
+                    t('Deleted {name}', { name: detail.displayName }),
+                  );
+                  onDeleted();
+                },
               })
             }
           >

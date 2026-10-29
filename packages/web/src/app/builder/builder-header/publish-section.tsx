@@ -41,6 +41,7 @@ import { DiscardChangesDialog } from './discard-changes-dialog';
 import { PublishDialog } from './publish-dialog';
 import { PublishGuard, usePublishGuard } from './publish-guard';
 import { useDraftChanged } from './use-draft-changed';
+import { useSetVersionKeepingSelection } from './use-set-version-keeping-selection';
 
 export const BuilderPublishSection = ({
   guard,
@@ -109,8 +110,11 @@ function SingleEnvironmentPublishSection({
     isSaving,
   });
   const { mutate: publishBatch } = projectWorkspaceHooks.useBatchPublish();
+  const { rememberSelection, setVersionKeepingSelection } =
+    useSetVersionKeepingSelection();
   const queryClient = useQueryClient();
   const publish = (description: string | undefined) => {
+    rememberSelection();
     setIsPublishing(true);
     publishBatch(
       {
@@ -128,7 +132,7 @@ function SingleEnvironmentPublishSection({
           }
           const updatedWorkflow = await workflowsApi.get(workflow.id);
           setWorkflow(updatedWorkflow);
-          setVersion(updatedWorkflow.version);
+          setVersionKeepingSelection(updatedWorkflow.version);
           setIsPublishing(false);
           void queryClient.invalidateQueries({
             queryKey: ['workflow-versions', workflow.id],
@@ -292,7 +296,6 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
     isValid,
     workflow,
     setWorkflow,
-    setVersion,
     workflowVersion,
     run,
     editLockHolder,
@@ -303,7 +306,6 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
     state.workflowVersion.valid,
     state.workflow,
     state.setWorkflow,
-    state.setVersion,
     state.workflowVersion,
     state.run,
     state.editLockHolder,
@@ -328,8 +330,11 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
     showErrorDialog: false,
   });
   const { mutateAsync: deployToTest } = releasesHooks.useDeployToTest();
+  const { rememberSelection, setVersionKeepingSelection } =
+    useSetVersionKeepingSelection();
   const { mutate: deploy } = useMutation({
     mutationFn: async (note: string | undefined) => {
+      rememberSelection();
       setIsPublishing(true);
       try {
         await deployToTest({ projectId, workflowId: workflow.id, note });
@@ -340,7 +345,7 @@ function EnvironmentsPublishSection({ projectId }: { projectId: string }) {
     },
     onSuccess: (updatedWorkflow) => {
       setWorkflow(updatedWorkflow);
-      setVersion(updatedWorkflow.version);
+      setVersionKeepingSelection(updatedWorkflow.version);
       toast.success(t('Deployed to test'), {
         description: releaseUiUtils.isWebhookTrigger(
           updatedWorkflow.version.trigger,

@@ -229,6 +229,84 @@ describe('auditEventUtils.summarize in Chinese', () => {
     ).toBe(false);
   });
 
+  it('tells a new connection apart from an updated one and drops the internal id', () => {
+    const connection = {
+      displayName: '北森生产',
+      externalId: 'Mk2VGB5RpRDlw53IlY2eg',
+      connectorName: 'beisen',
+      status: 'ACTIVE',
+      type: 'SECRET_TEXT',
+      id: 'c1',
+      created: '2026-10-28T08:00:00.000Z',
+      updated: '2026-10-28T08:00:00.120Z',
+    };
+    const created: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.CONNECTION_UPSERTED,
+      data: { connection },
+    };
+    const updated: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.CONNECTION_UPSERTED,
+      data: {
+        connection: { ...connection, updated: '2026-10-28T09:00:00.000Z' },
+      },
+    };
+    expect(auditEventUtils.eventActionLabel(created)).toBe('新建连接');
+    expect(auditEventUtils.summarize({ event: created })).toBe(
+      '已新建连接「北森生产」',
+    );
+    expect(auditEventUtils.eventActionLabel(updated)).toBe('更新连接');
+    expect(auditEventUtils.summarize({ event: updated })).toBe(
+      '已更新连接「北森生产」',
+    );
+  });
+
+  it('tells a new project config apart from an updated one', () => {
+    const variable = {
+      id: 'v1',
+      name: 'FEISHU_GROUP_ID',
+      created: '2026-10-28T08:00:00.000Z',
+      updated: '2026-10-28T08:00:00.000Z',
+    };
+    const created: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.VARIABLE_UPSERTED,
+      data: { variable },
+    };
+    const updated: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.VARIABLE_UPSERTED,
+      data: { variable: { ...variable, updated: '2026-10-29T08:00:00.000Z' } },
+    };
+    expect(auditEventUtils.summarize({ event: created })).toBe(
+      '已新建配置项「FEISHU_GROUP_ID」',
+    );
+    expect(auditEventUtils.summarize({ event: updated })).toBe(
+      '已更新配置项「FEISHU_GROUP_ID」',
+    );
+  });
+
+  it('describes project creation and mapping table changes', () => {
+    const projectCreated: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.PROJECT_CREATED,
+      data: { createdProject: { id: 'p2', displayName: '人事集成' } },
+    };
+    const rowsAdded: ApplicationEvent = {
+      ...baseEvent(),
+      action: ApplicationEventName.MAPPING_TABLE_UPDATED,
+      data: { mappingTable: { id: 'm1', name: '部门映射' }, addedRows: 2 },
+    };
+    expect(auditEventUtils.eventActionLabel(projectCreated)).toBe('创建项目');
+    expect(auditEventUtils.summarize({ event: projectCreated })).toBe(
+      '已创建项目「人事集成」',
+    );
+    expect(auditEventUtils.summarize({ event: rowsAdded })).toBe(
+      '已向映射表「部门映射」添加 2 行',
+    );
+  });
+
   it('phrases every action label as a verb phrase without a trailing status', () => {
     Object.values(ApplicationEventName).forEach((name) => {
       expect(auditEventUtils.actionLabel(name)).not.toMatch(/^已/);

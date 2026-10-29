@@ -1,6 +1,10 @@
+import { ConnectorMetadataModelSummary } from '@fema-ipaas/connector-sdk';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
+  Step,
   WorkflowTrigger,
   WorkflowActionType,
+  WorkflowTriggerType,
   workflowStructureUtil,
   ConnectorCategory,
 } from '@fema-ipaas/shared';
@@ -9,13 +13,21 @@ import { t } from 'i18next';
 import { useMemo } from 'react';
 
 import {
+  componentLogoUrl,
+  componentsHooks,
+  TranslatedComponentMetadata,
+} from '@/features/components';
+
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '../../../components/ui/tooltip';
 import { connectorsHooks } from '../hooks/connectors-hooks';
-import { StepMetadata } from '../types';
-import { extractConnectorNamesAndCoreMetadata } from '../utils/step-utils';
+import {
+  extractConnectorNamesAndCoreMetadata,
+  getCoreStepMetadata,
+} from '../utils/step-utils';
 
 import { ConnectorIcon } from './connector-icon';
 
@@ -52,7 +64,7 @@ export function ConnectorIconList({
 }) {
   const steps = workflowStructureUtil.getAllSteps(trigger);
 
-  const { connectorNames, coreMetadata } = useMemo(
+  const { connectorNames } = useMemo(
     () => extractConnectorNamesAndCoreMetadata(steps, excludeCore),
     [steps, excludeCore],
   );
@@ -60,35 +72,23 @@ export function ConnectorIconList({
   const { summaries } = connectorsHooks.useConnectorSummariesByNames({
     names: connectorNames,
   });
+  const { data: components } = componentsHooks.useComponents();
 
-  const stepsMetadata: StepMetadata[] = useMemo(() => {
-    const connectorMetadata: StepMetadata[] = summaries
-      .filter(
-        (connector) =>
-          !excludeCore ||
-          !connector.categories?.includes(ConnectorCategory.CORE),
-      )
-      .map((connector) => ({
-        displayName: connector.displayName,
-        logoUrl: connector.logoUrl,
-        description: connector.description,
-        type: WorkflowActionType.CONNECTOR as const,
-        connectorType: connector.connectorType,
-        connectorName: connector.name,
-        connectorVersion: connector.version,
-        categories: connector.categories ?? [],
-        packageType: connector.packageType,
-        auth: connector.auth,
-      }));
-    return [...coreMetadata, ...connectorMetadata];
-  }, [summaries, coreMetadata, excludeCore]);
-
-  const uniqueMetadata: StepMetadata[] = stepsMetadata.filter(
-    (item, index, self) =>
-      self.findIndex(
-        (secondItem) => item.displayName === secondItem.displayName,
-      ) === index,
-  );
+  const uniqueMetadata: StepIcon[] = steps
+    .flatMap((step) =>
+      iconsOfStep({
+        step,
+        summaries,
+        components: components ?? [],
+        excludeCore,
+      }),
+    )
+    .filter(
+      (item, index, self) =>
+        self.findIndex(
+          (secondItem) => item.displayName === secondItem.displayName,
+        ) === index,
+    );
   const visibleMetadata = uniqueMetadata.slice(0, maxNumberOfIconsToShow);
   const extraConnectors = uniqueMetadata.length - visibleMetadata.length;
   const extraMetadata = uniqueMetadata.slice(maxNumberOfIconsToShow);
@@ -129,3 +129,52 @@ export function ConnectorIconList({
     </div>
   );
 }
+
+function iconsOfStep({
+  step,
+  summaries,
+  components,
+  excludeCore,
+}: {
+  step: Step;
+  summaries: ConnectorMetadataModelSummary[];
+  components: TranslatedComponentMetadata[];
+  excludeCore: boolean;
+}): StepIcon[] {
+  if (
+    step.type === WorkflowActionType.CONNECTOR ||
+    step.type === WorkflowTriggerType.CONNECTOR
+  ) {
+    const summary = summaries.find(
+      (candidate) => candidate.name === step.settings.connectorName,
+    );
+    if (
+      isNil(summary) ||
+      (excludeCore && summary.categories?.includes(ConnectorCategory.CORE))
+    ) {
+      return [];
+    }
+    return [{ displayName: summary.displayName, logoUrl: summary.logoUrl }];
+  }
+  if (excludeCore) {
+    return [];
+  }
+  if (step.type === WorkflowActionType.COMPONENT) {
+    const component = components.find(
+      (candidate) => candidate.type === step.settings.componentType,
+    );
+    return [
+      {
+        displayName: component?.displayName ?? step.settings.componentType,
+        logoUrl: componentLogoUrl(component?.icon ?? ''),
+      },
+    ];
+  }
+  const core = getCoreStepMetadata()[step.type];
+  return [{ displayName: core.displayName, logoUrl: core.logoUrl }];
+}
+
+type StepIcon = {
+  displayName: string;
+  logoUrl: string;
+};

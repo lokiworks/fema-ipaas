@@ -40,9 +40,9 @@ function useCreateDataStore({ onError }: { onError: (error: Error) => void }) {
   return useMutation({
     mutationFn: (request: CreateDataStoreRequestBody) =>
       dataStoresApi.create(request),
-    onSuccess: () => {
+    onSuccess: (_, request) => {
       void queryClient.invalidateQueries({ queryKey: [DATA_STORES_KEY] });
-      toast.success(t('Data store created'));
+      toast.success(t('Created {name}', { name: request.name }));
     },
     onError,
   });
@@ -58,9 +58,9 @@ function useUpdateDataStore({ onError }: { onError: (error: Error) => void }) {
       id: string;
       request: UpdateDataStoreRequestBody;
     }) => dataStoresApi.update({ id, request }),
-    onSuccess: () => {
+    onSuccess: (_, { request }) => {
       void queryClient.invalidateQueries({ queryKey: [DATA_STORES_KEY] });
-      toast.success(t('Saved'));
+      toast.success(t('Saved {name}', { name: request.name }));
     },
     onError,
   });

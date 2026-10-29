@@ -444,7 +444,7 @@ const CLI_STEPS = [
     command: 'connectors-cli connectors create',
     description: () =>
       t(
-        'Generates a connector package under packages/connectors with the SDK wired up.',
+        'Generates a connector project in the current folder with the SDK wired up.',
       ),
   },
   {

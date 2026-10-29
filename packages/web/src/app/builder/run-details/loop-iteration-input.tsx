@@ -208,7 +208,7 @@ function getIterationStatusLabel(status: StepOutputStatus): string {
     case StepOutputStatus.FAILED:
       return t('Failed');
     case StepOutputStatus.RUNNING:
-      return t('Running');
+      return t('Executing');
     case StepOutputStatus.PAUSED:
       return t('Paused');
     case StepOutputStatus.STOPPED:

@@ -193,7 +193,7 @@ export function SearchResultRow({
       </span>
       {item.status === 'ENABLED' && (
         <span className="shrink-0 rounded-full bg-green-500/10 px-1.5 py-0.5 text-[10px] font-medium text-green-600">
-          {t('Live')}
+          {t('Running')}
         </span>
       )}
       {item.subtitle && (

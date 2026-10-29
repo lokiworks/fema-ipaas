@@ -107,7 +107,7 @@ function ProjectInfoForm({
 
   const { mutate: create, isPending: isCreating } =
     projectCollectionUtils.useCreateProject((created) => {
-      toast.success(t('projectCreated', { projectName: created.displayName }));
+      toast.success(t('Created {name}', { name: created.displayName }));
       onCreated?.(created);
       onOpenChange(false);
     }, handleError);
@@ -134,7 +134,7 @@ function ProjectInfoForm({
       { projectId: project.id, request: values },
       {
         onSuccess: () => {
-          toast.success(t('Project updated'));
+          toast.success(t('Saved {name}', { name: values.displayName }));
           onOpenChange(false);
         },
         onError: handleError,

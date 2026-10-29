@@ -47,6 +47,17 @@ describe('errorExplanation.explain', () => {
     );
   });
 
+  it('explains the platform step timeout with its limit', () => {
+    const explanation = errorExplanation.explain({
+      message:
+        'The step ran longer than 5 seconds and was stopped (FEMA_STEP_TIMEOUT)',
+    });
+    expect(explanation?.headline).toBe(
+      'The step ran longer than {seconds} seconds and was stopped',
+    );
+    expect(explanation?.hint).toContain('time limit');
+  });
+
   it('returns null for messages it does not know', () => {
     expect(
       errorExplanation.explain({ message: 'value is required' }),

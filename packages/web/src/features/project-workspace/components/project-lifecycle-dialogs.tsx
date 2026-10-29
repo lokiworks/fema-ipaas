@@ -53,7 +53,7 @@ export function DeleteProjectDialog({
     const nextProject = (directory ?? []).find(
       (item) => item.id !== project.id && projectDirectoryUtils.isMember(item),
     );
-    toast.success(t('Deleted project {name}', { name: project.displayName }));
+    toast.success(t('Deleted {name}', { name: project.displayName }));
     onOpenChange(false);
     if (nextProject) {
       authenticationSession.switchToProject(nextProject.id);

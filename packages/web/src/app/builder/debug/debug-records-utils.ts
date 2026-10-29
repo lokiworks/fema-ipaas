@@ -1,4 +1,4 @@
-import { isNil } from '@fema-ipaas/core-utils';
+import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
 import {
   StepOutput,
   StepOutputStatus,
@@ -76,11 +76,27 @@ function troubleshootingHints(errorText: string | null): DebugHint[] {
   if (isNil(errorText) || errorText.trim().length === 0) {
     return [];
   }
-  const text = errorText.toLowerCase();
-  const matched = HINT_RULES.filter((rule) =>
-    rule.patterns.some((pattern) => pattern.test(text)),
-  ).map((rule) => rule.hint);
-  return matched.length > 0 ? matched : [DebugHint.READ_MESSAGE];
+  const text = hintSubjectOf(errorText).toLowerCase();
+  if (errorExplanation.isStepTimeout(text)) {
+    return [DebugHint.STEP_TIMEOUT];
+  }
+  const rule = HINT_RULES.find((candidate) =>
+    candidate.patterns.some((pattern) => pattern.test(text)),
+  );
+  return isNil(rule) ? [] : [rule.hint];
+}
+
+function hintSubjectOf(errorText: string): string {
+  const friendly = tryParseFriendlyConnectorError(errorText);
+  if (isNil(friendly)) {
+    return errorText;
+  }
+  const message = [friendly.apiMessage, friendly.message].find(
+    (candidate) => typeof candidate === 'string' && candidate.trim().length > 0,
+  );
+  return [friendly.status, message, friendly.errorName]
+    .filter((part) => !isNil(part))
+    .join(' ');
 }
 
 function statusOf(status: StepOutputStatus): DebugNodeStatus {
@@ -122,13 +138,27 @@ export enum DebugHint {
   CHECK_NETWORK = 'CHECK_NETWORK',
   CHECK_INPUT = 'CHECK_INPUT',
   CHECK_REFERENCE = 'CHECK_REFERENCE',
-  READ_MESSAGE = 'READ_MESSAGE',
+  CHECK_CODE_NAME = 'CHECK_CODE_NAME',
+  STEP_TIMEOUT = 'STEP_TIMEOUT',
 }
 
 const HINT_RULES: { hint: DebugHint; patterns: RegExp[] }[] = [
   {
+    hint: DebugHint.CHECK_CODE_NAME,
+    patterns: [/\bis not defined\b/, /\bis not a function\b/],
+  },
+  {
+    hint: DebugHint.CHECK_REFERENCE,
+    patterns: [/cannot read propert(?:y|ies) of (?:undefined|null)/],
+  },
+  {
     hint: DebugHint.CHECK_CONNECTION,
-    patterns: [/\b401\b/, /unauthori[sz]ed/, /invalid[_ ]?token/, /expired/],
+    patterns: [
+      /\b401\b/,
+      /unauthori[sz]ed/,
+      /invalid[_ ]?token/,
+      /token (?:has )?expired/,
+    ],
   },
   {
     hint: DebugHint.CHECK_PERMISSION,
@@ -153,11 +183,7 @@ const HINT_RULES: { hint: DebugHint; patterns: RegExp[] }[] = [
   },
   {
     hint: DebugHint.CHECK_INPUT,
-    patterns: [/\b400\b/, /bad request/, /invalid/, /required/, /validation/],
-  },
-  {
-    hint: DebugHint.CHECK_REFERENCE,
-    patterns: [/undefined/, /cannot read propert/, /is not defined/],
+    patterns: [/\b400\b/, /\b422\b/, /bad request/, /validation/],
   },
 ];
 

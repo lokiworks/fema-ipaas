@@ -94,7 +94,7 @@ async function createToolInUi({ page }) {
   await page.getByRole('button', { name: '新建工具' }).first().click()
   await page.getByRole('menuitem', { name: '从连接器新建' }).click()
   const dialog = page.getByRole('dialog')
-  await dialog.getByText('文本工具', { exact: true }).click()
+  await dialog.getByText('高级文本处理', { exact: true }).click()
   await dialog.getByRole('button', { name: '下一步' }).click()
   await dialog.getByText('拼接', { exact: true }).first().click()
   await dialog.getByRole('button', { name: '下一步' }).click()

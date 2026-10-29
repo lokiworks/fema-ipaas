@@ -398,10 +398,11 @@ export const createWorkflowState = (
         readonly:
           state.workflow.publishedVersionId !== workflowVersion.id &&
           workflowVersion.state === WorkflowVersionState.LOCKED,
-        rightSidebar:
-          initiallySelectedStep && !isEmptyTriggerInitiallySelected
-            ? RightSideBarType.CONNECTOR_SETTINGS
-            : RightSideBarType.NONE,
+        rightSidebar: !shouldReselectInitialStep
+          ? state.rightSidebar
+          : initiallySelectedStep && !isEmptyTriggerInitiallySelected
+          ? RightSideBarType.CONNECTOR_SETTINGS
+          : RightSideBarType.NONE,
         selectedBranchIndex: null,
       }));
     },

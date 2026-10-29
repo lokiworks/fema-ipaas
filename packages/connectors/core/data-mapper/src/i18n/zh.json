@@ -4,7 +4,7 @@
   "Map data from one format to another": "把数据从一种结构映射到另一种",
   "Mapping": "映射",
   "The mapping to use": "要使用的映射",
-  "Data Mapper": "映射工具",
+  "Data Mapper": "字段映射与映射表",
   "Map Fields": "字段映射",
   "Build an object field by field, with transforms and mapping-table lookups": "逐个字段组装对象，支持转换和查映射表",
   "Field mapping": "字段映射",

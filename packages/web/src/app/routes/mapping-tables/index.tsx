@@ -11,6 +11,7 @@ import { Download, Plus, Table2, Trash2, Upload } from 'lucide-react';
 import { useId, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { useUnsavedChangesGuard } from '@/app/components/unsaved-changes-guard';
 import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import {
@@ -211,6 +212,8 @@ function MappingTableEditor({
   const validation = UpsertMappingTableRequestBody.safeParse(draft);
   const newRowProblem = rowProblem({ row: newRow, rows: draft.rows });
   const dirty = JSON.stringify(draft) !== JSON.stringify(toRequest(table));
+  const hasUnsavedChanges = dirty || newRow.k.length > 0 || newRow.v.length > 0;
+  const unsavedGuard = useUnsavedChangesGuard({ dirty: hasUnsavedChanges });
 
   const setRows = (rows: MappingTableRow[]) => setDraft({ ...draft, rows });
   const exportCsv = () => {
@@ -237,7 +240,18 @@ function MappingTableEditor({
       <Card>
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex min-w-0 flex-col gap-1">
-            <CardTitle className="break-words">{table.name}</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle className="break-words">{table.name}</CardTitle>
+              {hasUnsavedChanges && (
+                <Badge
+                  variant="outline"
+                  className="border-warning text-warning"
+                  data-testid="mapping-unsaved-badge"
+                >
+                  {t('You have unsaved changes')}
+                </Badge>
+              )}
+            </div>
             <CardDescription>
               {t('Updated')} <FormattedDate date={new Date(table.updated)} />
             </CardDescription>
@@ -267,6 +281,7 @@ function MappingTableEditor({
               showToast
               mutationFn={async () => {
                 await deleteTable(table.id);
+                unsavedGuard.skipNextPrompt();
                 onDeleted();
               }}
             >
@@ -458,15 +473,34 @@ function MappingTableEditor({
               {t(validation.error.issues[0]?.message ?? 'formErrors.required')}
             </p>
           )}
-          <Button
-            className="self-start"
-            size="sm"
-            disabled={!canWrite || !dirty || !validation.success || isPending}
-            loading={isPending}
-            onClick={() => save({ id: table.id, request: draft })}
-          >
-            {t('Save changes')}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              disabled={!canWrite || !dirty || !validation.success || isPending}
+              loading={isPending}
+              onClick={() => save({ id: table.id, request: draft })}
+            >
+              {t('Save changes')}
+            </Button>
+            {hasUnsavedChanges && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={isPending}
+                  onClick={() => {
+                    setDraft(toRequest(table));
+                    setNewRow({ k: '', v: '' });
+                  }}
+                >
+                  {t('Discard unsaved changes')}
+                </Button>
+                <span className="text-xs text-warning">
+                  {t('Added and edited rows take effect only after you save.')}
+                </span>
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -512,6 +546,7 @@ function MappingTableEditor({
         labels={[draft.keyLabel, draft.valueLabel]}
         onApply={setRows}
       />
+      {unsavedGuard.dialog}
     </div>
   );
 }

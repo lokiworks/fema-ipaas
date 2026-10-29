@@ -165,13 +165,33 @@ describe('debugTestedStepsUtils.testedStepsOf', () => {
     expect(tested).toEqual({});
   });
 
-  it('skips steps that did not succeed', () => {
+  it('records failed steps as failed and succeeded steps as passed', () => {
     const tested = debugTestedStepsUtils.testedStepsOf({
       run: runOf({
         status: ExecutionStatus.FAILED,
         finishTime: RUN_FINISHED,
         steps: {
           http_1: outputOf(StepOutputStatus.FAILED),
+          script_1: outputOf(StepOutputStatus.SUCCEEDED),
+        },
+      }),
+      runVersion: unchanged,
+      currentVersion: unchanged,
+      observedAt: OBSERVED_AT,
+    });
+
+    expect(Object.keys(tested).sort()).toEqual(['http_1', 'script_1']);
+    expect(tested.http_1.failed).toBe(true);
+    expect(tested.script_1.failed).toBe(false);
+  });
+
+  it('skips steps that neither succeeded nor failed', () => {
+    const tested = debugTestedStepsUtils.testedStepsOf({
+      run: runOf({
+        status: ExecutionStatus.FAILED,
+        finishTime: RUN_FINISHED,
+        steps: {
+          http_1: outputOf(StepOutputStatus.RUNNING),
           script_1: outputOf(StepOutputStatus.SUCCEEDED),
         },
       }),
@@ -257,10 +277,12 @@ describe('debugTestedStepsUtils.merge', () => {
   it('lets the newer entries override the older ones', () => {
     const merged = debugTestedStepsUtils.merge({
       older: {
-        http_1: { testedAt: BEFORE_RUN, signature: 'old' },
-        script_1: { testedAt: BEFORE_RUN, signature: 'kept' },
+        http_1: { testedAt: BEFORE_RUN, signature: 'old', failed: false },
+        script_1: { testedAt: BEFORE_RUN, signature: 'kept', failed: false },
       },
-      newer: { http_1: { testedAt: RUN_FINISHED, signature: 'new' } },
+      newer: {
+        http_1: { testedAt: RUN_FINISHED, signature: 'new', failed: true },
+      },
     });
 
     expect(merged.http_1.signature).toBe('new');

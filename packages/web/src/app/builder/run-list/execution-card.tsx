@@ -121,7 +121,7 @@ const ExecutionCard = React.memo(
           )}
           {run.status === ExecutionStatus.RUNNING && (
             <p className="flex gap-1 text-xs text-muted-foreground">
-              {t('Running')}...
+              {t('Executing')}...
             </p>
           )}
           {run.status === ExecutionStatus.QUEUED && (

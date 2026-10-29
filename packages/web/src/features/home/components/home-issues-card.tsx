@@ -27,14 +27,14 @@ export function HomeIssuesCard() {
     <SideCard
       title={t('Unresolved issues')}
       description={
-        unresolved === 0
-          ? t('All good')
-          : highSeverity > 0
-          ? t('{count} unresolved, {high} high severity', {
+        highSeverity > 0
+          ? t(
+              'Open and investigating issues in your projects: {count}, {high} high severity',
+              { count: unresolved, high: highSeverity },
+            )
+          : t('Open and investigating issues in your projects: {count}', {
               count: unresolved,
-              high: highSeverity,
             })
-          : t('{count} unresolved', { count: unresolved })
       }
       action={
         <Link

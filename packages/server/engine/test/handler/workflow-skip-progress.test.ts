@@ -1,7 +1,7 @@
-import { WorkflowAction, ExecutionStatus, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest } from '@fema-ipaas/shared'
+import { BranchOperator, RouterExecutionType, WorkflowAction, ExecutionStatus, StepOutputStatus, StreamStepProgress, UpdateRunProgressRequest } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
-import { buildConnectorAction, generateMockEngineConstants } from './test-helper'
+import { buildConnectorAction, buildRouterWithOneCondition, generateMockEngineConstants } from './test-helper'
 
 const { updateRunProgressMock } = vi.hoisted(() => ({
     updateRunProgressMock: vi.fn<(params: { apiUrl: string, engineToken: string, request: UpdateRunProgressRequest }) => Promise<void>>().mockResolvedValue(undefined),
@@ -68,6 +68,29 @@ describe('workflowExecutor — progress events with skipped neighbours', () => {
         })
 
         expect(lastStatusByStep().only).toBe(StepOutputStatus.SUCCEEDED)
+    })
+
+    it('streams SUCCEEDED for a router before the steps inside its branch run', async () => {
+        const router = buildRouterWithOneCondition({
+            children: [buildMapper({ name: 'inside_branch', mapping: { key: '{{ 1 + 1 }}' } })],
+            conditions: [{ operator: BranchOperator.TEXT_EXACTLY_MATCHES, firstValue: 'test', secondValue: 'test', caseSensitive: false }],
+            executionType: RouterExecutionType.EXECUTE_FIRST_MATCH,
+        })
+
+        await workflowExecutor.execute({
+            action: router,
+            executionState: WorkflowExecutorContext.empty(),
+            constants: generateMockEngineConstants({ streamStepProgress: StreamStepProgress.WEBSOCKET }),
+        })
+
+        const order = updateRunProgressMock.mock.calls
+            .map(([{ request }]) => request.step)
+            .filter((step) => step !== undefined)
+            .map((step) => `${step.name}:${step.output.status}`)
+        const routerDone = order.indexOf(`router:${StepOutputStatus.SUCCEEDED}`)
+        const branchDone = order.indexOf(`inside_branch:${StepOutputStatus.SUCCEEDED}`)
+        expect(routerDone).toBeGreaterThanOrEqual(0)
+        expect(branchDone).toBeGreaterThan(routerDone)
     })
 })
 

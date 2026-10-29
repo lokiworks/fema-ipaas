@@ -489,8 +489,8 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
     mentionAttrs.label || '{}',
   );
   mentionElement.className = stepMentionAttrs.isBroken
-    ? 'inline-flex bg-destructive/10 break-all my-1 mx-px border border-destructive/60 border-solid items-center gap-2 py-1 px-2 rounded-[3px] text-destructive cursor-pointer'
-    : 'inline-flex bg-muted/10 break-all my-1 mx-px border border-[#9e9e9e] border-solid items-center gap-2 py-1 px-2 rounded-[3px] text-muted-foreground cursor-pointer';
+    ? 'inline-flex max-w-full align-middle bg-destructive/10 my-1 mx-px border border-destructive/60 border-solid items-center gap-2 py-1 px-2 rounded-[3px] text-destructive cursor-pointer'
+    : 'inline-flex max-w-full align-middle bg-muted/10 my-1 mx-px border border-[#9e9e9e] border-solid items-center gap-2 py-1 px-2 rounded-[3px] text-muted-foreground cursor-pointer';
   assertNotNullOrUndefined(mentionAttrs.label, 'mentionAttrs.label');
   assertNotNullOrUndefined(mentionAttrs.id, 'mentionAttrs.id');
   assertNotNullOrUndefined(
@@ -511,7 +511,7 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
   } else if (stepMentionAttrs.logoUrl) {
     const imgElement = document.createElement('img');
     imgElement.src = stepMentionAttrs.logoUrl;
-    imgElement.className = 'object-contain w-4 h-4';
+    imgElement.className = 'object-contain w-4 h-4 shrink-0';
     mentionElement.appendChild(imgElement);
   } else {
     const emptyImagePlaceHolder = document.createElement('span');
@@ -519,10 +519,13 @@ const generateMentionHtmlElement = (mentionAttrs: MentionNodeAttrs) => {
     mentionElement.appendChild(emptyImagePlaceHolder);
   }
 
-  const mentiontextDiv = document.createTextNode(stepMentionAttrs.displayText);
+  const mentionText = document.createElement('span');
+  mentionText.className = 'min-w-0 truncate whitespace-nowrap';
+  mentionText.textContent = stepMentionAttrs.displayText;
+  mentionElement.title = stepMentionAttrs.displayText;
   mentionElement.setAttribute('serverValue', stepMentionAttrs.serverValue);
 
-  mentionElement.appendChild(mentiontextDiv);
+  mentionElement.appendChild(mentionText);
   return mentionElement;
 };
 

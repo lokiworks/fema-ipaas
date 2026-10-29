@@ -54,11 +54,7 @@ export function AllProjectsPage() {
 
   const open = (item: ProjectDirectoryItem, suffix = '') => {
     if (!projectDirectoryUtils.isMember(item)) {
-      toast.warning(
-        t(
-          'You are not a member of this project. Ask the project owner to share it with you.',
-        ),
-      );
+      toast.warning(notMemberReason(item));
       return;
     }
     projectCollectionUtils.setCurrentProject(
@@ -164,11 +160,7 @@ export function AllProjectsPage() {
                   <TableCell onClick={(event) => event.stopPropagation()}>
                     <span className="flex items-center gap-1">
                       <DisabledReason
-                        reason={
-                          member
-                            ? null
-                            : t('You are not a member of this project')
-                        }
+                        reason={member ? null : notMemberReason(item)}
                       >
                         <Button
                           type="button"
@@ -183,7 +175,7 @@ export function AllProjectsPage() {
                       <DisabledReason
                         reason={
                           !member
-                            ? t('You are not a member of this project')
+                            ? notMemberReason(item)
                             : canShare
                             ? null
                             : t('Viewers cannot share the project')
@@ -234,4 +226,15 @@ export function AllProjectsPage() {
       />
     </ConsolePage>
   );
+}
+
+function notMemberReason(item: ProjectDirectoryItem): string {
+  return item.ownerName
+    ? t(
+        'You are not a member of this project. Ask its owner {owner} to add you.',
+        { owner: item.ownerName },
+      )
+    : t(
+        'You are not a member of this project. Ask the project owner to share it with you.',
+      );
 }

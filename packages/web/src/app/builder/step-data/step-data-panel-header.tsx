@@ -1,12 +1,17 @@
 import { StepOutputStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Loader2 } from 'lucide-react';
+import { Loader2, TriangleAlert } from 'lucide-react';
 
 import { StepStatusIcon } from '@/features/executions';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
-type StepDataPanelHeaderStatus = 'success' | 'failed' | 'testing' | 'idle';
+type StepDataPanelHeaderStatus =
+  | 'success'
+  | 'failed'
+  | 'testing'
+  | 'stale'
+  | 'idle';
 type StepDataPanelHeaderViewMode = 'edit' | 'run';
 
 type StepDataPanelHeaderProps = {
@@ -31,6 +36,7 @@ const StepDataPanelHeader = ({
         status === 'success' && 'bg-success-100',
         status === 'failed' && 'bg-destructive/10',
         status === 'testing' && 'bg-primary/10',
+        status === 'stale' && 'bg-warning/10',
       )}
     >
       <StepDataPanelStatusBadge status={status} viewMode={viewMode} />
@@ -40,6 +46,7 @@ const StepDataPanelHeader = ({
             'text-xs truncate',
             status === 'success' && 'text-success-700/80',
             status === 'failed' && 'text-destructive/80',
+            status === 'stale' && 'shrink-0 text-muted-foreground',
           )}
         >
           {formatUtils.formatDateWithTime(new Date(lastTestDate), false)}
@@ -64,6 +71,18 @@ const StepDataPanelStatusBadge = ({
         <StepStatusIcon status={StepOutputStatus.FAILED} size="4.5" />
         <span className="text-destructive-700 dark:text-destructive-200 font-medium">
           {viewMode === 'run' ? t('Failed') : t('Test Failed')}
+        </span>
+      </div>
+    );
+  }
+  if (status === 'stale') {
+    return (
+      <div className="flex min-w-0 items-center gap-1.5 text-sm">
+        <TriangleAlert className="size-4 shrink-0 text-warning" />
+        <span className="font-medium text-foreground">
+          {t(
+            'Configuration changed. The test result may be outdated, test again',
+          )}
         </span>
       </div>
     );

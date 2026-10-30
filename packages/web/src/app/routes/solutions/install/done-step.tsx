@@ -1,7 +1,6 @@
-import { SolutionInstallResult } from '@fema-ipaas/shared';
+import { SolutionInstallResult, SolutionPackage } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { CircleCheck } from 'lucide-react';
-import { Fragment } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -9,9 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SolutionCheckLabel, solutionsUtils } from '@/features/solutions';
 
-function DoneStep({ result }: DoneStepProps) {
+function DoneStep({ result, pkg }: DoneStepProps) {
   const navigate = useNavigate();
   const { projectId } = result.install;
+  const { afterInstall } = solutionsUtils.splitChecks(pkg.checks);
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
@@ -72,16 +72,38 @@ function DoneStep({ result }: DoneStepProps) {
         ))}
       </div>
 
+      {afterInstall.length > 0 && (
+        <div
+          className="flex flex-col gap-2 rounded-lg border p-4"
+          data-testid="solution-done-after-install"
+        >
+          <span className="text-sm font-medium">{t('After you install')}</span>
+          <ol className="flex list-decimal flex-col gap-2 pl-5 text-sm">
+            {afterInstall.map((check) => (
+              <li key={check.key}>
+                <SolutionCheckLabel label={check.label} />
+                {check.detail && (
+                  <span className="block text-xs text-muted-foreground">
+                    {check.detail}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       {result.skippedChecks.length > 0 && (
         <Alert variant="warning">
-          <AlertDescription>
-            {t('Checks skipped during install:')}{' '}
-            {result.skippedChecks.map((label, index) => (
-              <Fragment key={label}>
-                {index > 0 && ', '}
-                <SolutionCheckLabel label={label} />
-              </Fragment>
-            ))}
+          <AlertDescription className="flex flex-col gap-1">
+            <span>{t('Checks skipped during install:')}</span>
+            <ul className="flex list-disc flex-col gap-0.5 pl-5">
+              {result.skippedChecks.map((label) => (
+                <li key={label}>
+                  <SolutionCheckLabel label={label} />
+                </li>
+              ))}
+            </ul>
           </AlertDescription>
         </Alert>
       )}
@@ -102,4 +124,5 @@ export { DoneStep };
 
 type DoneStepProps = {
   result: SolutionInstallResult;
+  pkg: SolutionPackage;
 };

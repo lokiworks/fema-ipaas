@@ -82,7 +82,14 @@ describe('error handling strategies', () => {
         const echoed = result.getStepOutput('echo_step_1')?.output
         expect(echoed).toEqual({ code: 'STEP_FAILED', message: expect.any(String), time: expect.any(String) })
         expect(result.getStepOutput('runtime')?.status).toBe(StepOutputStatus.FAILED)
-        expect(result.getStepOutput('runtime')?.output).toEqual({ errorCode: 'STEP_FAILED', errorMessage: expect.any(String), errorTime: expect.any(String) })
+        expect(result.getStepOutput('runtime')?.output).toEqual({
+            errorCode: 'STEP_FAILED',
+            errorCategory: 'STEP_FAILED',
+            errorMessage: expect.stringMatching(/^步骤执行失败/),
+            rawMessage: expect.any(String),
+            errorTime: expect.stringMatching(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/),
+            errorTimeIso: expect.any(String),
+        })
     })
 
     it('leaves the failed step output alone when the success branch is taken', async () => {

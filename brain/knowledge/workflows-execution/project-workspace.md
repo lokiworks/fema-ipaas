@@ -33,6 +33,8 @@ icon: 🗂️
 - **角色名**：`DefaultProjectRole.ADMIN` 显示为「管理员」，只有 `project.ownerId` 那个人显示「所有者」（`projectRoleLabels.memberLabel`），邀请和审批下拉里选的是「管理员」。
 - 「他人正在编辑」这一项校验还没做：写这块时平台还没有编辑锁。
 - 最近一次运行只看最近 30 天，避免 `DISTINCT ON` 扫完整张 execution 表。
+- **申请人可以撤回自己的待审批申请**（`POST /v1/project-access-requests/:id/withdraw`，只认本人且状态为 PENDING，状态改成 `WITHDRAWN`，写审计 `project.access.withdrawn`）。「已申请」按钮是下拉，里面有「撤回申请」。
+- **租户「权限申请审核」页只审模块权限，但会列出待你审批的项目加入申请**（`GET /v1/project-access-requests/to-review`，与首页「待我处理」同源），点「去审批」进项目成员页处理，两处口径一致。
 
 ## Key files
 - `packages/server/api/src/app/project-workspace/` — 树、统计、批量操作、导入导出（`projectWorkspaceModule`）

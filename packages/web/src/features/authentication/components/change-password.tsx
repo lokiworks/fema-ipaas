@@ -1,10 +1,12 @@
-import { ResetPasswordRequestBody } from '@fema-ipaas/shared';
+import { FlagId, ResetPasswordRequestBody } from '@fema-ipaas/shared';
+import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { useRef, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { authenticationApi } from '@/api/authentication-api';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -21,14 +23,98 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Skeleton } from '@/components/ui/skeleton';
 import { PasswordRequirementsList } from '@/features/authentication/components/password-validator';
 import { passwordValidation } from '@/features/authentication/utils/password-validation-utils';
+import { flagsHooks } from '@/hooks/flags-hooks';
 
 import { authMutations } from '../hooks/auth-hooks';
 
 const ChangePasswordForm = () => {
-  const navigate = useNavigate();
   const queryParams = new URLSearchParams(window.location.search);
+  const otp = queryParams.get('otpcode') ?? '';
+  const identityId = queryParams.get('identityId') ?? '';
+  const hasLinkParams = otp.length > 0 && identityId.length > 0;
+  const { data: linkCheck, isLoading } = useQuery({
+    queryKey: ['reset-password-link', identityId, otp],
+    queryFn: () =>
+      authenticationApi.checkResetPasswordLink({ identityId, otp }),
+    enabled: hasLinkParams,
+    retry: false,
+    staleTime: Infinity,
+  });
+  if (hasLinkParams && isLoading) {
+    return (
+      <Card
+        className="w-full max-w-md rounded-sm drop-shadow-xl"
+        data-testid="reset-link-checking"
+      >
+        <CardHeader>
+          <CardTitle className="text-2xl">{t('Reset Password')}</CardTitle>
+          <CardDescription>{t('Checking the reset link…')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+  if (!hasLinkParams || linkCheck?.valid === false) {
+    return <ExpiredResetLink />;
+  }
+  return <NewPasswordForm otp={otp} identityId={identityId} />;
+};
+
+const ExpiredResetLink = () => {
+  const { data: smtpFlag } = flagsHooks.useFlag<boolean>(
+    FlagId.SMTP_CONFIGURED,
+  );
+  const smtpConfigured = smtpFlag === true;
+  return (
+    <Card
+      className="w-full max-w-md rounded-sm drop-shadow-xl"
+      data-testid="reset-link-expired"
+    >
+      <CardHeader>
+        <CardTitle className="text-2xl">
+          {t('This reset link no longer works')}
+        </CardTitle>
+        <CardDescription>
+          {smtpConfigured
+            ? t(
+                'The link has expired, has already been used, or is incomplete. Request a new reset email and use the latest link within 10 minutes.',
+              )
+            : t(
+                'The link has expired, has already been used, or is incomplete. Email is not set up on this platform, so a new link cannot be sent. Ask an administrator to reset your password in Members.',
+              )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2">
+        {smtpConfigured && (
+          <Button asChild className="w-full">
+            <Link to="/forget-password">{t('Request a new link')}</Link>
+          </Button>
+        )}
+        <Button
+          asChild
+          variant={smtpConfigured ? 'ghost' : 'default'}
+          className="w-full"
+        >
+          <Link to="/sign-in">{t('Back to sign in')}</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+const NewPasswordForm = ({
+  otp,
+  identityId,
+}: {
+  otp: string;
+  identityId: string;
+}) => {
+  const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
   const [isPasswordFocused, setPasswordFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,8 +124,8 @@ const ChangePasswordForm = () => {
     newPassword: string;
   }>({
     defaultValues: {
-      otp: queryParams.get('otpcode') || '',
-      identityId: queryParams.get('identityId') || '',
+      otp,
+      identityId,
       newPassword: '',
     },
   });

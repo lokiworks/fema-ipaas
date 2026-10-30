@@ -1,6 +1,7 @@
 import {
   dataMapping,
   generateId,
+  isNil,
   MappingItemRow,
   MappingRow,
   MappingSpec,
@@ -168,6 +169,23 @@ function previewText(value: unknown): string {
   return typeof value === 'string' ? value : JSON.stringify(value);
 }
 
+function rowPreviewText({
+  row,
+  value,
+  sampleData,
+}: {
+  row: MappingRow;
+  value: unknown;
+  sampleData: Record<string, unknown>;
+}): string {
+  if (!isNil(value)) {
+    return previewText(value);
+  }
+  return templatePreview.hasSampleFor({ template: row.source, sampleData })
+    ? t('Empty in the sample data, the output keeps it as null')
+    : t('No sample value yet');
+}
+
 function safeJson(text: string): unknown {
   try {
     return JSON.parse(text);
@@ -193,6 +211,7 @@ export const mappingSpecUtils = {
   argPlaceholder,
   defaultArg,
   previewText,
+  rowPreviewText,
   TRANSFORMS_WITH_ARG,
 };
 

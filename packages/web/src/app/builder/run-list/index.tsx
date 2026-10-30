@@ -1,4 +1,4 @@
-import { isNil, SeekPage } from '@fema-ipaas/core-utils';
+import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   Execution,
   isExecutionStateTerminal,
@@ -59,7 +59,6 @@ const RunsList = React.memo(() => {
         projectId: authenticationSession.getProjectId()!,
         limit: 15,
         environment: RunEnvironment.TESTING,
-        excludeStepTests: true,
         cursor: pageParam as string | undefined,
       }),
     refetchOnMount: true,
@@ -80,7 +79,7 @@ const RunsList = React.memo(() => {
   const dedupedRuns: Execution[] = useMemo(() => {
     const seen = new Set<string>();
     return (runs?.pages.flatMap((page) => page.data) ?? []).filter((run) => {
-      if (!isNil(run.stepNameToTest) || seen.has(run.id)) {
+      if (seen.has(run.id)) {
         return false;
       }
       seen.add(run.id);

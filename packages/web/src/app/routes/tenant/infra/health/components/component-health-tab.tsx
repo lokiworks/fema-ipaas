@@ -82,7 +82,7 @@ export function ComponentHealthTab() {
           {t('Check again')}
         </Button>
       </div>
-      {data.checks.map((check) => (
+      {sortByAttention(data.checks).map((check) => (
         <Item key={check.component} variant="outline">
           <ItemContent>
             <ItemTitle>
@@ -128,6 +128,32 @@ export function ComponentHealthTab() {
       ))}
     </div>
   );
+}
+
+function sortByAttention(
+  checks: ComponentHealthCheck[],
+): ComponentHealthCheck[] {
+  return checks
+    .map((check, index) => ({ check, index }))
+    .sort(
+      (a, b) =>
+        attentionRank(a.check.level) - attentionRank(b.check.level) ||
+        a.index - b.index,
+    )
+    .map(({ check }) => check);
+}
+
+function attentionRank(level: ComponentHealthLevel): number {
+  switch (level) {
+    case ComponentHealthLevel.ERROR:
+      return 0;
+    case ComponentHealthLevel.WARNING:
+      return 1;
+    case ComponentHealthLevel.OK:
+    case ComponentHealthLevel.INFO:
+    case ComponentHealthLevel.NOT_CONFIGURED:
+      return 2;
+  }
 }
 
 function isCheckPending(check: ComponentHealthCheck): boolean {

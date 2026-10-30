@@ -16,13 +16,36 @@ function showError(error: unknown): void {
   toast.error(api.extractServerErrorMessage(error, t('Something went wrong')));
 }
 
-function useMyPendingProjectIds() {
+function useMyPendingRequest(projectId: string) {
   const { data } = useQuery({
     queryKey: projectAccessRequestKeys.mine,
     queryFn: () => projectAccessRequestsApi.listMine(),
     staleTime: 30 * 1000,
   });
-  return projectAccessRequestUtils.pendingProjectIds(data);
+  return (
+    (data ?? []).find((request) => request.projectId === projectId) ?? null
+  );
+}
+
+function useWithdrawRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => projectAccessRequestsApi.withdraw(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: projectAccessRequestKeys.mine,
+      });
+      toast.success(t('projectAccessWithdrawn'));
+    },
+    onError: showError,
+  });
+}
+
+function useRequestsToReview() {
+  return useQuery({
+    queryKey: projectAccessRequestKeys.toReview,
+    queryFn: () => projectAccessRequestsApi.listToReview(),
+  });
 }
 
 function useRequestAccess() {
@@ -69,6 +92,9 @@ function useDecideRequest({ projectId }: { projectId: string }) {
         queryKey: ['project-members', projectId],
       });
       queryClient.invalidateQueries({ queryKey: [HOME_SUMMARY_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: projectAccessRequestKeys.toReview,
+      });
       toast.success(
         projectAccessRequestUtils.decidedMessage({
           name: variables.name,
@@ -81,7 +107,9 @@ function useDecideRequest({ projectId }: { projectId: string }) {
 }
 
 export const projectAccessRequestsHooks = {
-  useMyPendingProjectIds,
+  useMyPendingRequest,
+  useWithdrawRequest,
+  useRequestsToReview,
   useRequestAccess,
   usePendingRequests,
   useDecideRequest,
@@ -89,6 +117,7 @@ export const projectAccessRequestsHooks = {
 
 const projectAccessRequestKeys = {
   mine: ['project-access-requests', 'mine'],
+  toReview: ['project-access-requests', 'to-review'],
   pending: (projectId: string) => [
     'project-access-requests',
     'pending',

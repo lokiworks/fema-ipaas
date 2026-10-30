@@ -34,6 +34,7 @@ import {
 import { useIsNarrowDesktop } from '@/hooks/use-mobile';
 import { formatUtils } from '@/lib/format-utils';
 
+import { runLogErrorSummary } from '../utils/run-log-error-summary';
 import { runLogUiUtils } from '../utils/run-log-ui-utils';
 
 import { RunStatus } from './run-status';
@@ -329,13 +330,22 @@ function columns({
     },
     {
       accessorKey: 'errorCount',
-      size: 52,
+      size: 120,
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('Errors')} />
+        <DataTableColumnHeader column={column} title={t('Failed step')} />
       ),
-      cell: ({ row }) => (
-        <span className="text-sm">{row.original.errorCount}</span>
-      ),
+      cell: ({ row }) => {
+        const failed = runLogErrorSummary.failedStepName(row.original);
+        return isNil(failed) ? (
+          <span className="text-sm text-muted-foreground">—</span>
+        ) : (
+          <TextWithTooltip tooltipMessage={failed}>
+            <p className="truncate text-sm text-destructive">
+              {failed.length > 0 ? failed : t('runLogFailedOutsideSteps')}
+            </p>
+          </TextWithTooltip>
+        );
+      },
     },
     {
       accessorKey: 'actions',
@@ -434,11 +444,7 @@ function CompactWorkflowCell({
     isNil(row.durationMs)
       ? null
       : formatUtils.formatDuration(row.durationMs, true),
-    row.errorCount > 0
-      ? t('{count, plural, =1 {1 error} other {# errors}}', {
-          count: row.errorCount,
-        })
-      : null,
+    compactFailedText(row),
   ].filter((item): item is string => !isNil(item) && item.length > 0);
   return (
     <div className="min-w-0" data-testid="run-log-compact-cell">
@@ -465,6 +471,16 @@ function CompactWorkflowCell({
       </TextWithTooltip>
     </div>
   );
+}
+
+function compactFailedText(row: RunLogRow): string | null {
+  const failed = runLogErrorSummary.failedStepName(row);
+  if (isNil(failed)) {
+    return null;
+  }
+  return failed.length > 0
+    ? t('runLogFailedAtShort', { step: failed })
+    : t('runLogFailedOutsideSteps');
 }
 
 function RowRerun({ row, onRerun }: { row: RunLogRow; onRerun: () => void }) {

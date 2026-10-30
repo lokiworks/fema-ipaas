@@ -6,11 +6,12 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { TriangleAlert } from 'lucide-react';
+import { FlaskConical, TriangleAlert } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { useDraftChanged } from '@/app/builder/builder-header/use-draft-changed';
 import { stepTestRelevance } from '@/app/builder/state/step-test-relevance';
+import { connectorSampleData } from '@/app/builder/test-step/utils/connector-sample-data';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
 import { InvalidStepIcon } from '@/components/custom/alert-icon';
@@ -19,7 +20,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
-import { connectorSelectorUtils } from '@/features/connectors';
+import { connectorSelectorUtils, connectorsHooks } from '@/features/connectors';
 import { StepStatusIcon, executionUtils } from '@/features/executions';
 import {
   ValidationCode,
@@ -39,6 +40,7 @@ type DraftStepStatus =
   | 'failed'
   | 'needs-test'
   | 'tested'
+  | 'sample'
   | 'untested';
 
 const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
@@ -55,6 +57,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     isSkipped,
     debugTested,
     step,
+    outputSample,
   ] = useBuilderStateContext((state) => {
     const step = workflowStructureUtil.getStep(
       stepName,
@@ -79,7 +82,22 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       workflowCanvasUtils.isSkipped(stepName, state.workflowVersion.trigger),
       state.debugTestedSteps[stepName],
       step,
+      state.outputSampleData[stepName],
     ];
+  });
+  const triggerConnector =
+    step?.type === WorkflowTriggerType.CONNECTOR ? step.settings : null;
+  const { connectorModel: triggerConnectorModel } =
+    connectorsHooks.useConnector({
+      name: triggerConnector?.connectorName ?? '',
+      version: triggerConnector?.connectorVersion,
+      enabled: !isNil(triggerConnector),
+    });
+  const usesConnectorSample = connectorSampleData.isConnectorSample({
+    sampleData: outputSample,
+    connectorSample:
+      triggerConnectorModel?.triggers[triggerConnector?.triggerName ?? '']
+        ?.sampleData,
   });
 
   const workflow = useBuilderStateContext((state) => state.workflow);
@@ -158,6 +176,11 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       text: t('Test me'),
       icon: <TriangleAlert className="size-3" />,
     },
+    sample: {
+      variant: 'default',
+      text: t('Sample data in use'),
+      icon: <FlaskConical className="size-3" />,
+    },
     tested: {
       variant: 'success',
       text: t('Tested'),
@@ -196,9 +219,11 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       return 'needs-test';
     }
     if (hasError) return 'failed';
+    if (usesConnectorSample) return 'sample';
 
     return 'tested';
   }, [
+    usesConnectorSample,
     hasValidationError,
     hasValidationWarning,
     isStepValid,
@@ -248,6 +273,13 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
             {validationMessages.messageOf(firstWarning)}
           </TooltipContent>
         )}
+        {status === 'sample' && (
+          <TooltipContent>
+            {t(
+              'This step uses the sample data of the connector, not data fetched by a real test. Test it again to use real data.',
+            )}
+          </TooltipContent>
+        )}
         {status === 'untested' && (
           <TooltipContent>
             {t('This step has not been tested yet')}
@@ -267,6 +299,7 @@ const LIVE_HIDDEN_STATUSES: DraftStepStatus[] = [
   'needs-test',
   'untested',
   'tested',
+  'sample',
 ];
 
 StepNodeStatusInDraft.displayName = 'StepNodeStatusInDraft';

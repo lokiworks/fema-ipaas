@@ -68,45 +68,55 @@ export const otpService = (log: FastifyBaseLogger) => ({
     },
 
     async confirm({ identityId, type, value }: ConfirmParams): Promise<boolean> {
-        return distributedLock(log).runExclusive({
-            key: confirmLockKey({ identityId, type }),
-            timeoutInSeconds: 15,
-            fn: async () => {
-                const spentOnIdentity = await guessesSpentOnIdentity({ identityId, type })
-                if (spentOnIdentity >= MAX_ATTEMPTS_PER_IDENTITY) {
-                    log.warn({ identityId, type }, '[otpService#confirm] identity guess budget exhausted, refusing')
-                    return false
-                }
-                const otp = await repo().findOneBy({ identityId, type })
-                if (isNil(otp)) {
-                    return false
-                }
-                if (otp.attempts >= MAX_ATTEMPTS) {
-                    await discard({ otp, identityId, type, log })
-                    return false
-                }
-                if (otpIsExpired(otp)) {
-                    await discard({ otp, identityId, type, log })
-                    return false
-                }
-                const otpIsPending = otp.state === OtpState.PENDING
-                const otpMatches = encryptUtils.digestsMatch(otp.value, await comparableValue({ otp, value }))
-                if (otpMatches && otpIsPending) {
+        return verifyOtp({ identityId, type, value, consume: true, log })
+    },
+
+    async check({ identityId, type, value }: ConfirmParams): Promise<boolean> {
+        return verifyOtp({ identityId, type, value, consume: false, log })
+    },
+})
+
+async function verifyOtp({ identityId, type, value, consume, log }: VerifyOtpParams): Promise<boolean> {
+    return distributedLock(log).runExclusive({
+        key: confirmLockKey({ identityId, type }),
+        timeoutInSeconds: 15,
+        fn: async () => {
+            const spentOnIdentity = await guessesSpentOnIdentity({ identityId, type })
+            if (spentOnIdentity >= MAX_ATTEMPTS_PER_IDENTITY) {
+                log.warn({ identityId, type }, '[otpService#confirm] identity guess budget exhausted, refusing')
+                return false
+            }
+            const otp = await repo().findOneBy({ identityId, type })
+            if (isNil(otp)) {
+                return false
+            }
+            if (otp.attempts >= MAX_ATTEMPTS) {
+                await discard({ otp, identityId, type, log })
+                return false
+            }
+            if (otpIsExpired(otp)) {
+                await discard({ otp, identityId, type, log })
+                return false
+            }
+            const otpIsPending = otp.state === OtpState.PENDING
+            const otpMatches = encryptUtils.digestsMatch(otp.value, await comparableValue({ otp, value }))
+            if (otpMatches && otpIsPending) {
+                if (consume) {
                     await repo().delete({ id: otp.id })
                     await forgetCachedCode({ identityId, type })
                     await clearIdentityBudget({ identityId, type })
-                    return true
                 }
-                await countAttempt(otp.id)
-                await countGuessOnIdentity({ identityId, type, spent: spentOnIdentity })
-                if (otp.attempts + 1 >= MAX_ATTEMPTS) {
-                    await discard({ otp, identityId, type, log })
-                }
-                return false
-            },
-        })
-    },
-})
+                return true
+            }
+            await countAttempt(otp.id)
+            await countGuessOnIdentity({ identityId, type, spent: spentOnIdentity })
+            if (otp.attempts + 1 >= MAX_ATTEMPTS) {
+                await discard({ otp, identityId, type, log })
+            }
+            return false
+        },
+    })
+}
 
 async function comparableValue({ otp, value }: ComparableValueParams): Promise<string> {
     const writtenBeforeHashing = otp.version < HASHED_OTP_VERSION
@@ -203,6 +213,11 @@ type DiscardParams = {
     otp: OtpModel
     identityId: string
     type: OtpType
+    log: FastifyBaseLogger
+}
+
+type VerifyOtpParams = ConfirmParams & {
+    consume: boolean
     log: FastifyBaseLogger
 }
 

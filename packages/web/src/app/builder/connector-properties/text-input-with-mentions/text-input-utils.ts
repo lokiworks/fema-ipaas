@@ -2,6 +2,7 @@ import { assertNotNullOrUndefined, isNil } from '@fema-ipaas/core-utils';
 import { FEMA_FUNCTIONS, formulaEvaluator } from '@fema-ipaas/expression';
 import {
   WorkflowAction,
+  WorkflowActionType,
   WorkflowTrigger,
   workflowCanvasUtils,
 } from '@fema-ipaas/shared';
@@ -80,10 +81,19 @@ type StepMetadataWithDisplayName = StepMetadata & {
 const ZWS = '\u200B';
 const FAILURE_FIELD_LABELS: Record<string, string> = {
   errorCode: 'Failure error code',
+  errorCategory: 'Failure category',
   errorMessage: 'Failure error message',
+  rawMessage: 'Failure raw message',
   errorTime: 'Failure time',
+  errorTimeIso: 'Failure time (ISO)',
+};
+const LOOP_OUTPUT_LABELS: Record<string, string> = {
+  item: 'Loop current item',
+  index: 'Loop index',
+  iterations: 'Loop iteration results',
 };
 const CURRENT_ITEM_ROOT = 'item';
+const STEP_ROOT_ACCESSORS = ['output', 'error'];
 
 type ExprToken =
   | { kind: 'fn_open'; name: string; known: boolean }
@@ -386,6 +396,19 @@ function parseLabelFromMention(
   }
   const stepMetadata = stepsMetadata[stepIdx];
   const step = steps[stepIdx];
+  if (missesOutputAccessor(mention)) {
+    return {
+      displayText: `${t('Invalid reference')} · ${
+        stepMetadata?.stepDisplayName ?? step.displayName
+      } · ${path.join('.')}`,
+      fullText: t(
+        "This reference is missing ['output'], so it reads nothing. Insert the field again from the data selector.",
+      ),
+      serverValue: mention,
+      logoUrl: undefined,
+      isBroken: true,
+    };
+  }
   const labels = friendlyLabelsOf({
     path,
     step,
@@ -405,6 +428,15 @@ function parseLabelFromMention(
     serverValue: mention,
     logoUrl: stepMetadata?.logoUrl,
   };
+}
+
+function missesOutputAccessor(mention: string): boolean {
+  const body = removeIntroplationBrackets(mention);
+  if (parseFlattenArrayPath(body).isValid) {
+    return false;
+  }
+  const keys = keysWithinPath(body);
+  return keys.length > 1 && !STEP_ROOT_ACCESSORS.includes(keys[1]);
 }
 
 function mentionDisplayText({
@@ -444,6 +476,13 @@ function friendlyLabelsOf({
       : undefined;
   if (!isNil(failureLabel)) {
     return [t(failureLabel)];
+  }
+  const loopLabel =
+    step.type === WorkflowActionType.LOOP_ON_ITEMS && outputPath.length > 0
+      ? LOOP_OUTPUT_LABELS[outputPath[0]]
+      : undefined;
+  if (!isNil(loopLabel)) {
+    return [t(loopLabel), ...outputPath.slice(1)];
   }
   return labelSegments({ segments: outputPath, fields: schema?.fields ?? [] });
 }

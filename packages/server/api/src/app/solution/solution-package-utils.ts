@@ -53,6 +53,7 @@ function buildPackage({ workflows, tables, manualChecks }: BuildPackageParams): 
                 label: check.label,
                 kind: SolutionCheckKind.MANUAL,
                 blocking: false,
+                ...(check.afterInstall === true ? { afterInstall: true } : {}),
                 detail: check.detail,
                 who: check.who,
                 fixSteps: [],
@@ -143,7 +144,7 @@ function wantsAuth(step: { settings?: unknown }): boolean {
 type BuildPackageParams = {
     workflows: SolutionWorkflow[]
     tables: (SolutionMappingTable & { id: string })[]
-    manualChecks: { label: string, detail?: string, who?: string }[]
+    manualChecks: { label: string, detail?: string, who?: string, afterInstall?: boolean }[]
 }
 
 type InstantiateParams = {

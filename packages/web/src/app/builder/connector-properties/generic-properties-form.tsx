@@ -11,6 +11,7 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { FormField } from '@/components/ui/form';
+import { formUtils } from '@/features/connectors';
 import { cn, GAP_SIZE_FOR_STEP_SETTINGS } from '@/lib/utils';
 
 import { FilterBuilderLayout } from './filter-builder-layout';
@@ -44,7 +45,7 @@ export const GenericPropertiesForm = React.memo(
       propertyName: string,
       options?: { hideLabel?: boolean; hideDescription?: boolean },
     ) => {
-      const dynamicInputModeToggled =
+      const toggledInSettings =
         propertySettings?.[propertyName]?.type ===
         PropertyExecutionType.DYNAMIC;
       return (
@@ -52,8 +53,16 @@ export const GenericPropertiesForm = React.memo(
           key={propertyName}
           name={inputNameFor(propertyName)}
           control={form.control}
-          render={({ field }) =>
-            selectGenericFormComponentForProperty({
+          render={({ field }) => {
+            const dynamicInputModeToggled =
+              toggledInSettings ||
+              (isManualMode(propertySettings?.[propertyName]?.type) &&
+                !isNil(props[propertyName]) &&
+                formUtils.requiresDynamicInput({
+                  property: props[propertyName],
+                  value: field.value,
+                }));
+            return selectGenericFormComponentForProperty({
               field: {
                 ...field,
                 onChange: (value) => {
@@ -75,8 +84,8 @@ export const GenericPropertiesForm = React.memo(
               propertySettings,
               hideLabel: options?.hideLabel,
               hideDescription: options?.hideDescription,
-            })
-          }
+            });
+          }}
         />
       );
     };
@@ -154,6 +163,10 @@ export const GenericPropertiesForm = React.memo(
 );
 
 GenericPropertiesForm.displayName = 'GenericFormComponent';
+
+function isManualMode(type: PropertyExecutionType | undefined): boolean {
+  return isNil(type) || type === PropertyExecutionType.MANUAL;
+}
 
 function buildGroupByPropName(
   propertyGroups: PropertyGroup[] | undefined,

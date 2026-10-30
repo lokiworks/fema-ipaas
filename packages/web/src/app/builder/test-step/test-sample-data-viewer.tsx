@@ -1,7 +1,7 @@
 import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
-import { WorkflowAction } from '@fema-ipaas/shared';
+import { WorkflowAction, WorkflowActionType } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { CircleAlert, Loader2, Play } from 'lucide-react';
+import { CircleAlert, Info, Loader2, Play } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { SmartOutputViewer } from '@/components/custom/smart-output-viewer';
@@ -13,6 +13,8 @@ import { cn } from '@/lib/utils';
 import { DataDisplayTabs } from '../data-display/data-display-tabs';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
 import { FriendlyErrorView } from '../data-display/friendly-error-view';
+import { builtinOutputSchemas } from '../run-details/builtin-output-schemas';
+import { RouterHitSummary } from '../run-details/router-hit-summary';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 
 import { JsonTreeSkeleton } from './json-tree-skeleton';
@@ -34,6 +36,7 @@ type TestSampleDataViewerProps = {
   connectorDisplayName?: string;
   connectorSchema?: OutputSchema | null;
   retestLabel?: string;
+  isSampleData?: boolean;
 } & (
   | {
       hideCancel: true;
@@ -81,6 +84,7 @@ export const TestSampleDataViewer = React.memo(
       connectorDisplayName,
       connectorSchema,
       retestLabel,
+      isSampleData = false,
     } = props;
     const [requestedTab, setActiveTab] = useState<ActiveTab>('Output');
     const hasInput = !isNil(sampleDataInput);
@@ -93,13 +97,16 @@ export const TestSampleDataViewer = React.memo(
 
     const isFailed = !isNil(errorMessage);
 
-    const status: 'success' | 'failed' | 'testing' | 'stale' = isTesting
-      ? 'testing'
-      : isStale
-      ? 'stale'
-      : isFailed
-      ? 'failed'
-      : 'success';
+    const status: 'success' | 'failed' | 'testing' | 'stale' | 'sample' =
+      isTesting
+        ? 'testing'
+        : isStale
+        ? 'stale'
+        : isFailed
+        ? 'failed'
+        : isSampleData
+        ? 'sample'
+        : 'success';
 
     const outputData = errorMessage ?? sampleData;
     const activeData =
@@ -155,11 +162,40 @@ export const TestSampleDataViewer = React.memo(
                 connectorDisplayName={connectorDisplayName}
               />
             ) : activeTab === 'Output' && !errorMessage ? (
-              <SmartOutputViewer
-                json={outputData}
-                title={t('Output')}
-                connectorSchema={connectorSchema ?? null}
-              />
+              <div className="flex flex-col gap-3">
+                {!isNil(currentStep) &&
+                  currentStep.type === WorkflowActionType.ROUTER && (
+                    <RouterHitSummary step={currentStep} output={outputData} />
+                  )}
+                {!isNil(currentStep) &&
+                  currentStep.type === WorkflowActionType.LOOP_ON_ITEMS && (
+                    <div className="flex items-start gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                      <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+                      <span className="min-w-0 break-words">
+                        {t(
+                          'Only the first item runs when you test a loop. A debug run or a real run goes through every item.',
+                        )}
+                      </span>
+                    </div>
+                  )}
+                <SmartOutputViewer
+                  json={
+                    isNil(currentStep)
+                      ? outputData
+                      : builtinOutputSchemas.displayOutput({
+                          step: currentStep,
+                          output: outputData,
+                        })
+                  }
+                  title={t('Output')}
+                  connectorSchema={
+                    connectorSchema ??
+                    (isNil(currentStep)
+                      ? null
+                      : builtinOutputSchemas.forStep(currentStep))
+                  }
+                />
+              </div>
             ) : (
               <DataDisplayTabs
                 data={activeData}

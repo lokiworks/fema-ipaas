@@ -43,6 +43,9 @@ icon: 🩺
 - **触发器失败同因合并成一个问题（`IssueKind.TRIGGER`）。** 轮询触发器失败时，`issueUtils.classifyTriggerFailure` 取触发器输入里引用的连接（`connectionExternalIdOf` 扫 `{{connections['…']}}`），有连接时签名是 `trigger:<连接外部 ID>:<错误码>`，同一连接同一错误类别的所有工作流共用这个问题，只在第一次出现时告警；没有连接的触发器仍按 `<工作流>:<触发器>:<错误码>` 一个工作流一个问题。授权过期类仍走 `conn:<连接>`。受影响的工作流记在 `issue_workflow` 表（问题、工作流、最近失败时间，唯一键 `issueId + workflowId`），`GET /v1/issues/:id/workflows` 返回名字和最近失败时间，问题详情页的「受影响的工作流」卡片列出并可点进去；按工作流筛选问题时合并问题也算进去。不同原因互不混淆：同一个工作流换了错误类别（限流变成 500），它会从旧问题里摘出来加入新问题，旧问题没有工作流了就自动已解决（`reason: CAUSE_CHANGED`）。
 - **合并的触发器问题在其中一个工作流修好后不会被解决。** 工作流的触发器下一次轮询成功（`resolveTriggerFailures`），只把它从 `issue_workflow` 摘掉，问题仍是未处理，活动记录加一条 `TRIGGER_RECOVERED`（写明哪个工作流恢复、还剩几个受影响）；最后一个也恢复才自动已解决（`reason: TRIGGER_RECOVERED`）；已忽略的问题不会被改状态；工作流被删除时同样摘掉（`WORKFLOW_DELETED`）。触发器问题没有运行，所以没有「受影响的运行」和趋势图，修复动作里没有重放；合并问题（`connectionExternalId` 非空）也不给「打开节点」，只留重新授权（401/403）和忽略。告警策略限定了工作流时，合并问题按受影响的工作流匹配。
 - **问题标题是「原因归类：关键对象」，原始报错只放在详情里。** 归类由 `issueUtils.titleCategoryOf` 按错误码和消息定（限流、访问被拒绝、找不到、服务出错、超时、请求被拒绝、映射表缺值、触发器检查失败、步骤失败），对象是步骤名（映射表缺值时是映射表名，合并的触发器问题是连接显示名，单个工作流的触发器问题是工作流名）。库里存英文（告警和 API 用），页面由 `issueUiUtils.issueTitle` 按 `ISSUE_TITLE_CATEGORY_ENGLISH` 反查归类再翻译；认不出归类的旧标题走 `failureText.localize`。改归类要同时补 shared 的英文表、`IssueTitleCategory`、前端 `titleCategoryLabel` 和中英文翻译。
+- **「打开节点检查入参」「错误处理」类修复跳到失败那次运行，不是编辑器草稿。** 取问题名下最近的失败运行（`runFocusUtils.pickFailedRun`），地址 `/runs/:id?step=<失败节点>&panel=input|error&issueId=…`：运行页选中该节点，`input` 打开「出参」页签下的「本次入参」，`error` 打开「错误处理」页签。带 `issueId` 时运行页顶部有「返回问题」和「重跑」。取不到运行时才退回编辑器。
+- **「标记已解决」先确认，可顺手写一句怎么解决的（记成备注）。** 状态下拉显示「状态：当前状态」并勾出当前项，选「已解决」同样走确认；其他状态立即生效、可撤销。
+- **问题重放和运行日志重跑用同一条「大概率再失败」规则。** 运行日志的重跑弹窗先调 `POST /v1/run-logs/rerun-check`（`issueReplayService.likelyToFailAgain`，按所属问题的错误码、工作流和映射表是否在失败后改过，复用 `issueReplayUtils.classify`），这类运行默认不重跑，勾「仍然重跑」才算上；两个弹窗用同一个 `LikelyToFailBlock`。服务端的批量重跑接口本身不拦，规则在弹窗里。
 
 ## Key files
 - `packages/server/api/src/app/issue/` — `issueService.recordFailure`、`issueReplayService`

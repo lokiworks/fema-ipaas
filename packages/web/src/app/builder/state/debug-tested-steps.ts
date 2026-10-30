@@ -34,7 +34,7 @@ function testedStepsOf({
   }
   const testedAt = run.finishTime ?? observedAt;
   return Object.fromEntries(
-    Object.entries(run.steps).flatMap(([stepName, output]) => {
+    Object.entries(flattenRunSteps(run.steps)).flatMap(([stepName, output]) => {
       const status = finishedStatusOf(output);
       if (isNil(status)) {
         return [];
@@ -95,6 +95,66 @@ function testedStepOf({
   return { testedAt, signature, failed };
 }
 
+function flattenRunSteps(
+  steps: Record<string, unknown>,
+): Record<string, unknown> {
+  return Object.entries(steps).reduce<Record<string, unknown>>(
+    (acc, [stepName, output]) => {
+      const nested = iterationsOf(output).reduce<Record<string, unknown>>(
+        (found, iteration) =>
+          preferSucceeded({
+            current: found,
+            incoming: flattenRunSteps(iteration),
+          }),
+        {},
+      );
+      return preferSucceeded({
+        current: acc,
+        incoming: { ...nested, [stepName]: output },
+      });
+    },
+    {},
+  );
+}
+
+function iterationsOf(output: unknown): Record<string, unknown>[] {
+  if (typeof output !== 'object' || output === null || !('output' in output)) {
+    return [];
+  }
+  const loopOutput = output.output;
+  if (
+    typeof loopOutput !== 'object' ||
+    loopOutput === null ||
+    !('iterations' in loopOutput) ||
+    !Array.isArray(loopOutput.iterations)
+  ) {
+    return [];
+  }
+  return loopOutput.iterations.filter(
+    (iteration): iteration is Record<string, unknown> =>
+      typeof iteration === 'object' && iteration !== null,
+  );
+}
+
+function preferSucceeded({
+  current,
+  incoming,
+}: {
+  current: Record<string, unknown>;
+  incoming: Record<string, unknown>;
+}): Record<string, unknown> {
+  return Object.entries(incoming).reduce<Record<string, unknown>>(
+    (acc, [stepName, output]) => {
+      const existing = acc[stepName];
+      const keepExisting =
+        !isNil(existing) &&
+        finishedStatusOf(existing) === StepOutputStatus.SUCCEEDED;
+      return keepExisting ? acc : { ...acc, [stepName]: output };
+    },
+    current,
+  );
+}
+
 function finishedStatusOf(output: unknown): StepOutputStatus | null {
   if (typeof output !== 'object' || output === null || !('status' in output)) {
     return null;
@@ -111,6 +171,7 @@ function finishedStatusOf(output: unknown): StepOutputStatus | null {
 export const debugTestedStepsUtils = {
   testedStepsOf,
   merge,
+  flattenRunSteps,
 };
 
 export type DebugTestedStep = {

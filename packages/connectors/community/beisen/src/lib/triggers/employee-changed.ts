@@ -21,12 +21,20 @@ import {
   beisenTimeWindow,
 } from '../common/time-window';
 
+const CHANGE_TYPE_OPTIONS = [
+  { label: 'New hire (1)', value: '1' },
+  { label: 'Rehire (2)', value: '2' },
+  { label: 'Transfer (7)', value: '7' },
+  { label: 'Position change (9)', value: '9' },
+];
+
 const polling: Polling<
   ConnectionValueForAuthProperty<typeof beisenAuth>,
   {
     statusScope?: unknown;
     queryType?: unknown;
     timezone?: string | undefined;
+    changeTypes?: unknown[] | undefined;
     filterColumn?: string | undefined;
     filterValues?: unknown[] | undefined;
   }
@@ -46,7 +54,11 @@ const polling: Polling<
       timeZone: propsValue.timezone ?? DEFAULT_TIMEZONE,
     });
     const records = beisenCommon.filterByColumn({
-      records: fetched,
+      records: beisenCommon.filterByColumn({
+        records: fetched,
+        column: CHANGE_TYPE_PATH,
+        values: toStringList(propsValue.changeTypes),
+      }),
       column: propsValue.filterColumn,
       values: toStringList(propsValue.filterValues),
     });
@@ -103,10 +115,16 @@ export const employeeChanged = createTrigger({
         ],
       },
     }),
+    changeTypes: Property.StaticMultiSelectDropdown({
+      displayName: 'Change Types',
+      description: 'Optional. Only start for these change types (recordInfo.changeTypeOID). Leave empty to start for every change.',
+      required: false,
+      options: { options: CHANGE_TYPE_OPTIONS },
+    }),
     filterColumn: Property.ShortText({
       displayName: 'Only When This Field',
       description:
-        'Optional. A field path inside the returned record, for example recordInfo.changeTypeOID. Together with the values below it keeps only records where that field matches, which is how you pick new hires (1) or rehires (2) out of all changes.',
+        'Optional. A field path inside the returned record, for example recordInfo.jobNumber. Together with the values below it keeps only records where that field matches. To pick change types such as new hires, use Change Types above.',
       required: false,
     }),
     filterValues: Property.Array({
@@ -170,6 +188,9 @@ function toStringList(values: unknown[] | undefined): string[] {
 }
 
 const DEFAULT_TIMEZONE = 'Asia/Shanghai';
+
+const CHANGE_TYPE_PATH = 'recordInfo.changeTypeOID';
+
 
 const INITIAL_LOOKBACK_MS = 24 * 60 * 60 * 1000;
 

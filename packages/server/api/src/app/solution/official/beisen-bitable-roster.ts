@@ -80,6 +80,7 @@ function rosterWorkflow(): SolutionWorkflow {
                 connectorVersion: FEISHU_VERSION,
                 actionName: 'create_bitable_record',
                 retry: true,
+                dynamic: ['fields'],
                 input: {
                     auth: FEISHU_AUTH,
                     appToken: '',
@@ -107,8 +108,8 @@ const DEPARTMENT_NAME_TABLE = {
 const MANUAL_CHECKS = [
     { label: '北森连接器已勾选「员工信息」和「任职记录」两个对象', detail: '缺一个，北森会返回权限异常。字段权限也要允许读到姓名、手机号、邮箱、工号和部门', who: '北森管理员' },
     { label: '多维表格里已建好与映射结果同名的列：姓名、工号、手机号、邮箱、部门、入职日期', detail: '写入时列名必须完全一致，否则飞书会拒绝。想用别的列名，安装后在工作流里打开「整理成花名册一行」，把目标字段名改成你的列名', who: '安装的人' },
-    { label: '飞书应用已开通多维表格权限，并且是这个多维表格的协作者', detail: '缺权限时飞书返回「没有访问权限」，在问题中心能看到并定位到这一步', who: '飞书管理员' },
-    { label: '映射表里已填好北森部门 OId 对应的部门名称', detail: '映射表缺少对应关系时，这一步会明确失败并写明缺哪个值；映射表的「覆盖率」会列出最近运行里还没有对照的部门，一键补上', who: '安装的人' },
+    { label: '飞书应用已开通多维表格权限，并且是这个多维表格的协作者', detail: '缺权限时飞书返回「没有访问权限」，在「问题」页能看到并定位到这一步', who: '飞书管理员' },
+    { label: '在映射表「北森部门到部门名称」里填好北森部门 OId 对应的部门名称', detail: '映射表在安装时生成，所以安装后再填。缺少对应关系时，这一步会明确失败并写明缺哪个值；映射表的「覆盖率」会列出最近运行里还没有对照的部门，一键补上', who: '安装的人', afterInstall: true },
 ]
 
 export const beisenBitableRosterSolution = buildBeisenBitableRosterSolution

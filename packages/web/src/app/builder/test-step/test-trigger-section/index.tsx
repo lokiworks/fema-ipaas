@@ -18,6 +18,7 @@ import { StepDataPanelHeader } from '../../step-data/step-data-panel-header';
 import { JsonTreeSkeleton } from '../json-tree-skeleton';
 import { useTriggerTestRunner } from '../test-runner-context';
 import { TestSampleDataViewer } from '../test-sample-data-viewer';
+import { connectorSampleData } from '../utils/connector-sample-data';
 
 import { EmptyPollNotice } from './empty-poll-notice';
 import { FirstTimeTestingSection } from './first-time-testing-section';
@@ -233,6 +234,10 @@ const TestTriggerSection = React.memo(
                 lastTestDate={lastTestDate}
                 isSaving={isSaving}
                 retestLabel={t('Retest Trigger')}
+                isSampleData={connectorSampleData.isConnectorSample({
+                  sampleData,
+                  connectorSample: mockData,
+                })}
                 connectorSchema={
                   connectorModel?.triggers[triggerName ?? '']?.outputSchema ??
                   null

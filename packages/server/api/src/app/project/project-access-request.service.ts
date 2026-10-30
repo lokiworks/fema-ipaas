@@ -5,6 +5,7 @@ import {
     Project,
     ProjectAccessRequest,
     ProjectAccessRequestStatus,
+    ProjectAccessRequestToReview,
     ProjectAccessRequestWithUser,
     ProjectMember,
     ProjectType,
@@ -68,7 +69,7 @@ export const projectAccessRequestService = (log: FastifyBaseLogger) => ({
         return withUsers({ tenantId, requests })
     },
 
-    async listPendingForApprover({ tenantId, userId }: UserParams): Promise<PendingForApprover[]> {
+    async listPendingForApprover({ tenantId, userId }: UserParams): Promise<ProjectAccessRequestToReview[]> {
         const projects = await projectAccess(log).projectsWithPermission({ userId, tenantId, permission: Permission.WRITE_PROJECT_MEMBER })
         if (projects.length === 0) {
             return []
@@ -81,6 +82,28 @@ export const projectAccessRequestService = (log: FastifyBaseLogger) => ({
         const names = new Map(projects.map((project) => [project.id, project.displayName]))
         const enriched = await withUsers({ tenantId, requests })
         return enriched.map((request) => ({ ...request, projectDisplayName: names.get(request.projectId) ?? request.projectId }))
+    },
+
+    async withdraw({ tenantId, userId, requestId }: WithdrawParams): Promise<ProjectAccessRequest> {
+        const request = await projectAccessRequestRepo().findOneBy({ id: requestId, tenantId, userId })
+        if (isNil(request)) {
+            throw notFound(requestId)
+        }
+        if (request.status !== ProjectAccessRequestStatus.PENDING) {
+            throw validation({ message: 'This request has already been decided', messageKey: 'projectAccessAlreadyDecided' })
+        }
+        const withdrawn: ProjectAccessRequest = {
+            ...request,
+            status: ProjectAccessRequestStatus.WITHDRAWN,
+            decidedBy: userId,
+            decidedAt: dayjs().toISOString(),
+        }
+        await projectAccessRequestRepo().update({ id: request.id, tenantId, userId, status: ProjectAccessRequestStatus.PENDING }, {
+            status: withdrawn.status,
+            decidedBy: withdrawn.decidedBy,
+            decidedAt: withdrawn.decidedAt,
+        })
+        return withdrawn
     },
 
     async decide({ tenantId, requestId, actorId, approve, role }: DecideParams): Promise<DecideResult> {
@@ -200,6 +223,10 @@ type CreateResult = {
     created: boolean
 }
 
+type WithdrawParams = UserParams & {
+    requestId: string
+}
+
 type DecideParams = {
     tenantId: string
     requestId: string
@@ -228,6 +255,4 @@ type WithUsersParams = {
     requests: ProjectAccessRequest[]
 }
 
-export type PendingForApprover = ProjectAccessRequestWithUser & {
-    projectDisplayName: string
-}
+export type PendingForApprover = ProjectAccessRequestToReview

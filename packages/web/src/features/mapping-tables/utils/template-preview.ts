@@ -41,10 +41,33 @@ function readReference({
   });
 }
 
+function hasSampleFor({
+  template,
+  sampleData,
+}: {
+  template: unknown;
+  sampleData: Record<string, unknown>;
+}): boolean {
+  if (typeof template !== 'string') {
+    return true;
+  }
+  const references = [...template.matchAll(ANY_TEMPLATE)].map(
+    (match) => match[1],
+  );
+  return references.every((reference) => {
+    const [stepName] = reference
+      .trim()
+      .replace(/\['([^']+)'\]/g, '.$1')
+      .split('.');
+    return sampleData[stepName] !== undefined;
+  });
+}
+
 const OUTPUT_SEGMENT = 'output';
 const WHOLE_TEMPLATE = /^\{\{\s*([^{}]+?)\s*\}\}$/;
 const ANY_TEMPLATE = /\{\{\s*([^{}]+?)\s*\}\}/g;
 
 export const templatePreview = {
   resolveTemplate,
+  hasSampleFor,
 };

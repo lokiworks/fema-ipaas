@@ -27,6 +27,8 @@ icon: 🔔
 ## Gotchas
 
 - **全局搜索在服务端也按模块隐藏结果。** `globalSearchUtils.hiddenTypes` 按用户的有效模块决定：非平台管理员看不到连接器和 MCP 服务器，没有「MCP 服务」模块的看不到 MCP 服务，这些分组根本不查。问题结果带 `issueStatus`，非待处理的在结果里标状态。
+- **问题标题库里存英文，搜中文要靠服务端的对照表。** 问题标题按 `ISSUE_TITLE_CATEGORY_ENGLISH` 存成「Step failed: 节点名」，界面才翻译成「步骤失败：节点名」。`globalSearchUtils.issueTitlePatterns` 把「步骤失败」「步骤失败：校验」这类输入翻成 `Step failed%` 的 ILIKE 模式，连接认证失败和结果对不上按 `kind` 匹配。中文对照 `ISSUE_TITLE_CATEGORY_CHINESE` 有单测比对 web 的 zh 翻译，改翻译时单测会提醒同步。
+- **命令面板的页面名必须跟侧栏一致**：`static-pages.ts` 的 label 用侧栏同一个翻译词，旧叫法放 `keywords`（如「认证」「用户」「项目与上限」）让老用户还能搜到；有关键字时页面结果不截断，服务端分组被截断时提示语改成「显示前 N 个结果」，不再写「共 N 个」。
 - 容量告警（`CAPACITY_THRESHOLD`）站内通知发给项目所有者和租户管理员，**链接按收件人区分**：租户管理员去 `/tenant/limits/usage`，不是管理员的所有者去 `/projects/<id>/automations`（租户页对他们会被静默重定向回首页）。
 - 通知列表里的时间用 `formatUtils.formatDate`（本地化），`formatDateToAgo` 是写死英文的；正文里的角色名、连接器名在前端换成本地化名称，库里存的仍是枚举值和包名。
 - 通知永远排除触发它的人（`actorId`），审批人自己申请的发布不会通知自己。

@@ -202,12 +202,13 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
                 projectId: null,
             })
         }
+        const auditProjectId = auditProjectIdOf({ connection, requestProjectId: request.projectId })
         applicationEvents(request.log).sendUserEvent(request, {
             action: ApplicationEventName.CONNECTION_DELETED,
             data: {
                 connection,
             },
-        })
+        }, isNil(auditProjectId) ? undefined : { projectId: auditProjectId })
         await reply.status(StatusCodes.NO_CONTENT).send()
     })
     app.post('/oauth2/authorization-url', GetOAuth2AuthorizationUrlRequest, async (request) => {
@@ -223,6 +224,16 @@ export const connectionController: FastifyPluginCallbackZod = (app, _opts, done)
         })
     })
     done()
+}
+
+function auditProjectIdOf({ connection, requestProjectId }: { connection: { scope: ConnectionScope, projectIds: string[] }, requestProjectId: string | undefined }): string | null {
+    if (connection.scope !== ConnectionScope.PROJECT) {
+        return null
+    }
+    if (!isNil(requestProjectId) && connection.projectIds.includes(requestProjectId)) {
+        return requestProjectId
+    }
+    return connection.projectIds[0] ?? null
 }
 
 function principalOf(principal: { id: string, type: PrincipalType, tenant: { id: string } }): { id: string, type: PrincipalType, tenantId: string } {

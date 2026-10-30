@@ -73,6 +73,7 @@ function IssuesPage() {
   const narrowWindow = useIsNarrowDesktop();
   const compact =
     tableWidth > 0 ? tableWidth < COMPACT_TABLE_WIDTH : narrowWindow;
+  const tiny = tableWidth > 0 && tableWidth < TINY_TABLE_WIDTH;
 
   const view = readEnum({
     value: searchParams.get('view'),
@@ -166,7 +167,7 @@ function IssuesPage() {
       const all: ColumnDef<RowDataWithActions<IssueWithSeverity>, unknown>[] = [
         {
           accessorKey: 'title',
-          size: compact ? 320 : 380,
+          size: tiny ? 280 : compact ? 320 : 380,
           header: ({ column }) => (
             <DataTableColumnHeader
               column={column}
@@ -195,6 +196,19 @@ function IssuesPage() {
                       )}`
                     : ''}
                 </span>
+                {tiny && (
+                  <span
+                    className="flex flex-wrap items-center gap-1 pt-1"
+                    data-testid="issue-tiny-badges"
+                  >
+                    <IssueStatusBadge
+                      status={row.original.status}
+                      reopened={row.original.reopened}
+                      muted={isMuted(row.original.mutedUntil)}
+                    />
+                    <IssueSeverityBadge severity={row.original.severity} />
+                  </span>
+                )}
                 {compact && (
                   <span
                     className="text-xs text-muted-foreground truncate"
@@ -277,14 +291,17 @@ function IssuesPage() {
           ),
         },
       ];
-      return compact
-        ? all.filter(
-            (column) =>
-              !('accessorKey' in column) ||
-              !COMPACT_HIDDEN_COLUMNS.includes(String(column.accessorKey)),
-          )
-        : all;
-    }, [nameOf, compact]);
+      const hidden = tiny
+        ? [...COMPACT_HIDDEN_COLUMNS, ...TINY_HIDDEN_COLUMNS]
+        : compact
+        ? COMPACT_HIDDEN_COLUMNS
+        : [];
+      return all.filter(
+        (column) =>
+          !('accessorKey' in column) ||
+          !hidden.includes(String(column.accessorKey)),
+      );
+    }, [nameOf, compact, tiny]);
 
   const bulkActions: BulkAction<IssueWithSeverity>[] = [
     {
@@ -551,6 +568,8 @@ function isMuted(mutedUntil: string | null | undefined): boolean {
 const DEFAULT_LIMIT = 20;
 const COMPACT_TABLE_WIDTH = 980;
 const COMPACT_HIDDEN_COLUMNS = ['occurrences', 'lastSeenAt'];
+const TINY_TABLE_WIDTH = 640;
+const TINY_HIDDEN_COLUMNS = ['status', 'assigneeId', 'severity'];
 const MUTE_HOURS = [1, 4, 24] as const;
 const VIEW_ORDER = [
   IssueListView.UNRESOLVED,

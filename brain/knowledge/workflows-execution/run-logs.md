@@ -29,6 +29,8 @@ icon: 📜
 - 「共尝试 N 次」和「沿用原结果，耗时 0 ms」都没做：引擎不在步骤输出里记录重试次数，也不标记原地续跑时沿用的节点。
 - 日志内容里的去重键只能匹配「后来有重复事件被拦下」的首次运行（`deduped_event.firstExecutionId` + `keyPreview`），其他运行的去重键只在 Redis 里，查不到。
 - 终止运行沿用 `executionService.cancel`，只能终止排队中 / 等待中的生产运行；`includeChildRuns: false` 时不连带取消子流程。
+- **项目内的运行日志不能去掉「项目」条件。** 去掉（或通过筛选面板改成没有项目）会跳到全局 `/logs` 并带上其余条件，那里有项目列；旧地址 `?allProjects=true` 也会重定向过去。项目内的「清除条件」保留项目条件。
+- **列表「失败节点」列和详情抽屉同一口径。** 列表显示导致运行失败的节点名（运行状态属于失败类时取 `failedStep`，其余为「—」）；抽屉写「运行失败在「X」节点」，出错后按设置继续执行的节点另起一行计数；运行成功但有节点出错继续时写「运行没有失败；N 个节点出错后按设置继续执行」。判定在 `runLogErrorSummary`。
 
 ## Key files
 - `packages/server/api/src/app/run-logs/` — `runLogService`（列表、范围、详情、批量重跑、终止）、`runLogQuery`、`runLogAccess`

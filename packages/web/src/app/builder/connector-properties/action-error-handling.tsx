@@ -423,7 +423,7 @@ function RuleCard({
         ) : (
           <span className="text-xs text-muted-foreground">
             {t(
-              'For example HTTP_429, STEP_TIMEOUT, STEP_FAILED or CONNECTION_EXPIRED. A plain number such as 429 means the HTTP status.',
+              'For example HTTP_429, STEP_TIMEOUT, STEP_FAILED or CONNECTION_EXPIRED, or the code of the external system such as Feishu 41017. A three-digit number such as 429 means the HTTP status.',
             )}
           </span>
         )}

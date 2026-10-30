@@ -289,3 +289,29 @@ describe('debugTestedStepsUtils.merge', () => {
     expect(merged.script_1.signature).toBe('kept');
   });
 });
+
+describe('debugTestedStepsUtils.flattenRunSteps', () => {
+  it('lifts steps that ran inside loop iterations to the top level', () => {
+    const flattened = debugTestedStepsUtils.flattenRunSteps({
+      loop_1: {
+        type: WorkflowActionType.LOOP_ON_ITEMS,
+        status: StepOutputStatus.SUCCEEDED,
+        output: {
+          item: 'b',
+          index: 2,
+          iterations: [
+            { send_1: { status: StepOutputStatus.FAILED, output: null } },
+            {
+              send_1: { status: StepOutputStatus.SUCCEEDED, output: { ok: 2 } },
+            },
+          ],
+        },
+      },
+    });
+    expect(Object.keys(flattened).sort()).toEqual(['loop_1', 'send_1']);
+    expect(flattened['send_1']).toEqual({
+      status: StepOutputStatus.SUCCEEDED,
+      output: { ok: 2 },
+    });
+  });
+});

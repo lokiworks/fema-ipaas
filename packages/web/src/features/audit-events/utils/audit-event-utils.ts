@@ -440,6 +440,14 @@ function summarize({
           userNames,
         }),
       });
+    case ApplicationEventName.PROJECT_ACCESS_WITHDRAWN:
+      return t('auditProjectAccessWithdrawn', {
+        user: userLabel({
+          id: event.data.accessRequest.userId,
+          email: event.data.accessRequest.email,
+          userNames,
+        }),
+      });
     case ApplicationEventName.PROJECT_ACCESS_DECIDED:
       return t('auditProjectAccessDecided', {
         user: userLabel({
@@ -929,6 +937,8 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('auditActionProjectAccessRequested'),
   [ApplicationEventName.PROJECT_ACCESS_DECIDED]: () =>
     t('auditActionProjectAccessDecided'),
+  [ApplicationEventName.PROJECT_ACCESS_WITHDRAWN]: () =>
+    t('auditActionProjectAccessWithdrawn'),
   [ApplicationEventName.MAPPING_TABLE_CREATED]: () =>
     t('auditActionMappingTableCreated'),
   [ApplicationEventName.MAPPING_TABLE_UPDATED]: () =>

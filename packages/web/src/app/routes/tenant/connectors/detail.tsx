@@ -5,13 +5,14 @@ import {
   TriggerBase,
 } from '@fema-ipaas/connector-sdk';
 import { isNil } from '@fema-ipaas/core-utils';
-import { ConnectorSource } from '@fema-ipaas/shared';
+import { ConnectorSource, SolutionProvider } from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import {
   ChevronRightIcon,
   LayoutTemplateIcon,
   LinkIcon,
+  PackageIcon,
   PackageXIcon,
   ServerIcon,
 } from 'lucide-react';
@@ -38,6 +39,7 @@ import { connectorUsageHooks } from '@/features/connector-usage';
 import { ConnectorIcon, connectorsHooks } from '@/features/connectors';
 import { connectorCategoryLabels } from '@/features/connectors/utils/connector-category-labels';
 import { connectorMarketUtils } from '@/features/connectors/utils/connector-market-utils';
+import { solutionsApi } from '@/features/solutions';
 import { templatesApi } from '@/features/templates';
 import { authenticationSession } from '@/lib/authentication-session';
 import { cn } from '@/lib/utils';
@@ -70,6 +72,30 @@ export default function ConnectorDetailPage() {
     enabled: connectorName.length > 0,
   });
   const relatedTemplates = relatedTemplatesPage?.data ?? [];
+  const { data: solutions } = useQuery({
+    queryKey: ['connector-related-solutions'],
+    queryFn: () => solutionsApi.list(),
+    staleTime: 60 * 1000,
+  });
+  const relatedSolutions = (solutions ?? []).filter((solution) =>
+    solution.connectorNames.includes(connectorName),
+  );
+  const relatedItems: RelatedItem[] = [
+    ...relatedSolutions.map((solution) => ({
+      id: `solution-${solution.id}`,
+      kind: 'solution' as const,
+      name: solution.name,
+      official: solution.provider === SolutionProvider.OFFICIAL,
+      href: `/solutions/${solution.id}`,
+    })),
+    ...relatedTemplates.map((template) => ({
+      id: `template-${template.id}`,
+      kind: 'template' as const,
+      name: template.name,
+      official: false,
+      href: '/templates',
+    })),
+  ];
 
   if (isLoading) {
     return (
@@ -320,26 +346,42 @@ export default function ConnectorDetailPage() {
               </div>
             )}
           </SideCard>
-          <SideCard title={t('Related templates')}>
-            {relatedTemplates.length === 0 ? (
+          <SideCard title={t('Related solutions and templates')}>
+            {relatedItems.length === 0 ? (
               <p className="text-xs text-muted-foreground">
-                {t('No templates use it yet.')}
+                {t('No solution or template uses it yet.')}
               </p>
             ) : (
               <div className="flex flex-col gap-1">
-                {relatedTemplates.slice(0, 3).map((template) => (
+                {relatedItems.slice(0, RELATED_ITEMS_LIMIT).map((item) => (
                   <button
-                    key={template.id}
+                    key={item.id}
                     type="button"
                     className="flex items-center gap-2 rounded px-1 py-1 text-left text-sm hover:bg-muted"
-                    onClick={() => navigate('/templates')}
+                    onClick={() => navigate(item.href)}
                   >
-                    <LayoutTemplateIcon className="size-4 text-muted-foreground" />
-                    <span className="min-w-0 grow truncate">
-                      {template.name}
-                    </span>
+                    {item.kind === 'solution' ? (
+                      <PackageIcon className="size-4 shrink-0 text-muted-foreground" />
+                    ) : (
+                      <LayoutTemplateIcon className="size-4 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className="min-w-0 grow truncate">{item.name}</span>
+                    <Badge variant="outline" className="shrink-0">
+                      {item.kind === 'template'
+                        ? t('Template')
+                        : item.official
+                        ? t('Official solution')
+                        : t('Solution')}
+                    </Badge>
                   </button>
                 ))}
+                {relatedItems.length > RELATED_ITEMS_LIMIT && (
+                  <p className="px-1 text-xs text-muted-foreground">
+                    {t('and {count} more', {
+                      count: relatedItems.length - RELATED_ITEMS_LIMIT,
+                    })}
+                  </p>
+                )}
               </div>
             )}
           </SideCard>
@@ -655,3 +697,13 @@ function VersionTab({
     </div>
   );
 }
+
+const RELATED_ITEMS_LIMIT = 5;
+
+type RelatedItem = {
+  id: string;
+  kind: 'solution' | 'template';
+  name: string;
+  official: boolean;
+  href: string;
+};

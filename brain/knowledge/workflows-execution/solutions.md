@@ -27,6 +27,10 @@ icon: 📦
 - 只有创建人能「发布新版本」，且只有从项目生成的方案才有来源项目可重新打包。
 - 升级只替换草稿，线上版本要重新发布才生效。
 - **官方北森 → 飞书方案 1.1 做过三处可靠性修正（`official/beisen-feishu.ts`）。** 入职和调岗的触发器带 `concurrency.orderKeyPath = {{trigger.recordInfo.jobNumber}}`，同一员工的变动按工号排队逐条处理（原来没有保序键，同一员工的几条变动并发跑，最后写进飞书的不一定是最后一条；实测把保序键关掉后，10 个连续调岗两次的员工里有 2 个最终部门不是最后一条）；调岗去重键加上 `startDate`，A 到 B 再调回 A 不再被当成重复事件吞掉；HR 群和 IT 群的通知改成「先查 store 里的已通知记录、发完再记下」（`check_notified` / `mark_notified`，键 `onboard-notified:工号:startDate`），不再靠「这次新建了账号」判断，因为 worker 被强杀后整个运行从头重跑，账号已存在就被当成不用通知（实测 60 人里 3 人漏通知，运行却显示成功）。代价是重跑在发完消息、写记录之前被打断时会多发一条，宁可重复不要漏。
+- **方案间依赖用配置项的 `workflowFrom` 加 `SOLUTION` 检查表达，不要让安装人手填另一个方案的 externalId。** `workflowFrom: { solutionId, workflowKey }` 的配置项在向导里是下拉，选项来自 `POST /:id/preview` 的 `configChoices`（同一项目里该方案安装记录的 `workflowKeys` 定位工作流、取 `externalId`），安装时服务端再校验一次；没装依赖方案时给「先安装」入口并允许留空（`required: false`，提示里写清留空的影响）。`SolutionCheckKind.SOLUTION` 检查按 `solutionId` 查同项目有没有安装记录，非阻塞。企业微信、钉钉人员方案由飞书版改写而来，`solutionId` 要改成各自的组织方案。
+- **要用到安装时才生成的资源的检查（比如「映射表里已填好对照」）标 `afterInstall: true`。** 安装检查、阻塞判断和 `skippedChecks` 都跳过它们；详情页单列「安装后要做」，安装完成页再列一次。放在安装前它永远过不了，只能被勾「已知晓」。
+- **对象、数组类的入参填表达式时，必须在 `propertySettings` 里标 `DYNAMIC`。** 官方方案用 `connectorStep({ dynamic: ['fields'] })`；漏标时编辑器按 MANUAL 把字符串当对象逐字符拆开。`official-solution-install-contract.test.ts` 按动作名列出这类入参并逐个方案检查。
+- 文本型配置项默认必填（`required !== false`），向导和详情页用 `solutionsUtils.isConfigRequired` 显示星号，和 `solutionUtils.resolveConfig` 同口径。
 
 ## Key files
 - `packages/core/shared/src/lib/automation/solution/` — 类型与 `solutionUtils`

@@ -17,10 +17,11 @@ function listNodes({
   outputs: Record<string, StepOutput | undefined>;
   displayNumbers: Record<string, string>;
 }): DebugNodeRow[] {
-  return workflowStructureUtil.getAllSteps(trigger).map((step) => {
+  return workflowStructureUtil.getAllSteps(trigger).map((step, index) => {
     const output = outputs[step.name];
     return {
       stepName: step.name,
+      ordinal: index + 1,
       displayName: step.displayName,
       displayNumber: displayNumbers[step.name] ?? '',
       status: isNil(output) ? DebugNodeStatus.NOT_RUN : statusOf(output.status),
@@ -189,6 +190,7 @@ const HINT_RULES: { hint: DebugHint; patterns: RegExp[] }[] = [
 
 export type DebugNodeRow = {
   stepName: string;
+  ordinal: number;
   displayName: string;
   displayNumber: string;
   status: DebugNodeStatus;

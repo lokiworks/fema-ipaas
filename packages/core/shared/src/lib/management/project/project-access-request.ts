@@ -6,6 +6,7 @@ export enum ProjectAccessRequestStatus {
     PENDING = 'PENDING',
     APPROVED = 'APPROVED',
     REJECTED = 'REJECTED',
+    WITHDRAWN = 'WITHDRAWN',
 }
 
 export const PROJECT_ACCESS_REASON_MAX_LENGTH = 200
@@ -30,6 +31,11 @@ export const ProjectAccessRequestWithUser = ProjectAccessRequest.extend({
     userLastName: Nullable(z.string()),
 })
 export type ProjectAccessRequestWithUser = z.infer<typeof ProjectAccessRequestWithUser>
+
+export const ProjectAccessRequestToReview = ProjectAccessRequestWithUser.extend({
+    projectDisplayName: z.string(),
+})
+export type ProjectAccessRequestToReview = z.infer<typeof ProjectAccessRequestToReview>
 
 export const CreateProjectAccessRequestBody = z.object({
     projectId: z.string(),

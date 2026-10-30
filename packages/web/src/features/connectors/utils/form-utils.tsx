@@ -121,6 +121,28 @@ function parseDynamicValue({
   }
 }
 
+function isExpressionValue(value: unknown): value is string {
+  return typeof value === 'string' && EXPRESSION_PATTERN.test(value);
+}
+
+function requiresDynamicInput({
+  property,
+  value,
+}: {
+  property: ConnectorProperty;
+  value: unknown;
+}): boolean {
+  if (typeof value !== 'string' || value.length === 0) {
+    return false;
+  }
+  if (STRUCTURED_PROPERTY_TYPES.includes(property.type)) {
+    return true;
+  }
+  return (
+    CHOICE_PROPERTY_TYPES.includes(property.type) && isExpressionValue(value)
+  );
+}
+
 function getDefaultPropertyValue({
   property,
   dynamicInputModeToggled,
@@ -232,6 +254,23 @@ function getDefaultValueForProperties({
   }
   return defaultValues;
 }
+
+const EXPRESSION_PATTERN = /\{\{[\s\S]*?\}\}/;
+
+const STRUCTURED_PROPERTY_TYPES: PropertyType[] = [
+  PropertyType.OBJECT,
+  PropertyType.ARRAY,
+  PropertyType.DATE_RANGE,
+];
+
+const CHOICE_PROPERTY_TYPES: PropertyType[] = [
+  PropertyType.CHECKBOX,
+  PropertyType.DROPDOWN,
+  PropertyType.STATIC_DROPDOWN,
+  PropertyType.MULTI_SELECT_DROPDOWN,
+  PropertyType.STATIC_MULTI_SELECT_DROPDOWN,
+  PropertyType.COLOR,
+];
 
 const EXTERNAL_ID_SCHEMA = z
   .string()
@@ -667,6 +706,8 @@ export const formUtils = {
   buildConnectionSchema,
   getDefaultPropertyValue,
   parseDynamicValue,
+  isExpressionValue,
+  requiresDynamicInput,
 };
 
 export type BuildConnectionSchemaOptions = {

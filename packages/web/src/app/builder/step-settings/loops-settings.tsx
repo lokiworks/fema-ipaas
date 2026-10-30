@@ -5,8 +5,11 @@ import { useFormContext } from 'react-hook-form';
 
 import { Markdown } from '@/components/custom/markdown';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { cn } from '@/lib/utils';
 
 import { TextInputWithMentions } from '../connector-properties/text-input-with-mentions';
+
+import { useShowFieldError } from './field-error-reveal';
 
 type LoopsSettingsProps = {
   readonly: boolean;
@@ -25,7 +28,7 @@ const LoopsSettings = React.memo(({ readonly }: LoopsSettingsProps) => {
       render={({ field }) => (
         <FormItem className="flex flex-col gap-2">
           <Markdown markdown={markdown} />
-          <FormLabel showRequiredIndicator>{t('Items')}</FormLabel>
+          <ItemsLabel />
           <TextInputWithMentions
             disabled={readonly}
             onChange={field.onChange}
@@ -37,6 +40,18 @@ const LoopsSettings = React.memo(({ readonly }: LoopsSettingsProps) => {
     />
   );
 });
+
+function ItemsLabel() {
+  const showError = useShowFieldError();
+  return (
+    <FormLabel
+      showRequiredIndicator
+      className={cn(!showError && 'data-[error=true]:text-foreground')}
+    >
+      {t('Items')}
+    </FormLabel>
+  );
+}
 
 LoopsSettings.displayName = 'LoopsSettings';
 export { LoopsSettings };

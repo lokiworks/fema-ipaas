@@ -14,15 +14,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useUnsavedChangesGuard } from '@/app/components/unsaved-changes-guard';
 import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/custom/empty';
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import { MasterDetailLayout } from '@/components/custom/master-detail-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -88,21 +81,18 @@ function MappingTablesPage() {
       description={t(
         'Mapping tables translate codes between systems, like department names to department IDs.',
       )}
-      actions={noTables ? undefined : newTableButton}
+      actions={newTableButton}
     >
       {noTables ? (
-        <Empty className="min-h-[360px]">
-          <EmptyHeader>
-            <EmptyMedia>
-              <Table2 className="size-10 text-muted-foreground" />
-            </EmptyMedia>
-            <EmptyTitle>{t('No mapping tables yet')}</EmptyTitle>
-            <EmptyDescription>
-              {t('Create a mapping table to get started.')}
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>{newTableButton}</EmptyContent>
-        </Empty>
+        <ListEmptyState
+          align="start"
+          icon={Table2}
+          title={t('No mapping tables yet')}
+          description={t(
+            'Create a mapping table with New mapping table at the top right, then look values up from a workflow step.',
+          )}
+          testId="mapping-tables-empty"
+        />
       ) : (
         <MasterDetailLayout
           showDetail={explicitId !== null}

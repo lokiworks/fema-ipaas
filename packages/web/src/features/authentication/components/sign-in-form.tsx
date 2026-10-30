@@ -234,7 +234,7 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
           {showContactAdmin && (
             <p className="text-xs text-muted-foreground">
               {t(
-                'Email is not set up on this platform, so a reset link cannot be sent. Ask an administrator to reset your password in member management.',
+                'Email is not set up on this platform, so a reset link cannot be sent. Ask an administrator to reset your password in Members.',
               )}
             </p>
           )}

@@ -139,7 +139,7 @@ function evaluate({ spec, tables }: EvaluateParams): MappingResult {
         ...rows.flatMap((row) => row.issues),
     ])
     return {
-        value: Object.fromEntries(rows.map((row) => [row.target, row.value])),
+        value: Object.fromEntries(rows.map((row) => [row.target, row.value ?? null])),
         rows: rows.map((row) => withRowError({ row, issues })),
         issues,
     }
@@ -236,7 +236,7 @@ function evaluateEach({ row, field, list, tables }: { row: MappingRow, field: Ma
             }
         })
         return {
-            value: Object.fromEntries(evaluated.map((entry) => [entry.target, entry.value])),
+            value: Object.fromEntries(evaluated.map((entry) => [entry.target, entry.value ?? null])),
             issues: evaluated.flatMap((entry) => entry.issues),
         }
     })

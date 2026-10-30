@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { triggerRunner } from '../core/connector/trigger-runner'
 import { resolveFailedStepStrategy } from '../helper/error-handling'
 import { executionProgressReporter } from '../helper/execution-progress-reporter'
+import { failureDetails } from '../helper/failure-details'
 import { loggingUtils } from '../helper/logging-utils'
 import { runLimits } from '../helper/run-limits'
 import { BaseExecutor } from './base-executor'
@@ -200,18 +201,16 @@ async function recordFailureDetails({ action, executionState }: {
     if (isNil(stepOutput)) {
         return executionState
     }
-    const { errorCode, message } = errorHandlingUtils.classifyErrorMessage({ message: stepOutput.errorMessage })
     return executionState.upsertStep(action.name, new GenericStepOutput({
         type: action.type,
         status: stepOutput.status,
         input: stepOutput.input,
         duration: stepOutput.duration,
         errorMessage: stepOutput.errorMessage,
-        output: {
-            errorCode,
-            errorMessage: message,
-            errorTime: dayjs().toISOString(),
-        },
+        output: failureDetails.build({
+            errorMessage: typeof stepOutput.errorMessage === 'string' ? stepOutput.errorMessage : undefined,
+            now: new Date(),
+        }),
     }))
 }
 

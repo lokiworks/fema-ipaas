@@ -286,12 +286,14 @@ export const formatConnectorError = (error: unknown, options?: FormatConnectorEr
     const errorName = readErrorName(error)
     const rawMessage = readErrorMessage(error)
     const message = pickPlainMessage({ httpDetails, rawMessage })
+    const readableMessage = readString(error, 'readableMessage')
 
     return withRaw({
         __apErrorVersion: FRIENDLY_CONNECTOR_ERROR_VERSION,
         message,
         errorName,
         ...(httpDetails ?? {}),
+        ...(isNil(readableMessage) || readableMessage.length === 0 ? {} : { readableMessage }),
     })
 }
 
@@ -324,6 +326,7 @@ export type FriendlyConnectorError = {
     requestUrl?: string
     requestMethod?: string
     apiMessage?: string
+    readableMessage?: string
     raw?: string
 }
 

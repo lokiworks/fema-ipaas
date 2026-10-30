@@ -1,6 +1,7 @@
 import { Nullable, OptionalArrayFromQuery } from '@fema-ipaas/core-utils'
 import { ExecutionStatus, FailedStep, ReliabilityEventKind, RunEnvironment, WorkflowRetryStrategy } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
+import { ReplayReason } from '../issue/issue-requests'
 
 export const RUN_LOG_TEXT_MAX_LENGTH = 255
 
@@ -209,6 +210,17 @@ export const RerunRunLogsRequestBody = z.object({
     strategy: z.enum(WorkflowRetryStrategy),
 })
 export type RerunRunLogsRequestBody = z.infer<typeof RerunRunLogsRequestBody>
+
+export const RerunCheckRunLogsRequestBody = RerunRunLogsRequestBody
+export type RerunCheckRunLogsRequestBody = z.infer<typeof RerunCheckRunLogsRequestBody>
+
+export const RerunCheckRunLogsResponse = z.object({
+    likelyToFailAgain: z.array(z.object({
+        executionId: z.string(),
+        reason: z.enum(ReplayReason),
+    })),
+})
+export type RerunCheckRunLogsResponse = z.infer<typeof RerunCheckRunLogsResponse>
 
 export const RerunRunLogResult = z.object({
     executionId: z.string(),

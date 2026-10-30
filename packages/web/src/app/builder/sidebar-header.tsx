@@ -22,9 +22,6 @@ const SidebarHeader = ({
       <div className="flex px-3 py-2 w-full gap-2 text-base items-center min-h-[44px]">
         {leadingIcon && <div className="shrink-0">{leadingIcon}</div>}
         <div className="flex min-w-0 grow items-center gap-2">{children}</div>
-        {actions && (
-          <div className="flex shrink-0 items-center gap-1">{actions}</div>
-        )}
         <Button
           variant="ghost"
           size={'sm'}
@@ -38,8 +35,13 @@ const SidebarHeader = ({
           <X size={16} />
         </Button>
       </div>
-      {subheader && (
-        <div className="flex items-center px-3 pb-1">{subheader}</div>
+      {(subheader || actions) && (
+        <div className="flex min-h-7 items-center gap-2 px-3 pb-1">
+          <div className="flex min-w-0 grow items-center">{subheader}</div>
+          {actions && (
+            <div className="flex shrink-0 items-center gap-1">{actions}</div>
+          )}
+        </div>
       )}
     </div>
   );

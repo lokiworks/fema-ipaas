@@ -23,7 +23,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { LikelyToFailBlock } from '@/features/issues/components/likely-to-fail-block';
 
+import { runLogsHooks } from '../hooks/run-logs-hooks';
 import { rerunPreviewUtils } from '../utils/rerun-preview-utils';
 import { runLogUiUtils } from '../utils/run-log-ui-utils';
 
@@ -87,6 +89,21 @@ function RerunChoice({
       ? row.fromFailedStepBlockReason ?? null
       : row.rerunBlockReason ?? null;
   const eligible = rows.filter((row) => reasonOf(row) === null);
+  const { data: check, isLoading: checking } = runLogsHooks.useRerunCheck({
+    executionIds: eligible.map((row) => row.id),
+    strategy,
+    enabled: true,
+  });
+  const likelyReasons = new Map(
+    (check?.likelyToFailAgain ?? []).map((item) => [
+      item.executionId,
+      item.reason,
+    ]),
+  );
+  const [includeLikely, setIncludeLikely] = useState(false);
+  const toRun = eligible.filter(
+    (row) => includeLikely || !likelyReasons.has(row.id),
+  );
   const blocked = rows.flatMap((row) => {
     const reason = reasonOf(row);
     return reason === null ? [] : [{ reason, blockedUntil: row.blockedUntil }];
@@ -101,7 +118,7 @@ function RerunChoice({
   const needsAcknowledgement =
     strategy === WorkflowRetryStrategy.ON_LATEST_VERSION;
   const groups = rerunPreviewUtils.groupRuns({
-    runs: eligible.map((row) => ({
+    runs: toRun.map((row) => ({
       workflowId: row.workflowId,
       workflowName: row.workflowDisplayName ?? null,
       workflowVersionId: row.workflowVersionId,
@@ -181,8 +198,13 @@ function RerunChoice({
           ))}
         </div>
       )}
+      <LikelyToFailBlock
+        reasons={[...likelyReasons.values()]}
+        included={includeLikely}
+        onIncludedChange={setIncludeLikely}
+      />
       <RerunPreview groups={groups} strategy={strategy} />
-      {needsAcknowledgement && eligible.length > 0 && (
+      {needsAcknowledgement && toRun.length > 0 && (
         <label className="flex items-start gap-2 text-sm">
           <Checkbox
             checked={acknowledged}
@@ -204,21 +226,22 @@ function RerunChoice({
                 type="button"
                 loading={pending}
                 disabled={
-                  eligible.length === 0 ||
+                  checking ||
+                  toRun.length === 0 ||
                   (needsAcknowledgement && !acknowledged)
                 }
                 onClick={() =>
                   onConfirm({
-                    executionIds: eligible.map((row) => row.id),
+                    executionIds: toRun.map((row) => row.id),
                     strategy,
                   })
                 }
               >
-                {t('Rerun {count}', { count: eligible.length })}
+                {t('Rerun {count}', { count: toRun.length })}
               </Button>
             </span>
           </TooltipTrigger>
-          {eligible.length === 0 && (
+          {toRun.length === 0 && (
             <TooltipContent>
               {t('None of the selected runs can be rerun this way')}
             </TooltipContent>

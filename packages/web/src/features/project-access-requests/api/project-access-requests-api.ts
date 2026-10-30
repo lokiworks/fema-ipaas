@@ -2,6 +2,7 @@ import {
   ApproveProjectAccessRequestBody,
   CreateProjectAccessRequestBody,
   ProjectAccessRequest,
+  ProjectAccessRequestToReview,
   ProjectAccessRequestWithUser,
 } from '@fema-ipaas/shared';
 
@@ -35,6 +36,16 @@ export const projectAccessRequestsApi = {
     return api.post<ProjectAccessRequest>(
       `/v1/project-access-requests/${id}/approve`,
       request,
+    );
+  },
+  withdraw(id: string): Promise<ProjectAccessRequest> {
+    return api.post<ProjectAccessRequest>(
+      `/v1/project-access-requests/${id}/withdraw`,
+    );
+  },
+  listToReview(): Promise<ProjectAccessRequestToReview[]> {
+    return api.get<ProjectAccessRequestToReview[]>(
+      '/v1/project-access-requests/to-review',
     );
   },
   reject(id: string): Promise<ProjectAccessRequest> {

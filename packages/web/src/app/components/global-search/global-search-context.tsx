@@ -118,9 +118,11 @@ function GlobalSearchDialogContent({
 
   const hasQuery = debouncedSearch.length > 0;
   const noResults = hasQuery && !isLoading && groups.length === 0;
-  const resultCount = groups
-    .flatMap((group) => group.items)
-    .filter((item) => item.type !== 'view-all').length;
+  const resultItems = groups.flatMap((group) => group.items);
+  const resultCount = resultItems.filter(
+    (item) => item.type !== 'view-all',
+  ).length;
+  const resultsTruncated = resultItems.some((item) => item.type === 'view-all');
 
   const firstItemId =
     groups.find((g) => !g.isLoading && g.items.length > 0)?.items[0]?.id ?? '';
@@ -167,7 +169,12 @@ function GlobalSearchDialogContent({
 
       {hasQuery && !isLoading && resultCount > 0 && (
         <div className="px-4 pb-2 text-xs text-muted-foreground">
-          {t('{count} search results in total', { count: resultCount })}
+          {resultsTruncated
+            ? t(
+                'Showing the first {count} results. Use View all at the end of a group to see the rest.',
+                { count: resultCount },
+              )
+            : t('{count} search results in total', { count: resultCount })}
         </div>
       )}
 

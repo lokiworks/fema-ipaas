@@ -167,7 +167,11 @@ async function searchIssues(ctx: SearchContext): Promise<GlobalSearchItem[]> {
     const issues = await issueRepo()
         .createQueryBuilder('issue')
         .where('issue."projectId" IN (:...projectIds)', { projectIds: ctx.projectIds })
-        .andWhere('(issue.title ILIKE :pattern OR issue."stepDisplayName" ILIKE :pattern)', { pattern: ctx.pattern })
+        .andWhere('(issue.title ILIKE :pattern OR issue."stepDisplayName" ILIKE :pattern OR issue.title ILIKE ANY(CAST(:titlePatterns AS text[])) OR issue.kind = ANY(CAST(:kinds AS text[])))', {
+            pattern: ctx.pattern,
+            titlePatterns: globalSearchUtils.issueTitlePatterns(ctx.query),
+            kinds: globalSearchUtils.issueKindsMatching(ctx.query),
+        })
         .orderBy('issue."lastSeenAt"', 'DESC')
         .limit(globalSearchUtils.fetchSize)
         .getMany()

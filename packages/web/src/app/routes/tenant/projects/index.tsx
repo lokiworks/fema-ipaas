@@ -375,7 +375,7 @@ export default function ProjectsPage() {
         emptyStateIcon={<Package className="size-14" />}
         onRowClick={async (project) => {
           await projectCollectionUtils.setCurrentProject(project.id);
-          navigate('/');
+          navigate(`/projects/${project.id}/home`);
         }}
         filters={[
           {

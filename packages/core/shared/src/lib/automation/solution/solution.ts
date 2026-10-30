@@ -22,6 +22,7 @@ export enum SolutionVisibility {
 export enum SolutionCheckKind {
     CONNECTION = 'CONNECTION',
     MANUAL = 'MANUAL',
+    SOLUTION = 'SOLUTION',
 }
 
 export enum SolutionCheckStatus {
@@ -61,6 +62,7 @@ export const SolutionConfigItem = z.object({
     defaultValue: z.string(),
     hint: z.string().optional(),
     required: z.boolean().optional(),
+    workflowFrom: z.object({ solutionId: z.string(), workflowKey: z.string() }).optional(),
     affectsWorkflows: z.array(z.string()),
     patches: z.array(SolutionPatch),
 })
@@ -95,6 +97,8 @@ export const SolutionCheck = z.object({
     kind: z.enum(SolutionCheckKind),
     blocking: z.boolean(),
     connectorName: z.string().optional(),
+    solutionId: z.string().optional(),
+    afterInstall: z.boolean().optional(),
     detail: z.string().optional(),
     who: z.string().optional(),
     fixSteps: z.array(z.string()),
@@ -212,6 +216,7 @@ export const SolutionCheckResult = z.object({
     blocking: z.boolean(),
     status: z.enum(SolutionCheckStatus),
     message: Nullable(z.string()),
+    solutionId: z.string().optional(),
     detail: Nullable(z.string()),
     who: Nullable(z.string()),
     fixSteps: z.array(z.string()),
@@ -224,6 +229,7 @@ export type SolutionCheckResults = z.infer<typeof SolutionCheckResults>
 export const SolutionInstallPreview = z.object({
     workflows: z.array(z.object({ key: z.string(), name: z.string() })),
     mappingTables: z.array(z.object({ key: z.string(), name: z.string(), reusedTableId: Nullable(z.string()) })),
+    configChoices: z.array(z.object({ key: z.string(), options: z.array(z.object({ value: z.string(), label: z.string() })) })),
     workflowLimit: Nullable(z.number()),
     currentWorkflowCount: z.number(),
     capacityError: Nullable(z.string()),

@@ -25,8 +25,11 @@ const JOINED_VALUES_MAX_LENGTH = 32;
 
 const FAILURE_FIELDS: { key: string; label: string; format?: FieldFormat }[] = [
   { key: 'errorCode', label: 'Failure error code' },
+  { key: 'errorCategory', label: 'Failure category' },
   { key: 'errorMessage', label: 'Failure error message' },
-  { key: 'errorTime', label: 'Failure time', format: 'datetime' },
+  { key: 'rawMessage', label: 'Failure raw message' },
+  { key: 'errorTime', label: 'Failure time' },
+  { key: 'errorTimeIso', label: 'Failure time (ISO)', format: 'datetime' },
 ];
 
 function buildTestStepNode(

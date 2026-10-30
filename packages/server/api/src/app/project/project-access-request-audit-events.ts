@@ -9,6 +9,10 @@ function decided({ request, email }: EventParams): ProjectAccessAuditEvent {
     return { action: ApplicationEventName.PROJECT_ACCESS_DECIDED, data: { accessRequest: describe({ request, email }) } }
 }
 
+function withdrawn({ request, email }: EventParams): ProjectAccessAuditEvent {
+    return { action: ApplicationEventName.PROJECT_ACCESS_WITHDRAWN, data: { accessRequest: describe({ request, email }) } }
+}
+
 function describe({ request, email }: EventParams): ProjectAccessRequestEvent['data']['accessRequest'] {
     return {
         id: request.id,
@@ -19,7 +23,7 @@ function describe({ request, email }: EventParams): ProjectAccessRequestEvent['d
     }
 }
 
-export const projectAccessRequestAuditEvents = { requested, decided }
+export const projectAccessRequestAuditEvents = { requested, decided, withdrawn }
 
 type EventParams = {
     request: ProjectAccessRequest

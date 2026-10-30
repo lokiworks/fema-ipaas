@@ -9,7 +9,8 @@ import { blockedUntilMarker, fixOwnerMarker, tryCatch, type ConnectionValueForAu
 
 import type { feishuAuth } from '../auth';
 import { FEISHU_DOMAIN } from '../constants';
-import { feishuErrorTable } from './error-table';
+import { feishuReadableError } from './error-readable';
+import { feishuErrorTable, type ErrorRule } from './error-table';
 
 export const feishuCommon = {
   obtainTenantAccessToken,
@@ -128,8 +129,13 @@ function isAborted(error: Error): boolean {
 function timeoutError({ method, path }: { method: HttpMethod; path: string }): Error {
   const seconds = REQUEST_TIMEOUT_MS / MS_PER_SECOND;
   return method === HttpMethod.GET
-    ? new Error(`Feishu did not answer ${path} within ${seconds} seconds`)
-    : new Error(`Feishu did not answer ${method} ${path} within ${seconds} seconds, the change may or may not have been applied, read the account back before writing again`);
+    ? Object.assign(new Error(`Feishu did not answer ${path} within ${seconds} seconds`), {
+        readableMessage: `飞书在 ${seconds} 秒内没有响应，请稍后重试`,
+      })
+    : Object.assign(
+        new Error(`Feishu did not answer ${method} ${path} within ${seconds} seconds, the change may or may not have been applied, read the account back before writing again`),
+        { readableMessage: `飞书在 ${seconds} 秒内没有响应，这次修改可能已生效也可能没有，请先查询确认再重新写入` },
+      );
 }
 
 function baseUrlFor(domain: string | undefined): string {
@@ -159,6 +165,11 @@ function rateLimitResetSeconds(headers: Record<string, string | string[] | undef
 
 function feishuError(code: number, message: string, resetSeconds?: number): Error {
   const rule = feishuErrorTable.ruleFor({ code });
+  const readableMessage = feishuReadableError.describe({ code, hint: rule?.hint, message });
+  return Object.assign(rawFeishuError({ code, message, resetSeconds, rule }), { readableMessage });
+}
+
+function rawFeishuError({ code, message, resetSeconds, rule }: RawFeishuErrorParams): Error {
   const described = describeError(code, message);
   const statusMessage = rule?.status ? `HTTP ${rule.status}: ${described}` : described;
   const plain = rule?.owner ? fixOwnerMarker.attach({ message: statusMessage, owner: rule.owner }) : statusMessage;
@@ -233,6 +244,13 @@ type TenantAccessTokenResponse = {
   msg: string;
   tenant_access_token: string;
   expire: number;
+};
+
+type RawFeishuErrorParams = {
+  code: number;
+  message: string;
+  resetSeconds: number | undefined;
+  rule: ErrorRule | undefined;
 };
 
 type FeishuEnvelope<T> = { code: number; msg: string; data: T };

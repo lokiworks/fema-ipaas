@@ -1,6 +1,6 @@
 {
   "name": "@fema-ipaas/shared",
-  "version": "0.167.2",
+  "version": "0.167.4",
   "type": "commonjs",
   "sideEffects": false,
   "main": "./dist/src/index.js",

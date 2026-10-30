@@ -13,7 +13,6 @@ import {
   Folder,
   Globe,
   Puzzle,
-  Shield,
   Unplug,
   User,
 } from 'lucide-react';
@@ -88,7 +87,7 @@ export default function TenantConnectionsPage() {
     },
     {
       type: 'select',
-      title: t('Project'),
+      title: t('Available projects'),
       accessorKey: 'projectIds',
       icon: Folder,
       options: (projects ?? []).map((project) => ({
@@ -167,23 +166,19 @@ export default function TenantConnectionsPage() {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('Project')}
+          title={t('Available projects')}
           icon={Folder}
         />
       ),
-      cell: ({ row }) => <ProjectsCell projects={row.original.projects} />,
-    },
-    {
-      accessorKey: 'scope',
-      size: 120,
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('Scope')}
-          icon={Shield}
-        />
-      ),
-      cell: ({ row }) => <ScopeBadge scope={row.original.scope} />,
+      cell: ({ row }) =>
+        row.original.scope === ConnectionScope.TENANT ? (
+          <Badge variant="info" className="gap-1">
+            <Globe className="size-3" />
+            {t('All projects')}
+          </Badge>
+        ) : (
+          <ProjectsCell projects={row.original.projects} />
+        ),
     },
     {
       accessorKey: 'owner',
@@ -268,25 +263,17 @@ function compactColumns({
     }));
 }
 
-const ScopeBadge = ({ scope }: { scope: ConnectionScope }) => {
-  if (scope === ConnectionScope.TENANT) {
-    return (
-      <Badge variant="accent">
-        <Globe />
-        {t('Global')}
-      </Badge>
-    );
-  }
-  return <Badge variant="outline">{t('Project')}</Badge>;
-};
-
 const ProjectsCell = ({
   projects,
 }: {
   projects: TenantConnectionsListItem['projects'];
 }) => {
   if (projects.length === 0) {
-    return <span className="text-muted-foreground">{t('N/A')}</span>;
+    return (
+      <span className="text-muted-foreground">
+        {t('No available projects')}
+      </span>
+    );
   }
   if (projects.length === 1) {
     const project = projects[0];
@@ -328,6 +315,5 @@ const COMPACT_COLUMN_SIZES: Record<string, number> = {
   displayName: 190,
   status: 110,
   projects: 150,
-  scope: 90,
   owner: 130,
 };

@@ -88,6 +88,7 @@ describe('debugRecordsUtils', () => {
       ['step_2', DebugNodeStatus.NOT_RUN],
     ]);
     expect(debugRecordsUtils.firstFailed(rows)?.stepName).toBe('step_1');
+    expect(rows.map((row) => row.ordinal)).toEqual([1, 2, 3]);
   });
 
   it('highlights the step selected on the canvas, falling back to the failed one', () => {

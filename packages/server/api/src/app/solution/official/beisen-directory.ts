@@ -1,16 +1,18 @@
-import { isObject, SolutionCheckKind, SolutionConfigType, SolutionPackage, WorkflowActionType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
+import { isNil } from '@fema-ipaas/core-utils'
+import { isObject, SolutionCheck, SolutionCheckKind, SolutionConfigType, SolutionPackage, WorkflowActionType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import type { OfficialSolution } from '../official-solutions'
 import { solutionPackageUtils } from '../solution-package-utils'
-import { beisenFeishuSolution } from './beisen-feishu'
+import { beisenFeishuOrgDependency, beisenFeishuSolution } from './beisen-feishu'
 import { beisenFeishuOrgSolution } from './beisen-feishu-org'
 
 function people({ target }: { target: Target }): OfficialSolution {
     const original = beisenFeishuSolution()
     const pkg = adapt({ pkg: original.package, target, organization: false })
     const pendingPatches = pkg.workflows.flatMap((workflow) => workflowStructureUtil.getAllSteps(workflow.trigger).filter((step) => step.type === WorkflowActionType.CONNECTOR && step.settings.actionName === 'suspend_user').map((step) => ({ workflowKey: workflow.key, stepName: step.name, inputKey: 'pendingDepartmentId' })))
-    const config = target === 'dingtalk' ? [...pkg.config, { key: 'pendingDepartmentId', label: '待离职部门 ID', type: SolutionConfigType.TEXT, options: [], defaultValue: '', affectsWorkflows: ['leave', 'repair'], patches: pendingPatches }] : pkg.config
+    const linkedConfig = pkg.config.map((item) => isNil(item.workflowFrom) ? item : { ...item, workflowFrom: { ...item.workflowFrom, solutionId: `official-beisen-${target}-org` } })
+    const config = target === 'dingtalk' ? [...linkedConfig, { key: 'pendingDepartmentId', label: '待离职部门 ID', type: SolutionConfigType.TEXT, options: [], defaultValue: '', affectsWorkflows: ['leave', 'repair'], patches: pendingPatches }] : linkedConfig
     const rules = pkg.reconciliationRules.map((rule) => ({ ...rule, target: { ...rule.target, keyPath: 'employee_no', input: { rootDepartmentId: '1', ...(target === 'dingtalk' ? { pendingDepartmentId: 'config:pendingDepartmentId' } : {}) } }, expectations: rule.expectations.map((expectation) => target === 'dingtalk' && expectation.aspect === 'suspension' ? { ...expectation, expect: { kind: 'FLAG', targetPath: 'pending_resignation', value: true } } : expectation) }))
-    return { ...original, id: `official-beisen-${target}`, name: `北森 → ${labelOf(target)} 人员同步`, summary: target === 'dingtalk' ? '入职开通、调岗同步；离职移入待离职部门并通知管理员办理离职，账号仍然可用。' : '入职开通、调岗同步、离职停用企业微信成员，并通过自建应用通知 HR 与 IT。', version: '1.0', notes: target === 'dingtalk' ? '钉钉没有暂停账号接口。离职只移动部门，账号保持可用，并标记为「待管理员办理离职」；管理员必须在钉钉后台完成离职。管理员工作通知单独发送，先查后记；发送结果不确定时由问题中心要求人工确认。' : '通讯录写入使用 Contact Secret，成员读取和应用消息使用 App Secret。userid 使用北森工号，权限范围须覆盖同步树。', package: SolutionPackage.parse({ ...pkg, config, reconciliationRules: rules }) }
+    return { ...original, id: `official-beisen-${target}`, name: `北森 → ${labelOf(target)} 人员同步`, summary: target === 'dingtalk' ? '入职开通、调岗同步；离职移入待离职部门并通知管理员办理离职，账号仍然可用。' : '入职开通、调岗同步、离职停用企业微信成员，并通过自建应用通知 HR 与 IT。', version: '1.0', notes: target === 'dingtalk' ? '钉钉没有暂停账号接口。离职只移动部门，账号保持可用，并标记为「待管理员办理离职」；管理员必须在钉钉后台完成离职。管理员工作通知单独发送，先查后记；发送结果不确定时由「问题」页要求人工确认。' : '通讯录写入使用 Contact Secret，成员读取和应用消息使用 App Secret。userid 使用北森工号，权限范围须覆盖同步树。', package: SolutionPackage.parse({ ...pkg, config, reconciliationRules: rules, checks: withOrgDependency({ checks: pkg.checks, target }) }) }
 }
 
 function organization({ target }: { target: Target }): OfficialSolution {
@@ -51,6 +53,12 @@ function rewrite({ value, target }: { value: unknown, target: Target }): unknown
     if (Array.isArray(value)) return value.map((item: unknown) => rewrite({ value: item, target }))
     if (isObject(value)) return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, rewrite({ value: item, target })]))
     return value
+}
+
+function withOrgDependency({ checks, target }: { checks: SolutionCheck[], target: Target }): SolutionCheck[] {
+    const connectionChecks = checks.filter((check) => check.kind === SolutionCheckKind.CONNECTION)
+    const otherChecks = checks.filter((check) => check.kind !== SolutionCheckKind.CONNECTION)
+    return [...connectionChecks, beisenFeishuOrgDependency.orgSolutionCheck({ solutionId: `official-beisen-${target}-org`, solutionName: `北森 → ${labelOf(target)} 组织同步` }), ...otherChecks]
 }
 
 function labelOf(target: Target): string {

@@ -319,7 +319,13 @@ function SchemaFieldRow({ field, json, depth }: SchemaFieldRowProps) {
             </TooltipProvider>
           )}
         </div>
-        <div className="flex-1 text-sm min-w-0">
+        <div
+          className={cn(
+            'flex-1 text-sm min-w-0',
+            isExpandable && 'cursor-pointer',
+          )}
+          onClick={isExpandable ? () => setExpanded(!expanded) : undefined}
+        >
           {isDescribedList || isMatrix ? (
             <span className="text-muted-foreground">
               {t('itemCount', {

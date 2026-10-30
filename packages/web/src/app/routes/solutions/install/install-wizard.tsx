@@ -1,6 +1,8 @@
 import {
+  isNil,
   SolutionDetail,
   SolutionInstallResult,
+  SolutionPackage,
   solutionUtils,
 } from '@fema-ipaas/shared';
 import { useState } from 'react';
@@ -24,7 +26,7 @@ function InstallWizard({ solution }: InstallWizardProps) {
   const [result, setResult] = useState<SolutionInstallResult | null>(null);
 
   if (result) {
-    return <DoneStep result={result} />;
+    return <DoneStep result={result} pkg={pkg} />;
   }
 
   const goTo = (next: WizardStep) => setStep(next);
@@ -42,7 +44,13 @@ function InstallWizard({ solution }: InstallWizardProps) {
             setDraft(
               projectId === draft.projectId
                 ? draft
-                : { ...draft, projectId, connections: {}, acknowledged: [] },
+                : {
+                    ...draft,
+                    projectId,
+                    connections: {},
+                    acknowledged: [],
+                    config: withoutLinkedValues({ pkg, config: draft.config }),
+                  },
             );
             goTo('connections');
           }}
@@ -62,6 +70,8 @@ function InstallWizard({ solution }: InstallWizardProps) {
       )}
       {step === 'config' && (
         <ConfigStep
+          solutionId={solution.id}
+          projectId={draft.projectId}
           pkg={pkg}
           config={draft.config}
           onBack={() => goTo('connections')}
@@ -93,6 +103,23 @@ function InstallWizard({ solution }: InstallWizardProps) {
         />
       )}
     </div>
+  );
+}
+
+function withoutLinkedValues({
+  pkg,
+  config,
+}: {
+  pkg: SolutionPackage;
+  config: Record<string, string>;
+}): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(config).map(([key, value]) => [
+      key,
+      pkg.config.some((item) => item.key === key && !isNil(item.workflowFrom))
+        ? ''
+        : value,
+    ]),
   );
 }
 

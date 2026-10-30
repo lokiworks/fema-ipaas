@@ -116,7 +116,7 @@ export default function SettingsHealthPage() {
         </TabsContent>
 
         <TabsContent value="runs">
-          <RunsTab report={report} isLoading={isReportLoading} />
+          <RunsTab report={report} isLoading={isReportLoading} range={range} />
         </TabsContent>
 
         <TabsContent value="queue">

@@ -3,6 +3,8 @@ import { t } from 'i18next';
 import { Pencil } from 'lucide-react';
 import React, { useCallback, useRef } from 'react';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
+import { stepLocationUtils } from '@/app/builder/workflow-canvas/utils/step-location';
 import EditableText from '@/components/custom/editable-text';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,8 +44,15 @@ const EditableStepName: React.FC<EditableStepNameProps> = ({
   tooltipTitle,
   tooltipDescription,
   connectorVersion,
-  displayNumber,
 }) => {
+  const location = useBuilderStateContext((state) =>
+    isNil(state.selectedStep)
+      ? ''
+      : stepLocationUtils.label({
+          trigger: state.workflowVersion.trigger,
+          stepName: state.selectedStep,
+        }),
+  );
   const inBranchView = !isNil(selectedBranchIndex);
   const showActionTooltip =
     !inBranchView &&
@@ -115,16 +124,22 @@ const EditableStepName: React.FC<EditableStepNameProps> = ({
                 )}
               >
                 <span className="flex min-w-0 items-center gap-1.5">
-                  <span className="truncate text-foreground">
+                  <span
+                    className="truncate text-foreground"
+                    title={displayName}
+                  >
                     {displayName}
                   </span>
                   {!readonly && (
                     <Pencil className="size-3.5 shrink-0 text-muted-foreground" />
                   )}
                 </span>
-                {displayNumber && (
-                  <span className="truncate font-mono text-[11px] font-normal text-muted-foreground">
-                    {displayNumber}
+                {location && (
+                  <span
+                    className="truncate text-[11px] font-normal text-muted-foreground"
+                    title={location}
+                  >
+                    {location}
                   </span>
                 )}
               </div>

@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 
 import { ScrollArea } from '../../../components/ui/scroll-area';
 import { BuilderState, useBuilderStateContext } from '../builder-hooks';
+import { builtinOutputSchemas } from '../run-details/builtin-output-schemas';
 import { workflowCanvasConsts } from '../workflow-canvas/utils/consts';
 
 import { DataSelectorNode } from './data-selector-node';
@@ -327,7 +328,7 @@ const DataSelector = ({
           };
         }
 
-        const schema = schemaMap[step.name];
+        const schema = schemaMap[step.name] ?? builtinSelectorSchema(step);
 
         if (Array.isArray(stepData) && stepData.length > 0) {
           const arrayKind = schemaTreeUtils.selectArrayTreeKind(schema);
@@ -356,9 +357,26 @@ const DataSelector = ({
                 });
           return dataSelectorUtils.applyContinueOnFailureView({
             step,
-            stepNode: arrayTree,
+            stepNode: markAsList({ node: arrayTree }),
             targetStepName: selectedStepName,
           });
+        }
+
+        if (schema && step.type === WorkflowActionType.LOOP_ON_ITEMS) {
+          const loopNode = dataSelectorUtils.stepNeedsTesting(step)
+            ? schemaTreeUtils.buildStructureFromSchema({
+                stepName: step.name,
+                displayName,
+                schema,
+                badge: t('Not tested · sample structure'),
+              })
+            : schemaTreeUtils.buildTreeFromSchema({
+                stepName: step.name,
+                displayName,
+                schema,
+                sampleData: stepData,
+              });
+          return { ...loopNode, isLoopStepNode: true };
         }
 
         if (schema && dataSelectorUtils.stepNeedsTesting(step)) {
@@ -417,9 +435,13 @@ const DataSelector = ({
   const visibleStepStructure = useMemo(
     () =>
       selectedStepIsLoop
-        ? listOnlyNodes({ nodes: stepStructure })
+        ? listOnlyNodes({
+            nodes: stepStructure.filter(
+              (_, index) => steps[index]?.type !== WorkflowActionType.ROUTER,
+            ),
+          })
         : stepStructure,
-    [selectedStepIsLoop, stepStructure],
+    [selectedStepIsLoop, stepStructure, steps],
   );
   const showNoListHint =
     selectedStepIsLoop &&
@@ -683,7 +705,10 @@ function buildLoopVariableNodes({
       data: {
         type: 'value' as const,
         value: key in sampleRecord ? Reflect.get(sampleRecord, key) : '',
-        displayName: `${loop?.displayName ?? loopName} · ${key}`,
+        displayName: `${loop?.displayName ?? loopName} · ${t(
+          LOOP_VARIABLE_LABELS[key],
+        )}`,
+        searchTerms: [key],
         propertyPath: pathHelpers.convertValuePathToPropertyPath(loopName, key),
         insertable: true,
         stepName: loopName,
@@ -722,6 +747,28 @@ function definedEntries(
   return Object.fromEntries(
     Object.entries(record).filter(([, value]) => value !== undefined),
   );
+}
+
+function builtinSelectorSchema(step: StepInfo): OutputSchema | null {
+  const schema = builtinOutputSchemas.forStep(step);
+  if (isNil(schema)) {
+    return null;
+  }
+  return {
+    ...schema,
+    fields: schema.fields.filter((field) => field.key !== 'iterations'),
+  };
+}
+
+function markAsList({
+  node,
+}: {
+  node: DataSelectorTreeNode;
+}): DataSelectorTreeNode {
+  if (node.data.type !== 'value') {
+    return node;
+  }
+  return { ...node, data: { ...node.data, listField: true } };
 }
 
 function listOnlyNodes({
@@ -816,6 +863,10 @@ function fitAroundNode({
 }
 
 const LOOP_VARIABLE_KEYS = ['item', 'index'];
+const LOOP_VARIABLE_LABELS: Record<string, string> = {
+  item: 'Loop current item',
+  index: 'Loop index',
+};
 
 const NARROW_CANVAS_PX = 760;
 const DOCKED_PX = 450;

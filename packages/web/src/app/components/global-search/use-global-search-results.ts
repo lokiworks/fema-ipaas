@@ -52,9 +52,9 @@ function pageMatchesQuery({
   query: string;
 }): boolean {
   const needle = query.toLowerCase();
-  return [t(page.label), page.label].some((label) =>
-    label.toLowerCase().includes(needle),
-  );
+  return [page.label, ...(page.keywords ?? [])]
+    .flatMap((label) => [t(label), label])
+    .some((label) => label.toLowerCase().includes(needle));
 }
 
 export function useGlobalSearchResults(query: string, open: boolean) {
@@ -129,7 +129,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
         (access?.modules ?? []).includes(p.module)) &&
       (!p.projectScoped || !!projectId) &&
       (!hasQuery || pageMatchesQuery({ page: p, query })),
-  ).slice(0, SEARCH_LIMIT);
+  ).slice(0, hasQuery ? undefined : SEARCH_LIMIT);
 
   const matchedProjects = allProjects
     .filter(

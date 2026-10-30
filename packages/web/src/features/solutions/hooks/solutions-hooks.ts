@@ -103,13 +103,16 @@ function usePublishedWorkflows(projectId: string) {
 function useInstallPreview({
   id,
   request,
+  enabled = true,
 }: {
   id: string;
   request: SolutionInstallInput;
+  enabled?: boolean;
 }) {
   return useQuery({
     queryKey: [SOLUTIONS_KEY, 'preview', id, request],
     queryFn: () => solutionsApi.preview({ id, request }),
+    enabled: enabled && request.projectId.length > 0,
     staleTime: 0,
     gcTime: 0,
     retry: false,

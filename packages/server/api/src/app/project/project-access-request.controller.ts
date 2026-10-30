@@ -6,6 +6,7 @@ import {
     NotificationType,
     PrincipalType,
     ProjectAccessRequest,
+    ProjectAccessRequestToReview,
     ProjectAccessRequestWithUser,
 } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -39,6 +40,21 @@ export const projectAccessRequestController: FastifyPluginAsyncZod = async (app)
 
     app.get('/me', MyPendingRequest, async (request): Promise<ProjectAccessRequest[]> => {
         return projectAccessRequestService(request.log).listMyPending({ tenantId: request.principal.tenant.id, userId: request.principal.id })
+    })
+
+    app.get('/to-review', ToReviewRequest, async (request): Promise<ProjectAccessRequestToReview[]> => {
+        return projectAccessRequestService(request.log).listPendingForApprover({ tenantId: request.principal.tenant.id, userId: request.principal.id })
+    })
+
+    app.post('/:id/withdraw', WithdrawRequest, async (request): Promise<ProjectAccessRequest> => {
+        const withdrawn = await projectAccessRequestService(request.log).withdraw({
+            tenantId: request.principal.tenant.id,
+            userId: request.principal.id,
+            requestId: request.params.id,
+        })
+        const requester = await userService(request.log).getMetaInformation({ id: request.principal.id })
+        applicationEvents(request.log).sendUserEvent(request, projectAccessRequestAuditEvents.withdrawn({ request: withdrawn, email: requester.email }), { projectId: withdrawn.projectId })
+        return withdrawn
     })
 
     app.get('/', ListPendingRequest, async (request): Promise<ProjectAccessRequestWithUser[]> => {
@@ -98,6 +114,16 @@ const CreateRequest = {
 const MyPendingRequest = {
     config: { security: securityAccess.publicTenant([PrincipalType.USER]) },
     schema: { tags: ['project-access-requests'], response: { [StatusCodes.OK]: z.array(ProjectAccessRequest) } },
+}
+
+const ToReviewRequest = {
+    config: { security: securityAccess.publicTenant([PrincipalType.USER]) },
+    schema: { tags: ['project-access-requests'], response: { [StatusCodes.OK]: z.array(ProjectAccessRequestToReview) } },
+}
+
+const WithdrawRequest = {
+    config: { security: securityAccess.publicTenant([PrincipalType.USER]) },
+    schema: { tags: ['project-access-requests'], params: IdParams, response: { [StatusCodes.OK]: ProjectAccessRequest } },
 }
 
 const ListPendingRequest = {

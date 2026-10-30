@@ -100,7 +100,7 @@ function WriteStepsText({
     strategy,
   });
   const names = (steps: typeof writeSteps) =>
-    steps.map((step) => step.displayName).join(', ');
+    steps.map((step) => step.displayName).join(t('listSeparator'));
   return (
     <>
       {executed.length > 0 && (

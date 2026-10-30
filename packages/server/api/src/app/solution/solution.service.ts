@@ -122,6 +122,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
         const current = await workflowRepo().countBy({ projectId: input.projectId })
         const limit = project.workflowsLimit ?? instanceLimits.projectWorkflows()
         const existingTables = await mappingTableRepo().find({ where: { projectId: input.projectId } })
+        const configChoices = await configChoicesOf({ pkg: entry.package, projectId: input.projectId, tenantId })
         return {
             workflows: entry.package.workflows.map((workflow) => ({ key: workflow.key, name: workflow.name })),
             mappingTables: entry.package.mappingTables.map((table) => ({
@@ -129,6 +130,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
                 name: table.name,
                 reusedTableId: reusableTable({ table, existing: existingTables })?.id ?? null,
             })),
+            configChoices,
             workflowLimit: limit,
             currentWorkflowCount: current,
             capacityError: solutionUtils.capacityError({ limit, current, needed: entry.package.workflows.length }),
@@ -138,7 +140,8 @@ export const solutionService = (log: FastifyBaseLogger) => ({
     async runChecks({ id, tenantId, userId, request }: RunChecksParams): Promise<SolutionCheckResults> {
         const entry = await findVisibleOrThrow({ id, tenantId, userId, log })
         await projectOrThrow({ projectId: request.projectId, tenantId })
-        const checks = isNil(request.checkKey) ? entry.package.checks : entry.package.checks.filter((check) => check.key === request.checkKey)
+        const beforeInstall = entry.package.checks.filter((check) => check.afterInstall !== true)
+        const checks = isNil(request.checkKey) ? beforeInstall : beforeInstall.filter((check) => check.key === request.checkKey)
         const results = await Promise.all(checks.map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
         return { results }
     },
@@ -148,6 +151,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
         const pkg = entry.package
         await projectOrThrow({ projectId: request.projectId, tenantId })
         const config = resolveConfigOrThrow({ pkg, provided: request.config })
+        await assertConfigChoices({ pkg, config, projectId: request.projectId, tenantId })
         await assertInstallable({ pkg, request, tenantId })
         const created = await createResources({ log, pkg, projectId: request.projectId, tenantId, userId, connections: request.connections, config })
         const skipped = await skippedChecks({ pkg, request, tenantId })
@@ -375,6 +379,10 @@ async function evaluateCheck({ check, projectId, tenantId, connections }: Evalua
     if (check.kind === SolutionCheckKind.MANUAL) {
         return { ...base, status: SolutionCheckStatus.NEEDS_CONFIRM, message: null }
     }
+    if (check.kind === SolutionCheckKind.SOLUTION) {
+        const installed = !isNil(check.solutionId) && await solutionInstallRepo().existsBy({ tenantId, projectId, solutionId: check.solutionId })
+        return { ...base, solutionId: check.solutionId, status: installed ? SolutionCheckStatus.PASS : SolutionCheckStatus.FAIL, message: installed ? null : 'solutionNotInstalled' }
+    }
     const externalId = isNil(check.connectorName) ? undefined : connections[check.connectorName]
     if (isNil(externalId)) {
         return { ...base, status: SolutionCheckStatus.FAIL, message: 'noConnectionSelected' }
@@ -403,7 +411,7 @@ async function assertInstallable({ pkg, request, tenantId }: { pkg: SolutionPack
     if (mappingProblems.length > 0) {
         throw validation(`The package has field mapping problems: ${mappingProblems.join('; ')}`)
     }
-    const results = await Promise.all(pkg.checks.map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
+    const results = await Promise.all(pkg.checks.filter((check) => check.afterInstall !== true).map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
     const blocking = results.filter((result) => result.blocking && result.status !== SolutionCheckStatus.PASS && !(result.status === SolutionCheckStatus.NEEDS_CONFIRM && request.acknowledgedChecks.includes(result.key)))
     if (blocking.length > 0) {
         throw validation(`These checks have to pass first: ${blocking.map((result) => result.label).join(', ')}`)
@@ -411,10 +419,43 @@ async function assertInstallable({ pkg, request, tenantId }: { pkg: SolutionPack
 }
 
 async function skippedChecks({ pkg, request, tenantId }: { pkg: SolutionPackage, request: InstallSolutionRequestBody, tenantId: TenantId }): Promise<string[]> {
-    const results = await Promise.all(pkg.checks.filter((check) => !check.blocking).map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
+    const results = await Promise.all(pkg.checks.filter((check) => !check.blocking && check.afterInstall !== true).map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
     return results
         .filter((result) => result.status !== SolutionCheckStatus.PASS)
         .map((result) => result.label)
+}
+
+async function configChoicesOf({ pkg, projectId, tenantId }: { pkg: SolutionPackage, projectId: ProjectId, tenantId: TenantId }): Promise<SolutionInstallPreview['configChoices']> {
+    const linked = pkg.config.flatMap((item) => isNil(item.workflowFrom) ? [] : [{ key: item.key, from: item.workflowFrom }])
+    if (linked.length === 0) {
+        return []
+    }
+    const installs = await solutionInstallRepo().find({ where: { tenantId, projectId, solutionId: In(unique(linked.map((item) => item.from.solutionId))) }, order: { created: 'DESC' } })
+    const candidates = installs.flatMap((row) => linked.flatMap((item) => {
+        const index = row.solutionId === item.from.solutionId ? (row.workflowKeys ?? []).indexOf(item.from.workflowKey) : -1
+        const workflowId = index >= 0 ? row.workflowIds[index] : undefined
+        return isNil(workflowId) ? [] : [{ key: item.key, workflowId, label: `${row.solutionName} v${row.version}` }]
+    }))
+    const workflows = candidates.length === 0 ? [] : await workflowRepo().find({ where: { projectId, id: In(candidates.map((candidate) => candidate.workflowId)) }, select: ['id', 'externalId'] })
+    const externalIdOf = new Map(workflows.map((workflow) => [workflow.id, workflow.externalId]))
+    return linked.map((item) => ({
+        key: item.key,
+        options: candidates.flatMap((candidate) => {
+            const externalId = externalIdOf.get(candidate.workflowId)
+            return candidate.key === item.key && !isNil(externalId) ? [{ value: externalId, label: candidate.label }] : []
+        }),
+    }))
+}
+
+async function assertConfigChoices({ pkg, config, projectId, tenantId }: { pkg: SolutionPackage, config: Record<string, string>, projectId: ProjectId, tenantId: TenantId }): Promise<void> {
+    const choices = await configChoicesOf({ pkg, projectId, tenantId })
+    const invalid = choices.filter((choice) => {
+        const value = config[choice.key] ?? ''
+        return value.length > 0 && !choice.options.some((option) => option.value === value)
+    })
+    if (invalid.length > 0) {
+        throw validation(`Invalid configuration: ${invalid.map((choice) => `${choice.key} (invalidOption)`).join(', ')}`)
+    }
 }
 
 function resolveConfigOrThrow({ pkg, provided }: { pkg: SolutionPackage, provided: Record<string, string> }): Record<string, string> {

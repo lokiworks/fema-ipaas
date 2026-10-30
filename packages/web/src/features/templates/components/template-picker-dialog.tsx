@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { OfficialSolutionsGrid, solutionsHooks } from '@/features/solutions';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { templatesHooks } from '../hooks/templates-hook';
@@ -76,6 +77,12 @@ function PickerBody({
     search,
     sort: TemplateCenterSort.HOT,
   });
+  const showSolutions =
+    tab === TemplateCenterTab.RECOMMENDED && search.trim() === '';
+  const { data: officialSolutions } = solutionsHooks.useOfficialSolutions({
+    enabled: showSolutions,
+  });
+  const solutionsShown = showSolutions ? officialSolutions ?? [] : [];
 
   if (!isNil(preview)) {
     return (
@@ -130,9 +137,36 @@ function PickerBody({
         </div>
       </div>
       <ScrollArea className="min-h-0 flex-1">
-        <div className="px-6 pb-6">
+        <div className="flex flex-col gap-4 px-6 pb-6">
+          {solutionsShown.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <h3 className="text-sm font-semibold">
+                  {t('Official solutions')}
+                </h3>
+                <span className="text-xs text-muted-foreground">
+                  {t(
+                    'A solution is a set of ready-made workflows. Install it into a project and the wizard walks you through connections and settings.',
+                  )}
+                </span>
+              </div>
+              <OfficialSolutionsGrid
+                solutions={solutionsShown}
+                className="lg:grid-cols-3 xl:grid-cols-3"
+              />
+            </section>
+          )}
+          {solutionsShown.length > 0 && (
+            <h3 className="text-sm font-semibold">{t('Workflow templates')}</h3>
+          )}
           {isLoading ? (
             <TemplateGridSkeleton className="lg:grid-cols-3 xl:grid-cols-3" />
+          ) : list.length === 0 && solutionsShown.length > 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t(
+                'No workflow templates yet. Open the "···" menu of a published workflow and choose "Generate template" to create one.',
+              )}
+            </p>
           ) : list.length === 0 ? (
             <TemplateCenterEmpty tab={tab} searching={search.trim() !== ''} />
           ) : (

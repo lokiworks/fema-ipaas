@@ -67,7 +67,7 @@ const ResetPasswordForm = () => {
           {!smtpConfigured ? (
             <span>
               {t(
-                'Email is not set up on this platform, so a reset link cannot be sent. Ask an administrator to reset your password in member management.',
+                'Email is not set up on this platform, so a reset link cannot be sent. Ask an administrator to reset your password in Members.',
               )}
             </span>
           ) : isSent ? (

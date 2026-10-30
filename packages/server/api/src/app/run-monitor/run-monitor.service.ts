@@ -1,6 +1,7 @@
 import { isNil, unique } from '@fema-ipaas/core-utils'
 import {
     ExecutionStatus,
+    FAILED_STATES,
     RateLimitUnit,
     ReliabilityEventKind,
     RUN_MONITOR_MAX_WORKFLOW_ROWS,
@@ -126,12 +127,14 @@ async function handledCounts(scope: MonitorScope): Promise<RunMonitorHandled> {
     const [duplicates, merged, platformEvents]: [{ projectId: string, count: string }[], FailureFunnelCounts, PlatformEventRow[]] = await Promise.all([
         databaseConnection().query(
             `SELECT d."projectId" AS "projectId", COUNT(*) AS count FROM deduped_event d
+            LEFT JOIN "execution" first_run ON first_run.id = d."firstExecutionId" AND first_run."projectId" = d."projectId"
             WHERE d."projectId" = ANY($1::varchar[])
                 AND (cardinality($2::varchar[]) = 0 OR d."workflowId" = ANY($2::varchar[]))
                 AND d.created >= $3 AND d.created <= $4
+                AND (first_run.status IS NULL OR NOT (first_run.status = ANY($5)))
             GROUP BY d."projectId"
             ORDER BY count DESC`,
-            [...scopeParams(scope), ...window],
+            [...scopeParams(scope), ...window, FAILED_STATES],
         ),
         failureFunnel.count({ projectIds: scope.projectIds, workflowIds: scope.workflowIds, from: scope.window.from, to: scope.window.to }),
         databaseConnection().query(

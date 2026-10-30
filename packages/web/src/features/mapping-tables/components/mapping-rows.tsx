@@ -217,7 +217,7 @@ export function MappingRowCard({
           ? field?.required
             ? t('Not mapped')
             : t('Not written')
-          : mappingSpecUtils.previewText(value)}
+          : mappingSpecUtils.rowPreviewText({ row, value, sampleData })}
       </span>
     </div>
   );

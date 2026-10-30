@@ -12,7 +12,6 @@ import React from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { ConnectorSelector } from '@/app/builder/connectors-selector';
-import { LoopIterationInput } from '@/app/builder/run-details/loop-iteration-input';
 import { RightSideBarType } from '@/app/builder/types';
 import { stepsHooks } from '@/features/connectors';
 import { cn } from '@/lib/utils';
@@ -22,6 +21,7 @@ import { workflowCanvasConsts } from '../../utils/consts';
 import { StepNode } from '../../utils/types';
 import { workflowCanvasUtils } from '../../utils/workflow-canvas-utils';
 
+import { LoopIterationSwitcher } from './loop-iteration-switcher';
 import { StepNodeChevron } from './step-node-chevron';
 import { StepNodeCollapseToggle } from './step-node-collapse-toggle';
 import { StepNodeDisplayName } from './step-node-display-name';
@@ -196,7 +196,7 @@ const StepCanvasNode = React.memo(
         {...stepNodeDivListeners}
       >
         {isTrigger && isHorizontal && <TriggerWidget isSelected={isSelected} />}
-        <LoopIterationInput stepName={step.name} />
+        <LoopIterationSwitcher stepName={step.name} />
         <StepNodeStatusInRun stepName={step.name} />
         <StepNodeSkippedStatus stepName={step.name} />
         <StepNodeStatusInDraft stepName={step.name} />

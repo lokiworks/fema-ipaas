@@ -1,5 +1,6 @@
 import {
   formErrors,
+  isNil,
   SolutionConfigItem,
   SolutionConfigType,
   SolutionPackage,
@@ -7,9 +8,13 @@ import {
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
+import { ExternalLink, RefreshCw } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormField,
@@ -27,12 +32,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { solutionsHooks, solutionsUtils } from '@/features/solutions';
 import { cn } from '@/lib/utils';
 
 import { WizardFooter } from './wizard-parts';
 
-function ConfigStep({ pkg, config, onBack, onNext }: ConfigStepProps) {
+function ConfigStep({
+  solutionId,
+  projectId,
+  pkg,
+  config,
+  onBack,
+  onNext,
+}: ConfigStepProps) {
   const items = pkg.config;
+  const linked = items.some((item) => !isNil(item.workflowFrom));
+  const preview = solutionsHooks.useInstallPreview({
+    id: solutionId,
+    request: { projectId, connections: {}, config: {} },
+    enabled: linked,
+  });
+  const choicesOf = (key: string) =>
+    preview.data?.configChoices.find((choice) => choice.key === key)?.options ??
+    [];
   const form = useForm<ConfigFormValues>({
     resolver: zodResolver(buildSchema(items)),
     mode: 'onChange',
@@ -59,12 +82,29 @@ function ConfigStep({ pkg, config, onBack, onNext }: ConfigStepProps) {
             name={`values.${index}`}
             render={({ field }) => (
               <FormItem className="flex flex-col gap-2">
-                <FormLabel>{item.label}</FormLabel>
-                <ConfigInput
-                  item={item}
-                  value={field.value}
-                  onChange={field.onChange}
-                />
+                <FormLabel>
+                  {item.label}
+                  {solutionsUtils.isConfigRequired(item) && (
+                    <span className="text-destructive"> *</span>
+                  )}
+                </FormLabel>
+                {isNil(item.workflowFrom) ? (
+                  <ConfigInput
+                    item={item}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                ) : (
+                  <LinkedWorkflowInput
+                    solutionId={item.workflowFrom.solutionId}
+                    options={choicesOf(item.key)}
+                    loading={preview.isLoading}
+                    refreshing={preview.isFetching}
+                    onRefresh={() => void preview.refetch()}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
                 <ConfigHint item={item} pkg={pkg} />
                 <FormMessage />
               </FormItem>
@@ -135,6 +175,80 @@ function ConfigInput({ item, value, onChange }: ConfigInputProps) {
   }
 }
 
+function LinkedWorkflowInput({
+  solutionId,
+  options,
+  loading,
+  refreshing,
+  onRefresh,
+  value,
+  onChange,
+}: LinkedWorkflowInputProps) {
+  const { data: official } = solutionsHooks.useOfficialSolutions();
+  const name =
+    official?.find((solution) => solution.id === solutionId)?.name ?? null;
+  if (loading) {
+    return <Skeleton className="h-9 w-full max-w-80" />;
+  }
+  if (options.length === 0) {
+    return (
+      <Alert data-testid="linked-workflow-missing">
+        <AlertDescription className="flex flex-col items-start gap-2">
+          <span>
+            {name
+              ? t('linkedSolutionMissingNamed', { name })
+              : t('linkedSolutionMissing')}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild type="button" size="sm" variant="outline">
+              <Link
+                to={`/solutions/${solutionId}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <ExternalLink className="size-4" />
+                {name
+                  ? t('Install {name} first', { name })
+                  : t('Install that solution first')}
+              </Link>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              loading={refreshing}
+              onClick={onRefresh}
+            >
+              <RefreshCw className="size-4" />
+              {t('Check again')}
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  return (
+    <Select
+      value={value.length > 0 ? value : EMPTY_CHOICE}
+      onValueChange={(next) => onChange(next === EMPTY_CHOICE ? '' : next)}
+    >
+      <SelectTrigger className="w-full max-w-80">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={EMPTY_CHOICE}>
+          {t('solutionConfigLeaveEmpty')}
+        </SelectItem>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function ConfigHint({
   item,
   pkg,
@@ -150,7 +264,11 @@ function ConfigHint({
     <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
       {item.hint && <span>{item.hint}</span>}
       {affected.length > 0 && (
-        <span>{t('Affects: {names}', { names: affected.join(', ') })}</span>
+        <span>
+          {t('Affects: {names}', {
+            names: solutionsUtils.joinLabels(affected),
+          })}
+        </span>
       )}
     </div>
   );
@@ -197,6 +315,8 @@ function toConfig({
   );
 }
 
+const EMPTY_CHOICE = '__empty__';
+
 export { ConfigStep };
 
 type ConfigFormValues = {
@@ -204,10 +324,22 @@ type ConfigFormValues = {
 };
 
 type ConfigStepProps = {
+  solutionId: string;
+  projectId: string;
   pkg: SolutionPackage;
   config: Record<string, string>;
   onBack: () => void;
   onNext: (config: Record<string, string>) => void;
+};
+
+type LinkedWorkflowInputProps = {
+  solutionId: string;
+  options: { value: string; label: string }[];
+  loading: boolean;
+  refreshing: boolean;
+  onRefresh: () => void;
+  value: string;
+  onChange: (value: string) => void;
 };
 
 type ConfigInputProps = {

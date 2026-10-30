@@ -38,7 +38,7 @@ export default function UsageLimitsPage() {
     <ConsolePage
       title={t('Usage and limits')}
       description={t(
-        'Instance limits come from the deployment configuration; project limits are adjusted in Projects and limits. Run counts exclude debug runs.',
+        'Instance limits come from the deployment configuration; project limits are adjusted in Projects. Run counts exclude debug runs.',
       )}
     >
       {isLoading || !instance ? (

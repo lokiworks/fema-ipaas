@@ -38,7 +38,9 @@ import { workflowCanvasConsts } from './workflow-canvas/utils/consts';
 import { BuilderBanner } from './workflow-canvas/widgets/builder-banner';
 const animateResizeClassName = `transition-all `;
 
-const DEFAULT_SIDEBAR_SIZE_PX = 320;
+const SIDEBAR_MIN_SIZE_PX = 320;
+const SIDEBAR_MAX_SIZE_PX = 400;
+const SIDEBAR_VIEWPORT_SHARE = 0.27;
 const DEFAULT_MIN_SIZE = '280px';
 
 const BuilderPage = () => {
@@ -86,10 +88,9 @@ const BuilderPage = () => {
       handle.resize('0%');
       return;
     }
-    handle.resize(DEFAULT_SIDEBAR_SIZE_PX);
-    const rafId = window.requestAnimationFrame(() =>
-      handle.resize(DEFAULT_SIDEBAR_SIZE_PX),
-    );
+    const size = defaultSidebarSize(window.innerWidth);
+    handle.resize(size);
+    const rafId = window.requestAnimationFrame(() => handle.resize(size));
     return () => window.cancelAnimationFrame(rafId);
   }, [rightSidebar, leftSidebar]);
 
@@ -217,6 +218,15 @@ const BuilderPage = () => {
 
 BuilderPage.displayName = 'BuilderPage';
 export { BuilderPage };
+
+function defaultSidebarSize(viewportWidth: number): number {
+  return Math.round(
+    Math.min(
+      SIDEBAR_MAX_SIZE_PX,
+      Math.max(SIDEBAR_MIN_SIZE_PX, viewportWidth * SIDEBAR_VIEWPORT_SHARE),
+    ),
+  );
+}
 
 function constructContainerKey({
   workflowVersionId,

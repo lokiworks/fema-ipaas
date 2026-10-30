@@ -2,6 +2,8 @@ import { EntityId, Permission, SeekPage } from '@fema-ipaas/core-utils'
 import {
     ListRunLogsRequestQuery,
     PrincipalType,
+    RerunCheckRunLogsRequestBody,
+    RerunCheckRunLogsResponse,
     RerunRunLogsRequestBody,
     RerunRunLogsResponse,
     RunLogDetail,
@@ -31,6 +33,14 @@ export const runLogController: FastifyPluginAsyncZod = async (app) => {
         return runLogService(request.log).scope({
             userId: request.principal.id,
             tenantId: request.principal.tenant.id,
+        })
+    })
+
+    app.post('/rerun-check', RerunCheckRequest, async (request): Promise<RerunCheckRunLogsResponse> => {
+        return runLogService(request.log).rerunCheck({
+            userId: request.principal.id,
+            tenantId: request.principal.tenant.id,
+            executionIds: request.body.executionIds,
         })
     })
 
@@ -90,6 +100,16 @@ const RerunRequest = {
         tags: ['run-logs'],
         body: RerunRunLogsRequestBody,
         response: { [StatusCodes.OK]: RerunRunLogsResponse },
+    },
+}
+
+const RerunCheckRequest = {
+    config: { security: securityAccess.publicTenant([PrincipalType.USER]) },
+    schema: {
+        tags: ['run-logs'],
+        description: 'Tell which of the selected runs failed for a reason that nothing has changed since, so a rerun would most likely fail again',
+        body: RerunCheckRunLogsRequestBody,
+        response: { [StatusCodes.OK]: RerunCheckRunLogsResponse },
     },
 }
 

@@ -14,14 +14,25 @@ export function ListEmptyState({
   title,
   description,
   className,
+  align = 'center',
+  testId,
 }: ListEmptyStateProps) {
+  const start = align === 'start';
   return (
-    <Empty className={cn('rounded-lg border py-10', className)}>
-      <EmptyHeader>
+    <Empty
+      className={cn(
+        'rounded-lg border py-10',
+        start &&
+          'items-start justify-start px-6 py-6 text-left md:px-6 md:py-6',
+        className,
+      )}
+      data-testid={testId}
+    >
+      <EmptyHeader className={cn(start && 'max-w-xl items-start text-left')}>
         <EmptyMedia variant="icon">
           <Icon />
         </EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyTitle className={cn(start && 'text-base')}>{title}</EmptyTitle>
         {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
     </Empty>
@@ -33,4 +44,6 @@ export type ListEmptyStateProps = {
   title: string;
   description?: string;
   className?: string;
+  align?: 'center' | 'start';
+  testId?: string;
 };

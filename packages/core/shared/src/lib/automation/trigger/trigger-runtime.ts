@@ -1,4 +1,5 @@
 import { BaseModelSchema, Nullable } from '@fema-ipaas/core-utils'
+import { ExecutionStatus } from '@fema-ipaas/workflow-core'
 import { z } from 'zod'
 
 const MAX_HOLIDAY_DATES = 2000
@@ -18,6 +19,7 @@ export type DedupedEvent = z.infer<typeof DedupedEvent>
 
 export const DedupedEventWithWorkflow = DedupedEvent.extend({
     workflowDisplayName: Nullable(z.string()),
+    firstExecutionStatus: Nullable(z.enum(ExecutionStatus)),
 })
 export type DedupedEventWithWorkflow = z.infer<typeof DedupedEventWithWorkflow>
 

@@ -31,9 +31,10 @@ function renderDelta(current: number, previous: number): ReactNode {
 type RunsTabProps = {
   report: TenantMetricsReport | undefined;
   isLoading: boolean;
+  range: { createdAfter: string; createdBefore: string };
 };
 
-export function RunsTab({ report, isLoading }: RunsTabProps) {
+export function RunsTab({ report, isLoading, range }: RunsTabProps) {
   const summary = report?.summary;
 
   return (
@@ -78,7 +79,11 @@ export function RunsTab({ report, isLoading }: RunsTabProps) {
         />
       </div>
 
-      <StatusLineChart data={report?.statusTimeseries} isLoading={isLoading} />
+      <StatusLineChart
+        data={report?.statusTimeseries}
+        isLoading={isLoading}
+        range={range}
+      />
 
       <InternalErrorsTable
         internalErrors={report?.internalErrors}

@@ -21,6 +21,7 @@ import {
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -72,7 +73,6 @@ function McpServicesContent() {
       projectId,
       tab: McpServiceListTab.MARKETPLACE,
       search: '',
-      enabled: tab === 'MARKETPLACE',
     });
   const isLoading =
     tab === 'MARKETPLACE' ? isMarketplaceLoading : isServicesLoading;
@@ -121,7 +121,9 @@ function McpServicesContent() {
     OBTAINED: searched.filter((service) =>
       matchesTab({ service, tabKey: 'OBTAINED' }),
     ).length,
+    MARKETPLACE: marketplaceServices.filter(matchesQuery).length,
   };
+  const tabHint = listTabHint(tab);
   const list =
     tab === 'MARKETPLACE'
       ? marketplaceServices.filter(matchesQuery)
@@ -162,8 +164,12 @@ function McpServicesContent() {
             <TabsTrigger value="OBTAINED">
               {t('Obtained by me ({count})', { count: counts.OBTAINED })}
             </TabsTrigger>
-            <TabsTrigger value="MARKETPLACE">
-              {t('Enterprise MCP marketplace')}
+            <Separator orientation="vertical" className="mx-1 h-4" />
+            <TabsTrigger value="MARKETPLACE" data-testid="mcp-tab-marketplace">
+              <Store className="size-3.5" />
+              {t('Enterprise marketplace, whole enterprise ({count})', {
+                count: counts.MARKETPLACE,
+              })}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -174,6 +180,11 @@ function McpServicesContent() {
           className="max-w-64"
         />
       </div>
+      {tabHint !== null && (
+        <p className="text-sm text-muted-foreground" data-testid="mcp-tab-hint">
+          {tabHint}
+        </p>
+      )}
       {isLoading && <Skeleton className="h-40 w-full" />}
       {!isLoading && list.length === 0 && (
         <Empty>
@@ -202,7 +213,7 @@ function McpServicesContent() {
               </EmptyTitle>
               <EmptyDescription>
                 {t(
-                  'Services that any project lists on the enterprise MCP marketplace appear here, so you can obtain them.',
+                  'Services that any project lists on the enterprise MCP marketplace appear here, so you can obtain them. To list one, publish it first, then click List on the MCP marketplace on its card or in the More menu of its page.',
                 )}
               </EmptyDescription>
             </EmptyHeader>
@@ -320,6 +331,22 @@ function McpServicesContent() {
       )}
     </ConsolePage>
   );
+}
+
+function listTabHint(tab: ListTab): string | null {
+  switch (tab) {
+    case 'MARKETPLACE':
+      return t(
+        'The enterprise marketplace shows the services any project has listed and made available to you. It does not change with the current project.',
+      );
+    case 'OBTAINED':
+      return t(
+        'Counted per person: the services you obtained from the enterprise marketplace, whichever project they belong to.',
+      );
+    case 'ALL':
+    case 'MINE':
+      return null;
+  }
 }
 
 export { McpServicesPage };

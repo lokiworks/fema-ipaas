@@ -167,3 +167,56 @@ describe('textMentionUtils.parseLabelFromMention — friendly field names', () =
     expect(label.displayText).toBe('2.extra.x');
   });
 });
+
+describe('textMentionUtils.parseLabelFromMention — invalid paths and loops', () => {
+  const step = {
+    name: 'step_3',
+    type: WorkflowActionType.CODE,
+    displayName: 'Create account',
+    valid: true,
+    lastUpdatedDate: '2024-01-01T00:00:00.000Z',
+    settings: { sourceCode: { code: '', packageJson: '{}' }, input: {} },
+  } satisfies WorkflowAction;
+  const loop = {
+    name: 'loop_1',
+    type: WorkflowActionType.LOOP_ON_ITEMS,
+    displayName: 'Loop',
+    valid: true,
+    lastUpdatedDate: '2024-01-01T00:00:00.000Z',
+    settings: { items: "{{step_3['output']}}" },
+  } satisfies WorkflowAction;
+
+  it("marks a reference that skips ['output'] as broken", () => {
+    const label = textMentionUtils.parseLabelFromMention(
+      "{{step_3['errorCode']}}",
+      [step],
+      [undefined],
+    );
+    expect(label.isBroken).toBe(true);
+    expect(label.displayText).toContain('Invalid reference');
+  });
+
+  it("keeps a reference through ['output'] valid", () => {
+    const label = textMentionUtils.parseLabelFromMention(
+      "{{step_3['output']['errorCode']}}",
+      [step],
+      [undefined],
+    );
+    expect(label.isBroken).toBeUndefined();
+  });
+
+  it('names loop variables instead of showing item and index', () => {
+    const item = textMentionUtils.parseLabelFromMention(
+      "{{loop_1['output']['item']['name']}}",
+      [loop],
+      [undefined],
+    );
+    const index = textMentionUtils.parseLabelFromMention(
+      "{{loop_1['output']['index']}}",
+      [loop],
+      [undefined],
+    );
+    expect(item.displayText).toBe('Loop .Current item.name');
+    expect(index.displayText).toBe('Loop .Index');
+  });
+});

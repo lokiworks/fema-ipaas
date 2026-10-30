@@ -11,13 +11,16 @@ export const dedupeService = {
         const filteredPayloads = await Promise.all(payloads.map(async (payload) => isDuplicated(workflowVersionId, payload)))
         return payloads.filter((_, index) => !filteredPayloads[index]).map(removeDedupeKey)
     },
-    claimWorkflowDedupe: async ({ workflowId, settings, payloads }: ClaimWorkflowDedupeParams): Promise<DedupeClaimResult> => {
+    claimWorkflowDedupe: async ({ workflowId, settings, payloads, findFailedExecutionIds }: ClaimWorkflowDedupeParams): Promise<DedupeClaimResult> => {
         if (isNil(settings) || !settings.enabled || !isNil(triggerRunSettingsUtils.validateKeyPath(settings.keyPath))) {
             return { accepted: payloads.map((payload) => ({ payload, claim: null })), duplicates: [] }
         }
         const evaluated = await Promise.all(payloads.map(async (payload) => claimPayload({ workflowId, settings, payload })))
-        const accepted = evaluated.flatMap((item) => (item.kind === 'accepted' ? [{ payload: item.payload, claim: item.claim }] : []))
-        const duplicates = evaluated.flatMap((item) => (item.kind === 'duplicate' ? [item.duplicate] : []))
+        const boundExecutionIds = [...new Set(evaluated.flatMap((item) => (item.kind === 'duplicate' && !isNil(item.duplicate.firstExecutionId) ? [item.duplicate.firstExecutionId] : [])))]
+        const failedExecutionIds = boundExecutionIds.length === 0 ? new Set<string>() : new Set(await findFailedExecutionIds({ executionIds: boundExecutionIds }))
+        const settled = failedExecutionIds.size === 0 ? evaluated : await Promise.all(evaluated.map(async (item) => reclaimAfterFailedRun({ item, failedExecutionIds, windowSeconds: settings.windowSeconds })))
+        const accepted = settled.flatMap((item) => (item.kind === 'accepted' ? [{ payload: item.payload, claim: item.claim }] : []))
+        const duplicates = settled.flatMap((item) => (item.kind === 'duplicate' ? [item.duplicate] : []))
         return { accepted, duplicates }
     },
     bindFirstExecution: async ({ claim, executionId }: { claim: DedupeClaim, executionId: string }): Promise<void> => {
@@ -58,6 +61,7 @@ async function claimPayload({ workflowId, settings, payload }: ClaimPayloadParam
     const stored = await redisConnection.get(redisKey)
     return {
         kind: 'duplicate',
+        redisKey,
         duplicate: {
             payload,
             keyHash,
@@ -65,6 +69,21 @@ async function claimPayload({ workflowId, settings, payload }: ClaimPayloadParam
             firstExecutionId: resolveFirstExecutionId(stored),
         },
     }
+}
+
+async function reclaimAfterFailedRun({ item, failedExecutionIds, windowSeconds }: ReclaimParams): Promise<ClaimOutcome> {
+    if (item.kind !== 'duplicate' || isNil(item.duplicate.firstExecutionId) || !failedExecutionIds.has(item.duplicate.firstExecutionId)) {
+        return item
+    }
+    const { payload, keyHash, firstExecutionId } = item.duplicate
+    const redisKey = item.redisKey
+    const redisConnection = await redisConnections.useExisting()
+    const reclaimed = await redisConnection.eval(RECLAIM_FAILED_SCRIPT, 1, redisKey, firstExecutionId, PENDING_MARKER, windowSeconds * MS_PER_SECOND)
+    if (reclaimed === 1) {
+        return { kind: 'accepted', payload, claim: { redisKey, keyHash } }
+    }
+    const stored = await redisConnection.get(redisKey)
+    return { kind: 'duplicate', redisKey, duplicate: { ...item.duplicate, firstExecutionId: resolveFirstExecutionId(stored) } }
 }
 
 function hashKey(keyValue: string): string {
@@ -151,6 +170,13 @@ end
 redis.call('SET', KEYS[1], ARGV[1], 'PX', ARGV[2])
 return 1
 `
+const RECLAIM_FAILED_SCRIPT = `
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then
+    return 0
+end
+redis.call('SET', KEYS[1], ARGV[2], 'PX', ARGV[3])
+return 1
+`
 const BIND_SCRIPT = `
 local ttl = redis.call('PTTL', KEYS[1])
 if ttl > 0 then
@@ -163,6 +189,13 @@ type ClaimWorkflowDedupeParams = {
     workflowId: string
     settings: TriggerDedupeSettings | undefined
     payloads: unknown[]
+    findFailedExecutionIds: (params: { executionIds: string[] }) => Promise<string[]>
+}
+
+type ReclaimParams = {
+    item: ClaimOutcome
+    failedExecutionIds: Set<string>
+    windowSeconds: number
 }
 
 type ClaimPayloadParams = {
@@ -173,7 +206,7 @@ type ClaimPayloadParams = {
 
 type ClaimOutcome =
     | { kind: 'accepted', payload: unknown, claim: DedupeClaim | null }
-    | { kind: 'duplicate', duplicate: DuplicatePayload }
+    | { kind: 'duplicate', redisKey: string, duplicate: DuplicatePayload }
 
 export type DedupeClaim = {
     redisKey: string

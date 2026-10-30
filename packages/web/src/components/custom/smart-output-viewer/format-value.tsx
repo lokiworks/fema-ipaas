@@ -74,6 +74,19 @@ function formatCurrency(n: number, currency: string | undefined): string {
   }
 }
 
+function parseDateValue(value: string): Date {
+  if (EPOCH_MILLISECONDS_PATTERN.test(value)) {
+    return new Date(Number(value));
+  }
+  if (EPOCH_SECONDS_PATTERN.test(value)) {
+    return new Date(Number(value) * 1000);
+  }
+  return new Date(value);
+}
+
+const EPOCH_MILLISECONDS_PATTERN = /^\d{13}$/;
+const EPOCH_SECONDS_PATTERN = /^\d{10}$/;
+
 function FormatSingleValue({
   value,
   format,
@@ -140,7 +153,7 @@ function FormatSingleValue({
   }
 
   if (format === 'date' || format === 'datetime') {
-    const date = new Date(stringValue);
+    const date = parseDateValue(stringValue);
     if (!isNaN(date.getTime())) {
       return (
         <span title={date.toISOString()}>

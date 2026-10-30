@@ -59,9 +59,18 @@ const WorkflowVersionDetailsCard = React.memo(
     const userHasPermissionToWriteWorkflow = checkAccess(
       Permission.WRITE_WORKFLOW,
     );
-    const [setVersion, setReadonly, workflow] = useBuilderStateContext(
-      (state) => [state.setVersion, state.setReadOnly, state.workflow],
-    );
+    const [setVersion, setReadonly, workflow, liveVersion] =
+      useBuilderStateContext((state) => [
+        state.setVersion,
+        state.setReadOnly,
+        state.workflow,
+        state.workflowVersion,
+      ]);
+    const isDraft = workflowVersion.state === WorkflowVersionState.DRAFT;
+    const draftUpdated =
+      liveVersion.id === workflowVersion.id
+        ? liveVersion.updated
+        : workflowVersion.updated;
     const { project } = projectCollectionUtils.useCurrentProject();
     const inProduction = workflowVersion.id === workflow.publishedVersionId;
     const inTest =
@@ -101,16 +110,16 @@ const WorkflowVersionDetailsCard = React.memo(
           <FormattedDate
             date={
               new Date(
-                releaseInfo?.production?.created ?? workflowVersion.created,
+                isDraft
+                  ? draftUpdated
+                  : releaseInfo?.production?.created ?? workflowVersion.created,
               )
             }
             includeTime={true}
             className="break-words text-sm font-medium leading-tight select-none cursor-default"
           ></FormattedDate>
           <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-            {workflowVersion.state === WorkflowVersionState.DRAFT
-              ? t('Draft')
-              : `v${workflowVersionNumber}`}
+            {isDraft ? t('Draft') : `v${workflowVersionNumber}`}
             {inProduction && <Badge variant="success">{t('Production')}</Badge>}
             {inTest && <Badge variant="info">{t('Test')}</Badge>}
           </p>

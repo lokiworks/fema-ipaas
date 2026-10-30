@@ -21,7 +21,7 @@ export function RunStateChip() {
       className={cn(
         'flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs leading-4',
         running
-          ? 'bg-success-50 text-success-700'
+          ? 'bg-success/10 text-success-700'
           : 'bg-muted text-muted-foreground',
       )}
     >

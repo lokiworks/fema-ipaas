@@ -1,4 +1,4 @@
-import { Permission } from '@fema-ipaas/core-utils';
+import { isNil, Permission, tryCatch } from '@fema-ipaas/core-utils';
 import {
   AlertRecordKind,
   IssueFixKind,
@@ -13,7 +13,9 @@ import { t } from 'i18next';
 import {
   ArrowLeft,
   BellOff,
+  Check,
   CheckCircle2,
+  ChevronDown,
   RotateCcw,
   Sparkles,
 } from 'lucide-react';
@@ -56,10 +58,16 @@ import {
   IssueSeverityBadge,
   IssueStatusBadge,
   issueMembersHooks,
+  issuesApi,
   issuesHooks,
   issueUiUtils,
 } from '@/features/issues';
+import { ResolveIssueDialog } from '@/features/issues/components/resolve-issue-dialog';
 import { ReconciliationDifferences } from '@/features/reconciliation/reconciliation';
+import {
+  RunFocusPanel,
+  runFocusUtils,
+} from '@/features/run-logs/utils/run-focus-utils';
 import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
@@ -87,16 +95,27 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
   const canWrite = checkAccess(Permission.WRITE_ISSUE);
   const canReplay = checkAccess(Permission.WRITE_RUN);
   const { assignable, nameOf } = issueMembersHooks.useIssueMembers();
-  const { mutate: update } = issuesHooks.useUpdateIssue(issue.id);
-  const changeStatus = (status: IssueStatus) => {
+  const { mutate: update, isPending: updating } = issuesHooks.useUpdateIssue(
+    issue.id,
+  );
+  const { mutate: addNote } = issuesHooks.useAddNote(issue.id);
+  const [resolveOpen, setResolveOpen] = useState(false);
+  const applyStatus = ({
+    status,
+    note,
+  }: {
+    status: IssueStatus;
+    note: string;
+  }) => {
     const previous = issue.status;
-    if (status === previous) {
-      return;
-    }
     update(
       { status },
       {
-        onSuccess: () =>
+        onSuccess: () => {
+          setResolveOpen(false);
+          if (note.length > 0) {
+            addNote(note);
+          }
           toast.success(
             t('Marked as {status}', {
               status: issueUiUtils.statusLabel(status),
@@ -120,9 +139,20 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
                   ),
               },
             },
-          ),
+          );
+        },
       },
     );
+  };
+  const changeStatus = (status: IssueStatus) => {
+    if (status === issue.status) {
+      return;
+    }
+    if (status === IssueStatus.RESOLVED) {
+      setResolveOpen(true);
+      return;
+    }
+    applyStatus({ status, note: '' });
   };
   const workflow = issuesHooks.useWorkflowAvailability({
     workflowId: issue.workflowId,
@@ -237,16 +267,31 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
           </DropdownMenu>
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={!canWrite}>
-                {issueUiUtils.statusLabel(issue.status)}
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={!canWrite}
+                data-testid="issue-status-select"
+              >
+                {t('issueStatusCurrent', {
+                  status: issueUiUtils.statusLabel(issue.status),
+                })}
+                <ChevronDown className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              <DropdownMenuLabel>{t('Change status')}</DropdownMenuLabel>
               {Object.values(IssueStatus).map((status) => (
                 <DropdownMenuItem
                   key={status}
                   onSelect={() => changeStatus(status)}
                 >
+                  <Check
+                    className={cn(
+                      'size-4',
+                      status === issue.status ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
                   {issueUiUtils.statusLabel(status)}
                 </DropdownMenuItem>
               ))}
@@ -321,6 +366,14 @@ function IssueDetail({ issue }: { issue: IssueWithSeverity }) {
         </div>
       </div>
 
+      <ResolveIssueDialog
+        open={resolveOpen}
+        pending={updating}
+        onOpenChange={setResolveOpen}
+        onConfirm={(note) =>
+          applyStatus({ status: IssueStatus.RESOLVED, note })
+        }
+      />
       {replayStrategy !== null && (
         <IssueReplayDialog
           workflowName={issue.workflowDisplayName ?? null}
@@ -417,14 +470,32 @@ function InsightCard({
 }) {
   const navigate = useNavigate();
   const { data: insight, isLoading } = issuesHooks.useInsight(issue.id);
-  const openWorkflow = () => {
-    if (issue.workflowId) {
+  const [opening, setOpening] = useState(false);
+  const openFailedRun = async (panel: RunFocusPanel) => {
+    setOpening(true);
+    const { data: page } = await tryCatch(() =>
+      issuesApi.executions(issue.id, { limit: RUN_LOOKUP_LIMIT }),
+    );
+    setOpening(false);
+    const run = runFocusUtils.pickFailedRun(page?.data ?? []);
+    if (isNil(run)) {
       navigate(
         authenticationSession.appendProjectRoutePrefix(
-          `/workflows/${issue.workflowId}`,
+          `/workflows/${issue.workflowId ?? ''}`,
         ),
       );
+      return;
     }
+    navigate(
+      authenticationSession.appendProjectRoutePrefix(
+        runFocusUtils.runPath({
+          runId: run.id,
+          stepName: run.failedStep?.name ?? issue.stepName ?? null,
+          panel,
+          issueId: issue.id,
+        }),
+      ),
+    );
   };
   const handlers: Record<IssueFixKind, { run: () => void; allowed: boolean }> =
     {
@@ -436,12 +507,12 @@ function InsightCard({
         allowed: true,
       },
       [IssueFixKind.OPEN_STEP_INPUT]: {
-        run: openWorkflow,
-        allowed: !!issue.workflowId && !workflow.deleted,
+        run: () => void openFailedRun('input'),
+        allowed: !!issue.workflowId && !workflow.deleted && !opening,
       },
       [IssueFixKind.OPEN_STEP_ERROR_HANDLING]: {
-        run: openWorkflow,
-        allowed: !!issue.workflowId && !workflow.deleted,
+        run: () => void openFailedRun('error'),
+        allowed: !!issue.workflowId && !workflow.deleted && !opening,
       },
       [IssueFixKind.REPLAY_FROM_FAILED_STEP]: {
         run: () => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP),
@@ -749,7 +820,12 @@ function AffectedRunsCard({
                   className="flex min-w-0 items-center gap-2 text-primary hover:underline"
                   title={execution.id}
                   to={authenticationSession.appendProjectRoutePrefix(
-                    `/runs/${execution.id}`,
+                    runFocusUtils.runPath({
+                      runId: execution.id,
+                      stepName: null,
+                      panel: null,
+                      issueId,
+                    }),
                   )}
                 >
                   <span className="truncate">
@@ -989,6 +1065,7 @@ const WORKFLOW_BOUND_FIXES: IssueFixKind[] = [
   IssueFixKind.OPEN_STEP_ERROR_HANDLING,
 ];
 const RUNS_PAGE_SIZE = 8;
+const RUN_LOOKUP_LIMIT = 20;
 const RUN_SHORT_ID_LENGTH = 6;
 const NOTE_MAX_LENGTH = 500;
 

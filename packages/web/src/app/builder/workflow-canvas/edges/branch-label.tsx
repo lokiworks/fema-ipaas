@@ -144,9 +144,9 @@ const BranchLabel = (props: BaseBranchLabel) => {
               'ring-2 ring-primary/40': branchRunState === 'taken',
               'bg-border/60 text-foreground/70 dark:text-foreground/70  border-border hover:text-foreground/70 hover:bg-border/60 hover:border-border cursor-default':
                 isOtherwiseBranch,
-              'text-success-800 bg-success-50 border-success-200 dark:text-success-200 dark:bg-success-900 dark:border-success-800 hover:text-success-800 hover:bg-success-50 hover:border-success-200 cursor-default':
+              'text-success-800 bg-success-50 border-success-200 dark:text-success-200 dark:bg-success-900 dark:border-success-800 hover:text-success-800 hover:bg-success-50 hover:border-success-200 dark:hover:text-success-200 dark:hover:bg-success-900 dark:hover:border-success-800 cursor-default':
                 isOnSuccessBranch,
-              'text-destructive-800 bg-destructive-50 border-destructive-200 dark:text-destructive-200 dark:bg-destructive-900 dark:border-destructive-800 hover:text-destructive-800 hover:bg-destructive-50 hover:border-destructive-200 cursor-default':
+              'text-destructive-800 bg-destructive-50 border-destructive-200 dark:text-destructive-200 dark:bg-destructive-900 dark:border-destructive-800 hover:text-destructive-800 hover:bg-destructive-50 hover:border-destructive-200 dark:hover:text-destructive-200 dark:hover:bg-destructive-900 dark:hover:border-destructive-800 cursor-default':
                 isOnFailureBranch,
             },
           )}

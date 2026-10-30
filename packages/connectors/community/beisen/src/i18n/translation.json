@@ -58,7 +58,6 @@
   "Business changes only (hire, regularization, transfer, edits)": "Business changes only (hire, regularization, transfer, edits)",
   "Any modification, including nightly system updates": "Any modification, including nightly system updates",
   "Only When This Field": "Only When This Field",
-  "Optional. A field path inside the returned record, for example recordInfo.changeTypeOID. Together with the values below it keeps only records where that field matches, which is how you pick new hires (1) or rehires (2) out of all changes.": "Optional. A field path inside the returned record, for example recordInfo.changeTypeOID. Together with the values below it keeps only records where that field matches, which is how you pick new hires (1) or rehires (2) out of all changes.",
   "The trigger only starts for records whose field above equals one of these values. Ignored when the field is empty.": "The trigger only starts for records whose field above equals one of these values. Ignored when the field is empty.",
   "Beginning of the change window, for example 2026-09-01T00:00:00. The window can span at most 90 days.": "Beginning of the change window, for example 2026-09-01T00:00:00. The window can span at most 90 days.",
   "End of the change window, for example 2026-09-08T00:00:00.": "End of the change window, for example 2026-09-08T00:00:00.",
@@ -128,5 +127,12 @@
   "Pick the organization to search under, usually the company root. To type an OId instead, set the value type in the top-right corner of the field to String.": "Pick the organization to search under, usually the company root. To type an OId instead, set the value type in the top-right corner of the field to String.",
   "Select a Beisen connection first": "Select a Beisen connection first",
   "Could not list Beisen organizations, set the value type to String and type the OId": "Could not list Beisen organizations, set the value type to String and type the OId",
-  "Beisen returned no organization units": "Beisen returned no organization units"
+  "Beisen returned no organization units": "Beisen returned no organization units",
+  "Change Types": "Change Types",
+  "Optional. Only start for these change types (recordInfo.changeTypeOID). Leave empty to start for every change.": "Optional. Only start for these change types (recordInfo.changeTypeOID). Leave empty to start for every change.",
+  "New hire (1)": "New hire (1)",
+  "Rehire (2)": "Rehire (2)",
+  "Transfer (7)": "Transfer (7)",
+  "Position change (9)": "Position change (9)",
+  "Optional. A field path inside the returned record, for example recordInfo.jobNumber. Together with the values below it keeps only records where that field matches. To pick change types such as new hires, use Change Types above.": "Optional. A field path inside the returned record, for example recordInfo.jobNumber. Together with the values below it keeps only records where that field matches. To pick change types such as new hires, use Change Types above."
 }

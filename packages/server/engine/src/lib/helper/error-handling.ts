@@ -47,8 +47,8 @@ export async function continueIfFailureHandler(
 }
 
 export function resolveFailedStepStrategy({ executionState, action }: { executionState: WorkflowExecutorContext, action: RetryableAction }): ResolvedErrorStrategy | null {
-    const { errorCode } = errorHandlingUtils.classifyErrorMessage({ message: failureMessageOf({ state: executionState, action }) })
-    return errorHandlingUtils.resolveStrategy({ options: action.settings.errorHandlingOptions, errorCode })
+    const { errorCode, externalCode } = errorHandlingUtils.classifyErrorMessage({ message: failureMessageOf({ state: executionState, action }) })
+    return errorHandlingUtils.resolveStrategy({ options: action.settings.errorHandlingOptions, errorCode, externalCode })
 }
 
 async function runWithLegacyRetry<T extends RetryableAction>({ executionState, action, constants, requestFunction, attemptCount, carried, firstAttemptAt }: RunWithLegacyRetryParams<T>): Promise<AttemptOutcome> {

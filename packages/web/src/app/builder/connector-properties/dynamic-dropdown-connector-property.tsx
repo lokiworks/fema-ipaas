@@ -13,6 +13,7 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 import { MultiSelectConnectorProperty } from '../../../components/custom/multi-select-connector-property';
 
+import { dropdownValueUtils } from './dropdown-value-utils';
 import { DynamicPropertiesErrorBoundary } from './dynamic-connector-properties-error-boundary';
 import { DynamicPropertiesContext } from './dynamic-properties-context';
 
@@ -118,6 +119,11 @@ const DynamicDropdownConnectorPropertyImplementation = React.memo(
       value: option.value,
     }));
     const isDisabled = dropdownState.disabled || props.disabled;
+    const current = dropdownValueUtils.withCurrentValue({
+      value: props.value,
+      options: selectOptions,
+      loading: isPending || isNil(firstDropdownState.current),
+    });
     return props.multiple ? (
       <MultiSelectConnectorProperty
         placeholder={dropdownState.placeholder ?? t('Select an option')}
@@ -139,21 +145,30 @@ const DynamicDropdownConnectorPropertyImplementation = React.memo(
         cachedOptions={firstDropdownState.current?.options ?? []}
       />
     ) : (
-      <SearchableSelect
-        options={selectOptions}
-        disabled={dropdownState.disabled || props.disabled}
-        loading={isPending}
-        placeholder={dropdownState.placeholder ?? t('Select an option')}
-        value={props.value}
-        onChange={(value) => props.onChange(value)}
-        showDeselect={
-          props.showDeselect && !isNil(props.value) && !props.disabled
-        }
-        onRefresh={refresh}
-        showRefresh={!isPending && !readonly}
-        refreshOnSearch={props.shouldRefreshOnSearch ? refresh : undefined}
-        cachedOptions={firstDropdownState.current?.options ?? []}
-      />
+      <div className="flex flex-col gap-1">
+        <SearchableSelect
+          options={current.options}
+          disabled={dropdownState.disabled || props.disabled}
+          loading={isPending}
+          placeholder={dropdownState.placeholder ?? t('Select an option')}
+          value={props.value}
+          onChange={(value) => props.onChange(value)}
+          showDeselect={
+            props.showDeselect && !isNil(props.value) && !props.disabled
+          }
+          onRefresh={refresh}
+          showRefresh={!isPending && !readonly}
+          refreshOnSearch={props.shouldRefreshOnSearch ? refresh : undefined}
+          cachedOptions={firstDropdownState.current?.options ?? []}
+        />
+        {current.missing && !dropdownState.disabled && (
+          <span className="text-xs text-warning-700">
+            {t(
+              'The saved value is not in the current list. It may have been deleted or the connection cannot see it. Pick another option or keep it as it is.',
+            )}
+          </span>
+        )}
+      </div>
     );
   },
 );

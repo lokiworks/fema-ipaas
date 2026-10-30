@@ -244,14 +244,20 @@ export default function AuditLogPage() {
         {isLoading ? (
           <Skeleton className="h-64 w-full" />
         ) : (
-          <Table className="min-w-[40rem] table-fixed">
+          <Table className="table-fixed md:min-w-[40rem]">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-28 xl:w-40">{t('Time')}</TableHead>
-                <TableHead className="w-24 xl:w-40">{t('Actor')}</TableHead>
-                <TableHead className="w-28 xl:w-36">{t('Action')}</TableHead>
-                <TableHead>{t('Audit target')}</TableHead>
-                <TableHead className="w-36 xl:w-44">
+                <TableHead className="w-24 md:w-28 xl:w-40">
+                  {t('Time')}
+                </TableHead>
+                <TableHead className="w-20 md:w-24 xl:w-40">
+                  {t('Actor')}
+                </TableHead>
+                <TableHead className="md:w-28 xl:w-36">{t('Action')}</TableHead>
+                <TableHead className="hidden md:table-cell">
+                  {t('Audit target')}
+                </TableHead>
+                <TableHead className="hidden w-36 md:table-cell xl:w-44">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="inline-flex cursor-default items-center gap-1">
@@ -357,10 +363,28 @@ function AuditRow({
           </TextWithTooltip>
         )}
       </TableCell>
-      <TableCell className="truncate whitespace-nowrap">
-        {auditEventUtils.eventActionLabel(event)}
-      </TableCell>
       <TableCell className="min-w-0">
+        <p className="truncate whitespace-nowrap">
+          {auditEventUtils.eventActionLabel(event)}
+        </p>
+        <div
+          className="flex flex-col gap-0.5 pt-1 text-xs md:hidden"
+          data-testid="audit-row-compact-target"
+        >
+          {runPath ? (
+            <Link
+              to={runPath}
+              className="break-words text-primary hover:underline"
+            >
+              {summary}
+            </Link>
+          ) : (
+            <p className="break-words text-muted-foreground">{summary}</p>
+          )}
+          <p className="truncate text-muted-foreground">{projectLabel}</p>
+        </div>
+      </TableCell>
+      <TableCell className="hidden min-w-0 md:table-cell">
         <TextWithTooltip tooltipMessage={summary}>
           {runPath ? (
             <Link
@@ -374,7 +398,7 @@ function AuditRow({
           )}
         </TextWithTooltip>
       </TableCell>
-      <TableCell className="min-w-0 text-muted-foreground">
+      <TableCell className="hidden min-w-0 text-muted-foreground md:table-cell">
         <TextWithTooltip tooltipMessage={projectLabel}>
           <p className="truncate whitespace-nowrap">{projectLabel}</p>
         </TextWithTooltip>

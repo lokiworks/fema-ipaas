@@ -1,18 +1,32 @@
-import { Execution, PopulatedWorkflow } from '@fema-ipaas/shared';
+import {
+  Execution,
+  isNil,
+  PopulatedWorkflow,
+  workflowStructureUtil,
+} from '@fema-ipaas/shared';
 import { useQuery } from '@tanstack/react-query';
 import { ReactFlowProvider } from '@xyflow/react';
-import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { BuilderPage } from '@/app/builder';
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
 import { ResourceNotFound } from '@/components/custom/resource-not-found';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { executionsApi } from '@/features/executions';
+import { RunPageBar } from '@/features/run-logs/components/run-page-bar';
+import {
+  RunFocus,
+  runFocusUtils,
+} from '@/features/run-logs/utils/run-focus-utils';
 import { workflowsApi, sampleDataHooks } from '@/features/workflows';
 import { notFoundError } from '@/lib/not-found-error';
 
 const ExecutionPage = () => {
   const { runId, projectId } = useParams();
+  const [searchParams] = useSearchParams();
+  const focus = runFocusUtils.parse(searchParams);
   const { data, isLoading, error } = useQuery<
     {
       run: Execution;
@@ -59,6 +73,16 @@ const ExecutionPage = () => {
     );
   }
 
+  const focusStepExists =
+    !isNil(data) &&
+    !isNil(focus.stepName) &&
+    !isNil(
+      workflowStructureUtil.getStep(
+        focus.stepName,
+        data.workflow.version.trigger,
+      ),
+    );
+
   return (
     data && (
       <ReactFlowProvider>
@@ -71,11 +95,38 @@ const ExecutionPage = () => {
           outputSampleData={sampleData ?? {}}
           inputSampleData={sampleDataInput ?? {}}
         >
-          <BuilderPage />
+          {focusStepExists && <ApplyRunFocus focus={focus} />}
+          {isNil(focus.issueId) ? (
+            <BuilderPage />
+          ) : (
+            <div className="flex h-full w-full flex-col">
+              <RunPageBar runId={data.run.id} issueId={focus.issueId} />
+              <div className="min-h-0 flex-1">
+                <BuilderPage />
+              </div>
+            </div>
+          )}
         </BuilderStateProvider>
       </ReactFlowProvider>
     )
   );
 };
+
+function ApplyRunFocus({ focus }: { focus: RunFocus }) {
+  const selectStepByName = useBuilderStateContext(
+    (state) => state.selectStepByName,
+  );
+  const { stepName, panel } = focus;
+  useEffect(() => {
+    if (isNil(stepName) || isNil(panel)) {
+      return;
+    }
+    selectStepByName(stepName, {
+      fromAutoFocus: true,
+      tab: runFocusUtils.stepPanelTab(panel),
+    });
+  }, [selectStepByName, stepName, panel]);
+  return null;
+}
 
 export { ExecutionPage };

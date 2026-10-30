@@ -1,6 +1,7 @@
 import {
   SolutionCheck,
   SolutionConfigItem,
+  SolutionConfigType,
   SolutionDetail,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -32,6 +33,7 @@ function SolutionDetailView({ solution }: SolutionDetailViewProps) {
   const navigate = useNavigate();
   const [publishing, setPublishing] = useState(false);
   const pkg = solution.package;
+  const checks = solutionsUtils.splitChecks(pkg.checks);
   const canPublish =
     solutionsUtils.isOwn({
       solution,
@@ -135,7 +137,7 @@ function SolutionDetailView({ solution }: SolutionDetailViewProps) {
             </CardContent>
           </Card>
 
-          {pkg.checks.length > 0 && (
+          {checks.beforeInstall.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>{t('Before you install')}</CardTitle>
@@ -146,7 +148,22 @@ function SolutionDetailView({ solution }: SolutionDetailViewProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                {pkg.checks.map((check) => (
+                {checks.beforeInstall.map((check) => (
+                  <CheckRow key={check.key} check={check} />
+                ))}
+              </CardContent>
+            </Card>
+          )}
+          {checks.afterInstall.length > 0 && (
+            <Card data-testid="solution-after-install">
+              <CardHeader>
+                <CardTitle>{t('After you install')}</CardTitle>
+                <CardDescription>
+                  {t('solutionAfterInstallDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                {checks.afterInstall.map((check) => (
                   <CheckRow key={check.key} check={check} />
                 ))}
               </CardContent>
@@ -260,9 +277,11 @@ function CheckRow({ check }: { check: SolutionCheck }) {
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {check.who && <Badge variant="outline">{check.who}</Badge>}
-        <Badge variant={check.blocking ? 'destructive' : 'secondary'}>
-          {check.blocking ? t('Must pass') : t('Recommended')}
-        </Badge>
+        {check.afterInstall !== true && (
+          <Badge variant={check.blocking ? 'destructive' : 'secondary'}>
+            {check.blocking ? t('Must pass') : t('Recommended')}
+          </Badge>
+        )}
       </div>
     </div>
   );
@@ -274,7 +293,18 @@ function ConfigRow({ item }: { item: SolutionConfigItem }) {
   );
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-sm font-medium">{item.label}</span>
+      <span className="text-sm font-medium">
+        {item.label}
+        {solutionsUtils.isConfigRequired(item) && (
+          <span className="text-destructive"> *</span>
+        )}
+      </span>
+      {!solutionsUtils.isConfigRequired(item) &&
+        item.type === SolutionConfigType.TEXT && (
+          <span className="text-xs text-muted-foreground">
+            {t('Can be left empty')}
+          </span>
+        )}
       {item.defaultValue.length > 0 && (
         <span className="text-xs text-muted-foreground">
           {t('Default: {value}', {

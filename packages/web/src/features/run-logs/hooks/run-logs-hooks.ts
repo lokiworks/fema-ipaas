@@ -4,6 +4,7 @@ import {
   RerunRunLogsRequestBody,
   RerunRunLogsResponse,
   TerminateRunLogRequestBody,
+  WorkflowRetryStrategy,
 } from '@fema-ipaas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -66,6 +67,25 @@ function useRunSteps({ runId, live }: { runId: string | null; live: boolean }) {
     enabled: runId !== null,
     retry: false,
     refetchInterval: live ? REFRESH_INTERVAL_MS : false,
+  });
+}
+
+function useRerunCheck({
+  executionIds,
+  strategy,
+  enabled,
+}: {
+  executionIds: string[];
+  strategy: WorkflowRetryStrategy;
+  enabled: boolean;
+}) {
+  return useQuery({
+    queryKey: [RUN_LOG_RERUN_CHECK_KEY, executionIds, strategy],
+    queryFn: () => runLogsApi.rerunCheck({ executionIds, strategy }),
+    enabled: enabled && executionIds.length > 0,
+    staleTime: 0,
+    gcTime: 0,
+    retry: false,
   });
 }
 
@@ -136,6 +156,7 @@ const RUN_LOGS_KEY = 'run-logs';
 const RUN_LOG_SCOPE_KEY = 'run-log-scope';
 const RUN_LOG_DETAIL_KEY = 'run-log-detail';
 const RUN_LOG_STEPS_KEY = 'run-log-steps';
+const RUN_LOG_RERUN_CHECK_KEY = 'run-log-rerun-check';
 const REFRESH_INTERVAL_MS = 15 * 1000;
 
 export const runLogsHooks = {
@@ -143,6 +164,7 @@ export const runLogsHooks = {
   useScope,
   useDetail,
   useRunSteps,
+  useRerunCheck,
   useRerun,
   useTerminate,
 };

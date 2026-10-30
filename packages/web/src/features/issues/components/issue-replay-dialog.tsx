@@ -25,6 +25,8 @@ import { rerunPreviewUtils } from '@/features/run-logs/utils/rerun-preview-utils
 import { issuesHooks } from '../hooks/issues-hooks';
 import { issueUiUtils } from '../utils/issue-ui-utils';
 
+import { LikelyToFailBlock } from './likely-to-fail-block';
+
 export function IssueReplayDialog({
   issueId,
   workflowName,
@@ -177,6 +179,13 @@ export function IssueReplayDialog({
             <Skeleton className="h-32 w-full" />
           ) : (
             <div className="flex flex-col gap-3 max-h-80 overflow-y-auto">
+              <LikelyToFailBlock
+                reasons={groups[ReplayCategory.DATA_PROBLEM].map(
+                  (item) => item.reason,
+                )}
+                included={includeDataProblems}
+                onIncludedChange={setIncludeDataProblems}
+              />
               {CATEGORY_ORDER.map((category) =>
                 groups[category].length === 0 ? null : (
                   <div key={category} className="rounded-md border">
@@ -203,19 +212,6 @@ export function IssueReplayDialog({
                         ),
                       )}
                     </ul>
-                    {category === ReplayCategory.DATA_PROBLEM && (
-                      <label className="flex items-center gap-2 px-3 pb-3 text-sm">
-                        <Checkbox
-                          checked={includeDataProblems}
-                          onCheckedChange={(value) =>
-                            setIncludeDataProblems(value === true)
-                          }
-                        />
-                        {t('Rerun these {count} runs anyway', {
-                          count: dataProblemCount,
-                        })}
-                      </label>
-                    )}
                   </div>
                 ),
               )}
@@ -359,7 +355,6 @@ function laterOf(
 
 const CATEGORY_ORDER = [
   ReplayCategory.REPLAYABLE,
-  ReplayCategory.DATA_PROBLEM,
   ReplayCategory.BLOCKED,
   ReplayCategory.NOT_NEEDED,
 ];

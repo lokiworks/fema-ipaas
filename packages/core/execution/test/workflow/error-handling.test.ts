@@ -116,3 +116,32 @@ describe('errorHandlingUtils.usesBranches', () => {
         expect(errorHandlingUtils.effectiveStrategy({ options: { continueOnFailure: { value: true }, retryOnFailure: { value: true } }, fallback }).mode).toBe(ErrorStrategyMode.RETRY_THEN_BRANCH)
     })
 })
+
+describe('external error codes', () => {
+    const feishuFailure = JSON.stringify({
+        __apErrorVersion: 1,
+        message: 'department not exist — check the department mapping table (Feishu error 41017)\n[fix-owner=MAPPING_OWNER]',
+        readableMessage: '飞书中不存在该部门（飞书错误码 41017）',
+    })
+
+    it('reads the code of the external system and the connector readable message', () => {
+        const result = errorHandlingUtils.classifyErrorMessage({ message: feishuFailure })
+        expect(result.errorCode).toBe('STEP_FAILED')
+        expect(result.externalCode).toBe('41017')
+        expect(result.readableMessage).toBe('飞书中不存在该部门（飞书错误码 41017）')
+        expect(result.plainMessage).not.toContain('fix-owner')
+    })
+
+    it('matches rules written with the external code as well as the platform code', () => {
+        const rule = { operator: ErrorCodeOperator.EQUALS_ANY, codes: ['41017'] }
+        expect(errorHandlingUtils.ruleMatches({ rule, errorCode: 'STEP_FAILED', externalCode: '41017' })).toBe(true)
+        expect(errorHandlingUtils.ruleMatches({ rule, errorCode: 'STEP_FAILED', externalCode: '41001' })).toBe(false)
+        expect(errorHandlingUtils.ruleMatches({ rule: { operator: ErrorCodeOperator.NOT_EQUALS_ANY, codes: ['41017'] }, errorCode: 'STEP_FAILED', externalCode: '41017' })).toBe(false)
+        expect(errorHandlingUtils.ruleMatches({ rule: { operator: ErrorCodeOperator.STARTS_WITH_ANY, codes: ['4101'] }, errorCode: 'STEP_FAILED', externalCode: '41017' })).toBe(true)
+    })
+
+    it('still reads a three digit code as an HTTP status', () => {
+        expect(errorHandlingUtils.normalizeCode('429')).toBe('HTTP_429')
+        expect(errorHandlingUtils.normalizeCode('41017')).toBe('41017')
+    })
+})

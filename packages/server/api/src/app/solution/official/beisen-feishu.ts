@@ -1,4 +1,4 @@
-import { ReconciliationRuleBody, SolutionConfigType, SolutionPackage, SolutionWorkflow, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
+import { ReconciliationRuleBody, SolutionCheck, SolutionCheckKind, SolutionConfigType, SolutionPackage, SolutionWorkflow, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import type { OfficialSolution } from '../official-solutions'
 import { solutionPackageUtils } from '../solution-package-utils'
 import { beisenTrigger, connectorStep, DATA_MAPPER, DEPARTMENT_OID, DEPARTMENT_TABLE, FEISHU, FEISHU_AUTH, FEISHU_VERSION, ref, routerStep, STORE, STORE_VERSION } from './official-solution-builders'
@@ -10,8 +10,11 @@ function buildBeisenFeishuSolution(): OfficialSolution {
         tables: [DEPARTMENT_TABLE],
         manualChecks: MANUAL_CHECKS,
     })
+    const connectionChecks = built.checks.filter((check) => check.kind === SolutionCheckKind.CONNECTION)
+    const otherChecks = built.checks.filter((check) => check.kind !== SolutionCheckKind.CONNECTION)
     const pkg: SolutionPackage = {
         ...built,
+        checks: [...connectionChecks, orgSolutionCheck({ solutionId: ORG_SOLUTION_ID, solutionName: '北森 → 飞书 组织同步' }), ...otherChecks],
         reconciliationRules: [peopleReconciliation()],
         config: [
             {
@@ -34,8 +37,8 @@ function buildBeisenFeishuSolution(): OfficialSolution {
                 affectsWorkflows: ['leave', 'repair'],
                 patches: [{ workflowKey: 'leave', stepName: 'notify_it', inputKey: 'chatId' }, { workflowKey: 'repair', stepName: 'left_notify_it', inputKey: 'chatId' }],
             },
-            { key: 'rootOrganizationId', label: '北森根组织 OId（全量对账）', type: SolutionConfigType.TEXT, options: [], defaultValue: '', affectsWorkflows: ['repair'], patches: [] },
-            { key: 'orgWorkflow', label: '组织整树收敛子流程的外部 ID', type: SolutionConfigType.TEXT, options: [], defaultValue: '', hint: '先安装并发布组织同步方案，再填写其收敛子流程的 externalId。缺部门对照时会等待它完成后重新查表。', affectsWorkflows: ['onboard', 'transfer', 'repair'], patches: [{ workflowKey: 'onboard', stepName: 'recover_department', inputKey: 'workflowId' }, { workflowKey: 'transfer', stepName: 'recover_department', inputKey: 'workflowId' }, { workflowKey: 'repair', stepName: 'active_recover_department', inputKey: 'workflowId' }] },
+            { key: 'rootOrganizationId', label: '北森根组织 OId（全量对账）', type: SolutionConfigType.TEXT, options: [], defaultValue: '', hint: '全量对账从这个组织往下读北森人员，通常是公司根组织的 OId', affectsWorkflows: ['repair'], patches: [] },
+            { key: 'orgWorkflow', label: '组织整树收敛子流程', type: SolutionConfigType.TEXT, options: [], defaultValue: '', required: false, workflowFrom: { solutionId: ORG_SOLUTION_ID, workflowKey: 'converge' }, hint: '从这个项目里已安装的组织同步方案中选择。缺部门对照时先调用它补齐组织再查表；留空时，缺部门对照的入职和调岗会直接失败，补好映射表后可在「问题」页重放。', affectsWorkflows: ['onboard', 'transfer', 'repair'], patches: [{ workflowKey: 'onboard', stepName: 'recover_department', inputKey: 'workflowId' }, { workflowKey: 'transfer', stepName: 'recover_department', inputKey: 'workflowId' }, { workflowKey: 'repair', stepName: 'active_recover_department', inputKey: 'workflowId' }] },
         ],
     }
     return {
@@ -306,8 +309,24 @@ const MANUAL_CHECKS = [
     { label: '北森返回的手机号没有被脱敏', detail: '脱敏的手机号（如 129****1283）开通不了飞书账号。在连接器的字段权限里放开手机号', who: '北森管理员' },
     { label: '北森开放平台的授信 IP 包含本实例的出口 IP', detail: '不在白名单时北森会拒绝调用', who: '北森管理员' },
     { label: '飞书应用已开通所需权限，且通讯录权限范围覆盖要同步的部门', detail: '更新通讯录、通过手机号或邮箱获取用户 ID、以应用身份发消息；范围之外的部门无法开通账号', who: '飞书管理员' },
-    { label: '映射表里已填好北森部门 OId 对应的飞书部门 ID', detail: '映射表缺少对应关系时，开通和调岗会明确失败，在问题中心修好映射表后可以重放', who: '安装的人' },
+    { label: '在映射表「北森部门到飞书部门」里填好北森部门 OId 对应的飞书部门 ID', detail: '映射表在安装时生成，所以安装后再填；装了组织同步方案时，整树收敛会自动写入部门绑定。缺少对应关系时，开通和调岗会明确失败，修好映射表后在「问题」页重放', who: '安装的人', afterInstall: true },
     { label: '用一名测试员工验证入职和离职都能从北森读到', detail: '北森只返回审批生效的记录，离职要过了最后工作日才算生效；先在北森造一个测试员工，确认触发器测试能读到', who: 'HR 或实施顾问' },
 ]
 
+function orgSolutionCheck({ solutionId, solutionName }: { solutionId: string, solutionName: string }): SolutionCheck {
+    return {
+        key: 'solution:org',
+        label: `同一项目里已安装「${solutionName}」方案`,
+        kind: SolutionCheckKind.SOLUTION,
+        blocking: false,
+        solutionId,
+        detail: '人员同步缺部门对照时，调用组织同步方案的整树收敛子流程补齐组织。不装也能安装本方案，但缺部门对照的入职和调岗会直接失败',
+        who: '安装的人',
+        fixSteps: [`在方案库把「${solutionName}」安装到同一个项目`, '回到这里重新检查，并在配置步骤选择它的整树收敛子流程'],
+    }
+}
+
+const ORG_SOLUTION_ID = 'official-beisen-feishu-org'
+
 export const beisenFeishuSolution = buildBeisenFeishuSolution
+export const beisenFeishuOrgDependency = { orgSolutionCheck }

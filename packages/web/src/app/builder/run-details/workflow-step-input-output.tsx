@@ -12,12 +12,11 @@ import {
   LogSliceRef,
   StepOutputType,
   RunInternalError,
-  WorkflowAction,
-  WorkflowTrigger,
 } from '@fema-ipaas/shared';
-import i18next, { t } from 'i18next';
-import { Download, Info, ShieldAlert, Split } from 'lucide-react';
+import { t } from 'i18next';
+import { Download, Info, ShieldAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { StepOutputSkeleton } from '@/app/components/step-output-skeleton';
 import { SmartOutputViewer } from '@/components/custom/smart-output-viewer';
@@ -29,6 +28,7 @@ import { RunApprovalsNotice } from '@/features/agent-approvals';
 import { connectorsHooks } from '@/features/connectors';
 import { executionUtils } from '@/features/executions';
 import { MaskedPayloadNotice } from '@/features/privacy';
+import { runFocusUtils } from '@/features/run-logs/utils/run-focus-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { formatUtils } from '@/lib/format-utils';
 
@@ -38,8 +38,9 @@ import { DataDisplayTabs } from '../data-display/data-display-tabs';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
 import { FriendlyErrorView } from '../data-display/friendly-error-view';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
-import { runPathUtils } from '../workflow-canvas/utils/run-path';
 
+import { builtinOutputSchemas } from './builtin-output-schemas';
+import { RouterHitSummary } from './router-hit-summary';
 import { truncatedInputUtils } from './truncated-input-utils';
 
 type RunActiveTab = 'input' | 'output' | 'timeline';
@@ -60,8 +61,13 @@ export const WorkflowStepInputOutput = () => {
   const isAgent = false;
   const isTrigger =
     !isNil(selectedStep) && workflowStructureUtil.isTrigger(selectedStep.type);
-  const [requestedTab, setActiveTab] = useState<RunActiveTab>(
-    isAgent ? 'timeline' : 'output',
+  const [searchParams] = useSearchParams();
+  const [requestedTab, setActiveTab] = useState<RunActiveTab>(() =>
+    runFocusUtils.parse(searchParams).panel === 'input'
+      ? 'input'
+      : isAgent
+      ? 'timeline'
+      : 'output',
   );
   const activeTab: RunActiveTab =
     (requestedTab === 'timeline' && !isAgent) ||
@@ -174,6 +180,13 @@ export const WorkflowStepInputOutput = () => {
       </div>
     );
   }
+  const failureOutputSchema =
+    selectedStepOutput.status === StepOutputStatus.FAILED
+      ? builtinOutputSchemas.failureOutput(selectedStepOutput.output)
+      : null;
+  const stepMaskedFields =
+    builtinOutputSchemas.maskedValueCount(selectedStepOutput.input) +
+    builtinOutputSchemas.maskedValueCount(selectedStepOutput.output);
   const status: 'success' | 'failed' | 'testing' | 'idle' =
     selectedStepOutput.status === StepOutputStatus.FAILED
       ? 'failed'
@@ -235,7 +248,8 @@ export const WorkflowStepInputOutput = () => {
           <MaskedPayloadNotice
             executionId={run.id}
             stepName={selectedStep.name}
-            maskedFields={run.privacyMaskedFields ?? 0}
+            maskedFields={stepMaskedFields}
+            scope="step"
             redacted={run.payloadRedacted ?? false}
             canReveal={run.canRevealPayload ?? false}
             rawExpired={run.rawPayloadExpired ?? false}
@@ -266,6 +280,11 @@ export const WorkflowStepInputOutput = () => {
               <SmartOutputViewer
                 json={selectedStepOutput.input}
                 title={t('Data')}
+                connectorSchema={builtinOutputSchemas.inputSchema({
+                  step: selectedStep,
+                  connectorModel,
+                  input: selectedStepOutput.input,
+                })}
               />
             </TabsContent>
           )}
@@ -275,6 +294,13 @@ export const WorkflowStepInputOutput = () => {
               <RouterHitSummary
                 step={selectedStep}
                 output={selectedStepOutput.output}
+              />
+            )}
+            {!isStepRunning && !isNil(failureOutputSchema) && (
+              <SmartOutputViewer
+                json={selectedStepOutput.output}
+                title={t('Failure details passed to the failure branch')}
+                connectorSchema={failureOutputSchema}
               />
             )}
             {isStepRunning ? (
@@ -289,9 +315,14 @@ export const WorkflowStepInputOutput = () => {
               />
             ) : status === 'success' ? (
               <SmartOutputViewer
-                json={parsedOutput}
+                json={builtinOutputSchemas.displayOutput({
+                  step: selectedStep,
+                  output: parsedOutput,
+                })}
                 title={t('Data')}
-                connectorSchema={connectorSchema}
+                connectorSchema={
+                  connectorSchema ?? builtinOutputSchemas.forStep(selectedStep)
+                }
               />
             ) : (
               <DataDisplayTabs
@@ -307,44 +338,6 @@ export const WorkflowStepInputOutput = () => {
     </div>
   );
 };
-
-const RouterHitSummary = ({
-  step,
-  output,
-}: {
-  step: WorkflowAction | WorkflowTrigger;
-  output: unknown;
-}) => {
-  if (!isActionStep(step)) {
-    return null;
-  }
-  const names = runPathUtils
-    .routerHitBranchNames({ step, output })
-    ?.map((name) => (name === 'Otherwise' ? t('Otherwise') : name));
-  if (isNil(names)) {
-    return null;
-  }
-  return (
-    <div className="flex items-start gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
-      <Split className="mt-0.5 size-4 shrink-0 text-primary" />
-      <span className="min-w-0 break-words">
-        {names.length === 0
-          ? t('No branch matched, so none of the branches ran')
-          : t('Matched branch: {names}', {
-              names: new Intl.ListFormat(i18next.language, {
-                type: 'conjunction',
-              }).format(names),
-            })}
-      </span>
-    </div>
-  );
-};
-
-function isActionStep(
-  step: WorkflowAction | WorkflowTrigger,
-): step is WorkflowAction {
-  return workflowStructureUtil.isAction(step.type);
-}
 
 const InternalErrorPanel = ({
   internalError,

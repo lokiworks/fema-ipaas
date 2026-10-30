@@ -1,5 +1,5 @@
 import { ApplicationError, EntityId, ErrorCode, isNil, Permission, SeekPage, UserId } from '@fema-ipaas/core-utils'
-import { CountWorkflowsRequest, CreateWorkflowRequest, GetWorkflowQueryParamsRequest, GetWorkflowTemplateRequestQuery, ListWorkflowsRequest, PopulatedWorkflow, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, SharedTemplate, workflowCompiler, WorkflowOperationRequest, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
+import { CountWorkflowsRequest, CreateWorkflowRequest, GetWorkflowQueryParamsRequest, GetWorkflowTemplateRequestQuery, ListWorkflowsRequest, PopulatedWorkflow, PrincipalType, SERVICE_KEY_SECURITY_OPENAPI, SharedTemplate, workflowCompiler, WorkflowOperationRequest, WorkflowOperationStatus, WorkflowOperationType, workflowStructureUtil, WorkflowTrigger } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -173,11 +173,18 @@ export const workflowController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/:id', GetWorkflowRequestOptions, async (request) => {
-        return workflowService(request.log).getOnePopulatedOrThrow({
+        const workflow = await workflowService(request.log).getOnePopulatedOrThrow({
             id: request.params.id,
             projectId: request.projectId,
             versionId: request.query.versionId,
         })
+        if (workflow.operationStatus === WorkflowOperationStatus.DELETING) {
+            throw new ApplicationError({
+                code: ErrorCode.ENTITY_NOT_FOUND,
+                params: { entityType: 'workflow', entityId: request.params.id },
+            })
+        }
+        return workflow
     })
 
     app.delete('/:id', DeleteWorkflowRequestOptions, async (request, reply) => {

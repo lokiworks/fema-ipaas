@@ -1,5 +1,5 @@
-import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@fema-ipaas/shared'
+import { ApplicationError, EntityId, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { CheckResetPasswordLinkRequestBody, CheckResetPasswordLinkResponse, OtpType, ResetPasswordRequestBody, UserIdentity, VerifyEmailRequestBody } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -23,6 +23,18 @@ const localAuthnController: FastifyPluginAsyncZod = async (app) => {
             log: req.log,
         })
         return userIdentityService(req.log).verify(req.body.identityId)
+    })
+
+    app.post('/reset-password/check', CheckResetPasswordLinkRequest, async (req): Promise<CheckResetPasswordLinkResponse> => {
+        if (!EntityId.safeParse(req.body.identityId).success || req.body.otp.length === 0) {
+            return { valid: false }
+        }
+        const valid = await otpService(req.log).check({
+            identityId: req.body.identityId,
+            type: OtpType.PASSWORD_RESET,
+            value: req.body.otp,
+        })
+        return { valid }
     })
 
     app.post('/reset-password', ResetPasswordRequest, async (req, res) => {
@@ -75,6 +87,19 @@ const ResetPasswordRequest = {
     },
     schema: {
         body: ResetPasswordRequestBody,
+    },
+}
+
+const CheckResetPasswordLinkRequest = {
+    config: {
+        security: securityAccess.public(),
+        rateLimit: authnRateLimit,
+    },
+    schema: {
+        body: CheckResetPasswordLinkRequestBody,
+        response: {
+            [StatusCodes.OK]: CheckResetPasswordLinkResponse,
+        },
     },
 }
 

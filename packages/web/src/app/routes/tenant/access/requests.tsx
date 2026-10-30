@@ -23,6 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProjectAccessRequestsToReview } from '@/features/project-access-requests';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 
 export default function AccessRequestsPage() {
@@ -36,9 +37,7 @@ export default function AccessRequestsPage() {
   return (
     <ConsolePage
       title={t('Permission requests')}
-      description={t(
-        'Members can ask for modules they do not have. How they are told is set in permission settings.',
-      )}
+      description={t('permissionRequestsScopeDescription')}
     >
       <div className="flex flex-col gap-4">
         {settings && !settings.allowRequests && (
@@ -57,6 +56,7 @@ export default function AccessRequestsPage() {
             )}
           </AlertDescription>
         </Alert>
+        <ProjectAccessRequestsToReview />
         <Tabs
           value={filter}
           onValueChange={(value) =>

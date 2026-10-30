@@ -144,7 +144,13 @@ function RunRecord() {
         <span>
           {run.environment === RunEnvironment.PRODUCTION
             ? t('Production')
-            : t('Debug')}
+            : isNil(run.stepNameToTest)
+            ? t('Full debug')
+            : t('Step test: {step}', {
+                step:
+                  workflowStructureUtil.getStep(run.stepNameToTest, trigger)
+                    ?.displayName ?? run.stepNameToTest,
+              })}
         </span>
       </div>
       <div className="flex items-center gap-2 px-3 pb-2">
@@ -268,8 +274,8 @@ function NodeRow({
         className={cn('size-2 shrink-0 rounded-full', STATUS_DOT[row.status])}
       />
       <span className="min-w-0 grow truncate">{row.displayName}</span>
-      <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
-        {row.displayNumber}
+      <span className="shrink-0 text-[11px] text-muted-foreground">
+        {t('Step {position}', { position: row.ordinal })}
       </span>
       {row.status === DebugNodeStatus.RUNNING && (
         <span className="shrink-0 text-[11px] text-muted-foreground">

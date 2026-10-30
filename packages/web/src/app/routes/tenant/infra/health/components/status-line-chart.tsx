@@ -1,4 +1,5 @@
 import { ExecutionStatus, TenantMetricsStatusPoint } from '@fema-ipaas/shared';
+import dayjs from 'dayjs';
 import { t } from 'i18next';
 import { LineChart as LineChartIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -32,9 +33,14 @@ const SERIES: Array<{ status: ExecutionStatus; label: string; color: string }> =
 type StatusLineChartProps = {
   data: TenantMetricsStatusPoint[] | undefined;
   isLoading: boolean;
+  range: { createdAfter: string; createdBefore: string };
 };
 
-export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
+export function StatusLineChart({
+  data,
+  isLoading,
+  range,
+}: StatusLineChartProps) {
   const [selectedStatuses, setSelectedStatuses] = useState<ExecutionStatus[]>(
     SERIES.map((item) => item.status),
   );
@@ -51,17 +57,17 @@ export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
     );
   };
 
-  const chartData = useMemo(() => {
-    const byDay = new Map<string, Record<string, string | number>>();
-    for (const point of data ?? []) {
-      const existing = byDay.get(point.day) ?? createEmptyDay(point.day);
-      existing[point.status] = point.count;
-      byDay.set(point.day, existing);
-    }
-    return Array.from(byDay.values()).sort((a, b) =>
-      String(a.date).localeCompare(String(b.date)),
-    );
-  }, [data]);
+  const points = data ?? [];
+  const chartData = useMemo(
+    () =>
+      statusChartRows({
+        points: data ?? [],
+        from: range.createdAfter,
+        to: range.createdBefore,
+        now: Date.now(),
+      }),
+    [data, range.createdAfter, range.createdBefore],
+  );
 
   const chartConfig = selectedSeries.reduce((config, item) => {
     config[item.status] = { label: t(item.label), color: item.color };
@@ -105,7 +111,7 @@ export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
               {t('Select at least one status to display')}
             </p>
           </div>
-        ) : chartData.length === 0 ? (
+        ) : points.length === 0 ? (
           <div className="flex h-[300px] w-full flex-col items-center justify-center gap-2">
             <LineChartIcon className="size-10 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
@@ -200,10 +206,35 @@ export function StatusLineChart({ data, isLoading }: StatusLineChartProps) {
   );
 }
 
-function createEmptyDay(day: string): Record<string, string | number> {
-  const row: Record<string, string | number> = { date: day };
-  for (const series of SERIES) {
-    row[series.status] = 0;
-  }
-  return row;
+function statusChartRows({
+  points,
+  from,
+  to,
+  now,
+}: {
+  points: TenantMetricsStatusPoint[];
+  from: string;
+  to: string;
+  now: number;
+}): Record<string, string | number>[] {
+  const counts = new Map(
+    points.map((point) => [
+      `${dayjs(point.day).format('YYYY-MM-DD')}|${point.status}`,
+      point.count,
+    ]),
+  );
+  const first = dayjs(from).startOf('day');
+  const last = dayjs(Math.min(dayjs(to).valueOf(), now)).startOf('day');
+  const dayCount = Math.max(last.diff(first, 'day') + 1, 1);
+  return Array.from({ length: dayCount }, (_, index) => {
+    const day = first.add(index, 'day');
+    const key = day.format('YYYY-MM-DD');
+    return SERIES.reduce<Record<string, string | number>>(
+      (row, series) => ({
+        ...row,
+        [series.status]: counts.get(`${key}|${series.status}`) ?? 0,
+      }),
+      { date: day.toISOString() },
+    );
+  });
 }

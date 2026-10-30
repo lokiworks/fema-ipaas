@@ -43,7 +43,7 @@ export const feishuOutputSchemas = {
       { key: 'message_id', label: 'Message ID' },
       { key: 'chat_id', label: 'Chat ID' },
       { key: 'message_type', label: 'Message Type' },
-      { key: 'created_at', label: 'Created At', description: 'Milliseconds since 1970, as Feishu returns it.' },
+      { key: 'created_at', label: 'Created At', format: 'datetime', description: 'Milliseconds since 1970, as Feishu returns it.' },
     ],
   }),
   listDepartmentUsers: schema({

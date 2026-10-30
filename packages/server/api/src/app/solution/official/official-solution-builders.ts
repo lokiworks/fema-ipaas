@@ -1,5 +1,5 @@
 import { MappingMissingBehavior } from '@fema-ipaas/core-utils'
-import { WorkflowTrigger } from '@fema-ipaas/shared'
+import { PropertyExecutionType, WorkflowTrigger } from '@fema-ipaas/shared'
 
 function beisenTrigger({ displayName, statusScope, changeTypes, dedupeKey, dedupeDays, serial, orderKeyPath, nextAction }: BeisenTriggerParams): WorkflowTrigger {
     return WorkflowTrigger.parse({
@@ -34,7 +34,7 @@ function concurrencyOf({ serial, orderKeyPath }: { serial?: boolean, orderKeyPat
     return orderKeyPath === undefined ? {} : { concurrency: { maxConcurrentRuns: 0, orderKeyPath } }
 }
 
-function connectorStep({ name, displayName, connectorName, connectorVersion, actionName, input, retry, nextAction }: ConnectorStepParams): Record<string, unknown> {
+function connectorStep({ name, displayName, connectorName, connectorVersion, actionName, input, retry, dynamic = [], nextAction }: ConnectorStepParams): Record<string, unknown> {
     return {
         type: 'CONNECTOR',
         name,
@@ -46,7 +46,7 @@ function connectorStep({ name, displayName, connectorName, connectorVersion, act
             connectorVersion,
             actionName,
             input,
-            propertySettings: {},
+            propertySettings: Object.fromEntries(dynamic.map((key) => [key, { type: PropertyExecutionType.DYNAMIC }])),
             errorHandlingOptions: retry ? { retryOnFailure: { value: true }, continueOnFailure: { value: false } } : {},
         },
         ...(nextAction ? { nextAction } : {}),
@@ -118,6 +118,7 @@ type ConnectorStepParams = {
     actionName: string
     input: Record<string, unknown>
     retry?: boolean
+    dynamic?: string[]
     nextAction?: Record<string, unknown>
 }
 

@@ -1,4 +1,6 @@
 import {
+  CheckResetPasswordLinkRequestBody,
+  CheckResetPasswordLinkResponse,
   CreateOtpRequestBody,
   CompleteSignUpRequest,
   RequestEmailCodeRequest,
@@ -45,6 +47,12 @@ export const authenticationApi = {
   },
   sendOtpEmail(request: CreateOtpRequestBody) {
     return api.post<void>('/v1/otp', request);
+  },
+  checkResetPasswordLink(request: CheckResetPasswordLinkRequestBody) {
+    return api.post<CheckResetPasswordLinkResponse>(
+      '/v1/authn/local/reset-password/check',
+      request,
+    );
   },
   resetPassword(request: ResetPasswordRequestBody) {
     return api.post<void>('/v1/authn/local/reset-password', request);

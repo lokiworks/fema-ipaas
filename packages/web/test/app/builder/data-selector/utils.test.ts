@@ -163,8 +163,11 @@ describe('dataSelectorUtils.traverseStep — failure branch', () => {
 
     expect(leafNames(tree)).toEqual([
       'Failure error code',
+      'Platform error category',
       'Failure error message',
+      'Original error message',
       'Failure time',
+      'Failure time (ISO 8601, UTC)',
     ]);
     expect(collectPropertyPaths(tree)).toContain(
       "step_1['output']['errorMessage']",
@@ -183,8 +186,11 @@ describe('dataSelectorUtils.traverseStep — failure branch', () => {
 
     expect(leafNames(tree)).toEqual([
       'Failure error code',
+      'Platform error category',
       'Failure error message',
+      'Original error message',
       'Failure time',
+      'Failure time (ISO 8601, UTC)',
     ]);
   });
 });

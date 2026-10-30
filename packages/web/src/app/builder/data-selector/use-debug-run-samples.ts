@@ -13,6 +13,7 @@ import { executionsApi } from '@/features/executions';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { useBuilderStateContext } from '../builder-hooks';
+import { debugTestedStepsUtils } from '../state/debug-tested-steps';
 
 import { dataSelectorUtils } from './utils';
 
@@ -90,11 +91,23 @@ async function fetchLatestDebugOutputs({
   }
   const run = await executionsApi.getPopulated(latest.id);
   return Object.fromEntries(
-    Object.entries(run.steps ?? {}).flatMap(([stepName, stepOutput]) =>
-      stepOutput.status === StepOutputStatus.SUCCEEDED
-        ? [[stepName, stepOutput.output]]
-        : [],
+    Object.entries(
+      debugTestedStepsUtils.flattenRunSteps(run.steps ?? {}),
+    ).flatMap(([stepName, stepOutput]) =>
+      isSucceededOutput(stepOutput) ? [[stepName, stepOutput.output]] : [],
     ),
+  );
+}
+
+function isSucceededOutput(
+  value: unknown,
+): value is { status: StepOutputStatus; output: unknown } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'status' in value &&
+    value.status === StepOutputStatus.SUCCEEDED &&
+    'output' in value
   );
 }
 

@@ -15,6 +15,7 @@ import { Archive, ChevronDown, CopyMinus, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   Link,
+  Navigate,
   useNavigate,
   useParams,
   useSearchParams,
@@ -110,7 +111,11 @@ const RunsPage = () => {
     singleProject(state) ??
     (dedupeCandidates.length === 1 ? dedupeCandidates[0].id : null);
 
-  const applyState = (next: RunLogFilterState) =>
+  const applyState = (next: RunLogFilterState) => {
+    if (!isNil(presetProjectId) && !hasProjectCondition(next)) {
+      navigate(globalLogsPath({ state: next, base: searchParams }));
+      return;
+    }
     setSearchParams(
       runLogFilterUtils.writeSearchParams({
         state: next,
@@ -118,6 +123,7 @@ const RunsPage = () => {
         presetProjectId,
       }),
     );
+  };
   const openRun = (id: string) => {
     const base = new URLSearchParams(searchParams);
     base.set(RUN_PARAM, id);
@@ -179,9 +185,22 @@ const RunsPage = () => {
     applyState({
       ...state,
       match: RunLogMatch.ALL,
-      conditions: [],
+      conditions: isNil(presetProjectId)
+        ? []
+        : state.conditions.filter(
+            (condition) => condition.field === RunLogConditionField.PROJECT,
+          ),
       runIds: [],
     });
+
+  if (
+    !isNil(presetProjectId) &&
+    searchParams.get(ALL_PROJECTS_PARAM) === 'true'
+  ) {
+    return (
+      <Navigate replace to={globalLogsPath({ state, base: searchParams })} />
+    );
+  }
 
   return (
     <ConsolePage
@@ -379,7 +398,35 @@ function singleProject(state: RunLogFilterState): string | null {
   return project.values[0];
 }
 
+function hasProjectCondition(state: RunLogFilterState): boolean {
+  return state.conditions.some(
+    (condition) =>
+      condition.field === RunLogConditionField.PROJECT &&
+      condition.values.length > 0,
+  );
+}
+
+function globalLogsPath({
+  state,
+  base,
+}: {
+  state: RunLogFilterState;
+  base: URLSearchParams;
+}): string {
+  const next = new URLSearchParams(base);
+  next.delete(ALL_PROJECTS_PARAM);
+  next.delete(CURSOR_QUERY_PARAM);
+  next.delete(VIEW_PARAM);
+  const params = runLogFilterUtils.writeSearchParams({
+    state,
+    base: next,
+    presetProjectId: null,
+  });
+  return `/logs?${params.toString()}`;
+}
+
 const VIEW_PARAM = 'view';
+const ALL_PROJECTS_PARAM = 'allProjects';
 const DEDUPED_VIEW = 'deduped';
 const RUN_PARAM = 'run';
 const DEFAULT_LIMIT = 10;

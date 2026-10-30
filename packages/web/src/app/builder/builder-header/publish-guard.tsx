@@ -8,6 +8,7 @@ import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { LeftSideBarType } from '@/app/builder/types';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
+import { stepLocationUtils } from '@/app/builder/workflow-canvas/utils/step-location';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -135,9 +136,14 @@ function PublishWarningsDialog({
                 <TriangleAlertIcon className="mt-0.5 size-3.5 shrink-0 text-warning" />
                 <div className="flex min-w-0 flex-col">
                   <span>{validationMessages.messageOf(issue)}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {workflowStructureUtil.getStep(issue.stepName, trigger)
-                      ?.displayName ?? issue.stepName}
+                  <span className="text-xs text-muted-foreground">
+                    {stepLocationUtils.label({
+                      trigger,
+                      stepName: issue.stepName,
+                    }) ||
+                      (workflowStructureUtil.getStep(issue.stepName, trigger)
+                        ?.displayName ??
+                        issue.stepName)}
                   </span>
                 </div>
               </div>

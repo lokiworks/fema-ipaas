@@ -20,6 +20,7 @@ import { useDebounce } from 'use-debounce';
 import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import { MasterDetailLayout } from '@/components/custom/master-detail-layout';
 import { SearchInput } from '@/components/custom/search-input';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
@@ -119,19 +120,13 @@ function DataStoresPage() {
       )}
       {isLoading && <Skeleton className="h-64 w-full" />}
       {!isLoading && (stores ?? []).length === 0 && (
-        <div className="flex flex-col items-start gap-2 rounded-md border border-dashed p-6">
-          <Database className="size-8 text-muted-foreground" />
-          <span className="text-sm font-medium">{t('No data stores yet')}</span>
-          <span className="text-sm text-muted-foreground">
-            {t('dataStoresEmptyDescription')}
-          </span>
-          {canWrite && (
-            <Button size="sm" onClick={() => openDialog(null)}>
-              <Plus className="size-4 mr-1" />
-              {t('New data store')}
-            </Button>
-          )}
-        </div>
+        <ListEmptyState
+          align="start"
+          icon={Database}
+          title={t('No data stores yet')}
+          description={t('dataStoresEmptyDescription')}
+          testId="data-stores-empty"
+        />
       )}
       {(stores ?? []).length > 0 && (
         <MasterDetailLayout

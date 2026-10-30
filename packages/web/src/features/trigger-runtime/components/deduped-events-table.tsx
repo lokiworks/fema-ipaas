@@ -1,8 +1,12 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { DedupedEventWithWorkflow } from '@fema-ipaas/shared';
+import {
+  DedupedEventWithWorkflow,
+  ExecutionStatus,
+  isFailedState,
+} from '@fema-ipaas/shared';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
-import { CopyX, ExternalLink, Settings2 } from 'lucide-react';
+import { CopyX, ExternalLink, Settings2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -16,6 +20,7 @@ import { DataTableColumnHeader } from '@/components/custom/data-table/data-table
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { MessageTooltip } from '@/components/custom/message-tooltip';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,6 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { executionUtils } from '@/features/executions';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { triggerRuntimeHooks } from '../hooks/trigger-runtime-hooks';
@@ -111,6 +117,16 @@ function DedupedEventDialog({
                 )}
               </DialogDescription>
             </DialogHeader>
+            {firstRunFailed(event.firstExecutionStatus) && (
+              <Alert variant="warning" data-testid="deduped-first-run-failed">
+                <TriangleAlert className="size-4" />
+                <AlertDescription>
+                  {t(
+                    'The first run failed, so this event has not been processed yet. Retry the first run, or ask the sender to resend it: while the first run is failed, a resent event starts a new run instead of being deduplicated.',
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
             <DialogFooter>
               <Button
                 type="button"
@@ -197,6 +213,15 @@ function dedupedEventColumns({
       cell: ({ row }) => windowLabel(row.original.windowSeconds),
     },
     {
+      accessorKey: 'firstExecutionStatus',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('First run status')} />
+      ),
+      cell: ({ row }) => (
+        <FirstRunStatus status={row.original.firstExecutionStatus} />
+      ),
+    },
+    {
       accessorKey: 'firstExecutionId',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('First run')} />
@@ -222,6 +247,37 @@ function dedupedEventColumns({
       },
     },
   ];
+}
+
+function FirstRunStatus({ status }: { status?: ExecutionStatus | null }) {
+  if (isNil(status)) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+  const failed = firstRunFailed(status);
+  const label = executionUtils.getStatusLabel(status);
+  if (!failed) {
+    return <span>{label}</span>;
+  }
+  return (
+    <MessageTooltip
+      isDisabled
+      message={t(
+        'The first run failed, so this event has not been processed yet. Retry the first run to process it.',
+      )}
+    >
+      <span
+        className="inline-flex items-center gap-1 text-destructive-700 dark:text-destructive-200"
+        data-testid="deduped-first-run-failed-cell"
+      >
+        <TriangleAlert className="size-3.5" />
+        {t('{status}, not processed', { status: label })}
+      </span>
+    </MessageTooltip>
+  );
+}
+
+function firstRunFailed(status?: ExecutionStatus | null): boolean {
+  return !isNil(status) && isFailedState(status);
 }
 
 function windowLabel(seconds: number): string {

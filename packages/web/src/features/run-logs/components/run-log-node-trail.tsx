@@ -27,6 +27,10 @@ import { MaskedPayloadNotice } from '@/features/privacy';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
+import {
+  NodeErrorSummary,
+  runLogErrorSummary,
+} from '../utils/run-log-error-summary';
 import { RunLogStepNode, runLogUiUtils } from '../utils/run-log-ui-utils';
 
 export function RunLogNodeTrail({
@@ -76,11 +80,13 @@ export function RunLogNodeTrail({
     <div className="flex min-h-0 flex-col gap-3">
       {errorNodes.length > 0 && (
         <div className="flex items-center gap-2 text-xs">
-          <span className="text-destructive">
-            {t('{count, plural, =1 {1 step failed} other {# steps failed}}', {
-              count: errorNodes.length,
+          <ErrorSummaryText
+            summary={runLogErrorSummary.summarize({
+              runStatus: run.status,
+              failedStepName: run.failedStep?.name ?? null,
+              nodes,
             })}
-          </span>
+          />
           <Button
             type="button"
             variant="ghost"
@@ -145,6 +151,32 @@ export function RunLogNodeTrail({
         )}
       </div>
     </div>
+  );
+}
+
+function ErrorSummaryText({ summary }: { summary: NodeErrorSummary }) {
+  if (summary.kind === 'NONE') {
+    return null;
+  }
+  return (
+    <span className="flex flex-col" data-testid="run-log-error-summary">
+      {summary.kind === 'FAILED_AT' ? (
+        <span className="text-destructive">
+          {t('runLogFailedAtStep', { step: summary.failingNode ?? '—' })}
+        </span>
+      ) : (
+        <span className="text-muted-foreground">
+          {t('runLogDidNotFailButStepsErred', {
+            count: summary.continuedCount,
+          })}
+        </span>
+      )}
+      {summary.kind === 'FAILED_AT' && summary.continuedCount > 0 && (
+        <span className="text-muted-foreground">
+          {t('runLogContinuedAfterErrors', { count: summary.continuedCount })}
+        </span>
+      )}
+    </span>
   );
 }
 

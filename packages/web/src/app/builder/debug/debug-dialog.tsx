@@ -19,6 +19,7 @@ import { z } from 'zod';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
+import { stepLocationUtils } from '@/app/builder/workflow-canvas/utils/step-location';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -283,6 +284,9 @@ function WriteStepsNotice({
   isTestEnvironment: boolean;
 }) {
   const { writeSteps } = useBuilderValidation();
+  const trigger = useBuilderStateContext(
+    (state) => state.workflowVersion.trigger,
+  );
   if (writeSteps.length === 0) {
     return null;
   }
@@ -300,16 +304,30 @@ function WriteStepsNotice({
             { count: writeSteps.length },
           )}
         </span>
-        <span className="text-xs">
-          {shown
-            .map((step) =>
-              step.destructive
-                ? t('{name} (may be irreversible)', { name: step.displayName })
-                : step.displayName,
-            )
-            .join(', ')}
-          {writeSteps.length > MAX_WRITE_STEPS_SHOWN ? '…' : ''}
-        </span>
+        <ul className="flex list-disc flex-col gap-0.5 pl-4 text-xs">
+          {shown.map((step) => (
+            <li key={step.stepName}>
+              <span className="font-medium">
+                {step.destructive
+                  ? t('{name} (may be irreversible)', {
+                      name: step.displayName,
+                    })
+                  : step.displayName}
+              </span>
+              <span className="opacity-80">
+                {' · '}
+                {stepLocationUtils.label({ trigger, stepName: step.stepName })}
+              </span>
+            </li>
+          ))}
+          {writeSteps.length > MAX_WRITE_STEPS_SHOWN && (
+            <li className="list-none">
+              {t('{count, plural, other {and # more}}', {
+                count: writeSteps.length - MAX_WRITE_STEPS_SHOWN,
+              })}
+            </li>
+          )}
+        </ul>
         <span className="text-xs">
           {t(
             'Branches decide which of them actually run. Debugging does not publish the workflow, but these steps are not simulated.',

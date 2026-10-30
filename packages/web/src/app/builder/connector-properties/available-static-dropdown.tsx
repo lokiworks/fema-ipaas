@@ -5,6 +5,7 @@ import { t } from 'i18next';
 import { SearchableSelect } from '@/components/custom/searchable-select';
 import { flagsHooks } from '@/hooks/flags-hooks';
 
+import { dropdownValueUtils } from './dropdown-value-utils';
 import { StaticDropdownCards } from './static-dropdown-cards';
 
 export function AvailableStaticDropdown(props: Props) {
@@ -39,6 +40,11 @@ function WithFlags(props: Props) {
 }
 
 function Choices({ property, value, onChange, disabled }: Props) {
+  const current = dropdownValueUtils.withCurrentValue({
+    value,
+    options: property.options.options,
+    loading: false,
+  });
   const handleChange = (next: unknown) =>
     isNil(next) && !isNil(property.defaultValue)
       ? onChange(property.defaultValue)
@@ -51,14 +57,23 @@ function Choices({ property, value, onChange, disabled }: Props) {
       disabled={disabled}
     />
   ) : (
-    <SearchableSelect
-      options={property.options.options}
-      onChange={handleChange}
-      value={value}
-      disabled={disabled}
-      placeholder={property.options.placeholder ?? t('Select an option')}
-      showDeselect={!property.required}
-    />
+    <div className="flex flex-col gap-1">
+      <SearchableSelect
+        options={current.options}
+        onChange={handleChange}
+        value={value}
+        disabled={disabled}
+        placeholder={property.options.placeholder ?? t('Select an option')}
+        showDeselect={!property.required}
+      />
+      {current.missing && (
+        <span className="text-xs text-warning-700">
+          {t(
+            'The saved value is not in the current list. It may have been deleted or the connection cannot see it. Pick another option or keep it as it is.',
+          )}
+        </span>
+      )}
+    </div>
   );
 }
 

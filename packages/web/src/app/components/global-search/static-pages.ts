@@ -1,10 +1,19 @@
 import { TenantModule } from '@fema-ipaas/shared';
 import {
   ActivityIcon,
+  ArrowUpCircleIcon,
+  BoxesIcon,
+  CalendarOffIcon,
+  DatabaseBackupIcon,
+  GaugeIcon,
+  InboxIcon,
+  KeyRound as KeyRoundIcon,
   Link2Icon,
   PackageIcon,
   ScrollTextIcon,
   ServerCogIcon,
+  ShieldCheckIcon,
+  ShieldQuestionIcon,
   SirenIcon,
   TerminalIcon,
 } from 'lucide-react';
@@ -24,16 +33,6 @@ import { ShieldIcon } from '@/components/icons/shield';
 import { SquareDashedBottomCodeIcon } from '@/components/icons/square-dashed-bottom-code';
 import { UnplugIcon } from '@/components/icons/unplug';
 import { UsersIcon } from '@/components/icons/users';
-
-export type StaticPage = {
-  id: string;
-  label: string;
-  href: string;
-  icon: ComponentType<{ className?: string; size?: number }>;
-  requiresTenantAdmin?: boolean;
-  projectScoped?: boolean;
-  module?: TenantModule;
-};
 
 export const STATIC_PAGES: StaticPage[] = [
   {
@@ -82,8 +81,16 @@ export const STATIC_PAGES: StaticPage[] = [
     icon: PackageIcon,
   },
   {
+    id: 'page-tenant-admin',
+    label: 'Tenant Admin',
+    href: '/tenant/projects',
+    icon: ShieldIcon,
+    requiresTenantAdmin: true,
+  },
+  {
     id: 'page-tenant-projects',
-    label: 'Tenant Admin — Projects and limits',
+    label: 'Tenant Admin — Projects',
+    keywords: ['Projects and limits'],
     href: '/tenant/projects',
     icon: LayoutGridIcon,
     requiresTenantAdmin: true,
@@ -91,8 +98,23 @@ export const STATIC_PAGES: StaticPage[] = [
   {
     id: 'page-tenant-users',
     label: 'Tenant Admin — Members',
+    keywords: ['Users'],
     href: '/tenant/users',
     icon: UsersIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-access-requests',
+    label: 'Tenant Admin — Permission requests',
+    href: '/tenant/access/requests',
+    icon: InboxIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-access-settings',
+    label: 'Tenant Admin — Permission settings',
+    href: '/tenant/access/settings',
+    icon: ShieldQuestionIcon,
     requiresTenantAdmin: true,
   },
   {
@@ -103,24 +125,17 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-connector-marketplace',
-    label: 'Tenant Admin — Connector Marketplace',
-    href: '/tenant/connectors',
-    icon: PuzzleIcon,
+    id: 'page-tenant-resources',
+    label: 'Tenant Admin — Integration resources',
+    href: '/tenant/resources',
+    icon: BoxesIcon,
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-connector-development',
-    label: 'Tenant Admin — Connector Development',
-    href: '/tenant/connectors/development',
-    icon: TerminalIcon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-connector-openapi',
-    label: 'Tenant Admin — Import from OpenAPI',
-    href: '/tenant/connectors/openapi',
-    icon: FileJson2Icon,
+    id: 'page-tenant-usage-limits',
+    label: 'Tenant Admin — Usage and limits',
+    href: '/tenant/limits/usage',
+    icon: GaugeIcon,
     requiresTenantAdmin: true,
   },
   {
@@ -139,7 +154,7 @@ export const STATIC_PAGES: StaticPage[] = [
   },
   {
     id: 'page-tenant-connectors',
-    label: 'Tenant Admin — Connectors',
+    label: 'Tenant Admin — Installed connectors',
     href: '/tenant/setup/connectors',
     icon: PuzzleIcon,
     requiresTenantAdmin: true,
@@ -152,6 +167,13 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
+    id: 'page-tenant-holidays',
+    label: 'Tenant Admin — Holiday calendar',
+    href: '/tenant/setup/holidays',
+    icon: CalendarOffIcon,
+    requiresTenantAdmin: true,
+  },
+  {
     id: 'page-tenant-audit-log',
     label: 'Tenant Admin — Audit Log',
     href: '/tenant/audit',
@@ -160,9 +182,24 @@ export const STATIC_PAGES: StaticPage[] = [
   },
   {
     id: 'page-tenant-authentication',
-    label: 'Tenant Admin — Authentication',
+    label: 'Tenant Admin — Sign-in and security',
+    keywords: ['Authentication', 'Single sign-on', 'Password'],
     href: '/tenant/security/authentication',
     icon: LogInIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-encryption',
+    label: 'Tenant Admin — Encryption',
+    href: '/tenant/security/encryption',
+    icon: KeyRoundIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-privacy',
+    label: 'Tenant Admin — Data and privacy',
+    href: '/tenant/security/privacy',
+    icon: ShieldCheckIcon,
     requiresTenantAdmin: true,
   },
   {
@@ -180,20 +217,6 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-system',
-    label: 'Tenant Admin — System and upgrades',
-    href: '/tenant/infra/system',
-    icon: ServerIcon,
-    requiresTenantAdmin: true,
-  },
-  {
-    id: 'page-tenant-backup',
-    label: 'Tenant Admin — Backup and restore',
-    href: '/tenant/infra/backup',
-    icon: ServerIcon,
-    requiresTenantAdmin: true,
-  },
-  {
     id: 'page-tenant-triggers',
     label: 'Tenant Admin — Triggers',
     href: '/tenant/infra/triggers',
@@ -201,18 +224,46 @@ export const STATIC_PAGES: StaticPage[] = [
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-usage-limits',
-    label: 'Tenant Admin — Usage and limits',
-    href: '/tenant/limits/usage',
-    icon: ServerIcon,
+    id: 'page-tenant-system',
+    label: 'Tenant Admin — System and upgrades',
+    href: '/tenant/infra/system',
+    icon: ArrowUpCircleIcon,
     requiresTenantAdmin: true,
   },
   {
-    id: 'page-tenant-admin',
-    label: 'Tenant Admin',
-    href: '/tenant/projects',
-    icon: ShieldIcon,
+    id: 'page-tenant-backup',
+    label: 'Tenant Admin — Backup and restore',
+    href: '/tenant/infra/backup',
+    icon: DatabaseBackupIcon,
     requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-connector-marketplace',
+    label: 'Connectors — Connector Marketplace',
+    href: '/tenant/connectors',
+    icon: PuzzleIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-connector-requests',
+    label: 'Connectors — Connector requests',
+    href: '/tenant/connectors/requests',
+    icon: InboxIcon,
+    requiresTenantAdmin: true,
+  },
+  {
+    id: 'page-tenant-connector-development',
+    label: 'Connectors — Connector Development',
+    href: '/tenant/connectors/development',
+    icon: TerminalIcon,
+    module: TenantModule.CONNECTOR_DEVELOPMENT,
+  },
+  {
+    id: 'page-tenant-connector-openapi',
+    label: 'Connectors — Import from OpenAPI',
+    href: '/tenant/connectors/openapi',
+    icon: FileJson2Icon,
+    module: TenantModule.CONNECTOR_DEVELOPMENT,
   },
   {
     id: 'page-account',
@@ -221,3 +272,14 @@ export const STATIC_PAGES: StaticPage[] = [
     icon: SettingsIcon,
   },
 ];
+
+export type StaticPage = {
+  id: string;
+  label: string;
+  keywords?: string[];
+  href: string;
+  icon: ComponentType<{ className?: string; size?: number }>;
+  requiresTenantAdmin?: boolean;
+  projectScoped?: boolean;
+  module?: TenantModule;
+};

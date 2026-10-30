@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/tooltip';
 
 import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
+import { useFieldErrorReveal } from '../step-settings/field-error-reveal';
 
 type TestButtonTooltipProps = {
   children: React.ReactNode;
@@ -22,9 +23,16 @@ const TestButtonTooltip = ({
   saving,
 }: TestButtonTooltipProps) => {
   const { isLoadingDynamicProperties } = useContext(DynamicPropertiesContext);
+  const { reveal } = useFieldErrorReveal();
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip
+        onOpenChange={(open) => {
+          if (open && invalid) {
+            reveal();
+          }
+        }}
+      >
         <TooltipTrigger asChild className="disabled:pointer-events-auto">
           {children}
         </TooltipTrigger>

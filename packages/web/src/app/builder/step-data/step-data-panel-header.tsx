@@ -1,6 +1,6 @@
 import { StepOutputStatus } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Loader2, TriangleAlert } from 'lucide-react';
+import { FlaskConical, Loader2, TriangleAlert } from 'lucide-react';
 
 import { StepStatusIcon } from '@/features/executions';
 import { formatUtils } from '@/lib/format-utils';
@@ -11,6 +11,7 @@ type StepDataPanelHeaderStatus =
   | 'failed'
   | 'testing'
   | 'stale'
+  | 'sample'
   | 'idle';
 type StepDataPanelHeaderViewMode = 'edit' | 'run';
 
@@ -33,10 +34,11 @@ const StepDataPanelHeader = ({
     <div
       className={cn(
         'flex items-center justify-between px-3 py-2 shrink-0 gap-2',
-        status === 'success' && 'bg-success-100',
+        status === 'success' && 'bg-success/10',
         status === 'failed' && 'bg-destructive/10',
         status === 'testing' && 'bg-primary/10',
         status === 'stale' && 'bg-warning/10',
+        status === 'sample' && 'bg-muted',
       )}
     >
       <StepDataPanelStatusBadge status={status} viewMode={viewMode} />
@@ -44,9 +46,10 @@ const StepDataPanelHeader = ({
         <span
           className={cn(
             'text-xs truncate',
-            status === 'success' && 'text-success-700/80',
-            status === 'failed' && 'text-destructive/80',
-            status === 'stale' && 'shrink-0 text-muted-foreground',
+            status === 'success' && 'text-success-700',
+            status === 'failed' && 'text-destructive-700',
+            (status === 'stale' || status === 'sample') &&
+              'shrink-0 text-muted-foreground',
           )}
         >
           {formatUtils.formatDateWithTime(new Date(lastTestDate), false)}
@@ -83,6 +86,16 @@ const StepDataPanelStatusBadge = ({
           {t(
             'Configuration changed. The test result may be outdated, test again',
           )}
+        </span>
+      </div>
+    );
+  }
+  if (status === 'sample') {
+    return (
+      <div className="flex min-w-0 items-center gap-1.5 text-sm">
+        <FlaskConical className="size-4 shrink-0 text-muted-foreground" />
+        <span className="font-medium text-foreground">
+          {t('Sample data, not a real test result')}
         </span>
       </div>
     );

@@ -1,5 +1,6 @@
-import { Permission } from '@fema-ipaas/core-utils';
+import { isNil, Permission } from '@fema-ipaas/core-utils';
 import {
+  workflowStructureUtil,
   WorkflowRetryStrategy,
   Execution,
   ExecutionStatus,
@@ -11,6 +12,7 @@ import { Eye, Repeat, Timer } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { CardListItem } from '@/components/custom/card-list';
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
@@ -48,6 +50,14 @@ const ExecutionCard = React.memo(
       Permission.WRITE_RUN,
     );
     const projectId = authenticationSession.getProjectId();
+    const stepTestName = useBuilderStateContext((state) =>
+      isNil(run.stepNameToTest)
+        ? null
+        : workflowStructureUtil.getStep(
+            run.stepNameToTest,
+            state.workflowVersion.trigger,
+          )?.displayName ?? run.stepNameToTest,
+    );
     const navigate = useNavigate();
 
     const [isRetryDropdownOpen, setIsRetryDropdownOpen] =
@@ -94,7 +104,7 @@ const ExecutionCard = React.memo(
             )}
           </span>
         </div>
-        <div className="grid gap-2">
+        <div className="grid min-w-0 gap-2">
           <div className="text-sm font-medium leading-none flex gap-2 items-center">
             <FormattedDate
               date={new Date(run.created ?? new Date())}
@@ -103,22 +113,38 @@ const ExecutionCard = React.memo(
             ></FormattedDate>
             {run.id === viewedRunId && <Eye className="w-3.5 h-3.5"></Eye>}
           </div>
-          {isExecutionStateTerminal({
-            status: run.status,
-            ignoreInternalError: false,
-          }) && (
-            <p className="flex gap-1 text-xs text-muted-foreground">
-              <Timer className="h-3.5 w-3.5" />
-              {t('Took')}{' '}
-              {formatUtils.formatDuration(
-                run.startTime && run.finishTime
-                  ? new Date(run.finishTime).getTime() -
-                      new Date(run.startTime).getTime()
-                  : undefined,
-                false,
+          <p className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <span
+              className={cn(
+                'shrink-0 rounded-sm px-1 leading-4',
+                isNil(run.stepNameToTest)
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted text-foreground/80',
               )}
-            </p>
-          )}
+            >
+              {isNil(run.stepNameToTest) ? t('Full debug') : t('Step test')}
+            </span>
+            {!isNil(stepTestName) && (
+              <span className="min-w-0 truncate" title={stepTestName}>
+                {stepTestName}
+              </span>
+            )}
+            {isExecutionStateTerminal({
+              status: run.status,
+              ignoreInternalError: false,
+            }) && (
+              <span className="flex shrink-0 items-center gap-1">
+                <Timer className="h-3.5 w-3.5" />
+                {formatUtils.formatDuration(
+                  run.startTime && run.finishTime
+                    ? new Date(run.finishTime).getTime() -
+                        new Date(run.startTime).getTime()
+                    : undefined,
+                  false,
+                )}
+              </span>
+            )}
+          </p>
           {run.status === ExecutionStatus.RUNNING && (
             <p className="flex gap-1 text-xs text-muted-foreground">
               {t('Executing')}...

@@ -157,7 +157,7 @@ export function AllProjectsPage() {
                       className="block truncate text-muted-foreground"
                       title={item.description ?? ''}
                     >
-                      {item.description || '—'}
+                      {item.description || t('No description')}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">

@@ -1,9 +1,10 @@
 import { generateId, isNil, ProjectId, SeekPage } from '@fema-ipaas/core-utils'
-import { DedupedEventStats, DedupedEventWithWorkflow, ListDedupedEventsRequestQuery } from '@fema-ipaas/shared'
+import { DedupedEventStats, DedupedEventWithWorkflow, ExecutionStatus, ListDedupedEventsRequestQuery } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In, LessThan } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
+import { executionRepo } from '../../workflows/execution/execution-service'
 import { workflowVersionRepo } from '../../workflows/workflow-version/workflow-version.service'
 import { DedupedEventEntity } from './deduped-event.entity'
 
@@ -47,9 +48,16 @@ export const dedupedEventService = (log: FastifyBaseLogger) => ({
             .take(limit + 1)
             .getMany()
         const page = rows.slice(0, limit)
-        const names = await displayNamesOf([...new Set(page.map((row) => row.workflowVersionId))])
+        const [names, statuses] = await Promise.all([
+            displayNamesOf([...new Set(page.map((row) => row.workflowVersionId))]),
+            firstRunStatusesOf({ projectId: query.projectId, executionIds: [...new Set(page.flatMap((row) => (isNil(row.firstExecutionId) ? [] : [row.firstExecutionId])))] }),
+        ])
         return {
-            data: page.map((row) => ({ ...row, workflowDisplayName: names.get(row.workflowVersionId) ?? null })),
+            data: page.map((row) => ({
+                ...row,
+                workflowDisplayName: names.get(row.workflowVersionId) ?? null,
+                firstExecutionStatus: isNil(row.firstExecutionId) ? null : statuses.get(row.firstExecutionId) ?? null,
+            })),
             next: rows.length > limit ? String(offset + limit) : null,
             previous: offset > 0 ? String(Math.max(0, offset - limit)) : null,
         }
@@ -77,6 +85,14 @@ async function displayNamesOf(versionIds: string[]): Promise<Map<string, string>
     }
     const versions = await workflowVersionRepo().find({ where: { id: In(versionIds) }, select: ['id', 'displayName'] })
     return new Map(versions.map((version) => [version.id, version.displayName]))
+}
+
+async function firstRunStatusesOf({ projectId, executionIds }: { projectId: ProjectId, executionIds: string[] }): Promise<Map<string, ExecutionStatus>> {
+    if (executionIds.length === 0) {
+        return new Map()
+    }
+    const executions = await executionRepo().find({ where: { projectId, id: In(executionIds) }, select: ['id', 'status'] })
+    return new Map(executions.map((execution) => [execution.id, execution.status]))
 }
 
 const DEFAULT_PAGE_SIZE = 20

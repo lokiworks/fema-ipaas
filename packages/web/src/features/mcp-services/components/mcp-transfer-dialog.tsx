@@ -97,7 +97,7 @@ function TransferForm({
             <EmptyTitle>{t('No one to transfer to')}</EmptyTitle>
             <EmptyDescription>
               {t(
-                'Only active members with the MCP services module permission can receive a service. Grant it from the admin console first.',
+                'Only active members with the MCP services module permission can receive a service. A tenant admin grants it in Tenant Admin > Members.',
               )}
             </EmptyDescription>
           </Empty>

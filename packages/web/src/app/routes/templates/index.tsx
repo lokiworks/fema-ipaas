@@ -13,7 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { OfficialSolutionsGrid, solutionsHooks } from '@/features/solutions';
+import {
+  OfficialSolutionsGrid,
+  solutionsHooks,
+  solutionsUtils,
+} from '@/features/solutions';
 import {
   TemplateCard,
   TemplateCenterSort,
@@ -77,7 +81,12 @@ const TemplatesPage = () => {
   const { data: officialSolutions } = solutionsHooks.useOfficialSolutions({
     enabled: showSolutions,
   });
-  const solutionsShown = showSolutions ? officialSolutions ?? [] : [];
+  const solutionsShown = showSolutions
+    ? solutionsUtils.sortForCenter({
+        solutions: officialSolutions ?? [],
+        byInstalls: sort === TemplateCenterSort.HOT,
+      })
+    : [];
 
   const openTemplate = (template: Template) => {
     setSelected(template);

@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import { t } from 'i18next';
 import { Plus, TrashIcon } from 'lucide-react';
 import { useRef } from 'react';
@@ -6,6 +7,8 @@ import { TextWithIcon } from '@/components/custom/text-with-icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+
+import { dictionaryInputUtils } from './dictionary-input-utils';
 
 type DictionaryInputItem = {
   key: string;
@@ -23,7 +26,8 @@ export const DictionaryInput = ({
   valuePlaceholder,
 }: DictionaryInputProps) => {
   const id = useRef(1);
-  const valuesArray = Object.entries(values ?? {}).map((el) => {
+  const record = dictionaryInputUtils.toRecord(values);
+  const valuesArray = Object.entries(record ?? {}).map((el) => {
     id.current++;
     return {
       key: el[0],
@@ -94,6 +98,31 @@ export const DictionaryInput = ({
     onChange({ target: { value } } as unknown as Record<string, string>);
   };
 
+  if (isNil(record)) {
+    return (
+      <div className="flex w-full flex-col gap-2 rounded-md border border-dashed px-3 py-2 text-sm">
+        <span className="text-muted-foreground">
+          {t(
+            'This value is not a list of key-value entries. Switch to a dynamic value to edit it, or clear it to add entries.',
+          )}
+        </span>
+        <code className="break-all font-mono text-xs">
+          {dictionaryInputUtils.previewOf(values)}
+        </code>
+        <Button
+          variant="outline"
+          size="sm"
+          type="button"
+          disabled={disabled}
+          className="self-start"
+          onClick={() => updateValue([])}
+        >
+          {t('Clear and add entries')}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className={cn('flex w-full flex-col gap-2')}>
       {valuesArrayRef.current.map(({ key, value, id }, index) => (
@@ -157,7 +186,7 @@ export const DictionaryInput = ({
 };
 
 export type DictionaryInputProps = {
-  values: Record<string, string> | undefined;
+  values: unknown;
   onChange: (values: Record<string, string>) => void;
   disabled?: boolean;
   keyInputClassName?: string;

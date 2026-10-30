@@ -1,6 +1,8 @@
 import { SeekPage } from '@fema-ipaas/core-utils';
 import {
   ListRunLogsRequestQuery,
+  RerunCheckRunLogsRequestBody,
+  RerunCheckRunLogsResponse,
   RerunRunLogsRequestBody,
   RerunRunLogsResponse,
   RunLogDetail,
@@ -24,6 +26,14 @@ export const runLogsApi = {
   },
   detail(id: string): Promise<RunLogDetail> {
     return api.get<RunLogDetail>(`/v1/run-logs/${id}`);
+  },
+  rerunCheck(
+    request: RerunCheckRunLogsRequestBody,
+  ): Promise<RerunCheckRunLogsResponse> {
+    return api.post<RerunCheckRunLogsResponse>(
+      '/v1/run-logs/rerun-check',
+      request,
+    );
   },
   rerun(request: RerunRunLogsRequestBody): Promise<RerunRunLogsResponse> {
     return api.post<RerunRunLogsResponse>('/v1/run-logs/rerun', request);

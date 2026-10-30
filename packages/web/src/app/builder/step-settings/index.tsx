@@ -43,7 +43,6 @@ import {
   TriggerTestRunnerProvider,
 } from '../test-step/test-runner-context';
 import { TestStepCTAButton } from '../test-step/test-step-cta-button';
-import { useStepDisplayNumbers } from '../use-step-display-numbers';
 import { useBuilderValidation } from '../validation/validation-context';
 
 import { CodeSettings } from './code-settings';
@@ -51,6 +50,7 @@ import { ComponentSettings } from './component-settings';
 import { ConnectorSettings } from './connector-settings';
 import EditableStepName from './editable-step-name';
 import { errorTabVisibility } from './error-tab-visibility';
+import { FieldErrorRevealProvider } from './field-error-reveal';
 import { JoinEdgesSection } from './join-edges-section';
 import { joinEdgesVisibility } from './join-edges-visibility';
 import { LoopsSettings } from './loops-settings';
@@ -203,7 +203,6 @@ const StepSettingsContainer = () => {
     modifiedStep.type !== WorkflowTriggerType.EMPTY &&
     form.watch('settings.pendingReview') === true;
   const validation = useBuilderValidation();
-  const displayNumbers = useStepDisplayNumbers();
   const stepIssues = workflowValidator.issuesForStep({
     result: validation,
     stepName: selectedStep.name,
@@ -499,7 +498,6 @@ const StepSettingsContainer = () => {
           >
             <EditableStepName
               selectedBranchIndex={selectedBranchIndex}
-              displayNumber={displayNumbers[selectedStep.name]}
               setDisplayName={(value) => {
                 form.setValue('displayName', value, {
                   shouldValidate: true,
@@ -562,9 +560,18 @@ const StepSettingsContainer = () => {
           <DynamicPropertiesProvider
             key={`${selectedStep.name}-${selectedStep.type}`}
           >
-            <StepTestRunnerProvider step={selectedStep}>
-              {settingsForm}
-            </StepTestRunnerProvider>
+            <FieldErrorRevealProvider
+              key={selectedStep.name}
+              stepName={selectedStep.name}
+              revealInitially={
+                !isNil(stepPanelTab) ||
+                !isNil(selectedStep.settings.sampleData?.lastTestDate)
+              }
+            >
+              <StepTestRunnerProvider step={selectedStep}>
+                {settingsForm}
+              </StepTestRunnerProvider>
+            </FieldErrorRevealProvider>
           </DynamicPropertiesProvider>
         </stepFormBaseline.Provider>
       </form>

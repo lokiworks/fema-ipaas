@@ -361,10 +361,10 @@ function PolicyForm({ settings }: { settings: LoginSecuritySettings }) {
         <CardDescription>
           {settings.emailDelivery
             ? t(
-                'Members can reset a forgotten password by email, and admins can reset it in Users.',
+                'Members can reset a forgotten password by email, and admins can reset it in Members.',
               )
             : t(
-                'Email is not configured, so password reset emails are not sent. Admins can reset passwords in Users.',
+                'Email is not configured, so password reset emails are not sent. Admins can reset passwords in Members.',
               )}
         </CardDescription>
       </CardHeader>

@@ -18,6 +18,20 @@ const materials: MappingTableData = {
 }
 
 describe('dataMapping.evaluate', () => {
+    it('keeps a field whose source is empty as null instead of dropping it', () => {
+        const result = dataMapping.evaluate({
+            spec: {
+                fields: [
+                    { id: '1', target: '姓名', source: '王五', transforms: [] },
+                    { id: '2', target: '邮箱', source: undefined, transforms: [{ type: MappingTransformType.TRIM }, { type: MappingTransformType.LOWER }] },
+                ],
+            },
+            tables: [],
+        })
+        expect(result.value).toEqual({ 姓名: '王五', 邮箱: null })
+        expect(JSON.parse(JSON.stringify(result.value))).toHaveProperty('邮箱', null)
+    })
+
     it('applies transform chains in order', () => {
         const result = dataMapping.evaluate({
             spec: {
@@ -179,7 +193,7 @@ describe('dataMapping target schema', () => {
         const missing = result.issues.find((candidate) => candidate.code === MappingIssueCode.ITEM_FIELD_MISSING)
         expect(missing?.target).toBe('positions[2].title')
         expect(missing?.severity).toBe(MappingIssueSeverity.ERROR)
-        expect(result.value['positions']).toEqual([{ title: '后端', level: 3 }, { title: undefined, level: 5 }])
+        expect(result.value['positions']).toEqual([{ title: '后端', level: 3 }, { title: null, level: 5 }])
     })
 
     it('treats a missing optional item field as a warning', () => {

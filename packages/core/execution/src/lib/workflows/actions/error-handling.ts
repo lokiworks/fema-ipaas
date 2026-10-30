@@ -1,4 +1,4 @@
-import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
+import { blockedUntilMarker, fixOwnerMarker, isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 
 export const errorHandlingUtils = {
@@ -17,22 +17,24 @@ export const errorHandlingUtils = {
 
 function classifyErrorMessage({ message, timedOut }: ClassifyErrorMessageParams): StepErrorClassification {
     const readable = readableMessage(message)
+    const plainMessage = stripMarkers(readable)
+    const details = { externalCode: externalCodeOf(plainMessage), plainMessage, readableMessage: connectorReadableMessage(message) }
     const connection = matchConnectionFailure(readable)
     if (!isNil(connection)) {
-        return { errorCode: connection.errorCode, connectionExternalId: connection.externalId, httpStatus: null, message: readable }
+        return { errorCode: connection.errorCode, connectionExternalId: connection.externalId, httpStatus: null, message: readable, ...details }
     }
     const httpStatus = friendlyHttpStatus(message) ?? extractHttpStatus(readable)
     const errorCode = timedOut === true
         ? STEP_TIMEOUT_CODE
         : isNil(httpStatus) ? STEP_FAILED_CODE : `HTTP_${httpStatus}`
-    return { errorCode, connectionExternalId: null, httpStatus, message: readable }
+    return { errorCode, connectionExternalId: null, httpStatus, message: readable, ...details }
 }
 
-function resolveStrategy({ options, errorCode }: ResolveStrategyParams): ResolvedErrorStrategy | null {
+function resolveStrategy({ options, errorCode, externalCode }: ResolveStrategyParams): ResolvedErrorStrategy | null {
     if (isNil(options) || isNil(options.strategy)) {
         return null
     }
-    const matched = (options.rules ?? []).find((rule) => ruleMatches({ rule, errorCode }))
+    const matched = (options.rules ?? []).find((rule) => ruleMatches({ rule, errorCode, externalCode }))
     const strategy = matched?.strategy ?? options.strategy
     return {
         mode: strategy.mode,
@@ -42,21 +44,23 @@ function resolveStrategy({ options, errorCode }: ResolveStrategyParams): Resolve
     }
 }
 
-function ruleMatches({ rule, errorCode }: { rule: Pick<ErrorHandlingRule, 'operator' | 'codes'>, errorCode: string }): boolean {
+function ruleMatches({ rule, errorCode, externalCode }: RuleMatchesParams): boolean {
     const codes = rule.codes.map((code) => normalizeCode(code)).filter((code) => code.length > 0)
     if (codes.length === 0) {
         return false
     }
-    const actual = errorCode.trim().toUpperCase()
+    const actuals = [errorCode, externalCode]
+        .flatMap((code) => (isNil(code) ? [] : [code.trim().toUpperCase()]))
+        .filter((code) => code.length > 0)
     switch (rule.operator) {
         case ErrorCodeOperator.EQUALS_ANY:
-            return codes.some((code) => actual === code)
+            return codes.some((code) => actuals.includes(code))
         case ErrorCodeOperator.NOT_EQUALS_ANY:
-            return codes.every((code) => actual !== code)
+            return codes.every((code) => !actuals.includes(code))
         case ErrorCodeOperator.STARTS_WITH_ANY:
-            return codes.some((code) => actual.startsWith(code))
+            return codes.some((code) => actuals.some((actual) => actual.startsWith(code)))
         case ErrorCodeOperator.NOT_STARTS_WITH_ANY:
-            return codes.every((code) => !actual.startsWith(code))
+            return codes.every((code) => actuals.every((actual) => !actual.startsWith(code)))
     }
 }
 
@@ -127,7 +131,22 @@ function withoutRetry(strategy: ErrorStrategy): ErrorStrategy {
 
 function normalizeCode(code: string): string {
     const trimmed = code.trim().toUpperCase()
-    return /^\d+$/.test(trimmed) ? `HTTP_${trimmed}` : trimmed
+    return HTTP_STATUS_CODE_PATTERN.test(trimmed) ? `HTTP_${trimmed}` : trimmed
+}
+
+function stripMarkers(message: string): string {
+    return blockedUntilMarker.strip(fixOwnerMarker.strip(message)).replace(/\s+/g, ' ').trim()
+}
+
+function externalCodeOf(message: string): string | null {
+    const matches = [...message.matchAll(EXTERNAL_CODE_PATTERN)]
+    const last = matches.at(-1)
+    return isNil(last) ? null : last[1]
+}
+
+function connectorReadableMessage(raw: string | undefined): string | null {
+    const readable = tryParseFriendlyConnectorError(raw)?.readableMessage
+    return isNil(readable) || readable.trim().length === 0 ? null : readable.trim()
 }
 
 function readableMessage(raw: string | undefined): string {
@@ -247,6 +266,8 @@ const CONNECTION_EXPIRED_PATTERN = /connection \(([^)]+)\) expired/
 const CONNECTION_NOT_FOUND_PATTERN = /connection \(([^)]+)\) not found/
 const CONNECTION_LOADING_PATTERN = /Failed to load connection \(([^)]+)\)/
 const HTTP_STATUS_PATTERN = /\b([45]\d\d)\b/
+const HTTP_STATUS_CODE_PATTERN = /^[1-5]\d\d$/
+const EXTERNAL_CODE_PATTERN = /\([A-Za-z][\w-]* (?:error|code) ([A-Za-z0-9_.-]+)(?=[)\s])/g
 const MAX_BODY_MESSAGE_LENGTH = 200
 const MessageShape = z.object({ message: z.string() })
 const HttpErrorShape = z.object({ response: z.object({ status: z.number(), body: z.unknown().optional() }) })
@@ -280,6 +301,13 @@ type ConnectionFailure = {
 type ResolveStrategyParams = {
     options: ErrorHandlingOptionsShape | undefined
     errorCode: string
+    externalCode?: string | null
+}
+
+type RuleMatchesParams = {
+    rule: Pick<ErrorHandlingRule, 'operator' | 'codes'>
+    errorCode: string
+    externalCode?: string | null
 }
 
 export type ErrorHandlingOptionsShape = {
@@ -306,6 +334,9 @@ export type StepErrorClassification = {
     connectionExternalId: string | null
     httpStatus: number | null
     message: string
+    externalCode: string | null
+    plainMessage: string
+    readableMessage: string | null
 }
 
 export const ERROR_STRATEGY_RETRY_ATTEMPT_OPTIONS = [1, 2, 3, 5]

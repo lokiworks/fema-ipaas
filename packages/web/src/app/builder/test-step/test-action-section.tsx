@@ -7,7 +7,7 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { FlaskConical } from 'lucide-react';
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 
 import { connectorsHooks } from '@/features/connectors';
 
@@ -15,6 +15,7 @@ import { useBuilderStateContext } from '../builder-hooks';
 import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
 import { stepPropertiesSnapshotUtils } from '../data-display/build-step-properties-snapshot';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
+import { useDebugRunSamples } from '../data-selector/use-debug-run-samples';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 
 import { useActionTestRunner } from './test-runner-context';
@@ -54,9 +55,26 @@ const TestStepSectionImplementation = React.memo(
     const isStale =
       !isNil(lastTestDate) && currentStep.lastUpdatedDate > lastTestDate;
 
+    const debugSteps = useMemo(
+      () => [{ ...currentStep, dfsIndex: 0 }],
+      [currentStep],
+    );
+    const debugSamples = useDebugRunSamples({ steps: debugSteps });
+    const usesDebugSample =
+      isNil(lastTestDate) &&
+      isNil(errorMessage) &&
+      currentStep.name in debugSamples.outputs;
+    const shownSampleData = usesDebugSample
+      ? debugSamples.outputs[currentStep.name]
+      : sampleData;
+    const shownTestDate = usesDebugSample
+      ? debugSamples.testedAt[currentStep.name]
+      : lastTestDate;
+
     const sampleDataExists =
       !isNil(lastTestDate) ||
       !isNil(errorMessage) ||
+      usesDebugSample ||
       isStepBeingTested(currentStep.name);
 
     const isTesting = runner?.isTesting ?? false;
@@ -133,9 +151,9 @@ const TestStepSectionImplementation = React.memo(
             isValid={currentStep.valid && !isLoadingDynamicProperties}
             currentStep={currentStep}
             isTesting={isTesting}
-            sampleData={sampleData}
+            sampleData={shownSampleData}
             sampleDataInput={sampleDataInput ?? null}
-            lastTestDate={lastTestDate}
+            lastTestDate={shownTestDate}
             isStale={isStale}
             isSaving={isSaving}
             onRetest={onTestButtonClick}
@@ -150,7 +168,15 @@ const TestStepSectionImplementation = React.memo(
               removeStepTestListener(currentStep.name);
               revertSampleDataLocally?.();
             }}
-          ></TestSampleDataViewer>
+          >
+            {usesDebugSample && (
+              <div className="px-3 pt-2 text-xs text-muted-foreground">
+                {t(
+                  'This sample comes from the latest debug run of the whole workflow.',
+                )}
+              </div>
+            )}
+          </TestSampleDataViewer>
         )}
       </>
     );

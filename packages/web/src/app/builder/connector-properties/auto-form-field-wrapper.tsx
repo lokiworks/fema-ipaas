@@ -33,6 +33,8 @@ import {
 import { formUtils } from '@/features/connectors';
 import { cn } from '@/lib/utils';
 
+import { useShowFieldError } from '../step-settings/field-error-reveal';
+
 import { ArrayConnectorPropertyInInlineItemMode } from './array-property-in-inline-item-mode';
 import { PropertyTypeSwitcher } from './property-type-switcher';
 import { TextInputWithMentions } from './text-input-with-mentions';
@@ -53,8 +55,11 @@ function AutoFormFieldWrapper({
   isForConnectionSelect = false,
 }: AutoFormFieldWrapperProps) {
   const isArrayProperty =
-    !isConnectorAuthProperty(property) && property.type === PropertyType.ARRAY;
+    !isConnectorAuthProperty(property) &&
+    property.type === PropertyType.ARRAY &&
+    !formUtils.isExpressionValue(field.value);
   const isAuthProperty = isForConnectionSelect || Array.isArray(property);
+  const showFieldError = useShowFieldError();
   return (
     <AutoFormFielWrapperErrorBoundary
       field={field}
@@ -63,7 +68,12 @@ function AutoFormFieldWrapper({
     >
       <FormItem className="flex flex-col">
         {(!hideLabel || placeBeforeLabelText) && (
-          <FormLabel className="flex items-center gap-1 h-7.5 max-h-7.5">
+          <FormLabel
+            className={cn(
+              'flex items-center gap-1 h-7.5 max-h-7.5',
+              !showFieldError && 'data-[error=true]:text-foreground',
+            )}
+          >
             {placeBeforeLabelText && !dynamicInputModeToggled && children}
             <div className={cn(!placeBeforeLabelText && 'pt-1')}>
               <span>
@@ -141,7 +151,7 @@ function FieldErrorScope({
   isEmpty: boolean;
 }) {
   const { error, formMessageId } = useFormField();
-  const hasError = !isNil(error);
+  const hasError = useShowFieldError();
   const message = isEmpty
     ? t('{name} is required', { name: fieldName })
     : t(String(error?.message ?? ''));
@@ -310,9 +320,10 @@ function DynamicValueToggle({
       );
     }
   }
-  const currentMode =
-    form.getValues().settings?.propertySettings?.[propertyName]?.type ??
-    (isToggled ? PropertyExecutionType.DYNAMIC : PropertyExecutionType.MANUAL);
+  const currentMode = isToggled
+    ? PropertyExecutionType.DYNAMIC
+    : form.getValues().settings?.propertySettings?.[propertyName]?.type ??
+      PropertyExecutionType.MANUAL;
 
   return (
     <PropertyTypeSwitcher

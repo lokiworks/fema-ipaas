@@ -6,6 +6,7 @@ import {
     ExecutionStatus,
     issueUtils,
     ListRunLogsRequestQuery,
+    RerunCheckRunLogsResponse,
     RerunRunLogResult,
     RerunRunLogsResponse,
     RunEnvironment,
@@ -30,6 +31,7 @@ import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { Order } from '../helper/pagination/paginator'
 import { IdentifierKind, searchableHash } from '../helper/searchable-hash'
+import { issueReplayService } from '../issue/issue-replay.service'
 import { issueRepo } from '../issue/issue.service'
 import { projectStatsUtils } from '../project-workspace/project-stats-utils'
 import { dedupedEventRepo } from '../trigger/deduped-event/deduped-event.service'
@@ -152,6 +154,15 @@ export const runLogService = (log: FastifyBaseLogger) => ({
         })))
         auditReruns({ results, rowById, strategy, meta: { tenantId, userId, ip }, log })
         return { results }
+    },
+
+    async rerunCheck({ userId, tenantId, executionIds }: { userId: string, tenantId: string, executionIds: string[] }): Promise<RerunCheckRunLogsResponse> {
+        const access = await runLogAccess(log).resolve({ userId, tenantId })
+        const projectIds = access.projects.map((project) => project.id)
+        const executions = projectIds.length === 0
+            ? []
+            : await executionRepo().find({ where: { id: In(unique(executionIds)), projectId: In(projectIds), environment: RunEnvironment.PRODUCTION } })
+        return { likelyToFailAgain: await issueReplayService(log).likelyToFailAgain({ executions }) }
     },
 
     async terminate({ id, projectId, tenantId, stopChildRuns }: TerminateParams): Promise<void> {

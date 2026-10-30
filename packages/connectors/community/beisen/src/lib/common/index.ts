@@ -129,7 +129,10 @@ async function requestOnce<T>({ auth, rateLimit, method, path, body, queryParams
   );
   if (error) {
     if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-      throw new Error(`Beisen did not answer ${path} within ${REQUEST_TIMEOUT_MS / MS_PER_SECOND} seconds`);
+      throw withReadable({
+        error: new Error(`Beisen did not answer ${path} within ${REQUEST_TIMEOUT_MS / MS_PER_SECOND} seconds`),
+        readableMessage: `北森在 ${REQUEST_TIMEOUT_MS / MS_PER_SECOND} 秒内没有响应，请稍后重试`,
+      });
     }
     if (isRateLimited(error)) {
       throw rateLimitError({ retryAfterSeconds: retryAfterSecondsOf(error) });
@@ -164,7 +167,11 @@ function isSuccessCode(code: unknown): boolean {
 
 function businessError({ code, message }: { code: unknown; message: string | undefined }): Error {
   const text = message && message.length > 0 ? message : 'Beisen rejected the request';
-  return new Error(code === undefined || code === null ? text : `${text} (Beisen code ${String(code)})`);
+  const hasCode = code !== undefined && code !== null;
+  return withReadable({
+    error: new Error(hasCode ? `${text} (Beisen code ${String(code)})` : text),
+    readableMessage: hasCode ? `北森接口返回错误：${text}（北森错误码 ${String(code)}）` : `北森接口返回错误：${text}`,
+  });
 }
 
 function chunk<Item>({ items, size }: { items: Item[]; size: number }): Item[][] {
@@ -180,9 +187,16 @@ function isUnauthorized(error: Error): boolean {
 }
 
 function unauthorizedError(cause: Error): Error {
-  return new Error(
-    `HTTP ${HTTP_UNAUTHORIZED}: ${cause.message}. Check that the connector Key and Secret are still valid in the Beisen admin console and that the connection uses them (Beisen credentials)`,
-  );
+  return withReadable({
+    error: new Error(
+      `HTTP ${HTTP_UNAUTHORIZED}: ${cause.message}. Check that the connector Key and Secret are still valid in the Beisen admin console and that the connection uses them (Beisen credentials)`,
+    ),
+    readableMessage: '北森拒绝了连接凭证，请在北森管理后台确认连接器 Key 和 Secret 仍然有效，并且连接里填的是它们',
+  });
+}
+
+function withReadable({ error, readableMessage }: { error: Error; readableMessage: string }): Error {
+  return Object.assign(error, { readableMessage });
 }
 
 function tokenCacheKey({ appKey, appSecret }: TokenParams): string {
@@ -191,19 +205,22 @@ function tokenCacheKey({ appKey, appSecret }: TokenParams): string {
 
 function rateLimitError({ retryAfterSeconds }: { retryAfterSeconds?: number } = {}): Error {
   if (retryAfterSeconds !== undefined) {
-    return new Error(
-      blockedUntilMarker.attach({
-        message: `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen asked the caller to wait before the next call (Beisen retry-after)`,
-        until: new Date(Date.now() + retryAfterSeconds * MS_PER_SECOND),
-      }),
-    );
+    return withReadable({
+      error: new Error(
+        blockedUntilMarker.attach({
+          message: `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen asked the caller to wait before the next call (Beisen retry-after)`,
+          until: new Date(Date.now() + retryAfterSeconds * MS_PER_SECOND),
+        }),
+      ),
+      readableMessage: `北森接口调用超过频率限制，需要等待 ${retryAfterSeconds} 秒后再调用`,
+    });
   }
-  return new Error(
+  return withReadable({ error: new Error(
     blockedUntilMarker.attach({
       message: `HTTP ${HTTP_TOO_MANY_REQUESTS}: Beisen API rate limit exceeded. Beisen stops answering this tenant for the rest of the day and allows calls again at 00:00 the next day (Beijing time), so retrying now will not help. Lower how often the workflow polls or how much history it replays (Beisen rate limit)`,
       until: nextBeijingMidnight({ now: new Date() }),
     }),
-  );
+  ), readableMessage: '北森接口今日调用次数已达上限，北森次日 0 点（北京时间）才恢复，现在重试无效；请降低轮询频率或回放的历史数据量' });
 }
 
 function retryAfterSecondsOf(error: HttpError): number | undefined {
@@ -228,7 +245,8 @@ function assertNoGatewayError({ body, rejectsCredentials }: { body: Partial<Gate
   const code = body.error_code ?? body.error;
   const description = body.error_description ?? body.error;
   const message = `${description} (Beisen error ${code})`;
-  throw rejectsCredentials ? new CredentialRejectedError(message) : new Error(message);
+  const readableMessage = `北森接口返回错误：${description}（北森错误码 ${code}）`;
+  throw withReadable({ error: rejectsCredentials ? new CredentialRejectedError(message) : new Error(message), readableMessage });
 }
 
 const FIRST_ERROR_CODE = 400;

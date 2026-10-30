@@ -1,7 +1,18 @@
-import { SolutionCheckResult, SolutionCheckStatus } from '@fema-ipaas/shared';
+import {
+  SolutionCheckKind,
+  SolutionCheckResult,
+  SolutionCheckStatus,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { CircleAlert, CircleCheck, CircleX, RefreshCw } from 'lucide-react';
+import {
+  CircleAlert,
+  CircleCheck,
+  CircleX,
+  ExternalLink,
+  RefreshCw,
+} from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { CopyButton } from '@/components/custom/clipboard/copy-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -141,6 +152,26 @@ function CheckResultRow({
           {message && (
             <span className="text-xs text-destructive">{message}</span>
           )}
+          {!passed &&
+            result.kind === SolutionCheckKind.SOLUTION &&
+            result.solutionId && (
+              <Button
+                asChild
+                type="button"
+                size="sm"
+                variant="outline"
+                className="self-start"
+              >
+                <Link
+                  to={`/solutions/${result.solutionId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink className="size-4" />
+                  {t('Open that solution')}
+                </Link>
+              </Button>
+            )}
         </div>
         <Button
           type="button"

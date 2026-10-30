@@ -1,6 +1,6 @@
 import { isNil, ProjectId, TenantId } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
-import { ConnectorTriggerSettings, Execution, ExecutionStatus, RunConcurrencyTicket, RunEnvironment, ScheduleOverlapPolicy, scheduleUtils, triggerRunSettingsUtils, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
+import { ConnectorTriggerSettings, Execution, ExecutionStatus, FAILED_STATES, RunConcurrencyTicket, RunEnvironment, ScheduleOverlapPolicy, scheduleUtils, triggerRunSettingsUtils, WorkflowTriggerType, WorkflowVersion } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In, MoreThan } from 'typeorm'
 import { privacyService } from '../privacy/privacy.service'
@@ -24,7 +24,12 @@ export const triggerRunPolicy = (log: FastifyBaseLogger) => ({
                 return []
             }
         }
-        const { accepted, duplicates } = await dedupeService.claimWorkflowDedupe({ workflowId, settings: settings?.dedupe, payloads })
+        const { accepted, duplicates } = await dedupeService.claimWorkflowDedupe({
+            workflowId,
+            settings: settings?.dedupe,
+            payloads,
+            findFailedExecutionIds: async ({ executionIds }) => failedExecutionIdsOf({ projectId, executionIds }),
+        })
         const enqueuedAt = Date.now()
         const attempts = await Promise.allSettled(accepted.map(async ({ payload, claim }, index) => {
             const execution = await startRun({
@@ -67,6 +72,14 @@ export const triggerRunPolicy = (log: FastifyBaseLogger) => ({
         return started.map(({ execution }) => execution)
     },
 })
+
+async function failedExecutionIdsOf({ projectId, executionIds }: { projectId: ProjectId, executionIds: string[] }): Promise<string[]> {
+    const rows = await executionRepo().find({
+        where: { projectId, id: In(executionIds), status: In(FAILED_STATES) },
+        select: ['id'],
+    })
+    return rows.map((row) => row.id)
+}
 
 async function scheduleSkipReason({ settings, workflowId, tenantId, log }: ScheduleSkipParams): Promise<string | null> {
     if (!scheduleUtils.isScheduleConnector(settings.connectorName)) {

@@ -5,6 +5,8 @@ import {
   SolutionCheckResult,
   SolutionCheckResults,
   SolutionCheckStatus,
+  SolutionConfigItem,
+  SolutionConfigType,
   SolutionConnectionSlot,
   SolutionInstall,
   SolutionPackage,
@@ -187,9 +189,43 @@ function checkMessage(message: string | null | undefined): string | null {
       return t('The selected connection is not available in this project');
     case 'connectionNotWorking':
       return t('The selected connection is not working. Reconnect it');
+    case 'solutionNotInstalled':
+      return t('solutionDependencyNotInstalled');
     default:
       return null;
   }
+}
+
+function sortForCenter({
+  solutions,
+  byInstalls,
+}: {
+  solutions: SolutionSummary[];
+  byInstalls: boolean;
+}): SolutionSummary[] {
+  const updatedTime = (solution: SolutionSummary) =>
+    new Date(solution.updated).getTime();
+  return [...solutions].sort((a, b) => {
+    const byCount = byInstalls ? b.installCount - a.installCount : 0;
+    return byCount !== 0 ? byCount : updatedTime(b) - updatedTime(a);
+  });
+}
+
+function isConfigRequired(item: SolutionConfigItem): boolean {
+  return item.type === SolutionConfigType.TEXT && item.required !== false;
+}
+
+function splitChecks<T extends { afterInstall?: boolean }>(
+  checks: T[],
+): { beforeInstall: T[]; afterInstall: T[] } {
+  return {
+    beforeInstall: checks.filter((check) => check.afterInstall !== true),
+    afterInstall: checks.filter((check) => check.afterInstall === true),
+  };
+}
+
+function joinLabels(labels: string[]): string {
+  return labels.join(t('listSeparator'));
 }
 
 function capacityMessage({
@@ -272,6 +308,10 @@ export const solutionsUtils = {
   generatedConnectionCheckConnector,
   versionNotesLabel,
   workflowPath,
+  sortForCenter,
+  joinLabels,
+  isConfigRequired,
+  splitChecks,
 };
 
 export type WizardStep = (typeof WIZARD_STEPS)[number];

@@ -86,6 +86,7 @@ export enum ApplicationEventName {
     PROJECT_CREATED = 'project.created',
     PROJECT_ACCESS_REQUESTED = 'project.access.requested',
     PROJECT_ACCESS_DECIDED = 'project.access.decided',
+    PROJECT_ACCESS_WITHDRAWN = 'project.access.withdrawn',
     MAPPING_TABLE_CREATED = 'mapping_table.created',
     MAPPING_TABLE_UPDATED = 'mapping_table.updated',
     MAPPING_TABLE_DELETED = 'mapping_table.deleted',
@@ -709,6 +710,7 @@ export const ProjectAccessRequestEvent = z.object({
     action: z.union([
         z.literal(ApplicationEventName.PROJECT_ACCESS_REQUESTED),
         z.literal(ApplicationEventName.PROJECT_ACCESS_DECIDED),
+        z.literal(ApplicationEventName.PROJECT_ACCESS_WITHDRAWN),
     ]),
     data: z.object({
         accessRequest: z.object({
@@ -948,6 +950,8 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return `Project "${event.data.createdProject.displayName}" was created`
         case ApplicationEventName.PROJECT_ACCESS_REQUESTED:
             return `User ${event.data.accessRequest.email ?? event.data.accessRequest.userId} requested access to the project`
+        case ApplicationEventName.PROJECT_ACCESS_WITHDRAWN:
+            return `User ${event.data.accessRequest.email ?? event.data.accessRequest.userId} withdrew the access request to the project`
         case ApplicationEventName.PROJECT_ACCESS_DECIDED:
             return `Access request of ${event.data.accessRequest.email ?? event.data.accessRequest.userId} was ${event.data.accessRequest.status === ProjectAccessRequestStatus.APPROVED ? `approved as ${event.data.accessRequest.role ?? ''}` : 'rejected'}`
         case ApplicationEventName.MAPPING_TABLE_CREATED:

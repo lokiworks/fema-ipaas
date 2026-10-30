@@ -24,6 +24,7 @@ export function MaskedPayloadNotice({
   redacted,
   canReveal,
   rawExpired,
+  scope = 'run',
 }: {
   executionId: string;
   stepName: string;
@@ -31,6 +32,7 @@ export function MaskedPayloadNotice({
   redacted: boolean;
   canReveal: boolean;
   rawExpired: boolean;
+  scope?: 'run' | 'step';
 }) {
   const [open, setOpen] = useState(false);
   if (!redacted && maskedFields === 0) {
@@ -42,6 +44,10 @@ export function MaskedPayloadNotice({
         <EyeOff className="size-3.5" />
         {redacted
           ? t('Inputs and outputs are not shown by the privacy settings.')
+          : scope === 'step'
+          ? t('{count} fields of this step are masked.', {
+              count: maskedFields,
+            })
           : t('{count} fields in this run are masked.', {
               count: maskedFields,
             })}

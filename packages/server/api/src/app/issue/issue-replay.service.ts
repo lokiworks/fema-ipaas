@@ -11,6 +11,7 @@ import {
     ReplayCategory,
     ReplayCheckItem,
     ReplayCheckResult,
+    ReplayReason,
     retrySafety,
     WorkflowActionType,
     WorkflowRetryStrategy,
@@ -29,7 +30,7 @@ import { executionRepo, executionService } from '../workflows/execution/executio
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { ChainVerdict, issueReplayUtils, ReplayConnectionState } from './issue-replay-utils'
-import { issueService } from './issue.service'
+import { issueRepo, issueService } from './issue.service'
 
 export const issueReplayService = (log: FastifyBaseLogger) => ({
     async check({ id, projectId, strategy = WorkflowRetryStrategy.FROM_FAILED_STEP }: IssueRef & { strategy?: WorkflowRetryStrategy }): Promise<ReplayCheckResult> {
@@ -77,6 +78,43 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             writeSteps: item.category === ReplayCategory.BLOCKED || item.category === ReplayCategory.NOT_NEEDED ? [] : await writeStepsFor({ execution: executions[index], strategy, projectId, tenantId, log }),
         }))))
         return { items }
+    },
+
+    async likelyToFailAgain({ executions }: { executions: Execution[] }): Promise<LikelyToFailAgain[]> {
+        const candidates = executions.filter((execution) => !isNil(execution.issueId))
+        if (candidates.length === 0) {
+            return []
+        }
+        const projectIds = [...new Set(candidates.map((execution) => execution.projectId))]
+        const [issues, workflows, mappingByProject] = await Promise.all([
+            issueRepo().find({ where: { id: In([...new Set(candidates.map((execution) => execution.issueId ?? ''))]), projectId: In(projectIds) }, select: ['id', 'kind', 'errorCode', 'connectionExternalId'] }),
+            workflowRepo().find({ where: { id: In([...new Set(candidates.map((execution) => execution.workflowId))]), projectId: In(projectIds) }, select: ['id', 'updated'] }),
+            Promise.all(projectIds.map(async (projectId): Promise<[string, Map<string, string>]> => [projectId, await mappingTableService(log).lastUpdatedByWorkflow({ projectId })])),
+        ])
+        const issueById = new Map(issues.map((issue) => [issue.id, issue]))
+        const workflowUpdatedAt = new Map(workflows.map((workflow) => [workflow.id, workflow.updated]))
+        const mappingUpdatedAt = new Map(mappingByProject)
+        const now = new Date()
+        return candidates.flatMap((execution): LikelyToFailAgain[] => {
+            const issue = issueById.get(execution.issueId ?? '')
+            if (isNil(issue) || issue.kind === IssueKind.CONNECTION || !workflowUpdatedAt.has(execution.workflowId)) {
+                return []
+            }
+            const classified = issueReplayUtils.classify({
+                execution,
+                verdict: ChainVerdict.TARGET,
+                workflowExists: true,
+                workflowChangedAfterFailure: dayjsUtil(workflowUpdatedAt.get(execution.workflowId)).isAfter(execution.finishTime ?? execution.created),
+                mappingTableChangedAfterFailure: isAfterFailure({ changedAt: mappingUpdatedAt.get(execution.projectId)?.get(execution.workflowId), execution }),
+                connectionState: ReplayConnectionState.NOT_APPLICABLE,
+                connectionExternalId: null,
+                transient: issueUtils.isTransientHttpStatus(issue.errorCode),
+                authorization: issueUtils.isAuthorizationHttpStatus(issue.errorCode),
+                rejectedByTarget: issueUtils.isRejectedByTargetHttpStatus(issue.errorCode),
+                blockedUntil: issueUtils.activeBlockedUntil({ message: execution.failedStep?.message, now }),
+            })
+            return classified.category === ReplayCategory.DATA_PROBLEM ? [{ executionId: execution.id, reason: classified.reason }] : []
+        })
     },
 
     async connectionHealth({ externalId, projectId }: { externalId: string, projectId: ProjectId }): Promise<{ healthy: boolean, missing: boolean }> {
@@ -182,6 +220,11 @@ const REPLAY_CONCURRENCY = 3
 type VersionNumberRow = {
     id: string
     number: number | null
+}
+
+type LikelyToFailAgain = {
+    executionId: string
+    reason: ReplayReason
 }
 
 type IssueRef = {

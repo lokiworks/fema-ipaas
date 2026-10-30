@@ -539,7 +539,13 @@ function inferLoopItemSample({
   return Array.isArray(list) && list.length > 0 ? { item: list[0] } : null;
 }
 
-function readPath({ value, path }: { value: unknown; path: string[] }): unknown {
+function readPath({
+  value,
+  path,
+}: {
+  value: unknown;
+  path: string[];
+}): unknown {
   return path.reduce<unknown>((current, segment) => {
     if (Array.isArray(current) && /^\d+$/.test(segment)) {
       return current[Number(segment)];

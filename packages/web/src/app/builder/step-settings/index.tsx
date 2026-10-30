@@ -25,7 +25,6 @@ import {
   ConnectorIcon,
   ConnectorStepMetadata,
 } from '@/features/connectors';
-import { executionUtils } from '@/features/executions';
 import { projectCollectionUtils } from '@/features/projects';
 import {
   ValidationSeverity,
@@ -194,9 +193,7 @@ const StepSettingsContainer = () => {
     !readonly && !isManualTrigger && !isEmptyTrigger;
   const showStepInputOutFromRun =
     !isNil(run) && !isManualTrigger && !isEmptyTrigger;
-  const openOnRunOutput =
-    showStepInputOutFromRun &&
-    executionUtils.getStatusIcon(run.status).variant === 'error';
+  const openOnRunOutput = showStepInputOutFromRun;
 
   const [isEditingStepOrBranchName, setIsEditingStepOrBranchName] =
     useState(false);

@@ -1,8 +1,8 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   BatchPublishRequestBody,
   PUBLISH_DESCRIPTION_MAX_LENGTH,
 } from '@fema-ipaas/shared';
-import { isNil } from '@fema-ipaas/core-utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
@@ -12,7 +12,6 @@ import { useForm } from 'react-hook-form';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { VersionChangeList } from '@/app/builder/workflow-versions/version-change-list';
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {

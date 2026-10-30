@@ -1,8 +1,8 @@
 import { isNil, tryCatch, unique } from '@fema-ipaas/core-utils'
 import { DefaultProjectRole, NotificationResolution, NotificationType, Project, ProjectAccessRequest, ProjectAccessRequestStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { notificationService } from '../notification/notification.service'
 import { notificationUtils } from '../notification/notification-utils'
+import { notificationService } from '../notification/notification.service'
 import { projectAccessRequestService } from './project-access-request.service'
 import { projectMemberRepo } from './project-member.repo'
 

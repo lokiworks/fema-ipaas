@@ -8,6 +8,7 @@ export const workspaceReviews: Record<string, Review> = {
     'GET /v1/solutions/:id': { verdict: 'ok', note: 'findVisibleOrThrow 按同一可见性规则取，不可见 404' },
     'GET /v1/solutions/installs': { verdict: 'ok', note: '按令牌租户与可访问项目过滤' },
     'POST /v1/solutions/:id/versions': { verdict: 'fixed', note: 'AU-W-5：创建人被降为查看者或退出源项目后仍能重新打包。现在发布新版本还要求对源项目有 WORKFLOW:UPDATE，否则 403；非创建人得 403 而不是校验错误' },
+    'POST /v1/solutions/installs/:installId/remove-record': { verdict: 'ok', note: '只删安装记录、不删资源；要求目标项目 WORKFLOW:UPDATE，且记录的资源已全部删除，否则 400；写审计 solution.install_record.removed。矩阵 workspace-solutions 验证' },
     'POST /v1/solutions/installs/:installId/upgrade': { verdict: 'ok', note: '升级目标项目需 WORKFLOW:UPDATE（projectsWithPermission）；矩阵 workspace-solutions 验证' },
     'POST /v1/templates': { verdict: 'needs-decision', note: 'CUSTOM 类型要租户管理员；SHARED 类型任何成员都能建（旧分享链接），无创建人记录、不能删，按 id 全员可读，是否保留需产品确认' },
     'POST /v1/templates/:id': { verdict: 'ok', note: 'assertCanManageTemplate：官方 / 共享不可改，自定义要求同租户且是管理员或创建人；别的租户 403（deep/machine-public.test.ts）' },

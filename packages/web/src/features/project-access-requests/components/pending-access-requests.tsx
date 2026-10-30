@@ -42,16 +42,16 @@ export function PendingAccessRequests({ projectId }: { projectId: string }) {
     <>
       {linkedRequestClosed && <ClosedRequestNotice />}
       <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
-      <h3 className="text-sm font-medium">
-        {t('projectAccessPendingTitle', { count: requests.length })}
-      </h3>
-      <div className="flex flex-col divide-y">
-        {requests.map((request) => (
-          <PendingRequestRow
-            key={request.id}
-            projectId={projectId}
-            request={request}
-          />
+        <h3 className="text-sm font-medium">
+          {t('projectAccessPendingTitle', { count: requests.length })}
+        </h3>
+        <div className="flex flex-col divide-y">
+          {requests.map((request) => (
+            <PendingRequestRow
+              key={request.id}
+              projectId={projectId}
+              request={request}
+            />
           ))}
         </div>
       </div>

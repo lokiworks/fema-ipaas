@@ -1,4 +1,4 @@
-import { WorkflowAction, ExecutionStatus, LoopStepOutput } from '@fema-ipaas/shared'
+import { ExecutionStatus, LoopStepOutput, WorkflowAction } from '@fema-ipaas/shared'
 import {  WorkflowExecutorContext } from '../../src/lib/handler/context/workflow-execution-context'
 import { workflowExecutor } from '../../src/lib/handler/workflow-executor'
 import { buildCodeAction, buildSimpleLoopAction, generateMockEngineConstants } from './test-helper'
@@ -34,7 +34,7 @@ describe('workflow with looping', () => {
         const result = await workflowExecutor.execute({
             action: buildSimpleLoopAction({
                 name: 'loop',
-                loopItems: "{{branch_only_step['list']}}",
+                loopItems: '{{branch_only_step[\'list\']}}',
                 firstLoopAction: buildCodeAction({ name: 'runtime', input: {} }),
             }),
             executionState: WorkflowExecutorContext.empty(),

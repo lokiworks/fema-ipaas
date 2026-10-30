@@ -353,7 +353,10 @@ describe('workflowValidator', () => {
         ...router({
           name: 'step_1',
           children: [
-            connectorAction({ name: 'step_2', input: { text: '{{trigger.a}}' } }),
+            connectorAction({
+              name: 'step_2',
+              input: { text: '{{trigger.a}}' },
+            }),
             null,
           ],
         }),

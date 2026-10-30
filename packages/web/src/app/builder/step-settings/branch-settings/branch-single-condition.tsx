@@ -86,7 +86,8 @@ const BranchSingleCondition = ({
   const firstValueMissing = condition.firstValue.length === 0;
   const secondValue =
     'secondValue' in condition ? condition.secondValue ?? '' : '';
-  const secondValueMissing = !isSingleValueCondition && secondValue.length === 0;
+  const secondValueMissing =
+    !isSingleValueCondition && secondValue.length === 0;
   return (
     <>
       <div className="flex flex-col gap-3 grow">

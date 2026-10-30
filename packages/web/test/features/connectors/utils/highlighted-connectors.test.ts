@@ -1,5 +1,9 @@
 // @vitest-environment jsdom
-import { ConnectorType, PackageType, WorkflowActionType } from '@fema-ipaas/shared';
+import {
+  ConnectorType,
+  PackageType,
+  WorkflowActionType,
+} from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { StepMetadataWithSuggestions } from '@/features/connectors/types';

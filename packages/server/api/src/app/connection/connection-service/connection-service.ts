@@ -21,7 +21,6 @@ import { projectRepo } from '../../project/project-service'
 import { userService } from '../../user/user-service'
 import { userInteractionWatcher } from '../../workers/user-interaction-watcher'
 import { workflowService } from '../../workflows/workflow/workflow.service'
-import { connectionReferenceService } from '../connection-reference.service'
 import {
     ConnectionEntity,
     ConnectionSchema,
@@ -502,17 +501,13 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         })
 
         const projectIdsToLookUp = unique(page.data.flatMap((connection) => connection.projectIds))
-        const [projectsById, references] = await Promise.all([
-            fetchProjectsForTenant(projectIdsToLookUp, params.tenantId),
-            connectionReferenceService(log).workflowReferences({ tenantId: params.tenantId, connections: page.data }),
-        ])
+        const projectsById = await fetchProjectsForTenant(projectIdsToLookUp, params.tenantId)
 
         const data: TenantConnectionsListItem[] = page.data.map((connection) => {
             const projects: TenantConnectionProjectInfo[] = connection.projectIds
                 .map((id) => projectsById.get(id))
                 .filter((project): project is TenantConnectionProjectInfo => project !== undefined)
-            const workflowIds = (references.get(connection.id) ?? []).map((reference) => reference.workflowId)
-            return { ...connection, projects, workflowIds }
+            return { ...connection, projects }
         })
 
         return { ...page, data }

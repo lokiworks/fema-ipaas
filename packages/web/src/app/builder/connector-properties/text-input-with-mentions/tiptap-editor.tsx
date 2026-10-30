@@ -257,7 +257,10 @@ export const TiptapEditor = ({
     () =>
       isNil(selectedStepName)
         ? workflowStructureUtil.getAllSteps(trigger)
-        : workflowStructureUtil.findReferenceableSteps(trigger, selectedStepName),
+        : workflowStructureUtil.findReferenceableSteps(
+            trigger,
+            selectedStepName,
+          ),
     [trigger, selectedStepName],
   );
   const stepNumbers = useMemo(

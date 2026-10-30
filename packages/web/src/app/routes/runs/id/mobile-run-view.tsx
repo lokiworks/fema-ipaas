@@ -75,9 +75,7 @@ export function MobileRunView({
           })}
         />
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="text-sm font-medium">
-            {statusTitle(run.status)}
-          </span>
+          <span className="text-sm font-medium">{statusTitle(run.status)}</span>
           <span className="text-muted-foreground flex flex-wrap gap-x-3 text-xs">
             <span>
               {t('Started')}{' '}

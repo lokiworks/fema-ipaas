@@ -296,7 +296,7 @@ async function solution({ world, scope, createdBy, visibility, sourceProjectId, 
     return { id }
 }
 
-async function solutionInstall({ world, scope, solutionId, installedBy }: { world: World, scope: Scope, solutionId: string, installedBy?: string }): Promise<{ id: string }> {
+async function solutionInstall({ world, scope, solutionId, installedBy, workflowIds }: { world: World, scope: Scope, solutionId: string, installedBy?: string, workflowIds?: string[] }): Promise<{ id: string }> {
     const info = world.scopes[scope]
     const id = generateId()
     const now = dayjs().toISOString()
@@ -311,8 +311,8 @@ async function solutionInstall({ world, scope, solutionId, installedBy }: { worl
         version: '1.0',
         config: {},
         connections: {},
-        workflowIds: [],
-        workflowKeys: [],
+        workflowIds: workflowIds ?? [],
+        workflowKeys: (workflowIds ?? []).map((_, index) => `wf-${index}`),
         mappingTableIds: [],
         skippedChecks: [],
         installedBy: installedBy ?? info.ownerId,

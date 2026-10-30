@@ -1,4 +1,4 @@
-import { Permission } from '@fema-ipaas/core-utils'
+import { generateId, Permission } from '@fema-ipaas/core-utils'
 import { SolutionVisibility, TemplateType, TemplateVisibility } from '@fema-ipaas/shared'
 import { db } from '../../../helpers/db'
 import { Access, MatrixCase, MatrixHookParams } from '../support/matrix'
@@ -139,6 +139,18 @@ export const workspaceSolutionCases: MatrixCase[] = [
         afterDenied: async ({ prepared }) => {
             const row = await db.findOneBy<{ version: string }>('solution_install', { id: String(prepared.state?.installId) })
             expect(row?.version).toBe('1.0')
+        },
+    },
+    {
+        id: 'POST /v1/solutions/installs/:installId/remove-record',
+        access: { type: 'project', permission: Permission.WRITE_WORKFLOW },
+        prepare: async ({ world, scope }) => {
+            const solution = await workspaceSeed.solution({ world, scope })
+            const install = await workspaceSeed.solutionInstall({ world, scope, solutionId: solution.id, workflowIds: [generateId()] })
+            return { request: { method: 'POST', url: `/v1/solutions/installs/${install.id}/remove-record`, body: {} }, state: { installId: install.id } }
+        },
+        afterDenied: async ({ prepared }) => {
+            expect(await workspaceSeed.countRows({ entity: 'solution_install', where: { id: String(prepared.state?.installId) } })).toBe(1)
         },
     },
 ]

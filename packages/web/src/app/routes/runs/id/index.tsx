@@ -128,7 +128,6 @@ function ApplyRunFocus({ focus }: { focus: RunFocus }) {
       return;
     }
     selectStepByName(stepName, {
-      fromAutoFocus: true,
       tab: runFocusUtils.stepPanelTab(panel),
     });
   }, [selectStepByName, stepName, panel]);

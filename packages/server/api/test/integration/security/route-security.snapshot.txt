@@ -432,6 +432,7 @@ POST /v1/solutions/:id/checks | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectI
 POST /v1/solutions/:id/install | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId
 POST /v1/solutions/:id/preview | PROJECT | USER | WORKFLOW:UPDATE | BODY:projectId
 POST /v1/solutions/:id/versions | TENANT_ANY_MEMBER | USER | - | -
+POST /v1/solutions/installs/:installId/remove-record | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/solutions/installs/:installId/upgrade | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/store-entries | ENGINE | ENGINE | - | -
 POST /v1/templates | TENANT_ANY_MEMBER | USER,SERVICE | - | -

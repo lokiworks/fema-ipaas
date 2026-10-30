@@ -632,7 +632,10 @@ export type CompareContext = {
   componentName: (type: string) => string | null;
   stepNames: Record<string, string>;
   connectionNames: Record<string, string>;
-  fieldLabels: (params: { stepName: string; path: string[] }) => string[] | null;
+  fieldLabels: (params: {
+    stepName: string;
+    path: string[];
+  }) => string[] | null;
 };
 
 type FieldDescription = {

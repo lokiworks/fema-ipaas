@@ -139,11 +139,11 @@ describe('notificationUiUtils.resolution', () => {
         )?.label,
     );
     expect(labels).toEqual([
-      'projectAccessResolvedApproved',
-      'projectAccessResolvedRejected',
-      'projectAccessResolvedWithdrawn',
-      'projectAccessResolvedClosed',
-      'projectAccessResolvedClosed',
+      'Approved',
+      'Rejected',
+      'Withdrawn',
+      'No longer valid',
+      'No longer valid',
     ]);
   });
 });

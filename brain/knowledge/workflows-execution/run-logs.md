@@ -34,6 +34,9 @@ icon: 📜
 - **保留期是两档，文案必须两档都写。** 脱敏运行日志按 `min(租户 logRetentionDays, 项目 executionDataRetentionDays)`（默认 30 天），原始数据（可查看原文、可重跑）按租户 `rawPayloadRetentionDays`（默认 3 天，且不超过日志保留期）；计算在 `retentionUtils.effective`（`privacy.service.ts`），`GET /v1/run-logs/scope` 带出 `tenantRawRetentionDays` 和各项目 `rawRetentionDays`，前端用 `runLogUiUtils.retentionText` / `projectRetention`。不要再用 `EXECUTION_DATA_RETENTION_DAYS` 标志当保留天数，那是实例上限。
 - **原始数据过期后运行页回退到脱敏日志。** `GET /v1/executions/:id` 读的是 `displayLogsFileId`，过期后 `steps` 仍在；运行页右侧面板按 `runLogUiUtils.runDataState` 判断，`MASKED_ONLY` 时照常显示入参出参并标注「原始数据已过保留期，以下为脱敏日志」，只有两份日志都没有（`NONE`）才显示「已过保留期被清理」。
 
+- **节点面板入参／出参是同一套结构。** 运行视图（`/runs/…` 与编辑器里看调试结果）顶层「入参」默认显示本次实际入参、可切到「配置」，顶层「出参」只放本次出参，失败时出参里是 `StepErrorDetails`（友好错误 + 复制错误给 AI + 排查建议）；调试记录面板也只有「入参／出参」两页。`panel=input` 落到顶层「入参」，`ApplyRunFocus` 不能带 `fromAutoFocus`，否则 `useFocusOnStep` 半秒后会把选中改回失败节点。
+- **编辑器 URL 记住选中节点和页签。** `StepSelectionUrlSync` 把 `step`、`tab` 写进编辑器地址（replace），从运行视图后退回来能恢复；它只挂在编辑器路由，运行页仍用 `step`/`panel`。
+
 ## Key files
 - `packages/server/api/src/app/run-logs/` — `runLogService`（列表、范围、详情、批量重跑、终止）、`runLogQuery`、`runLogAccess`
 - `packages/core/shared/src/lib/automation/run-log/` — DTO、`runLogFilterUtils`、`runRerunUtils`

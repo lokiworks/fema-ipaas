@@ -154,9 +154,9 @@ function McpServicesContent() {
               setTab(next);
             }
           }}
-          className="min-w-0 max-w-full overflow-x-auto"
+          className="min-w-0 max-w-full"
         >
-          <TabsList>
+          <TabsList className="h-auto min-h-10 flex-wrap gap-x-6 gap-y-2">
             <TabsTrigger value="ALL">
               {t('All services ({count})', { count: counts.ALL })}
             </TabsTrigger>
@@ -166,7 +166,10 @@ function McpServicesContent() {
             <TabsTrigger value="OBTAINED">
               {t('Obtained by me ({count})', { count: counts.OBTAINED })}
             </TabsTrigger>
-            <Separator orientation="vertical" className="mx-1 h-4" />
+            <Separator
+              orientation="vertical"
+              className="mx-1 hidden h-4 md:block"
+            />
             <TabsTrigger value="MARKETPLACE" data-testid="mcp-tab-marketplace">
               <Store className="size-3.5" />
               {t('Enterprise marketplace, whole enterprise ({count})', {

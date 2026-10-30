@@ -6672,7 +6672,7 @@
   "This reference is missing ['output'], so it reads nothing. Insert the field again from the data selector.": "这个引用缺少 ['output']，取不到任何值。请从数据选择器里重新插入该字段。",
   "Failure category": "平台错误分类",
   "Failure raw message": "原始错误信息",
-  "Failure time (ISO)": "出错时间（ISO 格式，UTC）",
+  "Failure time (ISO)": "出错时间（ISO）",
   "{count} fields of this step are masked.": "本步骤有 {count} 个字段已脱敏。",
   "Failure details passed to the failure branch": "传给异常处理分支的错误信息",
   "Branch results": "分支判断结果",

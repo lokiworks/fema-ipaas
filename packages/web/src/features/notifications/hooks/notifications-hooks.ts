@@ -54,7 +54,10 @@ export const notificationsHooks = {
       socket.on(WebsocketClientEvent.NOTIFICATIONS_RESOLVED, resolvedHandler);
       return () => {
         socket.off(WebsocketClientEvent.NOTIFICATION_CREATED, handler);
-        socket.off(WebsocketClientEvent.NOTIFICATIONS_RESOLVED, resolvedHandler);
+        socket.off(
+          WebsocketClientEvent.NOTIFICATIONS_RESOLVED,
+          resolvedHandler,
+        );
       };
     }, [socket, queryClient, onNotification]);
   },

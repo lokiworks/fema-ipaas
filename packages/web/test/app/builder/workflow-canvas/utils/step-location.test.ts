@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs';
+import path from 'path';
+
 import {
   BranchExecutionType,
   RouterExecutionType,
@@ -6,9 +9,6 @@ import {
   WorkflowTrigger,
   WorkflowTriggerType,
 } from '@fema-ipaas/shared';
-import { readFileSync } from 'fs';
-import path from 'path';
-
 import i18n from 'i18next';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -142,12 +142,12 @@ describe('stepLocationUtils', () => {
         routerName: '条件分支',
         firstBranchName: '',
       });
-      expect(stepLocationUtils.label({ trigger: unnamed, stepName: 'step_6' })).toBe(
-        '第 5 步 · 条件分支「否则」内',
-      );
-      expect(stepLocationUtils.label({ trigger: unnamed, stepName: 'step_3' })).toBe(
-        '第 4 步 · 条件分支「分支 1」内 / 循环「Each person」内',
-      );
+      expect(
+        stepLocationUtils.label({ trigger: unnamed, stepName: 'step_6' }),
+      ).toBe('第 5 步 · 条件分支「否则」内');
+      expect(
+        stepLocationUtils.label({ trigger: unnamed, stepName: 'step_3' }),
+      ).toBe('第 4 步 · 条件分支「分支 1」内 / 循环「Each person」内');
       expect(stepLocationUtils.label({ trigger, stepName: 'step_5' })).toBe(
         '第 7 步 · Write table「失败」分支内',
       );
@@ -165,7 +165,10 @@ describe('stepLocationUtils', () => {
 
 const ZH_TRANSLATION = JSON.parse(
   readFileSync(
-    path.resolve(__dirname, '../../../../../public/locales/zh/translation.json'),
+    path.resolve(
+      __dirname,
+      '../../../../../public/locales/zh/translation.json',
+    ),
     'utf-8',
   ),
 );

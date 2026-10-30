@@ -74,9 +74,7 @@ const TemplatesPage = () => {
       : [];
 
   const showSolutions =
-    isAuthenticated &&
-    tab === TemplateCenterTab.RECOMMENDED &&
-    isNil(category);
+    isAuthenticated && tab === TemplateCenterTab.RECOMMENDED && isNil(category);
   const { data: officialSolutions } = solutionsHooks.useOfficialSolutions({
     enabled: showSolutions,
   });

@@ -7,6 +7,7 @@ import { t } from 'i18next';
 import { toast } from 'sonner';
 
 import { HOME_SUMMARY_QUERY_KEY } from '@/features/home/api/home-api';
+import { notificationKeys } from '@/features/notifications';
 import { api } from '@/lib/api';
 
 import { projectAccessRequestsApi } from '../api/project-access-requests-api';
@@ -95,6 +96,7 @@ function useDecideRequest({ projectId }: { projectId: string }) {
       queryClient.invalidateQueries({
         queryKey: projectAccessRequestKeys.toReview,
       });
+      queryClient.invalidateQueries({ queryKey: notificationKeys.all });
       toast.success(
         projectAccessRequestUtils.decidedMessage({
           name: variables.name,

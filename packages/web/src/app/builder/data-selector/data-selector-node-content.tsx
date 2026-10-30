@@ -150,9 +150,11 @@ const DataSelectorNodeContent = ({
           )}
 
           {badge && (
-            <span className="shrink-0 rounded-sm bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground">
-              {badge}
-            </span>
+            <TextWithTooltip tooltipMessage={badge}>
+              <span className="min-w-0 truncate rounded-sm bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground">
+                {badge}
+              </span>
+            </TextWithTooltip>
           )}
 
           {showArrayCount && (

@@ -47,6 +47,7 @@ export enum ReplayReason {
     WORKFLOW_DELETED = 'WORKFLOW_DELETED',
     FAILED_STEP_MISSING = 'FAILED_STEP_MISSING',
     BLOCKED_UNTIL = 'BLOCKED_UNTIL',
+    RAW_DATA_EXPIRED = 'RAW_DATA_EXPIRED',
 }
 
 export enum IssueInsightCause {
@@ -199,6 +200,8 @@ export type ReplayCheckItem = z.infer<typeof ReplayCheckItem>
 
 export const ReplayCheckResult = z.object({
     items: z.array(ReplayCheckItem),
+    rawDataExpiredCount: z.number(),
+    rawRetentionDays: z.number(),
 })
 export type ReplayCheckResult = z.infer<typeof ReplayCheckResult>
 

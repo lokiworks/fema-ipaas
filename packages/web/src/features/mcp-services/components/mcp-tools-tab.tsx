@@ -7,13 +7,7 @@ import { t } from 'i18next';
 import { MoreHorizontal, Plug, Plus, Trash2, Workflow } from 'lucide-react';
 import { useState } from 'react';
 
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/custom/empty';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -82,22 +76,19 @@ function McpToolsTab({
         </div>
       )}
       {service.tools.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Plug />
-            </EmptyMedia>
-            <EmptyTitle>{t('No tools yet')}</EmptyTitle>
-            <EmptyDescription>
-              {canEdit
-                ? t(
-                    'Create a tool from a connector action or a published workflow.',
-                  )
-                : t('The service owner has not added any tools yet.')}
-            </EmptyDescription>
-          </EmptyHeader>
+        <ListEmptyState
+          icon={Plug}
+          title={t('No tools yet')}
+          description={
+            canEdit
+              ? t(
+                  'Create a tool from a connector action or a published workflow.',
+                )
+              : t('The service owner has not added any tools yet.')
+          }
+        >
           {canEdit && <NewToolMenu onPick={(mode) => setWizard({ mode })} />}
-        </Empty>
+        </ListEmptyState>
       ) : (
         <Table>
           <TableHeader>

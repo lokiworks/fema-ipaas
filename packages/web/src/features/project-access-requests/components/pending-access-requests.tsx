@@ -4,7 +4,9 @@ import {
   ProjectAccessRequestWithUser,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
+import { Info } from 'lucide-react';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
@@ -23,15 +25,23 @@ import { projectAccessRequestsHooks } from '../hooks/project-access-requests-hoo
 import { projectAccessRequestUtils } from '../utils/project-access-request-utils';
 
 export function PendingAccessRequests({ projectId }: { projectId: string }) {
+  const [searchParams] = useSearchParams();
   const { data: requests } = projectAccessRequestsHooks.usePendingRequests({
     projectId,
     enabled: true,
   });
+  const linkedRequestId = searchParams.get(ACCESS_REQUEST_PARAM);
+  const linkedRequestClosed =
+    linkedRequestId !== null &&
+    requests !== undefined &&
+    !requests.some((request) => request.id === linkedRequestId);
   if (!requests || requests.length === 0) {
-    return null;
+    return linkedRequestClosed ? <ClosedRequestNotice /> : null;
   }
   return (
-    <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
+    <>
+      {linkedRequestClosed && <ClosedRequestNotice />}
+      <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-3">
       <h3 className="text-sm font-medium">
         {t('projectAccessPendingTitle', { count: requests.length })}
       </h3>
@@ -42,7 +52,27 @@ export function PendingAccessRequests({ projectId }: { projectId: string }) {
             projectId={projectId}
             request={request}
           />
-        ))}
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function ClosedRequestNotice() {
+  return (
+    <div
+      className="flex items-start gap-2 rounded-lg border bg-muted/30 p-3 text-sm"
+      data-testid="project-access-request-closed"
+    >
+      <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <div className="flex flex-col gap-0.5">
+        <span className="font-medium">
+          {t('projectAccessLinkedRequestClosedTitle')}
+        </span>
+        <span className="text-muted-foreground">
+          {t('projectAccessLinkedRequestClosedDescription')}
+        </span>
       </div>
     </div>
   );
@@ -135,6 +165,8 @@ function PendingRequestRow({
     </div>
   );
 }
+
+const ACCESS_REQUEST_PARAM = 'accessRequest';
 
 const ROLE_ORDER: DefaultProjectRole[] = [
   DefaultProjectRole.VIEWER,

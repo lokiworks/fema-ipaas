@@ -14,9 +14,11 @@ import {
   BulkArchiveActionOnRunsRequestBody,
   BulkCancelWorkflowRequestBody,
   UpdateRunProgressRequest,
+  PopulatedWorkflow,
 } from '@fema-ipaas/shared';
 import { Socket } from 'socket.io-client';
 
+import { workflowsApi } from '@/features/workflows/api/workflows-api';
 import { api } from '@/lib/api';
 
 type TestStepParams = {
@@ -36,6 +38,15 @@ export const executionsApi = {
   },
   getPopulated(id: string): Promise<Execution> {
     return api.get<Execution>(`/v1/executions/${id}`);
+  },
+  getRunWorkflow(
+    run: Pick<Execution, 'id' | 'workflowId' | 'workflowVersionId'>,
+  ): Promise<PopulatedWorkflow> {
+    return api
+      .get<PopulatedWorkflow>(`/v1/executions/${run.id}/workflow`)
+      .catch(() =>
+        workflowsApi.get(run.workflowId, { versionId: run.workflowVersionId }),
+      );
   },
   bulkRetry(
     request: BulkActionOnRunsRequestBody,

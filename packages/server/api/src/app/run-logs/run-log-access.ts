@@ -3,8 +3,7 @@ import { rolePermissions, TenantRole } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { connectionAccessService } from '../connection/connection-access.service'
-import { getEffectiveExecutionDataRetentionDays } from '../file/file.service'
-import { privacyService } from '../privacy/privacy.service'
+import { privacyService, retentionUtils } from '../privacy/privacy.service'
 import { projectMemberRepo } from '../project/project-member.repo'
 import { projectRepo } from '../project/project-repo'
 import { userRepo } from '../user/user-service'
@@ -16,9 +15,11 @@ export const runLogAccess = (log: FastifyBaseLogger) => ({
             connectionAccessService(log).memberProjectIds({ userId, tenantId }),
             privacyService(log).get({ tenantId }),
         ])
-        const tenantRetentionDays = getEffectiveExecutionDataRetentionDays(privacy.logRetentionDays)
+        const tenantRetention = retentionUtils.effective({ settings: privacy, projectRetentionDays: null })
+        const tenantRetentionDays = tenantRetention.logDays
+        const tenantRawRetentionDays = tenantRetention.rawDays
         if (isNil(user) || projectIds.length === 0) {
-            return { isTenantAdmin: false, tenantRetentionDays, projects: [] }
+            return { isTenantAdmin: false, tenantRetentionDays, tenantRawRetentionDays, projects: [] }
         }
         const isTenantAdmin = user.tenantRole === TenantRole.ADMIN
         const [projects, memberships] = await Promise.all([
@@ -32,15 +33,15 @@ export const runLogAccess = (log: FastifyBaseLogger) => ({
         return {
             isTenantAdmin,
             tenantRetentionDays,
+            tenantRawRetentionDays,
             projects: projects.map((project) => {
                 const role = roleByProject.get(project.id)
-                const projectDays = isNil(project.executionDataRetentionDays)
-                    ? privacy.logRetentionDays
-                    : Math.min(privacy.logRetentionDays, project.executionDataRetentionDays)
+                const retention = retentionUtils.effective({ settings: privacy, projectRetentionDays: project.executionDataRetentionDays })
                 return {
                     id: project.id,
                     displayName: project.displayName,
-                    retentionDays: getEffectiveExecutionDataRetentionDays(projectDays),
+                    retentionDays: retention.logDays,
+                    rawRetentionDays: retention.rawDays,
                     canRerun: isTenantAdmin || project.ownerId === userId || (!isNil(role) && rolePermissions[role].includes(Permission.WRITE_RUN)),
                 }
             }),
@@ -57,11 +58,13 @@ export type RunLogAccessProject = {
     id: string
     displayName: string
     retentionDays: number
+    rawRetentionDays: number
     canRerun: boolean
 }
 
 export type RunLogAccess = {
     isTenantAdmin: boolean
     tenantRetentionDays: number
+    tenantRawRetentionDays: number
     projects: RunLogAccessProject[]
 }

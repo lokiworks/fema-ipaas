@@ -45,19 +45,19 @@ function label({
 function segmentLabel(segment: StepLocationSegment): string {
   switch (segment.kind) {
     case StepLocationKind.BRANCH:
-      return t('{step} branch {branch}', {
+      return t('Inside branch {branch} of {step}', {
         step: segment.stepDisplayName,
         branch: segment.branchName,
       });
     case StepLocationKind.LOOP:
       return t('Inside loop {step}', { step: segment.stepDisplayName });
     case StepLocationKind.ON_SUCCESS:
-      return t('{step} branch {branch}', {
+      return t('Inside the {branch} branch of {step}', {
         step: segment.stepDisplayName,
         branch: t('Success'),
       });
     case StepLocationKind.ON_FAILURE:
-      return t('{step} branch {branch}', {
+      return t('Inside the {branch} branch of {step}', {
         step: segment.stepDisplayName,
         branch: t('On failure'),
       });

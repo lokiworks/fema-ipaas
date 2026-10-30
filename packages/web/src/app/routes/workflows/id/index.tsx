@@ -9,6 +9,7 @@ import { Link, useParams } from 'react-router-dom';
 import { BuilderPage } from '@/app/builder';
 import { BuilderSnapshotProvider } from '@/app/builder/snapshot-context';
 import { BuilderStateProvider } from '@/app/builder/state/builder-state-provider';
+import { StepSelectionUrlSync } from '@/app/builder/step-settings/step-selection-url-sync';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { buttonVariants } from '@/components/ui/button';
 import { workflowsApi, sampleDataHooks } from '@/features/workflows';
@@ -127,6 +128,7 @@ const WorkflowEditor = ({
           outputSampleData={sampleData ?? {}}
           inputSampleData={sampleDataInput ?? {}}
         >
+          {isNil(snapshotVersionId) && <StepSelectionUrlSync />}
           <BuilderPage />
         </BuilderStateProvider>
       </BuilderSnapshotProvider>

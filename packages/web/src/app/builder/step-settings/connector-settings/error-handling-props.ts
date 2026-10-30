@@ -22,7 +22,7 @@ export const errorHandlingProps = {
   hasErrorSettings,
 };
 
-const ERROR_HANDLING_PROPERTY_NAMES = ['failureMode'];
+const ERROR_HANDLING_PROPERTY_NAMES = ['failureMode', 'idempotencyKey'];
 
 export type ErrorSettingsAction = {
   props: Record<string, unknown>;

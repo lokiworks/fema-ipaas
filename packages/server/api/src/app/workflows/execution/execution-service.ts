@@ -1,6 +1,6 @@
 import { ApplicationError, Cursor, ErrorCode, ExecutionId, generateId, isNil, ProjectId, SeekPage, TenantId, WorkflowId, WorkflowVersionId } from '@fema-ipaas/core-utils'
 import { dayjsUtil, wideEvent } from '@fema-ipaas/server-utils'
-import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileType, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, LogSliceRef, RecentlyEditedWorkflow, ResumeReason, RunConcurrencyTicket, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, workflowStructureUtil } from '@fema-ipaas/shared'
+import { ConnectionHealthSummary, ConnectorUsageSummary, ExecuteWorkflowJobData, Execution, ExecutionCountByStatus, ExecutionStatus, ExecutionType, ExecutionWithRetryError, ExecutioOutputFile, FileType, isExecutionStateTerminal, JobPayload, LATEST_JOB_DATA_SCHEMA_VERSION, LogSliceRef, PopulatedWorkflow, RecentlyEditedWorkflow, ResumeReason, RunConcurrencyTicket, RunEnvironment, RunInternalError, SampleDataFileType, StepOutput, StepOutputStatus, StepOutputType, StreamStepProgress, WorkerJobType, WorkflowRetryStrategy, workflowStructureUtil } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import pLimit from 'p-limit'
 import { ArrayContains, In, IsNull, Not, Repository, SelectQueryBuilder } from 'typeorm'
@@ -28,6 +28,7 @@ import { ExecutionEntity } from './execution-entity'
 import { executionSideEffects } from './execution-side-effects'
 import { runsMetadataQueue } from './executions-queue'
 import { runEnvironmentUtils } from './run-environment'
+import { runWorkflowSnapshot } from './run-workflow-snapshot'
 import { waitpointService } from './waitpoint/waitpoint-service'
 
 const CANCELLABLE_STATUSES: ExecutionStatus[] = [ExecutionStatus.PAUSED, ExecutionStatus.QUEUED]
@@ -356,6 +357,8 @@ export const executionService = (log: FastifyBaseLogger) => ({
     async test({ projectId, workflowVersionId, parentRunId, stepNameToTest, triggeredBy, payload, environment }: TestParams): Promise<Execution> {
         const workflowVersion = await workflowVersionService(log).getOneOrThrow(workflowVersionId)
         await workflowService(log).getOneOrThrow({ id: workflowVersion.workflowId, projectId })
+        const tenantId = await projectService(log).getTenantId(projectId)
+        const workflowSnapshotFileId = await runWorkflowSnapshot(log).capture({ projectId, tenantId, workflowVersion })
 
         const triggerPayload = payload !== undefined
             ? payload
@@ -374,6 +377,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             failParentOnFailure: undefined,
             stepNameToTest,
             triggeredBy,
+            workflowSnapshotFileId,
         }, log)
         return addToQueue({
             execution,
@@ -381,7 +385,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             executionType: ExecutionType.BEGIN,
             workerHandlerId: undefined,
             httpRequestId: undefined,
-            tenantId: await projectService(log).getTenantId(projectId),
+            tenantId,
             executeTrigger: false,
             streamStepProgress: StreamStepProgress.WEBSOCKET,
             sampleData: !isNil(stepNameToTest) ? await sampleDataService(log).getSampleDataForWorkflow(projectId, workflowVersion, SampleDataFileType.OUTPUT) : undefined,
@@ -401,6 +405,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             workflowVersionId: workflowVersion.id,
             publishedVersionId: workflow.publishedVersionId,
         })
+        const workflowSnapshotFileId = await runWorkflowSnapshot(log).capture({ projectId, tenantId, workflowVersion })
 
         const execution = await queueOrCreateInstantly({
             projectId,
@@ -411,6 +416,7 @@ export const executionService = (log: FastifyBaseLogger) => ({
             failParentOnFailure: undefined,
             stepNameToTest: undefined,
             triggeredBy,
+            workflowSnapshotFileId,
         }, log)
         return addToQueue({
             execution,
@@ -431,6 +437,25 @@ export const executionService = (log: FastifyBaseLogger) => ({
         }).getOne()
 
         return execution
+    },
+    async getRunWorkflow({ projectId, id }: GetRunWorkflowParams): Promise<PopulatedWorkflow> {
+        const execution = await this.getOneOrThrow({ projectId, id })
+        const reference = await executionRepo().createQueryBuilder('execution')
+            .select('execution.workflowSnapshotFileId', 'fileId')
+            .where({ id: execution.id, projectId })
+            .getRawOne<{ fileId: string | null }>()
+        const snapshot = isNil(reference?.fileId)
+            ? null
+            : await runWorkflowSnapshot(log).read({ projectId, fileId: reference.fileId })
+        if (isNil(snapshot)) {
+            return workflowService(log).getOnePopulatedOrThrow({
+                id: execution.workflowId,
+                projectId,
+                versionId: execution.workflowVersionId,
+            })
+        }
+        const workflow = await workflowService(log).getOneOrThrow({ id: execution.workflowId, projectId })
+        return { ...workflow, version: snapshot }
     },
     async getOneOrThrow(params: GetOneParams): Promise<Execution> {
         const execution = await this.getOne(params)
@@ -896,10 +921,11 @@ async function queueOrCreateInstantly(params: CreateParams, log: FastifyBaseLogg
         rerunOfExecutionId: params.rerunOfExecutionId,
         businessKey: params.businessKey,
     }
-    if (params.executionId) return executionRepo().save(execution)
+    const row = isNil(params.workflowSnapshotFileId) ? execution : { ...execution, workflowSnapshotFileId: params.workflowSnapshotFileId }
+    if (params.executionId) return executionRepo().save(row)
     switch (params.environment) {
         case RunEnvironment.TESTING:
-            return executionRepo().save(execution)
+            return executionRepo().save(row)
         case RunEnvironment.PRODUCTION:
             await runsMetadataQueue(log).add(execution)
             return execution
@@ -923,6 +949,7 @@ type CreateParams = {
     environment: RunEnvironment
     rerunOfExecutionId?: ExecutionId
     businessKey?: string | null
+    workflowSnapshotFileId?: string | null
 }
 
 type ListParams = {
@@ -996,6 +1023,11 @@ type StartParams = {
 }
 
 
+
+type GetRunWorkflowParams = {
+    projectId: ProjectId
+    id: ExecutionId
+}
 
 type TestParams = {
     projectId: ProjectId

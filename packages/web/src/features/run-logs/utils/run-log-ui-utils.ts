@@ -1,6 +1,7 @@
 import { isNil } from '@fema-ipaas/core-utils';
 import {
   ConnectionStatus,
+  Execution,
   ReliabilityEventKind,
   RunEnvironment,
   RunLogCondition,
@@ -156,23 +157,75 @@ function blockReasonLabel(
 
 function retentionText(scope: RunLogScope): string {
   const exceptions = scope.projects.filter(
-    (project) => project.retentionDays !== scope.tenantRetentionDays,
+    (project) =>
+      project.retentionDays !== scope.tenantRetentionDays ||
+      project.rawRetentionDays !== scope.tenantRawRetentionDays,
   );
-  const base = t('Logs are kept for {days} days', {
-    days: scope.tenantRetentionDays,
+  const base = retentionTiersText({
+    logDays: scope.tenantRetentionDays,
+    rawDays: scope.tenantRawRetentionDays,
   });
   if (exceptions.length === 0) {
     return base;
   }
   const detail = exceptions
     .map((project) =>
-      t('{project} {days} days', {
+      t('{project}: {tiers}', {
         project: project.displayName,
-        days: project.retentionDays,
+        tiers: retentionTiersText({
+          logDays: project.retentionDays,
+          rawDays: project.rawRetentionDays,
+        }),
       }),
     )
     .join(t('listSeparator'));
   return t('{base} ({detail})', { base, detail });
+}
+
+function retentionTiersText({ logDays, rawDays }: RunRetention): string {
+  return t('runRetentionTiers', { logDays, rawDays });
+}
+
+function projectRetention({
+  scope,
+  projectId,
+}: {
+  scope: RunLogScope | undefined;
+  projectId: string | null | undefined;
+}): RunRetention | null {
+  if (isNil(scope)) {
+    return null;
+  }
+  const project = scope.projects.find((candidate) => candidate.id === projectId);
+  return isNil(project)
+    ? { logDays: scope.tenantRetentionDays, rawDays: scope.tenantRawRetentionDays }
+    : { logDays: project.retentionDays, rawDays: project.rawRetentionDays };
+}
+
+function runDataState(
+  run: Pick<Execution, 'logsFileId' | 'displayLogsFileId' | 'rawPayloadExpired'>,
+): RunDataState {
+  if (!isNil(run.logsFileId)) {
+    return 'RAW';
+  }
+  return run.rawPayloadExpired === true || !isNil(run.displayLogsFileId)
+    ? 'MASKED_ONLY'
+    : 'NONE';
+}
+
+function maskedOnlyNotice(retention: RunRetention | null): string {
+  return isNil(retention)
+    ? t('runMaskedOnlyNotice')
+    : t('runMaskedOnlyNoticeDays', { rawDays: retention.rawDays });
+}
+
+function logsGoneText(retention: RunRetention | null): string {
+  return isNil(retention)
+    ? t('runLogsGone')
+    : t('runLogsGoneDays', {
+        logDays: retention.logDays,
+        rawDays: retention.rawDays,
+      });
 }
 
 function maxRetentionDays(scope: RunLogScope): number {
@@ -396,6 +449,11 @@ export const runLogUiUtils = {
   handledKindLabel,
   blockReasonLabel,
   retentionText,
+  retentionTiersText,
+  projectRetention,
+  runDataState,
+  maskedOnlyNotice,
+  logsGoneText,
   maxRetentionDays,
   errorHint,
   errorCodeLabel,
@@ -406,6 +464,13 @@ export const runLogUiUtils = {
   workflowOptions,
   matchesOption,
 };
+
+export type RunRetention = {
+  logDays: number;
+  rawDays: number;
+};
+
+export type RunDataState = 'RAW' | 'MASKED_ONLY' | 'NONE';
 
 export type RunLogPickerOption = {
   value: string;

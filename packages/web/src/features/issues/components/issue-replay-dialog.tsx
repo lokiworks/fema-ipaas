@@ -16,10 +16,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RerunPreview } from '@/features/run-logs/components/rerun-preview';
+import { RerunStrategyOptions } from '@/features/run-logs/components/rerun-strategy-options';
 import { rerunPreviewUtils } from '@/features/run-logs/utils/rerun-preview-utils';
 
 import { issuesHooks } from '../hooks/issues-hooks';
@@ -56,17 +55,8 @@ export function IssueReplayDialog({
   const groups = useMemo(() => groupByCategory(check?.items ?? []), [check]);
   const replayableCount = groups[ReplayCategory.REPLAYABLE].length;
   const dataProblemCount = groups[ReplayCategory.DATA_PROBLEM].length;
-  const expiredCount =
-    strategy === WorkflowRetryStrategy.FROM_FAILED_STEP
-      ? [
-          ...groups[ReplayCategory.REPLAYABLE],
-          ...(includeDataProblems ? groups[ReplayCategory.DATA_PROBLEM] : []),
-        ].filter((item) => item.rawDataExpired).length
-      : 0;
-  const toRun =
-    replayableCount +
-    (includeDataProblems ? dataProblemCount : 0) -
-    expiredCount;
+  const expiredCount = check?.rawDataExpiredCount ?? 0;
+  const toRun = replayableCount + (includeDataProblems ? dataProblemCount : 0);
   const [acknowledged, setAcknowledged] = useState(false);
   const needsAcknowledgement =
     strategy === WorkflowRetryStrategy.ON_LATEST_VERSION;
@@ -74,13 +64,7 @@ export function IssueReplayDialog({
     runs: [
       ...groups[ReplayCategory.REPLAYABLE],
       ...(includeDataProblems ? groups[ReplayCategory.DATA_PROBLEM] : []),
-    ]
-      .filter(
-        (item) =>
-          strategy !== WorkflowRetryStrategy.FROM_FAILED_STEP ||
-          !item.rawDataExpired,
-      )
-      .map((item) => ({
+    ].map((item) => ({
         workflowId: item.workflowId,
         workflowName,
         workflowVersionId: item.workflowVersionId,
@@ -94,11 +78,6 @@ export function IssueReplayDialog({
       (item) =>
         item.category === ReplayCategory.REPLAYABLE ||
         (includeDataProblems && item.category === ReplayCategory.DATA_PROBLEM),
-    )
-    .filter(
-      (item) =>
-        strategy !== WorkflowRetryStrategy.FROM_FAILED_STEP ||
-        !item.rawDataExpired,
     )
     .flatMap((item) =>
       item.writeSteps
@@ -117,61 +96,25 @@ export function IssueReplayDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>
-            {strategy === WorkflowRetryStrategy.FROM_FAILED_STEP
-              ? t('Rerun from the failed step')
-              : t('Rerun the whole run')}
-          </DialogTitle>
-          <DialogDescription>
-            {t(
-              'Runs are checked first. Runs whose connection is still broken are held back instead of failing again.',
-            )}
-          </DialogDescription>
+          <DialogTitle>{t('Rerun the failed runs of this issue?')}</DialogTitle>
+          <DialogDescription>{t('rerunDialogDescription')}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
-          <RadioGroup
+          <RerunStrategyOptions
             value={strategy}
-            onValueChange={(value) => {
+            onChange={(next) => {
               setAcknowledged(false);
               setConfirmedUnsafeSteps([]);
-              setStrategy(
-                value === WorkflowRetryStrategy.ON_LATEST_VERSION
-                  ? WorkflowRetryStrategy.ON_LATEST_VERSION
-                  : WorkflowRetryStrategy.FROM_FAILED_STEP,
-              );
+              setStrategy(next);
             }}
-            className="grid grid-cols-2 gap-3"
-          >
-            <Label className="flex items-start gap-2 rounded-md border p-3 cursor-pointer">
-              <RadioGroupItem value={WorkflowRetryStrategy.FROM_FAILED_STEP} />
-              <span className="flex flex-col gap-1">
-                <span className="font-medium">
-                  {t('Rerun from the failed step')}
-                </span>
-                <span className="text-xs text-muted-foreground font-normal">
-                  {t('Steps that succeeded keep their original results.')}
-                </span>
-              </span>
-            </Label>
-            <Label className="flex items-start gap-2 rounded-md border p-3 cursor-pointer">
-              <RadioGroupItem value={WorkflowRetryStrategy.ON_LATEST_VERSION} />
-              <span className="flex flex-col gap-1">
-                <span className="font-medium">{t('Rerun the whole run')}</span>
-                <span className="text-xs text-muted-foreground font-normal">
-                  {t(
-                    'Runs the latest version from the trigger and may create duplicate data.',
-                  )}
-                </span>
-              </span>
-            </Label>
-          </RadioGroup>
+          />
 
           {expiredCount > 0 && (
             <p className="text-sm text-warning-700">
-              {t(
-                '{count, plural, =1 {1 run has} other {# runs have}} passed the retention period for original data and can only be rerun as a whole. They are skipped here.',
-                { count: expiredCount },
-              )}
+              {t('replayRawDataExpired', {
+                count: expiredCount,
+                days: check?.rawRetentionDays ?? 0,
+              })}
             </p>
           )}
 

@@ -1,5 +1,6 @@
 import { Permission } from '@fema-ipaas/core-utils'
 import {
+    ApplicationEventName,
     CreateSolutionFromProjectRequestBody,
     InstallSolutionRequestBody,
     ListSolutionInstallsRequestQuery,
@@ -20,6 +21,7 @@ import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { applicationEvents } from '../helper/application-events'
 import { solutionService } from './solution.service'
 
 export const solutionController: FastifyPluginAsyncZod = async (app) => {
@@ -33,6 +35,15 @@ export const solutionController: FastifyPluginAsyncZod = async (app) => {
 
     app.post('/installs/:installId/upgrade', UpgradeRequest, async (request): Promise<SolutionInstall> => {
         return solutionService(request.log).upgrade({ installId: request.params.installId, tenantId: request.principal.tenant.id, userId: request.principal.id })
+    })
+
+    app.post('/installs/:installId/remove-record', RemoveRecordRequest, async (request): Promise<SolutionInstall> => {
+        const removed = await solutionService(request.log).removeRecord({ installId: request.params.installId, tenantId: request.principal.tenant.id, userId: request.principal.id })
+        applicationEvents(request.log).sendUserEvent(request, {
+            action: ApplicationEventName.SOLUTION_INSTALL_RECORD_REMOVED,
+            data: { install: { id: removed.id, solutionId: removed.solutionId, solutionName: removed.solutionName, version: removed.version } },
+        }, { projectId: removed.projectId })
+        return removed
     })
 
     app.post('/', CreateFromProjectRequest, async (request, reply) => {
@@ -81,6 +92,11 @@ const GetRequest = {
 }
 
 const UpgradeRequest = {
+    config: { security: securityAccess.publicTenant([PrincipalType.USER]) },
+    schema: { tags: ['solutions'], params: InstallIdParams },
+}
+
+const RemoveRecordRequest = {
     config: { security: securityAccess.publicTenant([PrincipalType.USER]) },
     schema: { tags: ['solutions'], params: InstallIdParams },
 }

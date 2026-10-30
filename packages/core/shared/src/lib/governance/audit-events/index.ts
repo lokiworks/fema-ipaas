@@ -90,6 +90,7 @@ export enum ApplicationEventName {
     MAPPING_TABLE_CREATED = 'mapping_table.created',
     MAPPING_TABLE_UPDATED = 'mapping_table.updated',
     MAPPING_TABLE_DELETED = 'mapping_table.deleted',
+    SOLUTION_INSTALL_RECORD_REMOVED = 'solution.install_record.removed',
 }
 
 const BaseAuditEventProps = {
@@ -741,6 +742,20 @@ export const MappingTableEvent = z.object({
 })
 export type MappingTableEvent = z.infer<typeof MappingTableEvent>
 
+export const SolutionInstallRecordRemovedEvent = z.object({
+    ...BaseAuditEventProps,
+    action: z.literal(ApplicationEventName.SOLUTION_INSTALL_RECORD_REMOVED),
+    data: z.object({
+        install: z.object({
+            id: z.string(),
+            solutionId: z.string(),
+            solutionName: z.string(),
+            version: z.string(),
+        }),
+    }),
+})
+export type SolutionInstallRecordRemovedEvent = z.infer<typeof SolutionInstallRecordRemovedEvent>
+
 export const PersonalAccessTokenEvent = z.object({
     ...BaseAuditEventProps,
     action: z.union([
@@ -818,6 +833,7 @@ export const ApplicationEvent = z.union([
     ProjectCreatedEvent,
     ProjectAccessRequestEvent,
     MappingTableEvent,
+    SolutionInstallRecordRemovedEvent,
 ])
 
 export type ApplicationEvent = z.infer<typeof ApplicationEvent>
@@ -960,6 +976,8 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
             return isNil(event.data.addedRows) ? `Mapping table "${event.data.mappingTable.name}" was updated` : `${event.data.addedRows} rows were added to mapping table "${event.data.mappingTable.name}"`
         case ApplicationEventName.MAPPING_TABLE_DELETED:
             return `Mapping table "${event.data.mappingTable.name}" was deleted`
+        case ApplicationEventName.SOLUTION_INSTALL_RECORD_REMOVED:
+            return `Install record of solution "${event.data.install.solutionName}" v${event.data.install.version} was removed`
     }
 }
 

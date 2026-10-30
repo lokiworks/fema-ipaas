@@ -17,6 +17,8 @@ import {
     SolutionInstall,
     SolutionInstallInput,
     SolutionInstallPreview,
+    SolutionInstallResourceKind,
+    SolutionInstallResourceStatus,
     SolutionInstallResult,
     SolutionMappingTable,
     SolutionPackage,
@@ -31,6 +33,7 @@ import { In } from 'typeorm'
 import { connectionAvailability } from '../connection/connection-service/connection-availability'
 import { connectionsRepo } from '../connection/connection-service/connection-service'
 import { repoFactory } from '../core/db/repo-factory'
+import { databaseConnection } from '../database/database-connection'
 import { instanceLimits } from '../limits/instance-limits'
 import { mappingTableRepo, mappingTableService } from '../mapping-table/mapping-table.service'
 import { projectAccess } from '../project/project-access'
@@ -40,6 +43,7 @@ import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { workflowService } from '../workflows/workflow/workflow.service'
 import { workflowVersionService } from '../workflows/workflow-version/workflow-version.service'
 import { OFFICIAL_SOLUTIONS, OfficialSolution } from './official-solutions'
+import { InstallLiveness, solutionInstallUtils } from './solution-install-utils'
 import { solutionMappingCheck } from './solution-mapping-check'
 import { solutionPackageUtils } from './solution-package-utils'
 import { solutionReconciliation } from './solution-reconciliation'
@@ -59,7 +63,7 @@ const solutionInstallRepo = repoFactory(SolutionInstallEntity)
 export const solutionService = (log: FastifyBaseLogger) => ({
     async list({ tenantId, userId, query }: ListParams): Promise<SolutionSummary[]> {
         const visible = await visibleSolutions({ tenantId, userId, log })
-        const installs = await solutionInstallRepo().find({ where: { tenantId } })
+        const installs = await activeInstalls(await solutionInstallRepo().find({ where: { tenantId } }))
         const readableProjectIds = await readableProjectIdsOf({ tenantId, userId, log })
         const mine = query.mine === true
         const search = query.search?.trim().toLowerCase() ?? ''
@@ -72,7 +76,7 @@ export const solutionService = (log: FastifyBaseLogger) => ({
 
     async getDetail({ id, tenantId, userId }: SolutionRef): Promise<SolutionDetail> {
         const entry = await findVisibleOrThrow({ id, tenantId, userId, log })
-        const installs = await solutionInstallRepo().find({ where: { tenantId, solutionId: id } })
+        const installs = await activeInstalls(await solutionInstallRepo().find({ where: { tenantId, solutionId: id } }))
         const readableProjectIds = await readableProjectIdsOf({ tenantId, userId, log })
         return { ...summaryOf({ entry, installs, readableProjectIds }), package: entry.package, versions: entry.versions }
     },
@@ -185,7 +189,28 @@ export const solutionService = (log: FastifyBaseLogger) => ({
         }
         const rows = await solutionInstallRepo().find({ where: { tenantId, projectId: In(projectIds) }, order: { created: 'DESC' } })
         const visible = await visibleSolutions({ tenantId, userId, log })
-        return rows.map((row) => toInstall({ row, latestVersion: visible.find((entry) => entry.solution.id === row.solutionId)?.solution.currentVersion ?? row.version }))
+        const liveness = await livenessOf(rows)
+        const names = await resourceNamesOf({ rows, liveness, catalog: visible })
+        return rows.map((row) => {
+            const entry = visible.find((candidate) => candidate.solution.id === row.solutionId)
+            return toInstall({ row, latestVersion: entry?.solution.currentVersion ?? row.version, liveness, names })
+        })
+    },
+
+    async removeRecord({ installId, tenantId, userId }: UpgradeParams): Promise<SolutionInstall> {
+        const row = await solutionInstallRepo().findOneBy({ id: installId, tenantId })
+        if (isNil(row)) {
+            throw notFound({ id: installId, entityType: 'SolutionInstall' })
+        }
+        await assertCanWrite({ projectId: row.projectId, userId, tenantId, log })
+        const liveness = await livenessOf([row])
+        const install = toInstall({ row, latestVersion: row.version, liveness, names: new Map() })
+        if (install.resourceStatus !== SolutionInstallResourceStatus.ALL_DELETED) {
+            throw validation('Only an install record whose resources were all deleted can be removed')
+        }
+        await solutionInstallRepo().delete({ id: installId, tenantId })
+        log.info({ solution: { id: row.solutionId }, project: { id: row.projectId }, install: { id: installId } }, '[solutionService#removeRecord] Install record removed')
+        return install
     },
 
     async upgrade({ installId, tenantId, userId }: UpgradeParams): Promise<SolutionInstall> {
@@ -380,7 +405,7 @@ async function evaluateCheck({ check, projectId, tenantId, connections }: Evalua
         return { ...base, status: SolutionCheckStatus.NEEDS_CONFIRM, message: null }
     }
     if (check.kind === SolutionCheckKind.SOLUTION) {
-        const installed = !isNil(check.solutionId) && await solutionInstallRepo().existsBy({ tenantId, projectId, solutionId: check.solutionId })
+        const installed = !isNil(check.solutionId) && (await activeInstalls(await solutionInstallRepo().find({ where: { tenantId, projectId, solutionId: check.solutionId } }))).length > 0
         return { ...base, solutionId: check.solutionId, status: installed ? SolutionCheckStatus.PASS : SolutionCheckStatus.FAIL, message: installed ? null : 'solutionNotInstalled' }
     }
     const externalId = isNil(check.connectorName) ? undefined : connections[check.connectorName]
@@ -412,7 +437,7 @@ async function assertInstallable({ pkg, request, tenantId }: { pkg: SolutionPack
         throw validation(`The package has field mapping problems: ${mappingProblems.join('; ')}`)
     }
     const results = await Promise.all(pkg.checks.filter((check) => check.afterInstall !== true).map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
-    const blocking = results.filter((result) => result.blocking && result.status !== SolutionCheckStatus.PASS && !(result.status === SolutionCheckStatus.NEEDS_CONFIRM && request.acknowledgedChecks.includes(result.key)))
+    const blocking = solutionUtils.unmetBlockingChecks({ results, acknowledged: request.acknowledgedChecks })
     if (blocking.length > 0) {
         throw validation(`These checks have to pass first: ${blocking.map((result) => result.label).join(', ')}`)
     }
@@ -420,9 +445,7 @@ async function assertInstallable({ pkg, request, tenantId }: { pkg: SolutionPack
 
 async function skippedChecks({ pkg, request, tenantId }: { pkg: SolutionPackage, request: InstallSolutionRequestBody, tenantId: TenantId }): Promise<string[]> {
     const results = await Promise.all(pkg.checks.filter((check) => !check.blocking && check.afterInstall !== true).map((check) => evaluateCheck({ check, projectId: request.projectId, tenantId, connections: request.connections })))
-    return results
-        .filter((result) => result.status !== SolutionCheckStatus.PASS)
-        .map((result) => result.label)
+    return solutionUtils.skippedChecks({ results, acknowledged: request.acknowledgedChecks })
 }
 
 async function configChoicesOf({ pkg, projectId, tenantId }: { pkg: SolutionPackage, projectId: ProjectId, tenantId: TenantId }): Promise<SolutionInstallPreview['configChoices']> {
@@ -537,10 +560,45 @@ async function installOrThrow({ id, tenantId, latestVersion }: { id: string, ten
     if (isNil(row)) {
         throw notFound({ id, entityType: 'SolutionInstall' })
     }
-    return toInstall({ row, latestVersion })
+    const liveness = await livenessOf([row])
+    const names = await resourceNamesOf({ rows: [row], liveness, catalog: [] })
+    return toInstall({ row, latestVersion, liveness, names })
 }
 
-function toInstall({ row, latestVersion }: { row: SolutionInstallSchema, latestVersion: string }): SolutionInstall {
+async function activeInstalls(rows: SolutionInstallSchema[]): Promise<SolutionInstallSchema[]> {
+    const liveness = await livenessOf(rows)
+    return rows.filter((row) => solutionInstallUtils.resourceStatus({ row, liveness }) !== SolutionInstallResourceStatus.ALL_DELETED)
+}
+
+async function livenessOf(rows: SolutionInstallSchema[]): Promise<InstallLiveness> {
+    const workflowIds = unique(rows.flatMap((row) => row.workflowIds))
+    const tableIds = unique(rows.flatMap((row) => row.mappingTableIds))
+    const projectIds = unique(rows.map((row) => row.projectId))
+    const [workflows, tables] = await Promise.all([
+        workflowIds.length === 0 ? [] : workflowRepo().find({ where: { id: In(workflowIds), projectId: In(projectIds) }, select: ['id'] }),
+        tableIds.length === 0 ? [] : mappingTableRepo().find({ where: { id: In(tableIds), projectId: In(projectIds) }, select: ['id', 'name'] }),
+    ])
+    return {
+        workflowIds: new Set(workflows.map((workflow) => workflow.id)),
+        tableNames: new Map(tables.map((table) => [table.id, table.name])),
+    }
+}
+
+async function resourceNamesOf({ rows, liveness, catalog }: { rows: SolutionInstallSchema[], liveness: InstallLiveness, catalog: CatalogEntry[] }): Promise<Map<string, string>> {
+    const liveWorkflowIds = rows.flatMap((row) => row.workflowIds).filter((id) => liveness.workflowIds.has(id))
+    const versionRows: WorkflowNameRow[] = liveWorkflowIds.length === 0 ? [] : await databaseConnection().query(LATEST_WORKFLOW_NAMES_SQL, [unique(liveWorkflowIds)])
+    const liveNames = new Map(versionRows.map((version) => [version.workflowId, version.displayName]))
+    const packageNames = rows.flatMap((row) => {
+        const pkg = catalog.find((entry) => entry.solution.id === row.solutionId)?.package
+        return row.workflowIds.flatMap((workflowId, index): [string, string][] => {
+            const name = pkg?.workflows.find((workflow) => workflow.key === row.workflowKeys?.[index])?.name
+            return isNil(name) ? [] : [[workflowId, name]]
+        })
+    })
+    return new Map([...packageNames, ...liveNames, ...liveness.tableNames])
+}
+
+function toInstall({ row, latestVersion, liveness, names }: { row: SolutionInstallSchema, latestVersion: string, liveness: InstallLiveness, names: Map<string, string> }): SolutionInstall {
     return {
         id: row.id,
         created: row.created,
@@ -557,6 +615,11 @@ function toInstall({ row, latestVersion }: { row: SolutionInstallSchema, latestV
         mappingTableIds: row.mappingTableIds,
         skippedChecks: row.skippedChecks,
         installedBy: row.installedBy,
+        resourceStatus: solutionInstallUtils.resourceStatus({ row, liveness }),
+        resources: [
+            ...row.workflowIds.map((id) => ({ kind: SolutionInstallResourceKind.WORKFLOW, id, name: names.get(id) ?? null, exists: liveness.workflowIds.has(id) })),
+            ...row.mappingTableIds.map((id) => ({ kind: SolutionInstallResourceKind.MAPPING_TABLE, id, name: names.get(id) ?? null, exists: liveness.tableNames.has(id) })),
+        ],
     }
 }
 
@@ -621,6 +684,10 @@ function notFound({ id, entityType }: { id: string, entityType: string }): Appli
     return new ApplicationError({ code: ErrorCode.ENTITY_NOT_FOUND, params: { entityId: id, entityType } })
 }
 
+const LATEST_WORKFLOW_NAMES_SQL = `SELECT DISTINCT ON ("workflowId") "workflowId", "displayName"
+FROM workflow_version
+WHERE "workflowId" = ANY($1)
+ORDER BY "workflowId", created DESC`
 const FIRST_VERSION = '1.0'
 const MAX_TABLE_NAME = 30
 const MAX_TABLE_DESCRIPTION = 100
@@ -631,6 +698,11 @@ type CatalogEntry = {
     solution: Solution
     package: SolutionPackage
     versions: { version: string, notes: string, publishedAt: string }[]
+}
+
+type WorkflowNameRow = {
+    workflowId: string
+    displayName: string
 }
 
 type WorkflowRef = {

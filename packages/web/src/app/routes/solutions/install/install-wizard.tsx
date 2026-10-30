@@ -49,6 +49,7 @@ function InstallWizard({ solution }: InstallWizardProps) {
                     projectId,
                     connections: {},
                     acknowledged: [],
+                    acceptedRisks: [],
                     config: withoutLinkedValues({ pkg, config: draft.config }),
                   },
             );
@@ -63,7 +64,7 @@ function InstallWizard({ solution }: InstallWizardProps) {
           connections={draft.connections}
           onBack={() => goTo('project')}
           onNext={(connections) => {
-            update({ connections, acknowledged: [] });
+            update({ connections, acknowledged: [], acceptedRisks: [] });
             goTo('config');
           }}
         />
@@ -88,8 +89,8 @@ function InstallWizard({ solution }: InstallWizardProps) {
           connections={draft.connections}
           acknowledged={draft.acknowledged}
           onBack={() => goTo('config')}
-          onNext={(acknowledged) => {
-            update({ acknowledged });
+          onNext={({ acknowledged, acceptedRisks }) => {
+            update({ acknowledged, acceptedRisks });
             goTo('confirm');
           }}
         />
@@ -132,6 +133,7 @@ function initialDraft(solution: SolutionDetail): WizardDraft {
       provided: {},
     }).values,
     acknowledged: [],
+    acceptedRisks: [],
   };
 }
 

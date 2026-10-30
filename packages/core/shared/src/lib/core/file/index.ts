@@ -82,6 +82,12 @@ export enum FileType {
      * Stored at the configured location (S3 when available). Kept indefinitely.
      */
     WORKFLOW_BUNDLE = 'WORKFLOW_BUNDLE',
+    /**
+     * Compressed (ZSTD) copy of the draft workflow version a debug run or step test
+     * executed, so the run can be reviewed against the structure it ran on after the
+     * draft changes. Expires on the file-cleanup schedule together with the run logs.
+     */
+    RUN_WORKFLOW_SNAPSHOT = 'RUN_WORKFLOW_SNAPSHOT',
 }
 export enum FileCompression {
     NONE = 'NONE',

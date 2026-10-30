@@ -26,7 +26,7 @@ export const DEFAULT_NEW_WORKFLOW_TRIGGER = APP_EVENT_TRIGGER;
 export const NEW_WORKFLOW_TRIGGER_CHOICES: NewWorkflowTriggerChoice[] = [
   {
     value: 'webhook',
-    labelKey: 'Webhook trigger',
+    labelKey: 'triggerChoice.webhook',
     descriptionKey: 'Receive events from other services through a URL',
     target: {
       connectorName: '@fema-ipaas/connector-webhook',
@@ -35,7 +35,7 @@ export const NEW_WORKFLOW_TRIGGER_CHOICES: NewWorkflowTriggerChoice[] = [
   },
   {
     value: 'manual',
-    labelKey: 'Manual trigger',
+    labelKey: 'triggerChoice.manual',
     descriptionKey: 'Start the workflow by hand while testing',
     target: {
       connectorName: '@fema-ipaas/connector-manual-trigger',
@@ -44,7 +44,7 @@ export const NEW_WORKFLOW_TRIGGER_CHOICES: NewWorkflowTriggerChoice[] = [
   },
   {
     value: 'schedule',
-    labelKey: 'Scheduled trigger',
+    labelKey: 'triggerChoice.schedule',
     descriptionKey: 'Run the workflow on a schedule you define',
     target: {
       connectorName: '@fema-ipaas/connector-schedule',
@@ -53,7 +53,7 @@ export const NEW_WORKFLOW_TRIGGER_CHOICES: NewWorkflowTriggerChoice[] = [
   },
   {
     value: 'subflow',
-    labelKey: 'Subflow trigger',
+    labelKey: 'triggerChoice.subflow',
     descriptionKey: 'Called by the Call subflow step of another workflow',
     target: {
       connectorName: '@fema-ipaas/connector-subflows',
@@ -62,7 +62,7 @@ export const NEW_WORKFLOW_TRIGGER_CHOICES: NewWorkflowTriggerChoice[] = [
   },
   {
     value: 'form',
-    labelKey: 'Form trigger',
+    labelKey: 'triggerChoice.form',
     descriptionKey: 'Runs when someone submits a form',
     target: {
       connectorName: '@fema-ipaas/connector-forms',

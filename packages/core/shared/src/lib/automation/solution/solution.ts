@@ -31,6 +31,17 @@ export enum SolutionCheckStatus {
     NEEDS_CONFIRM = 'NEEDS_CONFIRM',
 }
 
+export enum SolutionInstallResourceStatus {
+    INTACT = 'INTACT',
+    PARTIALLY_DELETED = 'PARTIALLY_DELETED',
+    ALL_DELETED = 'ALL_DELETED',
+}
+
+export enum SolutionInstallResourceKind {
+    WORKFLOW = 'WORKFLOW',
+    MAPPING_TABLE = 'MAPPING_TABLE',
+}
+
 export enum SolutionConfigType {
     SELECT = 'SELECT',
     RADIO = 'RADIO',
@@ -161,6 +172,14 @@ export const SolutionDetail = SolutionSummary.extend({
 })
 export type SolutionDetail = z.infer<typeof SolutionDetail>
 
+export const SolutionInstallResource = z.object({
+    kind: z.enum(SolutionInstallResourceKind),
+    id: z.string(),
+    name: z.string().nullable(),
+    exists: z.boolean(),
+})
+export type SolutionInstallResource = z.infer<typeof SolutionInstallResource>
+
 export const SolutionInstall = z.object({
     ...BaseModelSchema,
     tenantId: z.string(),
@@ -175,6 +194,8 @@ export const SolutionInstall = z.object({
     mappingTableIds: z.array(z.string()),
     skippedChecks: z.array(z.string()),
     installedBy: z.string(),
+    resourceStatus: z.enum(SolutionInstallResourceStatus),
+    resources: z.array(SolutionInstallResource),
 })
 export type SolutionInstall = z.infer<typeof SolutionInstall>
 

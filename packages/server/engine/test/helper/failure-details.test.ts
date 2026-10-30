@@ -31,6 +31,17 @@ describe('failureDetails.build', () => {
         expect(details.rawMessage).not.toContain('fix-owner')
     })
 
+    it('classifies a failed HTTP node by status so the failure branch can tell 4xx from 5xx', () => {
+        const errorMessage = JSON.stringify({ response: { status: 503, body: { message: 'upstream unavailable' } }, request: { body: { id: 1 } } })
+
+        const details = failureDetails.build({ errorMessage, now })
+
+        expect(details.errorCode).toBe('HTTP_503')
+        expect(details.errorCategory).toBe('HTTP_503')
+        expect(details.errorMessage).toBe('目标系统返回 HTTP 503：HTTP 503: upstream unavailable')
+        expect(details.rawMessage).toBe('HTTP 503: upstream unavailable')
+    })
+
     it('reads a Beisen code that is followed by more text', () => {
         const details = failureDetails.build({ errorMessage: 'The organization does not exist (Beisen code 417 bad org). Pick it again.', now })
 

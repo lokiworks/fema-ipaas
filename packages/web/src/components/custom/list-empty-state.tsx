@@ -1,7 +1,9 @@
 import { LucideIcon } from 'lucide-react';
+import { ReactNode } from 'react';
 
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -14,8 +16,9 @@ export function ListEmptyState({
   title,
   description,
   className,
-  align = 'center',
+  align = 'start',
   testId,
+  children,
 }: ListEmptyStateProps) {
   const start = align === 'start';
   return (
@@ -35,6 +38,11 @@ export function ListEmptyState({
         <EmptyTitle className={cn(start && 'text-base')}>{title}</EmptyTitle>
         {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
+      {children && (
+        <EmptyContent className={cn(start && 'items-start')}>
+          {children}
+        </EmptyContent>
+      )}
     </Empty>
   );
 }
@@ -46,4 +54,5 @@ export type ListEmptyStateProps = {
   className?: string;
   align?: 'center' | 'start';
   testId?: string;
+  children?: ReactNode;
 };

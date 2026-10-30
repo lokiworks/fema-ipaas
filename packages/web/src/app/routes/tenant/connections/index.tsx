@@ -4,6 +4,7 @@ import {
   MAX_TENANT_CONNECTION_OWNERS,
   TenantConnectionsListItem,
 } from '@fema-ipaas/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { t } from 'i18next';
 import {
@@ -15,10 +16,11 @@ import {
   Puzzle,
   Unplug,
   User,
+  Workflow,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 
-import { CopyTextTooltip } from '@/components/custom/clipboard/copy-text-tooltip';
+import { ReconnectConnectionDialog } from '@/app/connections/reconnect-connection-dialog';
 import { ConsolePage } from '@/components/custom/console-page';
 import {
   DataTable,
@@ -29,24 +31,37 @@ import { DataTableColumnHeader } from '@/components/custom/data-table/data-table
 import { FormattedDate } from '@/components/custom/formatted-date';
 import { StatusIconWithText } from '@/components/custom/status-icon-with-text';
 import { TextWithTooltip } from '@/components/custom/text-with-tooltip';
-import { Badge } from '@/components/ui/badge';
+import { UserBadge } from '@/components/custom/user-badge';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { connectionUtils } from '@/features/connections';
+import { ConnectionAccessDialog } from '@/features/connections/components/connection-access-dialog';
+import { ConnectionDetailSheet } from '@/features/connections/components/connection-detail-sheet';
+import { ConnectionScopeCell } from '@/features/connections/components/connection-list-cells';
+import { ConnectionUsagePopover } from '@/features/connections/components/connection-usage-popover';
+import { DeleteConnectionDialog } from '@/features/connections/components/delete-connection-dialog';
+import { RenameConnectionDialog } from '@/features/connections/components/rename-connection-dialog';
+import { ShareConnectionDialog } from '@/features/connections/components/share-connection-dialog';
+import { connectionAccessQueryKeys } from '@/features/connections/hooks/connections-hooks';
 import {
   ConnectorIconWithConnectorName,
   connectorsHooks,
 } from '@/features/connectors';
 import { getProjectName, projectCollectionUtils } from '@/features/projects';
-import { tenantConnectionsQueries } from '@/features/tenant-admin/hooks/tenant-connections-hooks';
+import {
+  tenantConnectionsKeys,
+  tenantConnectionsQueries,
+} from '@/features/tenant-admin/hooks/tenant-connections-hooks';
 import { useIsNarrowDesktop } from '@/hooks/use-mobile';
-import { personName } from '@/lib/person-name';
 
 export default function TenantConnectionsPage() {
   const compact = useIsNarrowDesktop();
+  const queryClient = useQueryClient();
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [activeDialog, setActiveDialog] = useState<ActiveDialog | null>(null);
   const {
     data: connections,
     isLoading,
@@ -55,6 +70,16 @@ export default function TenantConnectionsPage() {
   const { data: owners } = tenantConnectionsQueries.useOwners();
   const { data: projects } = projectCollectionUtils.useAllTenantProjects();
   const { connectors } = connectorsHooks.useConnectors({});
+
+  const activeConnection = (connections?.data ?? []).find(
+    (connection) => connection.id === activeDialog?.connectionId,
+  );
+  const invalidateList = () => {
+    queryClient.invalidateQueries({ queryKey: [TENANT_CONNECTIONS_KEY] });
+    queryClient.invalidateQueries({
+      queryKey: tenantConnectionsKeys.owners(),
+    });
+  };
 
   const filters: DataTableFilters<
     keyof TenantConnectionsListItem | 'ownerIds'
@@ -110,37 +135,43 @@ export default function TenantConnectionsPage() {
   const columns: ColumnDef<RowDataWithActions<TenantConnectionsListItem>>[] = [
     {
       accessorKey: 'displayName',
-      size: 280,
+      size: 240,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
           title={t('Name')}
-          icon={Unplug}
+          icon={Puzzle}
         />
       ),
-      cell: ({ row }) => (
-        <CopyTextTooltip
-          title={t('External ID')}
-          text={row.original.externalId || ''}
-        >
-          <div className="flex items-center gap-2 w-fit min-w-0">
-            <ConnectorIconWithConnectorName
-              connectorName={row.original.connectorName}
-              showTooltip={false}
-              size="sm"
-            />
-            <TextWithTooltip tooltipMessage={row.original.displayName}>
-              <span className="truncate max-w-[160px] 2xl:max-w-[260px]">
-                {row.original.displayName}
-              </span>
-            </TextWithTooltip>
+      cell: ({ row }) => {
+        const accountIdentifier =
+          connectionUtils.getConnectionAccountIdentifier(row.original);
+        return (
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0">
+              <ConnectorIconWithConnectorName
+                connectorName={row.original.connectorName}
+                showTooltip={false}
+                size="sm"
+              />
+            </span>
+            <div className="flex min-w-0 flex-col">
+              <TextWithTooltip tooltipMessage={row.original.displayName}>
+                <span className="min-w-0">{row.original.displayName}</span>
+              </TextWithTooltip>
+              {accountIdentifier && (
+                <span className="truncate text-xs text-muted-foreground">
+                  {accountIdentifier}
+                </span>
+              )}
+            </div>
           </div>
-        </CopyTextTooltip>
-      ),
+        );
+      },
     },
     {
       accessorKey: 'status',
-      size: 130,
+      size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -149,60 +180,75 @@ export default function TenantConnectionsPage() {
         />
       ),
       cell: ({ row }) => {
-        const status = row.original.status;
-        const { variant, icon: Icon } = connectionUtils.getStatusIcon(status);
+        const { variant, icon: Icon } = connectionUtils.getStatusIcon(
+          row.original.status,
+        );
+        const isActive = row.original.status === ConnectionStatus.ACTIVE;
         return (
-          <StatusIconWithText
-            icon={Icon}
-            text={connectionUtils.getStatusLabel(status)}
-            variant={variant}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="w-fit">
+                <StatusIconWithText
+                  icon={Icon}
+                  text={connectionUtils.getStatusLabel(row.original.status)}
+                  variant={variant}
+                />
+              </div>
+            </TooltipTrigger>
+            {!isActive && (
+              <TooltipContent>
+                {connectionUtils.getBrokenReason(row.original.status)}
+              </TooltipContent>
+            )}
+          </Tooltip>
         );
       },
     },
     {
       accessorKey: 'projects',
-      size: 220,
+      size: 170,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('Available projects')}
-          icon={Folder}
+          title={t('Available Projects')}
+          icon={Globe}
         />
       ),
-      cell: ({ row }) =>
-        row.original.scope === ConnectionScope.TENANT ? (
-          <Badge variant="info" className="gap-1">
-            <Globe className="size-3" />
-            {t('All projects')}
-          </Badge>
-        ) : (
-          <ProjectsCell projects={row.original.projects} />
-        ),
+      cell: ({ row }) => (
+        <ConnectionScopeCell
+          allProjects={row.original.scope === ConnectionScope.TENANT}
+          projects={row.original.projects.map((project) => ({
+            id: project.id,
+            displayName: getProjectName(project),
+          }))}
+        />
+      ),
+    },
+    {
+      accessorKey: 'workflowIds',
+      size: 110,
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={t('References')}
+          icon={Workflow}
+        />
+      ),
+      cell: ({ row }) => <ConnectionUsagePopover connection={row.original} />,
     },
     {
       accessorKey: 'owner',
-      size: 200,
+      size: 150,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('Owner')} icon={User} />
       ),
-      cell: ({ row }) => {
-        const owner = row.original.owner;
-        if (!owner) {
-          return <span className="text-muted-foreground">{t('N/A')}</span>;
-        }
-        const fullName = personName.format(owner);
-        const label = fullName || owner.email;
-        return (
-          <TextWithTooltip tooltipMessage={owner.email}>
-            <span className="truncate max-w-[180px]">{label}</span>
-          </TextWithTooltip>
-        );
-      },
+      cell: ({ row }) => (
+        <UserBadge id={row.original.ownerId ?? null} size="small" includeName />
+      ),
     },
     {
       accessorKey: 'updated',
-      size: 150,
+      size: 120,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
@@ -239,7 +285,70 @@ export default function TenantConnectionsPage() {
         isLoading={isLoading}
         isError={isError}
         filters={filters}
+        onRowClick={(row) => setDetailId(row.id)}
       />
+      <ConnectionDetailSheet
+        connectionId={detailId}
+        onClose={() => setDetailId(null)}
+        onShare={(id) => setActiveDialog({ type: 'share', connectionId: id })}
+        onEdit={(id) => setActiveDialog({ type: 'edit', connectionId: id })}
+        onReconnect={(id) =>
+          setActiveDialog({ type: 'reconnect', connectionId: id })
+        }
+        onDelete={(id) => setActiveDialog({ type: 'delete', connectionId: id })}
+        onAccess={(id) => setActiveDialog({ type: 'access', connectionId: id })}
+      />
+      {activeDialog?.type === 'share' && (
+        <ShareConnectionDialog
+          connectionId={activeDialog.connectionId}
+          open
+          onOpenChange={(open) => !open && setActiveDialog(null)}
+        />
+      )}
+      {activeDialog?.type === 'access' && (
+        <ConnectionAccessDialog
+          connectionId={activeDialog.connectionId}
+          open
+          onOpenChange={(open) => !open && setActiveDialog(null)}
+        />
+      )}
+      {activeDialog?.type === 'delete' && (
+        <DeleteConnectionDialog
+          connectionId={activeDialog.connectionId}
+          open
+          onOpenChange={(open) => !open && setActiveDialog(null)}
+          onDeleted={() => {
+            invalidateList();
+            setDetailId(null);
+          }}
+        />
+      )}
+      {activeDialog?.type === 'reconnect' && (
+        <ReconnectConnectionDialog
+          connectionId={activeDialog.connectionId}
+          open
+          onOpenChange={(open) => !open && setActiveDialog(null)}
+          onReconnected={() => {
+            invalidateList();
+            queryClient.invalidateQueries({
+              queryKey: connectionAccessQueryKeys.detail(
+                activeDialog.connectionId,
+              ),
+            });
+          }}
+        />
+      )}
+      {activeDialog?.type === 'edit' && activeConnection && (
+        <RenameConnectionDialog
+          connectionId={activeConnection.id}
+          currentName={activeConnection.displayName}
+          userHasPermissionToRename
+          open
+          hideTrigger
+          onOpenChange={(open) => !open && setActiveDialog(null)}
+          onRename={invalidateList}
+        />
+      )}
     </ConsolePage>
   );
 }
@@ -263,57 +372,17 @@ function compactColumns({
     }));
 }
 
-const ProjectsCell = ({
-  projects,
-}: {
-  projects: TenantConnectionsListItem['projects'];
-}) => {
-  if (projects.length === 0) {
-    return (
-      <span className="text-muted-foreground">
-        {t('No available projects')}
-      </span>
-    );
-  }
-  if (projects.length === 1) {
-    const project = projects[0];
-    const name = getProjectName(project);
-    return (
-      <Link to={`/projects/${project.id}`}>
-        <TextWithTooltip tooltipMessage={name}>
-          <span className="truncate max-w-[200px] text-primary hover:underline">
-            {name}
-          </span>
-        </TextWithTooltip>
-      </Link>
-    );
-  }
-  const label = t('{count, plural, =1 {1 project} other {# projects}}', {
-    count: projects.length,
-  });
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="cursor-default underline decoration-dashed underline-offset-2">
-          {label}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>
-        <ul className="flex flex-col gap-1 max-w-[260px]">
-          {projects.map((project) => (
-            <li key={project.id} className="truncate">
-              {getProjectName(project)}
-            </li>
-          ))}
-        </ul>
-      </TooltipContent>
-    </Tooltip>
-  );
-};
-
 const COMPACT_COLUMN_SIZES: Record<string, number> = {
   displayName: 190,
   status: 110,
   projects: 150,
+  workflowIds: 110,
   owner: 130,
+};
+
+const TENANT_CONNECTIONS_KEY = 'tenant-connections';
+
+type ActiveDialog = {
+  type: 'reconnect' | 'edit' | 'access' | 'share' | 'delete';
+  connectionId: string;
 };

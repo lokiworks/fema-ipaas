@@ -208,6 +208,14 @@ function useReplay(id: string) {
       issuesApi.replay(id, request),
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: [ISSUES_KEY] });
+      if (result.queued === 0) {
+        toast.warning(t('No run was queued for rerun'), {
+          description: t(
+            'The runs changed since the check. Open the rerun dialog again to see why they are held back.',
+          ),
+        });
+        return;
+      }
       toast.success(
         t('{count} runs queued for rerun', { count: result.queued }),
         {

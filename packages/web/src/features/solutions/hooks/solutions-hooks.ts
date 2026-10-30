@@ -233,6 +233,25 @@ function useUpgradeInstall() {
   });
 }
 
+function useRemoveInstallRecord() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: solutionsApi.removeInstallRecord,
+    onSuccess: (install) => {
+      void queryClient.invalidateQueries({ queryKey: [SOLUTIONS_KEY] });
+      toast.success(
+        t('Removed the install record of {name}', {
+          name: install.solutionName,
+        }),
+      );
+    },
+    onError: (error) =>
+      toast.error(
+        api.extractServerErrorMessage(error, t('Something went wrong')),
+      ),
+  });
+}
+
 function useInstall() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -263,5 +282,6 @@ export const solutionsHooks = {
   useCreateFromProject,
   usePublishVersion,
   useUpgradeInstall,
+  useRemoveInstallRecord,
   useInstall,
 };

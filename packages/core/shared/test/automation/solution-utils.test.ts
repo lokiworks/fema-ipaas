@@ -1,4 +1,4 @@
-import { SolutionConfigItem, SolutionConfigType, solutionUtils } from '../../src'
+import { SolutionCheckStatus, SolutionConfigItem, SolutionConfigType, solutionUtils } from '../../src'
 
 const leaveItem: SolutionConfigItem = {
     key: 'openAt',
@@ -70,5 +70,29 @@ describe('solutionUtils table placeholders', () => {
         expect(solutionUtils.tablePlaceholder('dept')).toBe('table:dept')
         expect(solutionUtils.isTablePlaceholder('table:dept')).toBe(true)
         expect(solutionUtils.isTablePlaceholder('mt_123')).toBe(false)
+    })
+})
+
+describe('solutionUtils install check gate', () => {
+    const manualBlocking = { key: 'feishu-app', label: 'Approval app permissions are set', blocking: true, status: SolutionCheckStatus.NEEDS_CONFIRM }
+    const manualOptional = { key: 'notice', label: 'Tell the HR group', blocking: false, status: SolutionCheckStatus.NEEDS_CONFIRM }
+    const failedOptional = { key: 'dep', label: 'Org solution installed', blocking: false, status: SolutionCheckStatus.FAIL }
+    const failedBlocking = { key: 'conn', label: 'Connection works', blocking: true, status: SolutionCheckStatus.FAIL }
+
+    it('asks to confirm every manual check, required or not, and to acknowledge failed optional checks', () => {
+        expect(solutionUtils.needsAcknowledgement(manualBlocking)).toBe(true)
+        expect(solutionUtils.needsAcknowledgement(manualOptional)).toBe(true)
+        expect(solutionUtils.needsAcknowledgement(failedOptional)).toBe(true)
+        expect(solutionUtils.needsAcknowledgement(failedBlocking)).toBe(false)
+    })
+
+    it('lets a required manual check through once it is confirmed, but never a failed required check', () => {
+        expect(solutionUtils.unmetBlockingChecks({ results: [manualBlocking, failedBlocking], acknowledged: [] })).toEqual([manualBlocking, failedBlocking])
+        expect(solutionUtils.unmetBlockingChecks({ results: [manualBlocking, failedBlocking], acknowledged: ['feishu-app', 'conn'] })).toEqual([failedBlocking])
+    })
+
+    it('does not record a confirmed manual check as skipped', () => {
+        expect(solutionUtils.skippedChecks({ results: [manualOptional, failedOptional], acknowledged: ['notice', 'dep'] })).toEqual(['Org solution installed'])
+        expect(solutionUtils.skippedChecks({ results: [manualOptional], acknowledged: [] })).toEqual(['Tell the HR group'])
     })
 })

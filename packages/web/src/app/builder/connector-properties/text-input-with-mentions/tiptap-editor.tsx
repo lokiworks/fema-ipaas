@@ -257,7 +257,7 @@ export const TiptapEditor = ({
     () =>
       isNil(selectedStepName)
         ? workflowStructureUtil.getAllSteps(trigger)
-        : workflowStructureUtil.findPathToStep(trigger, selectedStepName),
+        : workflowStructureUtil.findReferenceableSteps(trigger, selectedStepName),
     [trigger, selectedStepName],
   );
   const stepNumbers = useMemo(
@@ -310,6 +310,7 @@ export const TiptapEditor = ({
   ]);
   const pendingTriggerRef = useRef<string | null>(null);
   const [capsule, setCapsule] = useState<CapsuleToolbarState | null>(null);
+  const capsuleHideTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const projectId = authenticationSession.getProjectId();
   const { data: variablesPage } = variablesQueries.useVariables({
@@ -691,6 +692,24 @@ export const TiptapEditor = ({
         wrapperClassName,
       )}
       ref={editorWrapperRef}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setCapsule(null);
+        }
+      }}
+      onMouseEnter={() => clearTimeout(capsuleHideTimer.current)}
+      onMouseLeave={() => {
+        clearTimeout(capsuleHideTimer.current);
+        capsuleHideTimer.current = setTimeout(
+          () => setCapsule(null),
+          CAPSULE_HIDE_DELAY_MS,
+        );
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          setCapsule(null);
+        }
+      }}
     >
       {isHtml && !disabled && <RichTextToolbar editor={editor} />}
       {!isHtml && !disabled && !isNil(selectedStepName) && (
@@ -732,6 +751,7 @@ export const TiptapEditor = ({
             element: mention,
             serverValue: mention.getAttribute('serverValue') ?? '',
             top: mentionRect.top - wrapperRect.top,
+            bottom: mentionRect.bottom - wrapperRect.top,
             left: mentionRect.left - wrapperRect.left,
           });
         }}
@@ -856,7 +876,13 @@ function CapsuleToolbar({
   return (
     <div
       className="absolute z-50 flex items-center gap-0.5 rounded-md border bg-background p-0.5 shadow-md"
-      style={{ top: Math.max(state.top - 30, 0), left: state.left }}
+      style={{
+        top:
+          state.top >= CAPSULE_TOOLBAR_HEIGHT_PX
+            ? state.top - CAPSULE_TOOLBAR_HEIGHT_PX
+            : state.bottom + CAPSULE_TOOLBAR_GAP_PX,
+        left: state.left,
+      }}
       onMouseDown={(event) => event.preventDefault()}
     >
       <Button
@@ -900,8 +926,13 @@ type CapsuleToolbarState = {
   element: HTMLElement;
   serverValue: string;
   top: number;
+  bottom: number;
   left: number;
 };
+
+const CAPSULE_HIDE_DELAY_MS = 300;
+const CAPSULE_TOOLBAR_HEIGHT_PX = 30;
+const CAPSULE_TOOLBAR_GAP_PX = 4;
 
 const ZWS_CHAR = '\u200B';
 

@@ -32,6 +32,14 @@ export const NotificationEntity = new EntitySchema<NotificationSchema>({
             type: String,
             nullable: true,
         },
+        subjectId: {
+            ...EntityIdSchema,
+            nullable: true,
+        },
+        resolution: {
+            type: String,
+            nullable: true,
+        },
         read: {
             type: Boolean,
             nullable: false,
@@ -50,6 +58,11 @@ export const NotificationEntity = new EntitySchema<NotificationSchema>({
         {
             name: 'idx_notification_created',
             columns: ['created'],
+        },
+        {
+            name: 'idx_notification_subject',
+            columns: ['tenantId', 'type', 'subjectId'],
+            where: '"subjectId" IS NOT NULL',
         },
     ],
     relations: {

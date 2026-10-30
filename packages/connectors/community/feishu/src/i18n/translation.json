@@ -211,5 +211,17 @@
   "Created at (milliseconds)": "Created at (milliseconds)",
   "Completed at (milliseconds)": "Completed at (milliseconds)",
   "Named form values": "Named form values",
-  "Approval tasks": "Approval tasks"
+  "Approval tasks": "Approval tasks",
+  "Every column of the selected data table is listed here. Fill in the ones to write and leave the rest empty.": "Every column of the selected data table is listed here. Fill in the ones to write and leave the rest empty.",
+  "More Fields by Column Name": "More Fields by Column Name",
+  "Optional. Keys are column names and values are what to write, sent as they are. Use it to pass a whole object from an earlier node; for single columns prefer the Fields list above, which converts dates for you.": "Optional. Keys are column names and values are what to write, sent as they are. Use it to pass a whole object from an earlier node; for single columns prefer the Fields list above, which converts dates for you.",
+  "Text column.": "Text column.",
+  "Number column.": "Number column.",
+  "Single-select column. Fill in the option name.": "Single-select column. Fill in the option name.",
+  "Multi-select column. Separate options with commas, or reference a list.": "Multi-select column. Separate options with commas, or reference a list.",
+  "Date column. Reference a date field or type a date such as 2026-10-30. It is converted to a millisecond timestamp automatically.": "Date column. Reference a date field or type a date such as 2026-10-30. It is converted to a millisecond timestamp automatically.",
+  "Phone number column.": "Phone number column.",
+  "Link column. Fill in the URL.": "Link column. Fill in the URL.",
+  "Fill in the JSON this column type expects, for example [{\"id\":\"ou_xxx\"}] for a person column.": "Fill in the JSON this column type expects, for example [{\"id\":\"ou_xxx\"}] for a person column.",
+  "Nothing to write: fill in at least one column under Fields. Rows with an empty column name are ignored.": "Nothing to write: fill in at least one column under Fields. Rows with an empty column name are ignored."
 }

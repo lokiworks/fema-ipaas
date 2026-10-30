@@ -312,9 +312,7 @@ const RunsPage = () => {
                 )}
               </TooltipTrigger>
               <TooltipContent className="max-w-72">
-                {t(
-                  'Expired logs are cleaned up automatically. Sensitive fields are masked before they are written to the log.',
-                )}
+                {t('runRetentionTooltip')}
               </TooltipContent>
             </Tooltip>
           )}

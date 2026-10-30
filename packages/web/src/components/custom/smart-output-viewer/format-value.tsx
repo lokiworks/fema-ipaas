@@ -86,6 +86,7 @@ function parseDateValue(value: string): Date {
 
 const EPOCH_MILLISECONDS_PATTERN = /^\d{13}$/;
 const EPOCH_SECONDS_PATTERN = /^\d{10}$/;
+const REDACTED_VALUE = '**REDACTED**';
 
 function FormatSingleValue({
   value,
@@ -98,6 +99,10 @@ function FormatSingleValue({
 }) {
   if (isNil(value) || value === '') {
     return <span className="text-muted-foreground italic">{t('empty')}</span>;
+  }
+
+  if (value === REDACTED_VALUE) {
+    return <span className="text-muted-foreground">{t('Hidden')}</span>;
   }
 
   if (isStepFileUrl(value)) {

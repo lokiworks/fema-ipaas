@@ -7,6 +7,7 @@ import { system } from '../../helper/system/system'
 import { AppSystemProp } from '../../helper/system/system-props'
 import { userService } from '../../user/user-service'
 import { userIdentityService } from '../user-identity/user-identity-service'
+import { sessionRevocation } from './session-revocation'
 
 export const accessTokenManager = (log: FastifyBaseLogger) => ({
     async generateToken(principal: Principal, expiresInSeconds: number = dayjs.duration(7, 'day').asSeconds()): Promise<string> {
@@ -55,6 +56,15 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
     },
 
 
+    async revokeSession(token: string): Promise<void> {
+        const decoded = jwtUtils.decode<{ exp?: number }>({ jwt: token })
+        await sessionRevocation.revoke({
+            token,
+            expiresAtSeconds: decoded?.payload?.exp,
+            nowMs: Date.now(),
+        })
+    },
+
     async verifyPrincipal(token: string): Promise<Principal> {
         const secret = await jwtUtils.getJwtSecret()
 
@@ -71,6 +81,7 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
                     },
                 })
             }
+            await assertSessionNotRevoked({ token, decoded })
             await assertUserSession(log, decoded)
             return decoded
         }
@@ -87,6 +98,20 @@ export const accessTokenManager = (log: FastifyBaseLogger) => ({
         }
     },
 })
+
+async function assertSessionNotRevoked({ token, decoded }: { token: string, decoded: Principal }): Promise<void> {
+    if (decoded.type !== PrincipalType.USER && decoded.type !== PrincipalType.ONBOARDING) {
+        return
+    }
+    if (await sessionRevocation.isRevoked(token)) {
+        throw new ApplicationError({
+            code: ErrorCode.SESSION_EXPIRED,
+            params: {
+                message: 'The session has been signed out.',
+            },
+        })
+    }
+}
 
 async function assertUserSession(log: FastifyBaseLogger, decoded: Principal | Principal): Promise<void> {
     if (decoded.type !== PrincipalType.USER && decoded.type !== PrincipalType.ONBOARDING) return

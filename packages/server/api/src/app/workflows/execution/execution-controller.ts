@@ -1,6 +1,6 @@
 import { ApplicationError, EntityId, ErrorCode, isNil, omit, Permission, SeekPage, tryCatch } from '@fema-ipaas/core-utils'
 import { dayjsUtil } from '@fema-ipaas/server-utils'
-import { ApplicationEventName, BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PrincipalType, ProjectOverviewRequest, ProjectOverviewResponse, RetryWorkflowRequestBody, RevealExecutionPayloadRequestBody, RevealExecutionPayloadResponse, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole } from '@fema-ipaas/shared'
+import { ApplicationEventName, BulkActionOnRunsRequestBody, BulkArchiveActionOnRunsRequestBody, BulkCancelWorkflowRequestBody, CountExecutionsByStatusRequest, CountExecutionsByStatusResponse, Execution, ListExecutionsRequestQuery, PopulatedWorkflow, PrincipalType, ProjectOverviewRequest, ProjectOverviewResponse, RetryWorkflowRequestBody, RevealExecutionPayloadRequestBody, RevealExecutionPayloadResponse, RunEnvironment, RunInternalErrorSource, SERVICE_KEY_SECURITY_OPENAPI, TenantRole, WorkflowOperationStatus } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -76,6 +76,20 @@ export const executionController: FastifyPluginAsyncZod = async (app) => {
             await reply.send(canViewInternalError ? masked : omit(masked, ['internalError']))
         },
     )
+
+    app.get('/:id/workflow', GetRunWorkflowRequest, async (request) => {
+        const workflow = await executionService(request.log).getRunWorkflow({
+            projectId: request.projectId,
+            id: request.params.id,
+        })
+        if (workflow.operationStatus === WorkflowOperationStatus.DELETING) {
+            throw new ApplicationError({
+                code: ErrorCode.ENTITY_NOT_FOUND,
+                params: { entityType: 'workflow', entityId: workflow.id },
+            })
+        }
+        return workflow
+    })
 
     app.post('/:id/reveal', RevealPayloadRequest, async (request) => {
         const target = await executionService(request.log).getOneOrThrow({
@@ -249,6 +263,28 @@ const GetRequest = {
         }),
         response: {
             [StatusCodes.OK]: Execution,
+        },
+    },
+}
+
+const GetRunWorkflowRequest = {
+    config: {
+        security: securityAccess.project(
+            [PrincipalType.USER, PrincipalType.SERVICE],
+            Permission.READ_WORKFLOW, {
+                type: ProjectResourceType.TABLE,
+                tableName: ExecutionEntity,
+            }),
+    },
+    schema: {
+        tags: ['executions'],
+        description: 'Get the workflow structure a run executed',
+        security: [SERVICE_KEY_SECURITY_OPENAPI],
+        params: z.object({
+            id: EntityId,
+        }),
+        response: {
+            [StatusCodes.OK]: PopulatedWorkflow,
         },
     },
 }

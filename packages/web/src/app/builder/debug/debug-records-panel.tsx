@@ -1,4 +1,4 @@
-import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   Permission,
   RunEnvironment,
@@ -6,11 +6,11 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { ArrowLeft, Lightbulb, Search } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
-import { FriendlyErrorView } from '@/app/builder/data-display/friendly-error-view';
+import { StepErrorDetails } from '@/app/builder/data-display/step-error-details';
 import { RunsList } from '@/app/builder/run-list';
 import { SidebarHeader } from '@/app/builder/sidebar-header';
 import { LeftSideBarType } from '@/app/builder/types';
@@ -34,7 +34,6 @@ import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 
 import {
-  DebugHint,
   DebugNodeRow,
   DebugNodeStatus,
   debugRecordsUtils,
@@ -100,12 +99,11 @@ function RunRecord() {
     ? undefined
     : outputs[selectedName];
   const errorText = errorOf(selectedOutput);
+  const selectedStepModel = isNil(selectedName)
+    ? null
+    : workflowStructureUtil.getStep(selectedName, trigger) ?? null;
   const activeTab: RecordTab =
-    tabChoice?.stepName === selectedName
-      ? tabChoice.tab
-      : isNil(errorText)
-      ? RecordTab.OUTPUT
-      : RecordTab.ERROR;
+    tabChoice?.stepName === selectedName ? tabChoice.tab : RecordTab.OUTPUT;
   const visibleRows = debugRecordsUtils.filterNodes({ rows, status, query });
 
   if (isNil(run)) {
@@ -146,7 +144,7 @@ function RunRecord() {
             ? t('Production')
             : isNil(run.stepNameToTest)
             ? t('Full debug')
-            : t('Step test: {step}', {
+            : t('Step test · {step}', {
                 step:
                   workflowStructureUtil.getStep(run.stepNameToTest, trigger)
                     ?.displayName ?? run.stepNameToTest,
@@ -211,7 +209,6 @@ function RunRecord() {
                 <TabsTrigger value={RecordTab.OUTPUT}>
                   {t('Output')}
                 </TabsTrigger>
-                <TabsTrigger value={RecordTab.ERROR}>{t('Error')}</TabsTrigger>
               </TabsList>
               {activeTab === RecordTab.OUTPUT &&
                 !readonly &&
@@ -238,10 +235,14 @@ function RunRecord() {
                   <JsonBlock value={selectedOutput?.input} />
                 </TabsContent>
                 <TabsContent value={RecordTab.OUTPUT} className="mt-0">
-                  <JsonBlock value={selectedOutput?.output} />
-                </TabsContent>
-                <TabsContent value={RecordTab.ERROR} className="mt-0">
-                  <ErrorBlock errorText={errorText} />
+                  {isNil(errorText) ? (
+                    <JsonBlock value={selectedOutput?.output} />
+                  ) : (
+                    <StepErrorDetails
+                      errorText={errorText}
+                      step={selectedStepModel}
+                    />
+                  )}
                 </TabsContent>
               </div>
             </ScrollArea>
@@ -302,42 +303,6 @@ function JsonBlock({ value }: { value: unknown }) {
   return <CollapsibleJson json={value} label={t('Data')} defaultOpen={true} />;
 }
 
-function ErrorBlock({ errorText }: { errorText: string | null }) {
-  if (isNil(errorText)) {
-    return (
-      <span className="text-xs text-muted-foreground">
-        {t('This step did not fail')}
-      </span>
-    );
-  }
-  const friendly = tryParseFriendlyConnectorError(errorText);
-  const hints = debugRecordsUtils.troubleshootingHints(errorText);
-  return (
-    <div className="flex flex-col gap-3">
-      {friendly ? (
-        <FriendlyErrorView error={friendly} />
-      ) : (
-        <pre className="whitespace-pre-wrap break-all rounded-md bg-destructive/5 p-3 text-xs text-destructive">
-          {errorText}
-        </pre>
-      )}
-      {hints.length > 0 && (
-        <div className="flex flex-col gap-1.5">
-          <span className="flex items-center gap-1.5 text-sm font-medium">
-            <Lightbulb className="size-3.5 text-warning" />
-            {t('Where to look')}
-          </span>
-          <ul className="list-disc pl-5 text-sm text-muted-foreground">
-            {hints.map((hint) => (
-              <li key={hint}>{HINT_TEXT[hint]()}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function errorOf(output: StepOutput | undefined): string | null {
   return output?.errorMessage ?? null;
 }
@@ -360,7 +325,6 @@ type TabChoice = { stepName: string; tab: RecordTab };
 enum RecordTab {
   INPUT = 'input',
   OUTPUT = 'output',
-  ERROR = 'error',
 }
 
 const STATUS_FILTERS: {
@@ -380,45 +344,4 @@ const STATUS_DOT: Record<DebugNodeStatus, string> = {
   [DebugNodeStatus.RUNNING]: 'bg-primary animate-pulse',
   [DebugNodeStatus.NOT_RUN]: 'bg-muted-foreground/30',
   [DebugNodeStatus.OTHER]: 'bg-warning',
-};
-
-const HINT_TEXT: Record<DebugHint, () => string> = {
-  [DebugHint.CHECK_CONNECTION]: () =>
-    t(
-      'The connection was rejected. Reconnect it or check that the credentials are still valid.',
-    ),
-  [DebugHint.CHECK_PERMISSION]: () =>
-    t(
-      'The account behind the connection lacks permission. Grant the scope or use another connection.',
-    ),
-  [DebugHint.CHECK_RESOURCE]: () =>
-    t(
-      'The target record or URL was not found. Check ids and paths in the inputs.',
-    ),
-  [DebugHint.RATE_LIMITED]: () =>
-    t(
-      'The service is rate limiting. Retry later or add a delay or retry strategy.',
-    ),
-  [DebugHint.TIMEOUT]: () =>
-    t('The call timed out. Check the service status or raise the timeout.'),
-  [DebugHint.CHECK_NETWORK]: () =>
-    t(
-      'The address could not be reached. Check the URL and that the worker can reach it.',
-    ),
-  [DebugHint.CHECK_INPUT]: () =>
-    t(
-      'The service rejected the inputs. Compare the input with what the service expects.',
-    ),
-  [DebugHint.CHECK_REFERENCE]: () =>
-    t(
-      'A referenced value was empty. Check the upstream output and the reference path.',
-    ),
-  [DebugHint.CHECK_CODE_NAME]: () =>
-    t(
-      'The code uses a variable or function that does not exist. Check the spelling; globals such as setTimeout are not available in the code sandbox.',
-    ),
-  [DebugHint.STEP_TIMEOUT]: () =>
-    t(
-      'The step ran past its time limit. Narrow the query or split the work into batches, or ask the platform administrator to raise the step time limit.',
-    ),
 };

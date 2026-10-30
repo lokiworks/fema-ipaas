@@ -47,9 +47,14 @@ export const notificationsHooks = {
         queryClient.invalidateQueries({ queryKey: notificationKeys.all });
         onNotification?.(notification);
       };
+      const resolvedHandler = () => {
+        queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+      };
       socket.on(WebsocketClientEvent.NOTIFICATION_CREATED, handler);
+      socket.on(WebsocketClientEvent.NOTIFICATIONS_RESOLVED, resolvedHandler);
       return () => {
         socket.off(WebsocketClientEvent.NOTIFICATION_CREATED, handler);
+        socket.off(WebsocketClientEvent.NOTIFICATIONS_RESOLVED, resolvedHandler);
       };
     }, [socket, queryClient, onNotification]);
   },

@@ -1,7 +1,7 @@
 import { ConnectorMetadataModel } from '@fema-ipaas/connector-sdk';
 import { LocalesEnum, isNil } from '@fema-ipaas/core-utils';
 import {
-  WorkflowAction,
+  ReferenceableStep,
   WorkflowActionType,
   WorkflowTrigger,
   WorkflowTriggerType,
@@ -47,7 +47,7 @@ import { dataSelectorUtils } from './utils';
 import { schemaTreeUtils } from './utils-schema';
 import { VariablesTab } from './variables-tab';
 
-type StepInfo = (WorkflowAction | WorkflowTrigger) & { dfsIndex: number };
+type StepInfo = ReferenceableStep;
 
 function getStepsAndData(state: BuilderState): {
   steps: StepInfo[];
@@ -62,7 +62,7 @@ function getStepsAndData(state: BuilderState): {
       isFocusInsideListMapperModeInput: false,
     };
   }
-  const pathToTargetStep = workflowStructureUtil.findPathToStep(
+  const pathToTargetStep = workflowStructureUtil.findReferenceableSteps(
     workflowVersion.trigger,
     selectedStep,
   );
@@ -363,20 +363,10 @@ const DataSelector = ({
         }
 
         if (schema && step.type === WorkflowActionType.LOOP_ON_ITEMS) {
-          const loopNode = dataSelectorUtils.stepNeedsTesting(step)
-            ? schemaTreeUtils.buildStructureFromSchema({
-                stepName: step.name,
-                displayName,
-                schema,
-                badge: t('Not tested · sample structure'),
-              })
-            : schemaTreeUtils.buildTreeFromSchema({
-                stepName: step.name,
-                displayName,
-                schema,
-                sampleData: stepData,
-              });
-          return { ...loopNode, isLoopStepNode: true };
+          return {
+            ...buildLoopNode({ step, displayName, schema, sampleData }),
+            isLoopStepNode: true,
+          };
         }
 
         if (schema && dataSelectorUtils.stepNeedsTesting(step)) {
@@ -430,8 +420,22 @@ const DataSelector = ({
     ],
   );
 
-  const stepStructure =
-    viewMode === 'friendly' ? friendlyStructure : advancedStructure;
+  const stepStructure = useMemo(
+    () =>
+      (viewMode === 'friendly' ? friendlyStructure : advancedStructure).map(
+        (node, index) =>
+          dataSelectorUtils.withBranchCondition({
+            node,
+            label: dataSelectorUtils.branchConditionLabel({
+              onlyWhen: steps[index]?.onlyWhen ?? [],
+              displayNameOf: (stepName) =>
+                workflowStructureUtil.getStep(stepName, trigger)?.displayName ??
+                stepName,
+            }),
+          }),
+      ),
+    [viewMode, friendlyStructure, advancedStructure, steps, trigger],
+  );
   const visibleStepStructure = useMemo(
     () =>
       selectedStepIsLoop
@@ -700,20 +704,43 @@ function buildLoopVariableNodes({
     const loopSample = sampleData[loopName];
     const sampleRecord =
       typeof loopSample === 'object' && loopSample !== null ? loopSample : {};
-    return LOOP_VARIABLE_KEYS.map((key) => ({
-      key: `loop-variable-${loopName}-${key}`,
-      data: {
-        type: 'value' as const,
-        value: key in sampleRecord ? Reflect.get(sampleRecord, key) : '',
-        displayName: `${loop?.displayName ?? loopName} · ${t(
-          LOOP_VARIABLE_LABELS[key],
-        )}`,
-        searchTerms: [key],
-        propertyPath: pathHelpers.convertValuePathToPropertyPath(loopName, key),
-        insertable: true,
-        stepName: loopName,
-      },
-    }));
+    const inferred =
+      'item' in sampleRecord || isNil(loop)
+        ? null
+        : dataSelectorUtils.inferLoopItemSample({ loop, sampleData });
+    return LOOP_VARIABLE_KEYS.map((key) => {
+      const displayName = `${loop?.displayName ?? loopName} · ${t(
+        LOOP_VARIABLE_LABELS[key],
+      )}`;
+      const propertyPath = pathHelpers.convertValuePathToPropertyPath(
+        loopName,
+        key,
+      );
+      const value =
+        key in sampleRecord
+          ? Reflect.get(sampleRecord, key)
+          : key === 'item' && !isNil(inferred)
+          ? inferred.item
+          : '';
+      const sampleTree = schemaTreeUtils.buildSampleValueNode({
+        value,
+        displayName,
+        path: propertyPath,
+      });
+      return {
+        ...sampleTree,
+        key: `loop-variable-${loopName}-${key}`,
+        data: {
+          ...sampleTree.data,
+          searchTerms: [key],
+          stepName: loopName,
+          badge:
+            key === 'item' && !isNil(inferred)
+              ? t('Inferred from the upstream sample')
+              : undefined,
+        },
+      };
+    });
   });
   return [
     {
@@ -722,6 +749,51 @@ function buildLoopVariableNodes({
       children,
     },
   ];
+}
+
+function buildLoopNode({
+  step,
+  displayName,
+  schema,
+  sampleData,
+}: {
+  step: StepInfo;
+  displayName: string;
+  schema: OutputSchema;
+  sampleData: Record<string, unknown>;
+}): DataSelectorTreeNode {
+  if (!dataSelectorUtils.stepNeedsTesting(step)) {
+    return schemaTreeUtils.buildTreeFromSchema({
+      stepName: step.name,
+      displayName,
+      schema,
+      sampleData: sampleData[step.name],
+    });
+  }
+  const inferred = dataSelectorUtils.inferLoopItemSample({
+    loop: step,
+    sampleData,
+  });
+  if (isNil(inferred)) {
+    return schemaTreeUtils.buildStructureFromSchema({
+      stepName: step.name,
+      displayName,
+      schema,
+      badge: t('Not tested · sample structure'),
+    });
+  }
+  const tree = schemaTreeUtils.buildTreeFromSchema({
+    stepName: step.name,
+    displayName,
+    schema,
+    sampleData: { item: inferred.item },
+  });
+  return tree.data.type === 'value'
+    ? {
+        ...tree,
+        data: { ...tree.data, badge: t('Inferred from the upstream sample') },
+      }
+    : tree;
 }
 
 function withDebugTestDate({

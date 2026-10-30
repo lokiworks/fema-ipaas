@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { DataDisplayTabs } from '../data-display/data-display-tabs';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
 import { FriendlyErrorView } from '../data-display/friendly-error-view';
+import { TroubleshootingHints } from '../data-display/step-error-details';
 import { builtinOutputSchemas } from '../run-details/builtin-output-schemas';
 import { RouterHitSummary } from '../run-details/router-hit-summary';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
@@ -26,7 +27,6 @@ type TestSampleDataViewerProps = {
   currentStep?: WorkflowAction;
   isTesting: boolean;
   sampleData?: unknown;
-  sampleDataInput?: unknown | null;
   errorMessage: string | null;
   lastTestDate: string | undefined;
   isStale?: boolean;
@@ -56,7 +56,7 @@ type RetestButtonProps = {
   onRetest: () => void;
 };
 
-type ActiveTab = 'Input' | 'Output' | 'Logs';
+type ActiveTab = 'Output' | 'Logs';
 
 const isConsoleLogsValid = (value: unknown) => {
   if (isNil(value)) return false;
@@ -78,7 +78,6 @@ export const TestSampleDataViewer = React.memo(
       onRetest,
       onCancelTesting,
       hideCancel,
-      sampleDataInput,
       consoleLogs,
       explanationContext,
       connectorDisplayName,
@@ -87,13 +86,9 @@ export const TestSampleDataViewer = React.memo(
       isSampleData = false,
     } = props;
     const [requestedTab, setActiveTab] = useState<ActiveTab>('Output');
-    const hasInput = !isNil(sampleDataInput);
     const hasLogs = isConsoleLogsValid(consoleLogs);
     const activeTab: ActiveTab =
-      (requestedTab === 'Input' && !hasInput) ||
-      (requestedTab === 'Logs' && !hasLogs)
-        ? 'Output'
-        : requestedTab;
+      requestedTab === 'Logs' && !hasLogs ? 'Output' : requestedTab;
 
     const isFailed = !isNil(errorMessage);
 
@@ -109,12 +104,7 @@ export const TestSampleDataViewer = React.memo(
         : 'success';
 
     const outputData = errorMessage ?? sampleData;
-    const activeData =
-      activeTab === 'Input'
-        ? sampleDataInput
-        : activeTab === 'Logs'
-        ? consoleLogs
-        : outputData;
+    const activeData = activeTab === 'Logs' ? consoleLogs : outputData;
 
     const showAgentView = false;
     const knownError =
@@ -125,7 +115,7 @@ export const TestSampleDataViewer = React.memo(
       !isTesting && !showAgentView && activeTab === 'Output' && !knownError
         ? tryParseFriendlyConnectorError(errorMessage)
         : null;
-    const showToolbar = !showAgentView && (hasInput || hasLogs);
+    const showToolbar = !showAgentView && hasLogs;
 
     return (
       <div className="flex flex-col h-full w-full min-h-0">
@@ -140,7 +130,6 @@ export const TestSampleDataViewer = React.memo(
             <TestPanelToolbar
               activeTab={activeTab}
               setActiveTab={setActiveTab}
-              hasInput={hasInput}
               hasLogs={hasLogs}
               disabled={isTesting}
             />
@@ -156,11 +145,14 @@ export const TestSampleDataViewer = React.memo(
                 <AlertDescription>{t(knownError.hint)}</AlertDescription>
               </Alert>
             ) : friendlyError ? (
-              <FriendlyErrorView
-                error={friendlyError}
-                explanationContext={explanationContext}
-                connectorDisplayName={connectorDisplayName}
-              />
+              <div className="flex flex-col gap-3">
+                <FriendlyErrorView
+                  error={friendlyError}
+                  explanationContext={explanationContext}
+                  connectorDisplayName={connectorDisplayName}
+                />
+                <TroubleshootingHints errorText={errorMessage} />
+              </div>
             ) : activeTab === 'Output' && !errorMessage ? (
               <div className="flex flex-col gap-3">
                 {!isNil(currentStep) &&
@@ -229,7 +221,6 @@ export const TestSampleDataViewer = React.memo(
 type TestPanelToolbarProps = {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  hasInput: boolean;
   hasLogs: boolean;
   disabled?: boolean;
 };
@@ -237,7 +228,6 @@ type TestPanelToolbarProps = {
 const TestPanelToolbar = ({
   activeTab,
   setActiveTab,
-  hasInput,
   hasLogs,
   disabled = false,
 }: TestPanelToolbarProps) => (
@@ -245,7 +235,6 @@ const TestPanelToolbar = ({
     <SegmentedTabs
       activeTab={activeTab}
       setActiveTab={setActiveTab}
-      hasInput={hasInput}
       hasLogs={hasLogs}
       disabled={disabled}
     />
@@ -258,7 +247,6 @@ type SegmentedTabsProps = TestPanelToolbarProps;
 const SegmentedTabs = ({
   activeTab,
   setActiveTab,
-  hasInput,
   hasLogs,
   disabled,
 }: SegmentedTabsProps) => (
@@ -274,14 +262,6 @@ const SegmentedTabs = ({
       onClick={() => setActiveTab('Output')}
       disabled={disabled}
     />
-    {hasInput && (
-      <SegmentedTabsButton
-        label={t('Input')}
-        active={activeTab === 'Input'}
-        onClick={() => setActiveTab('Input')}
-        disabled={disabled}
-      />
-    )}
     {hasLogs && (
       <SegmentedTabsButton
         label={t('Logs')}

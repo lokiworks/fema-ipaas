@@ -34,15 +34,97 @@ describe('runLogUiUtils', () => {
   it('uses the longest project retention as the query window', () => {
     const scope: RunLogScope = {
       projects: [
-        { id: 'p1', displayName: 'A', retentionDays: 30, canRerun: true },
-        { id: 'p2', displayName: 'B', retentionDays: 14, canRerun: false },
+        {
+          id: 'p1',
+          displayName: 'A',
+          retentionDays: 30,
+          rawRetentionDays: 3,
+          canRerun: true,
+        },
+        {
+          id: 'p2',
+          displayName: 'B',
+          retentionDays: 14,
+          rawRetentionDays: 3,
+          canRerun: false,
+        },
       ],
       workflows: [],
       connectors: [],
       tenantRetentionDays: 30,
+      tenantRawRetentionDays: 3,
       canManagePrivacy: false,
     };
     expect(runLogUiUtils.maxRetentionDays(scope)).toBe(30);
+  });
+
+  it('states both retention tiers with the configured numbers', () => {
+    const scope: RunLogScope = {
+      projects: [
+        {
+          id: 'p1',
+          displayName: 'A',
+          retentionDays: 30,
+          rawRetentionDays: 3,
+          canRerun: true,
+        },
+        {
+          id: 'p2',
+          displayName: 'B',
+          retentionDays: 7,
+          rawRetentionDays: 3,
+          canRerun: true,
+        },
+      ],
+      workflows: [],
+      connectors: [],
+      tenantRetentionDays: 30,
+      tenantRawRetentionDays: 3,
+      canManagePrivacy: false,
+    };
+    const text = runLogUiUtils.retentionText(scope);
+    expect(text).toContain('30');
+    expect(text).toContain('3');
+    expect(text).toContain('B');
+    expect(text).not.toContain('{');
+    expect(runLogUiUtils.projectRetention({ scope, projectId: 'p2' })).toEqual(
+      { logDays: 7, rawDays: 3 },
+    );
+    expect(
+      runLogUiUtils.projectRetention({ scope, projectId: 'unknown' }),
+    ).toEqual({ logDays: 30, rawDays: 3 });
+    expect(
+      runLogUiUtils.projectRetention({ scope: undefined, projectId: 'p1' }),
+    ).toBeNull();
+  });
+
+  it('falls back to the masked log once the original run data expired', () => {
+    expect(
+      runLogUiUtils.runDataState({
+        logsFileId: 'raw',
+        displayLogsFileId: 'masked',
+        rawPayloadExpired: false,
+      }),
+    ).toBe('RAW');
+    expect(
+      runLogUiUtils.runDataState({
+        logsFileId: null,
+        displayLogsFileId: 'masked',
+        rawPayloadExpired: true,
+      }),
+    ).toBe('MASKED_ONLY');
+    expect(
+      runLogUiUtils.runDataState({
+        logsFileId: null,
+        displayLogsFileId: null,
+      }),
+    ).toBe('NONE');
+    const notice = runLogUiUtils.maskedOnlyNotice({ logDays: 30, rawDays: 3 });
+    expect(notice).toContain('3');
+    expect(notice).not.toContain('{');
+    expect(
+      runLogUiUtils.logsGoneText({ logDays: 30, rawDays: 3 }),
+    ).not.toContain('{');
   });
 
   it('lists steps in execution order when the version is unavailable', () => {

@@ -26,24 +26,41 @@ export function useHydrateDebugTestedSteps() {
         environment: RunEnvironment.TESTING,
         excludeStepTests: true,
       });
-      const latest = page.data.find(
-        (run) =>
-          isNil(run.stepNameToTest) &&
-          isExecutionStateTerminal({
-            status: run.status,
-            ignoreInternalError: false,
-          }),
+      const finished = page.data
+        .filter(
+          (run) =>
+            isNil(run.stepNameToTest) &&
+            isExecutionStateTerminal({
+              status: run.status,
+              ignoreInternalError: false,
+            }),
+        )
+        .slice(0, HYDRATED_RUNS)
+        .reverse();
+      const versionIds = [
+        ...new Set(finished.map((run) => run.workflowVersionId)),
+      ];
+      const [runs, versions] = await Promise.all([
+        Promise.all(finished.map((run) => executionsApi.getPopulated(run.id))),
+        Promise.all(
+          versionIds.map((versionId) =>
+            workflowsApi.get(workflowId, { versionId }),
+          ),
+        ),
+      ]);
+      const versionById = new Map(
+        versions.map((workflow) => [workflow.version.id, workflow.version]),
       );
-      if (latest) {
-        const [run, runVersion] = await Promise.all([
-          executionsApi.getPopulated(latest.id),
-          workflowsApi.get(workflowId, { versionId: latest.workflowVersionId }),
-        ]);
-        markDebugTested({ run, workflowVersion: runVersion.version });
-      }
+      runs.forEach((run) => {
+        const runVersion = versionById.get(run.workflowVersionId);
+        if (!isNil(runVersion)) {
+          markDebugTested({ run, workflowVersion: runVersion });
+        }
+      });
       return null;
     },
   });
 }
 
 const LOOKBACK_RUNS = 10;
+const HYDRATED_RUNS = 5;

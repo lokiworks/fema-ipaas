@@ -25,6 +25,7 @@ import {
   solutionsHooks,
   solutionsUtils,
 } from '@/features/solutions';
+import { cn } from '@/lib/utils';
 
 import { WizardFooter } from './wizard-parts';
 
@@ -54,9 +55,7 @@ function ChecksStep({
     <div className="flex max-w-3xl flex-col gap-4">
       <div className="flex items-center gap-3">
         <p className="grow text-sm text-muted-foreground">
-          {t(
-            'A required check has to pass before installing. For the others, confirm that you know and continue.',
-          )}
+          {t('solutionChecksIntro')}
         </p>
         <Button
           type="button"
@@ -110,7 +109,15 @@ function ChecksStep({
       <WizardFooter
         onBack={onBack}
         nextDisabled={isLoading || isFetching || isError || !gate.canContinue}
-        onNext={() => onNext(acknowledgedKeys)}
+        onNext={() =>
+          onNext({
+            acknowledged: acknowledgedKeys,
+            acceptedRisks: solutionsUtils.acceptedRisks({
+              results,
+              acknowledged: acknowledgedKeys,
+            }),
+          })
+        }
       />
     </div>
   );
@@ -126,6 +133,7 @@ function CheckResultRow({
 }: CheckResultRowProps) {
   const passed = result.status === SolutionCheckStatus.PASS;
   const message = solutionsUtils.checkMessage(result.message);
+  const acknowledgement = solutionsUtils.acknowledgementKind(result);
   return (
     <div className="flex flex-col gap-3 rounded-lg border p-4">
       <div className="flex items-start gap-3">
@@ -136,7 +144,7 @@ function CheckResultRow({
               <SolutionCheckLabel label={result.label} />
             </span>
             <Badge variant={result.blocking ? 'destructive' : 'secondary'}>
-              {result.blocking ? t('Must pass') : t('Recommended')}
+              {badgeLabel(result)}
             </Badge>
             {result.who && (
               <span className="text-xs text-muted-foreground">
@@ -144,7 +152,7 @@ function CheckResultRow({
               </span>
             )}
           </div>
-          {result.detail && (
+          {result.detail && acknowledgement !== 'confirm' && (
             <span className="text-xs text-muted-foreground">
               {result.detail}
             </span>
@@ -200,13 +208,32 @@ function CheckResultRow({
           </div>
         </div>
       )}
-      {!passed && !result.blocking && (
-        <label className="flex cursor-pointer items-center gap-2 text-sm">
+      {acknowledgement !== null && (
+        <label
+          className={cn(
+            'flex cursor-pointer items-start gap-2 rounded-md text-sm',
+            acknowledgement === 'confirm' && 'border bg-muted/40 p-3',
+          )}
+        >
           <Checkbox
+            className="mt-0.5"
             checked={acknowledged}
             onCheckedChange={(checked) => onAcknowledge(checked === true)}
           />
-          {t('I know about this and want to continue')}
+          {acknowledgement === 'confirm' ? (
+            <span className="flex min-w-0 flex-col gap-1">
+              <span className="font-medium">
+                {t('I have confirmed: {label}', { label: result.label })}
+              </span>
+              {result.detail && (
+                <span className="text-xs text-muted-foreground">
+                  {t('What to confirm: {detail}', { detail: result.detail })}
+                </span>
+              )}
+            </span>
+          ) : (
+            t('I know about this and want to continue')
+          )}
         </label>
       )}
     </div>
@@ -224,6 +251,13 @@ function StatusIcon({ status }: { status: SolutionCheckStatus }) {
   }
 }
 
+function badgeLabel(result: SolutionCheckResult): string {
+  if (result.status === SolutionCheckStatus.NEEDS_CONFIRM) {
+    return result.blocking ? t('Must confirm') : t('Please confirm');
+  }
+  return result.blocking ? t('Must pass') : t('Recommended');
+}
+
 function fixInstructions(result: SolutionCheckResult): string {
   return [
     result.label,
@@ -239,7 +273,10 @@ type ChecksStepProps = {
   connections: Record<string, string>;
   acknowledged: string[];
   onBack: () => void;
-  onNext: (acknowledged: string[]) => void;
+  onNext: (acknowledgement: {
+    acknowledged: string[];
+    acceptedRisks: string[];
+  }) => void;
 };
 
 type CheckResultRowProps = {

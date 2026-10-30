@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { MessageTooltip } from '@/components/custom/message-tooltip';
 import { RailButton } from '@/components/custom/rail-button';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -47,6 +48,11 @@ export function NotificationBell() {
   const openNotification = (notification: Notification) => {
     if (!notification.read) {
       markRead.mutate(notification.id);
+    }
+    const resolved = notificationUiUtils.resolution(notification);
+    if (!isNil(resolved)) {
+      toast(resolved.message);
+      return;
     }
     if (!isNil(notification.link)) {
       setOpen(false);
@@ -157,6 +163,7 @@ function NotificationRow({
     notification,
     connectorDisplayName: summary?.displayName,
   });
+  const resolved = notificationUiUtils.resolution(notification);
   return (
     <button
       type="button"
@@ -168,8 +175,20 @@ function NotificationRow({
     >
       <Icon className={cn('mt-0.5 size-4 shrink-0', className)} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-sm font-medium">
-          {notificationUiUtils.headline(notification)}
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span
+            className={cn(
+              'text-sm font-medium',
+              !isNil(resolved) && 'text-muted-foreground',
+            )}
+          >
+            {notificationUiUtils.headline(notification)}
+          </span>
+          {!isNil(resolved) && (
+            <Badge variant="outline" className="text-[11px] font-normal">
+              {resolved.label}
+            </Badge>
+          )}
         </span>
         {subject.length > 0 && (
           <span className="truncate text-xs text-foreground/80">{subject}</span>

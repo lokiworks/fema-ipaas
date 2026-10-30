@@ -23,7 +23,9 @@ function issueTitlePatterns(query: string): string[] {
     if (needle.length === 0) {
         return []
     }
-    return Object.values(IssueTitleCategory).flatMap((category) => localizedTitlePatterns({ needle, english: ISSUE_TITLE_CATEGORY_ENGLISH[category], localized: ISSUE_TITLE_CATEGORY_CHINESE[category] }))
+    const patterns = Object.values(IssueTitleCategory).flatMap((category) => [ISSUE_TITLE_CATEGORY_CHINESE[category], ...(RETIRED_ISSUE_TITLE_CATEGORY_CHINESE[category] ?? [])]
+        .flatMap((localized) => localizedTitlePatterns({ needle, english: ISSUE_TITLE_CATEGORY_ENGLISH[category], localized })))
+    return [...new Set(patterns)]
 }
 
 function localizedTitlePatterns({ needle, english, localized }: { needle: string, english: string, localized: string }): string[] {
@@ -89,5 +91,9 @@ export const ISSUE_TITLE_CATEGORY_CHINESE: Record<IssueTitleCategory, string> = 
     [IssueTitleCategory.REQUEST_REJECTED]: '对方系统拒绝了请求',
     [IssueTitleCategory.MAPPING_MISSING]: '映射表缺少对应值',
     [IssueTitleCategory.TRIGGER_FAILED]: '触发器检查失败',
-    [IssueTitleCategory.STEP_FAILED]: '步骤失败',
+    [IssueTitleCategory.STEP_FAILED]: '节点失败',
+}
+
+const RETIRED_ISSUE_TITLE_CATEGORY_CHINESE: Partial<Record<IssueTitleCategory, string[]>> = {
+    [IssueTitleCategory.STEP_FAILED]: ['步骤失败'],
 }

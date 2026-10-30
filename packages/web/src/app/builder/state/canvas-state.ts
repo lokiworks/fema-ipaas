@@ -1,5 +1,9 @@
 import { isNil } from '@fema-ipaas/core-utils';
-import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
+import {
+  WorkflowOperationType,
+  WorkflowTriggerType,
+  workflowStructureUtil,
+} from '@fema-ipaas/shared';
 import { StoreApi } from 'zustand';
 
 import { LeftSideBarType, RightSideBarType } from '@/app/builder/types';
@@ -72,9 +76,20 @@ export const createCanvasState = (
         initialState.run.steps,
       )
     : null;
+  const stepNameToTest = initialState.run?.stepNameToTest;
+  const testedStepNameInRun =
+    !isNil(stepNameToTest) &&
+    !isNil(
+      workflowStructureUtil.getStep(
+        stepNameToTest,
+        initialState.workflowVersion.trigger,
+      ),
+    )
+      ? stepNameToTest
+      : null;
   const initiallySelectedStep =
     workflowCanvasUtils.determineInitiallySelectedStep(
-      failedStepNameInRun,
+      failedStepNameInRun ?? testedStepNameInRun,
       initialState.workflowVersion,
     );
   const isEmptyTriggerInitiallySelected =

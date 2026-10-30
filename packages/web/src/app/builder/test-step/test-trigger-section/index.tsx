@@ -46,15 +46,13 @@ const TestTriggerSection = React.memo(
     );
 
     const stepName = currentStep?.name;
-    const { sampleData, sampleDataInput, lastTestDate } =
-      useBuilderStateContext((state) => ({
-        sampleData: stepName ? state.outputSampleData[stepName] : undefined,
-        sampleDataInput: stepName ? state.inputSampleData[stepName] : undefined,
-        lastTestDate:
-          stepName && state.selectedStep
-            ? findTriggerLastTestDate(state.workflowVersion.trigger, stepName)
-            : undefined,
-      }));
+    const { sampleData, lastTestDate } = useBuilderStateContext((state) => ({
+      sampleData: stepName ? state.outputSampleData[stepName] : undefined,
+      lastTestDate:
+        stepName && state.selectedStep
+          ? findTriggerLastTestDate(state.workflowVersion.trigger, stepName)
+          : undefined,
+    }));
 
     const { pollResults } = triggerEventHooks.usePollResults(
       workflowVersionId,
@@ -229,7 +227,6 @@ const TestTriggerSection = React.memo(
                 consoleLogs={null}
                 isTesting={isPollingTesting}
                 sampleData={sampleData}
-                sampleDataInput={sampleDataInput ?? null}
                 errorMessage={errorMessage ?? null}
                 lastTestDate={lastTestDate}
                 isSaving={isSaving}

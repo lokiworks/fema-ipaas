@@ -10,7 +10,7 @@ import { filesController, signedStepFileController } from './files-controller'
 export const fileModule: FastifyPluginAsyncZod = async (app) => {
     app.addHook('preSerialization', entitiesMustBeOwnedByCurrentProject)
     systemJobHandlers.registerJobHandler(SystemJobName.FILE_CLEANUP_TRIGGER, async () => {
-        await fileService(app.log).deleteStaleBulk([FileType.EXECUTION_LOG, FileType.EXECUTION_LOG_SLICE, FileType.WORKFLOW_STEP_FILE, FileType.TRIGGER_EVENT_FILE, FileType.TRIGGER_PAYLOAD, FileType.WEBHOOK_PAYLOAD])
+        await fileService(app.log).deleteStaleBulk([FileType.EXECUTION_LOG, FileType.EXECUTION_LOG_SLICE, FileType.WORKFLOW_STEP_FILE, FileType.TRIGGER_EVENT_FILE, FileType.TRIGGER_PAYLOAD, FileType.WEBHOOK_PAYLOAD, FileType.RUN_WORKFLOW_SNAPSHOT])
     })
     await systemJobsSchedule(app.log).upsertJob({
         job: {

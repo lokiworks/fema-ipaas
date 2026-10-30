@@ -10,12 +10,14 @@ import { FlaskConical } from 'lucide-react';
 import React, { useContext, useMemo } from 'react';
 
 import { connectorsHooks } from '@/features/connectors';
+import { StepTestStatus } from '@/features/workflows/utils/workflow-validator';
 
 import { useBuilderStateContext } from '../builder-hooks';
 import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
 import { stepPropertiesSnapshotUtils } from '../data-display/build-step-properties-snapshot';
 import { ErrorExplanationContext } from '../data-display/explanation-prompt';
 import { useDebugRunSamples } from '../data-selector/use-debug-run-samples';
+import { stepTestState } from '../state/step-test-state';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 
 import { useActionTestRunner } from './test-runner-context';
@@ -28,16 +30,15 @@ const TestStepSectionImplementation = React.memo(
   }: TestActionComponentProps & { currentStep: WorkflowAction }) => {
     const [
       sampleData,
-      sampleDataInput,
       errorMessage,
       consoleLogs,
       isStepBeingTested,
       removeStepTestListener,
       revertSampleDataLocally,
+      debugTested,
     ] = useBuilderStateContext((state) => {
       return [
         state.outputSampleData[currentStep.name],
-        state.inputSampleData[currentStep.name],
         state.errorLogs[currentStep.name],
         currentStep.type === WorkflowActionType.CODE
           ? state.consoleLogs[currentStep.name]
@@ -45,6 +46,7 @@ const TestStepSectionImplementation = React.memo(
         state.isStepBeingTested,
         state.removeStepTestListener,
         state.revertSampleDataLocallyCallbacks[currentStep.name],
+        state.debugTestedSteps[currentStep.name],
       ];
     });
 
@@ -53,7 +55,11 @@ const TestStepSectionImplementation = React.memo(
 
     const lastTestDate = currentStep.settings.sampleData?.lastTestDate;
     const isStale =
-      !isNil(lastTestDate) && currentStep.lastUpdatedDate > lastTestDate;
+      stepTestState.statusOf({
+        step: currentStep,
+        debugTested,
+        failedInSession: !isNil(errorMessage),
+      }) === StepTestStatus.CHANGED;
 
     const debugSteps = useMemo(
       () => [{ ...currentStep, dfsIndex: 0 }],
@@ -152,7 +158,6 @@ const TestStepSectionImplementation = React.memo(
             currentStep={currentStep}
             isTesting={isTesting}
             sampleData={shownSampleData}
-            sampleDataInput={sampleDataInput ?? null}
             lastTestDate={shownTestDate}
             isStale={isStale}
             isSaving={isSaving}

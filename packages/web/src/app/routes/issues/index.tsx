@@ -21,7 +21,7 @@ import {
   Workflow,
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
   ConsolePage,
@@ -426,6 +426,7 @@ function IssuesPage() {
               alerts: summary.alertsLast7Days,
             })}
           </p>
+          <OtherProjectsOpenIssues projectId={projectId} />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <SummaryCard
               active={view === IssueListView.OPEN}
@@ -492,6 +493,28 @@ function IssuesPage() {
         </ConsoleTableFrame>
       </div>
     </ConsolePage>
+  );
+}
+
+function OtherProjectsOpenIssues({ projectId }: { projectId: string }) {
+  const { data: overview } = issuesHooks.useOverview({
+    showErrorDialog: false,
+  });
+  const otherOpen = (overview?.projects ?? [])
+    .filter((project) => project.projectId !== projectId)
+    .reduce((sum, project) => sum + project.open, 0);
+  if (otherOpen === 0) {
+    return null;
+  }
+  return (
+    <p className="text-xs text-muted-foreground">
+      {t('Your other projects have {count} open issues.', {
+        count: otherOpen,
+      })}{' '}
+      <Link to="/issue-center" className="text-primary hover:underline">
+        {t('Open the issue center')}
+      </Link>
+    </p>
   );
 }
 

@@ -13,7 +13,10 @@ import { foldersApi } from '@/features/folders';
 import { projectCollectionUtils, getProjectName } from '@/features/projects';
 import { tenantAccessHooks } from '@/features/tenant-access';
 import { workflowsApi } from '@/features/workflows';
-import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
+import {
+  useAuthorization,
+  useIsTenantAdmin,
+} from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 
 import { getAccessHistory } from './access-history';
@@ -60,6 +63,7 @@ function pageMatchesQuery({
 export function useGlobalSearchResults(query: string, open: boolean) {
   const projectId = authenticationSession.getProjectId() ?? '';
   const isTenantAdmin = useIsTenantAdmin();
+  const { checkAccess } = useAuthorization();
   const { data: access } = tenantAccessHooks.useMyAccess();
   const hiddenTypes = globalSearchUtils.hiddenResultTypes({
     isTenantAdmin,
@@ -128,6 +132,7 @@ export function useGlobalSearchResults(query: string, open: boolean) {
         isTenantAdmin ||
         (access?.modules ?? []).includes(p.module)) &&
       (!p.projectScoped || !!projectId) &&
+      (p.permission === undefined || checkAccess(p.permission)) &&
       (!hasQuery || pageMatchesQuery({ page: p, query })),
   ).slice(0, hasQuery ? undefined : SEARCH_LIMIT);
 

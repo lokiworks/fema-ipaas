@@ -5,6 +5,7 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Link2, Siren, Workflow } from 'lucide-react';
+import { useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { AlertSettings } from '@/app/routes/tenant/alerts';
@@ -34,6 +35,7 @@ import {
 import { ReconciliationSettings } from '@/features/reconciliation/reconciliation';
 import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
+import { useElementSize } from '@/hooks/use-element-size';
 import { cn } from '@/lib/utils';
 
 export function IssueCenterPage() {
@@ -129,54 +131,12 @@ function UnresolvedIssues() {
           />
         ))}
       </div>
-      <ConsoleTableFrame>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('Issue')}</TableHead>
-              <TableHead>{t('Project')}</TableHead>
-              <TableHead>{t('Impact')}</TableHead>
-              <TableHead>{t('Last seen')}</TableHead>
-              <TableHead>{t('Status')}</TableHead>
-              <TableHead>{t('Severity')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {issues.map((issue) => (
-              <TableRow
-                key={issue.id}
-                className="cursor-pointer"
-                onClick={() =>
-                  navigate(`/projects/${issue.projectId}/issues/${issue.id}`)
-                }
-              >
-                <TableCell className="min-w-[16rem] max-w-[28rem]">
-                  <IssueTitle issue={issue} />
-                </TableCell>
-                <TableCell className="text-sm whitespace-nowrap">
-                  {issue.projectDisplayName}
-                </TableCell>
-                <TableCell className="text-sm whitespace-nowrap">
-                  {issueUiUtils.impactText(issue)}
-                </TableCell>
-                <TableCell className="text-sm whitespace-nowrap">
-                  <FormattedDate date={new Date(issue.lastSeenAt)} />
-                </TableCell>
-                <TableCell>
-                  <IssueStatusBadge
-                    status={issue.status}
-                    reopened={issue.reopened}
-                    muted={false}
-                  />
-                </TableCell>
-                <TableCell>
-                  <IssueSeverityBadge severity={issue.severity} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ConsoleTableFrame>
+      <IssueTable
+        issues={issues}
+        onOpen={(issue) =>
+          navigate(`/projects/${issue.projectId}/issues/${issue.id}`)
+        }
+      />
       {overview.latest.length >= LATEST_LIMIT && (
         <span className="text-xs text-muted-foreground">
           {t(
@@ -185,6 +145,81 @@ function UnresolvedIssues() {
           )}
         </span>
       )}
+    </div>
+  );
+}
+
+function IssueTable({
+  issues,
+  onOpen,
+}: {
+  issues: IssueOverviewItem[];
+  onOpen: (issue: IssueOverviewItem) => void;
+}) {
+  const frameRef = useRef<HTMLDivElement>(null);
+  const { width } = useElementSize(frameRef);
+  const tiny = width > 0 && width < TINY_TABLE_WIDTH;
+  return (
+    <div ref={frameRef} className="min-w-0">
+      <ConsoleTableFrame>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('Issue')}</TableHead>
+              {!tiny && (
+                <>
+                  <TableHead>{t('Project')}</TableHead>
+                  <TableHead>{t('Impact')}</TableHead>
+                  <TableHead>{t('Last seen')}</TableHead>
+                  <TableHead>{t('Status')}</TableHead>
+                  <TableHead>{t('Severity')}</TableHead>
+                </>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {issues.map((issue) => (
+              <TableRow
+                key={issue.id}
+                className="cursor-pointer"
+                onClick={() => onOpen(issue)}
+              >
+                <TableCell
+                  className={cn(
+                    'min-w-[16rem] max-w-[28rem]',
+                    tiny && 'w-full min-w-0 max-w-0',
+                  )}
+                >
+                  <IssueTitle issue={issue} tiny={tiny} />
+                </TableCell>
+                {!tiny && (
+                  <>
+                    <TableCell className="text-sm whitespace-nowrap">
+                      {issue.projectDisplayName}
+                    </TableCell>
+                    <TableCell className="text-sm whitespace-nowrap">
+                      {issueUiUtils.impactText(issue)}
+                    </TableCell>
+                    <TableCell className="text-sm whitespace-nowrap">
+                      <FormattedDate date={new Date(issue.lastSeenAt)} />
+                    </TableCell>
+                    <TableCell>
+                      <IssueStatusBadge
+                        status={issue.status}
+                        reopened={issue.reopened}
+                        muted={false}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <IssueSeverityBadge severity={issue.severity} />
+                    </TableCell>
+                  </>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </ConsoleTableFrame>
     </div>
   );
 }
@@ -225,7 +260,13 @@ function ProjectChip({
   );
 }
 
-function IssueTitle({ issue }: { issue: IssueOverviewItem }) {
+function IssueTitle({
+  issue,
+  tiny,
+}: {
+  issue: IssueOverviewItem;
+  tiny: boolean;
+}) {
   const detail = issueUiUtils.scopeText(issue);
   return (
     <div className="flex min-w-0 items-start gap-2">
@@ -248,6 +289,28 @@ function IssueTitle({ issue }: { issue: IssueOverviewItem }) {
             ? ` · ${runLogUiUtils.errorCodeLabel(issue.errorCode)}`
             : ''}
         </span>
+        {tiny && (
+          <>
+            <span
+              className="flex flex-wrap items-center gap-1 pt-1"
+              data-testid="issue-center-tiny-badges"
+            >
+              <IssueStatusBadge
+                status={issue.status}
+                reopened={issue.reopened}
+                muted={false}
+              />
+              <IssueSeverityBadge severity={issue.severity} />
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              {issue.projectDisplayName}
+              {' · '}
+              {issueUiUtils.impactText(issue)}
+              {' · '}
+              <FormattedDate date={new Date(issue.lastSeenAt)} />
+            </span>
+          </>
+        )}
       </div>
     </div>
   );
@@ -256,5 +319,6 @@ function IssueTitle({ issue }: { issue: IssueOverviewItem }) {
 const ISSUES_TAB = 'issues';
 const ALERTS_TAB = 'alerts';
 const LATEST_LIMIT = 50;
+const TINY_TABLE_WIDTH = 640;
 
 const RECONCILIATION_TAB = 'reconciliation';

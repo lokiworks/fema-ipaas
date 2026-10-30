@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { SOLUTION_TABLE_PLACEHOLDER_PREFIX, SolutionConfigItem, SolutionConfigType, SolutionPatch } from './solution'
+import { SOLUTION_TABLE_PLACEHOLDER_PREFIX, SolutionCheckResult, SolutionCheckStatus, SolutionConfigItem, SolutionConfigType, SolutionPatch } from './solution'
 
 export const solutionUtils = {
     resolveConfig,
@@ -9,6 +9,9 @@ export const solutionUtils = {
     capacityError,
     tablePlaceholder,
     isTablePlaceholder,
+    needsAcknowledgement,
+    unmetBlockingChecks,
+    skippedChecks,
 }
 
 function resolveConfig({ items, provided }: { items: SolutionConfigItem[], provided: Record<string, string> }): ResolvedConfig {
@@ -59,6 +62,23 @@ function tablePlaceholder(key: string): string {
 function isTablePlaceholder(value: string): boolean {
     return value.startsWith(SOLUTION_TABLE_PLACEHOLDER_PREFIX)
 }
+
+function needsAcknowledgement(result: CheckOutcome): boolean {
+    return result.status === SolutionCheckStatus.NEEDS_CONFIRM || (!result.blocking && result.status !== SolutionCheckStatus.PASS)
+}
+
+function unmetBlockingChecks<T extends CheckOutcome>({ results, acknowledged }: { results: T[], acknowledged: string[] }): T[] {
+    return results.filter((result) => result.blocking && result.status !== SolutionCheckStatus.PASS && !(result.status === SolutionCheckStatus.NEEDS_CONFIRM && acknowledged.includes(result.key)))
+}
+
+function skippedChecks({ results, acknowledged }: { results: CheckOutcome[], acknowledged: string[] }): string[] {
+    return results
+        .filter((result) => !result.blocking && result.status !== SolutionCheckStatus.PASS)
+        .filter((result) => !(result.status === SolutionCheckStatus.NEEDS_CONFIRM && acknowledged.includes(result.key)))
+        .map((result) => result.label)
+}
+
+type CheckOutcome = Pick<SolutionCheckResult, 'key' | 'label' | 'blocking' | 'status'>
 
 type ResolvedConfig = {
     values: Record<string, string>

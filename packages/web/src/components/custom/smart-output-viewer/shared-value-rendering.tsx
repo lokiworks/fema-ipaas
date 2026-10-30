@@ -10,9 +10,11 @@ import { isStepFileUrl } from '@/lib/dom-utils';
 import { FieldTypeIcon } from './field-type-icon';
 
 const MAX_NESTED_DEPTH = 10;
+const REDACTED_VALUE = '**REDACTED**';
 
 function truncateValue(value: unknown): string {
   if (isNil(value) || value === '') return '';
+  if (value === REDACTED_VALUE) return t('Hidden');
   if (Array.isArray(value)) return t('itemCount', { count: value.length });
   if (isObject(value)) {
     const entries = Object.entries(value);

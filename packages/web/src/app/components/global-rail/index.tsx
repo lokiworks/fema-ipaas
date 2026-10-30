@@ -102,6 +102,7 @@ export function GlobalRail({ className }: { className?: string }) {
             label={item.label}
             active={item.isActive(pathname)}
             badge={item.badge}
+            badgeHint={item.badgeHint}
             onClick={() => navigate(item.to)}
           />
         ))}
@@ -176,6 +177,9 @@ function buildItems({
       isActive: (path) =>
         path.startsWith('/issue-center') || PROJECT_ISSUES_PATTERN.test(path),
       badge: openIssueCount,
+      badgeHint: t('Issues: {count} open across all your projects', {
+        count: openIssueCount,
+      }),
     },
     {
       to: connectionsPath,
@@ -371,6 +375,7 @@ type RailItem = {
   icon: ComponentType<{ className?: string }>;
   isActive: (path: string) => boolean;
   badge?: number;
+  badgeHint?: string;
 };
 
 type ModuleEntry = {

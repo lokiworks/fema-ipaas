@@ -3,4 +3,5 @@ export type WizardDraft = {
   connections: Record<string, string>;
   config: Record<string, string>;
   acknowledged: string[];
+  acceptedRisks: string[];
 };

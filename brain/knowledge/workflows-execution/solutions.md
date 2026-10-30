@@ -31,6 +31,8 @@ icon: 📦
 - **要用到安装时才生成的资源的检查（比如「映射表里已填好对照」）标 `afterInstall: true`。** 安装检查、阻塞判断和 `skippedChecks` 都跳过它们；详情页单列「安装后要做」，安装完成页再列一次。放在安装前它永远过不了，只能被勾「已知晓」。
 - **对象、数组类的入参填表达式时，必须在 `propertySettings` 里标 `DYNAMIC`。** 官方方案用 `connectorStep({ dynamic: ['fields'] })`；漏标时编辑器按 MANUAL 把字符串当对象逐字符拆开。`official-solution-install-contract.test.ts` 按动作名列出这类入参并逐个方案检查。
 - 文本型配置项默认必填（`required !== false`），向导和详情页用 `solutionsUtils.isConfigRequired` 显示星号，和 `solutionUtils.resolveConfig` 同口径。
+- **需人工确认的检查（`NEEDS_CONFIRM`）不论是否 blocking 都要给「我已确认：…」勾选。** 官方方案把人工检查标成必须项，向导以前只给非必须项勾选框，导致 5 个官方方案「下一步」永远灰。规则统一在 `solutionUtils.needsAcknowledgement` / `unmetBlockingChecks` / `skippedChecks`（shared），前后端同口径：确认过的人工检查不计入 `skippedChecks`，确认页的风险提示只数「已知晓」的失败建议项（`acceptedRisks`）。
+- **安装记录的资源全部删除后视为失效。** `solutionInstallUtils.resourceStatus` 按记录里的工作流和映射表是否还在给出 正常 / 部分已删除 / 已全部删除；已全部删除的不计入安装次数、「已安装」徽标和依赖方案检查。已安装列表每行可点开「查看资源」，全删的可「移除记录」（`POST /v1/solutions/installs/:installId/remove-record`，要求项目写权限，审计 `solution.install_record.removed`）。卸载（删资源）没做。
 
 ## Key files
 - `packages/core/shared/src/lib/automation/solution/` — 类型与 `solutionUtils`

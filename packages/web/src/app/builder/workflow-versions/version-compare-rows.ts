@@ -67,10 +67,12 @@ function readableExpression({
   text,
   stepNames,
   connectionNames,
+  fieldLabels,
 }: {
   text: string;
   stepNames: Record<string, string>;
   connectionNames: Record<string, string>;
+  fieldLabels?: CompareContext['fieldLabels'];
 }): string {
   return text.replace(/\{\{([\s\S]*?)\}\}/g, (_match, body: string) => {
     const connection = CONNECTION_PATTERN.exec(body.trim());
@@ -78,6 +80,14 @@ function readableExpression({
       return t('Connection {name}', {
         name: connectionNames[connection[1]] ?? connection[1],
       });
+    }
+    const labelled = labelledReference({
+      body: body.trim(),
+      stepNames,
+      fieldLabels,
+    });
+    if (!isNil(labelled)) {
+      return labelled;
     }
     const readable = body
       .trim()
@@ -89,6 +99,36 @@ function readableExpression({
       .replace(/\[(\d+)\]/g, '[$1]');
     return `{${readable}}`;
   });
+}
+
+function labelledReference({
+  body,
+  stepNames,
+  fieldLabels,
+}: {
+  body: string;
+  stepNames: Record<string, string>;
+  fieldLabels: CompareContext['fieldLabels'] | undefined;
+}): string | null {
+  const reference = REFERENCE_PATTERN.exec(body);
+  if (isNil(reference) || isNil(fieldLabels)) {
+    return null;
+  }
+  const stepName = reference[1];
+  const displayName = stepNames[stepName];
+  if (isNil(displayName)) {
+    return null;
+  }
+  const path = [...reference[2].matchAll(SEGMENT_PATTERN)].map(
+    (match) => match[1] ?? match[2] ?? match[3] ?? match[4] ?? '',
+  );
+  const labels = fieldLabels({ stepName, path });
+  if (isNil(labels)) {
+    return null;
+  }
+  return labels.length === 0
+    ? `{「${displayName}」}`
+    : `{「${displayName}」.${labels.join('.')}}`;
 }
 
 function describeField({
@@ -341,6 +381,7 @@ function formatValue({
             text: raw,
             stepNames: context.stepNames,
             connectionNames: context.connectionNames,
+            fieldLabels: context.fieldLabels,
           })
         );
       }
@@ -523,6 +564,10 @@ const EMPTY = '—';
 const MAX_VALUE_LENGTH = 240;
 const AUTH_PROPERTY = 'auth';
 const CONNECTION_PATTERN = /^connections\[['"]([^'"\]]+)['"]\]$/;
+const REFERENCE_PATTERN =
+  /^([A-Za-z_][A-Za-z0-9_]*)((?:\[(?:'[^']*'|"[^"]*"|\d+)\]|\.[A-Za-z_$][\w$]*)*)$/;
+const SEGMENT_PATTERN =
+  /\[(?:'([^']*)'|"([^"]*)"|(\d+))\]|\.([A-Za-z_$][\w$]*)/g;
 
 enum ValueKind {
   TEXT = 'TEXT',
@@ -587,6 +632,7 @@ export type CompareContext = {
   componentName: (type: string) => string | null;
   stepNames: Record<string, string>;
   connectionNames: Record<string, string>;
+  fieldLabels: (params: { stepName: string; path: string[] }) => string[] | null;
 };
 
 type FieldDescription = {

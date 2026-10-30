@@ -7,6 +7,7 @@ import {
     WorkflowAction,
     WorkflowActionType,
     workflowReferenceUtil,
+    workflowStructureUtil,
     WorkflowTrigger,
     WorkflowTriggerType,
     WorkflowVersion,
@@ -215,7 +216,7 @@ function walkChain({ head, upstream, loops }: { head: WorkflowAction | undefined
     return [
         { step: head, upstream, loops },
         ...children,
-        ...walkChain({ head: head.nextAction, upstream: inside, loops }),
+        ...walkChain({ head: head.nextAction, upstream: [...inside, ...workflowStructureUtil.getStepsVisibleAfterJoin(head).map(({ step }) => step.name)], loops }),
     ]
 }
 
@@ -247,7 +248,18 @@ function isBlank(value: unknown): boolean {
     if (typeof value === 'string') {
         return value.trim().length === 0
     }
-    return Array.isArray(value) && value.length === 0
+    if (Array.isArray(value)) {
+        return value.length === 0
+    }
+    return hasOnlyBlankKeys(value)
+}
+
+function hasOnlyBlankKeys(value: unknown): boolean {
+    if (typeof value !== 'object' || isNil(value)) {
+        return false
+    }
+    const keys = Object.keys(value)
+    return keys.length > 0 && keys.every((key) => key.trim().length === 0)
 }
 
 function readRecord(value: unknown): Record<string, unknown> {

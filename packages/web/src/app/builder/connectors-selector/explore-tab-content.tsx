@@ -1,4 +1,4 @@
-import { WorkflowOperationType } from '@fema-ipaas/shared';
+import { WorkflowOperationType, WorkflowTriggerType } from '@fema-ipaas/shared';
 
 import { CardListItemSkeleton } from '@/components/custom/card-list';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,11 +24,17 @@ const ExploreTabContent = ({
   const selectedConnector = useBuilderStateContext(
     (state) => state.selectedConnectorMetadataInConnectorSelector,
   );
+  const triggerConnectorName = useBuilderStateContext((state) =>
+    state.workflowVersion.trigger.type === WorkflowTriggerType.CONNECTOR
+      ? state.workflowVersion.trigger.settings.connectorName
+      : undefined,
+  );
   const pickConnector = usePickConnector({ operation });
   const { data: categories, isLoading: isLoadingConnectors } =
     connectorsHooks.useConnectorsSearch({
       shouldCaptureEvent: false,
       searchQuery: '',
+      triggerConnectorName,
       type:
         operation.type === WorkflowOperationType.UPDATE_TRIGGER
           ? 'trigger'

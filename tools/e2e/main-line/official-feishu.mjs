@@ -555,6 +555,16 @@ export function createFeishuOfficial({ state, kit }) {
     return kit.ok({ code: 0, msg: 'success', data: { items: [{ table_id: 'tbl_roster', name: '员工花名册' }], has_more: false, total: 1 } })
   }
 
+  function bitableFieldList({ headers }) {
+    const denied = gate({ headers, scope: 'bitable:app', counted: true })
+    if (denied) {
+      return denied
+    }
+    const columns = official.bitableFields === null ? DEFAULT_BITABLE_COLUMNS : official.bitableFields.map((name) => ({ field_name: name, type: 1 }))
+    const items = columns.map((column, index) => ({ field_id: `fld_${index + 1}`, field_name: column.field_name, type: column.type, is_primary: index === 0 }))
+    return kit.ok({ code: 0, msg: 'success', data: { items, has_more: false, total: items.length } })
+  }
+
   function bitableCreate({ appToken, tableId, body, query, headers }) {
     const denied = gate({ headers, scope: 'bitable:app', counted: true })
     if (denied) {
@@ -752,6 +762,10 @@ export function createFeishuOfficial({ state, kit }) {
     if (tables && method === 'GET') {
       return (request) => bitableTables(request)
     }
+    const fieldList = /^\/bitable\/v1\/apps\/([^/]+)\/tables\/([^/]+)\/fields$/.exec(path)
+    if (fieldList && method === 'GET') {
+      return (request) => bitableFieldList(request)
+    }
     const records = /^\/bitable\/v1\/apps\/([^/]+)\/tables\/([^/]+)\/records(\/search)?$/.exec(path)
     if (records && method === 'GET' && !records[3]) return (request) => bitableSearch({ ...request, body: {}, appToken: records[1], tableId: records[2] })
     if (records && method === 'POST') {
@@ -762,3 +776,12 @@ export function createFeishuOfficial({ state, kit }) {
 
   return { routes, dynamicHandlerFor, reset, describe }
 }
+
+const DEFAULT_BITABLE_COLUMNS = [
+  { field_name: '姓名', type: 1 },
+  { field_name: '工号', type: 1 },
+  { field_name: '手机号', type: 13 },
+  { field_name: '邮箱', type: 1 },
+  { field_name: '部门', type: 1 },
+  { field_name: '入职日期', type: 5 },
+]

@@ -31,6 +31,8 @@ icon: 📜
 - 终止运行沿用 `executionService.cancel`，只能终止排队中 / 等待中的生产运行；`includeChildRuns: false` 时不连带取消子流程。
 - **项目内的运行日志不能去掉「项目」条件。** 去掉（或通过筛选面板改成没有项目）会跳到全局 `/logs` 并带上其余条件，那里有项目列；旧地址 `?allProjects=true` 也会重定向过去。项目内的「清除条件」保留项目条件。
 - **列表「失败节点」列和详情抽屉同一口径。** 列表显示导致运行失败的节点名（运行状态属于失败类时取 `failedStep`，其余为「—」）；抽屉写「运行失败在「X」节点」，出错后按设置继续执行的节点另起一行计数；运行成功但有节点出错继续时写「运行没有失败；N 个节点出错后按设置继续执行」。判定在 `runLogErrorSummary`。
+- **保留期是两档，文案必须两档都写。** 脱敏运行日志按 `min(租户 logRetentionDays, 项目 executionDataRetentionDays)`（默认 30 天），原始数据（可查看原文、可重跑）按租户 `rawPayloadRetentionDays`（默认 3 天，且不超过日志保留期）；计算在 `retentionUtils.effective`（`privacy.service.ts`），`GET /v1/run-logs/scope` 带出 `tenantRawRetentionDays` 和各项目 `rawRetentionDays`，前端用 `runLogUiUtils.retentionText` / `projectRetention`。不要再用 `EXECUTION_DATA_RETENTION_DAYS` 标志当保留天数，那是实例上限。
+- **原始数据过期后运行页回退到脱敏日志。** `GET /v1/executions/:id` 读的是 `displayLogsFileId`，过期后 `steps` 仍在；运行页右侧面板按 `runLogUiUtils.runDataState` 判断，`MASKED_ONLY` 时照常显示入参出参并标注「原始数据已过保留期，以下为脱敏日志」，只有两份日志都没有（`NONE`）才显示「已过保留期被清理」。
 
 ## Key files
 - `packages/server/api/src/app/run-logs/` — `runLogService`（列表、范围、详情、批量重跑、终止）、`runLogQuery`、`runLogAccess`

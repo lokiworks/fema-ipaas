@@ -108,12 +108,12 @@ function ConfirmStep({
         </SummaryBlock>
       )}
 
-      {draft.acknowledged.length > 0 && (
+      {draft.acceptedRisks.length > 0 && (
         <Alert variant="warning">
           <AlertDescription>
             {t(
               '{count, plural, =1 {1 recommended check is} other {# recommended checks are}} not confirmed. Related runs may fail until it is handled.',
-              { count: draft.acknowledged.length },
+              { count: draft.acceptedRisks.length },
             )}
           </AlertDescription>
         </Alert>

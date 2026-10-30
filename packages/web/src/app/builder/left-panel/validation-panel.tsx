@@ -1,5 +1,7 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   WorkflowOperationType,
+  WorkflowTrigger,
   WorkflowTriggerType,
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
@@ -15,9 +17,9 @@ import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { SidebarHeader } from '@/app/builder/sidebar-header';
 import { LeftSideBarType } from '@/app/builder/types';
 import { useEscapeToClose } from '@/app/builder/use-escape-to-close';
-import { useStepDisplayNumbers } from '@/app/builder/use-step-display-numbers';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
+import { stepLocationUtils } from '@/app/builder/workflow-canvas/utils/step-location';
 import { workflowCanvasUtils } from '@/app/builder/workflow-canvas/utils/workflow-canvas-utils';
 import { LoadingSpinner } from '@/components/custom/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -38,7 +40,6 @@ export function ValidationPanel() {
     ]);
   const { issues, errorCount, warningCount, isLoading } =
     useBuilderValidation();
-  const displayNumbers = useStepDisplayNumbers();
   const reactFlow = useReactFlow();
   useEscapeToClose({ onClose: () => setLeftSidebar(LeftSideBarType.NONE) });
 
@@ -114,10 +115,11 @@ export function ValidationPanel() {
                       {validationMessages.messageOf(issue)}
                     </span>
                     <span className="truncate text-[11px] text-muted-foreground">
-                      {step?.displayName ?? issue.stepName}
-                      {displayNumbers[issue.stepName]
-                        ? ` · ${displayNumbers[issue.stepName]}`
-                        : ''}
+                      {locationOf({
+                        trigger,
+                        stepName: issue.stepName,
+                        displayName: step?.displayName ?? issue.stepName,
+                      })}
                     </span>
                   </div>
                 </button>
@@ -128,6 +130,25 @@ export function ValidationPanel() {
       </ScrollArea>
     </div>
   );
+}
+
+function locationOf({
+  trigger,
+  stepName,
+  displayName,
+}: {
+  trigger: WorkflowTrigger;
+  stepName: string;
+  displayName: string;
+}): string {
+  const location = stepLocationUtils.locate({ trigger, stepName });
+  if (isNil(location)) {
+    return displayName;
+  }
+  return t('Step {position} · {name}', {
+    position: location.ordinal,
+    name: displayName,
+  });
 }
 
 ValidationPanel.displayName = 'ValidationPanel';

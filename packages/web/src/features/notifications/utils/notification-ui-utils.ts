@@ -2,6 +2,7 @@ import { isNil } from '@fema-ipaas/core-utils';
 import {
   DefaultProjectRole,
   Notification,
+  NotificationResolution,
   NotificationType,
   TenantModule,
 } from '@fema-ipaas/shared';
@@ -143,6 +144,39 @@ function icon(type: NotificationType): NotificationIcon {
   }
 }
 
+function resolution(notification: Notification): ResolutionCopy | null {
+  switch (notification.resolution) {
+    case NotificationResolution.APPROVED:
+      return {
+        label: t('projectAccessResolvedApproved'),
+        message: t('projectAccessResolvedApprovedMessage'),
+      };
+    case NotificationResolution.REJECTED:
+      return {
+        label: t('projectAccessResolvedRejected'),
+        message: t('projectAccessResolvedRejectedMessage'),
+      };
+    case NotificationResolution.WITHDRAWN:
+      return {
+        label: t('projectAccessResolvedWithdrawn'),
+        message: t('projectAccessResolvedWithdrawnMessage'),
+      };
+    case NotificationResolution.REQUESTER_REMOVED:
+      return {
+        label: t('projectAccessResolvedClosed'),
+        message: t('projectAccessResolvedRequesterRemovedMessage'),
+      };
+    case NotificationResolution.PROJECT_DELETED:
+      return {
+        label: t('projectAccessResolvedClosed'),
+        message: t('projectAccessResolvedProjectDeletedMessage'),
+      };
+    case null:
+    case undefined:
+      return null;
+  }
+}
+
 function isProjectRole(value: string): value is DefaultProjectRole {
   return Object.values<string>(DefaultProjectRole).includes(value);
 }
@@ -161,9 +195,15 @@ export const notificationUiUtils = {
   bodyText,
   icon,
   badgeLabel,
+  resolution,
 };
 
 const MAX_BADGE = 99;
+
+type ResolutionCopy = {
+  label: string;
+  message: string;
+};
 
 type NotificationIcon = {
   icon: LucideIcon;

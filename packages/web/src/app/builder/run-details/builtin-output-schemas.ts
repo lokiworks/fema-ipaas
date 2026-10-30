@@ -154,7 +154,7 @@ const FAILURE_OUTPUT_FIELDS: {
   { key: 'errorMessage', label: 'Failure error message' },
   { key: 'rawMessage', label: 'Failure raw message' },
   { key: 'errorTime', label: 'Failure time' },
-  { key: 'errorTimeIso', label: 'Failure time (ISO)', format: 'datetime' },
+  { key: 'errorTimeIso', label: 'Failure time (ISO)' },
 ];
 
 export const builtinOutputSchemas = {

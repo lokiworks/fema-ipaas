@@ -211,5 +211,17 @@
   "Created at (milliseconds)": "创建时间（毫秒）",
   "Completed at (milliseconds)": "完成时间（毫秒）",
   "Named form values": "表单字段值",
-  "Approval tasks": "审批任务"
+  "Approval tasks": "审批任务",
+  "Every column of the selected data table is listed here. Fill in the ones to write and leave the rest empty.": "这里列出所选数据表的每一列，填写要写入的列，其余留空即可。",
+  "More Fields by Column Name": "按列名补充字段",
+  "Optional. Keys are column names and values are what to write, sent as they are. Use it to pass a whole object from an earlier node; for single columns prefer the Fields list above, which converts dates for you.": "可选。键是列名，值是要写入的内容，按原样发送。适合整体传入上游节点输出的对象；单独填某一列时请用上方的「字段」列表，它会自动换算日期。",
+  "Text column.": "文本列。",
+  "Number column.": "数字列。",
+  "Single-select column. Fill in the option name.": "单选列，填写选项名称。",
+  "Multi-select column. Separate options with commas, or reference a list.": "多选列，多个选项用逗号分隔，或引用一个列表。",
+  "Date column. Reference a date field or type a date such as 2026-10-30. It is converted to a millisecond timestamp automatically.": "日期列。可以直接引用日期字段，或填写 2026-10-30 这样的日期，会自动换算成毫秒时间戳（按北京时间）。",
+  "Phone number column.": "电话号码列。",
+  "Link column. Fill in the URL.": "超链接列，填写网址。",
+  "Fill in the JSON this column type expects, for example [{\"id\":\"ou_xxx\"}] for a person column.": "填写这种列需要的 JSON，例如人员列填 [{\"id\":\"ou_xxx\"}]。",
+  "Nothing to write: fill in at least one column under Fields. Rows with an empty column name are ignored.": "没有要写入的内容：请在「字段」里至少填写一列。列名为空的行会被忽略。"
 }

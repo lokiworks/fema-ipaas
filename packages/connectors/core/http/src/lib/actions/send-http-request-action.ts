@@ -35,7 +35,6 @@ export const httpSendRequestAction = createAction({
   aiMetadata: { description: 'Sends an HTTP request to any URL with a chosen method, optional Basic or Bearer auth, an optional JSON, raw or multipart body, and can retry or continue the workflow on 4xx/5xx. Use it as the generic escape hatch for an API with no dedicated connector — prefer that app\'s own connector when one exists, and Parse URL to pull a URL apart without calling it. Requires an absolute URL and a method; not idempotent, since a call\'s effect follows the method and POST/PATCH-style calls mutate remote data.', idempotent: false },
   props: {
     method: httpMethodDropdown,
-    idempotencyKey: Property.ShortText({ displayName: 'Idempotency key', description: 'Sent as Idempotency-Key. Only use when the target API guarantees deduplication for this key.', required: false }),
     url: Property.ShortText({
       displayName: 'URL',
       required: true,
@@ -256,25 +255,27 @@ export const httpSendRequestAction = createAction({
       defaultValue: false,
     }),
     failureMode: Property.StaticDropdown({
-      displayName: 'On Failure',
+      displayName: 'HTTP error responses',
+      description: 'Whether a 4xx or 5xx response fails the step. A failed step follows the error handling strategy below, including retries and the failure branch.',
       required: false,
       defaultValue: 'continue_none',
       options: {
         disabled: false,
         options: [
-          { label: 'Retry on all errors (4xx, 5xx)', value: 'retry_all' },
-          { label: 'Retry on internal errors (5xx)', value: 'retry_5xx' },
-          { label: 'Do not retry', value: 'retry_none' },
-          { label: 'Continue workflow on all errors', value: 'continue_all' },
-          { label: 'Continue workflow on 4xx errors', value: 'continue_4xx' },
-          { label: 'Do not continue (stop the workflow)', value: 'continue_none' },
+          { label: 'Fail the step', value: 'continue_none' },
+          { label: 'Return 4xx responses as output, fail on 5xx', value: 'continue_4xx' },
+          { label: 'Return all error responses as output', value: 'continue_all' },
+          { label: 'Legacy: retry all errors inside the step', value: 'retry_all', disabled: true },
+          { label: 'Legacy: retry 5xx inside the step, return 4xx as output', value: 'retry_5xx', disabled: true },
+          { label: 'Legacy: fail without retrying', value: 'retry_none', disabled: true },
         ],
       },
-    })
-  },
-  errorHandlingOptions: {
-    continueOnFailure: { hide: true, defaultValue: false },
-    retryOnFailure: { hide: true, defaultValue: false },
+    }),
+    idempotencyKey: Property.ShortText({
+      displayName: 'Idempotency key',
+      description: 'Sent as the Idempotency-Key header so a retried POST or PATCH is not applied twice. Only fill it in when the target API deduplicates by this key.',
+      required: false,
+    }),
   },
   async run(context) {
     const {
@@ -407,7 +408,6 @@ export const httpSendRequestAction = createAction({
             if (status >= 400 && status < 500) {
               return toFailsafeOutput({ error, requestBody: request.body });
             }
-            if (mayRetry && attempts < 3) continue;
             throw error;
           case 'continue_none':
             throw error;

@@ -2,11 +2,13 @@ import { isNil, Permission, tryCatch } from '@fema-ipaas/core-utils';
 import {
   AlertRecordKind,
   IssueFixKind,
+  IssueInsight,
   IssueInsightCause,
   IssueKind,
   IssueStatus,
   IssueTrendGranularity,
   IssueWithSeverity,
+  ReplayReason,
   WorkflowRetryStrategy,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
@@ -68,7 +70,11 @@ import {
   RunFocusPanel,
   runFocusUtils,
 } from '@/features/run-logs/utils/run-focus-utils';
-import { runLogUiUtils } from '@/features/run-logs/utils/run-log-ui-utils';
+import { runLogsHooks } from '@/features/run-logs/hooks/run-logs-hooks';
+import {
+  runLogUiUtils,
+  RunRetention,
+} from '@/features/run-logs/utils/run-log-ui-utils';
 import { useAuthorization } from '@/hooks/authorization-hooks';
 import { authenticationSession } from '@/lib/authentication-session';
 import { notFoundError } from '@/lib/not-found-error';
@@ -470,6 +476,11 @@ function InsightCard({
 }) {
   const navigate = useNavigate();
   const { data: insight, isLoading } = issuesHooks.useInsight(issue.id);
+  const { data: runLogScope } = runLogsHooks.useScope();
+  const retention = runLogUiUtils.projectRetention({
+    scope: runLogScope,
+    projectId: issue.projectId,
+  });
   const [opening, setOpening] = useState(false);
   const openFailedRun = async (panel: RunFocusPanel) => {
     setOpening(true);
@@ -609,13 +620,7 @@ function InsightCard({
             </div>
             {insight.fixes.some((fix) => fix.disabledReason) && (
               <p className="text-xs text-muted-foreground">
-                {insight.cause === IssueInsightCause.BLOCKED_UNTIL
-                  ? t(
-                      'Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.',
-                    )
-                  : t(
-                      'Replaying is blocked until the connection is fixed, otherwise the runs would fail again.',
-                    )}
+                {replayBlockedExplanation({ insight, retention })}
               </p>
             )}
           </>
@@ -623,6 +628,31 @@ function InsightCard({
       </CardContent>
     </Card>
   );
+}
+
+function replayBlockedExplanation({
+  insight,
+  retention,
+}: {
+  insight: IssueInsight;
+  retention: RunRetention | null;
+}): string {
+  if (
+    insight.fixes.some(
+      (fix) => fix.disabledReason === ReplayReason.RAW_DATA_EXPIRED,
+    )
+  ) {
+    return isNil(retention)
+      ? t('replayBlockedRawDataExpired')
+      : t('replayBlockedRawDataExpiredDays', { days: retention.rawDays });
+  }
+  return insight.cause === IssueInsightCause.BLOCKED_UNTIL
+    ? t(
+        'Replaying is blocked until the other system accepts calls again, otherwise the runs would fail again.',
+      )
+    : t(
+        'Replaying is blocked until the connection is fixed, otherwise the runs would fail again.',
+      );
 }
 
 function workflowBlockedReason({
@@ -779,20 +809,38 @@ function AffectedRunsCard({
     cursor,
     limit: RUNS_PAGE_SIZE,
   });
+  const { data: insight } = issuesHooks.useInsight(issueId);
+  const replayFix = insight?.fixes.find(
+    (fix) => fix.kind === IssueFixKind.REPLAY_FROM_FAILED_STEP,
+  );
+  const replayDisabledReason = isNil(replayFix?.disabledReason)
+    ? null
+    : issueUiUtils.replayReasonLabel(
+        replayFix.disabledReason,
+        insight?.blockedUntil,
+      );
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{t('Affected runs')}</CardTitle>
         <DisabledReasonTooltip
-          reason={workflowBlockedReason({
-            kind: IssueFixKind.REPLAY_FROM_FAILED_STEP,
-            workflow,
-          })}
+          reason={
+            replayDisabledReason ??
+            workflowBlockedReason({
+              kind: IssueFixKind.REPLAY_FROM_FAILED_STEP,
+              workflow,
+            })
+          }
         >
           <Button
             size="sm"
             variant="outline"
-            disabled={!canReplay || workflow.stopped || workflow.deleted}
+            disabled={
+              !canReplay ||
+              workflow.stopped ||
+              workflow.deleted ||
+              replayDisabledReason !== null
+            }
             onClick={() => onReplay(WorkflowRetryStrategy.FROM_FAILED_STEP)}
           >
             <RotateCcw className="size-4 mr-1" />

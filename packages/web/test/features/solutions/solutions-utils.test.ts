@@ -7,6 +7,7 @@ import {
   SolutionCheckResult,
   SolutionCheckStatus,
   SolutionInstall,
+  SolutionInstallResourceStatus,
   SolutionProvider,
   SolutionSummary,
   SolutionVisibility,
@@ -123,6 +124,8 @@ function install({
     mappingTableIds: [],
     skippedChecks: [],
     installedBy: 'user',
+    resourceStatus: SolutionInstallResourceStatus.INTACT,
+    resources: [],
   };
 }
 
@@ -329,6 +332,27 @@ describe('solutionsUtils.checkGate', () => {
     ]);
   });
 
+  it('lets a required manual check through once the installer confirms it', () => {
+    const results = [
+      result({ key: 'conn', blocking: true, status: SolutionCheckStatus.PASS }),
+      result({
+        key: 'feishu-app',
+        blocking: true,
+        status: SolutionCheckStatus.NEEDS_CONFIRM,
+      }),
+    ];
+    const unconfirmed = solutionsUtils.checkGate({ results, acknowledged: [] });
+    expect(unconfirmed.canContinue).toBe(false);
+    expect(unconfirmed.failedBlocking).toEqual([]);
+    expect(unconfirmed.needsAcknowledgement.map((item) => item.key)).toEqual([
+      'feishu-app',
+    ]);
+    expect(
+      solutionsUtils.checkGate({ results, acknowledged: ['feishu-app'] })
+        .canContinue,
+    ).toBe(true);
+  });
+
   it('continues when everything passed', () => {
     expect(
       solutionsUtils.checkGate({
@@ -342,6 +366,47 @@ describe('solutionsUtils.checkGate', () => {
         acknowledged: [],
       }).canContinue,
     ).toBe(true);
+  });
+});
+
+describe('solutionsUtils.acknowledgementKind', () => {
+  it('asks to confirm manual checks whether or not they are required', () => {
+    expect(
+      solutionsUtils.acknowledgementKind(
+        result({
+          key: 'a',
+          blocking: true,
+          status: SolutionCheckStatus.NEEDS_CONFIRM,
+        }),
+      ),
+    ).toBe('confirm');
+    expect(
+      solutionsUtils.acknowledgementKind(
+        result({
+          key: 'b',
+          blocking: false,
+          status: SolutionCheckStatus.NEEDS_CONFIRM,
+        }),
+      ),
+    ).toBe('confirm');
+  });
+
+  it('asks to accept the risk of a failed recommended check and offers nothing for a failed required one', () => {
+    expect(
+      solutionsUtils.acknowledgementKind(
+        result({ key: 'c', blocking: false, status: SolutionCheckStatus.FAIL }),
+      ),
+    ).toBe('accept-risk');
+    expect(
+      solutionsUtils.acknowledgementKind(
+        result({ key: 'd', blocking: true, status: SolutionCheckStatus.FAIL }),
+      ),
+    ).toBeNull();
+    expect(
+      solutionsUtils.acknowledgementKind(
+        result({ key: 'e', blocking: true, status: SolutionCheckStatus.PASS }),
+      ),
+    ).toBeNull();
   });
 });
 

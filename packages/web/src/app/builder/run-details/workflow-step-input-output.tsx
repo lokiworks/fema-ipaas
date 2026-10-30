@@ -1,4 +1,4 @@
-import { isNil, tryParseFriendlyConnectorError } from '@fema-ipaas/core-utils';
+import { isNil } from '@fema-ipaas/core-utils';
 import {
   AI_CONNECTOR_NAME,
   StepOutputStatus,
@@ -8,42 +8,40 @@ import {
   isExecutionStateTerminal,
   Execution,
   ExecutionStatus,
-  FlagId,
   LogSliceRef,
   StepOutputType,
   RunInternalError,
+  WorkflowAction,
+  WorkflowTrigger,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Download, Info, ShieldAlert } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useMemo } from 'react';
 
 import { StepOutputSkeleton } from '@/app/components/step-output-skeleton';
 import { SmartOutputViewer } from '@/components/custom/smart-output-viewer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RunApprovalsNotice } from '@/features/agent-approvals';
 import { connectorsHooks } from '@/features/connectors';
 import { executionUtils } from '@/features/executions';
 import { MaskedPayloadNotice } from '@/features/privacy';
-import { runFocusUtils } from '@/features/run-logs/utils/run-focus-utils';
-import { flagsHooks } from '@/hooks/flags-hooks';
+import { runLogsHooks } from '@/features/run-logs/hooks/run-logs-hooks';
+import {
+  runLogUiUtils,
+  RunRetention,
+} from '@/features/run-logs/utils/run-log-ui-utils';
 import { formatUtils } from '@/lib/format-utils';
 
 import { useBuilderStateContext } from '../builder-hooks';
-import { stepPropertiesSnapshotUtils } from '../data-display/build-step-properties-snapshot';
 import { DataDisplayTabs } from '../data-display/data-display-tabs';
-import { ErrorExplanationContext } from '../data-display/explanation-prompt';
-import { FriendlyErrorView } from '../data-display/friendly-error-view';
+import { StepErrorDetails } from '../data-display/step-error-details';
 import { StepDataPanelHeader } from '../step-data/step-data-panel-header';
 
 import { builtinOutputSchemas } from './builtin-output-schemas';
 import { RouterHitSummary } from './router-hit-summary';
 import { truncatedInputUtils } from './truncated-input-utils';
-
-type RunActiveTab = 'input' | 'output' | 'timeline';
 
 export const WorkflowStepInputOutput = () => {
   const [run, loopsIndexes, workflowVersion, selectedStep] =
@@ -58,22 +56,6 @@ export const WorkflowStepInputOutput = () => {
           )
         : null,
     ]);
-  const isAgent = false;
-  const isTrigger =
-    !isNil(selectedStep) && workflowStructureUtil.isTrigger(selectedStep.type);
-  const [searchParams] = useSearchParams();
-  const [requestedTab, setActiveTab] = useState<RunActiveTab>(() =>
-    runFocusUtils.parse(searchParams).panel === 'input'
-      ? 'input'
-      : isAgent
-      ? 'timeline'
-      : 'output',
-  );
-  const activeTab: RunActiveTab =
-    (requestedTab === 'timeline' && !isAgent) ||
-    (requestedTab === 'input' && isTrigger)
-      ? 'output'
-      : requestedTab;
   const selectedStepOutput = useMemo(() => {
     return run && selectedStep && run.steps
       ? executionUtils.extractStepOutput(
@@ -89,9 +71,6 @@ export const WorkflowStepInputOutput = () => {
   const slicedOutputRef = isSlicedOutput
     ? (selectedStepOutput?.output as LogSliceRef | undefined)
     : undefined;
-  const friendlyError = tryParseFriendlyConnectorError(
-    selectedStepOutput?.errorMessage,
-  );
   const stepConnectorName =
     selectedStep?.type === WorkflowActionType.CONNECTOR ||
     selectedStep?.type === WorkflowTriggerType.CONNECTOR
@@ -120,9 +99,11 @@ export const WorkflowStepInputOutput = () => {
     status: run.status,
     ignoreInternalError: true,
   });
-  const { data: rententionDays } = flagsHooks.useFlag<number>(
-    FlagId.EXECUTION_DATA_RETENTION_DAYS,
-  );
+  const { data: runLogScope } = runLogsHooks.useScope();
+  const retention = runLogUiUtils.projectRetention({
+    scope: runLogScope,
+    projectId: run.projectId,
+  });
 
   if (
     run.status === ExecutionStatus.INTERNAL_ERROR &&
@@ -146,7 +127,7 @@ export const WorkflowStepInputOutput = () => {
       ? t(
           'There are no logs captured for this run because of an internal error, please contact your platform administrator.',
         )
-      : handleRunFailureOrEmptyLog(run, rententionDays);
+      : handleRunFailureOrEmptyLog(run, retention);
   if (message) {
     return (
       <div className="flex flex-col justify-center items-center gap-4 w-full pt-8 px-5">
@@ -194,43 +175,17 @@ export const WorkflowStepInputOutput = () => {
       ? 'testing'
       : 'success';
 
-  const stepKind: 'action' | 'trigger' =
-    selectedStep.type === WorkflowTriggerType.CONNECTOR ? 'trigger' : 'action';
   const stepName =
     selectedStep.type === WorkflowActionType.CONNECTOR
       ? selectedStep.settings.actionName
       : selectedStep.type === WorkflowTriggerType.CONNECTOR
       ? selectedStep.settings.triggerName
       : selectedStep.type;
-  const stepInput =
-    selectedStep.type === WorkflowActionType.CONNECTOR ||
-    selectedStep.type === WorkflowTriggerType.CONNECTOR
-      ? (selectedStep.settings.input as Record<string, unknown> | undefined)
-      : undefined;
   const connectorSchema =
     connectorModel?.actions[stepName ?? '']?.outputSchema ??
     connectorModel?.triggers[stepName ?? '']?.outputSchema ??
     null;
-  const explanationContext: ErrorExplanationContext = {
-    connectorName: stepConnectorName,
-    connectorVersion: stepConnectorVersion,
-    connectorDisplayName: connectorModel?.displayName,
-    connectorAuthType: stepPropertiesSnapshotUtils.findAuthType(connectorModel),
-    stepKind,
-    stepName,
-    stepDisplayName: selectedStep.displayName,
-    stepDescription: stepPropertiesSnapshotUtils.findDescription({
-      connectorModel,
-      stepKind,
-      stepName,
-    }),
-    stepProperties: stepPropertiesSnapshotUtils.build({
-      connectorModel,
-      stepKind,
-      stepName,
-      input: stepInput,
-    }),
-  };
+  const errorMessage = selectedStepOutput.errorMessage;
 
   return (
     <div className="h-full flex flex-col">
@@ -240,11 +195,13 @@ export const WorkflowStepInputOutput = () => {
         viewMode="run"
       />
       <ScrollArea className="flex-1 p-3">
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as RunActiveTab)}
-          className="w-full"
-        >
+        <div className="flex w-full flex-col gap-3">
+          {runLogUiUtils.runDataState(run) === 'MASKED_ONLY' && (
+            <div className="flex items-start gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              <Info className="mt-0.5 size-3.5 shrink-0" />
+              <span>{runLogUiUtils.maskedOnlyNotice(retention)}</span>
+            </div>
+          )}
           <MaskedPayloadNotice
             executionId={run.id}
             stepName={selectedStep.name}
@@ -259,82 +216,96 @@ export const WorkflowStepInputOutput = () => {
             stepName={selectedStep.name}
             enabled={stepConnectorName === AI_CONNECTOR_NAME}
           />
-          <div className="flex items-center justify-between gap-2 shrink-0 mb-2">
-            {!isTrigger && (
-              <TabsList className="h-9">
-                <TabsTrigger value="input">{t('Run input')}</TabsTrigger>
-                {isAgent && (
-                  <TabsTrigger value="timeline">{t('Timeline')}</TabsTrigger>
-                )}
-                <TabsTrigger value="output">{t('Run output')}</TabsTrigger>
-              </TabsList>
-            )}
-            <div className="flex items-center gap-1 shrink-0"></div>
-          </div>
-
-          {!isTrigger && (
-            <TabsContent value="input" className="flex flex-col gap-3">
-              {truncatedInputUtils.hasTruncatedValues(
-                selectedStepOutput.input,
-              ) && <TruncatedInputNotice />}
-              <SmartOutputViewer
-                json={selectedStepOutput.input}
-                title={t('Data')}
-                connectorSchema={builtinOutputSchemas.inputSchema({
-                  step: selectedStep,
-                  connectorModel,
-                  input: selectedStepOutput.input,
-                })}
-              />
-            </TabsContent>
+          {!isStepRunning && (
+            <RouterHitSummary
+              step={selectedStep}
+              output={selectedStepOutput.output}
+            />
           )}
-
-          <TabsContent value="output" className="flex flex-col gap-3">
-            {!isStepRunning && (
-              <RouterHitSummary
-                step={selectedStep}
-                output={selectedStepOutput.output}
-              />
-            )}
-            {!isStepRunning && !isNil(failureOutputSchema) && (
-              <SmartOutputViewer
-                json={selectedStepOutput.output}
-                title={t('Failure details passed to the failure branch')}
-                connectorSchema={failureOutputSchema}
-              />
-            )}
-            {isStepRunning ? (
-              <StepOutputSkeleton className="p-4" />
-            ) : slicedOutputRef ? (
-              <SlicedOutputDownload slicedOutputRef={slicedOutputRef} />
-            ) : friendlyError ? (
-              <FriendlyErrorView
-                error={friendlyError}
-                explanationContext={explanationContext}
-                connectorDisplayName={connectorModel?.displayName}
-              />
-            ) : status === 'success' ? (
-              <SmartOutputViewer
-                json={builtinOutputSchemas.displayOutput({
-                  step: selectedStep,
-                  output: parsedOutput,
-                })}
-                title={t('Data')}
-                connectorSchema={
-                  connectorSchema ?? builtinOutputSchemas.forStep(selectedStep)
-                }
-              />
-            ) : (
-              <DataDisplayTabs
-                data={parsedOutput}
-                title={t('Output')}
-                copyableData={parsedOutput}
-                downloadFileName={`${selectedStep.name}-output`}
-              />
-            )}
-          </TabsContent>
-        </Tabs>
+          {isStepRunning ? (
+            <StepOutputSkeleton className="p-4" />
+          ) : slicedOutputRef ? (
+            <SlicedOutputDownload slicedOutputRef={slicedOutputRef} />
+          ) : !isNil(errorMessage) ? (
+            <StepErrorDetails errorText={errorMessage} step={selectedStep} />
+          ) : status === 'success' ? (
+            <SmartOutputViewer
+              json={builtinOutputSchemas.displayOutput({
+                step: selectedStep,
+                output: parsedOutput,
+              })}
+              title={t('Data')}
+              connectorSchema={
+                connectorSchema ?? builtinOutputSchemas.forStep(selectedStep)
+              }
+            />
+          ) : (
+            <DataDisplayTabs
+              data={parsedOutput}
+              title={t('Output')}
+              copyableData={parsedOutput}
+              downloadFileName={`${selectedStep.name}-output`}
+            />
+          )}
+          {!isStepRunning && !isNil(failureOutputSchema) && (
+            <SmartOutputViewer
+              json={selectedStepOutput.output}
+              title={t('Failure details passed to the failure branch')}
+              connectorSchema={failureOutputSchema}
+            />
+          )}
+        </div>
       </ScrollArea>
+    </div>
+  );
+};
+
+export const RunStepActualInput = ({
+  step,
+}: {
+  step: WorkflowAction | WorkflowTrigger;
+}) => {
+  const [run, loopsIndexes] = useBuilderStateContext((state) => [
+    state.run,
+    state.loopsIndexes,
+  ]);
+  const connectorStep =
+    step.type === WorkflowActionType.CONNECTOR ||
+    step.type === WorkflowTriggerType.CONNECTOR
+      ? step
+      : null;
+  const { connectorModel } = connectorsHooks.useConnector({
+    name: connectorStep?.settings.connectorName ?? '',
+    version: connectorStep?.settings.connectorVersion,
+    enabled: !isNil(connectorStep),
+  });
+  const stepOutput =
+    isNil(run) || isNil(run.steps)
+      ? null
+      : executionUtils.extractStepOutput(step.name, loopsIndexes, run.steps);
+  if (isNil(stepOutput)) {
+    return (
+      <span className="text-sm text-muted-foreground">
+        {t(
+          'This step was skipped during this run, no input or output was captured.',
+        )}
+      </span>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3">
+      {truncatedInputUtils.hasTruncatedValues(stepOutput.input) && (
+        <TruncatedInputNotice />
+      )}
+      <SmartOutputViewer
+        json={stepOutput.input}
+        title={t('Data')}
+        connectorSchema={builtinOutputSchemas.inputSchema({
+          step,
+          connectorModel,
+          input: stepOutput.input,
+        })}
+      />
     </div>
   );
 };
@@ -425,7 +396,7 @@ const SlicedOutputDownload = ({
 
 function handleRunFailureOrEmptyLog(
   run: Execution | null,
-  retentionDays: number | null,
+  retention: RunRetention | null,
 ) {
   if (
     isNil(run) ||
@@ -434,11 +405,8 @@ function handleRunFailureOrEmptyLog(
     return null;
   }
 
-  if (isNil(run.logsFileId)) {
-    return t(
-      'Logs are kept for {days} days after execution and then deleted.',
-      { days: retentionDays },
-    );
+  if (runLogUiUtils.runDataState(run) === 'NONE') {
+    return runLogUiUtils.logsGoneText(retention);
   }
   return null;
 }

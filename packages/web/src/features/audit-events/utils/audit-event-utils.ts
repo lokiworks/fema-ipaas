@@ -476,6 +476,11 @@ function summarize({
       return t('auditMappingTableDeleted', {
         name: event.data.mappingTable.name,
       });
+    case ApplicationEventName.SOLUTION_INSTALL_RECORD_REMOVED:
+      return t('auditSolutionInstallRecordRemoved', {
+        name: event.data.install.solutionName,
+        version: event.data.install.version,
+      });
     case ApplicationEventName.USER_SIGN_IN_FAILED:
       return summarizeSignInFailed({
         target: event.data.target,
@@ -945,6 +950,8 @@ const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
     t('auditActionMappingTableUpdated'),
   [ApplicationEventName.MAPPING_TABLE_DELETED]: () =>
     t('auditActionMappingTableDeleted'),
+  [ApplicationEventName.SOLUTION_INSTALL_RECORD_REMOVED]: () =>
+    t('auditActionSolutionInstallRecordRemoved'),
 };
 
 function actionsForSources(sources: string[]): string[] | undefined {

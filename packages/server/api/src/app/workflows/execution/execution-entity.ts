@@ -19,6 +19,7 @@ type ExecutionSchema = Execution & {
     logsFile: File
     triggeredByUser?: User
     searchHashes: string[]
+    workflowSnapshotFileId?: string | null
     /** @deprecated kept for backwards compatibility, use waitpoint table instead, remove in 0.83.0 */
     pauseMetadata?: unknown
 }
@@ -108,6 +109,10 @@ export const ExecutionEntity = new EntitySchema<ExecutionSchema>({
         },
         businessKey: {
             type: String,
+            nullable: true,
+        },
+        workflowSnapshotFileId: {
+            ...EntityIdSchema,
             nullable: true,
         },
         searchHashes: {

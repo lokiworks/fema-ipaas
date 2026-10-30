@@ -6,18 +6,11 @@ import {
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { Plus, SearchX, Server, Store } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { ConsolePage } from '@/components/custom/console-page';
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/custom/empty';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import { PermissionNeededTooltip } from '@/components/custom/permission-needed-tooltip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -152,8 +145,17 @@ function McpServicesContent() {
         </PermissionNeededTooltip>
       }
     >
-      <div className="flex items-center justify-between gap-4">
-        <Tabs value={tab} onValueChange={(value) => setTab(value as ListTab)}>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+        <Tabs
+          value={tab}
+          onValueChange={(value) => {
+            const next = LIST_TABS.find((candidate) => candidate === value);
+            if (next) {
+              setTab(next);
+            }
+          }}
+          className="min-w-0 max-w-full overflow-x-auto"
+        >
           <TabsList>
             <TabsTrigger value="ALL">
               {t('All services ({count})', { count: counts.ALL })}
@@ -177,7 +179,7 @@ function McpServicesContent() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder={t('Search by name, key or description')}
-          className="max-w-64"
+          className="w-full md:max-w-64"
         />
       </div>
       {tabHint !== null && (
@@ -187,75 +189,18 @@ function McpServicesContent() {
       )}
       {isLoading && <Skeleton className="h-40 w-full" />}
       {!isLoading && list.length === 0 && (
-        <Empty>
-          {query ? (
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <SearchX />
-              </EmptyMedia>
-              <EmptyTitle>{t('No matching services')}</EmptyTitle>
-              <EmptyDescription>
-                {t(
-                  'No service has a name, key or description containing "{query}"',
-                  {
-                    query: search.trim(),
-                  },
-                )}
-              </EmptyDescription>
-            </EmptyHeader>
-          ) : tab === 'MARKETPLACE' ? (
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Store />
-              </EmptyMedia>
-              <EmptyTitle>
-                {t('Nothing is listed on the marketplace yet')}
-              </EmptyTitle>
-              <EmptyDescription>
-                {t(
-                  'Services that any project lists on the enterprise MCP marketplace appear here, so you can obtain them. To list one, publish it first, then click List on the MCP marketplace on its card or in the More menu of its page.',
-                )}
-              </EmptyDescription>
-            </EmptyHeader>
-          ) : tab === 'OBTAINED' ? (
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Server />
-              </EmptyMedia>
-              <EmptyTitle>{t('No services obtained yet')}</EmptyTitle>
-              <EmptyDescription>
-                {t(
-                  'Open a service in the enterprise MCP marketplace tab and click Obtain to start using it in your AI assistant.',
-                )}
-              </EmptyDescription>
-            </EmptyHeader>
-          ) : (
-            <>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Server />
-                </EmptyMedia>
-                <EmptyTitle>{t('No MCP services yet')}</EmptyTitle>
-                <EmptyDescription>
-                  {t(
-                    'Package a connector action or a published workflow into a service that AI assistants can call.',
-                  )}
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <PermissionNeededTooltip hasPermission={canWrite}>
-                  <Button
-                    disabled={!canWrite}
-                    onClick={() => setCreateOpen(true)}
-                  >
-                    <Plus className="size-4 mr-1" />
-                    {t('Create MCP service')}
-                  </Button>
-                </PermissionNeededTooltip>
-              </EmptyContent>
-            </>
-          )}
-        </Empty>
+        <McpListEmpty
+          tab={tab}
+          query={search.trim()}
+          createButton={
+            <PermissionNeededTooltip hasPermission={canWrite}>
+              <Button disabled={!canWrite} onClick={() => setCreateOpen(true)}>
+                <Plus className="size-4 mr-1" />
+                {t('Create MCP service')}
+              </Button>
+            </PermissionNeededTooltip>
+          }
+        />
       )}
       {!isLoading && list.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -333,6 +278,64 @@ function McpServicesContent() {
   );
 }
 
+function McpListEmpty({
+  tab,
+  query,
+  createButton,
+}: {
+  tab: ListTab;
+  query: string;
+  createButton: ReactNode;
+}) {
+  if (query.length > 0) {
+    return (
+      <ListEmptyState
+        icon={SearchX}
+        title={t('No matching services')}
+        description={t(
+          'No service has a name, key or description containing "{query}"',
+          { query },
+        )}
+      />
+    );
+  }
+  switch (tab) {
+    case 'MARKETPLACE':
+      return (
+        <ListEmptyState
+          icon={Store}
+          title={t('Nothing is listed on the marketplace yet')}
+          description={t(
+            'Services that any project lists on the enterprise MCP marketplace appear here, so you can obtain them. To list one, publish it first, then click List on the MCP marketplace on its card or in the More menu of its page.',
+          )}
+        />
+      );
+    case 'OBTAINED':
+      return (
+        <ListEmptyState
+          icon={Server}
+          title={t('No services obtained yet')}
+          description={t(
+            'Open a service in the enterprise MCP marketplace tab and click Obtain to start using it in your AI assistant.',
+          )}
+        />
+      );
+    case 'ALL':
+    case 'MINE':
+      return (
+        <ListEmptyState
+          icon={Server}
+          title={t('No MCP services yet')}
+          description={t(
+            'Package a connector action or a published workflow into a service that AI assistants can call.',
+          )}
+        >
+          {createButton}
+        </ListEmptyState>
+      );
+  }
+}
+
 function listTabHint(tab: ListTab): string | null {
   switch (tab) {
     case 'MARKETPLACE':
@@ -348,5 +351,7 @@ function listTabHint(tab: ListTab): string | null {
       return null;
   }
 }
+
+const LIST_TABS: ListTab[] = ['ALL', 'MINE', 'OBTAINED', 'MARKETPLACE'];
 
 export { McpServicesPage };

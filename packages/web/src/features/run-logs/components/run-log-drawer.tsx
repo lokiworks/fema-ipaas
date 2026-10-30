@@ -45,7 +45,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { agentApprovalsHooks, ApprovalCard } from '@/features/agent-approvals';
-import { workflowsApi } from '@/features/workflows/api/workflows-api';
+import { executionsApi } from '@/features/executions/api/executions-api';
 import { formatUtils } from '@/lib/format-utils';
 
 import { runLogsHooks } from '../hooks/run-logs-hooks';
@@ -147,11 +147,16 @@ function DrawerBody({
   const { data: workflow } = useQuery({
     queryKey: [
       'run-log-workflow-version',
+      row.id,
       row.workflowId,
       row.workflowVersionId,
     ],
     queryFn: () =>
-      workflowsApi.get(row.workflowId, { versionId: row.workflowVersionId }),
+      executionsApi.getRunWorkflow({
+        id: row.id,
+        workflowId: row.workflowId,
+        workflowVersionId: row.workflowVersionId,
+      }),
     enabled: row.workflowExists,
     staleTime: Infinity,
     retry: false,

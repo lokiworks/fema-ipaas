@@ -20,6 +20,7 @@ import {
   singleValueConditions,
   triggerRunSettingsUtils,
   workflowReferenceUtil,
+  workflowStructureUtil,
 } from '@fema-ipaas/shared';
 
 import { stepClassification } from './step-classification';
@@ -156,7 +157,16 @@ function walkChain({
   return [
     own,
     ...children,
-    ...walkChain({ head: head.nextAction, upstream: inside, loops }),
+    ...walkChain({
+      head: head.nextAction,
+      upstream: [
+        ...inside,
+        ...workflowStructureUtil
+          .getStepsVisibleAfterJoin(head)
+          .map(({ step }) => step.name),
+      ],
+      loops,
+    }),
   ];
 }
 
@@ -251,19 +261,21 @@ function untestedWriteIssues({
   ) {
     return [];
   }
-  if (isTestedAfterLastEdit(step)) {
+  const testStatuses = context.stepTestStatuses;
+  if (isNil(testStatuses)) {
     return [];
   }
-  const debug = context.debugVerification;
-  if (!isNil(debug) && debug.executedStepNames.includes(step.name)) {
+  const status = testStatuses[step.name] ?? StepTestStatus.UNTESTED;
+  if (status === StepTestStatus.TESTED) {
     return [];
   }
   return [
     issue({
       step,
-      code: isNil(debug)
-        ? ValidationCode.WRITE_NOT_TESTED
-        : ValidationCode.WRITE_NOT_REACHED,
+      code:
+        status === StepTestStatus.FAILED
+          ? ValidationCode.WRITE_TEST_FAILED
+          : ValidationCode.WRITE_NOT_TESTED,
       tab: ValidationTab.OUTPUT,
       severity: ValidationSeverity.WARNING,
       params: { step: step.displayName },
@@ -271,12 +283,8 @@ function untestedWriteIssues({
   ];
 }
 
-function isTestedAfterLastEdit(step: WorkflowAction): boolean {
-  const lastTestDate = readRecord(step.settings.sampleData)['lastTestDate'];
-  if (typeof lastTestDate !== 'string') {
-    return false;
-  }
-  return Date.parse(lastTestDate) >= Date.parse(step.lastUpdatedDate);
+function isIncompleteIssue(issue: ValidationIssue): boolean {
+  return INCOMPLETE_CODES.includes(issue.code);
 }
 
 function structureIssues({
@@ -941,7 +949,15 @@ function isBlank(value: unknown): boolean {
   if (Array.isArray(value)) {
     return value.length === 0;
   }
-  return false;
+  return hasOnlyBlankKeys(value);
+}
+
+function hasOnlyBlankKeys(value: unknown): boolean {
+  if (typeof value !== 'object' || isNil(value)) {
+    return false;
+  }
+  const keys = Object.keys(value);
+  return keys.length > 0 && keys.every((key) => key.trim().length === 0);
 }
 
 function readRecord(value: unknown): Record<string, unknown> {
@@ -980,6 +996,7 @@ export const workflowValidator = {
   issuesForStep,
   firstTabWithError,
   collectSteps,
+  isIncompleteIssue,
 };
 
 const AUTH_PROPERTY = 'auth';
@@ -1055,9 +1072,24 @@ export enum ValidationCode {
   VARIABLE_MISSING = 'VARIABLE_MISSING',
   AI_PENDING_REVIEW = 'AI_PENDING_REVIEW',
   WRITE_NOT_TESTED = 'WRITE_NOT_TESTED',
-  WRITE_NOT_REACHED = 'WRITE_NOT_REACHED',
+  WRITE_TEST_FAILED = 'WRITE_TEST_FAILED',
   MAPPING_COVERAGE_LOW = 'MAPPING_COVERAGE_LOW',
 }
+
+const INCOMPLETE_CODES: ValidationCode[] = [
+  ValidationCode.TRIGGER_NOT_SELECTED,
+  ValidationCode.OPERATION_NOT_SELECTED,
+  ValidationCode.CONNECTION_REQUIRED,
+  ValidationCode.REQUIRED_FIELD_MISSING,
+  ValidationCode.STEP_INCOMPLETE,
+  ValidationCode.BRANCH_NO_CONDITION,
+  ValidationCode.BRANCH_CONDITION_INCOMPLETE,
+  ValidationCode.LOOP_ITEMS_EMPTY,
+  ValidationCode.CODE_EMPTY,
+  ValidationCode.CODE_INPUT_NAME_EMPTY,
+  ValidationCode.FORM_NO_FIELDS,
+  ValidationCode.PARALLEL_TOO_FEW_BRANCHES,
+];
 
 const AGENT_PROBLEM_CODES: Record<AgentMcpServerProblemCode, ValidationCode> = {
   [AgentMcpServerProblemCode.SERVER_MISSING]:
@@ -1105,12 +1137,15 @@ export type ValidationContext = {
   mappingTableIds: string[] | null;
   variableNames: string[] | null;
   mappingCoverage?: Record<string, MappingCoverageFinding[]> | null;
-  debugVerification?: DebugRunEvidence | null;
+  stepTestStatuses?: Record<string, StepTestStatus> | null;
 };
 
-export type DebugRunEvidence = {
-  executedStepNames: string[];
-};
+export enum StepTestStatus {
+  TESTED = 'TESTED',
+  FAILED = 'FAILED',
+  CHANGED = 'CHANGED',
+  UNTESTED = 'UNTESTED',
+}
 
 export type MappingCoverageFinding = {
   tableName: string;

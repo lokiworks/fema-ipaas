@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { Notification, NotificationType } from '@fema-ipaas/shared'
+import { Notification, NotificationResolution, NotificationType, ProjectAccessRequestStatus } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 
 function resolveRecipients({ recipientIds, actorId }: ResolveRecipientsParams): string[] {
@@ -20,8 +20,23 @@ function buildRows({ input, recipientIds, actorName, now, generateId }: BuildRow
         body: isNil(input.body) ? null : truncate({ value: input.body, max: BODY_MAX_LENGTH }),
         link: input.link ?? null,
         actorName: actorName ?? null,
+        subjectId: input.subjectId ?? null,
+        resolution: null,
         read: false,
     }))
+}
+
+function accessRequestResolution(status: ProjectAccessRequestStatus): NotificationResolution | null {
+    switch (status) {
+        case ProjectAccessRequestStatus.APPROVED:
+            return NotificationResolution.APPROVED
+        case ProjectAccessRequestStatus.REJECTED:
+            return NotificationResolution.REJECTED
+        case ProjectAccessRequestStatus.WITHDRAWN:
+            return NotificationResolution.WITHDRAWN
+        case ProjectAccessRequestStatus.PENDING:
+            return null
+    }
 }
 
 function retentionCutoff({ now, days }: { now: Date, days: number }): string {
@@ -36,6 +51,7 @@ export const notificationUtils = {
     resolveRecipients,
     buildRows,
     retentionCutoff,
+    accessRequestResolution,
 }
 
 const TITLE_MAX_LENGTH = 200
@@ -50,6 +66,7 @@ export type NotifyInput = {
     body?: string | null
     link?: string | null
     actorId?: string | null
+    subjectId?: string | null
 }
 
 type ResolveRecipientsParams = {

@@ -1,5 +1,5 @@
 import { isNil } from '@fema-ipaas/core-utils'
-import { ApplicationEventName, CompleteSignUpRequest, PrincipalType, RequestEmailCodeRequest, SignInRequest, SignUpRequest, SwitchTenantRequest, TelemetryEventName, UserIdentityProvider, VerifyEmailCodeRequest } from '@fema-ipaas/shared'
+import { ApplicationEventName, CompleteSignUpRequest, PERSONAL_ACCESS_TOKEN_PREFIX, PrincipalType, RequestEmailCodeRequest, SignInRequest, SignUpRequest, SwitchTenantRequest, TelemetryEventName, UserIdentityProvider, VerifyEmailCodeRequest } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -14,6 +14,7 @@ import { telemetry } from '../helper/telemetry.utils'
 import { tenantUtils } from '../tenant/tenant.utils'
 import { userService } from '../user/user-service'
 import { authenticationService } from './authentication.service'
+import { accessTokenManager } from './lib/access-token-manager'
 import { turnstile } from './lib/turnstile'
 import { passwordlessAuthService } from './passwordless-auth.service'
 import { signInAudit } from './sign-in-audit'
@@ -152,6 +153,14 @@ export const authenticationController: FastifyPluginAsyncZod = async (
         return response
     })
 
+    app.post('/sign-out', SignOutRequestOptions, async (request, reply) => {
+        const token = bearerTokenOf(request.headers.authorization)
+        if (!isNil(token)) {
+            await accessTokenManager(request.log).revokeSession(token)
+        }
+        await reply.status(StatusCodes.NO_CONTENT).send()
+    })
+
     app.post('/switch-tenant', SwitchTenantRequestOptions, async (request) => {
         const user = await userService(request.log).getOneOrFail({ id: request.principal.id })
         return authenticationService(request.log).switchTenant({
@@ -163,6 +172,22 @@ export const authenticationController: FastifyPluginAsyncZod = async (
 }
 
 
+
+function bearerTokenOf(header: string | undefined): string | null {
+    if (isNil(header) || !header.startsWith(BEARER_PREFIX)) {
+        return null
+    }
+    const token = header.slice(BEARER_PREFIX.length)
+    return token.startsWith(PERSONAL_ACCESS_TOKEN_PREFIX) ? null : token
+}
+
+const BEARER_PREFIX = 'Bearer '
+
+const SignOutRequestOptions = {
+    config: {
+        security: securityAccess.unscoped([PrincipalType.USER, PrincipalType.ONBOARDING]),
+    },
+}
 
 const SwitchTenantRequestOptions = {
     config: {

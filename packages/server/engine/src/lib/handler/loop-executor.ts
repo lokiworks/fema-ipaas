@@ -40,7 +40,8 @@ export const loopExecutor: BaseExecutor<LoopOnItemsAction> = {
         })
         let newExecutionContext = await executionState.upsertStep(action.name, stepOutput)
 
-        if (!Array.isArray(resolvedInput.items)) {
+        const items = isNotRunBranchOutput(resolvedInput.items) ? [] : resolvedInput.items
+        if (!Array.isArray(items)) {
             return failStep({
                 action,
                 executionState: newExecutionContext,
@@ -53,11 +54,11 @@ export const loopExecutor: BaseExecutor<LoopOnItemsAction> = {
         const firstLoopAction = action.firstLoopAction
 
 
-        for (let i = 0; i < resolvedInput.items.length; ++i) {
+        for (let i = 0; i < items.length; ++i) {
             const newCurrentPath = newExecutionContext.currentPath.loopIteration({ loopName: action.name, iteration: i })
 
             const testSingleStepMode = !isNil(constants.stepNameToTest)
-            stepOutput = stepOutput.setItemAndIndex({ item: resolvedInput.items[i], index: i + 1 })
+            stepOutput = stepOutput.setItemAndIndex({ item: items[i], index: i + 1 })
             const addEmptyIteration = !stepOutput.hasIteration(i)
             if (addEmptyIteration) {
                 stepOutput = stepOutput.addIteration()
@@ -84,4 +85,8 @@ export const loopExecutor: BaseExecutor<LoopOnItemsAction> = {
         }
         return newExecutionContext.upsertStep(action.name, stepOutput.setDuration(performance.now() - stepStartTime))
     },
+}
+
+function isNotRunBranchOutput(items: unknown): boolean {
+    return isNil(items) || items === ''
 }

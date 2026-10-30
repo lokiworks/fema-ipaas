@@ -4,6 +4,8 @@ import { ExecutionStatus, ReplayCategory, ReplayReason } from '@fema-ipaas/share
 export const issueReplayUtils = {
     chainVerdicts,
     classify,
+    isRawDataExpired,
+    replayActivityShouldBeRecorded,
 }
 
 function chainVerdicts({ candidates, chain }: ChainVerdictsParams): Map<string, ChainVerdict> {
@@ -25,6 +27,7 @@ function chainVerdicts({ candidates, chain }: ChainVerdictsParams): Map<string, 
 }
 
 function classify({ execution, verdict, workflowExists, connectionState, connectionExternalId, transient, authorization, rejectedByTarget, workflowChangedAfterFailure, mappingTableChangedAfterFailure, blockedUntil = null }: ClassifyParams): ClassifiedReplay {
+    const rawDataExpired = isRawDataExpired(execution)
     const item = (category: ReplayCategory, reason: ReplayReason): ClassifiedReplay => ({
         executionId: execution.id,
         workflowId: execution.workflowId,
@@ -33,7 +36,7 @@ function classify({ execution, verdict, workflowExists, connectionState, connect
         category,
         reason,
         connectionExternalId,
-        rawDataExpired: isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId),
+        rawDataExpired,
         blockedUntil: reason === ReplayReason.BLOCKED_UNTIL ? blockedUntil?.toISOString() ?? null : null,
     })
     if (!workflowExists) {
@@ -44,6 +47,9 @@ function classify({ execution, verdict, workflowExists, connectionState, connect
     }
     if (verdict === ChainVerdict.DUPLICATE) {
         return item(ReplayCategory.NOT_NEEDED, ReplayReason.DUPLICATE_ATTEMPT)
+    }
+    if (rawDataExpired) {
+        return item(ReplayCategory.BLOCKED, ReplayReason.RAW_DATA_EXPIRED)
     }
     switch (connectionState) {
         case ReplayConnectionState.MISSING:
@@ -74,6 +80,14 @@ function classify({ execution, verdict, workflowExists, connectionState, connect
         return item(ReplayCategory.REPLAYABLE, ReplayReason.MAPPING_TABLE_CHANGED)
     }
     return item(ReplayCategory.DATA_PROBLEM, ReplayReason.UNCHANGED_SINCE_FAILURE)
+}
+
+function isRawDataExpired(execution: { logsFileId?: string | null, displayLogsFileId?: string | null }): boolean {
+    return isNil(execution.logsFileId) && !isNil(execution.displayLogsFileId)
+}
+
+function replayActivityShouldBeRecorded({ queued }: { queued: number }): boolean {
+    return queued > 0
 }
 
 export enum ChainVerdict {

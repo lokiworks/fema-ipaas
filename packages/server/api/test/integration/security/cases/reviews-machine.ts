@@ -119,6 +119,7 @@ export const machineReviews: Record<string, Review> = {
     'GET /v1/authn/sso/callback': { verdict: 'ok', note: '带认证限流；state 一次性（重放 / 篡改 / 无 Cookie 都拒绝），ID 令牌验签、颁发者、受众、nonce、过期、算法白名单；邮箱未验证、域名不在白名单、已停用、未开通账号都拒绝且不建账号；失败写审计' },
     'POST /v1/authn/sso/exchange': { verdict: 'ok', note: '带认证限流；凭 60 秒有效的一次性票据换会话，已用或过期都 401；换取时重新校验用户是否停用' },
     'POST /v1/authentication/complete-sign-up': { verdict: 'ok', note: '只接受 ONBOARDING 主体（注册后尚无租户的身份）' },
+    'POST /v1/authentication/sign-out': { verdict: 'ok', note: '只吊销请求头里调用者自己的登录令牌（按令牌哈希记到 Redis，保留到令牌过期），不接受也不影响个人访问令牌，碰不到别人的会话' },
     'POST /v1/tenants': { verdict: 'ok', note: '控制器里只允许 ONBOARDING 主体建第一个租户，USER 令牌一律 403' },
     'GET /v1/tenants/assets/:id': { verdict: 'ok', note: '租户 logo / 头像：只能取 TENANT_ASSET 与 USER_PROFILE_PICTURE 类型的文件，id 不可猜，响应强制 attachment' },
     'GET /v1/step-files/signed': { verdict: 'ok', note: '凭签名 token（JWT，限定可下载的文件类型），假 token 401（deep/machine-public.test.ts）' },

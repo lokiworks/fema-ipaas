@@ -86,6 +86,7 @@ type UseConnectorsSearchProps = {
   enabled?: boolean;
   type: 'action' | 'trigger';
   shouldCaptureEvent: boolean;
+  triggerConnectorName?: string;
 };
 
 export const connectorsHooks = {
@@ -293,6 +294,7 @@ export const connectorsHooks = {
             tenant,
             props.type,
             environment,
+            props.triggerConnectorName,
           ),
         };
       case ConnectorSelectorTabType.UTILITY:
@@ -511,6 +513,7 @@ const getExploreTabContent = (
   tenant: TenantWithoutSensitiveData,
   type: 'action' | 'trigger',
   environment: RuntimeEnvironment | null,
+  triggerConnectorName?: string,
 ) => {
   const popularCategory: CategorizedStepMetadataWithSuggestions = {
     title: t('Popular'),
@@ -540,7 +543,11 @@ const getExploreTabContent = (
       title: t('Highlights'),
       metadata: [],
     };
-  const highlightedConnectors = getHighlightedConnectors(queryResult, type);
+  const highlightedConnectors = getHighlightedConnectors({
+    queryResult,
+    type,
+    triggerConnectorName,
+  });
   const codeConnector = queryResult.find(
     (connector) => connector.type === WorkflowActionType.CODE,
   );

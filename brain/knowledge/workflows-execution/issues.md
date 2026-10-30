@@ -46,6 +46,11 @@ icon: 🩺
 - **「打开节点检查入参」「错误处理」类修复跳到失败那次运行，不是编辑器草稿。** 取问题名下最近的失败运行（`runFocusUtils.pickFailedRun`），地址 `/runs/:id?step=<失败节点>&panel=input|error&issueId=…`：运行页选中该节点，`input` 打开「出参」页签下的「本次入参」，`error` 打开「错误处理」页签。带 `issueId` 时运行页顶部有「返回问题」和「重跑」。取不到运行时才退回编辑器。
 - **「标记已解决」先确认，可顺手写一句怎么解决的（记成备注）。** 状态下拉显示「状态：当前状态」并勾出当前项，选「已解决」同样走确认；其他状态立即生效、可撤销。
 - **问题重放和运行日志重跑用同一条「大概率再失败」规则。** 运行日志的重跑弹窗先调 `POST /v1/run-logs/rerun-check`（`issueReplayService.likelyToFailAgain`，按所属问题的错误码、工作流和映射表是否在失败后改过，复用 `issueReplayUtils.classify`），这类运行默认不重跑，勾「仍然重跑」才算上；两个弹窗用同一个 `LikelyToFailBlock`。服务端的批量重跑接口本身不拦，规则在弹窗里。
+- **原始数据过期的运行两种重放都不行。** 原始运行数据（`logsFileId`）按租户隐私设置的 `rawPayloadRetentionDays`（默认 3 天，且不超过项目日志保留期）清理，之后只剩脱敏日志（`displayLogsFileId`）；`executionService.retry` 对这种运行两种策略都直接拒绝。所以 `issueReplayUtils.classify` 在「已重跑 / 重复尝试」之后就把它归为 `BLOCKED` + `RAW_DATA_EXPIRED`，`replay-check` 返回 `rawDataExpiredCount` 和 `rawRetentionDays` 供弹窗写明；问题名下全部失败运行都过期时，`insightOf({ rawDataExpired: true })` 把重放类修复置灰（`disabledReason: RAW_DATA_EXPIRED`），详情页「受影响的运行」的重跑按钮同样置灰。旧文案「只能整体重跑」是错的。
+- **重放 0 条入队不记活动、不写审计。** `replay` 只有 `queued > 0` 才记 `REPLAYED` 活动并发 `ISSUE_REPLAYED` 审计，前端提示「没有运行进入重跑队列」。
+- **状态叫法：未处理 = OPEN，处理中 = INVESTIGATING，两者合称「未解决」。** 问题中心页签、首页卡片标题用「未解决的问题」，项目块和侧栏角标只数未处理。侧栏「问题」角标是你所在全部项目的未处理合计（入口是跨项目的问题中心），悬停提示写明；项目问题页在别的项目有未处理问题时提示并链到问题中心。
+- **问题标题的中文归类「步骤失败」已改叫「节点失败」**（库里仍存英文 `Step failed`）。全局搜索用 `RETIRED_ISSUE_TITLE_CATEGORY_CHINESE` 兼容旧叫法，搜「步骤失败」「节点失败」都能命中；告警里的中文标题在 `alert-dispatcher` 的 `TITLE_CATEGORY_LABELS`。
+- **两个重跑弹窗共用文案。** 问题详情和运行日志的重跑弹窗都用 `RerunStrategyOptions` 和 `rerunDialogDescription`；运行日志批量条只按 `rerunBlockReason` 计数，所以写成「满足重跑条件，重跑前还会检查是否大概率再失败」，弹窗里再按 `rerun-check` 分出「大概率再失败」。
 
 ## Key files
 - `packages/server/api/src/app/issue/` — `issueService.recordFailure`、`issueReplayService`

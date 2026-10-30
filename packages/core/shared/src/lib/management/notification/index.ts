@@ -23,6 +23,14 @@ export enum NotificationType {
     CAPACITY_THRESHOLD = 'CAPACITY_THRESHOLD',
 }
 
+export enum NotificationResolution {
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+    WITHDRAWN = 'WITHDRAWN',
+    REQUESTER_REMOVED = 'REQUESTER_REMOVED',
+    PROJECT_DELETED = 'PROJECT_DELETED',
+}
+
 export const Notification = z.object({
     ...BaseModelSchema,
     tenantId: z.string(),
@@ -33,6 +41,8 @@ export const Notification = z.object({
     body: Nullable(z.string()),
     link: Nullable(z.string()),
     actorName: Nullable(z.string()),
+    subjectId: Nullable(z.string()),
+    resolution: Nullable(z.enum(NotificationResolution)),
     read: z.boolean(),
 })
 export type Notification = z.infer<typeof Notification>

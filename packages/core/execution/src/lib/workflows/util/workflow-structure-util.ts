@@ -193,6 +193,55 @@ function findPathToStep(trigger: WorkflowTrigger, targetStepName: string): StepW
 }
 
 
+function findReferenceableSteps(trigger: WorkflowTrigger, targetStepName: string): ReferenceableStep[] {
+    const order = new Map(getAllSteps(trigger).map((step, index) => [step.name, index]))
+    const path = findPathToStep(trigger, targetStepName)
+    const joined = path
+        .filter((step) => !isChildOf(step, targetStepName))
+        .flatMap((step) => getStepsVisibleAfterJoin(step))
+    return [
+        ...path.map((step) => ({ ...step, onlyWhen: [] })),
+        ...joined.map(({ step, onlyWhen }) => ({ ...step, dfsIndex: order.get(step.name) ?? 0, onlyWhen })),
+    ].sort((first, second) => first.dfsIndex - second.dfsIndex)
+}
+
+function getStepsVisibleAfterJoin(step: Step): VisibleBranchStep[] {
+    return branchHeadsOf(step).flatMap(({ head, guard }) => visibleChain({ head, onlyWhen: isNil(guard) ? [] : [guard] }))
+}
+
+function visibleChain({ head, onlyWhen }: { head: WorkflowAction | null | undefined, onlyWhen: BranchGuard[] }): VisibleBranchStep[] {
+    if (isNil(head)) {
+        return []
+    }
+    const nested = branchHeadsOf(head).flatMap(({ head: branchHead, guard }) => visibleChain({
+        head: branchHead,
+        onlyWhen: isNil(guard) ? onlyWhen : [...onlyWhen, guard],
+    }))
+    return [{ step: head, onlyWhen }, ...nested, ...visibleChain({ head: head.nextAction, onlyWhen })]
+}
+
+function branchHeadsOf(step: Step): { head: WorkflowAction | null | undefined, guard: BranchGuard | null }[] {
+    switch (step.type) {
+        case WorkflowActionType.ROUTER:
+            return step.children.map((child, index) => ({
+                head: child,
+                guard: { stepName: step.name, kind: 'ROUTER_BRANCH', branchName: step.settings.branches[index]?.branchName ?? null },
+            }))
+        case WorkflowActionType.PARALLEL:
+            return step.children.map((child) => ({ head: child, guard: null }))
+        case WorkflowActionType.CODE:
+        case WorkflowActionType.CONNECTOR:
+        case WorkflowActionType.COMPONENT:
+            return [
+                { head: step.continueOnFailureBranches?.onSuccess, guard: { stepName: step.name, kind: 'ON_SUCCESS', branchName: null } },
+                { head: step.continueOnFailureBranches?.onFailure, guard: { stepName: step.name, kind: 'ON_FAILURE', branchName: null } },
+            ]
+        default:
+            return []
+    }
+}
+
+
 function getAllChildSteps(action: Step): Step[] {
     return getAllSteps({
         ...action,
@@ -295,6 +344,8 @@ export const workflowStructureUtil = {
     getStep,
     createBranch,
     findPathToStep,
+    findReferenceableSteps,
+    getStepsVisibleAfterJoin,
     isChildOf,
     findUnusedName,
     findUnusedNames,
@@ -303,4 +354,19 @@ export const workflowStructureUtil = {
     extractConnectionIds,
     isAgentConnector,
     extractAgentIds,
+}
+
+export type BranchGuard = {
+    stepName: string
+    kind: 'ROUTER_BRANCH' | 'ON_SUCCESS' | 'ON_FAILURE'
+    branchName: string | null
+}
+
+export type VisibleBranchStep = {
+    step: WorkflowAction
+    onlyWhen: BranchGuard[]
+}
+
+export type ReferenceableStep = StepWithIndex & {
+    onlyWhen: BranchGuard[]
 }

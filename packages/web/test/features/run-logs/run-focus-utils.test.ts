@@ -51,7 +51,7 @@ describe('runFocusUtils', () => {
 
   it('opens the error handling tab for error handling fixes and the run data tab otherwise', () => {
     expect(runFocusUtils.stepPanelTab('error')).toBe('error');
-    expect(runFocusUtils.stepPanelTab('input')).toBe('output');
+    expect(runFocusUtils.stepPanelTab('input')).toBe('input');
     expect(
       runFocusUtils.parse(new URLSearchParams('panel=other')).panel,
     ).toBeNull();

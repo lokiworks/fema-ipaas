@@ -132,12 +132,22 @@ function severityOf(issue: Pick<Issue, 'kind' | 'occurrences'>): IssueSeverity {
 }
 
 function insightOf(params: InsightOfParams): IssueInsight {
-    const insight = baseInsightOf(params)
+    const insight = withRawDataExpiry({ insight: baseInsightOf(params), rawDataExpired: params.rawDataExpired === true })
     const owner = fixOwnerMarker.parse(params.issue.message)
     if (isNil(owner) || insight.cause === IssueInsightCause.BLOCKED_UNTIL || params.issue.kind === IssueKind.CONNECTION || (params.issue.kind === IssueKind.DRIFT || params.issue.kind === IssueKind.RECONCILIATION)) {
         return insight
     }
     return { ...insight, owner: IssueFixOwner[owner], confidence: 0.9 }
+}
+
+function withRawDataExpiry({ insight, rawDataExpired }: { insight: IssueInsight, rawDataExpired: boolean }): IssueInsight {
+    if (!rawDataExpired) {
+        return insight
+    }
+    return {
+        ...insight,
+        fixes: insight.fixes.map((item) => REPLAY_FIXES.includes(item.kind) && isNil(item.disabledReason) ? { ...item, disabledReason: ReplayReason.RAW_DATA_EXPIRED } : item),
+    }
 }
 
 function baseInsightOf({ issue, connectionHealthy, connectionMissing = false, now = new Date() }: InsightOfParams): IssueInsight {
@@ -287,6 +297,7 @@ function fix({ kind, disabledReason }: { kind: IssueFixKind, disabledReason?: Re
 
 const TRIGGER_SIGNATURE_PREFIX = 'trigger:'
 const TRIGGER_UNSUPPORTED_FIXES = [IssueFixKind.REPLAY_FROM_FAILED_STEP, IssueFixKind.REPLAY_FULL, IssueFixKind.OPEN_MAPPING_TABLES, IssueFixKind.OPEN_RUN]
+const REPLAY_FIXES = [IssueFixKind.REPLAY_FROM_FAILED_STEP, IssueFixKind.REPLAY_FULL]
 const WORKFLOW_FIXES = [IssueFixKind.OPEN_STEP_INPUT, IssueFixKind.OPEN_STEP_ERROR_HANDLING]
 const CONNECTION_REFERENCE_PATTERN = /\{\{\s*connections\['([^']+)'\]\s*\}\}/
 const MAPPING_MISS_PATTERN = /不在映射表「[^」]*」里/
@@ -328,6 +339,7 @@ type InsightOfParams = {
     issue: Pick<Issue, 'kind' | 'errorCode'> & Partial<Pick<Issue, 'message' | 'connectionExternalId'>>
     connectionHealthy: boolean
     connectionMissing?: boolean
+    rawDataExpired?: boolean
     now?: Date
 }
 

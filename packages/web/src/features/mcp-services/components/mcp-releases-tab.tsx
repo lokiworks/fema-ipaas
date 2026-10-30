@@ -2,14 +2,8 @@ import { McpService } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { History } from 'lucide-react';
 
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/custom/empty';
 import { FormattedDate } from '@/components/custom/formatted-date';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import {
   Table,
   TableBody,
@@ -28,21 +22,17 @@ function McpReleasesTab({
 }) {
   if (service.releases.length === 0) {
     return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <History />
-          </EmptyMedia>
-          <EmptyTitle>{t('No releases yet')}</EmptyTitle>
-          <EmptyDescription>
-            {canEdit
-              ? t(
-                  'Add tools, then click Publish at the top of the page so AI assistants can use this service.',
-                )
-              : t('The service owner has not published a release yet.')}
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <ListEmptyState
+        icon={History}
+        title={t('No releases yet')}
+        description={
+          canEdit
+            ? t(
+                'Add tools, then click Publish at the top of the page so AI assistants can use this service.',
+              )
+            : t('The service owner has not published a release yet.')
+        }
+      />
     );
   }
   return (

@@ -1,4 +1,4 @@
-import { DEFAULT_NOTIFICATION_PREFERENCES, NotificationType } from '@fema-ipaas/shared'
+import { DEFAULT_NOTIFICATION_PREFERENCES, NotificationResolution, NotificationType, ProjectAccessRequestStatus } from '@fema-ipaas/shared'
 import { describe, expect, it } from 'vitest'
 import { notificationPreferenceUtils } from '../../../../src/app/notification/notification-preference-utils'
 import { notificationUtils } from '../../../../src/app/notification/notification-utils'
@@ -53,6 +53,27 @@ describe('notificationUtils.buildRows', () => {
         expect(row.projectId).toBeNull()
         expect(row.body).toBeNull()
         expect(row.link).toBeNull()
+    })
+})
+
+describe('notificationUtils subject and resolution', () => {
+    it('keeps the subject id and starts unresolved', () => {
+        const [row] = notificationUtils.buildRows({
+            input: { tenantId: 't1', recipientIds: ['a'], type: NotificationType.PROJECT_ACCESS_REQUESTED, title: 'p', subjectId: 'req1' },
+            recipientIds: ['a'],
+            actorName: null,
+            now: '2026-10-30T00:00:00.000Z',
+            generateId: () => 'n1',
+        })
+        expect(row.subjectId).toBe('req1')
+        expect(row.resolution).toBeNull()
+    })
+
+    it('maps a decided access request to a resolution and leaves pending ones open', () => {
+        expect(notificationUtils.accessRequestResolution(ProjectAccessRequestStatus.APPROVED)).toBe(NotificationResolution.APPROVED)
+        expect(notificationUtils.accessRequestResolution(ProjectAccessRequestStatus.REJECTED)).toBe(NotificationResolution.REJECTED)
+        expect(notificationUtils.accessRequestResolution(ProjectAccessRequestStatus.WITHDRAWN)).toBe(NotificationResolution.WITHDRAWN)
+        expect(notificationUtils.accessRequestResolution(ProjectAccessRequestStatus.PENDING)).toBeNull()
     })
 })
 

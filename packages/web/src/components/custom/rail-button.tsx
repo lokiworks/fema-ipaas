@@ -9,7 +9,16 @@ import { cn } from '@/lib/utils';
 
 export const RailButton = React.forwardRef<HTMLButtonElement, RailButtonProps>(
   (
-    { icon: Icon, label, active, badge, showLabel = true, className, ...props },
+    {
+      icon: Icon,
+      label,
+      active,
+      badge,
+      badgeHint,
+      showLabel = true,
+      className,
+      ...props
+    },
     ref,
   ) => {
     const badgeText = badge && badge > 99 ? '99+' : badge;
@@ -43,7 +52,9 @@ export const RailButton = React.forwardRef<HTMLButtonElement, RailButtonProps>(
             )}
           </button>
         </TooltipTrigger>
-        <TooltipContent side="right">{label}</TooltipContent>
+        <TooltipContent side="right">
+          {badge !== undefined && badge > 0 && badgeHint ? badgeHint : label}
+        </TooltipContent>
       </Tooltip>
     );
   },
@@ -59,5 +70,6 @@ type RailButtonProps = Omit<
   label: string;
   active?: boolean;
   badge?: number;
+  badgeHint?: string;
   showLabel?: boolean;
 };

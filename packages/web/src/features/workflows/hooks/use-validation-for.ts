@@ -27,10 +27,10 @@ import { variablesQueries } from '@/features/variables/hooks/variables-hooks';
 import {
   ConnectionSpec,
   ConnectorSpec,
-  DebugRunEvidence,
   ConnectorSpecStatus,
   MappingCoverageFinding,
   OperationSpec,
+  StepTestStatus,
   ValidationResult,
   WriteStep,
   workflowValidator,
@@ -40,7 +40,7 @@ import { authenticationSession } from '@/lib/authentication-session';
 
 export function useValidationFor(
   trigger: WorkflowTrigger,
-  debugVerification: DebugRunEvidence | null = null,
+  stepTestStatuses: Record<string, StepTestStatus> | null = null,
   mappingCoverage: Record<string, MappingCoverageFinding[]> | null = null,
 ): WorkflowValidationState {
   const { i18n } = useTranslation();
@@ -145,7 +145,7 @@ export function useValidationFor(
         mcpServers,
         mappingTableIds,
         variableNames,
-        debugVerification,
+        stepTestStatuses,
         mappingCoverage,
       }),
     [
@@ -155,7 +155,7 @@ export function useValidationFor(
       mcpServers,
       mappingTableIds,
       variableNames,
-      debugVerification,
+      stepTestStatuses,
       mappingCoverage,
     ],
   );

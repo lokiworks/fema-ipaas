@@ -106,6 +106,22 @@ export const projectAccessRequestService = (log: FastifyBaseLogger) => ({
         return withdrawn
     },
 
+    async closeForRequester({ tenantId, userId }: UserParams): Promise<ProjectAccessRequest[]> {
+        const pending = await projectAccessRequestRepo().find({
+            where: { tenantId, userId, status: ProjectAccessRequestStatus.PENDING },
+        })
+        if (pending.length === 0) {
+            return []
+        }
+        const decidedAt = dayjs().toISOString()
+        await projectAccessRequestRepo().update({ tenantId, userId, status: ProjectAccessRequestStatus.PENDING }, {
+            status: ProjectAccessRequestStatus.WITHDRAWN,
+            decidedBy: null,
+            decidedAt,
+        })
+        return pending.map((request) => ({ ...request, status: ProjectAccessRequestStatus.WITHDRAWN, decidedBy: null, decidedAt }))
+    },
+
     async decide({ tenantId, requestId, actorId, approve, role }: DecideParams): Promise<DecideResult> {
         const request = await projectAccessRequestRepo().findOneBy({ id: requestId, tenantId })
         if (isNil(request)) {

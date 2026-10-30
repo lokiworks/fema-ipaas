@@ -105,10 +105,12 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
 
     app.get('/:id/insight', GetIssueRequest, async (request): Promise<IssueInsight> => {
         const issue = await issueService(request.log).getOneOrThrow({ id: request.params.id, projectId: request.projectId })
+        const replay = issueReplayService(request.log)
         const health = issue.kind === IssueKind.CONNECTION && !isNil(issue.connectionExternalId)
-            ? await issueReplayService(request.log).connectionHealth({ externalId: issue.connectionExternalId, projectId: request.projectId })
+            ? await replay.connectionHealth({ externalId: issue.connectionExternalId, projectId: request.projectId })
             : { healthy: true, missing: false }
-        return issueUtils.insightOf({ issue, connectionHealthy: health.healthy, connectionMissing: health.missing })
+        const rawDataExpired = await replay.rawDataExpired({ id: issue.id, projectId: request.projectId })
+        return issueUtils.insightOf({ issue, connectionHealthy: health.healthy, connectionMissing: health.missing, rawDataExpired })
     })
 
     app.get('/:id/alerts', GetIssueRequest, async (request): Promise<AlertRecord[]> => {
@@ -130,10 +132,12 @@ export const issueController: FastifyPluginAsyncZod = async (app) => {
             confirmedUnsafeSteps: request.body.confirmedUnsafeSteps,
             actorId: request.principal.id,
         })
-        applicationEvents(request.log).sendUserEvent(request, {
-            action: ApplicationEventName.ISSUE_REPLAYED,
-            data: { issue: { id: issue.id, title: issue.title }, strategy: request.body.strategy, count: result.queued },
-        })
+        if (result.queued > 0) {
+            applicationEvents(request.log).sendUserEvent(request, {
+                action: ApplicationEventName.ISSUE_REPLAYED,
+                data: { issue: { id: issue.id, title: issue.title }, strategy: request.body.strategy, count: result.queued },
+            })
+        }
         return result
     })
 }

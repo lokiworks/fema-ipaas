@@ -300,7 +300,7 @@ export const issueService = (log: FastifyBaseLogger) => ({
         }
     },
 
-    async summary({ projectId, currentUserId, timezone }: SummaryParams): Promise<IssueSummary> {
+    async summary({ projectId, currentUserId, timezone }: SummaryParams): Promise<Omit<IssueSummary, 'alertsLast7Days'>> {
         const issues = await issueRepo().find({ where: { projectId }, select: ['id', 'kind', 'status', 'occurrences', 'assigneeId', 'mutedUntil', 'firstSeenAt', 'lastSeenAt', 'reopened'] })
         const now = dayjsUtil()
         const zone = runMonitorUtils.safeTimezone(timezone)
@@ -320,7 +320,6 @@ export const issueService = (log: FastifyBaseLogger) => ({
             muted: muted.length,
             failuresLast7Days: funnel.failures,
             issuesLast7Days: funnel.issues,
-            alertsLast7Days: 0,
         }
     },
 

@@ -1,8 +1,8 @@
 import { generateId, isNil, SeekPage, tryCatch, tryCatchSync } from '@fema-ipaas/core-utils'
-import { ListNotificationsRequestQuery, Notification, NOTIFICATION_RETENTION_DAYS, WebsocketClientEvent } from '@fema-ipaas/shared'
+import { ListNotificationsRequestQuery, Notification, NotificationResolution, NOTIFICATION_RETENTION_DAYS, NotificationType, WebsocketClientEvent } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
-import { LessThan } from 'typeorm'
+import { FindOptionsWhere, In, IsNull, LessThan } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { websocketService } from '../core/websockets.service'
 import { buildPaginator } from '../helper/pagination/build-paginator'
@@ -53,6 +53,17 @@ export const notificationService = (log: FastifyBaseLogger) => ({
         await notificationRepo().update({ recipientId, tenantId, read: false }, { read: true })
     },
 
+    async resolveBySubject({ tenantId, type, subjectIds, resolution }: ResolveBySubjectParams): Promise<number> {
+        if (subjectIds.length === 0) {
+            return 0
+        }
+        return resolveWhere({ where: { tenantId, type, subjectId: In(subjectIds), resolution: IsNull() }, resolution, log })
+    },
+
+    async resolveByProject({ tenantId, projectId, type, resolution }: ResolveByProjectParams): Promise<number> {
+        return resolveWhere({ where: { tenantId, projectId, type, resolution: IsNull() }, resolution, log })
+    },
+
     async purgeExpired(): Promise<number> {
         const cutoff = notificationUtils.retentionCutoff({ now: new Date(), days: NOTIFICATION_RETENTION_DAYS })
         const result = await notificationRepo().delete({ created: LessThan(cutoff) })
@@ -79,6 +90,22 @@ async function createAndPush({ input, log }: { input: NotifyInput, log: FastifyB
     return rows
 }
 
+async function resolveWhere({ where, resolution, log }: ResolveWhereParams): Promise<number> {
+    const rows = await notificationRepo().find({ where, select: { id: true, recipientId: true } })
+    if (rows.length === 0) {
+        return 0
+    }
+    await notificationRepo().update({ id: In(rows.map((row) => row.id)) }, { resolution, read: true })
+    const recipientIds = [...new Set(rows.map((row) => row.recipientId))]
+    recipientIds.forEach((recipientId) => {
+        const { error } = tryCatchSync(() => websocketService.to(recipientId).emit(WebsocketClientEvent.NOTIFICATIONS_RESOLVED, { resolution }))
+        if (!isNil(error)) {
+            log.warn({ error, user: { id: recipientId } }, '[notificationService#resolve] Failed to push resolved notifications over websocket')
+        }
+    })
+    return rows.length
+}
+
 async function resolveActorName({ actorId, log }: { actorId: string | null | undefined, log: FastifyBaseLogger }): Promise<string | null> {
     if (isNil(actorId)) {
         return null
@@ -96,6 +123,26 @@ const DEFAULT_PAGE_SIZE = 30
 type RecipientRef = {
     recipientId: string
     tenantId: string
+}
+
+type ResolveWhereParams = {
+    where: FindOptionsWhere<Notification>
+    resolution: NotificationResolution
+    log: FastifyBaseLogger
+}
+
+type ResolveBySubjectParams = {
+    tenantId: string
+    type: NotificationType
+    subjectIds: string[]
+    resolution: NotificationResolution
+}
+
+type ResolveByProjectParams = {
+    tenantId: string
+    projectId: string
+    type: NotificationType
+    resolution: NotificationResolution
 }
 
 type ListParams = RecipientRef & {

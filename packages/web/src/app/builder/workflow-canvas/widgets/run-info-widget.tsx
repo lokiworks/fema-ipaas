@@ -1,8 +1,13 @@
+import { isNil } from '@fema-ipaas/core-utils';
 import {
+  Execution,
   FlagId,
   ExecutionStatus,
   isExecutionStateTerminal,
+  RunEnvironment,
   StepOutputStatus,
+  WorkflowTrigger,
+  workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { useReactFlow } from '@xyflow/react';
 import { t } from 'i18next';
@@ -73,8 +78,31 @@ function getStatusText({
   }
 }
 
+function runKindLabel({
+  run,
+  trigger,
+}: {
+  run: Execution;
+  trigger: WorkflowTrigger;
+}): string | null {
+  if (run.environment !== RunEnvironment.TESTING) {
+    return null;
+  }
+  if (isNil(run.stepNameToTest)) {
+    return t('Full debug');
+  }
+  return t('Step test · {step}', {
+    step:
+      workflowStructureUtil.getStep(run.stepNameToTest, trigger)?.displayName ??
+      run.stepNameToTest,
+  });
+}
+
 const RunInfoWidget = () => {
-  const run = useBuilderStateContext((state) => state.run);
+  const [run, trigger] = useBuilderStateContext((state) => [
+    state.run,
+    state.workflowVersion.trigger,
+  ]);
   const { variant, Icon } = run
     ? executionUtils.getStatusIcon(run.status)
     : { variant: 'default' as const, Icon: CircleHelp };
@@ -94,6 +122,7 @@ const RunInfoWidget = () => {
     status: run.status,
     ignoreInternalError: false,
   });
+  const kindLabel = runKindLabel({ run, trigger });
   return (
     <LargeWidgetWrapper
       containerClassName={cn(
@@ -106,6 +135,11 @@ const RunInfoWidget = () => {
         <div className="flex min-w-0 flex-col gap-0.5 text-sm">
           <div className="flex min-w-0 items-center">
             <Icon className="mr-2 size-5 shrink-0" />
+            {!isNil(kindLabel) && (
+              <span className="mr-2 min-w-0 truncate rounded-sm bg-primary/10 px-1.5 text-xs font-medium leading-5 text-primary">
+                {kindLabel}
+              </span>
+            )}
             <span className="font-medium text-foreground dark:text-foreground">
               {getStatusText({
                 status: run.status,

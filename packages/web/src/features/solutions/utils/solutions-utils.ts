@@ -138,10 +138,8 @@ function checkGate({
       result.status !== SolutionCheckStatus.PASS &&
       result.status !== SolutionCheckStatus.NEEDS_CONFIRM,
   );
-  const needsAcknowledgement = results.filter(
-    (result) =>
-      result.status === SolutionCheckStatus.NEEDS_CONFIRM ||
-      (!result.blocking && result.status !== SolutionCheckStatus.PASS),
+  const needsAcknowledgement = results.filter((result) =>
+    solutionUtils.needsAcknowledgement(result),
   );
   const unacknowledged = needsAcknowledgement.filter(
     (result) => !acknowledged.includes(result.key),
@@ -151,6 +149,33 @@ function checkGate({
     needsAcknowledgement,
     canContinue: failedBlocking.length === 0 && unacknowledged.length === 0,
   };
+}
+
+function acknowledgementKind(
+  result: SolutionCheckResult,
+): AcknowledgementKind | null {
+  if (!solutionUtils.needsAcknowledgement(result)) {
+    return null;
+  }
+  return result.status === SolutionCheckStatus.NEEDS_CONFIRM
+    ? 'confirm'
+    : 'accept-risk';
+}
+
+function acceptedRisks({
+  results,
+  acknowledged,
+}: {
+  results: SolutionCheckResult[];
+  acknowledged: string[];
+}): string[] {
+  return results
+    .filter(
+      (result) =>
+        acknowledgementKind(result) === 'accept-risk' &&
+        acknowledged.includes(result.key),
+    )
+    .map((result) => result.key);
 }
 
 function mergeCheckResults({
@@ -300,6 +325,8 @@ export const solutionsUtils = {
   effectiveConnections,
   missingSlots,
   checkGate,
+  acknowledgementKind,
+  acceptedRisks,
   toggleAcknowledged,
   mergeCheckResults,
   checkMessage,
@@ -315,6 +342,8 @@ export const solutionsUtils = {
 };
 
 export type WizardStep = (typeof WIZARD_STEPS)[number];
+
+export type AcknowledgementKind = 'confirm' | 'accept-risk';
 
 export type CheckGate = {
   failedBlocking: SolutionCheckResult[];

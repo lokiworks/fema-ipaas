@@ -27,13 +27,31 @@ function label({
   return value ? `v${value}` : null;
 }
 
+function shownAt({
+  version,
+  publishedAt,
+}: {
+  version: DatedVersion;
+  publishedAt: string | null | undefined;
+}): string {
+  if (version.state === WorkflowVersionState.DRAFT) {
+    return version.updated;
+  }
+  return publishedAt ?? version.created;
+}
+
 export const versionNumbers = {
   numberVersions,
   label,
+  shownAt,
 };
 
 type VersionLike = {
   id: string;
   created: string;
   state: WorkflowVersionState;
+};
+
+type DatedVersion = VersionLike & {
+  updated: string;
 };

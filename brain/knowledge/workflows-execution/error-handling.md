@@ -21,6 +21,7 @@ icon: 🧯
 - **HTTP 状态优先取连接器友好错误里的 `status`**：以前问题中心只在文案里找 3 位数字，「Route not found」这类 404 会被归为 `STEP_FAILED`；现在归为 `HTTP_404`，问题签名会随之变化。
 - **走异常处理分支时，引擎把失败步骤的出参改写成 `{ errorCode, errorCategory, errorMessage, rawMessage, errorTime, errorTimeIso }`**（`recordFailureDetails` → `helper/failure-details.ts`）。`errorCode` 优先取外部系统原始码（从 `(Feishu error 41017)`、`(Beisen code 417)` 这类尾注里取），没有才是平台分类，平台分类另放 `errorCategory`。`errorMessage` 是中文：连接器在抛出的 Error 上挂 `readableMessage`，`formatConnectorError` 把它带进友好错误；没挂时用「步骤执行失败：原文」兜底。`rawMessage` 是去掉 `[fix-owner=…]`、`[blocked-until=…]` 的原文。`errorTime` 是北京时间 `YYYY-MM-DD HH:mm:ss`，`errorTimeIso` 是 UTC ISO。分支里用 `{{step_x['output']['errorCode']}}` 引用，漏了 `['output']` 的引用在输入框里显示为「无效引用」。老的 `{{step_x.error.message}}` 仍然能解析。单步测试不走分支，所以测试分支里的步骤时这些引用是空的。
 - **错误码规则同时比对平台码和外部码**：规则写 `41017` 能命中飞书 41017；只有三位数字（如 429）才补成 `HTTP_429`，更长的数字原样比对。
+- **HTTP 节点和其他节点用同一套错误处理页**：`send_request` 不再隐藏 `continueOnFailure`/`retryOnFailure`，能选「走失败分支」。它自己的 `failureMode` 只决定 4xx/5xx 算不算失败（默认算失败，交给策略；「4xx 也继续」把 4xx 当输出、5xx 仍算失败且不在节点内重试），旧的 `retry_*` 值保留为禁用的「旧版」选项继续按老逻辑在节点内重试。`failureMode`、`idempotencyKey` 由 `connector-settings/error-handling-props.ts` 挪进错误处理页，渲染在策略表单的说明下方。失败分支里的 `errorCode` 是 `HTTP_503` 这类分类（HttpError 的 JSON 由 `classifyErrorMessage` 解出状态码）。
 
 ## Key files
 - `packages/core/execution/src/lib/workflows/actions/` — `ErrorStrategy`、`ErrorHandlingRule`、`errorHandlingUtils`

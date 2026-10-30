@@ -81,6 +81,33 @@ describe('issueReplayUtils.classify', () => {
     it('skips runs whose workflow is gone', () => {
         expect(issueReplayUtils.classify({ ...base, workflowExists: false }).reason).toBe(ReplayReason.WORKFLOW_DELETED)
     })
+
+    it('blocks runs whose original data passed the retention period, whatever the failure was', () => {
+        const expired = { ...base.execution, logsFileId: null, displayLogsFileId: 'masked' }
+        const transient = issueReplayUtils.classify({ ...base, execution: expired, transient: true })
+        expect(transient.category).toBe(ReplayCategory.BLOCKED)
+        expect(transient.reason).toBe(ReplayReason.RAW_DATA_EXPIRED)
+        expect(transient.rawDataExpired).toBe(true)
+        expect(issueReplayUtils.classify({ ...base, execution: expired, workflowChangedAfterFailure: true }).reason).toBe(ReplayReason.RAW_DATA_EXPIRED)
+    })
+
+    it('still reports expired runs that were already retried as not needed', () => {
+        const expired = { ...base.execution, logsFileId: null, displayLogsFileId: 'masked' }
+        expect(issueReplayUtils.classify({ ...base, execution: expired, verdict: ChainVerdict.RETRIED }).reason).toBe(ReplayReason.ALREADY_RETRIED)
+    })
+
+    it('does not call a run expired when it never had a masked log', () => {
+        expect(issueReplayUtils.isRawDataExpired({ logsFileId: null, displayLogsFileId: null })).toBe(false)
+        expect(issueReplayUtils.isRawDataExpired({ logsFileId: 'raw', displayLogsFileId: 'masked' })).toBe(false)
+        expect(issueReplayUtils.isRawDataExpired({ logsFileId: null, displayLogsFileId: 'masked' })).toBe(true)
+    })
+})
+
+describe('issueReplayUtils.replayActivityShouldBeRecorded', () => {
+    it('records a replay only when at least one run was queued', () => {
+        expect(issueReplayUtils.replayActivityShouldBeRecorded({ queued: 0 })).toBe(false)
+        expect(issueReplayUtils.replayActivityShouldBeRecorded({ queued: 2 })).toBe(true)
+    })
 })
 
 describe('issueReplayUtils.chainVerdicts', () => {

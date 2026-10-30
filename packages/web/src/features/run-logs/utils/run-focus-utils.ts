@@ -42,7 +42,7 @@ function parse(params: URLSearchParams): RunFocus {
 }
 
 function stepPanelTab(panel: RunFocusPanel): string {
-  return panel === 'error' ? 'error' : 'output';
+  return panel === 'error' ? 'error' : 'input';
 }
 
 const PARAM = {

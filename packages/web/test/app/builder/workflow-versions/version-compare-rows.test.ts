@@ -37,6 +37,18 @@ const context: CompareContext = {
   componentName: (type) => (type === 'runtime/delay' ? 'Delay' : null),
   stepNames: { trigger: 'Employee changed', step_1: 'Roster row' },
   connectionNames: { feishu_bot: 'Feishu bot' },
+  fieldLabels: ({ stepName, path }) => {
+    if (stepName !== 'trigger') {
+      return null;
+    }
+    const labels: Record<string, string> = {
+      employeeInfo: 'Employee info',
+      name: 'Name',
+    };
+    return path
+      .filter((segment) => segment !== 'output')
+      .map((segment) => labels[segment] ?? segment);
+  },
 };
 
 function send({
@@ -175,6 +187,34 @@ describe('versionCompareRows.stepRows', () => {
         'Run every matching branch',
       ],
     ]);
+  });
+});
+
+describe('versionCompareRows.readableExpression', () => {
+  const readable = (text: string) =>
+    versionCompareRows.readableExpression({
+      text,
+      stepNames: context.stepNames,
+      connectionNames: context.connectionNames,
+      fieldLabels: context.fieldLabels,
+    });
+
+  it('uses the same field labels as the canvas pills', () => {
+    expect(
+      readable("New hire: {{trigger['output']['employeeInfo']['name']}}"),
+    ).toBe('New hire: {「Employee changed」.Employee info.Name}');
+  });
+
+  it('keeps the raw path when the step has no output schema', () => {
+    expect(readable("{{step_1['output']['name']}}")).toBe(
+      '{「Roster row」.name}',
+    );
+  });
+
+  it('leaves formulas readable without guessing labels', () => {
+    expect(readable("{{trigger['output']['a'] + 1}}")).toBe(
+      '{「Employee changed」.a + 1}',
+    );
   });
 });
 

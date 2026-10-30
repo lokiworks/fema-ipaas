@@ -143,7 +143,7 @@ function StepChoice({
   const steps = (
     isNil(selectedStep)
       ? []
-      : workflowStructureUtil.findPathToStep(trigger, selectedStep)
+      : workflowStructureUtil.findReferenceableSteps(trigger, selectedStep)
   ).filter((step) => candidateStepNames.includes(step.name));
   return (
     <>

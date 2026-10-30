@@ -20,6 +20,8 @@ icon: 🛠️
 **健康状态** — `GET /v1/health/components` 汇总十项；「备份」只是管理员手动登记的时间（flag `BACKUP_CONFIRMATION`），平台自己不备份。
 
 ## Gotchas
+- **连接总览和项目「连接」页用同一套列与详情抽屉**：列表接口 `listForTenant` 也回填 `workflowIds`（被引用），行点开是 `ConnectionDetailSheet`；租户管理员的 `memberProjectIds` 是全部项目，所以详情能打开任何连接。
+
 - **删除连接的审计事件要显式带项目**：`DELETE /v1/connections/:id` 请求里没有项目，事件会落成「平台级」；`connection.controller.ts` 用请求项目（若在连接的 `projectIds` 里）或连接的第一个项目作为审计范围，租户级连接仍记平台级。
 
 - **健康状态按浏览器时区分日。** 「运行健康度」图表和 30 天健康条用请求里的 `timezone`（与运行监控同一个 `runMonitorUtils.safeTimezone`）做 `AT TIME ZONE` 分组，报告缓存键也带时区；不传就按 UTC。

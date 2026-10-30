@@ -41,13 +41,20 @@ describe('globalSearchUtils', () => {
     })
 
     it('finds issues by the Chinese title the issue list shows, although the title is stored in English', () => {
-        expect(globalSearchUtils.issueTitlePatterns('步骤失败')).toEqual(['Step failed%'])
-        expect(globalSearchUtils.issueTitlePatterns('步骤')).toEqual(['Step failed%'])
-        expect(globalSearchUtils.issueTitlePatterns('步骤失败：校验订单')).toEqual(['Step failed: %校验订单%'])
-        expect(globalSearchUtils.issueTitlePatterns('步骤失败 写入_外部')).toEqual(['Step failed: %写入\\_外部%'])
+        expect(globalSearchUtils.issueTitlePatterns('节点失败')).toEqual(['Step failed%'])
+        expect(globalSearchUtils.issueTitlePatterns('节点')).toEqual(['Step failed%'])
+        expect(globalSearchUtils.issueTitlePatterns('节点失败：校验订单')).toEqual(['Step failed: %校验订单%'])
+        expect(globalSearchUtils.issueTitlePatterns('节点失败 写入_外部')).toEqual(['Step failed: %写入\\_外部%'])
         expect(globalSearchUtils.issueTitlePatterns('映射表缺少')).toEqual(['Missing mapping value%'])
         expect(globalSearchUtils.issueTitlePatterns('订单')).toEqual([])
         expect(globalSearchUtils.issueTitlePatterns('  ')).toEqual([])
+    })
+
+    it('still finds node failures by the retired word for a node', () => {
+        expect(globalSearchUtils.issueTitlePatterns('步骤失败')).toEqual(['Step failed%'])
+        expect(globalSearchUtils.issueTitlePatterns('步骤')).toEqual(['Step failed%'])
+        expect(globalSearchUtils.issueTitlePatterns('步骤失败：校验订单')).toEqual(['Step failed: %校验订单%'])
+        expect(globalSearchUtils.issueTitlePatterns('失败')).toEqual(expect.arrayContaining(['Step failed%', 'Trigger check failed%']))
     })
 
     it('finds connection and mismatch issues by the words their displayed title uses', () => {

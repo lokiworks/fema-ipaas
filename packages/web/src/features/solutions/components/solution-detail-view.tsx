@@ -1,5 +1,6 @@
 import {
   SolutionCheck,
+  SolutionCheckKind,
   SolutionConfigItem,
   SolutionConfigType,
   SolutionDetail,
@@ -279,7 +280,13 @@ function CheckRow({ check }: { check: SolutionCheck }) {
         {check.who && <Badge variant="outline">{check.who}</Badge>}
         {check.afterInstall !== true && (
           <Badge variant={check.blocking ? 'destructive' : 'secondary'}>
-            {check.blocking ? t('Must pass') : t('Recommended')}
+            {check.kind === SolutionCheckKind.MANUAL
+              ? check.blocking
+                ? t('Must confirm')
+                : t('Please confirm')
+              : check.blocking
+              ? t('Must pass')
+              : t('Recommended')}
           </Badge>
         )}
       </div>

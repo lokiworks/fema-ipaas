@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 export function ConnectionUsagePopover({
   connection,
 }: {
-  connection: AccessibleConnection;
+  connection: Pick<AccessibleConnection, 'id' | 'displayName' | 'workflowIds'>;
 }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();

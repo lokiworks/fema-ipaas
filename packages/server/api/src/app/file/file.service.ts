@@ -400,6 +400,7 @@ function isExecutionDataFileThatExpires(type: FileType) {
         case FileType.TRIGGER_PAYLOAD:
         case FileType.TRIGGER_EVENT_FILE:
         case FileType.WEBHOOK_PAYLOAD:
+        case FileType.RUN_WORKFLOW_SNAPSHOT:
             return true
         case FileType.TENANT_ASSET:
         case FileType.USER_PROFILE_PICTURE:

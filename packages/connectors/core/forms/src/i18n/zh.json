@@ -1,7 +1,7 @@
 {
-  "Trigger a workflow through human input.": "通过人工输入触发工作流。",
+  "Trigger a workflow through human input.": "通过网页表单或对话界面收集输入并启动工作流。需要有人审批时，请用核心组件「人工处理」里的「等待审批」。",
   "Respond on UI": "在界面上响应",
-  "Return a file or text (markdown) as a response.": "以文件或文本（markdown）作为响应返回。",
+  "Return a file or text (markdown) as a response.": "把文件或文本（Markdown）返回给提交表单或对话的人。只在由「表单与对话」触发的工作流里有效。",
   "Text (Markdown)": "文本（Markdown）",
   "Attachment": "附件",
   "Web Form": "网页表单",
@@ -17,7 +17,7 @@
   "\n**Published Chat URL:**\n```text\n{{chatUrl}}\n```\nUse this for production, views the published version of the chat workflow.\n<br>\n<br>\n": "\n**已发布对话的 URL：**\n```text\n{{chatUrl}}\n```\n用于生产环境，打开的是对话工作流的已发布版本。\n<br>\n<br>\n",
   "\nThis trigger sets up a chat interface. Ensure that **Respond on UI** is used in your workflow": "\n该触发器会创建一个对话界面。请确保工作流中使用了**在界面上响应**",
   "The name of the chatbot": "对话机器人的名称",
-  "Human Input": "人工输入",
+  "Human Input": "表单与对话",
   "Field Name": "字段名称",
   "Field Type": "字段类型",
   "Field Description": "字段说明",

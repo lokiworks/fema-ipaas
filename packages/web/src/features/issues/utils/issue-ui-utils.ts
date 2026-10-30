@@ -290,6 +290,10 @@ function replayReasonLabel(
       return t('The workflow was deleted');
     case ReplayReason.FAILED_STEP_MISSING:
       return t('The failed step no longer exists in the new version');
+    case ReplayReason.RAW_DATA_EXPIRED:
+      return t(
+        'The original run data has expired, so this run can no longer be rerun',
+      );
   }
 }
 

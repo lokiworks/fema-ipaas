@@ -114,10 +114,7 @@ function BulkRerun({
       <span className="text-xs text-muted-foreground">
         {disabled
           ? t('None of the selected logs can be rerun')
-          : t(
-              '{count, plural, =1 {1 selected log can be rerun} other {# selected logs can be rerun}}',
-              { count: rerunnable.length },
-            )}
+          : t('runLogsBatchRerunEligible', { count: rerunnable.length })}
       </span>
       <DropdownMenu modal={false}>
         <Tooltip>

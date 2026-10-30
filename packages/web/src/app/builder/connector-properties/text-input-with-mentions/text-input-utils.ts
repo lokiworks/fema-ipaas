@@ -707,6 +707,7 @@ export const textMentionUtils = {
   generateMentionHtmlElement,
   createMentionNodeFromText,
   parseLabelFromMention,
+  friendlyLabelsOf,
   inputWithMentionsCssClass,
   dataSelectorCssClassSelector,
   isDataSelectorOrChildOfDataSelector,

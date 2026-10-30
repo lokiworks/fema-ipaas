@@ -132,25 +132,44 @@ const filterResultByConnectorType = (
   );
 };
 
-const getHighlightedConnectors = (
-  queryResult: StepMetadataWithSuggestions[],
-  type: 'action' | 'trigger',
-) => {
+const getHighlightedConnectors = ({
+  queryResult,
+  type,
+  triggerConnectorName,
+}: {
+  queryResult: StepMetadataWithSuggestions[];
+  type: 'action' | 'trigger';
+  triggerConnectorName?: string;
+}) => {
   const connectors = filterResultByConnectorType(queryResult);
   const highlightedConnectorsNames =
     type === 'action'
-      ? HIGHLIGHTED_CONNECTORS_NAMES_FOR_ACTIONS
+      ? HIGHLIGHTED_CONNECTORS_NAMES_FOR_ACTIONS.filter((connectorName) =>
+          fitsTrigger({ connectorName, triggerConnectorName }),
+        )
       : HIGHLIGHTED_CONNECTORS_NAMES_FOR_TRIGGERS;
   const highlightedConnectors = connectors.filter((connector) =>
     highlightedConnectorsNames.includes(connector.connectorName),
   );
   return sortByConnectorNameOrder(
     highlightedConnectors,
-    type === 'action'
-      ? HIGHLIGHTED_CONNECTORS_NAMES_FOR_ACTIONS
-      : HIGHLIGHTED_CONNECTORS_NAMES_FOR_TRIGGERS,
+    highlightedConnectorsNames,
   );
 };
+
+function fitsTrigger({
+  connectorName,
+  triggerConnectorName,
+}: {
+  connectorName: string;
+  triggerConnectorName?: string;
+}): boolean {
+  return (
+    !TRIGGER_BOUND_ACTION_CONNECTORS.includes(connectorName) ||
+    connectorName === triggerConnectorName
+  );
+}
+
 const sortByConnectorNameOrder = (
   searchResult: StepMetadataWithSuggestions[],
   orderNames: string[],
@@ -178,6 +197,11 @@ const HIGHLIGHTED_CONNECTORS_NAMES_FOR_ACTIONS = [
   '@fema-ipaas/connector-webhook',
   '@fema-ipaas/connector-text-helper',
   '@fema-ipaas/connector-date-helper',
+];
+
+const TRIGGER_BOUND_ACTION_CONNECTORS = [
+  '@fema-ipaas/connector-forms',
+  '@fema-ipaas/connector-webhook',
 ];
 
 export const connectorSearchUtils = {

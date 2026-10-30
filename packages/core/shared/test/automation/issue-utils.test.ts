@@ -91,6 +91,19 @@ describe('issueUtils.insightOf', () => {
         expect(insight.fixes).toEqual([{ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: ReplayReason.CONNECTION_DELETED }])
     })
 
+    it('disables every replay fix when the original data of all failed runs has expired', () => {
+        const insight = issueUtils.insightOf({ issue: { kind: IssueKind.STEP, errorCode: 'HTTP_504' }, connectionHealthy: true, rawDataExpired: true })
+        expect(insight.fixes).toEqual([
+            { kind: IssueFixKind.OPEN_STEP_ERROR_HANDLING, disabledReason: null },
+            { kind: IssueFixKind.REPLAY_FULL, disabledReason: ReplayReason.RAW_DATA_EXPIRED },
+        ])
+    })
+
+    it('keeps the more specific reason when replay is already blocked for another cause', () => {
+        const insight = issueUtils.insightOf({ issue: { kind: IssueKind.CONNECTION, errorCode: 'CONNECTION_EXPIRED' }, connectionHealthy: false, rawDataExpired: true })
+        expect(insight.fixes[1].disabledReason).toBe(ReplayReason.CONNECTION_STILL_BROKEN)
+    })
+
     it('allows replay once the connection is healthy again', () => {
         const insight = issueUtils.insightOf({ issue: { kind: IssueKind.CONNECTION, errorCode: 'CONNECTION_EXPIRED' }, connectionHealthy: true })
         expect(insight.fixes).toEqual([{ kind: IssueFixKind.REPLAY_FROM_FAILED_STEP, disabledReason: null }])

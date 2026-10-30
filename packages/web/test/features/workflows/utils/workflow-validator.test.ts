@@ -12,6 +12,7 @@ import {
 import {
   ConnectorSpec,
   ConnectorSpecStatus,
+  StepTestStatus,
   ValidationCode,
   ValidationContext,
   ValidationSeverity,
@@ -164,6 +165,7 @@ function context(
     connections: {},
     mappingTableIds: [],
     variableNames: [],
+    stepTestStatuses: {},
     ...overrides,
   };
 }
@@ -343,6 +345,48 @@ describe('workflowValidator', () => {
       ['step_3', ValidationCode.REFERENCE_DELETED],
     ]);
     expect(result.issues[0].tab).toBe(ValidationTab.INPUT);
+  });
+
+  it('lets a step after a branch join reference steps inside the branches', () => {
+    const trigger = webhookTrigger({
+      nextAction: {
+        ...router({
+          name: 'step_1',
+          children: [
+            connectorAction({ name: 'step_2', input: { text: '{{trigger.a}}' } }),
+            null,
+          ],
+        }),
+        nextAction: connectorAction({
+          name: 'step_3',
+          input: { text: "{{step_2['output'].x}}" },
+        }),
+      },
+    });
+    const result = workflowValidator.validate(context(trigger));
+    expect(result.issues.map((issue) => issue.code)).not.toContain(
+      ValidationCode.REFERENCE_NOT_UPSTREAM,
+    );
+  });
+
+  it('treats an object field with only blank keys as not filled in', () => {
+    const trigger = webhookTrigger({
+      nextAction: connectorAction({
+        name: 'step_1',
+        input: { auth: "{{connections['ok']}}", text: { '': '' } },
+      }),
+    });
+    const result = workflowValidator.validate(
+      context(trigger, {
+        connectors: { '@fema-ipaas/connector-feishu': feishuSpec },
+        connections: {
+          ok: { displayName: 'Ok', status: ConnectionStatus.ACTIVE },
+        },
+      }),
+    );
+    expect(result.issues.map((issue) => issue.code)).toContain(
+      ValidationCode.REQUIRED_FIELD_MISSING,
+    );
   });
 
   it('allows loop variables only inside their loop', () => {
@@ -564,57 +608,69 @@ describe('untested write steps', () => {
     expect(result.issues[0].tab).toBe(ValidationTab.OUTPUT);
   });
 
-  it('warns when the test is older than the last edit', () => {
+  it('warns when the write step was edited after its last test', () => {
     expect(
-      codes(
-        ctx(
-          writeStep({ lastTestDate: '2026-05-01T00:00:00.000Z' }),
-          feishuWriteSpec,
-        ),
-      ),
+      codes({
+        ...ctx(writeStep(), feishuWriteSpec),
+        stepTestStatuses: { step_1: StepTestStatus.CHANGED },
+      }),
     ).toEqual([ValidationCode.WRITE_NOT_TESTED]);
   });
 
-  it('stays quiet after a test that came after the last edit', () => {
+  it('stays quiet once the shared test status says tested', () => {
     expect(
-      codes(
-        ctx(
-          writeStep({ lastTestDate: '2026-05-03T00:00:00.000Z' }),
-          feishuWriteSpec,
-        ),
-      ),
+      codes({
+        ...ctx(writeStep(), feishuWriteSpec),
+        stepTestStatuses: { step_1: StepTestStatus.TESTED },
+      }),
     ).toEqual([]);
+  });
+
+  it('says the latest test failed instead of claiming it never ran', () => {
+    expect(
+      codes({
+        ...ctx(writeStep(), feishuWriteSpec),
+        stepTestStatuses: { step_1: StepTestStatus.FAILED },
+      }),
+    ).toEqual([ValidationCode.WRITE_TEST_FAILED]);
   });
 
   it('ignores steps that only read or have no classification', () => {
     expect(codes(ctx(writeStep(), feishuSpec))).toEqual([]);
   });
 
-  it('stays quiet when a successful debug run executed the write step', () => {
+  it('skips test warnings when there is no draft to test', () => {
     expect(
       codes({
         ...ctx(writeStep(), feishuWriteSpec),
-        debugVerification: { executedStepNames: ['trigger', 'step_1'] },
+        stepTestStatuses: null,
       }),
     ).toEqual([]);
   });
+});
 
-  it('says the debug run did not reach a write step it skipped', () => {
-    expect(
-      codes({
-        ...ctx(writeStep(), feishuWriteSpec),
-        debugVerification: { executedStepNames: ['trigger'] },
+describe('incomplete issues', () => {
+  it('treats unfilled required fields as incomplete, not broken', () => {
+    const trigger = webhookTrigger({
+      nextAction: connectorAction({ name: 'step_1', valid: false }),
+    });
+    const result = workflowValidator.validate(
+      context(trigger, {
+        connectors: {
+          '@fema-ipaas/connector-feishu': {
+            ...feishuSpec,
+            actions: {
+              send: {
+                requiresAuth: false,
+                props: [{ name: 'text', displayName: 'Text', required: true }],
+              },
+            },
+          },
+        },
       }),
-    ).toEqual([ValidationCode.WRITE_NOT_REACHED]);
-  });
-
-  it('warns again once there is no debug run that came after the last edit', () => {
-    expect(
-      codes({
-        ...ctx(writeStep(), feishuWriteSpec),
-        debugVerification: null,
-      }),
-    ).toEqual([ValidationCode.WRITE_NOT_TESTED]);
+    );
+    expect(result.issues.length).toBeGreaterThan(0);
+    expect(result.issues.every(workflowValidator.isIncompleteIssue)).toBe(true);
   });
 });
 

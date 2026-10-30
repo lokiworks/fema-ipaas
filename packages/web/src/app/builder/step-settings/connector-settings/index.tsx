@@ -212,33 +212,38 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
                   ></GenericPropertiesForm>
                 </AdvancedSection>
               )}
-              {showError && Object.keys(actionErrorProps).length > 0 && (
-                <GenericPropertiesForm
-                  key={`${selectedAction.name}-error-handling`}
-                  prefixValue={'settings.input'}
-                  props={actionErrorProps}
-                  propertySettings={selectedStep.settings.propertySettings}
-                  disabled={props.readonly}
-                  useMentionTextInput={true}
-                  markdownVariables={markdownVariables}
-                  dynamicPropsInfo={{
-                    connectorName: connectorModel.name,
-                    connectorVersion: connectorModel.version,
-                    actionOrTriggerName: selectedAction.name,
-                    placedInside: 'stepSettings',
-                    updateFormSchema,
-                    updatePropertySettingsSchema,
-                  }}
-                ></GenericPropertiesForm>
-              )}
-              {showError && errorHandlingItemsCount > 0 && (
-                <ActionErrorHandlingForm
+              {showError && (
+                <ActionErrorSection
+                  showStrategies={errorHandlingItemsCount > 0}
                   hideContinueOnFailure={hideContinueOnFailure}
                   hideRetryOnFailure={hideRetryOnFailure}
                   unsafeWrite={
                     selectedAction?.reliability?.writeSafety === 'UNSAFE'
                   }
                   disabled={props.readonly}
+                  connectorFields={
+                    Object.keys(actionErrorProps).length > 0 ? (
+                      <GenericPropertiesForm
+                        key={`${selectedAction.name}-error-handling`}
+                        prefixValue={'settings.input'}
+                        props={actionErrorProps}
+                        propertySettings={
+                          selectedStep.settings.propertySettings
+                        }
+                        disabled={props.readonly}
+                        useMentionTextInput={true}
+                        markdownVariables={markdownVariables}
+                        dynamicPropsInfo={{
+                          connectorName: connectorModel.name,
+                          connectorVersion: connectorModel.version,
+                          actionOrTriggerName: selectedAction.name,
+                          placedInside: 'stepSettings',
+                          updateFormSchema,
+                          updatePropertySettingsSchema,
+                        }}
+                      ></GenericPropertiesForm>
+                    ) : null
+                  }
                 />
               )}
             </>
@@ -301,6 +306,28 @@ const ConnectorSettings = React.memo((props: ConnectorSettingsProps) => {
 
 ConnectorSettings.displayName = 'ConnectorSettings';
 export { ConnectorSettings };
+
+function ActionErrorSection({
+  showStrategies,
+  hideContinueOnFailure,
+  hideRetryOnFailure,
+  unsafeWrite,
+  disabled,
+  connectorFields,
+}: ActionErrorSectionProps) {
+  if (!showStrategies) {
+    return <>{connectorFields}</>;
+  }
+  return (
+    <ActionErrorHandlingForm
+      hideContinueOnFailure={hideContinueOnFailure}
+      hideRetryOnFailure={hideRetryOnFailure}
+      unsafeWrite={unsafeWrite}
+      disabled={disabled}
+      connectorFields={connectorFields}
+    />
+  );
+}
 
 function removeHiddenProps({
   props,
@@ -417,6 +444,15 @@ function splitProps({
 }
 
 export type ConnectorSettingsSection = 'action' | 'input' | 'error';
+
+type ActionErrorSectionProps = {
+  showStrategies: boolean;
+  hideContinueOnFailure: boolean;
+  hideRetryOnFailure: boolean;
+  unsafeWrite: boolean;
+  disabled: boolean;
+  connectorFields: React.ReactNode;
+};
 
 type ConnectorSettingsProps = {
   section?: ConnectorSettingsSection;

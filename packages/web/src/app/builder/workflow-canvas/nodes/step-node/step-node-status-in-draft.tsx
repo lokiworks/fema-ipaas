@@ -6,11 +6,11 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { FlaskConical, TriangleAlert } from 'lucide-react';
+import { CircleDashed, FlaskConical, TriangleAlert } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { useDraftChanged } from '@/app/builder/builder-header/use-draft-changed';
-import { stepTestRelevance } from '@/app/builder/state/step-test-relevance';
+import { stepTestState } from '@/app/builder/state/step-test-state';
 import { connectorSampleData } from '@/app/builder/test-step/utils/connector-sample-data';
 import { useBuilderValidation } from '@/app/builder/validation/validation-context';
 import { validationMessages } from '@/app/builder/validation/validation-messages';
@@ -23,6 +23,7 @@ import {
 import { connectorSelectorUtils, connectorsHooks } from '@/features/connectors';
 import { StepStatusIcon, executionUtils } from '@/features/executions';
 import {
+  StepTestStatus,
   ValidationCode,
   ValidationSeverity,
   workflowValidator,
@@ -48,8 +49,6 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     run,
     isBeingTested,
     hasError,
-    lastTestDate,
-    lastUpdatedDate,
     stepType,
     isInDraft,
     isStepValid,
@@ -73,8 +72,6 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       state.run,
       state.isStepBeingTested(stepName),
       !isNil(state.errorLogs[stepName]),
-      step?.settings?.sampleData?.lastTestDate as string | undefined,
-      step?.lastUpdatedDate ?? '',
       step?.type,
       state.workflowVersion.state === WorkflowVersionState.DRAFT,
       !!step?.valid,
@@ -119,7 +116,7 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
     (issue) =>
       issue.severity === ValidationSeverity.WARNING &&
       issue.code !== ValidationCode.WRITE_NOT_TESTED &&
-      issue.code !== ValidationCode.WRITE_NOT_REACHED,
+      issue.code !== ValidationCode.WRITE_TEST_FAILED,
   );
   const draftStatusConfig: Record<
     DraftStepStatus,
@@ -140,9 +137,9 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       icon: <TriangleAlert className="size-3" />,
     },
     invalid: {
-      variant: 'warning',
-      text: t('Incomplete'),
-      icon: <InvalidStepIcon className="size-3" />,
+      variant: 'default',
+      text: t('To be completed'),
+      icon: <CircleDashed className="size-3" />,
     },
     testing: {
       variant: 'default',
@@ -193,46 +190,48 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
       ),
     },
   };
-  const currentSignature = useMemo(
-    () => (isNil(step) ? null : stepTestRelevance.signatureOf(step)),
-    [step],
+  const testStatus = useMemo(
+    () =>
+      isNil(step)
+        ? StepTestStatus.UNTESTED
+        : stepTestState.statusOf({
+            step,
+            debugTested,
+            failedInSession: hasError,
+          }),
+    [step, debugTested, hasError],
   );
-  const isTestedByDebug =
-    !isNil(debugTested) &&
-    debugTested.signature === currentSignature &&
-    (isNil(lastTestDate) || lastTestDate <= debugTested.testedAt);
   const hasValidationError = !isNil(firstError);
+  const isOnlyIncomplete =
+    hasValidationError &&
+    stepIssues
+      .filter((issue) => issue.severity === ValidationSeverity.ERROR)
+      .every(workflowValidator.isIncompleteIssue);
   const hasValidationWarning = !isNil(firstWarning);
   const status: DraftStepStatus = useMemo(() => {
-    if (hasValidationError) return 'has-error';
+    if (hasValidationError) return isOnlyIncomplete ? 'invalid' : 'has-error';
     if (!isStepValid) return 'invalid';
     if (isBeingTested) return 'testing';
     if (hasValidationWarning) return 'has-warning';
-
-    if (isTestedByDebug) {
-      return hasError || debugTested?.failed ? 'failed' : 'tested';
+    switch (testStatus) {
+      case StepTestStatus.FAILED:
+        return 'failed';
+      case StepTestStatus.CHANGED:
+        return 'needs-test';
+      case StepTestStatus.UNTESTED:
+        return 'untested';
+      case StepTestStatus.TESTED:
+        return usesConnectorSample && isNil(debugTested) ? 'sample' : 'tested';
     }
-    if (isNil(lastTestDate)) {
-      return isNil(debugTested) ? 'untested' : 'needs-test';
-    }
-    if (lastUpdatedDate > lastTestDate) {
-      return 'needs-test';
-    }
-    if (hasError) return 'failed';
-    if (usesConnectorSample) return 'sample';
-
-    return 'tested';
   }, [
     usesConnectorSample,
     hasValidationError,
+    isOnlyIncomplete,
     hasValidationWarning,
     isStepValid,
     isBeingTested,
-    hasError,
-    lastTestDate,
-    isTestedByDebug,
+    testStatus,
     debugTested,
-    lastUpdatedDate,
   ]);
 
   const hasRun = !isNil(run);
@@ -263,11 +262,12 @@ const StepNodeStatusInDraft = ({ stepName }: { stepName: string }) => {
             <div>{config.text}</div>
           </div>
         </TooltipTrigger>
-        {status === 'has-error' && !isNil(firstError) && (
-          <TooltipContent>
-            {validationMessages.messageOf(firstError)}
-          </TooltipContent>
-        )}
+        {(status === 'has-error' || status === 'invalid') &&
+          !isNil(firstError) && (
+            <TooltipContent>
+              {validationMessages.messageOf(firstError)}
+            </TooltipContent>
+          )}
         {status === 'has-warning' && !isNil(firstWarning) && (
           <TooltipContent>
             {validationMessages.messageOf(firstWarning)}

@@ -10,6 +10,7 @@ import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
+import { projectAccessRequestSideEffects } from '../project/project-access-request-side-effects'
 import { projectService } from '../project/project-service'
 import { projectSideEffects } from '../project/project-side-effects'
 import { tenantService } from '../tenant/tenant.service'
@@ -171,6 +172,7 @@ export const userService = (log: FastifyBaseLogger) => ({
             userId: id,
             tenantId,
         })
+        await projectAccessRequestSideEffects(log).onRequesterRemoved({ tenantId, userId: id })
         await transaction(async (entityManager) => {
             await userRepo(entityManager).delete({
                 id,

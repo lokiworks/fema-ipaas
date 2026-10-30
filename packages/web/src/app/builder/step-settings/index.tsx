@@ -59,6 +59,7 @@ import { PendingReviewNotice } from './pending-review-notice';
 import { RouterSettings } from './router-settings';
 import { SensitiveOutputToggle } from './sensitive-output-toggle';
 import { stepFormBaseline } from './step-form-baseline-context';
+import { StepInputViews } from './step-input-views';
 import { StepNavigationButtons } from './step-navigation-buttons';
 import { StepOperationSummary } from './step-operation-summary';
 import { useStepSettingsContext } from './step-settings-context';
@@ -324,6 +325,8 @@ const StepSettingsContainer = () => {
                 operationDisplayName={stepMetadata.displayName}
                 readonly={readonly}
                 hideChangeAction={true}
+                description={stepMetadata.description}
+                onConfigureInput={() => setStepPanelTab('input')}
               />
             )}
             {joinEdgesVisibility.shouldShow({
@@ -417,7 +420,13 @@ const StepSettingsContainer = () => {
                 GAP_SIZE_FOR_STEP_SETTINGS,
               )}
             >
-              {sectionContent(section)}
+              {section === 'input' ? (
+                <StepInputViews key={selectedStep.name} step={selectedStep}>
+                  {sectionContent(section)}
+                </StepInputViews>
+              ) : (
+                sectionContent(section)
+              )}
             </div>
           </ScrollArea>
         </TabsContent>

@@ -105,9 +105,12 @@ describe('errorTabVisibility.resolveActiveTab', () => {
 });
 
 describe('errorHandlingProps.isErrorHandlingName', () => {
-  it('recognises the failure mode property only', () => {
+  it('recognises the failure mode and idempotency key properties only', () => {
     expect(
       errorHandlingProps.isErrorHandlingName({ name: 'failureMode' }),
+    ).toBe(true);
+    expect(
+      errorHandlingProps.isErrorHandlingName({ name: 'idempotencyKey' }),
     ).toBe(true);
     expect(errorHandlingProps.isErrorHandlingName({ name: 'url' })).toBe(false);
   });

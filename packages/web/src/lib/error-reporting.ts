@@ -10,6 +10,9 @@ import { sentry } from './sentry';
 const CHUNK_LOAD_ERROR_REGEX =
   /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|Unable to preload CSS|ChunkLoadError|Loading chunk \d+ failed/i;
 
+const BENIGN_ERROR_REGEX =
+  /ResizeObserver loop (?:completed with undelivered notifications|limit exceeded)/i;
+
 const MAX_BUFFER_SIZE = 20;
 
 const DEDUP_WINDOW_MS = 5000;
@@ -120,7 +123,15 @@ function send(report: FrontendErrorReport): void {
 }
 
 function report(input: FrontendErrorReport): void {
+  if (isBenignError(input.error)) {
+    return;
+  }
   send(input);
+}
+
+function isBenignError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return BENIGN_ERROR_REGEX.test(message);
 }
 
 function flushBuffered(): void {
@@ -137,6 +148,7 @@ export const errorReporting = {
   report,
   flushBuffered,
   isChunkLoadError,
+  isBenignError,
 };
 
 export type FrontendErrorReport = {

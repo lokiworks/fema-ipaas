@@ -1,10 +1,12 @@
 import { isNil, isObject } from '@fema-ipaas/core-utils';
 import {
+  BranchGuard,
   workflowCanvasUtils,
   WorkflowAction,
   WorkflowActionType,
   WorkflowTrigger,
   WorkflowTriggerType,
+  workflowReferenceUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
@@ -29,7 +31,7 @@ const FAILURE_FIELDS: { key: string; label: string; format?: FieldFormat }[] = [
   { key: 'errorMessage', label: 'Failure error message' },
   { key: 'rawMessage', label: 'Failure raw message' },
   { key: 'errorTime', label: 'Failure time' },
-  { key: 'errorTimeIso', label: 'Failure time (ISO)', format: 'datetime' },
+  { key: 'errorTimeIso', label: 'Failure time (ISO)' },
 ];
 
 function buildTestStepNode(
@@ -455,6 +457,97 @@ function failureFieldLabelOf(key: string): string | null {
   return isNil(field) ? null : t(field.label);
 }
 
+function branchConditionLabel({
+  onlyWhen,
+  displayNameOf,
+}: {
+  onlyWhen: BranchGuard[];
+  displayNameOf: (stepName: string) => string;
+}): string | null {
+  if (onlyWhen.length === 0) {
+    return null;
+  }
+  const path = onlyWhen
+    .map((guard) => guardLabel({ guard, displayNameOf }))
+    .join(' → ');
+  return t('Only set when the run takes {path}', { path });
+}
+
+function guardLabel({
+  guard,
+  displayNameOf,
+}: {
+  guard: BranchGuard;
+  displayNameOf: (stepName: string) => string;
+}): string {
+  switch (guard.kind) {
+    case 'ROUTER_BRANCH':
+      return t('the {branch} branch', {
+        branch: guard.branchName ?? displayNameOf(guard.stepName),
+      });
+    case 'ON_SUCCESS':
+      return t('the success branch of {step}', {
+        step: displayNameOf(guard.stepName),
+      });
+    case 'ON_FAILURE':
+      return t('the failure branch of {step}', {
+        step: displayNameOf(guard.stepName),
+      });
+  }
+}
+
+function withBranchCondition({
+  node,
+  label,
+}: {
+  node: DataSelectorTreeNode;
+  label: string | null;
+}): DataSelectorTreeNode {
+  if (isNil(label) || node.data.type !== 'value') {
+    return node;
+  }
+  const badge = isNil(node.data.badge)
+    ? label
+    : `${node.data.badge} · ${label}`;
+  return { ...node, data: { ...node.data, badge } };
+}
+
+function inferLoopItemSample({
+  loop,
+  sampleData,
+}: {
+  loop: WorkflowAction | WorkflowTrigger;
+  sampleData: Record<string, unknown>;
+}): { item: unknown } | null {
+  if (loop.type !== WorkflowActionType.LOOP_ON_ITEMS) {
+    return null;
+  }
+  const items = loop.settings.items;
+  const references = workflowReferenceUtil.extractFromValue(items);
+  if (
+    typeof items !== 'string' ||
+    references.length !== 1 ||
+    references[0].token.trim() !== items.trim()
+  ) {
+    return null;
+  }
+  const [reference] = references;
+  const list = readPath({
+    value: sampleData[reference.root],
+    path: workflowReferenceUtil.stepOutputPath(reference.path),
+  });
+  return Array.isArray(list) && list.length > 0 ? { item: list[0] } : null;
+}
+
+function readPath({ value, path }: { value: unknown; path: string[] }): unknown {
+  return path.reduce<unknown>((current, segment) => {
+    if (Array.isArray(current) && /^\d+$/.test(segment)) {
+      return current[Number(segment)];
+    }
+    return isObject(current) ? current[segment] : undefined;
+  }, value);
+}
+
 function filterBy(
   mentions: DataSelectorTreeNode[],
   query: string | undefined,
@@ -558,6 +651,9 @@ export const dataSelectorUtils = {
   stepNeedsTesting,
   applyContinueOnFailureView,
   failureFieldLabelOf,
+  branchConditionLabel,
+  withBranchCondition,
+  inferLoopItemSample,
   filterBy,
   flattenVisibleRows,
 };

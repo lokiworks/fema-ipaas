@@ -4,6 +4,7 @@ import {
     ConnectionStatus,
     errorHandlingUtils,
     Execution,
+    ExecutionStatus,
     IssueActivityType,
     IssueKind,
     IssueReplayResult,
@@ -25,6 +26,7 @@ import { connectionsRepo } from '../connection/connection-service/connection-ser
 import { connectorMetadataService } from '../connectors/metadata/connector-metadata-service'
 import { databaseConnection } from '../database/database-connection'
 import { mappingTableService } from '../mapping-table/mapping-table.service'
+import { privacyService } from '../privacy/privacy.service'
 import { projectService } from '../project/project-service'
 import { executionRepo, executionService } from '../workflows/execution/execution-service'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
@@ -70,14 +72,27 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             rejectedByTarget: issueUtils.isRejectedByTargetHttpStatus(issue.errorCode),
             blockedUntil: issueUtils.activeBlockedUntil({ message: execution.failedStep?.message, now }),
         }))
-        const tenantId = await projectService(log).getTenantId(projectId)
+        const project = await projectService(log).getOneOrThrow(projectId)
+        const tenantId = project.tenantId
+        const retention = await privacyService(log).retentionFor({ tenantId, projectRetentionDays: project.executionDataRetentionDays })
         const limit = pLimit(REPLAY_CONCURRENCY)
         const items = await Promise.all(classified.map((item, index) => limit(async () => ({
             ...item,
             versionNumber: versionNumbers.get(item.workflowVersionId) ?? null,
             writeSteps: item.category === ReplayCategory.BLOCKED || item.category === ReplayCategory.NOT_NEEDED ? [] : await writeStepsFor({ execution: executions[index], strategy, projectId, tenantId, log }),
         }))))
-        return { items }
+        return {
+            items,
+            rawDataExpiredCount: items.filter((item) => item.reason === ReplayReason.RAW_DATA_EXPIRED).length,
+            rawRetentionDays: retention.rawDays,
+        }
+    },
+
+    async rawDataExpired({ id, projectId }: IssueRef): Promise<boolean> {
+        const rows: RawDataStateRow[] = await databaseConnection().query(RAW_DATA_STATE_SQL, [id, projectId, REPLAYABLE_STATUSES])
+        const available = Number(rows[0]?.available ?? 0)
+        const expired = Number(rows[0]?.expired ?? 0)
+        return available === 0 && expired > 0
     },
 
     async likelyToFailAgain({ executions }: { executions: Execution[] }): Promise<LikelyToFailAgain[]> {
@@ -126,7 +141,7 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
         const { items } = await this.check({ id, projectId, strategy })
         const selected = items
             .filter((item) => item.category === ReplayCategory.REPLAYABLE || (includeDataProblems && item.category === ReplayCategory.DATA_PROBLEM))
-            .filter((item) => strategy !== WorkflowRetryStrategy.FROM_FAILED_STEP || !item.rawDataExpired)
+            .filter((item) => !item.rawDataExpired)
         const missingConfirmations = selected.flatMap((item) => item.writeSteps.filter((step) => step.needsConfirmation && !confirmedUnsafeSteps.includes(`${item.executionId}:${step.stepName}`)))
         if (missingConfirmations.length > 0) {
             throw new ApplicationError({ code: ErrorCode.UNSAFE_REPLAY_NOT_CONFIRMED, params: { message: 'issues.replay.unsafeStepsNotConfirmed' } })
@@ -138,12 +153,14 @@ export const issueReplayService = (log: FastifyBaseLogger) => ({
             projectId,
         }))))
         const queued = results.filter((result) => result.status === 'fulfilled').length
-        await issueService(log).recordActivity({
-            issue: { id, projectId },
-            type: IssueActivityType.REPLAYED,
-            actorId,
-            data: { strategy, queued, skipped: items.length - queued },
-        })
+        if (issueReplayUtils.replayActivityShouldBeRecorded({ queued })) {
+            await issueService(log).recordActivity({
+                issue: { id, projectId },
+                type: IssueActivityType.REPLAYED,
+                actorId,
+                data: { strategy, queued, skipped: items.length - queued },
+            })
+        }
         return { queued, skipped: items.length - queued }
     },
 })
@@ -214,8 +231,19 @@ const VERSION_NUMBERS_SQL = `SELECT v.id AS id,
     )::int ELSE NULL END AS "number"
 FROM workflow_version v
 WHERE v.id = ANY($1)`
+const RAW_DATA_STATE_SQL = `SELECT
+    COUNT(*) FILTER (WHERE "logsFileId" IS NOT NULL) AS available,
+    COUNT(*) FILTER (WHERE "logsFileId" IS NULL AND "displayLogsFileId" IS NOT NULL) AS expired
+FROM execution
+WHERE "issueId" = $1 AND "projectId" = $2 AND status = ANY($3)`
+const REPLAYABLE_STATUSES: ExecutionStatus[] = [ExecutionStatus.FAILED, ExecutionStatus.TIMEOUT, ExecutionStatus.INTERNAL_ERROR, ExecutionStatus.MEMORY_LIMIT_EXCEEDED]
 const MAX_REPLAY_CANDIDATES = 500
 const REPLAY_CONCURRENCY = 3
+
+type RawDataStateRow = {
+    available: string | number
+    expired: string | number
+}
 
 type VersionNumberRow = {
     id: string

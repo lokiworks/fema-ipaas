@@ -31,4 +31,28 @@ describe('versionNumbers', () => {
     expect(versionNumbers.label({ numbers, versionId: 'draft' })).toBeNull();
     expect(versionNumbers.label({ numbers, versionId: null })).toBeNull();
   });
+
+  it('dates a published version by when it was published, a draft by its last edit', () => {
+    const locked = {
+      id: 'a',
+      created: '2026-01-01T00:00:00.000Z',
+      updated: '2026-01-02T00:00:00.000Z',
+      state: WorkflowVersionState.LOCKED,
+    };
+    expect(
+      versionNumbers.shownAt({
+        version: locked,
+        publishedAt: '2026-01-03T07:23:00.000Z',
+      }),
+    ).toBe('2026-01-03T07:23:00.000Z');
+    expect(versionNumbers.shownAt({ version: locked, publishedAt: null })).toBe(
+      '2026-01-01T00:00:00.000Z',
+    );
+    expect(
+      versionNumbers.shownAt({
+        version: { ...locked, state: WorkflowVersionState.DRAFT },
+        publishedAt: '2026-01-03T07:23:00.000Z',
+      }),
+    ).toBe('2026-01-02T00:00:00.000Z');
+  });
 });

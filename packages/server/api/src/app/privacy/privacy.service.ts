@@ -16,6 +16,7 @@ import {
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { getEffectiveExecutionDataRetentionDays } from '../file/file.service'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { tenantService } from '../tenant/tenant.service'
@@ -49,6 +50,11 @@ export const privacyService = (log: FastifyBaseLogger) => ({
         logPrivacyCache.delete(tenantId)
         log.info({ tenant: { id: tenantId } }, '[privacyService#update] Privacy settings updated')
         return this.get({ tenantId })
+    },
+
+    async retentionFor({ tenantId, projectRetentionDays }: TenantScope & { projectRetentionDays: number | null | undefined }): Promise<RetentionDays> {
+        const settings = await this.get({ tenantId })
+        return retentionUtils.effective({ settings, projectRetentionDays })
     },
 
     async maskExecution({ execution, tenantId, userId }: MaskExecutionParams): Promise<MaskedExecution> {
@@ -143,6 +149,14 @@ function roleOf({ ownerId, user }: { ownerId: UserId, user: Pick<User, 'id' | 't
 
 export const rawViewRoleUtils = { roleOf }
 
+function effectiveRetention({ settings, projectRetentionDays }: { settings: Pick<PrivacySettings, 'logRetentionDays' | 'rawPayloadRetentionDays'>, projectRetentionDays: number | null | undefined }): RetentionDays {
+    const tenantLogDays = getEffectiveExecutionDataRetentionDays(settings.logRetentionDays)
+    const logDays = isNil(projectRetentionDays) ? tenantLogDays : getEffectiveExecutionDataRetentionDays(Math.min(settings.logRetentionDays, projectRetentionDays))
+    return { logDays, rawDays: Math.min(settings.rawPayloadRetentionDays, logDays) }
+}
+
+export const retentionUtils = { effective: effectiveRetention }
+
 function defaults({ tenantId }: TenantScope): PrivacySettings {
     const now = new Date(0).toISOString()
     return {
@@ -191,6 +205,11 @@ type MaskExecutionParams = {
 type AssertCanRevealParams = TenantScope & {
     userId: UserId
     reason: string | undefined
+}
+
+export type RetentionDays = {
+    logDays: number
+    rawDays: number
 }
 
 export type MaskedExecution = Omit<Execution, 'steps'> & {

@@ -7,6 +7,7 @@ import { ProjectResourceType } from '../core/security/authorization/common'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { applicationEvents } from '../helper/application-events'
 import { userService } from '../user/user-service'
+import { projectAccessRequestSideEffects } from './project-access-request-side-effects'
 import { projectAuditEvents } from './project-audit-events'
 import { projectMemberService } from './project-member.service'
 import { projectRepo, projectService } from './project-service'
@@ -79,6 +80,7 @@ export const projectController: FastifyPluginAsyncZod = async (app) => {
         await projectSideEffects(request.log).assertDeletable(project.id)
         await projectRepo().softDelete({ id: project.id })
         await projectSideEffects(request.log).scheduleHardDelete(project.id)
+        await projectAccessRequestSideEffects(request.log).onProjectDeleted({ tenantId: request.principal.tenant.id, projectId: project.id })
         return reply.status(StatusCodes.NO_CONTENT).send()
     })
 }

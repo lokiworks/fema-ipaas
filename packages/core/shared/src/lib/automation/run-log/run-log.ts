@@ -151,6 +151,7 @@ export const RunLogScopeProject = z.object({
     id: z.string(),
     displayName: z.string(),
     retentionDays: z.number(),
+    rawRetentionDays: z.number(),
     canRerun: z.boolean(),
 })
 export type RunLogScopeProject = z.infer<typeof RunLogScopeProject>
@@ -167,6 +168,7 @@ export const RunLogScope = z.object({
     workflows: z.array(RunLogScopeWorkflow),
     connectors: z.array(z.string()),
     tenantRetentionDays: z.number(),
+    tenantRawRetentionDays: z.number(),
     canManagePrivacy: z.boolean(),
 })
 export type RunLogScope = z.infer<typeof RunLogScope>

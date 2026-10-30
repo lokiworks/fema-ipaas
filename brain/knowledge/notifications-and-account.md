@@ -41,6 +41,9 @@ icon: 🔔
 - 每周摘要查询别用 `user` 当别名：Postgres 里 `user` 是保留字，`user.status` 会报语法错误，整个任务静默失败。
 - PAT 不能用于 websocket 连接，websocket 仍然只认登录 JWT。
 - 通知保留 90 天，由 `notification-retention` 系统任务每天清理。
+- **「申请加入项目」通知跟着申请状态走。** 通知行带 `subjectId`（申请 id）和 `resolution`；申请被通过、拒绝、撤回，申请人被删除（其待审批申请改为已撤回），或项目被删除时，副作用把相关通知标成已处理并置为已读（不再计入角标），再推 `NOTIFICATIONS_RESOLVED` 让角标刷新。界面显示「已通过 / 已拒绝 / 已撤回 / 已失效」，点开只提示原因、不再跳进空的分享弹窗；链接带 `accessRequest=<id>`，成员面板发现它已不在待审批列表时显示「这条加入申请已处理」。迁移 `AddNotificationResolution` 按项目 + 申请原因 + 前后 5 分钟把旧通知和申请对上，补齐历史残留。
+- **退出登录会吊销当前令牌。** `POST /v1/authentication/sign-out` 把请求头里的登录 JWT 按 sha256 记进 Redis（`revoked_session:v1:*`，TTL 到令牌过期），`verifyPrincipal` 对 USER / ONBOARDING 令牌先查这张表；只吊销这一台设备的会话，别的设备不受影响。要让一个人所有设备都下线，用 `tokenVersion` 轮换（改密码、移出租户已经在用）。个人访问令牌不走这条路。
+- **命令面板里的项目二级页按当前项目跳转并按权限过滤。** `static-pages.ts` 的 `permission` 字段与侧栏 `useProjectNavTabs` 的权限一致，看不到侧栏入口的人也搜不到；「变更记录」是 `/releases?tab=history`。
 - 帮助文档的正文是 i18n 字符串，ICU 语法下不能出现 `{}`、`{{` 或 `<tag>` 这类字符，写文案时要避开。
 
 ## Key files

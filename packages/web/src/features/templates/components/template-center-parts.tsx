@@ -2,13 +2,7 @@ import { Template } from '@fema-ipaas/shared';
 import { t } from 'i18next';
 import { LayoutTemplate, SearchX } from 'lucide-react';
 
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/custom/empty';
+import { ListEmptyState } from '@/components/custom/list-empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -110,15 +104,12 @@ export function TemplateCenterEmpty({
 }) {
   const { title, description } = emptyCopy({ tab, searching });
   return (
-    <Empty className="min-h-[260px]">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          {searching ? <SearchX /> : <LayoutTemplate />}
-        </EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
-        {description && <EmptyDescription>{description}</EmptyDescription>}
-      </EmptyHeader>
-    </Empty>
+    <ListEmptyState
+      icon={searching ? SearchX : LayoutTemplate}
+      title={title}
+      description={description ?? undefined}
+      testId="template-center-empty"
+    />
   );
 }
 

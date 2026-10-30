@@ -20,6 +20,8 @@ The metadata catalog of automation integrations ("connectors") — each a named 
 
 ### Gotchas
 - Available all editions; base listing + install is Community-level.
+- **飞书「多维表格新增记录」按数据表列出各列。** `columns` 是动态属性，键是 `field_id`、标题是列名（`/bitable/v1/apps/:app/tables/:table/fields`，公式、查找引用、创建时间等只读列不列出）；运行时再拉一次列表把 `field_id` 换回列名，日期列把 `2026-10-30`（按北京时间）或秒级时间戳换成毫秒，多选按逗号拆成数组。旧的 `fields`（按列名的对象，官方方案用表达式整体传入）原样发送、不做换算，空列名的键被丢弃；两边都没值时报「没有要写入的内容」。e2e 飞书模拟服务已补列接口，默认列是花名册六列。
+- **只对特定触发器有意义的动作不进「精选」。** 「表单与对话」（`connector-forms`）和「网址请求」（`connector-webhook`）的动作只在触发器是同一连接器时出现在选择动作的精选区，搜索仍能找到（`connector-search-utils` 的 `TRIGGER_BOUND_ACTION_CONNECTORS`）。
 - EE/Cloud per-connector and per-action/trigger visibility workflows through `resolveVisibility` (`ee/connectors/filters/connector-filtering-utils.ts`), which returns a `VisibilityPolicy` or `null` on CE / when `platformId`/`projectId` is nil (callers treat `null` as no filtering). The policy is derived from the project's **connector set** (via `project.connectorSetId`, falling back to the platform Default).
 - Install and sync also enqueue a tool-search reindex, but only when `isToolSearchEnabled()`; no-op otherwise.
 - `delete` removes all versions sharing the name on that platform, and only for `CUSTOM` connectors the caller owns.

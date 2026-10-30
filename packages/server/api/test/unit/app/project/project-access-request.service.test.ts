@@ -183,4 +183,20 @@ describe('projectAccessRequestService', () => {
         expect(listed).toEqual([expect.objectContaining({ userEmail: 'asker@corp.test', userFirstName: '三', userLastName: '张', reason: '看日志' })])
         expect(await projectAccessRequestService(log).listPending({ tenantId: 't2', projectId: 'p1' })).toEqual([])
     })
+
+    it('closes only the pending requests of a removed requester in that tenant', async () => {
+        const { request: pending } = await projectAccessRequestService(log).create({ tenantId: 't1', userId: 'asker', projectId: 'p1' })
+        mocks.requests.push({ ...pending, id: 'decided', status: ProjectAccessRequestStatus.APPROVED })
+        mocks.requests.push({ ...pending, id: 'other-tenant', tenantId: 't2', projectId: 'p2' })
+        const closed = await projectAccessRequestService(log).closeForRequester({ tenantId: 't1', userId: 'asker' })
+        expect(closed.map((request) => request.id)).toEqual([pending.id])
+        expect(closed[0].status).toBe(ProjectAccessRequestStatus.WITHDRAWN)
+        expect(mocks.requests.find((row) => row.id === pending.id)?.status).toBe(ProjectAccessRequestStatus.WITHDRAWN)
+        expect(mocks.requests.find((row) => row.id === 'decided')?.status).toBe(ProjectAccessRequestStatus.APPROVED)
+        expect(mocks.requests.find((row) => row.id === 'other-tenant')?.status).toBe(ProjectAccessRequestStatus.PENDING)
+    })
+
+    it('closes nothing when the requester has no pending request', async () => {
+        expect(await projectAccessRequestService(log).closeForRequester({ tenantId: 't1', userId: 'asker' })).toEqual([])
+    })
 })

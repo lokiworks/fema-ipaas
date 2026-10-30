@@ -1,20 +1,27 @@
+import { Permission } from '@fema-ipaas/core-utils';
 import { TenantModule } from '@fema-ipaas/shared';
 import {
   ActivityIcon,
   ArrowUpCircleIcon,
   BoxesIcon,
   CalendarOffIcon,
+  ChartColumnIcon,
   DatabaseBackupIcon,
+  DatabaseIcon,
   GaugeIcon,
+  HistoryIcon,
   InboxIcon,
   KeyRound as KeyRoundIcon,
+  LayoutDashboardIcon,
   Link2Icon,
   PackageIcon,
+  RocketIcon,
   ScrollTextIcon,
   ServerCogIcon,
   ShieldCheckIcon,
   ShieldQuestionIcon,
   SirenIcon,
+  Table2Icon,
   TerminalIcon,
 } from 'lucide-react';
 import { type ComponentType } from 'react';
@@ -33,11 +40,13 @@ import { ShieldIcon } from '@/components/icons/shield';
 import { SquareDashedBottomCodeIcon } from '@/components/icons/square-dashed-bottom-code';
 import { UnplugIcon } from '@/components/icons/unplug';
 import { UsersIcon } from '@/components/icons/users';
+import { VariableIcon } from '@/components/icons/variable';
 
 export const STATIC_PAGES: StaticPage[] = [
   {
     id: 'page-logs',
-    label: 'Run logs',
+    label: 'Logs',
+    keywords: ['Run logs'],
     href: '/logs',
     icon: ScrollTextIcon,
   },
@@ -56,9 +65,77 @@ export const STATIC_PAGES: StaticPage[] = [
   },
   {
     id: 'page-monitor',
-    label: 'Run monitor',
+    label: 'Monitoring',
+    keywords: ['Run monitor'],
     href: '/monitor',
     icon: ActivityIcon,
+  },
+  {
+    id: 'page-project-overview',
+    label: 'Project overview',
+    href: '/home',
+    icon: LayoutDashboardIcon,
+    projectScoped: true,
+  },
+  {
+    id: 'page-project-config',
+    label: 'Project config',
+    keywords: ['Variables'],
+    href: '/variables',
+    icon: VariableIcon,
+    projectScoped: true,
+    permission: Permission.READ_VARIABLE,
+  },
+  {
+    id: 'page-project-releases',
+    label: 'Releases and approvals',
+    keywords: ['Approvals', 'Release requests', 'Environments'],
+    href: '/releases',
+    icon: RocketIcon,
+    projectScoped: true,
+    permission: Permission.READ_PROJECT_RELEASE,
+  },
+  {
+    id: 'page-project-change-history',
+    label: 'Releases and approvals — Change history',
+    keywords: ['Change history'],
+    href: '/releases?tab=history',
+    icon: HistoryIcon,
+    projectScoped: true,
+    permission: Permission.READ_PROJECT_RELEASE,
+  },
+  {
+    id: 'page-project-mapping-tables',
+    label: 'Mapping tables',
+    href: '/mapping-tables',
+    icon: Table2Icon,
+    projectScoped: true,
+    permission: Permission.READ_WORKFLOW,
+  },
+  {
+    id: 'page-project-data-stores',
+    label: 'Data stores',
+    href: '/data-stores',
+    icon: DatabaseIcon,
+    projectScoped: true,
+    permission: Permission.READ_WORKFLOW,
+  },
+  {
+    id: 'page-project-agent-approvals',
+    label: 'Agent approvals',
+    keywords: ['Agents', 'Approvals'],
+    href: '/agent-approvals',
+    icon: ShieldQuestionIcon,
+    projectScoped: true,
+    permission: Permission.READ_RUN,
+  },
+  {
+    id: 'page-project-ai-usage',
+    label: 'AI usage',
+    href: '/ai-usage',
+    icon: ChartColumnIcon,
+    projectScoped: true,
+    permission: Permission.READ_PROJECT,
   },
   {
     id: 'page-mcp-services',
@@ -282,4 +359,5 @@ export type StaticPage = {
   requiresTenantAdmin?: boolean;
   projectScoped?: boolean;
   module?: TenantModule;
+  permission?: Permission;
 };

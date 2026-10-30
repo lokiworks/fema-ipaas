@@ -71,7 +71,7 @@ export const runLogService = (log: FastifyBaseLogger) => ({
         const access = await runLogAccess(log).resolve({ userId, tenantId })
         const projectIds = access.projects.map((project) => project.id)
         if (projectIds.length === 0) {
-            return { projects: [], workflows: [], connectors: [], tenantRetentionDays: access.tenantRetentionDays, canManagePrivacy: access.isTenantAdmin }
+            return { projects: [], workflows: [], connectors: [], tenantRetentionDays: access.tenantRetentionDays, tenantRawRetentionDays: access.tenantRawRetentionDays, canManagePrivacy: access.isTenantAdmin }
         }
         const [workflowRows, connectorRows]: [ScopeWorkflowRow[], ConnectorRow[]] = await Promise.all([
             databaseConnection().query(SCOPE_WORKFLOWS_SQL, [projectIds]),
@@ -82,6 +82,7 @@ export const runLogService = (log: FastifyBaseLogger) => ({
             workflows: workflowRows.map((row) => ({ id: row.id, projectId: row.projectId, displayName: row.displayName ?? row.id })),
             connectors: connectorRows.map((row) => row.connectorName).sort(),
             tenantRetentionDays: access.tenantRetentionDays,
+            tenantRawRetentionDays: access.tenantRawRetentionDays,
             canManagePrivacy: access.isTenantAdmin,
         }
     },

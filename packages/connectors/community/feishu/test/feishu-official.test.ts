@@ -397,6 +397,58 @@ describe('bitable actions', () => {
     expect(none.queryParams).toBeUndefined();
   });
 
+  it('writes the listed columns by name and turns a date into milliseconds', async () => {
+    route((request) =>
+      request.url.endsWith('/fields')
+        ? reply({
+            code: 0,
+            data: {
+              items: [
+                { field_id: 'fld1', field_name: '姓名', type: 1 },
+                { field_id: 'fld2', field_name: '入职日期', type: 5 },
+                { field_id: 'fld3', field_name: '标签', type: 4 },
+                { field_id: 'fld4', field_name: '创建时间', type: 1001 },
+              ],
+              has_more: false,
+            },
+          })
+        : reply({ code: 0, data: { record: { record_id: 'rec2', fields: {} } } }),
+    );
+
+    await createBitableRecord.run({
+      auth: authFor('cli_b3'),
+      propsValue: { appToken: 'bas1', tableId: 'tbl1', columns: { fld1: '李雷', fld2: '2026-10-08', fld3: '老员工, 研发', fld4: 'x' }, fields: { '': '' } },
+    } as never);
+
+    const write = apiCalls().find((request) => request.url.endsWith('/records'));
+    expect(write?.body).toEqual({ fields: { 姓名: '李雷', 入职日期: Date.UTC(2026, 9, 7, 16), 标签: ['老员工', '研发'] } });
+  });
+
+  it('refuses to write a row when only blank column names were given', async () => {
+    route(() => reply({ code: 0, data: { record: { record_id: 'rec3', fields: {} } } }));
+
+    await expect(
+      createBitableRecord.run({ auth: authFor('cli_b4'), propsValue: { appToken: 'bas1', tableId: 'tbl1', columns: {}, fields: { '': '' } } } as never),
+    ).rejects.toThrow(/at least one column/);
+    expect(apiCalls()).toEqual([]);
+  });
+
+  it('lists the writable columns of the table as inputs keyed by field id', async () => {
+    const { bitableColumns } = await import('../src/lib/bitable-columns');
+    const props = bitableColumns.propsFor({
+      columns: [
+        { field_id: 'fld1', field_name: '姓名', type: 1 },
+        { field_id: 'fld2', field_name: '入职日期', type: 5 },
+        { field_id: 'fld9', field_name: '公式', type: 20 },
+      ],
+    });
+
+    expect(Object.keys(props)).toEqual(['fld1', 'fld2']);
+    expect(props['fld2'].displayName).toBe('入职日期');
+    expect(bitableColumns.toMilliseconds('2026-10-08 09:30')).toBe(Date.UTC(2026, 9, 8, 1, 30));
+    expect(bitableColumns.toMilliseconds(1730000000)).toBe(1730000000000);
+  });
+
   it('pages through the search results up to the requested maximum', async () => {
     const pages: Record<string, unknown> = {
       '': { code: 0, data: { items: [{ record_id: 'r1', fields: { 工号: 'E1' } }, { record_id: 'r2', fields: { 工号: 'E2' } }], has_more: true, page_token: 'n1' } },

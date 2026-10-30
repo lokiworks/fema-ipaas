@@ -64,6 +64,7 @@ const ActionErrorHandlingForm = React.memo(
     hideRetryOnFailure,
     disabled,
     unsafeWrite,
+    connectorFields,
   }: ActionErrorHandlingFormProps) => {
     const form = useFormContext();
     const watched: unknown = useWatch({
@@ -127,6 +128,7 @@ const ActionErrorHandlingForm = React.memo(
             )}
           </AlertDescription>
         </Alert>
+        {connectorFields}
         {unsafeWrite && !hideRetryOnFailure && (
           <Alert>
             <ShieldAlert />
@@ -513,6 +515,7 @@ const OPERATORS = [
 
 type ActionErrorHandlingFormProps = {
   unsafeWrite?: boolean;
+  connectorFields?: React.ReactNode;
   hideContinueOnFailure?: boolean;
   hideRetryOnFailure?: boolean;
   disabled: boolean;

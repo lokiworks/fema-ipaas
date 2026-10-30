@@ -430,7 +430,7 @@ const TITLE_CATEGORY_LABELS: Record<IssueTitleCategory, string> = {
     [IssueTitleCategory.REQUEST_REJECTED]: '对方系统拒绝了请求',
     [IssueTitleCategory.MAPPING_MISSING]: '映射表缺少对应值',
     [IssueTitleCategory.TRIGGER_FAILED]: '触发器检查失败',
-    [IssueTitleCategory.STEP_FAILED]: '步骤失败',
+    [IssueTitleCategory.STEP_FAILED]: '节点失败',
 }
 
 type OnIssueRecordedParams = {

@@ -83,10 +83,10 @@ const BranchSingleCondition = ({
     condition.operator && textConditions.includes(condition?.operator);
   const isSingleValueCondition =
     condition.operator && singleValueConditions.includes(condition?.operator);
-  const isInvalid = isSingleValueCondition
-    ? condition.firstValue.length === 0
-    : condition.firstValue.length === 0 ||
-      ('secondValue' in condition && condition.secondValue?.length === 0);
+  const firstValueMissing = condition.firstValue.length === 0;
+  const secondValue =
+    'secondValue' in condition ? condition.secondValue ?? '' : '';
+  const secondValueMissing = !isSingleValueCondition && secondValue.length === 0;
   return (
     <>
       <div className="flex flex-col gap-3 grow">
@@ -98,17 +98,8 @@ const BranchSingleCondition = ({
               <FormItem className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <Label>{t('First value')}</Label>
-                  {isInvalid && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <InvalidStepIcon className="h-4 w-4 shrink-0"></InvalidStepIcon>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        {t('Incomplete condition')}
-                      </TooltipContent>
-                    </Tooltip>
+                  {firstValueMissing && (
+                    <MissingValueIcon message={t('Fill in the first value')} />
                   )}
                 </div>
                 <TextInputWithMentions
@@ -160,7 +151,12 @@ const BranchSingleCondition = ({
             control={form.control}
             render={({ field }) => (
               <FormItem className="flex flex-col gap-1">
-                <Label>{t('Second value')}</Label>
+                <div className="flex items-center gap-2">
+                  <Label>{t('Second value')}</Label>
+                  {secondValueMissing && (
+                    <MissingValueIcon message={t('Fill in the second value')} />
+                  )}
+                </div>
                 <TextInputWithMentions
                   disabled={readonly}
                   initialValue={field.value || ''}
@@ -216,3 +212,16 @@ const BranchSingleCondition = ({
 
 BranchSingleCondition.displayName = 'BranchSingleCondition';
 export { BranchSingleCondition };
+
+function MissingValueIcon({ message }: { message: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div>
+          <InvalidStepIcon className="h-4 w-4 shrink-0"></InvalidStepIcon>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{message}</TooltipContent>
+    </Tooltip>
+  );
+}

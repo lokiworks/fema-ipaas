@@ -21,8 +21,20 @@ vi.mock('../../../../src/app/authentication/user-identity/user-identity-service'
             id: 'identity-1',
             verified: true,
             tokenVersion: null,
+            lastLoggedInTenantId: 'tenant-1',
         }),
     }),
+}))
+
+const revoked = vi.hoisted(() => new Set<string>())
+
+vi.mock('../../../../src/app/authentication/lib/session-revocation', () => ({
+    sessionRevocation: {
+        isRevoked: async (token: string) => revoked.has(token),
+        revoke: async ({ token }: { token: string }) => {
+            revoked.add(token)
+        },
+    },
 }))
 
 const { accessTokenManager } = await import('../../../../src/app/authentication/lib/access-token-manager')
@@ -84,5 +96,22 @@ describe('verifyPrincipal', () => {
         })
 
         await expect(manager.verifyPrincipal(token)).rejects.toThrow()
+    })
+
+    it('rejects a signed-out user token but keeps other sessions of the same user working', async () => {
+        const signedOut = await jwtUtils.sign({
+            payload: { id: 'user-1', type: PrincipalType.USER, tenant: { id: 'tenant-1' }, tokenVersion: null },
+            key: SECRET,
+            expiresInSeconds: 60,
+        })
+        const otherDevice = await jwtUtils.sign({
+            payload: { id: 'user-1', type: PrincipalType.USER, tenant: { id: 'tenant-1' }, tokenVersion: null, device: 'second' },
+            key: SECRET,
+            expiresInSeconds: 60,
+        })
+        await expect(manager.verifyPrincipal(signedOut)).resolves.toMatchObject({ id: 'user-1' })
+        await manager.revokeSession(signedOut)
+        await expect(manager.verifyPrincipal(signedOut)).rejects.toMatchObject({ error: { code: 'SESSION_EXPIRED' } })
+        await expect(manager.verifyPrincipal(otherDevice)).resolves.toMatchObject({ id: 'user-1' })
     })
 })

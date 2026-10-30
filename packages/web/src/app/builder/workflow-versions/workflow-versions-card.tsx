@@ -44,6 +44,7 @@ import { personName } from '@/lib/person-name';
 
 import { OverwriteDraftDialog } from './overwrite-draft-dialog';
 import { RollbackVersionDialog } from './rollback-version-dialog';
+import { versionNumbers } from './version-numbers';
 
 const WorkflowVersionDetailsCard = React.memo(
   ({
@@ -110,9 +111,10 @@ const WorkflowVersionDetailsCard = React.memo(
           <FormattedDate
             date={
               new Date(
-                isDraft
-                  ? draftUpdated
-                  : releaseInfo?.production?.created ?? workflowVersion.created,
+                versionNumbers.shownAt({
+                  version: { ...workflowVersion, updated: draftUpdated },
+                  publishedAt: releaseInfo?.production?.created,
+                }),
               )
             }
             includeTime={true}

@@ -24,6 +24,9 @@ export const authenticationApi = {
       request,
     );
   },
+  signOut() {
+    return api.post<void>('/v1/authentication/sign-out');
+  },
   signUp(request: SignUpRequest) {
     return api.post<AuthenticationResponse>(
       '/v1/authentication/sign-up',

@@ -16,8 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +28,7 @@ import { rerunPreviewUtils } from '../utils/rerun-preview-utils';
 import { runLogUiUtils } from '../utils/run-log-ui-utils';
 
 import { RerunPreview } from './rerun-preview';
+import { RerunStrategyOptions } from './rerun-strategy-options';
 
 export function RunLogRerunDialog({
   rows,
@@ -134,55 +133,15 @@ function RerunChoice({
             ? t('Rerun this run?')
             : t('Rerun {count} runs?', { count: rows.length })}
         </DialogTitle>
-        <DialogDescription>
-          {t(
-            'Reruns use the environment and connections of the original run. Every rerun is recorded in the audit log.',
-          )}
-        </DialogDescription>
+        <DialogDescription>{t('rerunDialogDescription')}</DialogDescription>
       </DialogHeader>
-      <RadioGroup
+      <RerunStrategyOptions
         value={strategy}
-        onValueChange={(value) => {
+        onChange={(next) => {
           setAcknowledged(false);
-          setStrategy(
-            value === WorkflowRetryStrategy.ON_LATEST_VERSION
-              ? WorkflowRetryStrategy.ON_LATEST_VERSION
-              : WorkflowRetryStrategy.FROM_FAILED_STEP,
-          );
+          setStrategy(next);
         }}
-        className="flex flex-col gap-3"
-      >
-        <label className="flex items-start gap-3">
-          <RadioGroupItem
-            value={WorkflowRetryStrategy.FROM_FAILED_STEP}
-            id="rerun-from-failed-step"
-          />
-          <span className="flex flex-col gap-0.5">
-            <Label htmlFor="rerun-from-failed-step">
-              {t('Rerun from the failed step')}
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {t(
-                'Continues the same run on its original version. Steps that already succeeded keep their results and are not called again.',
-              )}
-            </span>
-          </span>
-        </label>
-        <label className="flex items-start gap-3">
-          <RadioGroupItem
-            value={WorkflowRetryStrategy.ON_LATEST_VERSION}
-            id="rerun-whole-run"
-          />
-          <span className="flex flex-col gap-0.5">
-            <Label htmlFor="rerun-whole-run">{t('Rerun the whole run')}</Label>
-            <span className="text-xs text-muted-foreground">
-              {t(
-                'Starts a new run from the trigger with the same input on the latest published version. The new log links back to this one.',
-              )}
-            </span>
-          </span>
-        </label>
-      </RadioGroup>
+      />
       {reasons.length > 0 && (
         <div className="flex flex-col gap-1 rounded-md border bg-muted/50 p-3 text-xs">
           <span className="font-medium">

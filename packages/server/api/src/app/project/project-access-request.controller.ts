@@ -54,6 +54,7 @@ export const projectAccessRequestController: FastifyPluginAsyncZod = async (app)
         })
         const requester = await userService(request.log).getMetaInformation({ id: request.principal.id })
         applicationEvents(request.log).sendUserEvent(request, projectAccessRequestAuditEvents.withdrawn({ request: withdrawn, email: requester.email }), { projectId: withdrawn.projectId })
+        await projectAccessRequestSideEffects(request.log).onWithdrawn({ request: withdrawn })
         return withdrawn
     })
 
@@ -70,6 +71,7 @@ export const projectAccessRequestController: FastifyPluginAsyncZod = async (app)
             role: request.body.role,
         })
         applicationEvents(request.log).sendUserEvent(request, projectAccessRequestAuditEvents.decided({ request: result.request, email: result.requesterEmail }), { projectId: result.project.id })
+        await projectAccessRequestSideEffects(request.log).onDecided({ request: result.request, project: result.project, actorId: request.principal.id })
         if (!isNil(result.member) && !result.alreadyMember) {
             await projectMemberSideEffects(request.log).recordMemberUpserted({
                 request,
@@ -90,7 +92,7 @@ export const projectAccessRequestController: FastifyPluginAsyncZod = async (app)
             approve: false,
         })
         applicationEvents(request.log).sendUserEvent(request, projectAccessRequestAuditEvents.decided({ request: result.request, email: result.requesterEmail }), { projectId: result.project.id })
-        await projectAccessRequestSideEffects(request.log).onRejected({ request: result.request, project: result.project, actorId: request.principal.id })
+        await projectAccessRequestSideEffects(request.log).onDecided({ request: result.request, project: result.project, actorId: request.principal.id })
         return result.request
     })
 }

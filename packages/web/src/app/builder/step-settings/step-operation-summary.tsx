@@ -5,7 +5,7 @@ import {
   workflowStructureUtil,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { RefreshCwIcon } from 'lucide-react';
+import { RefreshCwIcon, SlidersHorizontalIcon } from 'lucide-react';
 
 import { useBuilderStateContext } from '@/app/builder/builder-hooks';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,8 @@ export function StepOperationSummary({
   operationDisplayName,
   readonly,
   hideChangeAction,
+  description,
+  onConfigureInput,
 }: StepOperationSummaryProps) {
   const openSelector = useBuilderStateContext(
     (state) => state.setOpenedConnectorSelectorStepNameOrAddButtonId,
@@ -41,6 +43,21 @@ export function StepOperationSummary({
           </span>
         </div>
       </div>
+      {description && (
+        <p className="text-xs text-muted-foreground">{description}</p>
+      )}
+      {onConfigureInput && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full gap-1.5"
+          onClick={onConfigureInput}
+        >
+          <SlidersHorizontalIcon className="size-3.5" />
+          {t('Configure on the Input tab')}
+        </Button>
+      )}
       {!readonly && !hideChangeAction && (
         <Button
           variant="outline"
@@ -76,4 +93,6 @@ export type StepOperationSummaryProps = {
   operationDisplayName: string;
   readonly: boolean;
   hideChangeAction?: boolean;
+  description?: string;
+  onConfigureInput?: () => void;
 };

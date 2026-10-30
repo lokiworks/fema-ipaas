@@ -1,4 +1,4 @@
-import { isNil } from '@fema-ipaas/core-utils';
+import { isNil, tryCatch } from '@fema-ipaas/core-utils';
 import {
   AuthenticationResponse,
   Principal,
@@ -127,7 +127,10 @@ export const authenticationSession = {
     BrowserStorage.getInstance().removeItem(projectIdKey);
     BrowserStorage.getInstance().removeItem(tokenKey);
   },
-  logOut() {
+  async logOut() {
+    if (!isNil(this.getToken())) {
+      await tryCatch(() => authenticationApi.signOut());
+    }
     this.clearSession();
     window.location.href = '/sign-in';
   },

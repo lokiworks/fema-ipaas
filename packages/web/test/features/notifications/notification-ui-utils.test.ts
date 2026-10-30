@@ -1,6 +1,7 @@
 import {
   DefaultProjectRole,
   Notification,
+  NotificationResolution,
   NotificationType,
   TenantModule,
 } from '@fema-ipaas/shared';
@@ -116,5 +117,33 @@ describe('notificationUiUtils', () => {
         }),
       ),
     ).toBe('Zhang asks to join a project');
+  });
+});
+
+describe('notificationUiUtils.resolution', () => {
+  it('has nothing to say about an open notification', () => {
+    expect(notificationUiUtils.resolution(notification({}))).toBeNull();
+    expect(
+      notificationUiUtils.resolution(notification({ resolution: null })),
+    ).toBeNull();
+  });
+
+  it('labels every way an access request can stop waiting', () => {
+    const labels = Object.values(NotificationResolution).map(
+      (resolution) =>
+        notificationUiUtils.resolution(
+          notification({
+            type: NotificationType.PROJECT_ACCESS_REQUESTED,
+            resolution,
+          }),
+        )?.label,
+    );
+    expect(labels).toEqual([
+      'projectAccessResolvedApproved',
+      'projectAccessResolvedRejected',
+      'projectAccessResolvedWithdrawn',
+      'projectAccessResolvedClosed',
+      'projectAccessResolvedClosed',
+    ]);
   });
 });

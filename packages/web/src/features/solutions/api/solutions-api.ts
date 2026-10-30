@@ -74,6 +74,12 @@ export const solutionsApi = {
       request,
     );
   },
+  removeInstallRecord(installId: string): Promise<SolutionInstall> {
+    return api.post<SolutionInstall>(
+      `/v1/solutions/installs/${installId}/remove-record`,
+      {},
+    );
+  },
   upgrade(installId: string): Promise<SolutionInstall> {
     return api.post<SolutionInstall>(
       `/v1/solutions/installs/${installId}/upgrade`,

@@ -30,6 +30,22 @@ describe('workflow with looping', () => {
         expect(loopOut.output?.item).toBe(6)
     })
 
+    it('runs no iterations when the list comes from a branch that did not run', async () => {
+        const result = await workflowExecutor.execute({
+            action: buildSimpleLoopAction({
+                name: 'loop',
+                loopItems: "{{branch_only_step['list']}}",
+                firstLoopAction: buildCodeAction({ name: 'runtime', input: {} }),
+            }),
+            executionState: WorkflowExecutorContext.empty(),
+            constants: generateMockEngineConstants({ stepNames: ['loop', 'branch_only_step'] }),
+        })
+
+        const loopOut = result.steps.loop as LoopStepOutput
+        expect(result.verdict.status).toBe(ExecutionStatus.RUNNING)
+        expect(loopOut.output?.iterations.length).toBe(0)
+    })
+
     it('should execute iterations and fail on first iteration', async () => {
         const generateArray = buildCodeAction({
             name: 'echo_step',

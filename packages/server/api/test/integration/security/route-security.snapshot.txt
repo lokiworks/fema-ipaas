@@ -299,6 +299,7 @@ POST /v1/authentication/complete-sign-up | UNSCOPED | ONBOARDING | - | -
 POST /v1/authentication/otp/request | PUBLIC | - | - | -
 POST /v1/authentication/otp/verify | PUBLIC | - | - | -
 POST /v1/authentication/sign-in | PUBLIC | - | - | -
+POST /v1/authentication/sign-out | UNSCOPED | USER,ONBOARDING | - | -
 POST /v1/authentication/sign-up | PUBLIC | - | - | -
 POST /v1/authentication/switch-tenant | TENANT_ANY_MEMBER | USER | - | -
 POST /v1/authn/local/reset-password | PUBLIC | - | - | -

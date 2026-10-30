@@ -20,13 +20,17 @@ import {
   RunFocus,
   runFocusUtils,
 } from '@/features/run-logs/utils/run-focus-utils';
-import { workflowsApi, sampleDataHooks } from '@/features/workflows';
+import { sampleDataHooks } from '@/features/workflows';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { notFoundError } from '@/lib/not-found-error';
+
+import { MobileRunView } from './mobile-run-view';
 
 const ExecutionPage = () => {
   const { runId, projectId } = useParams();
   const [searchParams] = useSearchParams();
   const focus = runFocusUtils.parse(searchParams);
+  const isMobile = useIsMobile();
   const { data, isLoading, error } = useQuery<
     {
       run: Execution;
@@ -37,9 +41,7 @@ const ExecutionPage = () => {
     queryKey: ['run', runId],
     queryFn: async () => {
       const execution = await executionsApi.getPopulated(runId!);
-      const workflow = await workflowsApi.get(execution.workflowId, {
-        versionId: execution.workflowVersionId,
-      });
+      const workflow = await executionsApi.getRunWorkflow(execution);
       return {
         run: execution,
         workflow: workflow,
@@ -71,6 +73,10 @@ const ExecutionPage = () => {
         <LoadingSpinner isLarge={true}></LoadingSpinner>
       </div>
     );
+  }
+
+  if (isMobile && !isNil(data)) {
+    return <MobileRunView run={data.run} workflow={data.workflow} />;
   }
 
   const focusStepExists =

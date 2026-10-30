@@ -76,14 +76,19 @@ const TemplatesPage = () => {
   const showSolutions =
     isAuthenticated &&
     tab === TemplateCenterTab.RECOMMENDED &&
-    !searching &&
     isNil(category);
   const { data: officialSolutions } = solutionsHooks.useOfficialSolutions({
     enabled: showSolutions,
   });
   const solutionsShown = showSolutions
     ? solutionsUtils.sortForCenter({
-        solutions: officialSolutions ?? [],
+        solutions: solutionsUtils.filterSolutions({
+          solutions: officialSolutions ?? [],
+          category: null,
+          search,
+          mineOnly: false,
+          userId,
+        }),
         byInstalls: sort === TemplateCenterSort.HOT,
       })
     : [];
@@ -205,9 +210,11 @@ const TemplatesPage = () => {
           <TemplateGridSkeleton />
         ) : list.length === 0 && solutionsShown.length > 0 ? (
           <p className="text-sm text-muted-foreground">
-            {t(
-              'No workflow templates yet. Open the "···" menu of a published workflow and choose "Generate template" to create one.',
-            )}
+            {searching
+              ? t('No workflow template matches this keyword.')
+              : t(
+                  'No workflow templates yet. Open the "···" menu of a published workflow and choose "Generate template" to create one.',
+                )}
           </p>
         ) : list.length === 0 ? (
           <TemplateCenterEmpty tab={tab} searching={searching} />

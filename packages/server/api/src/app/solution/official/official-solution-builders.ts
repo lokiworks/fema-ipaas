@@ -17,7 +17,7 @@ function beisenTrigger({ displayName, statusScope, changeTypes, dedupeKey, dedup
                 statusScope,
                 queryType: 2,
                 timezone: 'Asia/Shanghai',
-                ...(changeTypes.length > 0 ? { filterColumn: 'recordInfo.changeTypeOID', filterValues: changeTypes } : {}),
+                ...(changeTypes.length > 0 ? { changeTypes } : {}),
             },
             propertySettings: {},
             dedupe: { enabled: true, keyPath: dedupeKey, windowSeconds: dedupeDays * 24 * 60 * 60 },
@@ -80,7 +80,7 @@ export const FEISHU = '@fema-ipaas/connector-feishu'
 export const DATA_MAPPER = '@fema-ipaas/connector-data-mapper'
 export const STORE = '@fema-ipaas/connector-store'
 export const STORE_VERSION = '~0.6.0'
-export const BEISEN_VERSION = '~0.4.0'
+export const BEISEN_VERSION = '~0.4.3'
 export const FEISHU_VERSION = '~0.5.0'
 export const BEISEN_AUTH = '{{connections[\'beisen-connection\']}}'
 export const FEISHU_AUTH = '{{connections[\'feishu-connection\']}}'

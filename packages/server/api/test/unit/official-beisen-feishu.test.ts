@@ -38,7 +38,8 @@ describe('official Beisen to Feishu solution', () => {
         expect(text).toContain('[\'recordInfo\'][\'oIdDepartment\']')
         expect(text).toContain('[\'employeeInfo\'][\'mobilePhone\']')
         expect(text).toContain('"statusScope":"LEFT"')
-        expect(text).toContain('"filterColumn":"recordInfo.changeTypeOID"')
+        expect(text).toContain('"changeTypes":["1","2"]')
+        expect(text).not.toContain('filterColumn')
     })
 
     it('runs one employee at a time on onboarding and transfer, and counts a return to an earlier department as a new event', () => {

@@ -35,7 +35,7 @@ const CATALOG: CatalogEntry[] = [
         name: BEISEN,
         displayName: '北森',
         auth: {},
-        suggestedTriggers: [operation({ name: 'employee_changed', props: ['statusScope', 'queryType', 'timezone', 'filterColumn', 'filterValues'] })],
+        suggestedTriggers: [operation({ name: 'employee_changed', props: ['statusScope', 'queryType', 'timezone', 'changeTypes', 'filterColumn', 'filterValues'] })],
         suggestedActions: [operation({ name: 'search_changed_employees', props: ['startTime', 'stopTime', 'statusScope', 'queryType'] })],
     },
     {
@@ -103,7 +103,7 @@ describe('aiRulePlanner', () => {
         const result = plan({ prompt: '员工入职后在飞书建档、按部门开通账号并通知 HR 群' })
         expect(result.source).toBe(WorkflowPlanSource.RULES)
         expect(result.trigger.operationName).toBe('employee_changed')
-        expect(result.trigger.input).toMatchObject({ statusScope: 'ONBOARDING', filterColumn: 'recordInfo.changeTypeOID' })
+        expect(result.trigger.input).toMatchObject({ statusScope: 'ONBOARDING', changeTypes: ['1', '2'] })
         expect(result.steps.map((step) => step.operationName)).toEqual(['create_bitable_record', 'provision_user', 'send_group_message'])
         expect(result.steps[1].input).toMatchObject({ name: '{{trigger[\'output\'][\'employeeInfo\'][\'name\']}}', employeeNo: '{{trigger[\'output\'][\'recordInfo\'][\'jobNumber\']}}' })
         expect(result.steps[1].connectionExternalId).toBe('feishu-main')

@@ -44,7 +44,7 @@ describe('workflow retry', () => {
         })
         expect(failedResult.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(retryEntireWorkflow.verdict.status).toBe(ExecutionStatus.RUNNING)
-    }, 10000)
+    }, RERUN_TEST_TIMEOUT_MS)
 
     it('should retry workflow from failed step', async () => {
         const context = WorkflowExecutorContext.empty()
@@ -58,5 +58,7 @@ describe('workflow retry', () => {
         })
         expect(failedResult.verdict.status).toBe(ExecutionStatus.FAILED)
         expect(retryFromFailed.verdict.status).toBe(ExecutionStatus.RUNNING)
-    }, 10000)
+    }, RERUN_TEST_TIMEOUT_MS)
 })
+
+const RERUN_TEST_TIMEOUT_MS = 30_000

@@ -252,7 +252,7 @@ function triggerFor({ intent, text }: { intent: HrIntent, text: Text }): StepDra
             statusScope: scope.statusScope,
             queryType: 2,
             timezone: 'Asia/Shanghai',
-            ...(scope.changeTypes.length > 0 ? { filterColumn: 'recordInfo.changeTypeOID', filterValues: scope.changeTypes } : {}),
+            ...(scope.changeTypes.length > 0 ? { changeTypes: scope.changeTypes } : {}),
         },
     }
 }

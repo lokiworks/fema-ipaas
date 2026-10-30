@@ -137,6 +137,7 @@ function toRows({
       label: t('View all'),
       subtitle: null,
       projectName: null,
+      issueStatus: null,
       href: viewAllHref({ type: group.type, query, currentProjectId }),
     },
   ];

@@ -197,7 +197,9 @@ function McpServicesContent() {
               <EmptyMedia variant="icon">
                 <Store />
               </EmptyMedia>
-              <EmptyTitle>{t('Nothing is listed on the marketplace yet')}</EmptyTitle>
+              <EmptyTitle>
+                {t('Nothing is listed on the marketplace yet')}
+              </EmptyTitle>
               <EmptyDescription>
                 {t(
                   'Services that any project lists on the enterprise MCP marketplace appear here, so you can obtain them.',

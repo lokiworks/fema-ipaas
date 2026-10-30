@@ -197,7 +197,7 @@ function collectBranchLabels({
           (child, index): [string, string | undefined][] =>
             isNil(child)
               ? []
-              : [[child.name, step.settings.branches[index]?.branchName]],
+              : [[child.name, branchLabelOf(step.settings.branches[index])]],
         );
       case WorkflowActionType.CODE:
       case WorkflowActionType.CONNECTOR:
@@ -218,6 +218,15 @@ function collectBranchLabels({
     }
   });
   return Object.fromEntries(pairs);
+}
+
+function branchLabelOf(
+  branch: { branchName: string } | undefined,
+): string | undefined {
+  if (isNil(branch)) {
+    return undefined;
+  }
+  return branch.branchName === 'Otherwise' ? t('Otherwise') : branch.branchName;
 }
 
 const MAX_VISIBLE_INDENT_DEPTH = 4;

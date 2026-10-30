@@ -100,10 +100,7 @@ export const RouterEndCanvasEdge = ({
 
   return (
     <>
-      <BaseEdge
-        path={path}
-        style={edgeStyle}
-      />
+      <BaseEdge path={path} style={edgeStyle} />
 
       {data.drawEndingVerticalLine && (
         <foreignObject

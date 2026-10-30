@@ -305,7 +305,7 @@ type EdgeBranch = {
 
 export type RunStepOutput = {
   status: StepOutputStatus;
-  output: unknown;
+  output?: unknown;
 };
 
 export type BranchRunState = 'taken' | 'skipped' | 'pending';

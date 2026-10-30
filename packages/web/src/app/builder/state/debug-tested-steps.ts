@@ -86,7 +86,10 @@ function testedStepOf({
     new Date(currentStep.lastUpdatedDate).getTime() >
     new Date(testedAt).getTime();
   const signature = stepTestRelevance.signatureOf(ranStep);
-  if (editedAfterRun || signature !== stepTestRelevance.signatureOf(currentStep)) {
+  if (
+    editedAfterRun ||
+    signature !== stepTestRelevance.signatureOf(currentStep)
+  ) {
     return null;
   }
   return { testedAt, signature, failed };

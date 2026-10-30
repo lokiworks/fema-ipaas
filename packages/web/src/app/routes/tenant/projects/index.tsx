@@ -85,7 +85,8 @@ export default function ProjectsPage() {
         ...project,
         analytics: {
           ...project.analytics,
-          members: limits?.memberCount ?? Math.max(1, project.analytics.members),
+          members:
+            limits?.memberCount ?? Math.max(1, project.analytics.members),
         },
         globalConnectionsCount:
           allGlobalConnectionsPage?.data?.filter((connection) =>
@@ -99,116 +100,116 @@ export default function ProjectsPage() {
 
   const columnsWithCheckbox: ColumnDef<RowDataWithActions<TenantProjectRow>>[] =
     [
-    {
-      id: 'select',
-      accessorKey: 'select',
-      size: 40,
-      minSize: 40,
-      maxSize: 40,
-      header: ({ table }) => {
-        const selectableRows = table
-          .getRowModel()
-          .rows.filter(
-            (row) =>
-              row.original.id !== currentProject?.id &&
-              row.original.type !== ProjectType.PERSONAL,
+      {
+        id: 'select',
+        accessorKey: 'select',
+        size: 40,
+        minSize: 40,
+        maxSize: 40,
+        header: ({ table }) => {
+          const selectableRows = table
+            .getRowModel()
+            .rows.filter(
+              (row) =>
+                row.original.id !== currentProject?.id &&
+                row.original.type !== ProjectType.PERSONAL,
+            );
+          const allSelectableSelected =
+            selectableRows.length > 0 &&
+            selectableRows.every((row) => row.getIsSelected());
+          const someSelectableSelected = selectableRows.some((row) =>
+            row.getIsSelected(),
           );
-        const allSelectableSelected =
-          selectableRows.length > 0 &&
-          selectableRows.every((row) => row.getIsSelected());
-        const someSelectableSelected = selectableRows.some((row) =>
-          row.getIsSelected(),
-        );
 
-        return (
-          <Checkbox
-            aria-label={t('Select all rows')}
-            checked={allSelectableSelected || someSelectableSelected}
-            onCheckedChange={(value) => {
-              const isChecked = !!value;
-              selectableRows.forEach((row) => row.toggleSelected(isChecked));
+          return (
+            <Checkbox
+              aria-label={t('Select all rows')}
+              checked={allSelectableSelected || someSelectableSelected}
+              onCheckedChange={(value) => {
+                const isChecked = !!value;
+                selectableRows.forEach((row) => row.toggleSelected(isChecked));
 
-              if (isChecked) {
-                const selectableProjects = selectableRows.map(
-                  (row) => row.original,
-                );
-                const newSelectedRows = [
-                  ...selectableProjects,
-                  ...selectedRows,
-                ];
-                const uniqueRows = Array.from(
-                  new Map(
-                    newSelectedRows.map((item) => [item.id, item]),
-                  ).values(),
-                );
-                setSelectedRows(uniqueRows);
-              } else {
-                const filteredRows = selectedRows.filter(
-                  (row) =>
-                    !selectableRows.some((r) => r.original.id === row.id),
-                );
-                setSelectedRows(filteredRows);
-              }
-            }}
-          />
-        );
-      },
-      cell: ({ row }) => {
-        const isCurrentProject = row.original.id === currentProject?.id;
-        const isPersonalProject = row.original.type === ProjectType.PERSONAL;
-        const isDisabled = isCurrentProject || isPersonalProject;
-        const isChecked = selectedRows.some(
-          (selectedRow) => selectedRow.id === row.original.id,
-        );
+                if (isChecked) {
+                  const selectableProjects = selectableRows.map(
+                    (row) => row.original,
+                  );
+                  const newSelectedRows = [
+                    ...selectableProjects,
+                    ...selectedRows,
+                  ];
+                  const uniqueRows = Array.from(
+                    new Map(
+                      newSelectedRows.map((item) => [item.id, item]),
+                    ).values(),
+                  );
+                  setSelectedRows(uniqueRows);
+                } else {
+                  const filteredRows = selectedRows.filter(
+                    (row) =>
+                      !selectableRows.some((r) => r.original.id === row.id),
+                  );
+                  setSelectedRows(filteredRows);
+                }
+              }}
+            />
+          );
+        },
+        cell: ({ row }) => {
+          const isCurrentProject = row.original.id === currentProject?.id;
+          const isPersonalProject = row.original.type === ProjectType.PERSONAL;
+          const isDisabled = isCurrentProject || isPersonalProject;
+          const isChecked = selectedRows.some(
+            (selectedRow) => selectedRow.id === row.original.id,
+          );
 
-        return (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className={isDisabled ? 'cursor-not-allowed' : ''}>
-                <Checkbox
-                  aria-label={t('Select row')}
-                  checked={isChecked}
-                  disabled={isDisabled}
-                  onCheckedChange={(value) => {
-                    if (isDisabled) return;
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={isDisabled ? 'cursor-not-allowed' : ''}>
+                  <Checkbox
+                    aria-label={t('Select row')}
+                    checked={isChecked}
+                    disabled={isDisabled}
+                    onCheckedChange={(value) => {
+                      if (isDisabled) return;
 
-                    const isChecked = !!value;
-                    let newSelectedRows = [...selectedRows];
-                    if (isChecked) {
-                      const exists = newSelectedRows.some(
-                        (selectedRow) => selectedRow.id === row.original.id,
-                      );
-                      if (!exists) {
-                        newSelectedRows.push(row.original);
+                      const isChecked = !!value;
+                      let newSelectedRows = [...selectedRows];
+                      if (isChecked) {
+                        const exists = newSelectedRows.some(
+                          (selectedRow) => selectedRow.id === row.original.id,
+                        );
+                        if (!exists) {
+                          newSelectedRows.push(row.original);
+                        }
+                      } else {
+                        newSelectedRows = newSelectedRows.filter(
+                          (selectedRow) => selectedRow.id !== row.original.id,
+                        );
                       }
-                    } else {
-                      newSelectedRows = newSelectedRows.filter(
-                        (selectedRow) => selectedRow.id !== row.original.id,
-                      );
-                    }
-                    setSelectedRows(newSelectedRows);
-                    row.toggleSelected(!!value);
-                  }}
-                />
-              </div>
-            </TooltipTrigger>
-            {isDisabled && (
-              <TooltipContent side="right">
-                {isCurrentProject
-                  ? t(
-                      'Cannot delete active project, switch to another project first',
-                    )
-                  : t(
-                      "Personal projects cannot be deleted, and you can't subscribe to their alerts",
-                    )}
-              </TooltipContent>
-            )}
-          </Tooltip>
-        );
+                      setSelectedRows(newSelectedRows);
+                      row.toggleSelected(!!value);
+                    }}
+                  />
+                </div>
+              </TooltipTrigger>
+              {isDisabled && (
+                <TooltipContent side="right">
+                  {isCurrentProject
+                    ? t(
+                        'Cannot delete active project, switch to another project first',
+                      )
+                    : t(
+                        "Personal projects cannot be deleted, and you can't subscribe to their alerts",
+                      )}
+                </TooltipContent>
+              )}
+            </Tooltip>
+          );
+        },
       },
-    },
-    ...columns,
-  ];
+      ...columns,
+    ];
 
   const bulkActions: BulkAction<ProjectWithLimits>[] = useMemo(
     () => [

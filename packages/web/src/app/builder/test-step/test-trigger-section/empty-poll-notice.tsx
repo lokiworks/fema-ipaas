@@ -10,8 +10,7 @@ export const EmptyPollNotice = ({
   isSaving,
   onUseSampleData,
 }: EmptyPollNoticeProps) => {
-  const hasSampleData =
-    !isNil(mockData) && JSON.stringify(mockData) !== '{}';
+  const hasSampleData = !isNil(mockData) && JSON.stringify(mockData) !== '{}';
   return (
     <Alert variant="primary" data-testid="empty-poll-notice">
       <Inbox className="size-4" />

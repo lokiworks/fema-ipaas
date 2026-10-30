@@ -71,11 +71,7 @@ export const LoopReturnLineCanvasEdge = ({
     : layoutButtonPosition;
   return (
     <>
-      <BaseEdge
-        path={path}
-        style={edgeStyle}
-        className="relative"
-      ></BaseEdge>
+      <BaseEdge path={path} style={edgeStyle} className="relative"></BaseEdge>
       {
         <foreignObject
           x={buttonPosition.x}

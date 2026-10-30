@@ -23,12 +23,11 @@ type PathSegment = string | number;
 
 const JOINED_VALUES_MAX_LENGTH = 32;
 
-const FAILURE_FIELDS: { key: string; label: string; format?: FieldFormat }[] =
-  [
-    { key: 'errorCode', label: 'Failure error code' },
-    { key: 'errorMessage', label: 'Failure error message' },
-    { key: 'errorTime', label: 'Failure time', format: 'datetime' },
-  ];
+const FAILURE_FIELDS: { key: string; label: string; format?: FieldFormat }[] = [
+  { key: 'errorCode', label: 'Failure error code' },
+  { key: 'errorMessage', label: 'Failure error message' },
+  { key: 'errorTime', label: 'Failure time', format: 'datetime' },
+];
 
 function buildTestStepNode(
   displayName: string,
@@ -422,7 +421,8 @@ function applyContinueOnFailureView({
         data: {
           type: 'chunk',
           displayName: t('On failure'),
-          displayNameClassName: 'text-destructive-800 dark:text-destructive-200',
+          displayNameClassName:
+            'text-destructive-800 dark:text-destructive-200',
         },
         children: failureLeaves,
       },

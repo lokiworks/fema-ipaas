@@ -72,9 +72,9 @@ describe('error handling strategies', () => {
             onFailure: buildCodeAction({
                 name: 'echo_step_1',
                 input: {
-                    code: "{{runtime['output']['errorCode']}}",
-                    message: "{{runtime['output']['errorMessage']}}",
-                    time: "{{runtime['output']['errorTime']}}",
+                    code: '{{runtime.output.errorCode}}',
+                    message: '{{runtime.output.errorMessage}}',
+                    time: '{{runtime.output.errorTime}}',
                 },
             }),
         }))

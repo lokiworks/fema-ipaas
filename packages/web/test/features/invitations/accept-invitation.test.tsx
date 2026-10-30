@@ -24,6 +24,12 @@ vi.mock('@/features/invitations/api/user-invitation', () => ({
   userInvitationApi: { accept },
 }));
 
+vi.mock('@/features/authentication', () => ({
+  AuthSplitLayout: ({ children }: { children: React.ReactNode }) => (
+    <main>{children}</main>
+  ),
+}));
+
 function LocationDisplay() {
   const location = useLocation();
   return <p data-testid="location">{location.pathname + location.search}</p>;
@@ -98,7 +104,7 @@ describe('AcceptInvitation', () => {
   it('shows the invalid message without calling the server when there is no token', async () => {
     await render({ url: '/invitation' });
 
-    expect(text()).toContain('Invalid invitation token');
+    expect(text()).toContain('This invitation link no longer works');
     expect(accept).not.toHaveBeenCalled();
   });
 
@@ -108,7 +114,7 @@ describe('AcceptInvitation', () => {
     await render({ url: '/invitation?token=abc' });
 
     expect(text()).not.toContain('Team Invitation Accepted');
-    expect(text()).not.toContain('Invalid invitation token');
+    expect(text()).not.toContain('This invitation link no longer works');
   });
 
   it('sends a registered user to sign in right after accepting', async () => {
@@ -152,7 +158,7 @@ describe('AcceptInvitation', () => {
 
     await render({ url: '/invitation?token=expired' });
 
-    expect(text()).toContain('Invalid invitation token');
+    expect(text()).toContain('This invitation link no longer works');
     expect(text()).not.toContain('Team Invitation Accepted');
   });
 
@@ -171,6 +177,6 @@ describe('AcceptInvitation', () => {
     await render({ url: '/invitation?token=expired', strict: true });
 
     expect(accept).toHaveBeenCalledTimes(1);
-    expect(text()).toContain('Invalid invitation token');
+    expect(text()).toContain('This invitation link no longer works');
   });
 });

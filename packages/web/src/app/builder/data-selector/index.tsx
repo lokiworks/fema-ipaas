@@ -41,8 +41,8 @@ import {
 } from './data-selector-size-togglers';
 import { pathHelpers } from './path-helpers';
 import { DataSelectorTreeNode } from './type';
-import { dataSelectorUtils } from './utils';
 import { useDebugRunSamples } from './use-debug-run-samples';
+import { dataSelectorUtils } from './utils';
 import { schemaTreeUtils } from './utils-schema';
 import { VariablesTab } from './variables-tab';
 
@@ -414,14 +414,21 @@ const DataSelector = ({
 
   const stepStructure =
     viewMode === 'friendly' ? friendlyStructure : advancedStructure;
-  const visibleStepStructure = selectedStepIsLoop
-    ? listOnlyNodes({ nodes: stepStructure })
-    : stepStructure;
+  const visibleStepStructure = useMemo(
+    () =>
+      selectedStepIsLoop
+        ? listOnlyNodes({ nodes: stepStructure })
+        : stepStructure,
+    [selectedStepIsLoop, stepStructure],
+  );
   const showNoListHint =
     selectedStepIsLoop &&
     searchTerm.length === 0 &&
     !containsInsertableList({ nodes: visibleStepStructure });
-  const currentStructure = [...loopVariableNodes, ...visibleStepStructure];
+  const currentStructure = useMemo(
+    () => [...loopVariableNodes, ...visibleStepStructure],
+    [loopVariableNodes, visibleStepStructure],
+  );
   const [debouncedSearchTerm] = useDebounce(searchTerm, 250);
   const filteredNodes = useMemo(
     () => dataSelectorUtils.filterBy(currentStructure, debouncedSearchTerm),

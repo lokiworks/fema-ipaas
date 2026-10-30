@@ -68,8 +68,8 @@ export const mcpServiceService = (log: FastifyBaseLogger) => ({
             .innerJoin('project', 'project', 'project.id = service."projectId"')
             .where('project."tenantId" = :tenantId AND project.deleted IS NULL', { tenantId })
         const inProject = 'service."projectId" = :projectId'
-        const obtained = `EXISTS (SELECT 1 FROM "mcp_service_member" "viewer_member" WHERE "viewer_member"."serviceId" = service.id AND "viewer_member"."userId" = :userId) AND (service."ownerId" IS NULL OR service."ownerId" <> :userId)`
-        const marketplace = `service.listed = true AND (service.availability->>'mode' = 'ALL' OR service.availability->'userIds' ? :userId)`
+        const obtained = 'EXISTS (SELECT 1 FROM "mcp_service_member" "viewer_member" WHERE "viewer_member"."serviceId" = service.id AND "viewer_member"."userId" = :userId) AND (service."ownerId" IS NULL OR service."ownerId" <> :userId)'
+        const marketplace = 'service.listed = true AND (service.availability->>\'mode\' = \'ALL\' OR service.availability->\'userIds\' ? :userId)'
         switch (query.tab ?? McpServiceListTab.ALL) {
             case McpServiceListTab.MINE:
                 builder.andWhere(`${inProject} AND service."ownerId" = :userId`, { projectId, userId })

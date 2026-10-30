@@ -931,8 +931,7 @@ describe('schemaTreeUtils.buildStructureFromSchema — untested steps', () => {
     expect(list?.data.type === 'value' && list.data.listField).toBe(true);
     const firstItemField = list?.children?.[0]?.children?.[0];
     expect(
-      firstItemField?.data.type === 'value' &&
-        firstItemField.data.propertyPath,
+      firstItemField?.data.type === 'value' && firstItemField.data.propertyPath,
     ).toBe("step_1['output']['records'][0]['name']");
   });
 });

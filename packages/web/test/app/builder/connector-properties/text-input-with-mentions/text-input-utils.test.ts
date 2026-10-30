@@ -134,7 +134,9 @@ describe('textMentionUtils.parseLabelFromMention — friendly field names', () =
         },
       ],
     },
-  } satisfies Parameters<typeof textMentionUtils.parseLabelFromMention>[2][number];
+  } satisfies Parameters<
+    typeof textMentionUtils.parseLabelFromMention
+  >[2][number];
 
   it('labels the reference with the step number and schema labels', () => {
     const label = textMentionUtils.parseLabelFromMention(

@@ -152,7 +152,9 @@ describe('canvasBulkActions.getActionsInClipboard', () => {
   it('reads copied steps back', async () => {
     const step = codeStep({ name: 'step_1' });
     stubClipboard(() =>
-      Promise.resolve(JSON.stringify({ type: 'COPY_ACTIONS', actions: [step] })),
+      Promise.resolve(
+        JSON.stringify({ type: 'COPY_ACTIONS', actions: [step] }),
+      ),
     );
     await expect(canvasBulkActions.getActionsInClipboard()).resolves.toEqual([
       step,

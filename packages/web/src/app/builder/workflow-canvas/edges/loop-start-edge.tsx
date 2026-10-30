@@ -55,11 +55,7 @@ export const LoopStartLineCanvasEdge = ({
 
   return (
     <>
-      <BaseEdge
-        path={path}
-        style={edgeStyle}
-        className="relative"
-      ></BaseEdge>
+      <BaseEdge path={path} style={edgeStyle} className="relative"></BaseEdge>
       {!data.isLoopEmpty && (
         <foreignObject
           x={buttonPosition.x}

@@ -37,13 +37,10 @@ export function useDebugRunSamples({
       }),
     [steps, debugTestedSteps],
   );
-  const latestTestedAt = candidates.reduce(
-    (latest, step) => {
-      const testedAt = debugTestedSteps[step.name]?.testedAt ?? '';
-      return testedAt > latest ? testedAt : latest;
-    },
-    '',
-  );
+  const latestTestedAt = candidates.reduce((latest, step) => {
+    const testedAt = debugTestedSteps[step.name]?.testedAt ?? '';
+    return testedAt > latest ? testedAt : latest;
+  }, '');
   const { data: outputs } = useQuery({
     queryKey: ['data-selector-debug-samples', workflowId, latestTestedAt],
     enabled: candidates.length > 0,

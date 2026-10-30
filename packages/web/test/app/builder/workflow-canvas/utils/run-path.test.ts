@@ -57,7 +57,10 @@ function flow(): WorkflowTrigger {
       ],
     },
     children: [
-      codeStep({ name: 'open_account', onFailure: codeStep({ name: 'notify' }) }),
+      codeStep({
+        name: 'open_account',
+        onFailure: codeStep({ name: 'notify' }),
+      }),
       null,
     ],
     nextAction: codeStep({ name: 'after' }),

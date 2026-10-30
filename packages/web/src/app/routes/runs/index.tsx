@@ -249,30 +249,30 @@ const RunsPage = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <Button
-                  type="button"
-                  variant={dedupedView ? 'secondary' : 'outline'}
-                  size="sm"
-                  aria-pressed={dedupedView}
-                  disabled={isNil(dedupeProjectId)}
-                  onClick={() =>
-                    selectTab(dedupedView ? state.type : DEDUPED_VIEW)
-                  }
-                >
-                  <CopyMinus className="size-4" />
-                  {t('Deduplicated triggers')}
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-64">
-              {t(
-                'Triggers that were dropped as duplicates and never ran. Switch back to see run logs.',
-              )}
-            </TooltipContent>
-          </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    type="button"
+                    variant={dedupedView ? 'secondary' : 'outline'}
+                    size="sm"
+                    aria-pressed={dedupedView}
+                    disabled={isNil(dedupeProjectId)}
+                    onClick={() =>
+                      selectTab(dedupedView ? state.type : DEDUPED_VIEW)
+                    }
+                  >
+                    <CopyMinus className="size-4" />
+                    {t('Deduplicated triggers')}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64">
+                {t(
+                  'Triggers that were dropped as duplicates and never ran. Switch back to see run logs.',
+                )}
+              </TooltipContent>
+            </Tooltip>
           )}
           {scope && (
             <Tooltip>

@@ -18,8 +18,8 @@ import {
 } from 'lucide-react';
 
 import { TableIcon } from '@/components/icons/table';
-import { issueUiUtils } from '@/features/issues/utils/issue-ui-utils';
 import { WorkflowIcon } from '@/components/icons/workflow';
+import { issueUiUtils } from '@/features/issues/utils/issue-ui-utils';
 import { formatUtils } from '@/lib/format-utils';
 
 import { type SearchResultItem } from './use-global-search-results';

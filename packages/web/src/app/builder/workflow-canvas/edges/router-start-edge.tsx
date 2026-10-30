@@ -156,10 +156,7 @@ export const RouterStartCanvasEdge = ({
 
   return (
     <>
-      <BaseEdge
-        path={path}
-        style={edgeStyle}
-      ></BaseEdge>
+      <BaseEdge path={path} style={edgeStyle}></BaseEdge>
       {!data.isBranchEmpty && (
         <foreignObject
           x={buttonPosition.x}

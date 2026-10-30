@@ -36,10 +36,7 @@ export const StraightLineCanvasEdge = ({
 
   return (
     <>
-      <BaseEdge
-        path={path}
-        style={edgeStyle}
-      />
+      <BaseEdge path={path} style={edgeStyle} />
       {!data.hideAddButton && (
         <foreignObject
           x={

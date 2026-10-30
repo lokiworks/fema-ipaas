@@ -103,7 +103,10 @@ describe('stepTestRelevance', () => {
   it('keeps the tested date when only error handling changed', () => {
     const kept = stepTestRelevance.keepTestedSteps({
       workflowVersion: versionWith(
-        connectorStep({ errorHandlingOptions: RETRY, lastUpdatedDate: EDITED_AT }),
+        connectorStep({
+          errorHandlingOptions: RETRY,
+          lastUpdatedDate: EDITED_AT,
+        }),
       ),
       source: versionWith(connectorStep({ sampleData: SAMPLE })),
     });

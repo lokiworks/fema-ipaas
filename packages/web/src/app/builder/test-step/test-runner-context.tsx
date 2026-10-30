@@ -24,11 +24,11 @@ import {
 import { DynamicPropertiesContext } from '../connector-properties/dynamic-properties-context';
 
 import TestWebhookDialog from './custom-test-step/test-webhook-dialog';
-import { TestWriteConfirmDialog } from './test-write-confirm-dialog';
 import {
   TestType,
   triggerEventUtils,
 } from './test-trigger-section/trigger-event-utils';
+import { TestWriteConfirmDialog } from './test-write-confirm-dialog';
 import { testStepHooks } from './utils/test-step-hooks';
 
 const ActionTestRunnerContext =

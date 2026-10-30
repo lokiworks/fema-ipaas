@@ -79,9 +79,7 @@ export function BackupListCard({ overview }: { overview: BackupOverview }) {
                 <TableRow key={backup.id} data-testid="backup-row">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
-                      <span>
-                        {backupTime.local({ iso: backup.startedAt })}
-                      </span>
+                      <span>{backupTime.local({ iso: backup.startedAt })}</span>
                       {backup.note && (
                         <span className="text-xs text-muted-foreground">
                           {backup.note}

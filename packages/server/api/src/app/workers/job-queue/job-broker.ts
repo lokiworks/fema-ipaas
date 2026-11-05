@@ -11,6 +11,7 @@ import { QueueName } from '../job'
 import { jobMigrations } from '../migrations/job-data-migrations'
 import { instanceConcurrencyInterceptor } from './interceptors/instance-concurrency-interceptor'
 import { rateLimiterInterceptor } from './interceptors/rate-limiter-interceptor'
+import { tenantSuspensionInterceptor } from './interceptors/tenant-suspension-interceptor'
 import { workflowConcurrencyInterceptor } from './interceptors/workflow-concurrency-interceptor'
 import { zombiePollingInterceptor } from './interceptors/zombie-polling-interceptor'
 import { jobAssignmentTracker } from './job-assignment-tracker'
@@ -21,7 +22,7 @@ import { createQueueDispatcher, QueueDispatcher } from './queue-dispatcher'
 const DRAIN_DELAY_SECONDS = 15
 const LOCK_DURATION_MS = 120_000
 
-const interceptors: JobInterceptor[] = [rateLimiterInterceptor, zombiePollingInterceptor, instanceConcurrencyInterceptor, workflowConcurrencyInterceptor]
+const interceptors: JobInterceptor[] = [tenantSuspensionInterceptor, rateLimiterInterceptor, zombiePollingInterceptor, instanceConcurrencyInterceptor, workflowConcurrencyInterceptor]
 const workerPromises = new Map<string, Promise<BullMQWorker>>()
 const dispatchers = new Map<string, QueueDispatcher>()
 

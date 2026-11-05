@@ -6,6 +6,7 @@ import {
     createMockSignUpRequest,
 } from '../../helpers/mocks/authn'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
+import { captchaHelper } from '../../helpers/captcha'
 
 let app: FastifyInstance | null = null
 
@@ -34,7 +35,7 @@ describe('Authentication API', () => {
             const response = await app?.inject({
                 method: 'POST',
                 url: '/api/v1/authentication/sign-up',
-                body: mockSignUpRequest,
+                body: { ...mockSignUpRequest, captchaToken: await captchaHelper.solvedToken({ app }) },
             })
 
             // assert
@@ -63,7 +64,7 @@ describe('Authentication API', () => {
             const response = await app?.inject({
                 method: 'POST',
                 url: '/api/v1/authentication/sign-up',
-                body: mockSignUpRequest,
+                body: { ...mockSignUpRequest, captchaToken: await captchaHelper.solvedToken({ app }) },
             })
 
             // assert
@@ -84,7 +85,7 @@ describe('Authentication API', () => {
             await app?.inject({
                 method: 'POST',
                 url: '/api/v1/authentication/sign-up',
-                body: mockSignUpRequest,
+                body: { ...mockSignUpRequest, captchaToken: await captchaHelper.solvedToken({ app }) },
             })
 
             const mockSignInRequest = createMockSignInRequest({
@@ -116,7 +117,7 @@ describe('Authentication API', () => {
             await app?.inject({
                 method: 'POST',
                 url: '/api/v1/authentication/sign-up',
-                body: mockSignUpRequest,
+                body: { ...mockSignUpRequest, captchaToken: await captchaHelper.solvedToken({ app }) },
             })
 
             const mockSignInRequest = createMockSignInRequest({

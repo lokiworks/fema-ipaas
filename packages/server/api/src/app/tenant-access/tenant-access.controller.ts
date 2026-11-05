@@ -23,6 +23,7 @@ import {
     UpdateLoginSecurityRequestBody,
     UpdateModuleAccessSettingsRequestBody,
     UpdateTenantMemberAccessRequestBody,
+    UpdateTenantMfaPolicyRequestBody,
     UserStatus,
 } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
@@ -156,6 +157,22 @@ export const tenantAccessController: FastifyPluginAsyncZod = async (app) => {
         return settings
     })
 
+    app.post('/login-security/mfa-policy', UpdateMfaPolicyRequest, async (request): Promise<LoginSecuritySettings> => {
+        const settings = await loginSecurityService(request.log).updateMfaPolicy({ tenantId: request.principal.tenant.id, request: request.body })
+        audit({ request, action: ApplicationEventName.LOGIN_SETTINGS_UPDATED, target: 'two-step verification', detail: `${settings.mfaPolicy}, phone ${settings.phoneAuthEnabled ? 'on' : 'off'}` })
+        return settings
+    })
+
+    app.post('/members/:id/reset-mfa', ResetMemberMfaRequest, async (request, reply) => {
+        await loginSecurityService(request.log).resetMemberMfa({
+            tenantId: request.principal.tenant.id,
+            userId: request.params.id,
+            actorId: request.principal.id,
+        })
+        audit({ request, action: ApplicationEventName.LOGIN_SETTINGS_UPDATED, target: request.params.id, detail: 'two-step verification reset' })
+        await reply.status(StatusCodes.NO_CONTENT).send()
+    })
+
     app.get('/me', MyAccessRequest, async (request): Promise<MyModuleAccess> => {
         return moduleAccessService(request.log).getMyAccess({ tenantId: request.principal.tenant.id, userId: request.principal.id })
     })
@@ -229,6 +246,16 @@ const ListRequestsRequest = {
 const UpdateLoginSecurityRequest = {
     config: { security: adminOnly },
     schema: { tags: ['tenant-access'], body: UpdateLoginSecurityRequestBody, response: { [StatusCodes.OK]: LoginSecuritySettings } },
+}
+
+const UpdateMfaPolicyRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], body: UpdateTenantMfaPolicyRequestBody, response: { [StatusCodes.OK]: LoginSecuritySettings } },
+}
+
+const ResetMemberMfaRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], params: IdParams },
 }
 
 const MyAccessRequest = {

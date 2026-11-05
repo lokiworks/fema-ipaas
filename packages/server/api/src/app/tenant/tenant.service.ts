@@ -1,5 +1,5 @@
 import { ApplicationError, ErrorCode, generateId, isNil, spreadIfDefined, spreadIfNotUndefined, TenantId, UserId } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TENANT_ACCESS_LIMITS, TenantLimits, TenantRole, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
+import { AuthenticationResponse, InstanceRole, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TENANT_ACCESS_LIMITS, TenantExternalRef, TenantLimits, TenantLimitsUpdate, TenantMfaPolicy, TenantRole, TenantStatus, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { authenticationUtils } from '../authentication/authentication-utils'
@@ -8,11 +8,16 @@ import { userIdentityRepository, userIdentityService } from '../authentication/u
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
 import { defaultTheme } from '../flags/theme'
+import { instanceSettingsStore } from '../operator/instance-settings.store'
 import { projectService } from '../project/project-service'
 import { userService } from '../user/user-service'
+import { tenantLimitsService } from './tenant-limits.service'
+import { tenantLimitsUtils } from './tenant-limits.utils'
+import { tenantSlugUtils } from './tenant-slug.utils'
+import { tenantStatusGuard } from './tenant-status-guard'
 import { TenantEntity } from './tenant.entity'
 
-export const tenantRepo = repoFactory<Tenant>(TenantEntity)
+export const tenantRepo = repoFactory<Tenant & TenantLimits>(TenantEntity)
 
 export const tenantService = (log: FastifyBaseLogger) => ({
     async listTenantsForIdentityWithAtleastProject(params: ListTenantsForIdentityParams): Promise<TenantWithoutSensitiveData[]> {
@@ -41,12 +46,25 @@ export const tenantService = (log: FastifyBaseLogger) => ({
             logoIconUrl,
             fullLogoUrl,
             favIconUrl,
+            externalRef,
+            limits,
         } = params
 
         const newTenant: NewTenant = {
             id: generateId(),
             ownerId,
             name,
+            slug: await this.allocateSlug({ name, requested: params.slug }),
+            status: TenantStatus.ACTIVE,
+            externalIssuer: externalRef?.issuer ?? null,
+            externalTenantId: externalRef?.tenantId ?? null,
+            mfaPolicy: TenantMfaPolicy.OPTIONAL,
+            phoneAuthEnabled: true,
+            usersLimit: limits?.usersLimit ?? null,
+            projectsLimit: limits?.projectsLimit ?? null,
+            activeWorkflowsLimit: limits?.activeWorkflowsLimit ?? null,
+            concurrentExecutionsLimit: limits?.concurrentExecutionsLimit ?? null,
+            workerGroupId: limits?.workerGroupId ?? null,
             primaryColor: primaryColor ?? defaultTheme.colors.primary.default,
             logoIconUrl: logoIconUrl ?? defaultTheme.logos.logoIconUrl,
             fullLogoUrl: fullLogoUrl ?? defaultTheme.logos.fullLogoUrl,
@@ -91,7 +109,14 @@ export const tenantService = (log: FastifyBaseLogger) => ({
                 const provisioningStoppedBeforeLinkingTheOwner = !isNil(ownerWithoutTenant) && !isNil(unlinkedTenant)
                 if (provisioningStoppedBeforeLinkingTheOwner) {
                     await beforeProvision?.()
+                    if (isFirstTenant && await tenantRepo().count() === 1) {
+                        await userIdentityRepository().update({ id: identityId }, { instanceRole: InstanceRole.OPERATOR })
+                    }
                     return linkOwnerToTenant({ ownerId: ownerWithoutTenant.id, tenantId: unlinkedTenant.id, identityId, name, invalidatePreviousTokens, log })
+                }
+                const firstOfInstance = isFirstTenant && await tenantRepo().count() === 0
+                if (isFirstTenant) {
+                    await assertOnboardingMayCreateTenant()
                 }
                 await beforeProvision?.()
                 const owner = ownerWithoutTenant
@@ -101,6 +126,9 @@ export const tenantService = (log: FastifyBaseLogger) => ({
                         tenantId: null,
                     })
                 const tenant = await this.create({ ownerId: owner.id, name })
+                if (firstOfInstance) {
+                    await userIdentityRepository().update({ id: identityId }, { instanceRole: InstanceRole.OPERATOR })
+                }
                 const personalProject = await projectService(log).create({
                     displayName: signupNames.personalProjectName({ ownerName: name }),
                     ownerId: owner.id,
@@ -120,17 +148,102 @@ export const tenantService = (log: FastifyBaseLogger) => ({
             },
         })
     },
-    async getAll(): Promise<TenantWithoutFederatedAuth[]> {
-        return tenantRepo().find()
-    },
-    async getOldestTenant(): Promise<TenantWithoutFederatedAuth | null> {
-        return tenantRepo().findOne({
-            where: {},
-            order: {
-                created: 'ASC',
-                id: 'ASC',
+    async provisionTenant({ identityId, name, slug, externalRef, limits }: ProvisionTenantParams): Promise<ProvisionTenantResult> {
+        const lockKey = isNil(externalRef) ? `provision-tenant-${identityId}` : `provision-tenant-ref-${externalRef.issuer}-${externalRef.tenantId}`
+        return distributedLock(log).runExclusive({
+            key: lockKey,
+            timeoutInSeconds: 30,
+            fn: async () => {
+                const owner = await userService(log).create({
+                    identityId,
+                    tenantRole: TenantRole.ADMIN,
+                    tenantId: null,
+                })
+                const tenant = await this.create({ ownerId: owner.id, name, slug, externalRef, limits })
+                const project = await this.ensureOwnerProject({ tenantId: tenant.id, ownerId: owner.id, name })
+                return { tenant, ownerUserId: owner.id, projectId: project.id }
             },
         })
+    },
+    async ensureOwnerProject({ tenantId, ownerId, name }: EnsureOwnerProjectParams): Promise<{ id: string }> {
+        const existing = await projectService(log).getOneByOwnerAndTenant({ ownerId, tenantId })
+        if (!isNil(existing)) {
+            return existing
+        }
+        return projectService(log).create({
+            displayName: signupNames.personalProjectName({ ownerName: name }),
+            ownerId,
+            tenantId,
+            type: ProjectType.PERSONAL,
+        })
+    },
+    async allocateSlug({ name, requested }: AllocateSlugParams): Promise<string> {
+        if (!isNil(requested) && requested.trim().length > 0) {
+            const slug = tenantSlugUtils.normalise({ slug: requested })
+            await assertSlugAvailable({ slug })
+            return slug
+        }
+        for (const candidate of tenantSlugUtils.candidates({ name })) {
+            if (!(await tenantRepo().existsBy({ slug: candidate }))) {
+                return candidate
+            }
+        }
+        throw new ApplicationError({
+            code: ErrorCode.VALIDATION,
+            params: { message: 'tenantSlugUnavailable' },
+        })
+    },
+    async updateSlug({ tenantId, slug }: UpdateSlugParams): Promise<TenantWithoutFederatedAuth> {
+        const normalised = tenantSlugUtils.normalise({ slug })
+        await assertSlugAvailable({ slug: normalised, excludeTenantId: tenantId })
+        await tenantRepo().update({ id: tenantId }, { slug: normalised })
+        log.info({ tenant: { id: tenantId }, slug: normalised }, 'Tenant slug updated')
+        return this.getOneOrThrow(tenantId)
+    },
+    async setStatus({ tenantId, status }: SetStatusParams): Promise<TenantWithoutFederatedAuth> {
+        await tenantRepo().update({ id: tenantId }, { status })
+        tenantStatusGuard.invalidate({ tenantId })
+        log.info({ tenant: { id: tenantId }, status }, 'Tenant status changed')
+        return this.getOneOrThrow(tenantId)
+    },
+    async updateLimits({ tenantId, limits }: UpdateLimitsParams): Promise<TenantWithoutFederatedAuth> {
+        await this.getOneOrThrow(tenantId)
+        await tenantRepo().update({ id: tenantId }, {
+            ...(limits.usersLimit !== undefined ? { usersLimit: limits.usersLimit } : {}),
+            ...(limits.projectsLimit !== undefined ? { projectsLimit: limits.projectsLimit } : {}),
+            ...(limits.activeWorkflowsLimit !== undefined ? { activeWorkflowsLimit: limits.activeWorkflowsLimit } : {}),
+            ...(limits.concurrentExecutionsLimit !== undefined ? { concurrentExecutionsLimit: limits.concurrentExecutionsLimit } : {}),
+            ...(limits.workerGroupId !== undefined ? { workerGroupId: limits.workerGroupId } : {}),
+        })
+        await tenantLimitsService(log).invalidateConcurrentExecutionsLimit({ tenantId })
+        return this.getOneOrThrow(tenantId)
+    },
+    async rename({ tenantId, name }: RenameParams): Promise<TenantWithoutFederatedAuth> {
+        await tenantRepo().update({ id: tenantId }, { name })
+        return this.getOneOrThrow(tenantId)
+    },
+    async getBySlug(slug: string): Promise<TenantWithoutFederatedAuth | null> {
+        return tenantRepo().findOneBy({ slug: tenantSlugUtils.normalise({ slug }) })
+    },
+    async getBySlugOrId(slugOrId: string): Promise<TenantWithoutFederatedAuth | null> {
+        const bySlug = await this.getBySlug(slugOrId)
+        return bySlug ?? this.getOne(slugOrId)
+    },
+    async getByExternalRef({ issuer, tenantId }: TenantExternalRef): Promise<TenantWithoutFederatedAuth | null> {
+        return tenantRepo().findOneBy({ externalIssuer: issuer, externalTenantId: tenantId })
+    },
+    async count(): Promise<number> {
+        return tenantRepo().count()
+    },
+    async assertOnboardingAllowed(): Promise<void> {
+        await assertOnboardingMayCreateTenant()
+    },
+    async getOnlyTenantId(): Promise<TenantId | null> {
+        const rows = await tenantRepo().find({ select: ['id'], order: { created: 'ASC', id: 'ASC' }, take: 2 })
+        return rows.length === 1 ? rows[0].id : null
+    },
+    async getAll(): Promise<TenantWithoutFederatedAuth[]> {
+        return tenantRepo().find()
     },
     async update(params: UpdateParams): Promise<TenantWithoutFederatedAuth> {
         if (params.federatedAuthProviders?.saml !== undefined) {
@@ -200,25 +313,59 @@ export const tenantService = (log: FastifyBaseLogger) => ({
         return !isNil(result?.federatedAuthProviders?.saml)
     },
     async getOneWithLimits(id: TenantId): Promise<TenantWithoutSensitiveData | null> {
-        const tenant = await this.getOne(id)
+        const tenant = await tenantRepo().findOneBy({ id })
         if (isNil(tenant)) {
             return null
         }
         return {
             ...tenant,
             federatedAuthProviders: { saml: null },
-            limits: SYSTEM_LIMITS,
+            limits: effectiveLimitsOf(tenant),
         }
     },
     async getOneWithLimitsOrThrow(id: TenantId): Promise<TenantWithoutSensitiveData> {
-        const tenant = await this.getOneOrThrow(id)
+        const tenant = await tenantRepo().findOneByOrFail({ id })
         return {
             ...tenant,
             federatedAuthProviders: { saml: null },
-            limits: SYSTEM_LIMITS,
+            limits: effectiveLimitsOf(tenant),
         }
     },
 })
+
+function effectiveLimitsOf(tenant: TenantLimits): TenantLimits {
+    return tenantLimitsUtils.effective({ row: tenant, system: SYSTEM_LIMITS })
+}
+
+async function assertSlugAvailable({ slug, excludeTenantId }: { slug: string, excludeTenantId?: TenantId }): Promise<void> {
+    if (!tenantSlugUtils.isValid({ slug })) {
+        throw new ApplicationError({
+            code: ErrorCode.VALIDATION,
+            params: { message: 'tenantSlugInvalid' },
+        })
+    }
+    const existing = await tenantRepo().findOne({ where: { slug }, select: ['id'] })
+    if (!isNil(existing) && existing.id !== excludeTenantId) {
+        throw new ApplicationError({
+            code: ErrorCode.VALIDATION,
+            params: { message: 'tenantSlugTaken' },
+        })
+    }
+}
+
+async function assertOnboardingMayCreateTenant(): Promise<void> {
+    const existingTenants = await tenantRepo().count()
+    if (existingTenants === 0) {
+        return
+    }
+    const settings = await instanceSettingsStore.get()
+    if (!settings.tenantSelfSignup) {
+        throw new ApplicationError({
+            code: ErrorCode.INVITATION_ONLY_SIGN_UP,
+            params: { message: 'tenantSelfSignupDisabled' },
+        })
+    }
+}
 
 function findProvisionedOwner(users: User[]): TenantOwner | undefined {
     return users.find((user): user is TenantOwner => !isNil(user.tenantId))
@@ -315,16 +462,64 @@ function hasFederatedAuth(tenant: Tenant | TenantWithoutFederatedAuth): tenant i
     return 'federatedAuthProviders' in tenant
 }
 
+type ProvisionTenantParams = {
+    identityId: string
+    name: string
+    slug?: string
+    externalRef?: TenantExternalRef
+    limits?: TenantLimitsUpdate
+}
+
+type ProvisionTenantResult = {
+    tenant: TenantWithoutFederatedAuth
+    ownerUserId: UserId
+    projectId: string
+}
+
+type EnsureOwnerProjectParams = {
+    tenantId: TenantId
+    ownerId: UserId
+    name: string
+}
+
+type AllocateSlugParams = {
+    name: string
+    requested?: string
+}
+
+type UpdateSlugParams = {
+    tenantId: TenantId
+    slug: string
+}
+
+type SetStatusParams = {
+    tenantId: TenantId
+    status: TenantStatus
+}
+
+type UpdateLimitsParams = {
+    tenantId: TenantId
+    limits: TenantLimitsUpdate
+}
+
+type RenameParams = {
+    tenantId: TenantId
+    name: string
+}
+
 type AddParams = {
     ownerId: UserId
     name: string
+    slug?: string
+    externalRef?: TenantExternalRef
+    limits?: TenantLimitsUpdate
     primaryColor?: string
     logoIconUrl?: string
     fullLogoUrl?: string
     favIconUrl?: string
 }
 
-type NewTenant = Omit<Tenant, 'created' | 'updated'>
+type NewTenant = Omit<Tenant, 'created' | 'updated'> & TenantLimits
 
 type UpdateParams = UpdateTenantRequestBody & {
     id: TenantId

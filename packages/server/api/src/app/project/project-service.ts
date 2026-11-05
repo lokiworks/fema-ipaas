@@ -6,6 +6,7 @@ import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
 import { projectLimitsGuard } from '../limits/project-limits.service'
 import { runQuota } from '../limits/run-quota.service'
+import { tenantLimitsService } from '../tenant/tenant-limits.service'
 import { userService } from '../user/user-service'
 import { projectHooks, ProjectPostCreateContext } from './project-hooks'
 import { projectRepo } from './project-repo'
@@ -17,6 +18,9 @@ export const projectService = (log: FastifyBaseLogger) => ({
     async create(params: CreateParams): Promise<Project> {
         const { callPostCreateHooks = true, entityManager, postCreateContext, icon: requestedIcon, ...rest } = params
         const icon = requestedIcon ?? this.createProjectIcon()
+        if (rest.type === ProjectType.TEAM) {
+            await tenantLimitsService(log).assertCanAddProject({ tenantId: rest.tenantId })
+        }
         const newProject: NewProject = {
             id: generateId(),
             ...rest,

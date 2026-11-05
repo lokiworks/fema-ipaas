@@ -1,20 +1,48 @@
 import { ApplicationError, ErrorCode, isMultipartFile, isNil } from '@fema-ipaas/core-utils'
-import { LoginSecuritySettings, TENANT_BRANDING_LIMITS, UpdateLoginSecurityRequestBody } from '@fema-ipaas/shared'
+import { LoginMethod, LoginMethodStatus, LoginSecuritySettings, TENANT_BRANDING_LIMITS, UpdateLoginSecurityRequestBody, UpdateTenantMfaPolicyRequestBody } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { mfaService } from '../authentication/mfa/mfa.service'
+import { smsSettingsService } from '../authentication/sms/sms-settings.service'
 import { emailService } from '../helper/email/email-service'
 import { ssoConfigUtils } from '../sso/sso-config.service'
 import { tenantRepo, tenantService } from '../tenant/tenant.service'
 import { tenantAccessUtils } from './tenant-access.utils'
+import { tenantMembersService } from './tenant-members.service'
 
 export const loginSecurityService = (log: FastifyBaseLogger) => ({
     async get({ tenantId }: TenantParams): Promise<LoginSecuritySettings> {
         const tenant = await tenantService(log).getOneWithFederatedAuthOrThrow(tenantId)
+        const smsAvailable = await smsSettingsService.isAvailable()
         return {
-            methods: tenantAccessUtils.loginMethods({ emailAuthEnabled: tenant.emailAuthEnabled, providers: tenant.federatedAuthProviders }),
+            methods: withPhoneMethod({
+                methods: tenantAccessUtils.loginMethods({ emailAuthEnabled: tenant.emailAuthEnabled, providers: tenant.federatedAuthProviders }),
+                smsAvailable,
+                phoneAuthEnabled: tenant.phoneAuthEnabled,
+            }),
             passwordMinLength: tenant.passwordMinLength,
             sessionDurationDays: tenant.sessionDurationDays,
             emailDelivery: emailService(log).isConfigured(),
+            smsDelivery: smsAvailable,
+            phoneAuthEnabled: tenant.phoneAuthEnabled,
+            mfaPolicy: tenant.mfaPolicy,
         }
+    },
+
+    async updateMfaPolicy({ tenantId, request }: UpdateMfaPolicyParams): Promise<LoginSecuritySettings> {
+        if (request.phoneAuthEnabled === true && !await smsSettingsService.isAvailable()) {
+            throw new ApplicationError({ code: ErrorCode.SMS_NOT_CONFIGURED, params: {} })
+        }
+        await tenantRepo().update({ id: tenantId }, {
+            mfaPolicy: request.mfaPolicy,
+            ...(isNil(request.phoneAuthEnabled) ? {} : { phoneAuthEnabled: request.phoneAuthEnabled }),
+        })
+        return this.get({ tenantId })
+    },
+
+    async resetMemberMfa({ tenantId, userId, actorId }: ResetMemberMfaParams): Promise<void> {
+        const member = await tenantMembersService(log).assertEditable({ tenantId, userId, actorId })
+        await mfaService(log).adminReset({ identityId: member.identityId })
+        log.info({ tenant: { id: tenantId }, user: { id: userId } }, '[loginSecurity] two-step verification reset by admin')
     },
 
     async update({ tenantId, request }: UpdateParams): Promise<LoginSecuritySettings> {
@@ -41,6 +69,12 @@ async function assertAnotherMethodStaysEnabled({ log, tenantId }: { log: Fastify
     }
 }
 
+function withPhoneMethod({ methods, smsAvailable, phoneAuthEnabled }: WithPhoneMethodParams): LoginMethodStatus[] {
+    return methods.map((status) => status.method === LoginMethod.PHONE_SMS
+        ? { method: LoginMethod.PHONE_SMS, available: smsAvailable, configured: smsAvailable, enabled: smsAvailable && phoneAuthEnabled }
+        : status)
+}
+
 function assertBrandingAssetsWithinLimit(files: unknown[]): void {
     const tooLarge = files.some((file) => isMultipartFile(file) && file.data.length > TENANT_BRANDING_LIMITS.logoMaxBytes)
     if (tooLarge) {
@@ -58,6 +92,21 @@ export const tenantSettingsGuards = {
 
 type TenantParams = {
     tenantId: string
+}
+
+type UpdateMfaPolicyParams = TenantParams & {
+    request: UpdateTenantMfaPolicyRequestBody
+}
+
+type ResetMemberMfaParams = TenantParams & {
+    userId: string
+    actorId: string
+}
+
+type WithPhoneMethodParams = {
+    methods: LoginMethodStatus[]
+    smsAvailable: boolean
+    phoneAuthEnabled: boolean
 }
 
 type UpdateParams = TenantParams & {

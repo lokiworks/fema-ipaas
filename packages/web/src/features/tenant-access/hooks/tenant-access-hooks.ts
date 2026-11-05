@@ -3,10 +3,18 @@ import {
   ListOwnedResourcesRequestQuery,
   ModuleAccessRequestStatus,
   SsoProvider,
+  SsoSettings,
   TransferResourcesRequestBody,
+  UpdateDingtalkSsoRequestBody,
   UpdateFeishuSsoRequestBody,
   UpdateLoginSecurityRequestBody,
   UpdateOidcSsoRequestBody,
+  UpdateSamlSsoRequestBody,
+  UpdateTenantMfaPolicyRequestBody,
+  UpdateTenantSlugRequestBody,
+  UpdateWecomSsoRequestBody,
+  CreateTenantDomainRequestBody,
+  PlatformAppBindingView,
   UpdateModuleAccessSettingsRequestBody,
   UpdateTenantMemberAccessRequestBody,
 } from '@fema-ipaas/shared';
@@ -296,6 +304,161 @@ function useSaveFeishuSso({ onSaved }: { onSaved?: () => void } = {}) {
   });
 }
 
+function useSsoSaver<TRequest>({
+  save,
+  onSaved,
+}: {
+  save: (request: TRequest) => Promise<SsoSettings>;
+  onSaved?: () => void;
+}) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: save,
+    onSuccess: (settings) => {
+      queryClient.setQueryData(tenantAccessKeys.sso, settings);
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.loginSecurity,
+      });
+      toast.success(t('Saved'));
+      onSaved?.();
+    },
+    onError: showError,
+  });
+}
+
+function useSaveWecomSso({ onSaved }: { onSaved?: () => void } = {}) {
+  return useSsoSaver<UpdateWecomSsoRequestBody>({
+    save: tenantAccessApi.saveWecomSso,
+    onSaved,
+  });
+}
+
+function useSaveDingtalkSso({ onSaved }: { onSaved?: () => void } = {}) {
+  return useSsoSaver<UpdateDingtalkSsoRequestBody>({
+    save: tenantAccessApi.saveDingtalkSso,
+    onSaved,
+  });
+}
+
+function useSaveSamlSso({ onSaved }: { onSaved?: () => void } = {}) {
+  return useSsoSaver<UpdateSamlSsoRequestBody>({
+    save: tenantAccessApi.saveSamlSso,
+    onSaved,
+  });
+}
+
+function useStartPlatformBinding() {
+  return useMutation({
+    mutationFn: (kind: PlatformAppBindingView['kind']) =>
+      tenantAccessApi.startPlatformBinding(kind),
+    onSuccess: ({ url }) => {
+      window.location.assign(url);
+    },
+    onError: showError,
+  });
+}
+
+function useRemovePlatformBinding() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (kind: PlatformAppBindingView['kind']) =>
+      tenantAccessApi.removePlatformBinding(kind),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.sso });
+      queryClient.invalidateQueries({
+        queryKey: tenantAccessKeys.loginSecurity,
+      });
+      toast.success(t('Binding removed'));
+    },
+    onError: showError,
+  });
+}
+
+function useUpdateMfaPolicy() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: UpdateTenantMfaPolicyRequestBody) =>
+      tenantAccessApi.updateMfaPolicy(request),
+    onSuccess: (settings) => {
+      queryClient.setQueryData(tenantAccessKeys.loginSecurity, settings);
+      queryClient.invalidateQueries({ queryKey: ['tenant'] });
+      toast.success(t('Saved'));
+    },
+    onError: showError,
+  });
+}
+
+function useDomains() {
+  return useQuery({
+    queryKey: tenantAccessKeys.domains,
+    queryFn: () => tenantAccessApi.listDomains(),
+    meta: { showErrorDialog: true, loadSubsetOptions: {} },
+  });
+}
+
+function useCreateDomain({ onCreated }: { onCreated?: () => void } = {}) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: CreateTenantDomainRequestBody) =>
+      tenantAccessApi.createDomain(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.domains });
+      onCreated?.();
+    },
+    onError: showError,
+  });
+}
+
+function useVerifyDomain() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => tenantAccessApi.verifyDomain(id),
+    onSuccess: (domain) => {
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.domains });
+      if (domain.verifiedAt) {
+        toast.success(t('Domain verified'));
+      } else {
+        toast.error(
+          t(
+            'The TXT record was not found yet. DNS changes can take a few minutes.',
+          ),
+        );
+      }
+    },
+    onError: showError,
+  });
+}
+
+function useRemoveDomain() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => tenantAccessApi.removeDomain(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.domains });
+    },
+    onError: showError,
+  });
+}
+
+function useUpdateSlug({ onSaved }: { onSaved?: () => void } = {}) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      tenantId,
+      request,
+    }: {
+      tenantId: string;
+      request: UpdateTenantSlugRequestBody;
+    }) => tenantAccessApi.updateSlug({ tenantId, request }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenant'] });
+      toast.success(t('Sign-in address updated'));
+      onSaved?.();
+    },
+    onError: showError,
+  });
+}
+
 function useSetSsoEnabled() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -419,6 +582,7 @@ export const tenantAccessKeys = {
   requestsRoot: ['tenant-access', 'requests'],
   loginSecurity: ['tenant-access', 'login-security'],
   sso: ['tenant-access', 'sso'],
+  domains: ['tenant-access', 'domains'],
   me: ['tenant-access', 'me'],
   workerFleet: ['tenant-access', 'worker-fleet'],
   componentHealth: ['tenant-access', 'component-health'],
@@ -446,6 +610,17 @@ export const tenantAccessHooks = {
   useSsoSettings,
   useSaveOidcSso,
   useSaveFeishuSso,
+  useSaveWecomSso,
+  useSaveDingtalkSso,
+  useSaveSamlSso,
+  useStartPlatformBinding,
+  useRemovePlatformBinding,
+  useUpdateMfaPolicy,
+  useDomains,
+  useCreateDomain,
+  useVerifyDomain,
+  useRemoveDomain,
+  useUpdateSlug,
   useSetSsoEnabled,
   useStartSsoTest,
   useMyAccess,

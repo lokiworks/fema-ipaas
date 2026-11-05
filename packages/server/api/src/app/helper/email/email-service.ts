@@ -4,6 +4,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { projectService } from '../../project/project-service'
 import { tenantService } from '../../tenant/tenant.service'
 import { domainHelper } from '../domain-helper'
+import { identityContact } from '../identity-contact'
 import { emailBrandingUtils } from './email-branding-utils'
 import { mailSender, MailTemplateVariables } from './mail-sender'
 
@@ -56,10 +57,15 @@ export const emailService = (log: FastifyBaseLogger) => ({
     },
 
     async sendOtp({ tenantId, userIdentity, otp, type }: SendOtpParams): Promise<void> {
+        const to = identityContact.emailOrNull(userIdentity)
+        if (isNil(to)) {
+            log.warn({ user: { id: userIdentity.id } }, '[emailService#sendOtp] Identity has no email address, skipping')
+            return
+        }
         const { template, subject } = OTP_TEMPLATES[type]
         const branding = await brandingFor(tenantId, log)
         await mailSender(log).send({
-            to: userIdentity.email,
+            to,
             subject,
             template,
             variables: {

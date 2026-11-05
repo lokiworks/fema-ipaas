@@ -6,6 +6,7 @@ import { In, MoreThanOrEqual } from 'typeorm'
 import { connectionAccessService } from '../connection/connection-access.service'
 import { domainHelper } from '../helper/domain-helper'
 import { emailService } from '../helper/email/email-service'
+import { identityContact } from '../helper/identity-contact'
 import { issueRepo } from '../issue/issue.service'
 import { userRepo } from '../user/user-service'
 import { executionRepo } from '../workflows/execution/execution-service'
@@ -31,7 +32,10 @@ export const weeklyDigestService = (log: FastifyBaseLogger) => ({
                 return count
             }
             const tenantId = user.tenantId
-            const email = user.identity.email
+            const email = identityContact.emailOrNull(user.identity)
+            if (isNil(email)) {
+                return count
+            }
             const { error } = await tryCatch(async () => {
                 const counts = await countsFor({ userId: user.id, tenantId, since, log })
                 if (!weeklyDigestUtils.isWorthSending(counts)) {

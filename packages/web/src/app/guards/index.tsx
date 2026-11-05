@@ -7,6 +7,7 @@ import {
 
 import { PageTitle } from '@/app/components/page-title';
 import { authRoutes } from '@/app/routes/auth-routes';
+import { operatorRoutes } from '@/app/routes/operator-routes';
 import { projectRoutes } from '@/app/routes/project-routes';
 import { publicRoutes } from '@/app/routes/public-routes';
 import { tenantRoutes } from '@/app/routes/tenant-routes';
@@ -121,6 +122,7 @@ const routes = [
   ...projectRoutes,
   ...authRoutes,
   ...tenantRoutes,
+  ...operatorRoutes,
   {
     path: WORKSPACE_HOME_ROUTE,
     element: (

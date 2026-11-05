@@ -7,7 +7,7 @@ API_PORT=$((3100 + SLOT))
 WEB_PORT=$((4200 + SLOT))
 MOCK_PORT=$((18900 + SLOT))
 STATE_DIR="${E2E_STATE_ROOT:-/tmp/fema-e2e}/slot-${SLOT}"
-CONNECTORS="beisen,feishu,mysql,postgres,ai,connections,crypto,csv,data-mapper,data-summarizer,date-helper,file-helper,forms,http,manual-trigger,math-helper,mcp,schedule,store,subflows,tags,text-helper,webhook,xml"
+CONNECTORS="beisen,feishu,mysql,postgres,ai,connections,crypto,csv,data-mapper,data-summarizer,date-helper,file-helper,forms,http,manual-trigger,math-helper,mcp,schedule,store,subflows,tags,text-helper,webhook,xml,fema"
 JWT_SECRET="e2e-slot-${SLOT}-secret"
 
 cd "${ROOT}"

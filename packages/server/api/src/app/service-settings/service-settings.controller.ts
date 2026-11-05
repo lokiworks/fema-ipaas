@@ -5,24 +5,25 @@ import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { authnRateLimit } from '../core/security/rate-limit'
 import { serviceCheckService } from '../health/service-check.service'
+import { instanceOperator } from '../operator/instance-operator'
+import { instanceScope } from '../operator/instance-scope'
 import { tenantService } from '../tenant/tenant.service'
-import { tenantUtils } from '../tenant/tenant.utils'
 import { serviceSettingsService } from './service-settings.service'
 
 export const serviceSettingsController: FastifyPluginAsyncZod = async (app) => {
     app.get('/', ListRequest, async (request): Promise<ServiceSettingsOverview> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return serviceSettingsService(request.log).list({ tenantId: request.principal.tenant.id })
+        await instanceOperator.assert({ request })
+        return serviceSettingsService(request.log).list({ tenantId: await instanceScope.requireTenantId() })
     })
 
     app.post('/', SaveRequest, async (request): Promise<SaveServiceSettingResponse> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return serviceSettingsService(request.log).save({ tenantId: request.principal.tenant.id, userId: request.principal.id, draft: request.body })
+        await instanceOperator.assert({ request })
+        return serviceSettingsService(request.log).save({ tenantId: await instanceScope.requireTenantId(), userId: request.principal.id, draft: request.body })
     })
 
     app.post('/test', TestRequest, async (request): Promise<ServiceCheckResult> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        const tenantId = request.principal.tenant.id
+        await instanceOperator.assert({ request })
+        const tenantId = await instanceScope.requireTenantId()
         const candidate = await serviceSettingsService(request.log).resolveCandidate({ tenantId, draft: request.body.draft })
         if ('error' in candidate) {
             return { kind: request.body.draft.kind, ok: false, failure: ServiceCheckFailure.REJECTED, reason: candidate.error, sentTo: null, checkedAt: new Date().toISOString() }
@@ -32,8 +33,8 @@ export const serviceSettingsController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.delete('/:kind', ClearRequest, async (request): Promise<ServiceSettingView> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return serviceSettingsService(request.log).clear({ tenantId: request.principal.tenant.id, kind: request.params.kind })
+        await instanceOperator.assert({ request })
+        return serviceSettingsService(request.log).clear({ tenantId: await instanceScope.requireTenantId(), kind: request.params.kind })
     })
 }
 

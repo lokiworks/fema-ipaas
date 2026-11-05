@@ -38,6 +38,8 @@ The metadata catalog of automation integrations ("connectors") — each a named 
 - **精简 worker 镜像（`Dockerfile.worker`）里没有内置连接器。** 它不带 `packages/connectors` 和工作区 `node_modules`，只在 `benchmark/` 里用；默认的 `docker-compose.yml` 和 helm 的 app、worker 都用主镜像。要让它能跑内置连接器，同样要走「每个连接器打成带依赖的独立包」这条路。
 - **北森、飞书的接口地址可以用环境变量覆盖。** `FEMA_BEISEN_BASE_URL`、`FEMA_FEISHU_BASE_URL`（飞书优先于连接里选的地区），用于私有化网关和模拟服务；连接器跑在沙箱里，变量要同时列进 `FEMA_SANDBOX_PROPAGATED_ENV_VARS` 才传得进去。
 - **没配注册中心时同步任务直接跳过。** 以前 `listCloudConnectors()` 返回空数组后，`deleteConnectorsIfNotOnCloud` 会把所有 OFFICIAL 连接器当成「云上已下架」删掉。
+- **FEMA 连接器（`packages/connectors/community/fema`）的签名约定是我们单方定的。** fema 出站事件设计里没写到的部分：订阅返回 `secret`（兼容 `signingSecret`）和 `id`；撤销是 `POST /webhook/subscription/delete {id, code}`；验证请求 `{type:'webhook.verification', challenge}` 要原样回显；返回用 `{code:'SUCCESS', data}` 信封；读对象走 `/{应用}/{对象}/find-by-id?id=`。fema 侧实现时要按这个对齐。
+- **FEMA 业务事件按事件 id 去重 24 小时。** fema 失败重试会持续约 9 小时，平台自带的 webhook 去重只有 30 秒，所以触发器在 store 里另记一层；工作流引用触发器字段要写 `{{trigger['output']['objectPath']}}`。
 
 ### Key files
 Entry point: `connectorModule`, the Fastify plugin registered in `packages/server/api/src/app/app.ts` that mounts every `/v1/connectors` route.

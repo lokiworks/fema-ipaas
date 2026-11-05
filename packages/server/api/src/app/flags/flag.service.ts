@@ -9,6 +9,7 @@ import { domainHelper } from '../helper/domain-helper'
 import { emailService } from '../helper/email/email-service'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { instanceFlags } from '../operator/instance-flags'
 import { FlagEntity } from './flag.entity'
 import { defaultTheme } from './theme'
 
@@ -259,6 +260,9 @@ export const flagService = (log: FastifyBaseLogger) => ({
                 updated,
             },
         )
+
+        const instanceEntries = await instanceFlags.compute()
+        flags.push(...instanceEntries.map((entry) => ({ ...entry, created, updated })))
 
         if (system.isApp()) {
             flags.push(

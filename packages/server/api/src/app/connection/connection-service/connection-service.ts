@@ -10,6 +10,7 @@ import {
 } from '../../connectors/metadata/connector-metadata-service'
 import { repoFactory } from '../../core/db/repo-factory'
 import { encryptUtils } from '../../helper/encryption'
+import { identityContact } from '../../helper/identity-contact'
 import { jwtUtils } from '../../helper/jwt-utils'
 import { likePatternUtils } from '../../helper/like-pattern'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
@@ -479,7 +480,7 @@ export const connectionService = (log: FastifyBaseLogger) => ({
         const tenantAdmins = (await userService(log).getByTenantRole(tenantId, TenantRole.ADMIN)).map(user => ({
             firstName: user.identity.firstName,
             lastName: user.identity.lastName,
-            email: user.identity.email,
+            email: identityContact.of(user.identity),
         }))
         return tenantAdmins
     },
@@ -955,7 +956,7 @@ function mapToUserWithMetaInformation(owner: (User & { identity?: UserIdentity }
 
     return {
         id: owner.id,
-        email: identity.email,
+        email: identityContact.of(identity),
         firstName: identity.firstName,
         lastName: identity.lastName,
         tenantId: owner.tenantId,

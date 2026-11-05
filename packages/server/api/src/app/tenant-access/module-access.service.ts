@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { identityContact } from '../helper/identity-contact'
 import { notificationService } from '../notification/notification.service'
 import { tenantRepo } from '../tenant/tenant.service'
 import { userRepo, userService } from '../user/user-service'
@@ -96,8 +97,8 @@ export const moduleAccessService = (log: FastifyBaseLogger) => ({
             return {
                 ...request,
                 userEmail: requester?.identity?.email ?? null,
-                userName: isNil(requester?.identity) ? null : fullName(requester.identity),
-                decidedByName: isNil(decider?.identity) ? null : fullName(decider.identity),
+                userName: isNil(requester?.identity) ? null : identityContact.fullName(requester.identity),
+                decidedByName: isNil(decider?.identity) ? null : identityContact.fullName(decider.identity),
             }
         })
     },
@@ -159,7 +160,7 @@ async function grantModule({ tenantId, user, module, log }: GrantModuleParams): 
 async function resolveContacts({ tenantId, settings }: ResolveContactsParams): Promise<ModuleAccessContact[]> {
     if (settings.deniedHint === PermissionDeniedHint.PERSON && !isNil(settings.personUserId)) {
         const person = await userRepo().findOne({ where: { id: settings.personUserId, tenantId }, relations: { identity: true } })
-        return isNil(person?.identity) ? [] : [{ name: fullName(person.identity), email: person.identity.email }]
+        return isNil(person?.identity) ? [] : [{ name: identityContact.fullName(person.identity), email: identityContact.of(person.identity) }]
     }
     const admins = await userRepo().find({
         where: { tenantId, tenantRole: TenantRole.ADMIN, status: UserStatus.ACTIVE },
@@ -169,12 +170,7 @@ async function resolveContacts({ tenantId, settings }: ResolveContactsParams): P
         .sort((a, b) => String(b.lastActiveDate ?? '').localeCompare(String(a.lastActiveDate ?? '')))
         .slice(0, ADMIN_CONTACTS)
         .filter((admin) => !isNil(admin.identity))
-        .map((admin) => ({ name: fullName(admin.identity), email: admin.identity.email }))
-}
-
-function fullName(identity: { firstName: string, lastName: string, email: string }): string {
-    const name = `${identity.firstName} ${identity.lastName}`.trim()
-    return name.length > 0 ? name : identity.email
+        .map((admin) => ({ name: identityContact.fullName(admin.identity), email: identityContact.of(admin.identity) }))
 }
 
 function validation(message: string): ApplicationError {

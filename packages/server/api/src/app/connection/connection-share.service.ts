@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { distributedStore } from '../database/redis-connections'
+import { identityContact } from '../helper/identity-contact'
 import { likePatternUtils } from '../helper/like-pattern'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
@@ -77,7 +78,7 @@ export const connectionShareService = (log: FastifyBaseLogger) => ({
             .getMany()
         return candidates.flatMap((candidate) => isNil(candidate.identity) ? [] : [{
             id: candidate.id,
-            email: candidate.identity.email,
+            email: identityContact.of(candidate.identity),
             firstName: candidate.identity.firstName,
             lastName: candidate.identity.lastName,
         }])
@@ -287,7 +288,7 @@ function toOwner(owner: ConnectionSchema['owner']): UserWithMetaInformation | nu
     }
     return {
         id: owner.id,
-        email: identity.email,
+        email: identityContact.of(identity),
         firstName: identity.firstName,
         lastName: identity.lastName,
         tenantId: owner.tenantId,

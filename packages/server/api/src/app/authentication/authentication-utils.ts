@@ -4,9 +4,11 @@ import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { In } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
+import { identityContact } from '../helper/identity-contact'
 import { telemetry } from '../helper/telemetry.utils'
 import { projectRepo } from '../project/project-repo'
 import { projectService } from '../project/project-service'
+import { tenantStatusGuard } from '../tenant/tenant-status-guard'
 import { TenantEntity } from '../tenant/tenant.entity'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
@@ -58,6 +60,8 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
     },
 
     async getProjectAndToken(params: GetProjectAndTokenParams): Promise<AuthenticationResponse> {
+        await tenantStatusGuard.assertActive({ tenantId: params.tenantId })
+        const tenant = await tenantRepo().findOneBy({ id: params.tenantId })
         const user = await userService(log).getOneOrFail({ id: params.userId })
         const projects = await projectService(log).getAllForUser({
             tenantId: params.tenantId,
@@ -69,7 +73,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             throw new ApplicationError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
-                    email: identity.email,
+                    email: identityContact.of(identity),
                 },
             })
         }
@@ -77,7 +81,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             throw new ApplicationError({
                 code: ErrorCode.USER_IS_INACTIVE,
                 params: {
-                    email: identity.email,
+                    email: identityContact.of(identity),
                 },
             })
         }
@@ -92,7 +96,6 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
                 },
             })
         }
-        const tenant = await tenantRepo().findOneBy({ id: params.tenantId })
         const token = await accessTokenManager(log).generateToken({
             id: user.id,
             type: PrincipalType.USER,
@@ -100,7 +103,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
                 id: params.tenantId,
             },
             tokenVersion: identity.tokenVersion,
-        }, sessionDurationSeconds(tenant?.sessionDurationDays))
+        }, sessionDurationSeconds({ days: tenant?.sessionDurationDays, sessionHours: params.sessionHours }))
         return {
             ...user,
             firstName: identity.firstName,
@@ -120,7 +123,7 @@ export const authenticationUtils = (log: FastifyBaseLogger) => ({
             throw new ApplicationError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
-                    email: identity.email,
+                    email: identityContact.of(identity),
                 },
             })
         }
@@ -257,13 +260,20 @@ type AssertDomainIsAllowedParams = {
     tenantId: string
 }
 
-function sessionDurationSeconds(days: number | undefined): number {
+function sessionDurationSeconds({ days, sessionHours }: SessionDurationParams): number {
     const allowed = TENANT_ACCESS_LIMITS.sessionDurationOptions
     const effective = !isNil(days) && allowed.includes(days) ? days : TENANT_ACCESS_LIMITS.defaultSessionDurationDays
-    return effective * SECONDS_PER_DAY
+    const tenantSeconds = effective * SECONDS_PER_DAY
+    return isNil(sessionHours) ? tenantSeconds : Math.min(tenantSeconds, Math.floor(sessionHours * SECONDS_PER_HOUR))
 }
 
-const SECONDS_PER_DAY = 24 * 60 * 60
+const SECONDS_PER_HOUR = 60 * 60
+const SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
+
+type SessionDurationParams = {
+    days: number | undefined
+    sessionHours: number | undefined
+}
 
 type AssertPasswordMeetsPolicyParams = {
     password: string
@@ -296,4 +306,5 @@ type GetProjectAndTokenParams = {
     tenantId: string
     projectId: string | null
     scope?: EndpointScope
+    sessionHours?: number
 }

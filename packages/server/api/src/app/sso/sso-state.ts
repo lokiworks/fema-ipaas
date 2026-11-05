@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { isNil } from '@fema-ipaas/core-utils'
-import { SSO_LIMITS, SsoLoginErrorCode, SsoProvider } from '@fema-ipaas/shared'
+import { SSO_LIMITS, SsoLoginErrorCode, SsoProvider, SsoScope } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { distributedStore } from '../database/redis-connections'
 import { system } from '../helper/system/system'
@@ -8,20 +8,47 @@ import { AppSystemProp } from '../helper/system/system-props'
 import { oidcClient } from './oidc-client'
 import { SsoLoginError } from './sso-errors'
 
-async function begin({ tenantId, provider, mode, actorUserId }: BeginParams): Promise<BeginResult> {
+async function begin({ tenantId, scope, provider, mode, actorUserId }: BeginParams): Promise<BeginResult> {
     const state = oidcClient.randomToken()
     const binding = oidcClient.randomToken()
     const record: SsoStateRecord = {
         tenantId,
+        scope,
         provider,
         mode,
         actorUserId,
+        samlRequestId: provider === SsoProvider.SAML ? `_${oidcClient.randomToken()}` : null,
         nonce: oidcClient.randomToken(),
         codeVerifier: oidcClient.randomToken(),
         bindingHash: hashOf(binding),
     }
     await distributedStore.put(stateKey(state), record, SSO_LIMITS.stateTtlSeconds)
     return { state, binding, record }
+}
+
+async function peek({ state }: { state: string | undefined }): Promise<SsoStateRecord> {
+    if (isNil(state) || state.length === 0) {
+        throw new SsoLoginError({ code: SsoLoginErrorCode.STATE_INVALID, detail: 'The callback carries no state' })
+    }
+    const record = await distributedStore.get<SsoStateRecord>(stateKey(state))
+    if (isNil(record)) {
+        throw new SsoLoginError({ code: SsoLoginErrorCode.STATE_INVALID, detail: 'The state is unknown or has expired' })
+    }
+    return record
+}
+
+async function storeSamlResult({ state, result }: { state: string, result: SamlResult }): Promise<void> {
+    await distributedStore.put(samlResultKey(state), result, SSO_LIMITS.stateTtlSeconds)
+}
+
+async function takeSamlResult({ state }: { state: string | undefined }): Promise<SamlResult> {
+    const key = samlResultKey(state ?? '')
+    const result = isNil(state) ? null : await distributedStore.get<SamlResult>(key)
+    if (isNil(result)) {
+        throw new SsoLoginError({ code: SsoLoginErrorCode.CODE_REJECTED, detail: 'No SAML response was received for this sign-in' })
+    }
+    await distributedStore.delete(key)
+    return result
 }
 
 async function consume({ state, binding }: ConsumeParams): Promise<SsoStateRecord> {
@@ -42,9 +69,9 @@ async function consume({ state, binding }: ConsumeParams): Promise<SsoStateRecor
     return record
 }
 
-async function issueTicket({ userId, tenantId }: TicketParams): Promise<string> {
+async function issueTicket({ userId, tenantId, sessionSeconds }: TicketParams): Promise<string> {
     const ticket = oidcClient.randomToken()
-    await distributedStore.put(ticketKey(ticket), { userId, tenantId }, SSO_LIMITS.ticketTtlSeconds)
+    await distributedStore.put(ticketKey(ticket), { userId, tenantId, sessionSeconds }, SSO_LIMITS.ticketTtlSeconds)
     return ticket
 }
 
@@ -95,6 +122,10 @@ function usedStateKey(state: string): string {
     return `sso:state-used:${state}`
 }
 
+function samlResultKey(state: string): string {
+    return `sso:saml-result:${state}`
+}
+
 function ticketKey(ticket: string): string {
     return `sso:ticket:${ticket}`
 }
@@ -108,7 +139,10 @@ const COOKIE_PATH = '/api/v1/authn/sso'
 
 export const ssoState = {
     begin,
+    peek,
     consume,
+    storeSamlResult,
+    takeSamlResult,
     issueTicket,
     redeemTicket,
     buildBindingCookie,
@@ -117,19 +151,26 @@ export const ssoState = {
 }
 
 export type SsoStateRecord = {
-    tenantId: string
+    tenantId: string | null
+    scope: SsoScope
     provider: SsoProvider
     mode: SsoMode
     actorUserId: string | null
     nonce: string
     codeVerifier: string
     bindingHash: string
+    samlRequestId: string | null
 }
 
-export type SsoMode = 'login' | 'test'
+export type SsoMode = 'login' | 'test' | 'bind'
+
+export type SamlResult =
+    | { ok: true, nameId: string, attributes: Record<string, string[]> }
+    | { ok: false, code: SsoLoginErrorCode, detail: string }
 
 type BeginParams = {
-    tenantId: string
+    tenantId: string | null
+    scope: SsoScope
     provider: SsoProvider
     mode: SsoMode
     actorUserId: string | null
@@ -149,4 +190,5 @@ type ConsumeParams = {
 type TicketParams = {
     userId: string
     tenantId: string
+    sessionSeconds?: number
 }

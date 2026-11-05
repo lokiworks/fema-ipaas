@@ -6,3 +6,4 @@ export {
 export { tenantAccessUtils } from './utils/tenant-access-utils';
 export { ModuleGate, ModuleDeniedPanel } from './components/module-gate';
 export { MemberPicker } from './components/member-picker';
+export { SlugDialog } from './components/slug-dialog';

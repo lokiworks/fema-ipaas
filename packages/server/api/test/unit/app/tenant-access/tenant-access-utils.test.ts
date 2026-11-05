@@ -65,10 +65,10 @@ describe('tenant access utils', () => {
     })
 
     describe('login methods', () => {
-        it('lists every method in the fixed order and only email, OIDC and Feishu are available', () => {
+        it('lists every method in the fixed order and leaves phone sign-in to the SMS settings', () => {
             const methods = tenantAccessUtils.loginMethods({ emailAuthEnabled: true })
-            expect(methods.map((method) => method.method)).toEqual([LoginMethod.EMAIL_PASSWORD, LoginMethod.OIDC, LoginMethod.SAML, LoginMethod.FEISHU, LoginMethod.WECOM, LoginMethod.DINGTALK])
-            expect(methods.filter((method) => method.available).map((method) => method.method)).toEqual([LoginMethod.EMAIL_PASSWORD, LoginMethod.OIDC, LoginMethod.FEISHU])
+            expect(methods.map((method) => method.method)).toEqual([LoginMethod.EMAIL_PASSWORD, LoginMethod.PHONE_SMS, LoginMethod.OIDC, LoginMethod.SAML, LoginMethod.FEISHU, LoginMethod.WECOM, LoginMethod.DINGTALK])
+            expect(methods.filter((method) => method.available).map((method) => method.method)).toEqual([LoginMethod.EMAIL_PASSWORD, LoginMethod.OIDC, LoginMethod.SAML, LoginMethod.FEISHU, LoginMethod.WECOM, LoginMethod.DINGTALK])
             expect(tenantAccessUtils.countEnabledLoginMethods(methods)).toBe(1)
         })
 

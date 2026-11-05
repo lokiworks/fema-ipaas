@@ -4,8 +4,8 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { securityAccess } from '../core/security/authorization/fastify-security'
 import { authnRateLimit } from '../core/security/rate-limit'
+import { instanceOperator } from '../operator/instance-operator'
 import { tenantService } from '../tenant/tenant.service'
-import { tenantUtils } from '../tenant/tenant.utils'
 import { componentHealthService } from './component-health.service'
 import { healthMetricsService } from './health-metrics.service'
 import { healthStatusService } from './health.service'
@@ -42,7 +42,7 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/backup-confirmation', ConfirmBackupRequest, async (request): Promise<ComponentHealthCheck> => {
-        await tenantUtils.assertPrimaryTenant({ request })
+        await instanceOperator.assert({ request })
         return componentHealthService(request.log).confirmBackup()
     })
 
@@ -85,7 +85,7 @@ const healthController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/services/check', ServiceCheckRequestOptions, async (request): Promise<ServiceCheckResult> => {
-        await tenantUtils.assertPrimaryTenant({ request })
+        await instanceOperator.assert({ request })
         const tenant = await tenantService(request.log).getOneOrThrow(request.principal.tenant.id)
         return serviceCheckService(request.log).check({
             request: request.body,

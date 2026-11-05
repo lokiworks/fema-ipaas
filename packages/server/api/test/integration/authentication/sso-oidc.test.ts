@@ -1,5 +1,5 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { DefaultProjectRole, InvitationStatus, InvitationType, PrincipalType, ProjectType, SsoLoginErrorCode, TenantRole, UserStatus } from '@fema-ipaas/shared'
+import { DefaultProjectRole, InstanceRole, InvitationStatus, InvitationType, PrincipalType, ProjectType, SsoLoginErrorCode, TenantRole, UserStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { oidcClient } from '../../../src/app/sso/oidc-client'
@@ -130,7 +130,7 @@ describe('OIDC single sign-on', () => {
 
         it('never changes the role of the tenant owner when syncing roles', async () => {
             await configureAndEnable({ autoCreateUsers: true, syncOnLogin: true })
-            const ownerEmail = ctx.userIdentity.email
+            const ownerEmail = adminEmail()
             addIdpUser({ email: ownerEmail, groups: ['staff'] })
 
             const session = await exchange({ ticket: (await signIn({ email: ownerEmail })).ticket })
@@ -377,7 +377,7 @@ describe('OIDC single sign-on', () => {
             await configureAndEnable({ autoCreateUsers: true })
             await ctx.post('/v1/tenant-access/sso/OIDC/enabled', { enabled: false })
 
-            const start = await app.inject({ method: 'GET', url: '/api/v1/authn/sso/start', query: { provider: 'OIDC' }, headers: { 'x-real-ip': nextIp() } })
+            const start = await app.inject({ method: 'GET', url: '/api/v1/authn/sso/start', query: { provider: 'OIDC' }, headers: { 'x-real-ip': nextIp(), 'x-fema-tenant': ctx.tenant.id } })
 
             expect(errorOf(start.headers.location)).toBe(SsoLoginErrorCode.PROVIDER_NOT_ENABLED)
         })
@@ -406,6 +406,8 @@ describe('OIDC single sign-on', () => {
         it('re-encrypts the client secret when the encryption key is rotated, and sign-in keeps working', async () => {
             await configureAndEnable({ autoCreateUsers: true })
             await databaseConnection().query('update tenant set "federatedAuthProviders" = jsonb_set("federatedAuthProviders", \'{oidc,clientSecret,keyId}\', \'"deadbeef"\') where id = $1', [ctx.tenant.id])
+
+            await db.update('user_identity', ctx.userIdentity.id, { instanceRole: InstanceRole.OPERATOR })
 
             const rotation = await ctx.post('/v1/encryption/rotate', {})
 
@@ -501,7 +503,7 @@ describe('OIDC single sign-on', () => {
             const email = freshEmail()
             addIdpUser({ email })
 
-            const password = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-in', headers: { 'x-real-ip': nextIp() }, body: { email: ctx.userIdentity.email, password: 'whatever-it-is' } })
+            const password = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-in', headers: { 'x-real-ip': nextIp(), 'x-fema-tenant': ctx.tenant.id }, body: { email: adminEmail(), password: 'whatever-it-is' } })
             const sso = await signIn({ email })
 
             expect(password.statusCode).toBe(403)
@@ -526,7 +528,7 @@ describe('OIDC single sign-on', () => {
         it('records failed password sign-ins with the attempted address and the reason', async () => {
             const email = freshEmail()
 
-            const response = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-in', headers: { 'x-real-ip': nextIp() }, body: { email, password: 'wrong-password-123' } })
+            const response = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-in', headers: { 'x-real-ip': nextIp(), 'x-fema-tenant': ctx.tenant.id }, body: { email, password: 'wrong-password-123' } })
 
             expect(response.statusCode).toBe(401)
             await expectAuditedAction({ action: 'user.sign.in.failed', contains: email })
@@ -571,9 +573,13 @@ async function configureAndEnable(params: ConfigureParams): Promise<void> {
     expect(enabled.statusCode).toBe(200)
 }
 
+function adminEmail(): string {
+    return ctx.userIdentity.email ?? ''
+}
+
 async function verifyAsAdmin(): Promise<void> {
-    addIdpUser({ email: ctx.userIdentity.email, groups: ['fema-admins'] })
-    const flow = await signIn({ email: ctx.userIdentity.email, mode: 'test' })
+    addIdpUser({ email: adminEmail(), groups: ['fema-admins'] })
+    const flow = await signIn({ email: adminEmail(), mode: 'test' })
     expect(flow.testResult).toBe('ok')
 }
 
@@ -609,7 +615,7 @@ function oidcBody(params: ConfigureParams & { enabled?: boolean, issuer?: string
 async function signIn({ email, next, mutateCallback, dropCookie, mode = 'login', userinfoMissingEmail }: SignInParams): Promise<FlowResult> {
     const start = mode === 'test'
         ? await ctx.post('/v1/tenant-access/sso/OIDC/test')
-        : await app.inject({ method: 'GET', url: '/api/v1/authn/sso/start', query: { provider: 'OIDC' }, headers: { 'x-real-ip': nextIp() } })
+        : await app.inject({ method: 'GET', url: '/api/v1/authn/sso/start', query: { provider: 'OIDC' }, headers: { 'x-real-ip': nextIp(), 'x-fema-tenant': ctx.tenant.id } })
     const authorizeUrl = mode === 'test' ? start.json().url : start.headers.location
     if (typeof authorizeUrl !== 'string' || !authorizeUrl.startsWith(idp.issuer)) {
         return { error: errorOf(start.headers.location), ticket: null, testResult: null, callbackPath: '', cookie: '' }

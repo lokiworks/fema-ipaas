@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { securityAccess } from '../../core/security/authorization/fastify-security'
 import { websocketService } from '../../core/websockets.service'
 import { applicationEvents } from '../../helper/application-events'
-import { tenantUtils } from '../../tenant/tenant.utils'
+import { instanceOperator } from '../../operator/instance-operator'
 import { parseWorkerGroupValue, QueueName } from '../job'
 import { jobBroker } from '../job-queue/job-broker'
 import { jobQueue } from '../job-queue/job-queue'
@@ -49,21 +49,21 @@ export const workerMachineController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/:id/drain', WorkerActionParams, async (request) => {
-        await tenantUtils.assertPrimaryTenant({ request })
+        await instanceOperator.assert({ request })
         await workerFleetService(request.log).drain({ workerId: request.params.id })
         auditWorkerChange({ request, workerId: request.params.id, detail: 'drained' })
         return workerFleetService(request.log).list()
     })
 
     app.post('/:id/resume', WorkerActionParams, async (request) => {
-        await tenantUtils.assertPrimaryTenant({ request })
+        await instanceOperator.assert({ request })
         await workerFleetService(request.log).resume({ workerId: request.params.id })
         auditWorkerChange({ request, workerId: request.params.id, detail: 'resumed' })
         return workerFleetService(request.log).list()
     })
 
     app.delete('/:id', WorkerActionParams, async (request, reply) => {
-        await tenantUtils.assertPrimaryTenant({ request })
+        await instanceOperator.assert({ request })
         await workerFleetService(request.log).remove({ workerId: request.params.id })
         auditWorkerChange({ request, workerId: request.params.id, detail: 'removed' })
         return reply.status(StatusCodes.NO_CONTENT).send()

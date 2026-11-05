@@ -71,6 +71,9 @@
       "@fema-ipaas/connector-feishu": [
         "packages/connectors/community/feishu/src/index.ts"
       ],
+      "@fema-ipaas/connector-fema": [
+        "packages/connectors/community/fema/src/index.ts"
+      ],
       "@fema-ipaas/connector-file-helper": [
         "packages/connectors/core/file-helper/src/index.ts"
       ],

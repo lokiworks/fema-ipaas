@@ -61,6 +61,7 @@ protect connections and tokens, and telemetry.
 | Variable | Description | Default |
 |---|---|---|
 | `FEMA_FRONTEND_URL` | The public URL used to build redirect URLs and webhook URLs. It must be reachable by third parties for webhooks and app triggers to work. | `http://localhost:<FEMA_PORT>` |
+| `FEMA_TENANT_BASE_DOMAIN` | Base domain for per-tenant login addresses. When set, `<tenant-slug>.<this domain>` opens that tenant's sign-in page, so a wildcard DNS record and certificate must point at the platform. Leave it unset to use `/t/<tenant-slug>` addresses only. | `None` |
 | ❗ `FEMA_ENCRYPTION_KEY` | 32-character (16-byte) hexadecimal key used to encrypt connections. Generate one with `openssl rand -hex 16`. | `None` |
 | ❗ `FEMA_JWT_SECRET` | 32-character hexadecimal key used to sign JWT tokens. Generate one with `openssl rand -hex 32`. | `None` |
 | `FEMA_CONFIG_PATH` | Path where the PGLite database and local settings are stored. | `~/.fema` |

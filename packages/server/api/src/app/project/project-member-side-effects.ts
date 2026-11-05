@@ -4,6 +4,7 @@ import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { applicationEvents } from '../helper/application-events'
 import { emailService } from '../helper/email/email-service'
+import { identityContact } from '../helper/identity-contact'
 import { notificationPreferenceService } from '../notification/notification-preference.service'
 import { notificationService } from '../notification/notification.service'
 import { userRepo } from '../user/user-service'
@@ -63,10 +64,11 @@ async function emailIfAllowed({ log, userId, tenantId, projectId, projectName, r
         return
     }
     const user = await userRepo().findOne({ where: { id: userId, tenantId }, relations: { identity: true } })
-    if (isNil(user?.identity)) {
+    const to = identityContact.emailOrNull(user?.identity)
+    if (isNil(to)) {
         return
     }
-    await emailService(log).sendProjectAccessGranted({ tenantId, to: user.identity.email, projectId, projectName, role })
+    await emailService(log).sendProjectAccessGranted({ tenantId, to, projectId, projectName, role })
 }
 
 type MemberAddedNotification = NotificationType.PROJECT_MEMBER_ADDED | NotificationType.PROJECT_ACCESS_APPROVED

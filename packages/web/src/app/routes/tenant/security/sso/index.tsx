@@ -5,15 +5,19 @@ import {
   SsoProvider,
   SsoSettings,
   TENANT_ACCESS_LIMITS,
+  TenantMfaPolicy,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import {
   Earth,
+  FileKey2,
   KeyRound,
   MailIcon,
   MessageCircle,
+  MessageSquareText,
   ShieldCheck,
+  Smartphone,
   TriangleAlert,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -22,6 +26,10 @@ import { useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 
 import { AllowedDomainDialog } from '@/app/routes/tenant/security/sso/allowed-domain';
+import { LoginDomainsCard } from '@/app/routes/tenant/security/sso/login-domains-card';
+import { MfaPolicyCard } from '@/app/routes/tenant/security/sso/mfa-policy-card';
+import { PlatformBindingsCard } from '@/app/routes/tenant/security/sso/platform-bindings-card';
+import { SignInAddressCard } from '@/app/routes/tenant/security/sso/sign-in-address-card';
 import { SsoProviderDialog } from '@/app/routes/tenant/security/sso/sso-provider-dialog';
 import { ConsolePage } from '@/components/custom/console-page';
 import {
@@ -100,10 +108,18 @@ const AuthenticationPage = () => {
               />
             ))}
           </div>
+          <PlatformBindingsCard sso={sso ?? null} />
+          <MfaPolicyCard
+            key={`${tenant?.mfaPolicy}`}
+            mfaPolicy={tenant?.mfaPolicy ?? TenantMfaPolicy.OPTIONAL}
+            phoneAuthEnabled={tenant?.phoneAuthEnabled ?? false}
+          />
           <PolicyForm
             key={`${settings.passwordMinLength}-${settings.sessionDurationDays}`}
             settings={settings}
           />
+          <SignInAddressCard />
+          <LoginDomainsCard />
           <Item variant="outline">
             <ItemMedia variant="icon">
               <Earth />
@@ -186,6 +202,8 @@ function LoginMethodRow({
   const { mutate: update, isPending } =
     tenantAccessHooks.useUpdateLoginSecurity();
   const setSsoEnabled = tenantAccessHooks.useSetSsoEnabled();
+  const updateMfaPolicy = tenantAccessHooks.useUpdateMfaPolicy();
+  const { tenant } = tenantHooks.useCurrentTenant();
   const startTest = tenantAccessHooks.useStartSsoTest();
   const [dialogOpen, setDialogOpen] = useState(false);
   const provider = ssoProviderOf(method.method);
@@ -196,26 +214,38 @@ function LoginMethodRow({
     method.method === LoginMethod.EMAIL_PASSWORD &&
     method.enabled &&
     !hasVerifiedEnabledSso(sso);
-  const blockedReason = !method.available
-    ? t('This build has no sign-in integration for this method yet')
-    : !method.configured
-    ? t('Configure this method before turning it on')
-    : provider !== null && !method.enabled && verified === null
-    ? t('Run a successful test sign-in before turning this method on')
-    : passwordWouldLockOut
-    ? t(
-        'Turn on a single sign-on method and pass its test sign-in before turning password sign-in off',
-      )
-    : lastEnabled
-    ? t('At least one sign-in method must stay on')
-    : null;
-  const busy = isPending || setSsoEnabled.isPending;
+  const blockedReason =
+    method.method === LoginMethod.PHONE_SMS &&
+    (!method.available || !method.configured)
+      ? t('The instance has no SMS service yet. Ask an operator to set it up.')
+      : !method.available
+      ? t('This build has no sign-in integration for this method yet')
+      : !method.configured
+      ? t('Configure this method before turning it on')
+      : provider !== null && !method.enabled && verified === null
+      ? t('Run a successful test sign-in before turning this method on')
+      : passwordWouldLockOut
+      ? t(
+          'Turn on a single sign-on method and pass its test sign-in before turning password sign-in off',
+        )
+      : lastEnabled
+      ? t('At least one sign-in method must stay on')
+      : null;
+  const busy =
+    isPending || setSsoEnabled.isPending || updateMfaPolicy.isPending;
+  const provisioned =
+    provider === SsoProvider.OIDC && sso?.oidc?.provisioned === true;
   return (
     <Item variant="outline" data-testid={`login-method-${method.method}`}>
       <ItemMedia variant="icon">{methodIcon(method.method)}</ItemMedia>
       <ItemContent>
         <ItemTitle>
           {tenantAccessUtils.loginMethodLabel(method.method)}
+          {provisioned && (
+            <Badge variant="info" data-testid="sso-provisioned">
+              {t('Set up by the platform')}
+            </Badge>
+          )}
           {method.enabled ? (
             <Badge variant="success">{t('Turned on')}</Badge>
           ) : method.available ? (
@@ -278,6 +308,13 @@ function LoginMethodRow({
                     update({ emailAuthEnabled: checked });
                     return;
                   }
+                  if (method.method === LoginMethod.PHONE_SMS) {
+                    updateMfaPolicy.mutate({
+                      mfaPolicy: tenant?.mfaPolicy ?? TenantMfaPolicy.OPTIONAL,
+                      phoneAuthEnabled: checked,
+                    });
+                    return;
+                  }
                   if (provider !== null) {
                     setSsoEnabled.mutate({ provider, enabled: checked });
                   }
@@ -293,10 +330,20 @@ function LoginMethodRow({
 }
 
 function ssoProviderOf(method: LoginMethod): SsoProvider | null {
-  if (method === LoginMethod.OIDC) {
-    return SsoProvider.OIDC;
+  switch (method) {
+    case LoginMethod.OIDC:
+      return SsoProvider.OIDC;
+    case LoginMethod.FEISHU:
+      return SsoProvider.FEISHU;
+    case LoginMethod.WECOM:
+      return SsoProvider.WECOM;
+    case LoginMethod.DINGTALK:
+      return SsoProvider.DINGTALK;
+    case LoginMethod.SAML:
+      return SsoProvider.SAML;
+    default:
+      return null;
   }
-  return method === LoginMethod.FEISHU ? SsoProvider.FEISHU : null;
 }
 
 function ssoConfigOf({
@@ -309,14 +356,25 @@ function ssoConfigOf({
   if (provider === null || sso === null) {
     return null;
   }
-  return (provider === SsoProvider.OIDC ? sso.oidc : sso.feishu) ?? null;
+  switch (provider) {
+    case SsoProvider.OIDC:
+      return sso.oidc ?? null;
+    case SsoProvider.FEISHU:
+      return sso.feishu ?? null;
+    case SsoProvider.WECOM:
+      return sso.wecom ?? null;
+    case SsoProvider.DINGTALK:
+      return sso.dingtalk ?? null;
+    case SsoProvider.SAML:
+      return sso.saml ?? null;
+  }
 }
 
 function hasVerifiedEnabledSso(sso: SsoSettings | null): boolean {
   if (sso === null) {
     return false;
   }
-  return [sso.oidc, sso.feishu].some(
+  return [sso.oidc, sso.feishu, sso.wecom, sso.dingtalk, sso.saml].some(
     (config) =>
       config?.enabled === true && (config.verifiedAt ?? null) !== null,
   );
@@ -455,6 +513,13 @@ function methodIcon(method: LoginMethod) {
       return <KeyRound />;
     case LoginMethod.FEISHU:
       return <MessageCircle />;
+    case LoginMethod.PHONE_SMS:
+      return <Smartphone />;
+    case LoginMethod.SAML:
+      return <FileKey2 />;
+    case LoginMethod.WECOM:
+    case LoginMethod.DINGTALK:
+      return <MessageSquareText />;
     default:
       return <ShieldCheck />;
   }
@@ -464,6 +529,8 @@ function methodDescription(method: LoginMethod): string {
   switch (method) {
     case LoginMethod.EMAIL_PASSWORD:
       return t('For teams without a central identity provider');
+    case LoginMethod.PHONE_SMS:
+      return t('Members sign in with a code sent to their mobile number');
     case LoginMethod.OIDC:
       return t('Okta, Azure AD, Keycloak and other OIDC providers');
     case LoginMethod.SAML:

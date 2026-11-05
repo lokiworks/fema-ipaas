@@ -263,7 +263,7 @@ export const tenantRoutes = [
     element: (
       <TenantLayout>
         <PageTitle title="Infrastructure">
-          <Navigate to="/tenant/infra/health" replace />
+          <Navigate to="/tenant/infra/triggers" replace />
         </PageTitle>
       </TenantLayout>
     ),

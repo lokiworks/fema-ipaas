@@ -45,10 +45,7 @@ import { captchaUtils } from '../utils/captcha-utils';
 import { fullNameUtils } from '../utils/full-name-utils';
 import { passwordValidation } from '../utils/password-validation-utils';
 
-import {
-  TurnstileWidget,
-  useTurnstileSiteKey,
-} from './auth-landing/turnstile-widget';
+import { CaptchaWidget } from './auth-landing/captcha-widget';
 
 const SAFE_FULL_NAME_PATTERN = /^[^./]+$/;
 
@@ -103,7 +100,7 @@ const SignUpForm = ({
           name: TelemetryEventName.SIGN_UP_FAILED,
           payload: { errorCode: errorCode ?? 'UNKNOWN' },
         });
-        if (captchaUtils.isRejection(error)) {
+        if (captchaUtils.needsFreshToken(error)) {
           form.setError('root.serverError', {
             message: t('That verification expired. Please try again.'),
           });
@@ -167,7 +164,7 @@ const SignUpForm = ({
       payload: { surface: 'password-sign-up' },
     });
   }, [capture]);
-  const captchaRequired = !isNil(useTurnstileSiteKey()) && !captchaUnavailable;
+  const captchaRequired = !captchaUnavailable;
 
   const onSubmit: SubmitHandler<SignUpSchema> = (data) => {
     form.setError('root.serverError', {
@@ -351,7 +348,7 @@ const SignUpForm = ({
               {form.formState.errors.root.serverError.message}
             </FormMessage>
           )}
-          <TurnstileWidget
+          <CaptchaWidget
             onToken={setCaptchaToken}
             onUnavailable={handleCaptchaUnavailable}
             resetSignal={captchaReset}

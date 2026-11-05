@@ -9,6 +9,7 @@ import {
   accountUtils,
   NotificationPreferencesCard,
 } from '@/features/account';
+import { AccountSecurityCard } from '@/features/authentication';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { userHooks } from '@/hooks/user-hooks';
@@ -57,6 +58,7 @@ export function AccountPage() {
           <NotificationPreferencesCard />
         </div>
       </div>
+      <AccountSecurityCard />
       <AccessTokensCard />
     </ConsolePage>
   );

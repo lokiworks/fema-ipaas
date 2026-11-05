@@ -13,6 +13,7 @@ import {
   ScrollTextIcon,
   SearchIcon,
   ServerCogIcon,
+  ShieldHalfIcon,
   SettingsIcon,
   SirenIcon,
   WorkflowIcon,
@@ -30,6 +31,7 @@ import {
 import { HelpMenu } from '@/features/help';
 import { issuesHooks } from '@/features/issues';
 import { NotificationBell } from '@/features/notifications';
+import { operatorHooks } from '@/features/operator';
 import { tenantAccessHooks } from '@/features/tenant-access';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { flagsHooks } from '@/hooks/flags-hooks';
@@ -46,6 +48,7 @@ export function GlobalRail({ className }: { className?: string }) {
   const { setOpen: openSearch } = useGlobalSearch();
   const branding = flagsHooks.useWebsiteBranding();
   const isTenantAdmin = useIsTenantAdmin();
+  const isOperator = operatorHooks.useIsOperator();
   const projectId = authenticationSession.getProjectId();
   const { data: issueOverview } = issuesHooks.useOverview({
     showErrorDialog: false,
@@ -110,6 +113,14 @@ export function GlobalRail({ className }: { className?: string }) {
       <div className="mt-auto flex flex-col items-center gap-1">
         <HelpMenu />
         <NotificationBell />
+        {isOperator && (
+          <RailButton
+            icon={ShieldHalfIcon}
+            label={t('Operations')}
+            active={pathname.startsWith('/operator')}
+            onClick={() => navigate('/operator/tenants')}
+          />
+        )}
         {isTenantAdmin && (
           <RailButton
             icon={SettingsIcon}

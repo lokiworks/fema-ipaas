@@ -18,6 +18,7 @@ import { ConnectorBlueprintEntity } from '../connectors/blueprint/connector-blue
 import { ConnectorDemandEntity } from '../connectors/demand/connector-demand.entity'
 import { ConnectorMetadataEntity } from '../connectors/metadata/connector-metadata-entity'
 import { DataStoreEntity } from '../data-store/data-store.entity'
+import { ExternalIdentityEntity } from '../federation/external-identity.entity'
 import { FileEntity } from '../file/file.entity'
 import { FlagEntity } from '../flags/flag.entity'
 import { system } from '../helper/system/system'
@@ -27,6 +28,7 @@ import { MappingTableEntity } from '../mapping-table/mapping-table.entity'
 import { McpServerEntity } from '../mcp-server/mcp-server.entity'
 import { McpServiceEntity, McpServiceMemberEntity, McpServiceUsageEntity } from '../mcp-service/mcp-service.entity'
 import { NotificationEntity } from '../notification/notification.entity'
+import { PlatformClientEntity } from '../platform/platform-client.entity'
 import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectAccessRequestEntity } from '../project/project-access-request.entity'
@@ -42,6 +44,7 @@ import { StoreEntryEntity } from '../store-entry/store-entry-entity'
 import { TemplateEntity } from '../template/template.entity'
 import { TenantEntity } from '../tenant/tenant.entity'
 import { ModuleAccessRequestEntity } from '../tenant-access/module-access-request.entity'
+import { TenantDomainEntity } from '../tenant-domain/tenant-domain.entity'
 import { AppEventRoutingEntity } from '../trigger/app-event-routing/app-event-routing.entity'
 import { DedupedEventEntity } from '../trigger/deduped-event/deduped-event.entity'
 import { HolidayCalendarEntity } from '../trigger/holiday-calendar/holiday-calendar.entity'
@@ -111,6 +114,9 @@ function getEntities(): EntitySchema<unknown>[] {
         ConnectionShareEntity,
         ConnectorDemandEntity,
         ModuleAccessRequestEntity,
+        ExternalIdentityEntity,
+        TenantDomainEntity,
+        PlatformClientEntity,
         NotificationEntity,
         PersonalAccessTokenEntity,
         DedupedEventEntity,

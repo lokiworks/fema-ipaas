@@ -1,5 +1,18 @@
 import { ApplicationError, ErrorCode } from '@fema-ipaas/core-utils'
-import { ApplicationEventName, PrincipalType, SsoProvider, SsoSettings, SsoTestStartResponse, UpdateFeishuSsoRequestBody, UpdateOidcSsoRequestBody } from '@fema-ipaas/shared'
+import {
+    ApplicationEventName,
+    PlatformLoginAppKind,
+    PrincipalType,
+    SsoProvider,
+    SsoScope,
+    SsoSettings,
+    SsoTestStartResponse,
+    UpdateDingtalkSsoRequestBody,
+    UpdateFeishuSsoRequestBody,
+    UpdateOidcSsoRequestBody,
+    UpdateSamlSsoRequestBody,
+    UpdateWecomSsoRequestBody,
+} from '@fema-ipaas/shared'
 import { FastifyBaseLogger, FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -28,6 +41,37 @@ export const ssoAdminController: FastifyPluginAsyncZod = async (app) => {
         return result.settings
     })
 
+    app.post('/wecom', SaveWecomRequest, async (request): Promise<SsoSettings> => {
+        const result = await ssoConfigService(request.log).saveWecom({ tenantId: request.principal.tenant.id, request: request.body })
+        audit({ request, target: SsoProvider.WECOM, detail: describeChange({ enabled: request.body.enabled, changed: result.changed }) })
+        return result.settings
+    })
+
+    app.post('/dingtalk', SaveDingtalkRequest, async (request): Promise<SsoSettings> => {
+        const result = await ssoConfigService(request.log).saveDingtalk({ tenantId: request.principal.tenant.id, request: request.body })
+        audit({ request, target: SsoProvider.DINGTALK, detail: describeChange({ enabled: request.body.enabled, changed: result.changed }) })
+        return result.settings
+    })
+
+    app.post('/saml', SaveSamlRequest, async (request): Promise<SsoSettings> => {
+        const result = await ssoConfigService(request.log).saveSaml({ tenantId: request.principal.tenant.id, request: request.body })
+        audit({ request, target: SsoProvider.SAML, detail: describeChange({ enabled: request.body.enabled, changed: result.changed }) })
+        return result.settings
+    })
+
+    app.post('/platform-bindings/:kind/start', PlatformBindStartRequest, async (request, reply): Promise<SsoTestStartResponse> => {
+        const provider = PLATFORM_PROVIDER[request.params.kind]
+        const started = await startPlatformBind({ log: request.log, tenantId: request.principal.tenant.id, provider, actorUserId: request.principal.id })
+        void reply.header('set-cookie', ssoState.buildBindingCookie({ binding: started.binding }))
+        return { url: started.redirectUrl }
+    })
+
+    app.delete('/platform-bindings/:kind', PlatformBindRemoveRequest, async (request): Promise<SsoSettings> => {
+        const settings = await ssoConfigService(request.log).removePlatformBinding({ tenantId: request.principal.tenant.id, kind: request.params.kind })
+        audit({ request, target: PLATFORM_PROVIDER[request.params.kind], detail: 'enterprise binding removed' })
+        return settings
+    })
+
     app.post('/:provider/enabled', EnabledRequest, async (request): Promise<SsoSettings> => {
         const settings = await ssoConfigService(request.log).setEnabled({
             tenantId: request.principal.tenant.id,
@@ -47,7 +91,19 @@ export const ssoAdminController: FastifyPluginAsyncZod = async (app) => {
 
 async function startTest({ log, tenantId, provider, actorUserId }: StartTestParams) {
     try {
-        return await ssoLoginService(log).start({ tenantId, provider, mode: 'test', actorUserId })
+        return await ssoLoginService(log).start({ tenantId, scope: SsoScope.TENANT, provider, mode: 'test', actorUserId })
+    }
+    catch (error) {
+        if (isSsoLoginError(error)) {
+            throw new ApplicationError({ code: ErrorCode.VALIDATION, params: { message: error.detail } })
+        }
+        throw error
+    }
+}
+
+async function startPlatformBind({ log, tenantId, provider, actorUserId }: StartTestParams) {
+    try {
+        return await ssoLoginService(log).start({ tenantId, scope: SsoScope.PLATFORM, provider, mode: 'bind', actorUserId })
     }
     catch (error) {
         if (isSsoLoginError(error)) {
@@ -69,6 +125,12 @@ function audit({ request, target, detail }: AuditParams): void {
     })
 }
 
+const PLATFORM_PROVIDER: Record<PlatformLoginAppKind, SsoProvider> = {
+    FEISHU: SsoProvider.FEISHU,
+    WECOM: SsoProvider.WECOM,
+    DINGTALK: SsoProvider.DINGTALK,
+}
+
 const adminOnly = securityAccess.tenantAdminOnly([PrincipalType.USER])
 const ProviderParams = z.object({ provider: z.enum(SsoProvider) })
 const EnabledBody = z.object({ enabled: z.boolean() })
@@ -86,6 +148,33 @@ const SaveOidcRequest = {
 const SaveFeishuRequest = {
     config: { security: adminOnly },
     schema: { tags: ['tenant-access'], body: UpdateFeishuSsoRequestBody, response: { [StatusCodes.OK]: SsoSettings } },
+}
+
+const SaveWecomRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], body: UpdateWecomSsoRequestBody, response: { [StatusCodes.OK]: SsoSettings } },
+}
+
+const SaveDingtalkRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], body: UpdateDingtalkSsoRequestBody, response: { [StatusCodes.OK]: SsoSettings } },
+}
+
+const SaveSamlRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], body: UpdateSamlSsoRequestBody, response: { [StatusCodes.OK]: SsoSettings } },
+}
+
+const PlatformKindParams = z.object({ kind: PlatformLoginAppKind })
+
+const PlatformBindStartRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], params: PlatformKindParams, response: { [StatusCodes.OK]: SsoTestStartResponse } },
+}
+
+const PlatformBindRemoveRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], params: PlatformKindParams, response: { [StatusCodes.OK]: SsoSettings } },
 }
 
 const EnabledRequest = {

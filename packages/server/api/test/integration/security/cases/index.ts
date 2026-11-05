@@ -3,6 +3,7 @@ import { identityDomain } from './identity'
 import { integrationsDomain } from './integrations'
 import { machineDomain } from './machine'
 import { runtimeDomain } from './runtime'
+import { saasDomain } from './saas'
 import { workspaceDomain } from './workspace'
 
 export const securityDomains: Record<string, DomainModule> = {
@@ -11,4 +12,5 @@ export const securityDomains: Record<string, DomainModule> = {
     integrations: integrationsDomain,
     identity: identityDomain,
     machine: machineDomain,
+    saas: saasDomain,
 }

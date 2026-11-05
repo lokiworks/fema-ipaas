@@ -2,6 +2,7 @@ import { BaseModelSchema, DateOrString, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { TenantRole } from '../../core/user/user'
 import { formErrors } from '../../form-errors'
+import { TenantMfaPolicy } from '../saas/tenancy'
 
 export enum TenantModule {
     BUSINESS_INTEGRATION = 'BUSINESS_INTEGRATION',
@@ -39,6 +40,7 @@ export enum OwnedResourceType {
 
 export enum LoginMethod {
     EMAIL_PASSWORD = 'EMAIL_PASSWORD',
+    PHONE_SMS = 'PHONE_SMS',
     OIDC = 'OIDC',
     SAML = 'SAML',
     FEISHU = 'FEISHU',
@@ -79,6 +81,7 @@ export const TenantMember = z.object({
     id: z.string(),
     kind: z.enum(['USER', 'INVITATION']),
     email: z.string(),
+    phone: Nullable(z.string()),
     firstName: z.string(),
     lastName: z.string(),
     status: z.enum(TenantMemberStatus),
@@ -100,15 +103,17 @@ export const ListTenantMembersResponse = z.object({
 export type ListTenantMembersResponse = z.infer<typeof ListTenantMembersResponse>
 
 export const AddTenantUsersRequestBody = z.object({
-    emails: z.array(z.string().trim().toLowerCase().email('invalidEmail')).min(1, formErrors.required).max(MAX_USERS_PER_BATCH, 'atMostTenUsers'),
+    emails: z.array(z.string().trim().toLowerCase().email('invalidEmail')).max(MAX_USERS_PER_BATCH, 'atMostTenUsers').default([]),
+    phones: z.array(z.string().trim().regex(/^\+[1-9]\d{6,14}$/, 'invalidPhone')).max(MAX_USERS_PER_BATCH, 'atMostTenUsers').default([]),
     tenantRole: z.enum([TenantRole.ADMIN, TenantRole.MEMBER, TenantRole.OPERATOR]),
     modules: z.array(z.enum(TenantModule)),
-})
+}).refine((body) => body.emails.length + body.phones.length > 0, { message: formErrors.required, path: ['emails'] })
 export type AddTenantUsersRequestBody = z.infer<typeof AddTenantUsersRequestBody>
 
 export const AddTenantUsersResponse = z.object({
     invited: z.array(z.object({
         email: z.string(),
+        phone: Nullable(z.string()),
         link: Nullable(z.string()),
         external: z.boolean(),
     })),
@@ -231,6 +236,9 @@ export const LoginSecuritySettings = z.object({
     passwordMinLength: z.number(),
     sessionDurationDays: z.number(),
     emailDelivery: z.boolean(),
+    smsDelivery: z.boolean(),
+    phoneAuthEnabled: z.boolean(),
+    mfaPolicy: z.enum(TenantMfaPolicy),
 })
 export type LoginSecuritySettings = z.infer<typeof LoginSecuritySettings>
 
@@ -256,6 +264,7 @@ export const TENANT_ACCESS_LIMITS = {
 
 export const LOGIN_METHOD_ORDER: LoginMethod[] = [
     LoginMethod.EMAIL_PASSWORD,
+    LoginMethod.PHONE_SMS,
     LoginMethod.OIDC,
     LoginMethod.SAML,
     LoginMethod.FEISHU,

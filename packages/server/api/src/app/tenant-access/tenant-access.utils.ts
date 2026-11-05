@@ -63,6 +63,12 @@ function loginMethods({ emailAuthEnabled, providers }: LoginMethodsParams): Logi
                 return { method, available: true, configured: !isNil(providers?.oidc), enabled: providers?.oidc?.enabled === true }
             case LoginMethod.FEISHU:
                 return { method, available: true, configured: !isNil(providers?.feishu), enabled: providers?.feishu?.enabled === true }
+            case LoginMethod.SAML:
+                return { method, available: true, configured: !isNil(providers?.saml2), enabled: providers?.saml2?.enabled === true }
+            case LoginMethod.WECOM:
+                return { method, available: true, configured: !isNil(providers?.wecom), enabled: providers?.wecom?.enabled === true }
+            case LoginMethod.DINGTALK:
+                return { method, available: true, configured: !isNil(providers?.dingtalk), enabled: providers?.dingtalk?.enabled === true }
             default:
                 return { method, available: false, configured: false, enabled: false }
         }

@@ -71,7 +71,7 @@ async function detailsFor({ changes, tenantId }: { changes: ReleaseChange[], ten
         versionIds.length === 0 ? Promise.resolve([]) : workflowVersionRepo().find({ where: { id: In(versionIds) }, select: ['id', 'displayName', 'workflowId'] }),
         releaseVersionNumbers.forWorkflows({ workflowIds }),
     ])
-    const names = new Map(users.map((user) => [user.id, personName({ firstName: user.identity?.firstName, lastName: user.identity?.lastName, email: user.identity?.email })]))
+    const names = new Map(users.map((user) => [user.id, personName({ firstName: user.identity?.firstName, lastName: user.identity?.lastName, email: user.identity?.email ?? undefined })]))
     const versionName = new Map(versions.map((version) => [version.id, version.displayName]))
     return changes.map((change) => ({
         ...change,

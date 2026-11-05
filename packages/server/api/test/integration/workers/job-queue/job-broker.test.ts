@@ -28,6 +28,13 @@ vi.mock('../../../../src/app/workers/job-queue/interceptors/rate-limiter-interce
     },
 }))
 
+vi.mock('../../../../src/app/workers/job-queue/interceptors/tenant-suspension-interceptor', () => ({
+    tenantSuspensionInterceptor: {
+        preDispatch: vi.fn().mockResolvedValue({ verdict: 'ALLOW' }),
+        onJobFinished: vi.fn().mockResolvedValue(undefined),
+    },
+}))
+
 import { tryDequeue } from '../../../../src/app/workers/job-queue/job-broker'
 
 const mockLog: FastifyBaseLogger = {

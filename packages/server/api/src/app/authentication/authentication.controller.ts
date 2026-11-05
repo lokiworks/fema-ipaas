@@ -1,5 +1,5 @@
-import { isNil } from '@fema-ipaas/core-utils'
-import { ApplicationEventName, CompleteSignUpRequest, PERSONAL_ACCESS_TOKEN_PREFIX, PrincipalType, RequestEmailCodeRequest, SignInRequest, SignUpRequest, SwitchTenantRequest, TelemetryEventName, UserIdentityProvider, VerifyEmailCodeRequest } from '@fema-ipaas/shared'
+import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApplicationEventName, CompleteSignUpRequest, PERSONAL_ACCESS_TOKEN_PREFIX, PrincipalType, RequestEmailCodeRequest, SelectTenantRequest, SignInRequest, SignUpRequest, SwitchTenantRequest, TelemetryEventName, TenantSelectionOptionsRequest, TenantSelectionOptionsResponse, UserIdentityProvider, VerifyEmailCodeRequest } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
@@ -14,8 +14,9 @@ import { telemetry } from '../helper/telemetry.utils'
 import { tenantUtils } from '../tenant/tenant.utils'
 import { userService } from '../user/user-service'
 import { authenticationService } from './authentication.service'
+import { captcha } from './captcha/captcha'
+import { loginFailureTracker } from './captcha/login-failure-tracker'
 import { accessTokenManager } from './lib/access-token-manager'
-import { turnstile } from './lib/turnstile'
 import { passwordlessAuthService } from './passwordless-auth.service'
 import { signInAudit } from './sign-in-audit'
 
@@ -25,7 +26,7 @@ export const authenticationController: FastifyPluginAsyncZod = async (
     app.post('/sign-up', SignUpRequestOptions, async (request) => {
 
         const tenantId = await tenantUtils.getTenantIdForRequest(request)
-        await turnstile.assertSolved({
+        await captcha.assertSolved({
             token: request.body.captchaToken,
             remoteIp: clientIp(request),
             log: request.log,
@@ -56,14 +57,26 @@ export const authenticationController: FastifyPluginAsyncZod = async (
     app.post('/sign-in', SignInRequestOptions, async (request) => {
 
         const predefinedTenantId = await tenantUtils.getTenantIdForRequest(request)
+        const ip = clientIp(request)
+        const captchaRequired = await loginFailureTracker.captchaRequired({ email: request.body.email, ip })
+        if (captchaRequired) {
+            await captcha.assertSolved({ token: request.body.captchaToken, remoteIp: ip, log: request.log })
+        }
         const response = await authenticationService(request.log).signInWithPassword({
             email: request.body.email,
             password: request.body.password,
             predefinedTenantId,
-        }).catch((error: unknown) => {
+        }).catch(async (error: unknown) => {
             signInAudit.recordFailure({ request, tenantId: predefinedTenantId, email: request.body.email, method: 'password', error })
+            if (signInAudit.isFollowUpStep(error)) {
+                await loginFailureTracker.clear({ email: request.body.email })
+            }
+            if (error instanceof ApplicationError && error.error.code === ErrorCode.INVALID_CREDENTIALS) {
+                await loginFailureTracker.recordFailure({ email: request.body.email, ip })
+            }
             throw error
         })
+        await loginFailureTracker.clear({ email: request.body.email })
 
         if (!isNil(response.tenantId)) {
             applicationEvents(request.log).sendUserEvent({
@@ -161,6 +174,37 @@ export const authenticationController: FastifyPluginAsyncZod = async (
         await reply.status(StatusCodes.NO_CONTENT).send()
     })
 
+    app.post('/select-tenant', SelectTenantRequestOptions, async (request) => {
+        const response = await authenticationService(request.log).selectTenant({
+            selectionToken: request.body.selectionToken,
+            tenantId: request.body.tenantId,
+        })
+        if (!isNil(response.tenantId)) {
+            applicationEvents(request.log).sendUserEvent({
+                tenantId: response.tenantId,
+                userId: response.id,
+                projectId: response.projectId ?? undefined,
+                ip: clientIp(request),
+            }, {
+                action: ApplicationEventName.USER_SIGNED_IN,
+                data: { method: 'tenant-selection' },
+            })
+        }
+        return response
+    })
+
+    app.post('/select-tenant/options', SelectTenantOptionsRequestOptions, async (request): Promise<TenantSelectionOptionsResponse> => {
+        const selection = await authenticationService(request.log).readTenantSelection({ selectionToken: request.body.selectionToken })
+        if (isNil(selection)) {
+            throw new ApplicationError({
+                code: ErrorCode.AUTHENTICATION,
+                params: { message: 'The tenant selection has expired, sign in again' },
+            })
+        }
+        const tenants = await authenticationService(request.log).listSelectableTenants({ identityId: selection.identityId })
+        return { tenants }
+    })
+
     app.post('/switch-tenant', SwitchTenantRequestOptions, async (request) => {
         const user = await userService(request.log).getOneOrFail({ id: request.principal.id })
         return authenticationService(request.log).switchTenant({
@@ -186,6 +230,29 @@ const BEARER_PREFIX = 'Bearer '
 const SignOutRequestOptions = {
     config: {
         security: securityAccess.unscoped([PrincipalType.USER, PrincipalType.ONBOARDING]),
+    },
+}
+
+const SelectTenantRequestOptions = {
+    config: {
+        security: securityAccess.public(),
+        rateLimit: authnRateLimit,
+    },
+    schema: {
+        body: SelectTenantRequest,
+    },
+}
+
+const SelectTenantOptionsRequestOptions = {
+    config: {
+        security: securityAccess.public(),
+        rateLimit: authnRateLimit,
+    },
+    schema: {
+        body: TenantSelectionOptionsRequest,
+        response: {
+            [StatusCodes.OK]: TenantSelectionOptionsResponse,
+        },
     },
 }
 

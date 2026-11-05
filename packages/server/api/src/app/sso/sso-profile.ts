@@ -45,12 +45,21 @@ function fromClaims({ claims, emailClaim, groupsClaim }: FromClaimsParams): SsoP
         givenName,
         familyName,
         groups: isNil(groupsClaim) ? [] : claimStrings({ claims, path: groupsClaim }),
+        enterpriseKey: null,
+        enterpriseName: null,
     }
 }
 
-function assertUsable({ profile, requireVerifiedEmail }: AssertUsableParams): void {
-    if (profile.email.length === 0 || !profile.email.includes('@')) {
-        throw new SsoLoginError({ code: SsoLoginErrorCode.EMAIL_MISSING, detail: 'The identity provider returned no email address' })
+function hasEmail(profile: Pick<SsoProfile, 'email'>): boolean {
+    return profile.email.length > 0 && profile.email.includes('@')
+}
+
+function assertUsable({ profile, requireVerifiedEmail, requireEmail }: AssertUsableParams): void {
+    if (!hasEmail(profile)) {
+        if (requireEmail) {
+            throw new SsoLoginError({ code: SsoLoginErrorCode.EMAIL_MISSING, detail: 'The identity provider returned no email address' })
+        }
+        return
     }
     if (requireVerifiedEmail && !profile.emailVerified) {
         throw new SsoLoginError({ code: SsoLoginErrorCode.EMAIL_NOT_VERIFIED, detail: `The email ${profile.email} is not verified at the identity provider` })
@@ -87,6 +96,7 @@ export const ssoProfile = {
     claimValue,
     claimStrings,
     fromClaims,
+    hasEmail,
     assertUsable,
     assertDomainListed,
     resolveRole,
@@ -100,6 +110,8 @@ export type SsoProfile = {
     givenName: string
     familyName: string
     groups: string[]
+    enterpriseKey: string | null
+    enterpriseName: string | null
 }
 
 type ClaimValueParams = {
@@ -116,6 +128,7 @@ type FromClaimsParams = {
 type AssertUsableParams = {
     profile: SsoProfile
     requireVerifiedEmail: boolean
+    requireEmail: boolean
 }
 
 type AssertDomainListedParams = {

@@ -10,6 +10,8 @@ import { api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
+import { loginChallengeUtils } from '../utils/login-challenge-utils';
+
 function SsoComplete() {
   const [params] = useSearchParams();
   const ticket = params.get('ticket');
@@ -79,7 +81,10 @@ function failureMessage({
   if (code === ErrorCode.USER_IS_INACTIVE) {
     return t('Your account has been disabled. Contact an administrator.');
   }
-  return t('The sign-in has expired. Start again.');
+  return (
+    loginChallengeUtils.messageFor(error) ??
+    t('The sign-in has expired. Start again.')
+  );
 }
 
 export { SsoComplete };

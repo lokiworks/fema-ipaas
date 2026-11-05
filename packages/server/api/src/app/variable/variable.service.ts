@@ -4,6 +4,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { Equal, ILike, QueryFailedError } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { encryptUtils } from '../helper/encryption'
+import { identityContact } from '../helper/identity-contact'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { VariableEntity, VariableSchema } from './variable.entity'
@@ -202,7 +203,7 @@ function mapToUserWithMetaInformation(owner: (User & { identity?: UserIdentity }
     }
     return {
         id: owner.id,
-        email: identity.email,
+        email: identityContact.of(identity),
         firstName: identity.firstName,
         lastName: identity.lastName,
         tenantId: owner.tenantId,

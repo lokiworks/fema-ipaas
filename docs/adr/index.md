@@ -31,3 +31,4 @@ icon: 🧭
 | 0019 | [AI 与 MCP 作为连接器的消费层进入产品，不进入 Connector Domain](0019-ai-and-mcp-are-consumers-of-connectors.md) | accepted |
 | 0020 | [映射表负责人和 IM 卡片上的对方管理员是两条受限通道，不是新角色](0020-mapping-table-owners-and-im-card-operators-are-scoped-channels-not-roles.md) | accepted |
 | 0021 | [首页以「未到位」为中心，运行看板退到「运行」页](0021-the-home-page-centers-on-unmet-outcomes.md) | rejected |
+| 0022 | [多租户 SaaS 化：同一套代码既能独立出售，也能作为 FEMA 套件的集成平台](0022-ipaas-owns-identity-and-fema-joins-through-standard-protocols.md) | accepted |

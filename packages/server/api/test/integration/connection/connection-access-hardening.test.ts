@@ -223,7 +223,7 @@ describe('GET /v1/connections/share-candidates', () => {
         const member = await createMemberContext(app!, owner, { projectRole: DefaultProjectRole.OPERATOR })
         const target = await createMemberContext(app!, owner, { projectRole: DefaultProjectRole.VIEWER })
 
-        const byEmail = await member.get('/v1/connections/share-candidates', { search: target.userIdentity.email.toUpperCase() })
+        const byEmail = await member.get('/v1/connections/share-candidates', { search: (target.userIdentity.email ?? '').toUpperCase() })
         const wildcard = await member.get('/v1/connections/share-candidates', { search: '%' })
 
         expect(byEmail.json().map((candidate: { id: string }) => candidate.id)).toEqual([target.user.id])

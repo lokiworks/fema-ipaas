@@ -1,11 +1,11 @@
-import { Tenant, User } from '@fema-ipaas/shared'
+import { Tenant, TenantLimits, User } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import {
     BaseColumnSchemaPart,
     EntityIdSchema,
 } from '../database/database-common'
 
-type TenantSchema = Tenant & {
+type TenantSchema = Tenant & TenantLimits & {
     owner: User
 }
 
@@ -108,8 +108,66 @@ export const TenantEntity = new EntitySchema<TenantSchema>({
             type: 'jsonb',
             nullable: true,
         },
+        slug: {
+            type: String,
+            nullable: false,
+        },
+        status: {
+            type: String,
+            nullable: false,
+            default: 'ACTIVE',
+        },
+        externalIssuer: {
+            type: String,
+            nullable: true,
+        },
+        externalTenantId: {
+            type: String,
+            nullable: true,
+        },
+        mfaPolicy: {
+            type: String,
+            nullable: false,
+            default: 'OPTIONAL',
+        },
+        phoneAuthEnabled: {
+            type: Boolean,
+            nullable: false,
+            default: true,
+        },
+        usersLimit: {
+            type: Number,
+            nullable: true,
+        },
+        projectsLimit: {
+            type: Number,
+            nullable: true,
+        },
+        activeWorkflowsLimit: {
+            type: Number,
+            nullable: true,
+        },
+        concurrentExecutionsLimit: {
+            type: Number,
+            nullable: true,
+        },
+        workerGroupId: {
+            type: String,
+            nullable: true,
+        },
     },
     indices: [
+        {
+            name: 'idx_tenant_slug',
+            columns: ['slug'],
+            unique: true,
+        },
+        {
+            name: 'idx_tenant_external_ref',
+            columns: ['externalIssuer', 'externalTenantId'],
+            unique: true,
+            where: '"externalIssuer" IS NOT NULL',
+        },
         {
             name: 'idx_tenant_sso_domain',
             columns: ['ssoDomain'],

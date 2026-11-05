@@ -16,6 +16,7 @@ import qs from 'qs';
 import { authenticationSession } from '@/lib/authentication-session';
 import { chatDebug } from '@/lib/chat-debug-logger';
 import { loginRedirect } from '@/lib/login-redirect';
+import { tenantContext } from '@/lib/tenant-context';
 export const isRunningCloudInDevMode = import.meta.env.MODE === 'cloud';
 
 export const API_BASE_URL = isRunningCloudInDevMode
@@ -31,6 +32,12 @@ const disallowedRoutes = [
   '/v1/authentication/sign-up',
   '/v1/authentication/otp/request',
   '/v1/authentication/otp/verify',
+  '/v1/authentication/captcha',
+  '/v1/authentication/sms',
+  '/v1/authentication/mfa/verify',
+  '/v1/authentication/select-tenant',
+  '/v1/tenants/public',
+  '/v1/tenants/discover',
   '/v1/authn/local/verify-email',
   '/v1/authn/federated/login',
   '/v1/authn/federated/claim',
@@ -75,16 +82,18 @@ function request<TResponse>(
   );
 
   const startedAt = performance.now();
+  const authorization = getToken(
+    unAuthenticated,
+    isApWebsite,
+    authenticationSession.getToken(),
+  );
   return axios({
     url: resolvedUrl,
     ...config,
     headers: {
+      ...(isNil(authorization) && isApWebsite ? tenantContext.headers() : {}),
       ...config.headers,
-      Authorization: getToken(
-        unAuthenticated,
-        isApWebsite,
-        authenticationSession.getToken(),
-      ),
+      Authorization: authorization,
     },
   })
     .then((response) => {

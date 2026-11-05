@@ -4,6 +4,7 @@ import { BlueprintAuth, BlueprintAuthState, BlueprintTestResult, BlueprintTestSt
 import { In } from 'typeorm'
 import { repoFactory } from '../../core/db/repo-factory'
 import { EncryptedObject, encryptUtils } from '../../helper/encryption'
+import { identityContact } from '../../helper/identity-contact'
 import { tenantAccessUtils } from '../../tenant-access/tenant-access.utils'
 import { userRepo } from '../../user/user-service'
 import { ConnectorBlueprintVersionEntity } from './connector-blueprint-version.entity'
@@ -112,12 +113,11 @@ function validation(message: string): ApplicationError {
     return new ApplicationError({ code: ErrorCode.VALIDATION, params: { message } })
 }
 
-function fullName(identity: { firstName: string, lastName: string, email: string } | undefined | null): string {
+function fullName(identity: { firstName: string, lastName: string, email?: string | null, phone?: string | null } | undefined | null): string {
     if (isNil(identity)) {
         return ''
     }
-    const name = `${identity.firstName} ${identity.lastName}`.trim()
-    return name.length > 0 ? name : identity.email
+    return identityContact.fullName(identity)
 }
 
 type ActorParams = {

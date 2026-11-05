@@ -29,8 +29,8 @@ import { s3Helper } from '../file/s3-helper'
 import { encryptUtils } from '../helper/encryption'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
+import { instanceScope } from '../operator/instance-scope'
 import { projectRepo } from '../project/project-repo'
-import { tenantService } from '../tenant/tenant.service'
 import { userRepo } from '../user/user-service'
 import { ExecutionEntity } from '../workflows/execution/execution-entity'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
@@ -134,7 +134,7 @@ export const backupService = (log: FastifyBaseLogger) => ({
     },
 
     async summaryForUpgrade(): Promise<BackupSummaryForUpgrade> {
-        const primary = await tenantService(log).getOldestTenant()
+        const primary = await instanceScope.anchorTenant()
         const [latest, engine] = await Promise.all([
             isNil(primary) ? null : backupRecordRepo().findOne({ where: { tenantId: primary.id, status: BackupStatus.SUCCEEDED }, order: { startedAt: 'DESC' } }),
             inspectEngine(),
@@ -149,7 +149,7 @@ export const backupService = (log: FastifyBaseLogger) => ({
     },
 
     async isWorking(): Promise<boolean> {
-        const primary = await tenantService(log).getOldestTenant()
+        const primary = await instanceScope.anchorTenant()
         if (isNil(primary)) {
             return false
         }
@@ -223,7 +223,7 @@ export const backupService = (log: FastifyBaseLogger) => ({
     },
 
     async runDue(): Promise<void> {
-        const tenant = await tenantService(log).getOldestTenant()
+        const tenant = await instanceScope.anchorTenant()
         if (isNil(tenant)) {
             return
         }

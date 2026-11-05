@@ -1,4 +1,4 @@
-import { isNil } from '@fema-ipaas/core-utils'
+import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { FlagId } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { flagHooks } from '../flags/flags.hooks'
@@ -17,7 +17,7 @@ export const tenantBrandingFlags = {
 }
 
 async function applyTenantBranding({ flags, request }: ApplyParams): Promise<Record<string, unknown>> {
-    const tenantId = await tenantUtils.getTenantIdForRequest(request)
+    const { data: tenantId } = await tryCatch(() => tenantUtils.getTenantIdForRequest(request))
     if (isNil(tenantId)) {
         return flags
     }
@@ -37,6 +37,7 @@ async function applyTenantBranding({ flags, request }: ApplyParams): Promise<Rec
         ...flags,
         [FlagId.THEME]: { ...theme, welcomeText: tenant.welcomeText ?? null },
         [FlagId.EMAIL_AUTH_ENABLED]: tenant.emailAuthEnabled,
+        [FlagId.SMS_AUTH_AVAILABLE]: flags[FlagId.SMS_AUTH_AVAILABLE] === true && tenant.phoneAuthEnabled,
     }
 }
 

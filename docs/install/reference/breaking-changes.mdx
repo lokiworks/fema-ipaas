@@ -8,6 +8,46 @@ icon: "hammer"
 
 ### What has changed?
 
+#### One instance can host many tenants
+
+An instance can now hold any number of isolated tenants. Instance-wide settings moved from
+"the oldest tenant's admins" to a new **instance operator** role. These settings are workers,
+backups, encryption keys, service settings, SMS, captcha, platform sign-in apps and tenant
+self sign-up. The upgrade migration makes the owner of the oldest tenant an instance
+operator. Grant more operators from the operator console at `/operator`.
+
+Requests that are not signed in no longer fall back to the oldest tenant. On an instance with
+more than one tenant, sign-in pages and API clients must name the tenant. Use the
+`x-fema-tenant` header, the `tenant` query parameter, the `/t/<slug>` sign-in address, or a
+verified tenant domain. An instance with a single tenant behaves as before.
+
+Each tenant now has a `slug`, a `status` (`ACTIVE` or `SUSPENDED`) and its own capacity
+limits. A suspended tenant cannot sign in, and its executions, webhooks, schedules and API
+keys are rejected.
+
+#### Accounts may have no email address
+
+Accounts that sign in with a phone number or through an external identity source matched by
+subject (for example fema-iam) have no `email`. `email` in authentication responses and user
+identities can now be `null`. Accounts without an email address receive no email
+notifications.
+
+#### Sign-up and verification-code requests need a captcha solution
+
+Sign-up, email and SMS code requests, and phone binding now require a `captchaToken`. Password
+sign-in also requires one after five failed attempts. The default is a built-in
+proof-of-work challenge from `GET /v1/authentication/captcha/challenge`, which needs no
+configuration. Scripts that call these endpoints directly must fetch and solve the challenge
+first. Instances that already configured Cloudflare Turnstile keep using it.
+
+**When is action necessary?**
+
+- Before upgrading, back up the database. The migration `AddSaasTenancy1793300000000` cannot
+  be rolled back with an older release, because older releases cannot insert tenants without
+  a `slug` or read accounts without an email address.
+- If you run more than one tenant, update any sign-in links and API clients to name the tenant.
+- If scripts sign up users or request verification codes, add the captcha step.
+
 #### Container database and cache defaults
 
 Containers without database or cache connection settings use PGlite and in-memory Redis.

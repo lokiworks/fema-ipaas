@@ -1,44 +1,81 @@
 import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { cryptoUtils } from '@fema-ipaas/server-utils'
 import {
-    ApplicationEventName,
     AuthenticationResponse,
+    FEDERATION_LIMITS,
+    PrincipalType,
     SsoLoginErrorCode,
     SsoProvider,
-    User,
-    UserIdentity,
-    UserIdentityProvider,
-    UserStatus,
+    SsoScope,
 } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
-import { authenticationUtils, isDomainAllowed } from '../authentication/authentication-utils'
-import { signupNames } from '../authentication/lib/signup-names'
+import { authenticationUtils } from '../authentication/authentication-utils'
+import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
-import { applicationEvents } from '../helper/application-events'
-import { projectMemberService } from '../project/project-member.service'
-import { tenantService } from '../tenant/tenant.service'
+import { ExternalIdentityRecord, externalIdentityService } from '../federation/external-identity.service'
+import { identityContact } from '../helper/identity-contact'
 import { userService } from '../user/user-service'
-import { userInvitationsService } from '../user-invitations/user-invitation.service'
-import { feishuClient } from './feishu-client'
-import { oidcClient } from './oidc-client'
-import { RuntimeFeishu, RuntimeOidc, ssoConfigService } from './sso-config.service'
+import { samlClient } from './saml-client'
+import { ssoConfigService } from './sso-config.service'
 import { SsoLoginError } from './sso-errors'
+import { ssoPlatformLogin } from './sso-platform-login'
 import { ssoProfile, SsoProfile } from './sso-profile'
+import { RuntimePolicy, ssoRuntime } from './sso-runtime'
 import { SsoMode, ssoState, SsoStateRecord } from './sso-state'
+import { ssoUserResolver } from './sso-user-resolver'
 
 export const ssoLoginService = (log: FastifyBaseLogger) => ({
-    async start({ tenantId, provider, mode, actorUserId }: StartParams): Promise<StartResult> {
-        const runtime = await loadRuntime({ log, tenantId, provider })
+    async start({ tenantId, scope, provider, mode, actorUserId }: StartParams): Promise<StartResult> {
+        const redirectUri = await ssoConfigService(log).redirectUri()
+        if (scope === SsoScope.PLATFORM) {
+            const runtime = await ssoRuntime.loadPlatformRuntime({ provider })
+            if (isNil(runtime)) {
+                throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is not configured' })
+            }
+            const begun = await ssoState.begin({ tenantId: mode === 'bind' ? tenantId : null, scope, provider, mode, actorUserId })
+            return { redirectUrl: ssoRuntime.buildPlatformAuthorizationUrl({ runtime, redirectUri, begun }), binding: begun.binding }
+        }
+        if (isNil(tenantId)) {
+            throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'The tenant to sign in to could not be determined' })
+        }
+        const runtime = await ssoRuntime.loadTenantRuntime({ log, tenantId, provider })
         if (isNil(runtime)) {
             throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is not configured' })
         }
         if (mode === 'login' && !runtime.enabled) {
             throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is turned off' })
         }
-        const redirectUri = await ssoConfigService(log).redirectUri()
-        const begun = await ssoState.begin({ tenantId, provider, mode, actorUserId })
-        const redirectUrl = await buildAuthorizationUrl({ runtime, redirectUri, begun })
-        return { redirectUrl, binding: begun.binding }
+        const begun = await ssoState.begin({ tenantId, scope, provider, mode, actorUserId })
+        return { redirectUrl: await ssoRuntime.buildTenantAuthorizationUrl({ runtime, redirectUri, begun }), binding: begun.binding }
+    },
+
+    async handleSamlAcs({ samlResponse, relayState }: SamlAcsParams): Promise<string> {
+        const record = await ssoState.peek({ state: relayState })
+        if (record.provider !== SsoProvider.SAML || isNil(record.tenantId) || isNil(record.samlRequestId) || isNil(relayState)) {
+            throw new SsoLoginError({ code: SsoLoginErrorCode.STATE_INVALID, detail: 'The state does not belong to a SAML sign-in' })
+        }
+        try {
+            const stored = await ssoConfigService(log).getStoredSaml({ tenantId: record.tenantId })
+            if (isNil(stored)) {
+                throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is not configured' })
+            }
+            const sp = await ssoConfigService(log).serviceProviderUrls({ tenantId: record.tenantId })
+            const assertion = await samlClient.validateResponse({ stored, sp, samlResponse, expectedRequestId: record.samlRequestId })
+            await ssoState.storeSamlResult({ state: relayState, result: { ok: true, nameId: assertion.nameId, attributes: assertion.attributes } })
+        }
+        catch (error) {
+            const failure = error instanceof SsoLoginError ? error : new SsoLoginError({ code: SsoLoginErrorCode.UNKNOWN, detail: error instanceof Error ? error.message : 'unexpected error' })
+            await ssoState.storeSamlResult({ state: relayState, result: { ok: false, code: failure.code, detail: failure.detail } })
+        }
+        return relayState
+    },
+
+    async serviceProviderMetadata({ tenantId }: { tenantId: string }): Promise<string> {
+        const stored = await ssoConfigService(log).getStoredSaml({ tenantId })
+        if (isNil(stored)) {
+            throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is not configured' })
+        }
+        const sp = await ssoConfigService(log).serviceProviderUrls({ tenantId })
+        return samlClient.buildServiceProviderMetadata({ stored, sp })
     },
 
     async handleCallback({ query, binding, ip }: CallbackParams): Promise<CallbackOutcome> {
@@ -54,25 +91,34 @@ export const ssoLoginService = (log: FastifyBaseLogger) => ({
             if (!isNil(query.error)) {
                 throw new SsoLoginError({ code: SsoLoginErrorCode.IDP_DENIED, detail: `The identity provider answered ${query.error}${isNil(query.error_description) ? '' : ` (${query.error_description})` }` })
             }
-            if (isNil(query.code) || query.code.length === 0) {
+            const code = query.code ?? query.authCode ?? query.auth_code
+            if (isNil(code) || code.length === 0) {
                 throw new SsoLoginError({ code: SsoLoginErrorCode.CODE_REJECTED, detail: 'The callback carries no authorization code' })
             }
-            const runtime = await loadRuntime({ log, tenantId: record.tenantId, provider: record.provider })
-            if (isNil(runtime) || (record.mode === 'login' && !runtime.enabled)) {
-                throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is not available' })
-            }
             const redirectUri = await ssoConfigService(log).redirectUri()
-            const profile = await fetchProfile({ runtime, record, code: query.code, redirectUri })
-            email = profile.email
-            await assertProfileAllowed({ log, runtime, profile, tenantId: record.tenantId })
-            if (record.mode === 'test') {
-                await completeTest({ log, record, profile })
-                return { ok: true, kind: 'test', provider: record.provider, tenantId: record.tenantId }
+            if (record.scope === SsoScope.PLATFORM) {
+                return await handlePlatformCallback({
+                    log,
+                    record,
+                    code,
+                    redirectUri,
+                    ip,
+                    onEmail: (value) => {
+                        email = value
+                    },
+                })
             }
-            const resolved = await resolveUser({ log, runtime, profile, tenantId: record.tenantId, provider: record.provider, ip })
-            await ssoConfigService(log).markLoggedIn({ tenantId: record.tenantId, provider: record.provider })
-            const ticket = await ssoState.issueTicket({ userId: resolved.userId, tenantId: record.tenantId })
-            return { ok: true, kind: 'login', provider: record.provider, tenantId: record.tenantId, ticket }
+            return await handleTenantCallback({
+                log,
+                record,
+                code,
+                state: query.state,
+                redirectUri,
+                ip,
+                onEmail: (value) => {
+                    email = value
+                },
+            })
         }
         catch (error) {
             return failureFrom({ error, record, email })
@@ -81,203 +127,125 @@ export const ssoLoginService = (log: FastifyBaseLogger) => ({
 
     async redeemTicket({ ticket }: { ticket: string }): Promise<AuthenticationResponse> {
         const redeemed = await ssoState.redeemTicket({ ticket })
-        return authenticationUtils(log).getProjectAndToken({
+        const response = await authenticationUtils(log).getProjectAndToken({
             userId: redeemed.userId,
             tenantId: redeemed.tenantId,
             projectId: null,
         })
+        if (isNil(redeemed.sessionSeconds)) {
+            return response
+        }
+        const user = await userService(log).getOneOrFail({ id: redeemed.userId })
+        const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
+        const token = await accessTokenManager(log).generateToken({
+            id: user.id,
+            type: PrincipalType.USER,
+            tenant: { id: redeemed.tenantId },
+            tokenVersion: identity.tokenVersion,
+        }, redeemed.sessionSeconds)
+        return { ...response, token }
     },
 })
 
-async function loadRuntime({ log, tenantId, provider }: LoadRuntimeParams): Promise<Runtime | null> {
-    if (provider === SsoProvider.OIDC) {
-        const oidc = await ssoConfigService(log).getRuntimeOidc({ tenantId })
-        return isNil(oidc) ? null : { kind: SsoProvider.OIDC, enabled: oidc.stored.enabled, oidc }
+async function handleTenantCallback({ log, record, code, state, redirectUri, ip, onEmail }: TenantCallbackParams): Promise<CallbackOutcome> {
+    const tenantId = record.tenantId
+    if (isNil(tenantId)) {
+        throw new SsoLoginError({ code: SsoLoginErrorCode.STATE_INVALID, detail: 'The sign-in state carries no tenant' })
     }
-    const feishu = await ssoConfigService(log).getRuntimeFeishu({ tenantId })
-    return isNil(feishu) ? null : { kind: SsoProvider.FEISHU, enabled: feishu.stored.enabled, feishu }
+    const runtime = await ssoRuntime.loadTenantRuntime({ log, tenantId, provider: record.provider })
+    if (isNil(runtime) || (record.mode === 'login' && !runtime.enabled)) {
+        throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is not available' })
+    }
+    const fetched = await ssoRuntime.fetchTenantProfile({ log, runtime, record, code, state, redirectUri })
+    const profile = fetched.profile
+    onEmail(profile.email)
+    const policy = ssoRuntime.policyOf({ runtime })
+    const binding = await externalIdentityService(log).findBinding({ issuer: policy.issuer, subject: profile.subject })
+    await ssoUserResolver.assertProfileAllowed({ log, policy, profile, tenantId, binding })
+    if (record.mode === 'test') {
+        await completeTest({ log, record, profile, binding })
+        return { ok: true, kind: 'test', provider: record.provider, tenantId }
+    }
+    const resolved = await ssoUserResolver.resolve({ log, policy, profile, tenantId, binding, ip })
+    await storeRefreshToken({ log, policy, tenantId, externalIdentityId: resolved.externalIdentityId, refreshToken: fetched.refreshToken })
+    await ssoConfigService(log).markLoggedIn({ tenantId, provider: record.provider })
+    const ticket = await ssoState.issueTicket({ userId: resolved.userId, tenantId, sessionSeconds: sessionSecondsFor({ policy }) })
+    return { ok: true, kind: 'login', provider: record.provider, tenantId, ticket }
 }
 
-async function buildAuthorizationUrl({ runtime, redirectUri, begun }: BuildUrlParams): Promise<string> {
-    if (runtime.kind === SsoProvider.OIDC) {
-        const discovery = await oidcClient.discover({ issuer: runtime.oidc.stored.issuer })
-        return oidcClient.buildAuthorizationUrl({
-            discovery,
-            clientId: runtime.oidc.stored.clientId,
-            redirectUri,
-            scopes: runtime.oidc.stored.scopes,
-            state: begun.state,
-            nonce: begun.record.nonce,
-            codeVerifier: begun.record.codeVerifier,
-        })
+async function handlePlatformCallback({ log, record, code, redirectUri, ip, onEmail }: PlatformCallbackParams): Promise<CallbackOutcome> {
+    const runtime = await ssoRuntime.loadPlatformRuntime({ provider: record.provider })
+    if (isNil(runtime)) {
+        throw new SsoLoginError({ code: SsoLoginErrorCode.PROVIDER_NOT_ENABLED, detail: 'This sign-in method is not available' })
     }
-    return feishuClient.buildAuthorizationUrl({
-        region: runtime.feishu.stored.region,
-        appId: runtime.feishu.stored.appId,
-        redirectUri,
-        state: begun.state,
-        codeChallenge: oidcClient.challengeFor(begun.record.codeVerifier),
-    })
+    const platform = await ssoRuntime.fetchPlatformProfile({ runtime, record, code, redirectUri })
+    onEmail(platform.profile.email)
+    if (record.mode === 'bind') {
+        const tenantId = record.tenantId
+        if (isNil(tenantId)) {
+            throw new SsoLoginError({ code: SsoLoginErrorCode.STATE_INVALID, detail: 'The sign-in state carries no tenant' })
+        }
+        await ssoPlatformLogin.bind({ log, kind: runtime.kind, platform, tenantId, actorUserId: record.actorUserId })
+        return { ok: true, kind: 'bind', provider: record.provider, tenantId }
+    }
+    const result = await ssoPlatformLogin.login({ log, kind: runtime.kind, platform, app: runtime.app, ip })
+    const ticket = await ssoState.issueTicket({ userId: result.userId, tenantId: result.tenantId })
+    return { ok: true, kind: 'login', provider: record.provider, tenantId: result.tenantId, ticket }
 }
 
-async function fetchProfile({ runtime, record, code, redirectUri }: FetchProfileParams): Promise<SsoProfile> {
-    if (runtime.kind === SsoProvider.OIDC) {
-        const { stored, clientSecret } = runtime.oidc
-        const discovery = await oidcClient.discover({ issuer: stored.issuer })
-        const tokens = await oidcClient.exchangeCode({ discovery, clientId: stored.clientId, clientSecret, code, redirectUri, codeVerifier: record.codeVerifier })
-        const claims = await oidcClient.verifyIdToken({ idToken: tokens.idToken, discovery, clientId: stored.clientId, nonce: record.nonce })
-        const groupsClaim = stored.roleMapping?.claim ?? null
-        const missingEmail = typeof ssoProfile.claimValue({ claims, path: stored.emailClaim }) !== 'string'
-        const missingGroups = !isNil(groupsClaim) && isNil(ssoProfile.claimValue({ claims, path: groupsClaim }))
-        const subject = typeof claims['sub'] === 'string' ? claims['sub'] : ''
-        const extra = missingEmail || missingGroups
-            ? await oidcClient.fetchUserinfo({ discovery, accessToken: tokens.accessToken, subject })
-            : {}
-        return ssoProfile.fromClaims({ claims: { ...extra, ...claims }, emailClaim: stored.emailClaim, groupsClaim })
-    }
-    const { stored, appSecret } = runtime.feishu
-    const feishu = await feishuClient.fetchProfile({
-        region: stored.region,
-        appId: stored.appId,
-        appSecret,
-        code,
-        redirectUri,
-        codeVerifier: record.codeVerifier,
-    })
-    const enterpriseKey = stored.allowedEnterpriseKey ?? null
-    if (!isNil(enterpriseKey) && feishu.enterpriseKey !== enterpriseKey) {
-        throw new SsoLoginError({ code: SsoLoginErrorCode.ENTERPRISE_MISMATCH, detail: 'The Feishu account belongs to a different enterprise' })
-    }
-    const names = signupNames.splitFullName({ fullName: feishu.fullName, email: feishu.email })
-    return {
-        subject: feishu.subject,
-        email: feishu.email,
-        emailVerified: true,
-        fullName: feishu.fullName,
-        givenName: names.firstName,
-        familyName: names.lastName,
-        groups: [],
-    }
-}
-
-async function assertProfileAllowed({ log, runtime, profile, tenantId }: AssertProfileParams): Promise<void> {
-    const common = runtime.kind === SsoProvider.OIDC ? runtime.oidc.stored : runtime.feishu.stored
-    const requireVerifiedEmail = runtime.kind === SsoProvider.OIDC ? runtime.oidc.stored.requireVerifiedEmail : false
-    ssoProfile.assertUsable({ profile, requireVerifiedEmail })
-    ssoProfile.assertDomainListed({ email: profile.email, allowedDomains: common.allowedDomains })
-    const tenant = await tenantService(log).getOneOrThrow(tenantId)
-    if (!isDomainAllowed({ email: profile.email, enforce: tenant.enforceAllowedAuthDomains, allowedDomains: tenant.allowedAuthDomains })) {
-        throw new SsoLoginError({ code: SsoLoginErrorCode.DOMAIN_NOT_ALLOWED, detail: `The email domain of ${profile.email} is not allowed to sign in to this tenant` })
-    }
-}
-
-async function completeTest({ log, record, profile }: CompleteTestParams): Promise<void> {
+async function completeTest({ log, record, profile, binding }: CompleteTestParams): Promise<void> {
     const actor = isNil(record.actorUserId) ? null : await userService(log).get({ id: record.actorUserId })
     const actorIdentity = isNil(actor) ? null : await userIdentityService(log).getOneOrFail({ id: actor.identityId })
-    if (isNil(actorIdentity) || actorIdentity.email.toLowerCase() !== profile.email) {
+    const actorEmail = identityContact.emailOrNull(actorIdentity)?.toLowerCase() ?? null
+    const matchesBinding = !isNil(actor) && !isNil(binding) && binding.userId === actor.id
+    const matchesEmail = ssoProfile.hasEmail(profile) && !isNil(actorEmail) && actorEmail === profile.email
+    if (!matchesBinding && !matchesEmail) {
         throw new SsoLoginError({
             code: SsoLoginErrorCode.TEST_ACCOUNT_MISMATCH,
-            detail: `The test sign-in returned ${profile.email}, which is not the email of the administrator running the test`,
+            detail: `The test sign-in returned ${ssoUserResolver.displayNameOf({ profile })}, which is not the account of the administrator running the test`,
         })
+    }
+    if (isNil(record.tenantId)) {
+        return
     }
     await ssoConfigService(log).markVerified({ tenantId: record.tenantId, provider: record.provider })
 }
 
-async function resolveUser({ log, runtime, profile, tenantId, provider, ip }: ResolveUserParams): Promise<ResolvedUser> {
-    const common = runtime.kind === SsoProvider.OIDC ? runtime.oidc.stored : runtime.feishu.stored
-    const identity = await userIdentityService(log).getIdentityByEmail(profile.email)
-    const existingUser = isNil(identity) ? null : await userService(log).getOneByIdentityAndTenant({ identityId: identity.id, tenantId })
-    if (!isNil(existingUser) && !isNil(identity)) {
-        return signInExisting({ log, user: existingUser, identity, profile, runtime, tenantId, provider, ip })
+async function storeRefreshToken({ log, policy, tenantId, externalIdentityId, refreshToken }: StoreRefreshTokenParams): Promise<void> {
+    if (!policy.federated || isNil(refreshToken)) {
+        return
     }
-    const invited = await userInvitationsService(log).hasAnyAcceptedInvitations({ tenantId, email: profile.email })
-    if (!common.autoCreateUsers && !invited) {
-        throw new SsoLoginError({
-            code: SsoLoginErrorCode.USER_NOT_PROVISIONED,
-            detail: `No account exists for ${profile.email} in this tenant and automatic account creation is off`,
-        })
-    }
-    const readyIdentity = await ensureVerifiedIdentity({ log, identity, profile, provider })
-    const created = await userService(log).getOrCreateWithProject({ identity: readyIdentity, tenantId })
-    const role = ssoProfile.resolveRole({ groups: profile.groups, roleMapping: common.roleMapping, defaultRole: common.defaultRole })
-    if (role !== created.tenantRole) {
-        await userService(log).update({ id: created.id, tenantId, tenantRole: role })
-    }
-    if (!isNil(common.defaultProject)) {
-        await projectMemberService(log).upsert({ projectId: common.defaultProject.projectId, userId: created.id, role: common.defaultProject.role })
-    }
-    await userInvitationsService(log).provisionUserInvitation({ email: profile.email })
-    applicationEvents(log).sendUserEvent({ tenantId, userId: created.id, ip }, {
-        action: ApplicationEventName.USER_SIGNED_UP,
-        data: { source: 'sso' },
-    })
-    return { userId: created.id }
+    await externalIdentityService(log).saveRefreshToken({ id: externalIdentityId, tenantId, refreshToken })
 }
 
-async function signInExisting({ log, user, identity, profile, runtime, tenantId, provider, ip }: SignInExistingParams): Promise<ResolvedUser> {
-    if (user.status === UserStatus.INACTIVE) {
-        throw new SsoLoginError({ code: SsoLoginErrorCode.USER_DISABLED, detail: `The account ${profile.email} has been disabled` })
-    }
-    await ensureVerifiedIdentity({ log, identity, profile, provider })
-    const common = runtime.kind === SsoProvider.OIDC ? runtime.oidc.stored : runtime.feishu.stored
-    const tenant = await tenantService(log).getOneOrThrow(tenantId)
-    const shouldSync = common.roleMapping?.syncOnLogin === true && tenant.ownerId !== user.id
-    if (shouldSync) {
-        const role = ssoProfile.resolveRole({ groups: profile.groups, roleMapping: common.roleMapping, defaultRole: common.defaultRole })
-        if (role !== user.tenantRole) {
-            await userService(log).update({ id: user.id, tenantId, tenantRole: role })
-            applicationEvents(log).sendUserEvent({ tenantId, userId: user.id, ip }, {
-                action: ApplicationEventName.TENANT_USER_ACCESS_CHANGED,
-                data: { target: profile.email, detail: `${role} (synced from ${provider})` },
-            })
-        }
-    }
-    await userInvitationsService(log).provisionUserInvitation({ email: profile.email })
-    return { userId: user.id }
-}
-
-async function ensureVerifiedIdentity({ log, identity, profile, provider }: EnsureIdentityParams): Promise<UserIdentity> {
-    if (isNil(identity)) {
-        const split = signupNames.splitFullName({ fullName: profile.fullName, email: profile.email })
-        return userIdentityService(log).create({
-            email: profile.email,
-            password: await cryptoUtils.generateRandomPassword(),
-            firstName: profile.givenName.length > 0 ? profile.givenName : split.firstName,
-            lastName: profile.familyName.length > 0 ? profile.familyName : split.lastName,
-            trackEvents: false,
-            newsLetter: false,
-            provider: provider === SsoProvider.OIDC ? UserIdentityProvider.OIDC : UserIdentityProvider.FEISHU,
-            verified: true,
-        })
-    }
-    if (!identity.verified) {
-        return userIdentityService(log).verifyAndDiscardPassword(identity.id)
-    }
-    return identity
+function sessionSecondsFor({ policy }: { policy: RuntimePolicy }): number | undefined {
+    return policy.federated ? FEDERATION_LIMITS.federatedSessionHours * SECONDS_PER_HOUR : undefined
 }
 
 function failureFrom({ error, record, email }: FailureParams): CallbackOutcome {
+    const mode: SsoMode = record?.mode ?? 'login'
+    const base = { tenantId: record?.tenantId ?? null, provider: record?.provider ?? null, mode, email }
     if (error instanceof SsoLoginError) {
-        return { ok: false, code: error.code, detail: error.detail, tenantId: record?.tenantId ?? null, provider: record?.provider ?? null, mode: record?.mode ?? 'login', email }
+        return { ok: false, code: error.code, detail: error.detail, ...base }
     }
     if (error instanceof ApplicationError && error.error.code === ErrorCode.USER_IS_INACTIVE) {
-        return { ok: false, code: SsoLoginErrorCode.USER_DISABLED, detail: 'The account has been disabled', tenantId: record?.tenantId ?? null, provider: record?.provider ?? null, mode: record?.mode ?? 'login', email }
+        return { ok: false, code: SsoLoginErrorCode.USER_DISABLED, detail: 'The account has been disabled', ...base }
     }
     const detail = error instanceof Error ? error.message : 'unexpected error'
-    return { ok: false, code: SsoLoginErrorCode.UNKNOWN, detail, tenantId: record?.tenantId ?? null, provider: record?.provider ?? null, mode: record?.mode ?? 'login', email }
+    return { ok: false, code: SsoLoginErrorCode.UNKNOWN, detail, ...base }
 }
+
+const SECONDS_PER_HOUR = 3600
 
 export type CallbackOutcome =
     | { ok: true, kind: 'login', provider: SsoProvider, tenantId: string, ticket: string }
     | { ok: true, kind: 'test', provider: SsoProvider, tenantId: string }
+    | { ok: true, kind: 'bind', provider: SsoProvider, tenantId: string }
     | { ok: false, code: SsoLoginErrorCode, detail: string, tenantId: string | null, provider: SsoProvider | null, mode: SsoMode, email: string | null }
 
-type Runtime =
-    | { kind: SsoProvider.OIDC, enabled: boolean, oidc: RuntimeOidc }
-    | { kind: SsoProvider.FEISHU, enabled: boolean, feishu: RuntimeFeishu }
-
 type StartParams = {
-    tenantId: string
+    tenantId: string | null
+    scope: SsoScope
     provider: SsoProvider
     mode: SsoMode
     actorUserId: string | null
@@ -288,9 +256,16 @@ type StartResult = {
     binding: string
 }
 
+type SamlAcsParams = {
+    samlResponse: string
+    relayState: string | undefined
+}
+
 type CallbackParams = {
     query: {
         code?: string
+        authCode?: string
+        auth_code?: string
         state?: string
         error?: string
         error_description?: string
@@ -299,61 +274,38 @@ type CallbackParams = {
     ip: string | undefined
 }
 
-type LoadRuntimeParams = {
+type TenantCallbackParams = {
     log: FastifyBaseLogger
-    tenantId: string
-    provider: SsoProvider
-}
-
-type BuildUrlParams = {
-    runtime: Runtime
+    record: SsoStateRecord
+    code: string
+    state: string | undefined
     redirectUri: string
-    begun: { state: string, record: SsoStateRecord }
+    ip: string | undefined
+    onEmail: (email: string) => void
 }
 
-type FetchProfileParams = {
-    runtime: Runtime
+type PlatformCallbackParams = {
+    log: FastifyBaseLogger
     record: SsoStateRecord
     code: string
     redirectUri: string
-}
-
-type AssertProfileParams = {
-    log: FastifyBaseLogger
-    runtime: Runtime
-    profile: SsoProfile
-    tenantId: string
+    ip: string | undefined
+    onEmail: (email: string) => void
 }
 
 type CompleteTestParams = {
     log: FastifyBaseLogger
     record: SsoStateRecord
     profile: SsoProfile
+    binding: ExternalIdentityRecord | null
 }
 
-type ResolveUserParams = {
+type StoreRefreshTokenParams = {
     log: FastifyBaseLogger
-    runtime: Runtime
-    profile: SsoProfile
+    policy: RuntimePolicy
     tenantId: string
-    provider: SsoProvider
-    ip: string | undefined
-}
-
-type SignInExistingParams = ResolveUserParams & {
-    user: User
-    identity: UserIdentity
-}
-
-type EnsureIdentityParams = {
-    log: FastifyBaseLogger
-    identity: UserIdentity | null
-    profile: SsoProfile
-    provider: SsoProvider
-}
-
-type ResolvedUser = {
-    userId: string
+    externalIdentityId: string
+    refreshToken: string | null
 }
 
 type FailureParams = {

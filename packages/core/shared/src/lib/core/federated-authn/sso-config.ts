@@ -1,6 +1,7 @@
 import { Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { DefaultProjectRole } from '../../management/project/project-member'
+import { SsoMatchBy } from '../../management/saas/federation'
 import { TenantRole } from '../user/user'
 
 export enum SsoRegion {
@@ -56,6 +57,11 @@ export const StoredOidcSso = z.object({
     scopes: z.string(),
     emailClaim: z.string(),
     requireVerifiedEmail: z.boolean(),
+    matchBy: z.enum(SsoMatchBy).optional(),
+    extraAuthParams: z.record(z.string(), z.string()).optional(),
+    sessionRecheckMinutes: Nullable(z.number()),
+    provisioned: z.boolean().optional(),
+    eventSigningSecret: SsoEncryptedSecret.optional(),
 })
 export type StoredOidcSso = z.infer<typeof StoredOidcSso>
 
@@ -67,3 +73,45 @@ export const StoredFeishuSso = z.object({
     allowedEnterpriseKey: Nullable(z.string()),
 })
 export type StoredFeishuSso = z.infer<typeof StoredFeishuSso>
+
+export const StoredWecomSso = z.object({
+    ...SsoProviderCommon,
+    corpId: z.string(),
+    agentId: z.string(),
+    secret: SsoEncryptedSecret,
+})
+export type StoredWecomSso = z.infer<typeof StoredWecomSso>
+
+export const StoredDingtalkSso = z.object({
+    ...SsoProviderCommon,
+    appKey: z.string(),
+    appSecret: SsoEncryptedSecret,
+    corpId: Nullable(z.string()),
+})
+export type StoredDingtalkSso = z.infer<typeof StoredDingtalkSso>
+
+export const SamlSubjectSource = z.enum(['NAME_ID', 'ATTRIBUTE'])
+export type SamlSubjectSource = z.infer<typeof SamlSubjectSource>
+
+export const StoredSamlSso = z.object({
+    ...SsoProviderCommon,
+    idpMetadataXml: z.string(),
+    idpEntityId: z.string(),
+    idpSsoUrl: z.string(),
+    idpCertificates: z.array(z.string()),
+    emailAttribute: z.string(),
+    firstNameAttribute: Nullable(z.string()),
+    lastNameAttribute: Nullable(z.string()),
+    subjectSource: SamlSubjectSource,
+    subjectAttribute: Nullable(z.string()),
+    signAuthnRequests: z.boolean(),
+})
+export type StoredSamlSso = z.infer<typeof StoredSamlSso>
+
+export const PlatformAppBinding = z.object({
+    kind: z.enum(['FEISHU', 'WECOM', 'DINGTALK']),
+    enterpriseKey: z.string(),
+    enterpriseName: z.string(),
+    boundAt: z.string(),
+})
+export type PlatformAppBinding = z.infer<typeof PlatformAppBinding>

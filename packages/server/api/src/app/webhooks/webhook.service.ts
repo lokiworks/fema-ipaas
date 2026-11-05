@@ -17,6 +17,7 @@ import { workflowVersionRepo } from '../workflows/workflow-version/workflow-vers
 import { webhookHandshake, WebhookHandshakeResponse } from './webhook-handshake'
 import { webhookRunPolicy } from './webhook-run-policy'
 import { webhookSignature } from './webhook-signature'
+import { webhookTenantGate } from './webhook-tenant-gate'
 
 const WEBHOOK_TIMEOUT_MS = system.getNumberOrThrow(AppSystemProp.WEBHOOK_TIMEOUT_SECONDS) * 1000
 const MAX_PAYLOAD_SIZE_BYTES = system.getNumberOrThrow(AppSystemProp.MAX_WEBHOOK_PAYLOAD_SIZE_MB) * 1024 * 1024
@@ -93,6 +94,12 @@ export const webhookService = {
             }
         }
         const { workflow } = workflowExecutionResult
+
+        const suspendedRefusal = await webhookTenantGate.refusalFor({ tenantId: workflowExecutionResult.tenantId, webhookHeader, webhookRequestId })
+        if (webhookTenantGate.isRefusal(suspendedRefusal)) {
+            pinoLogger.info({ tenant: { id: workflowExecutionResult.tenantId } }, 'Tenant is suspended, refusing the webhook')
+            return suspendedRefusal
+        }
 
         // data() consumes the request body stream (streaming any file straight to storage), which
         // can only be read once. The handshake check and the payload resolution below both need it,

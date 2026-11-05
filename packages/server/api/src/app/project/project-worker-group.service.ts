@@ -1,12 +1,25 @@
 import { isNil, spreadIfDefined } from '@fema-ipaas/core-utils'
 import { dayjsDuration } from '@fema-ipaas/server-utils'
+import { Tenant, TenantLimits } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
+import { repoFactory } from '../core/db/repo-factory'
 import { distributedStore } from '../database/redis-connections'
+import { TenantEntity } from '../tenant/tenant.entity'
 import { projectRepo } from './project-repo'
 
 const NO_WORKER_GROUP_SENTINEL = '__none__'
 const CACHE_TTL_SECONDS = dayjsDuration(5, 'minute').asSeconds()
 const getProjectWorkerGroupCacheKey = (projectId: string): string => `project:${projectId}:worker_group`
+
+const tenantRepo = repoFactory<Tenant & TenantLimits>(TenantEntity)
+
+async function tenantWorkerGroupOf({ tenantId }: { tenantId: string | undefined }): Promise<string | null> {
+    if (isNil(tenantId)) {
+        return null
+    }
+    const tenant = await tenantRepo().findOne({ select: ['id', 'workerGroupId'], where: { id: tenantId } })
+    return tenant?.workerGroupId ?? null
+}
 
 export const projectWorkerGroupService = (_log: FastifyBaseLogger) => ({
     async getProjectWorkerGroup({ projectId, tenantId }: { projectId: string, tenantId?: string | null }): Promise<string | null> {
@@ -16,11 +29,11 @@ export const projectWorkerGroupService = (_log: FastifyBaseLogger) => ({
         }
 
         const project = await projectRepo().findOne({
-            select: ['workerGroupId'],
+            select: ['workerGroupId', 'tenantId'],
             where: { id: projectId, ...spreadIfDefined('tenantId', tenantId ?? undefined) },
         })
 
-        const workerGroupId = project?.workerGroupId ?? null
+        const workerGroupId = project?.workerGroupId ?? await tenantWorkerGroupOf({ tenantId: project?.tenantId })
         await distributedStore.put(getProjectWorkerGroupCacheKey(projectId), workerGroupId ?? NO_WORKER_GROUP_SENTINEL, CACHE_TTL_SECONDS)
         return workerGroupId
     },

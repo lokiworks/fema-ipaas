@@ -6,6 +6,7 @@ import { repoFactory } from '../../core/db/repo-factory'
 import { domainHelper } from '../../helper/domain-helper'
 import { emailService } from '../../helper/email/email-service'
 import { mailSender } from '../../helper/email/mail-sender'
+import { identityContact } from '../../helper/identity-contact'
 import { buildPaginator } from '../../helper/pagination/build-paginator'
 import { paginationHelper } from '../../helper/pagination/pagination-utils'
 import { userService } from '../../user/user-service'
@@ -104,7 +105,7 @@ function toModel(demand: ConnectorDemandSchema): ConnectorDemand {
         requesterId: demand.requesterId,
         requester: isNil(identity) || isNil(demand.requesterId) ? null : {
             id: demand.requesterId,
-            email: identity.email,
+            email: identityContact.of(identity),
             firstName: identity.firstName,
             lastName: identity.lastName,
         },

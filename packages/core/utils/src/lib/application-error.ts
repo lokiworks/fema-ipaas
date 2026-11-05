@@ -33,6 +33,14 @@ export type ApplicationErrorParams =
     | InvalidCredentialsErrorParams
     | InvalidOtpParams
     | InvitationOnlySignUpParams
+    | MfaRequiredErrorParams
+    | MfaEnrollmentRequiredErrorParams
+    | InvalidMfaCodeErrorParams
+    | TenantSuspendedErrorParams
+    | TenantSelectionRequiredErrorParams
+    | SmsNotConfiguredErrorParams
+    | CaptchaRequiredErrorParams
+    | PlatformClientUnauthorizedErrorParams
     | PermissionDeniedErrorParams
     | FeatureDisabledErrorParams
     | SystemInvalidErrorParams
@@ -257,6 +265,22 @@ ErrorCode.AUTHENTICATION,
 
 export type InvalidOtpParams = BaseErrorParams<ErrorCode.INVALID_OTP, Record<string, never>>
 
+export type MfaRequiredErrorParams = BaseErrorParams<ErrorCode.MFA_REQUIRED, { challengeToken: string }>
+
+export type MfaEnrollmentRequiredErrorParams = BaseErrorParams<ErrorCode.MFA_ENROLLMENT_REQUIRED, { challengeToken: string }>
+
+export type InvalidMfaCodeErrorParams = BaseErrorParams<ErrorCode.INVALID_MFA_CODE, Record<string, never>>
+
+export type TenantSuspendedErrorParams = BaseErrorParams<ErrorCode.TENANT_SUSPENDED, { tenantId: string }>
+
+export type TenantSelectionRequiredErrorParams = BaseErrorParams<ErrorCode.TENANT_SELECTION_REQUIRED, { selectionToken: string }>
+
+export type SmsNotConfiguredErrorParams = BaseErrorParams<ErrorCode.SMS_NOT_CONFIGURED, Record<string, never>>
+
+export type CaptchaRequiredErrorParams = BaseErrorParams<ErrorCode.CAPTCHA_REQUIRED, Record<string, never>>
+
+export type PlatformClientUnauthorizedErrorParams = BaseErrorParams<ErrorCode.PLATFORM_CLIENT_UNAUTHORIZED, { message: string }>
+
 export type ProjectExternalIdAlreadyExistsParams = BaseErrorParams<ErrorCode.PROJECT_EXTERNAL_ID_ALREADY_EXISTS, {
     externalId: string
 }>
@@ -314,6 +338,14 @@ export enum ErrorCode {
     INVALID_CLOUD_CLAIM = 'INVALID_CLOUD_CLAIM',
     INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
     INVALID_OTP = 'INVALID_OTP',
+    MFA_REQUIRED = 'MFA_REQUIRED',
+    MFA_ENROLLMENT_REQUIRED = 'MFA_ENROLLMENT_REQUIRED',
+    INVALID_MFA_CODE = 'INVALID_MFA_CODE',
+    TENANT_SUSPENDED = 'TENANT_SUSPENDED',
+    TENANT_SELECTION_REQUIRED = 'TENANT_SELECTION_REQUIRED',
+    SMS_NOT_CONFIGURED = 'SMS_NOT_CONFIGURED',
+    CAPTCHA_REQUIRED = 'CAPTCHA_REQUIRED',
+    PLATFORM_CLIENT_UNAUTHORIZED = 'PLATFORM_CLIENT_UNAUTHORIZED',
     INVITATION_ONLY_SIGN_UP = 'INVITATION_ONLY_SIGN_UP',
     PERMISSION_DENIED = 'PERMISSION_DENIED',
     FEATURE_DISABLED = 'FEATURE_DISABLED',

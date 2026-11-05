@@ -8,6 +8,7 @@ import { userIdentityService } from '../../../src/app/authentication/user-identi
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { distributedStore } from '../../../src/app/database/redis-connections'
 import { passwordlessAuthService } from '../../../src/app/authentication/passwordless-auth.service'
+import { captchaHelper } from '../../helpers/captcha'
 import { db } from '../../helpers/db'
 import { tenantService } from '../../../src/app/tenant/tenant.service'
 import { createMockTenant } from '../../helpers/mocks'
@@ -25,7 +26,7 @@ async function requestCode(email: string): Promise<number | undefined> {
         method: 'POST',
         url: '/api/v1/authentication/otp/request',
         headers: { 'x-real-ip': `10.0.${Math.floor(callers / 256)}.${callers % 256}` },
-        body: { email },
+        body: { email, captchaToken: await captchaHelper.solvedToken({ app }) },
     })
     return response?.statusCode
 }
@@ -113,7 +114,7 @@ describe('Passwordless Authentication API', () => {
             const response = await app?.inject({
                 method: 'POST',
                 url: '/api/v1/authentication/otp/request',
-                body: { email: 'someone@mailinator.com' },
+                body: { email: 'someone@mailinator.com', captchaToken: await captchaHelper.solvedToken({ app }) },
             })
 
             expect(response?.statusCode).not.toBe(StatusCodes.NO_CONTENT)
@@ -137,17 +138,41 @@ describe('Passwordless Authentication API', () => {
             const response = await app?.inject({
                 method: 'POST',
                 url: '/api/v1/authentication/otp/request',
-                body: { email: invited },
+                body: { email: invited, captchaToken: await captchaHelper.solvedToken({ app }) },
             })
 
             expect(response?.statusCode).toBe(StatusCodes.NO_CONTENT)
         })
 
-        it('issues a code with no captcha token when no challenge is configured', async () => {
+        it('issues a code once the built-in proof of work is attached', async () => {
             const statusCode = await requestCode(EMAIL)
 
             expect(statusCode).toBe(StatusCodes.NO_CONTENT)
             expect((await storedOtp(EMAIL))?.value).toMatch(/^[0-9]{6}$/)
+        })
+
+        it('asks for a captcha when no proof of work comes with the request', async () => {
+            const response = await app?.inject({
+                method: 'POST',
+                url: '/api/v1/authentication/otp/request',
+                body: { email: EMAIL },
+            })
+
+            expect(response?.statusCode).toBe(StatusCodes.BAD_REQUEST)
+            expect(response?.json()?.code).toBe('CAPTCHA_REQUIRED')
+            expect(await storedIdentity(EMAIL)).toBeNull()
+        })
+
+        it('refuses to accept the same proof of work twice', async () => {
+            const captchaToken = await captchaHelper.solvedToken({ app })
+            const send = () => app?.inject({
+                method: 'POST',
+                url: '/api/v1/authentication/otp/request',
+                body: { email: EMAIL, captchaToken },
+            })
+
+            expect((await send())?.statusCode).toBe(StatusCodes.NO_CONTENT)
+            expect((await send())?.statusCode).not.toBe(StatusCodes.NO_CONTENT)
         })
 
         it('does not set the USER_CREATED flag before a code is verified', async () => {

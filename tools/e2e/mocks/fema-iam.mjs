@@ -1,0 +1,759 @@
+import { createHash, createHmac, generateKeyPairSync, randomBytes, randomUUID, sign as cryptoSign } from 'node:crypto'
+import { createServer } from 'node:http'
+
+const SLOT = Number(process.env.E2E_SLOT ?? 3)
+const PORT = Number(process.env.FEMA_IAM_PORT ?? 19300 + SLOT)
+const HOST = process.env.FEMA_IAM_HOST ?? '127.0.0.1'
+const BASE = process.env.FEMA_IAM_BASE ?? `http://${HOST}:${PORT}`
+const ISSUER = `${BASE}/iam`
+const API = `${BASE}/api`
+const SESSION_COOKIE = 'fema_iam_sid'
+const CODE_TTL_MS = 60_000
+const ACCESS_TTL_SECONDS = Number(process.env.FEMA_IAM_ACCESS_TTL ?? 300)
+
+const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
+const KID = `mock-${randomBytes(4).toString('hex')}`
+const JWK = { ...publicKey.export({ format: 'jwk' }), kid: KID, alg: 'RS256', use: 'sig' }
+
+const state = freshState()
+
+function freshState() {
+  return {
+    tenants: new Map(),
+    persons: new Map(),
+    members: new Map(),
+    clients: new Map(),
+    sessions: new Map(),
+    codes: new Map(),
+    refreshTokens: new Map(),
+    accessTokens: new Map(),
+    subscriptions: new Map(),
+    objects: new Map(),
+    deniedEvents: new Set(),
+    faults: [],
+    log: { authorize: [], token: [], userinfo: [], federation: [], subscriptions: [], deliveries: [], api: [] },
+  }
+}
+
+function resetState() {
+  const next = freshState()
+  for (const key of Object.keys(next)) {
+    state[key] = next[key]
+  }
+}
+
+const server = createServer(async (req, res) => {
+  const url = new URL(req.url ?? '/', BASE)
+  const raw = await readRaw(req)
+  const route = `${req.method} ${url.pathname}`
+  try {
+    const handler = ROUTES[route] ?? dynamicRoute({ method: req.method ?? 'GET', pathname: url.pathname })
+    if (!handler) {
+      return send({ res, status: 404, payload: { error: 'not_found', path: url.pathname } })
+    }
+    const result = await handler({ req, url, raw, body: parseBody({ raw, contentType: req.headers['content-type'] }) })
+    return reply({ res, result })
+  }
+  catch (error) {
+    return send({ res, status: 500, payload: { error: 'server_error', error_description: String(error?.message ?? error) } })
+  }
+})
+
+server.listen(PORT, HOST, () => {
+  process.stdout.write(`fema-iam mock on ${BASE} (issuer ${ISSUER}, api ${API})\n`)
+})
+
+const ROUTES = {
+  'GET /': () => json({ payload: { ok: true, issuer: ISSUER, api: API } }),
+  'GET /iam/.well-known/openid-configuration': () => json({ payload: discovery() }),
+  'GET /iam/oauth2/jwks': () => json({ payload: { keys: [JWK] } }),
+  'GET /iam/oauth2/authorize': ({ req, url }) => authorize({ req, url }),
+  'POST /iam/login': ({ body }) => login({ body }),
+  'POST /iam/logout': ({ req }) => logout({ req }),
+  'POST /iam/oauth2/token': ({ req, body }) => token({ req, body }),
+  'GET /iam/userinfo': ({ req }) => userinfo({ req }),
+  'POST /iam/userinfo': ({ req }) => userinfo({ req }),
+  'POST /api/webhook/subscription/create': ({ req, body }) => createSubscription({ req, body }),
+  'POST /api/webhook/subscription/delete': ({ req, body }) => deleteSubscription({ req, body }),
+  'POST /__control/reset': () => {
+    resetState()
+    return json({ payload: { ok: true } })
+  },
+  'POST /__control/seed': ({ body }) => seed({ body }),
+  'GET /__control/state': () => json({ payload: snapshot() }),
+  'POST /__control/faults': ({ body }) => {
+    state.faults = Array.isArray(body.faults) ? body.faults.map((fault) => ({ remaining: 1, ...fault })) : []
+    return json({ payload: { ok: true, faults: state.faults } })
+  },
+  'POST /__control/clients/rotate': ({ body }) => rotateClient({ body }),
+  'POST /__control/tenants/update': ({ body }) => updateTenant({ body }),
+  'POST /__control/members/remove': ({ body }) => changeMembership({ body, removed: true }),
+  'POST /__control/members/restore': ({ body }) => changeMembership({ body, removed: false }),
+  'POST /__control/federation/send': ({ body }) => sendFederationEvent(body),
+  'POST /__control/objects': ({ body }) => putObject({ body }),
+  'POST /__control/events/push': ({ body }) => pushBusinessEvent(body),
+  'POST /__control/events/deny': ({ body }) => {
+    state.deniedEvents = new Set(Array.isArray(body.events) ? body.events : [])
+    return json({ payload: { ok: true } })
+  },
+}
+
+function dynamicRoute({ method, pathname }) {
+  const read = pathname.match(/^\/api\/([a-z0-9-]+)\/([a-z0-9-]+)\/find-by-id$/)
+  if (read && method === 'GET') {
+    return ({ req, url }) => findById({ req, app: read[1], object: read[2], id: url.searchParams.get('id') ?? '' })
+  }
+  if (pathname.startsWith('/api/')) {
+    return ({ req, url, body }) => echoApi({ req, url, body, method })
+  }
+  return null
+}
+
+function discovery() {
+  return {
+    issuer: ISSUER,
+    authorization_endpoint: `${ISSUER}/oauth2/authorize`,
+    token_endpoint: `${ISSUER}/oauth2/token`,
+    userinfo_endpoint: `${ISSUER}/userinfo`,
+    jwks_uri: `${ISSUER}/oauth2/jwks`,
+    response_types_supported: ['code'],
+    grant_types_supported: ['authorization_code', 'refresh_token', 'client_credentials'],
+    subject_types_supported: ['public'],
+    id_token_signing_alg_values_supported: ['RS256'],
+    scopes_supported: ['openid', 'profile', 'email'],
+    token_endpoint_auth_methods_supported: ['client_secret_basic', 'client_secret_post'],
+    code_challenge_methods_supported: ['S256'],
+    claims_supported: ['sub', 'tenantId', 'sub_type', 'sid', 'name', 'preferred_username', 'email', 'email_verified'],
+  }
+}
+
+function seed({ body }) {
+  if (body.reset !== false) {
+    resetState()
+  }
+  for (const tenant of body.tenants ?? []) {
+    state.tenants.set(tenant.code, { status: 'ACTIVE', eventSecret: null, eventsUrl: null, name: tenant.code, ...tenant })
+  }
+  for (const person of body.persons ?? []) {
+    state.persons.set(person.username, { password: 'Passw0rd!', name: person.username, email: null, emailVerified: false, phone: null, phoneVerified: false, ...person })
+  }
+  for (const member of body.members ?? []) {
+    state.members.set(member.id, { removed: false, ...member })
+  }
+  for (const client of body.clients ?? []) {
+    state.clients.set(client.clientId, { kind: 'oidc', acceptsAnyTenant: false, redirectUris: [], ...client })
+  }
+  for (const object of body.objects ?? []) {
+    putObject({ body: object })
+  }
+  return json({ payload: snapshot() })
+}
+
+function snapshot() {
+  return {
+    issuer: ISSUER,
+    api: API,
+    tenants: [...state.tenants.values()],
+    persons: [...state.persons.values()].map(({ password: _password, ...person }) => person),
+    members: [...state.members.values()],
+    clients: [...state.clients.values()].map(({ secret: _secret, ...client }) => client),
+    sessions: state.sessions.size,
+    subscriptions: [...state.subscriptions.values()].map(({ secret: _secret, ...subscription }) => subscription),
+    faults: state.faults,
+    log: state.log,
+  }
+}
+
+function rotateClient({ body }) {
+  const client = state.clients.get(body.clientId)
+  if (!client) {
+    return json({ status: 404, payload: { error: 'unknown_client' } })
+  }
+  client.secret = body.secret ?? `rotated-${randomBytes(12).toString('hex')}`
+  return json({ payload: { clientId: client.clientId, secret: client.secret } })
+}
+
+function updateTenant({ body }) {
+  const tenant = state.tenants.get(body.code)
+  if (!tenant) {
+    return json({ status: 404, payload: { error: 'unknown_tenant' } })
+  }
+  Object.assign(tenant, Object.fromEntries(Object.entries(body).filter(([key]) => key !== 'code')))
+  return json({ payload: tenant })
+}
+
+async function changeMembership({ body, removed }) {
+  const member = state.members.get(body.memberId)
+  if (!member) {
+    return json({ status: 404, payload: { error: 'unknown_member' } })
+  }
+  member.removed = removed
+  if (!body.notify) {
+    return json({ payload: { member, delivered: null } })
+  }
+  const delivered = await deliverFederationEvent({ tenantCode: member.tenant, type: removed ? 'MEMBER_REMOVED' : 'MEMBER_RESTORED', subject: member.id })
+  return json({ payload: { member, delivered } })
+}
+
+async function sendFederationEvent(body) {
+  const delivered = await deliverFederationEvent({
+    tenantCode: body.tenant,
+    type: body.type ?? 'MEMBER_REMOVED',
+    subject: body.subject,
+    id: body.id,
+    secret: body.secret,
+    signature: body.signature,
+    url: body.url,
+    rawBody: body.rawBody,
+  })
+  return json({ payload: { delivered } })
+}
+
+async function deliverFederationEvent({ tenantCode, type, subject, id, secret, signature, url, rawBody }) {
+  const tenant = state.tenants.get(tenantCode)
+  const target = url ?? tenant?.eventsUrl
+  const key = secret ?? tenant?.eventSecret
+  if (!target || !key) {
+    const entry = { at: new Date().toISOString(), tenant: tenantCode, type, subject, status: null, error: 'tenant has no eventsUrl or eventSecret' }
+    state.log.federation.push(entry)
+    return entry
+  }
+  const event = {
+    id: id ?? `fed-${randomUUID()}`,
+    type,
+    issuer: ISSUER,
+    externalTenantId: tenantCode,
+    ...(subject ? { subject } : {}),
+    occurredAt: new Date().toISOString(),
+  }
+  const payload = rawBody ?? JSON.stringify(event)
+  const header = signature ?? signBody({ secret: key, payload })
+  const entry = { at: new Date().toISOString(), tenant: tenantCode, type, subject: subject ?? null, id: event.id, url: target, status: null, response: null }
+  try {
+    const response = await fetch(target, { method: 'POST', headers: { 'content-type': 'application/json', 'x-fema-signature': header }, body: payload, signal: AbortSignal.timeout(15000) })
+    entry.status = response.status
+    entry.response = (await response.text()).slice(0, 500)
+  }
+  catch (error) {
+    entry.error = String(error?.message ?? error)
+  }
+  state.log.federation.push(entry)
+  return entry
+}
+
+function authorize({ req, url }) {
+  const query = Object.fromEntries(url.searchParams)
+  const client = state.clients.get(query.client_id)
+  const entry = { at: new Date().toISOString(), clientId: query.client_id ?? null, tenant: query.tenant ?? null, scope: query.scope ?? null, outcome: null }
+  state.log.authorize.push(entry)
+  if (!client || client.kind !== 'oidc') {
+    entry.outcome = 'unknown_client'
+    return html({ status: 400, body: page({ title: '无法登录', content: `<p data-testid="iam-error">未知的应用：${escapeHtml(query.client_id ?? '')}</p>` }) })
+  }
+  if (!query.redirect_uri || (client.redirectUris.length > 0 && !client.redirectUris.includes(query.redirect_uri))) {
+    entry.outcome = 'invalid_redirect_uri'
+    return html({ status: 400, body: page({ title: '无法登录', content: '<p data-testid="iam-error">回跳地址未登记</p>' }) })
+  }
+  if (query.response_type !== 'code') {
+    entry.outcome = 'unsupported_response_type'
+    return redirectError({ query, error: 'unsupported_response_type', description: 'only code is supported' })
+  }
+  if (!query.code_challenge || query.code_challenge_method !== 'S256') {
+    entry.outcome = 'pkce_required'
+    return redirectError({ query, error: 'invalid_request', description: 'PKCE with S256 is required' })
+  }
+  const session = sessionOf({ req })
+  if (!session) {
+    entry.outcome = 'login_page'
+    return html({ body: loginPage({ returnTo: url.pathname + url.search, error: null }) })
+  }
+  const person = state.persons.get(session.username)
+  const requestedTenant = query.tenant ?? (client.acceptsAnyTenant ? null : client.tenant)
+  const candidates = [...state.members.values()].filter((member) => member.username === person.username && !member.removed)
+  const chosen = requestedTenant ? candidates.filter((member) => member.tenant === requestedTenant) : candidates
+  if (chosen.length === 0) {
+    entry.outcome = 'no_member'
+    return redirectError({ query, error: 'access_denied', description: `${person.username} is not a member of ${requestedTenant ?? 'any tenant'}` })
+  }
+  if (chosen.length > 1) {
+    entry.outcome = 'choose_tenant'
+    return html({ body: chooseTenantPage({ url, members: chosen }) })
+  }
+  const member = chosen[0]
+  if (!client.acceptsAnyTenant && member.tenant !== client.tenant) {
+    entry.outcome = 'tenant_not_accepted'
+    return redirectError({ query, error: 'access_denied', description: `client ${client.clientId} only accepts members of ${client.tenant}` })
+  }
+  const tenant = state.tenants.get(member.tenant)
+  if (!tenant || tenant.status !== 'ACTIVE') {
+    entry.outcome = 'tenant_inactive'
+    return redirectError({ query, error: 'access_denied', description: `tenant ${member.tenant} is not active` })
+  }
+  const code = `code-${randomBytes(16).toString('hex')}`
+  state.codes.set(code, {
+    clientId: client.clientId,
+    redirectUri: query.redirect_uri,
+    memberId: member.id,
+    sid: session.sid,
+    authTime: session.authTime,
+    scope: query.scope ?? 'openid',
+    nonce: query.nonce ?? null,
+    codeChallenge: query.code_challenge,
+    expiresAt: Date.now() + CODE_TTL_MS,
+  })
+  entry.outcome = 'code'
+  entry.memberId = member.id
+  return redirect({ location: withParams({ base: query.redirect_uri, params: { code, ...(query.state ? { state: query.state } : {}), iss: ISSUER } }) })
+}
+
+function login({ body }) {
+  const returnTo = typeof body.return === 'string' && body.return.startsWith('/iam/oauth2/authorize') ? body.return : null
+  const person = state.persons.get(String(body.username ?? '').trim())
+  if (!person || person.password !== body.password) {
+    return html({ status: 401, body: loginPage({ returnTo: returnTo ?? '', error: '账号或密码不对' }) })
+  }
+  const sid = `sid-${randomBytes(12).toString('hex')}`
+  state.sessions.set(sid, { sid, username: person.username, authTime: Math.floor(Date.now() / 1000) })
+  const cookie = `${SESSION_COOKIE}=${sid}; Path=/iam; HttpOnly; SameSite=Lax`
+  if (!returnTo) {
+    return json({ payload: { ok: true, sid }, headers: { 'set-cookie': cookie } })
+  }
+  return redirect({ location: returnTo, headers: { 'set-cookie': cookie } })
+}
+
+function logout({ req }) {
+  const session = sessionOf({ req })
+  if (session) {
+    state.sessions.delete(session.sid)
+  }
+  return json({ payload: { ok: true }, headers: { 'set-cookie': `${SESSION_COOKIE}=; Path=/iam; Max-Age=0` } })
+}
+
+function token({ req, body }) {
+  const credentials = clientCredentialsOf({ req, body })
+  const grantType = body.grant_type
+  const extras = Object.fromEntries(Object.entries(body).filter(([key]) => !['client_secret', 'code', 'code_verifier', 'refresh_token', 'grant_type', 'client_id'].includes(key)))
+  const entry = { at: new Date().toISOString(), grantType: grantType ?? null, clientId: credentials.clientId, authMethod: credentials.method, params: extras, status: null, error: null, memberId: null }
+  state.log.token.push(entry)
+  const finish = (result) => {
+    entry.status = result.status ?? 200
+    entry.error = result.payload?.error ?? null
+    return result
+  }
+  const fault = takeFault({ kind: 'token', grantType, clientId: credentials.clientId })
+  if (fault) {
+    return finish(json({ status: fault.status ?? 503, payload: { error: fault.error ?? 'temporarily_unavailable', error_description: fault.description ?? 'injected fault' } }))
+  }
+  const client = state.clients.get(credentials.clientId)
+  if (!client || client.secret !== credentials.clientSecret) {
+    return finish(json({ status: 401, payload: { error: 'invalid_client', error_description: 'client authentication failed' } }))
+  }
+  if (grantType === 'authorization_code') {
+    return finish(exchangeCode({ client, body, entry }))
+  }
+  if (grantType === 'refresh_token') {
+    return finish(refresh({ client, body, entry }))
+  }
+  if (grantType === 'client_credentials') {
+    return finish(clientCredentials({ client, body }))
+  }
+  return finish(json({ status: 400, payload: { error: 'unsupported_grant_type' } }))
+}
+
+function exchangeCode({ client, body, entry }) {
+  const grant = state.codes.get(body.code)
+  state.codes.delete(body.code)
+  if (!grant || grant.expiresAt < Date.now() || grant.clientId !== client.clientId) {
+    return json({ status: 400, payload: { error: 'invalid_grant', error_description: 'unknown or expired code' } })
+  }
+  if (grant.redirectUri !== body.redirect_uri) {
+    return json({ status: 400, payload: { error: 'invalid_grant', error_description: 'redirect_uri mismatch' } })
+  }
+  const challenge = createHash('sha256').update(String(body.code_verifier ?? '')).digest('base64url')
+  if (challenge !== grant.codeChallenge) {
+    return json({ status: 400, payload: { error: 'invalid_grant', error_description: 'PKCE verification failed' } })
+  }
+  entry.memberId = grant.memberId
+  const refreshToken = `rt-${randomBytes(16).toString('hex')}`
+  state.refreshTokens.set(refreshToken, { clientId: client.clientId, memberId: grant.memberId, scope: grant.scope, sid: grant.sid, authTime: grant.authTime })
+  return json({ payload: memberTokens({ client, memberId: grant.memberId, scope: grant.scope, sid: grant.sid, authTime: grant.authTime, nonce: grant.nonce, refreshToken }) })
+}
+
+function refresh({ client, body, entry }) {
+  const grant = state.refreshTokens.get(body.refresh_token)
+  if (!grant || grant.clientId !== client.clientId) {
+    return json({ status: 400, payload: { error: 'invalid_grant', error_description: 'unknown refresh token' } })
+  }
+  entry.memberId = grant.memberId
+  const member = state.members.get(grant.memberId)
+  const tenant = member ? state.tenants.get(member.tenant) : null
+  if (!member || member.removed || !tenant || tenant.status !== 'ACTIVE') {
+    state.refreshTokens.delete(body.refresh_token)
+    return json({ status: 400, payload: { error: 'invalid_grant', error_description: 'member is no longer active in the tenant' } })
+  }
+  return json({ payload: memberTokens({ client, memberId: grant.memberId, scope: grant.scope, sid: grant.sid, authTime: grant.authTime, nonce: null, refreshToken: body.refresh_token }) })
+}
+
+function clientCredentials({ client, body }) {
+  if (client.kind !== 'service') {
+    return json({ status: 400, payload: { error: 'unauthorized_client', error_description: 'client_credentials is not allowed for this client' } })
+  }
+  const tenantCode = typeof body.tenant === 'string' && body.tenant.length > 0 ? body.tenant : null
+  if (tenantCode) {
+    const tenant = state.tenants.get(tenantCode)
+    if (!client.acceptsAnyTenant && client.tenant !== tenantCode) {
+      return json({ status: 400, payload: { error: 'invalid_target', error_description: `client ${client.clientId} may not act for tenant ${tenantCode} (invalid_target)` } })
+    }
+    if (!tenant || tenant.status !== 'ACTIVE') {
+      return json({ status: 400, payload: { error: 'invalid_target', error_description: `tenant ${tenantCode} is not active (invalid_target)` } })
+    }
+  }
+  const claims = {
+    sub: client.clientId,
+    sub_type: 'application',
+    client_id: client.clientId,
+    ...(tenantCode ? { tenantId: tenantCode } : {}),
+  }
+  const accessToken = issueAccessToken({ claims, audience: client.clientId })
+  return json({ payload: { access_token: accessToken, token_type: 'Bearer', expires_in: ACCESS_TTL_SECONDS } })
+}
+
+function memberTokens({ client, memberId, scope, sid, authTime, nonce, refreshToken }) {
+  const member = state.members.get(memberId)
+  const person = state.persons.get(member.username)
+  const scopes = String(scope ?? '').split(/\s+/)
+  const base = { sub: memberId, tenantId: member.tenant, sub_type: 'member', sid, auth_time: authTime }
+  const accessToken = issueAccessToken({ claims: { ...base, client_id: client.clientId }, audience: client.clientId, scope })
+  const idToken = signJwt({
+    payload: {
+      ...base,
+      iss: ISSUER,
+      aud: client.clientId,
+      azp: client.clientId,
+      iat: now(),
+      exp: now() + ACCESS_TTL_SECONDS,
+      ...(nonce ? { nonce } : {}),
+      ...(scopes.includes('profile') ? profileClaims({ person }) : {}),
+      ...(scopes.includes('email') ? emailClaims({ person }) : {}),
+    },
+  })
+  return { access_token: accessToken, token_type: 'Bearer', expires_in: ACCESS_TTL_SECONDS, refresh_token: refreshToken, id_token: idToken, scope }
+}
+
+function profileClaims({ person }) {
+  return { preferred_username: person.username, name: person.name }
+}
+
+function emailClaims({ person }) {
+  return person.email && person.emailVerified ? { email: person.email, email_verified: true } : {}
+}
+
+function issueAccessToken({ claims, audience, scope = null }) {
+  const accessToken = signJwt({ payload: { ...claims, iss: ISSUER, aud: audience, iat: now(), exp: now() + ACCESS_TTL_SECONDS, jti: randomUUID() } })
+  state.accessTokens.set(accessToken, { ...claims, scope, expiresAt: Date.now() + ACCESS_TTL_SECONDS * 1000 })
+  return accessToken
+}
+
+function userinfo({ req }) {
+  const grant = bearerOf({ req })
+  state.log.userinfo.push({ at: new Date().toISOString(), sub: grant?.sub ?? null })
+  if (!grant || grant.sub_type !== 'member') {
+    return json({ status: 401, payload: { error: 'invalid_token' } })
+  }
+  const member = state.members.get(grant.sub)
+  if (!member || member.removed) {
+    return json({ status: 401, payload: { error: 'invalid_token', error_description: 'member removed' } })
+  }
+  const person = state.persons.get(member.username)
+  const scopes = String(grant.scope ?? 'openid profile email').split(/\s+/)
+  return json({ payload: { sub: member.id, ...(scopes.includes('profile') ? { ...profileClaims({ person }), tenantId: member.tenant } : {}), ...(scopes.includes('email') ? emailClaims({ person }) : {}) } })
+}
+
+function createSubscription({ req, body }) {
+  const grant = applicationOf({ req })
+  if (grant.error) {
+    return grant.error
+  }
+  const entry = { at: new Date().toISOString(), action: 'create', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: body.code ?? null, endpoint: body.endpoint ?? null, events: body.events ?? [], outcome: null }
+  state.log.subscriptions.push(entry)
+  const events = Array.isArray(body.events) ? body.events.map(String) : []
+  if (typeof body.code !== 'string' || body.code.length === 0 || events.length === 0) {
+    entry.outcome = 'invalid'
+    return json({ status: 400, payload: { code: 'INVALID_ARGUMENT', message: 'code 与 events 必填' } })
+  }
+  if (typeof body.endpoint !== 'string' || !/^https?:\/\//.test(body.endpoint)) {
+    entry.outcome = 'invalid_endpoint'
+    return json({ status: 400, payload: { code: 'INVALID_ARGUMENT', message: '推送地址必须是 http(s) 地址' } })
+  }
+  const denied = events.find((event) => state.deniedEvents.has(event))
+  if (denied) {
+    entry.outcome = 'permission_denied'
+    return json({ payload: { code: 'PERMISSION_DENIED', message: `没有读取 ${denied.split('.').slice(0, 2).join('.')} 的权限，收不到 ${denied} 的通知`, data: null } })
+  }
+  const key = `${grant.claims.client_id}|${grant.claims.tenantId}|${body.code}`
+  const existing = [...state.subscriptions.values()].find((subscription) => subscription.key === key)
+  const id = existing?.id ?? `sub-${randomBytes(6).toString('hex')}`
+  const secret = `whsec_${randomBytes(24).toString('hex')}`
+  const subscription = { id, key, code: body.code, endpoint: body.endpoint, events, tenant: grant.claims.tenantId, clientId: grant.claims.client_id, secret, status: 'PENDING', createdAt: new Date().toISOString(), verification: null }
+  state.subscriptions.set(id, subscription)
+  entry.outcome = existing ? 'replaced' : 'created'
+  setTimeout(() => {
+    void verifySubscription({ subscription })
+  }, Number(process.env.FEMA_IAM_VERIFY_DELAY_MS ?? 300))
+  return json({ payload: { code: 'SUCCESS', message: null, data: { id, code: body.code, endpoint: body.endpoint, events, status: 'PENDING', secret } } })
+}
+
+async function verifySubscription({ subscription }) {
+  const challenge = `chl-${randomBytes(8).toString('hex')}`
+  const payload = JSON.stringify({ type: 'webhook.verification', subscription: subscription.code, challenge })
+  try {
+    const response = await fetch(subscription.endpoint, { method: 'POST', headers: { 'content-type': 'application/json', 'x-fema-signature': signBody({ secret: subscription.secret, payload }) }, body: payload, signal: AbortSignal.timeout(15000) })
+    const text = await response.text()
+    const echoed = text.includes(challenge)
+    subscription.verification = { status: response.status, echoed, body: text.slice(0, 300) }
+    if (state.subscriptions.get(subscription.id) === subscription) {
+      subscription.status = response.ok && echoed ? 'ACTIVE' : 'UNVERIFIED'
+    }
+  }
+  catch (error) {
+    subscription.verification = { status: null, echoed: false, error: String(error?.message ?? error) }
+    subscription.status = 'UNVERIFIED'
+  }
+}
+
+function deleteSubscription({ req, body }) {
+  const grant = applicationOf({ req })
+  if (grant.error) {
+    return grant.error
+  }
+  const match = [...state.subscriptions.values()].find((subscription) => subscription.clientId === grant.claims.client_id && subscription.tenant === grant.claims.tenantId && (subscription.id === body.id || (!body.id && subscription.code === body.code)))
+  state.log.subscriptions.push({ at: new Date().toISOString(), action: 'delete', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: body.code ?? null, id: body.id ?? null, outcome: match ? 'deleted' : 'not_found' })
+  if (!match) {
+    return json({ status: 404, payload: { code: 'NOT_FOUND', message: '登记不存在' } })
+  }
+  state.subscriptions.delete(match.id)
+  return json({ payload: { code: 'SUCCESS', message: null, data: { id: match.id, code: match.code } } })
+}
+
+async function pushBusinessEvent(body) {
+  const event = {
+    id: body.id ?? `${Date.now()}${Math.floor(Math.random() * 1000)}`,
+    type: body.type,
+    tenantId: body.tenant,
+    occurredAt: body.occurredAt ?? new Date().toISOString(),
+    object: body.object ?? {},
+  }
+  const targets = [...state.subscriptions.values()].filter((subscription) => subscription.tenant === body.tenant && subscription.events.includes(body.type) && (body.includeUnverified || subscription.status === 'ACTIVE'))
+  const deliveries = []
+  for (const subscription of targets) {
+    for (let attempt = 0; attempt < (body.times ?? 1); attempt += 1) {
+      const payload = JSON.stringify(event)
+      const signature = body.tamper ? signBody({ secret: 'not-the-secret', payload }) : signBody({ secret: subscription.secret, payload })
+      const delivery = { at: new Date().toISOString(), subscription: subscription.id, eventId: event.id, type: event.type, endpoint: subscription.endpoint, tampered: Boolean(body.tamper), status: null, response: null }
+      try {
+        const response = await fetch(subscription.endpoint, { method: 'POST', headers: { 'content-type': 'application/json', 'x-fema-signature': signature }, body: payload, signal: AbortSignal.timeout(15000) })
+        delivery.status = response.status
+        delivery.response = (await response.text()).slice(0, 300)
+      }
+      catch (error) {
+        delivery.error = String(error?.message ?? error)
+      }
+      state.log.deliveries.push(delivery)
+      deliveries.push(delivery)
+    }
+  }
+  return json({ payload: { event, deliveries } })
+}
+
+function putObject({ body }) {
+  state.objects.set(`${body.tenant}|${body.app}/${body.object}/${body.id}`, body.data)
+  return json({ payload: { ok: true } })
+}
+
+function findById({ req, app, object, id }) {
+  const grant = applicationOf({ req })
+  if (grant.error) {
+    return grant.error
+  }
+  state.log.api.push({ at: new Date().toISOString(), path: `${app}/${object}/find-by-id`, id, tenant: grant.claims.tenantId })
+  const data = state.objects.get(`${grant.claims.tenantId}|${app}/${object}/${id}`)
+  if (data === undefined) {
+    return json({ status: 404, payload: { code: 'NOT_FOUND', message: '对象不存在' } })
+  }
+  return json({ payload: { code: 'SUCCESS', message: null, data } })
+}
+
+function echoApi({ req, url, body, method }) {
+  const grant = applicationOf({ req })
+  if (grant.error) {
+    return grant.error
+  }
+  const entry = { at: new Date().toISOString(), method, path: url.pathname.slice('/api/'.length), query: Object.fromEntries(url.searchParams), body, tenant: grant.claims.tenantId }
+  state.log.api.push(entry)
+  return json({ payload: { code: 'SUCCESS', message: null, data: entry } })
+}
+
+function applicationOf({ req }) {
+  const claims = bearerOf({ req })
+  if (!claims) {
+    return { error: json({ status: 401, payload: { code: 'UNAUTHORIZED', message: '令牌无效或已过期' } }) }
+  }
+  if (!claims.tenantId) {
+    return { error: json({ status: 403, payload: { code: 'FORBIDDEN', message: '令牌不属于任何租户' } }) }
+  }
+  return { claims }
+}
+
+function bearerOf({ req }) {
+  const header = String(req.headers.authorization ?? '')
+  if (!header.toLowerCase().startsWith('bearer ')) {
+    return null
+  }
+  const grant = state.accessTokens.get(header.slice(7).trim())
+  if (!grant || grant.expiresAt < Date.now()) {
+    return null
+  }
+  return grant
+}
+
+function clientCredentialsOf({ req, body }) {
+  const header = String(req.headers.authorization ?? '')
+  if (header.toLowerCase().startsWith('basic ')) {
+    const decoded = Buffer.from(header.slice(6), 'base64').toString('utf8')
+    const index = decoded.indexOf(':')
+    return { clientId: decodeURIComponent(decoded.slice(0, index)), clientSecret: decodeURIComponent(decoded.slice(index + 1)), method: 'client_secret_basic' }
+  }
+  return { clientId: body.client_id ?? null, clientSecret: body.client_secret ?? null, method: 'client_secret_post' }
+}
+
+function takeFault({ kind, grantType, clientId }) {
+  const fault = state.faults.find((candidate) => candidate.remaining > 0 && candidate.kind === kind && (!candidate.grantType || candidate.grantType === grantType) && (!candidate.clientId || candidate.clientId === clientId))
+  if (!fault) {
+    return null
+  }
+  fault.remaining -= 1
+  return fault
+}
+
+function sessionOf({ req }) {
+  const cookies = String(req.headers.cookie ?? '').split(';').map((part) => part.trim().split('='))
+  const sid = cookies.find(([name]) => name === SESSION_COOKIE)?.[1]
+  return sid ? state.sessions.get(sid) ?? null : null
+}
+
+function signJwt({ payload }) {
+  const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: KID }))
+  const body = base64url(JSON.stringify(payload))
+  const signature = cryptoSign('RSA-SHA256', Buffer.from(`${header}.${body}`), privateKey).toString('base64url')
+  return `${header}.${body}.${signature}`
+}
+
+function signBody({ secret, payload }) {
+  return `sha256=${createHmac('sha256', secret).update(payload).digest('hex')}`
+}
+
+function base64url(text) {
+  return Buffer.from(text).toString('base64url')
+}
+
+function now() {
+  return Math.floor(Date.now() / 1000)
+}
+
+function redirectError({ query, error, description }) {
+  return redirect({ location: withParams({ base: query.redirect_uri, params: { error, error_description: description, ...(query.state ? { state: query.state } : {}), iss: ISSUER } }) })
+}
+
+function withParams({ base, params }) {
+  const target = new URL(base)
+  for (const [key, value] of Object.entries(params)) {
+    target.searchParams.set(key, value)
+  }
+  return target.toString()
+}
+
+function loginPage({ returnTo, error }) {
+  return page({
+    title: 'FEMA 统一登录',
+    content: `
+      <form method="post" action="/iam/login" data-testid="iam-login-form">
+        <input type="hidden" name="return" value="${escapeHtml(returnTo)}">
+        <label>账号 <input id="username" name="username" autocomplete="username"></label>
+        <label>密码 <input id="password" name="password" type="password" autocomplete="current-password"></label>
+        ${error ? `<p data-testid="iam-error" class="error">${escapeHtml(error)}</p>` : ''}
+        <button id="signin" type="submit">登录</button>
+      </form>`,
+  })
+}
+
+function chooseTenantPage({ url, members }) {
+  const links = members.map((member) => {
+    const target = new URL(url.toString())
+    target.searchParams.set('tenant', member.tenant)
+    const tenant = state.tenants.get(member.tenant)
+    return `<li><a data-testid="iam-tenant-${escapeHtml(member.tenant)}" href="${escapeHtml(target.pathname + target.search)}">${escapeHtml(tenant?.name ?? member.tenant)}</a></li>`
+  }).join('')
+  return page({ title: '选择以哪家租户的身份登录', content: `<ul>${links}</ul>` })
+}
+
+function page({ title, content }) {
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
+<style>body{font-family:system-ui,sans-serif;max-width:360px;margin:64px auto;color:#111}label{display:block;margin:12px 0}input{display:block;width:100%;padding:8px;margin-top:4px}button{padding:8px 16px}.error{color:#b00020}</style>
+</head><body><h1>${escapeHtml(title)}</h1>${content}</body></html>`
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char])
+}
+
+function json({ status = 200, payload, headers = {} }) {
+  return { status, payload, headers }
+}
+
+function html({ status = 200, body, headers = {} }) {
+  return { status, html: body, headers }
+}
+
+function redirect({ location, headers = {} }) {
+  return { status: 302, headers: { location, ...headers } }
+}
+
+function reply({ res, result }) {
+  if (result.html !== undefined) {
+    res.writeHead(result.status, { 'content-type': 'text/html; charset=utf-8', ...result.headers })
+    return res.end(result.html)
+  }
+  if (result.payload === undefined) {
+    res.writeHead(result.status, result.headers)
+    return res.end()
+  }
+  return send({ res, status: result.status, payload: result.payload, headers: result.headers })
+}
+
+function send({ res, status, payload, headers = {} }) {
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers })
+  res.end(JSON.stringify(payload))
+}
+
+async function readRaw(req) {
+  const chunks = []
+  for await (const chunk of req) {
+    chunks.push(chunk)
+  }
+  return Buffer.concat(chunks).toString('utf8')
+}
+
+function parseBody({ raw, contentType }) {
+  if (raw.length === 0) {
+    return {}
+  }
+  if (String(contentType ?? '').includes('application/x-www-form-urlencoded')) {
+    return Object.fromEntries(new URLSearchParams(raw))
+  }
+  try {
+    return JSON.parse(raw)
+  }
+  catch {
+    return {}
+  }
+}

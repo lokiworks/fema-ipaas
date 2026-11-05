@@ -1,4 +1,10 @@
-import { SsoLoginErrorCode, SsoProvider } from '@fema-ipaas/shared';
+import {
+  PublicSsoEntry,
+  SsoLoginErrorCode,
+  SsoProvider,
+  SsoProviderOption,
+  SsoScope,
+} from '@fema-ipaas/shared';
 import { t } from 'i18next';
 
 import { API_URL } from '@/lib/api';
@@ -79,22 +85,75 @@ function errorMessage(code: string): string {
 function providerLabel({
   provider,
   label,
+  scope,
 }: {
   provider: SsoProvider;
   label: string;
+  scope?: SsoScope;
 }): string {
   if (label.trim().length > 0) {
     return label.trim();
   }
-  return provider === SsoProvider.FEISHU ? t('Feishu') : t('Company account');
+  const name = providerName(provider);
+  return scope === SsoScope.PLATFORM ? t('{name} scan', { name }) : name;
 }
 
-function startUrl(provider: SsoProvider): string {
-  return `${API_URL}/v1/authn/sso/start?provider=${provider}`;
+function providerName(provider: SsoProvider): string {
+  switch (provider) {
+    case SsoProvider.FEISHU:
+      return t('Feishu');
+    case SsoProvider.WECOM:
+      return t('WeCom');
+    case SsoProvider.DINGTALK:
+      return t('DingTalk');
+    case SsoProvider.SAML:
+      return t('SAML');
+    default:
+      return t('Company account');
+  }
+}
+
+function startUrl({
+  provider,
+  scope,
+  tenant,
+}: {
+  provider: SsoProvider;
+  scope?: SsoScope;
+  tenant?: string | null;
+}): string {
+  const query = new URLSearchParams({ provider });
+  if (scope !== undefined) {
+    query.set('scope', scope);
+  }
+  if (tenant !== undefined && tenant !== null && tenant.length > 0) {
+    query.set('tenant', tenant);
+  }
+  return `${API_URL}/v1/authn/sso/start?${query.toString()}`;
+}
+
+function isSsoProvider(value: string): value is SsoProvider {
+  return Object.values<string>(SsoProvider).includes(value);
+}
+
+function fromPublicEntries(entries: PublicSsoEntry[]): SsoProviderOption[] {
+  return entries.flatMap((entry) =>
+    isSsoProvider(entry.provider)
+      ? [
+          {
+            provider: entry.provider,
+            label: entry.label,
+            scope: SsoScope.TENANT,
+          },
+        ]
+      : [],
+  );
 }
 
 export const ssoUtils = {
+  fromPublicEntries,
   errorMessage,
   providerLabel,
+  providerName,
   startUrl,
 };

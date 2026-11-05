@@ -1,8 +1,9 @@
-import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { cryptoUtils } from '@fema-ipaas/server-utils'
 import { AuthenticationResponse, FlagId, OtpType, TelemetryEventName, UserIdentity, UserIdentityProvider } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { flagService } from '../flags/flag.service'
+import { identityContact } from '../helper/identity-contact'
 import { rejectedPromiseHandler } from '../helper/promise-handler'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
@@ -11,16 +12,16 @@ import { tenantService } from '../tenant/tenant.service'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
 import { authenticationUtils } from './authentication-utils'
-import { authenticationService } from './authentication.service'
+import { authenticationService, LoginChannel } from './authentication.service'
+import { captcha } from './captcha/captcha'
 import { disposableEmail } from './lib/disposable-email'
 import { signupNames } from './lib/signup-names'
-import { turnstile } from './lib/turnstile'
 import { otpService } from './otp/otp-service'
 import { userIdentityService } from './user-identity/user-identity-service'
 
 export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
     async requestCode({ email, tenantId, captchaToken, remoteIp }: RequestCodeParams): Promise<void> {
-        await turnstile.assertSolved({ token: captchaToken, remoteIp, log })
+        await captcha.assertSolved({ token: captchaToken, remoteIp, log })
         const existingIdentity = await userIdentityService(log).getIdentityByEmail(email)
         if (isNil(existingIdentity)) {
             await disposableEmail.assertMaySignUp({ email, log })
@@ -31,6 +32,9 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
             if (!mayJoin) {
                 return
             }
+        }
+        if (isNil(tenantId) && isNil(existingIdentity) && !await mayOnboard({ email, log })) {
+            return
         }
         if (isNil(existingIdentity)) {
             await userIdentityService(log).create({
@@ -77,12 +81,9 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
         const verifiedIdentity = identity.verified ? identity : await userIdentityService(log).verifyAndDiscardPassword(identity.id)
         await flagService(log).save({ id: FlagId.USER_CREATED, value: true })
 
-        const preferredTenantId = isNil(tenantId)
-            ? await authenticationService(log).resolvePreferredTenantId({ identityId: verifiedIdentity.id })
-            : tenantId
         rejectedPromiseHandler(telemetry(log).trackIdentity(verifiedIdentity.id, {
             name: TelemetryEventName.EMAIL_CODE_VERIFIED,
-            payload: { needsNameStep: isNil(preferredTenantId) },
+            payload: { needsNameStep: isNil(tenantId) },
         }), log)
 
         if (!isNil(tenantId)) {
@@ -93,42 +94,28 @@ export const passwordlessAuthService = (log: FastifyBaseLogger) => ({
                     params: { message: 'User is not invited to the tenant' },
                 })
             }
-            const user = await userService(log).getOrCreateWithProject({
+            await userService(log).getOrCreateWithProject({
                 identity: verifiedIdentity,
                 tenantId,
             })
             await userInvitationsService(log).provisionUserInvitation({ email })
-            return authenticationUtils(log).getProjectAndToken({
-                userId: user.id,
-                tenantId,
-                projectId: null,
-            })
         }
-
-        if (!isNil(preferredTenantId)) {
-            await assertTenantAuthIsOpenTo({ email, tenantId: preferredTenantId, log })
-            const user = await userService(log).getOrCreateWithProject({
-                identity: verifiedIdentity,
-                tenantId: preferredTenantId,
-            })
-            return authenticationUtils(log).getProjectAndToken({
-                userId: user.id,
-                tenantId: preferredTenantId,
-                projectId: null,
-            })
-        }
-        return authenticationUtils(log).getOnboardingResponse({ identityId: verifiedIdentity.id })
+        return authenticationService(log).completeLogin({
+            identity: verifiedIdentity,
+            requestedTenantId: tenantId,
+            method: LoginChannel.EMAIL_CODE,
+        })
     },
 
     async completeSignUp({ identityId, fullName, organizationName }: CompleteSignUpParams): Promise<CompleteSignUpResult> {
         const identity = await userIdentityService(log).getOneOrFail({ id: identityId })
-        const { firstName, lastName } = signupNames.splitFullName({ fullName, email: identity.email })
+        const { firstName, lastName } = signupNames.splitFullName({ fullName, email: identityContact.of(identity) })
         const writeNames = async (): Promise<void> => {
             await userIdentityService(log).updateNames({ id: identityId, firstName, lastName })
         }
         const { response, provisioned } = await tenantService(log).createTenantWithProject({
             identityId,
-            name: organizationName ?? signupNames.tenantNameFromPerson({ firstName, email: identity.email }),
+            name: organizationName ?? signupNames.tenantNameFromPerson({ firstName, email: identityContact.of(identity) }),
             invalidatePreviousTokens: false,
             isFirstTenant: true,
             callerTokenVersion: undefined,
@@ -146,6 +133,17 @@ async function assertTenantAuthIsOpenTo({ email, tenantId, log }: TenantGatePara
     await authenticationUtils(log).assertDomainIsAllowed({ email, tenantId })
 }
 
+async function mayOnboard({ email, log }: MayOnboardParams): Promise<boolean> {
+    if (system.get(AppSystemProp.ALLOW_OPEN_SIGN_UP) === 'true') {
+        return true
+    }
+    if (await userInvitationsService(log).hasAnyAcceptedInvitationsForEmail({ email })) {
+        return true
+    }
+    const { error } = await tryCatch(() => tenantService(log).assertOnboardingAllowed())
+    return isNil(error)
+}
+
 async function mayJoinTenant({ email, tenantId, identity, log }: MayJoinTenantParams): Promise<boolean> {
     if (system.get(AppSystemProp.ALLOW_OPEN_SIGN_UP) === 'true') {
         return true
@@ -156,6 +154,11 @@ async function mayJoinTenant({ email, tenantId, identity, log }: MayJoinTenantPa
         return true
     }
     return userInvitationsService(log).hasAnyAcceptedInvitations({ tenantId, email })
+}
+
+type MayOnboardParams = {
+    email: string
+    log: FastifyBaseLogger
 }
 
 type RequestCodeParams = {

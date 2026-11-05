@@ -1,15 +1,26 @@
-import { SsoProvider, SsoProviderOption } from '@fema-ipaas/shared';
+import { SsoProvider, SsoProviderOption, SsoScope } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { KeyRound, MessageCircle, TriangleAlert } from 'lucide-react';
+import {
+  KeyRound,
+  MessageCircle,
+  QrCode,
+  ShieldCheck,
+  TriangleAlert,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { loginRedirect } from '@/lib/login-redirect';
 import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
+import { tenantContext } from '@/lib/tenant-context';
 
 import { ssoUtils } from '../utils/sso-utils';
 
-function SsoLoginOptions({ providers, withDivider }: SsoLoginOptionsProps) {
+function SsoLoginOptions({
+  providers,
+  withDivider,
+  tenant,
+}: SsoLoginOptionsProps) {
   if (providers.length === 0) {
     return null;
   }
@@ -17,13 +28,17 @@ function SsoLoginOptions({ providers, withDivider }: SsoLoginOptionsProps) {
     <div className="grid gap-2" data-testid="sso-options">
       {providers.map((option) => (
         <Button
-          key={option.provider}
+          key={`${option.scope}-${option.provider}`}
           asChild
           variant="outline"
           className="h-10 w-full justify-center gap-2"
         >
           <a
-            href={ssoUtils.startUrl(option.provider)}
+            href={ssoUtils.startUrl({
+              provider: option.provider,
+              scope: option.scope,
+              tenant: tenant === undefined ? tenantContext.get() : tenant,
+            })}
             onClick={() =>
               loginRedirect.rememberForExternalSignIn(
                 new URLSearchParams(window.location.search).get(
@@ -32,8 +47,9 @@ function SsoLoginOptions({ providers, withDivider }: SsoLoginOptionsProps) {
               )
             }
             data-testid={`sso-start-${option.provider.toLowerCase()}`}
+            data-scope={option.scope.toLowerCase()}
           >
-            {providerIcon(option.provider)}
+            {providerIcon(option)}
             {t('Sign in with {name}', {
               name: ssoUtils.providerLabel(option),
             })}
@@ -79,12 +95,20 @@ function SsoErrorNote() {
   );
 }
 
-function providerIcon(provider: SsoProvider) {
-  return provider === SsoProvider.FEISHU ? (
-    <MessageCircle className="size-4" />
-  ) : (
-    <KeyRound className="size-4" />
-  );
+function providerIcon({ provider, scope }: SsoProviderOption) {
+  if (scope === SsoScope.PLATFORM) {
+    return <QrCode className="size-4" />;
+  }
+  switch (provider) {
+    case SsoProvider.FEISHU:
+    case SsoProvider.WECOM:
+    case SsoProvider.DINGTALK:
+      return <MessageCircle className="size-4" />;
+    case SsoProvider.SAML:
+      return <ShieldCheck className="size-4" />;
+    default:
+      return <KeyRound className="size-4" />;
+  }
 }
 
 export { SsoLoginOptions, SsoErrorNote };
@@ -92,4 +116,5 @@ export { SsoLoginOptions, SsoErrorNote };
 type SsoLoginOptionsProps = {
   providers: SsoProviderOption[];
   withDivider: boolean;
+  tenant?: string | null;
 };

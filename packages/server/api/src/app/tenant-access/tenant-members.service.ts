@@ -1,7 +1,9 @@
 import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { AddTenantUsersRequestBody, AddTenantUsersResponse, InvitationStatus, InvitationType, ListTenantMembersResponse, TenantMember, TenantMemberStatus, TenantModule, TenantRole, UpdateTenantMemberAccessRequestBody, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
+import { cryptoUtils } from '@fema-ipaas/server-utils'
+import { AddTenantUsersRequestBody, AddTenantUsersResponse, InvitationStatus, InvitationType, ListTenantMembersResponse, TenantMember, TenantMemberStatus, TenantModule, TenantRole, UpdateTenantMemberAccessRequestBody, UserIdentity, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { isDomainAllowed } from '../authentication/authentication-utils'
+import { phoneNumber } from '../authentication/lib/phone-number'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { emailService } from '../helper/email/email-service'
 import { tenantRepo } from '../tenant/tenant.service'
@@ -24,14 +26,16 @@ export const tenantMembersService = (log: FastifyBaseLogger) => ({
         const members: TenantMember[] = [
             ...users.map((user): TenantMember => {
                 const email = user.identity?.email ?? ''
+                const awaitingFirstSignIn = !isNil(user.identity) && isNil(user.identity.email) && !isNil(user.identity.phone) && !user.identity.phoneVerified
                 const tenantRole = user.id === tenant.ownerId ? TenantRole.ADMIN : user.tenantRole
                 return {
                     id: user.id,
                     kind: USER_KIND,
                     email,
+                    phone: user.identity?.phone ?? null,
                     firstName: user.identity?.firstName ?? '',
                     lastName: user.identity?.lastName ?? '',
-                    status: user.status === UserStatus.ACTIVE ? TenantMemberStatus.ACTIVE : TenantMemberStatus.DISABLED,
+                    status: memberStatusOf({ userStatus: user.status, awaitingFirstSignIn }),
                     tenantRole,
                     isOwner: user.id === tenant.ownerId,
                     modules: tenantAccessUtils.effectiveModules({ tenantRole, storedModules: user.modules ?? [] }),
@@ -48,6 +52,7 @@ export const tenantMembersService = (log: FastifyBaseLogger) => ({
                         id: invitation.id,
                         kind: INVITATION_KIND,
                         email: invitation.email,
+                        phone: null,
                         firstName: '',
                         lastName: '',
                         status: TenantMemberStatus.PENDING,
@@ -71,6 +76,7 @@ export const tenantMembersService = (log: FastifyBaseLogger) => ({
     async invite({ tenantId, request }: InviteParams): Promise<AddTenantUsersResponse> {
         const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
         const emails = [...new Set(request.emails.map((email) => email.trim().toLowerCase()))]
+        const phones = normalizePhones({ values: request.phones })
         const { members, homeDomains } = await this.list({ tenantId })
         const existing = new Set(members.filter((member) => member.kind === USER_KIND).map((member) => member.email.toLowerCase()))
         const alreadyMembers = emails.filter((email) => existing.has(email))
@@ -79,6 +85,14 @@ export const tenantMembersService = (log: FastifyBaseLogger) => ({
                 code: ErrorCode.VALIDATION,
                 params: { message: `Already users of this tenant: ${alreadyMembers.join(', ')}` },
             })
+        }
+        const existingPhones = new Set(members.filter((member) => member.kind === USER_KIND).flatMap((member) => isNil(member.phone) ? [] : [member.phone]))
+        const alreadyPhoneMembers = phones.filter((phone) => existingPhones.has(phone))
+        if (alreadyPhoneMembers.length > 0) {
+            throw validation(`Already users of this tenant: ${alreadyPhoneMembers.join(', ')}`)
+        }
+        if (phones.length > 0 && !tenant.phoneAuthEnabled) {
+            throw validation('Phone sign-in is not turned on for this tenant')
         }
         const blocked = emails.filter((email) => !isDomainAllowed({ email, enforce: tenant.enforceAllowedAuthDomains, allowedDomains: tenant.allowedAuthDomains }))
         if (blocked.length > 0) {
@@ -106,11 +120,24 @@ export const tenantMembersService = (log: FastifyBaseLogger) => ({
             })
             invited.push({
                 email,
+                phone: null,
                 link: 'link' in finalized && typeof finalized.link === 'string' ? finalized.link : null,
                 external: tenantAccessUtils.isExternal({ email, domains: homeDomains }),
             })
         }
-        return { invited, emailSent: emailService(log).isConfigured() }
+        for (const phone of phones) {
+            await this.invitePhone({ tenantId, phone, tenantRole: request.tenantRole, modules })
+            invited.push({ email: '', phone, link: null, external: false })
+        }
+        return { invited, emailSent: emails.length > 0 && emailService(log).isConfigured() }
+    },
+
+    async invitePhone({ tenantId, phone, tenantRole, modules }: InvitePhoneParams): Promise<void> {
+        const known = await userIdentityService(log).getByPhone(phone)
+        const identity = known ?? await createPhoneIdentity({ log, phone })
+        const user = await userService(log).getOrCreateWithProject({ identity, tenantId })
+        await userService(log).update({ id: user.id, tenantId, tenantRole, modules })
+        log.info({ tenant: { id: tenantId }, user: { id: user.id }, existingAccount: !isNil(known) }, '[tenantMembers] member invited by phone')
     },
 
     async updateAccess({ tenantId, userId, actorId, request }: UpdateAccessParams): Promise<TenantMember> {
@@ -208,11 +235,65 @@ export const tenantMembersService = (log: FastifyBaseLogger) => ({
     },
 })
 
+async function createPhoneIdentity({ log, phone }: CreatePhoneIdentityParams): Promise<UserIdentity> {
+    return userIdentityService(log).create({
+        email: null,
+        phone,
+        phoneVerified: false,
+        password: await cryptoUtils.generateRandomPassword(),
+        firstName: phoneNumber.mask({ phone }),
+        lastName: '',
+        trackEvents: true,
+        newsLetter: false,
+        provider: UserIdentityProvider.PHONE,
+        verified: true,
+    })
+}
+
+function normalizePhones({ values }: NormalizePhonesParams): string[] {
+    const normalized = values.map((value) => {
+        const phone = phoneNumber.normalize({ value })
+        if (isNil(phone)) {
+            throw validation(`Not a valid phone number: ${value}`)
+        }
+        return phone
+    })
+    return [...new Set(normalized)]
+}
+
+function memberStatusOf({ userStatus, awaitingFirstSignIn }: MemberStatusOfParams): TenantMemberStatus {
+    if (userStatus !== UserStatus.ACTIVE) {
+        return TenantMemberStatus.DISABLED
+    }
+    return awaitingFirstSignIn ? TenantMemberStatus.PENDING : TenantMemberStatus.ACTIVE
+}
+
 function validation(message: string): ApplicationError {
     return new ApplicationError({
         code: ErrorCode.VALIDATION,
         params: { message },
     })
+}
+
+type InvitePhoneParams = {
+    tenantId: string
+    phone: string
+    tenantRole: TenantRole
+    modules: TenantModule[]
+}
+
+type CreatePhoneIdentityParams = {
+    log: FastifyBaseLogger
+    phone: string
+}
+
+type NormalizePhonesParams = {
+    values: string[]
+}
+
+type MemberStatusOfParams = {
+    userStatus: UserStatus
+    awaitingFirstSignIn: boolean
 }
 
 type EditableUser = {

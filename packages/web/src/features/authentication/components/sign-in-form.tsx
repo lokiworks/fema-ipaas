@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -27,6 +27,14 @@ import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
+import { discoveryHooks, DiscoveredTenants } from '../hooks/discovery-hook';
+import { captchaUtils } from '../utils/captcha-utils';
+import {
+  LoginChallenge,
+  loginChallengeUtils,
+} from '../utils/login-challenge-utils';
+
+import { CaptchaWidget } from './auth-landing/captcha-widget';
 import { CheckEmailNote } from './check-email-note';
 
 const SignInSchema = z.object({
@@ -40,7 +48,13 @@ const SignInSchema = z.object({
 
 type SignInSchema = z.infer<typeof SignInSchema>;
 
-const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
+const SignInForm = ({
+  onForgotPassword,
+  onChallenge,
+  discoveryEnabled = false,
+  onDiscovered,
+  defaultEmail = '',
+}: SignInFormProps) => {
   const [showCheckYourEmailNote, setShowCheckYourEmailNote] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showContactAdmin, setShowContactAdmin] = useState(false);
@@ -51,7 +65,7 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
   const form = useForm<SignInSchema>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
-      email: '',
+      email: defaultEmail,
       password: '',
     },
     mode: 'onChange',
@@ -60,6 +74,18 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
   const redirectAfterLogin = useRedirectAfterLogin();
   const navigate = useNavigate();
   const { capture } = useTelemetry();
+  const [captchaNeeded, setCaptchaNeeded] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | undefined>();
+  const [captchaUnavailable, setCaptchaUnavailable] = useState(false);
+  const [captchaReset, setCaptchaReset] = useState(0);
+  const handleCaptchaUnavailable = useCallback(
+    () => setCaptchaUnavailable(true),
+    [],
+  );
+  const { discover } = discoveryHooks.useDiscovery({
+    onDiscovered: (discovered: DiscoveredTenants | null) =>
+      onDiscovered?.(discovered),
+  });
 
   const { mutate, isPending } = useMutation<
     AuthenticationResponse,
@@ -77,6 +103,31 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
       redirectAfterLogin();
     },
     onError: (error) => {
+      setCaptchaToken(undefined);
+      setCaptchaReset((count) => count + 1);
+      const challenge = loginChallengeUtils.parse(error);
+      if (challenge !== null && onChallenge) {
+        onChallenge(challenge);
+        return;
+      }
+      if (captchaUtils.isRequired(error)) {
+        setCaptchaNeeded(true);
+        form.setError('root.serverError', {
+          message: t('Complete the verification below to continue.'),
+        });
+        return;
+      }
+      if (captchaUtils.isRejection(error)) {
+        form.setError('root.serverError', {
+          message: t('That verification expired. Please try again.'),
+        });
+        return;
+      }
+      const challengeMessage = loginChallengeUtils.messageFor(error);
+      if (challengeMessage !== null) {
+        form.setError('root.serverError', { message: challengeMessage });
+        return;
+      }
       if (api.isError(error)) {
         const errorCode: ErrorCode | undefined = (
           error.response?.data as { code: ErrorCode }
@@ -138,7 +189,7 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
       name: TelemetryEventName.SIGN_IN_SUBMITTED,
       payload: { method: 'email' },
     });
-    mutate(data);
+    mutate(captchaNeeded ? { ...data, captchaToken } : data);
   };
 
   return (
@@ -163,6 +214,16 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
                   onChange={(e) => {
                     field.onChange(e);
                     setShowCheckYourEmailNote(false);
+                  }}
+                  onBlur={(e) => {
+                    field.onBlur();
+                    const email = e.target.value.trim();
+                    if (
+                      discoveryEnabled &&
+                      formatUtils.emailRegex.test(email)
+                    ) {
+                      discover({ email });
+                    }
                   }}
                 />
                 <FormMessage />
@@ -243,8 +304,18 @@ const SignInForm = ({ onForgotPassword }: SignInFormProps) => {
               {form.formState.errors.root.serverError.message}
             </FormMessage>
           )}
+          {captchaNeeded && (
+            <CaptchaWidget
+              onToken={setCaptchaToken}
+              onUnavailable={handleCaptchaUnavailable}
+              resetSignal={captchaReset}
+            />
+          )}
           <Button
             loading={isPending}
+            disabled={
+              captchaNeeded && !captchaUnavailable && isNil(captchaToken)
+            }
             onClick={(e) => form.handleSubmit(onSubmit)(e)}
             tabIndex={3}
             data-testid="sign-in-button"
@@ -272,4 +343,8 @@ export { SignInForm };
 
 type SignInFormProps = {
   onForgotPassword?: () => void;
+  onChallenge?: (challenge: LoginChallenge) => void;
+  discoveryEnabled?: boolean;
+  onDiscovered?: (discovered: DiscoveredTenants | null) => void;
+  defaultEmail?: string;
 };

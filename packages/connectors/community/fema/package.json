@@ -1,0 +1,19 @@
+{
+  "name": "@fema-ipaas/connector-fema",
+  "version": "0.0.1",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "dependencies": {
+    "@fema-ipaas/connector-common": "workspace:*",
+    "@fema-ipaas/connector-sdk": "workspace:*",
+    "tslib": "2.6.2"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json && cp package.json dist/ && mkdir -p dist/src/i18n && cp src/i18n/*.json dist/src/i18n/",
+    "lint": "eslint 'src/**/*.ts'",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "vitest": "3.2.6"
+  }
+}

@@ -3,6 +3,7 @@ import { connectionAccessUtils, ConnectionPermission, ConnectionScope, Connectio
 import { FastifyBaseLogger } from 'fastify'
 import { In, IsNull } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
+import { identityContact } from '../helper/identity-contact'
 import { projectAccess } from '../project/project-access'
 import { projectMemberRepo } from '../project/project-member.repo'
 import { projectRepo } from '../project/project-repo'
@@ -199,7 +200,7 @@ function toShareModel(share: ConnectionShareSchema): ConnectionShare {
         permission: share.permission,
         user: isNil(identity) ? null : {
             id: share.userId,
-            email: identity.email,
+            email: identityContact.of(identity),
             firstName: identity.firstName,
             lastName: identity.lastName,
         },

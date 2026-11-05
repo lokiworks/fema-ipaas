@@ -42,13 +42,23 @@ describe('sso profile', () => {
         const profile = ssoProfile.fromClaims({ claims: { sub: 'u1', email: 'a@acme.test', email_verified: false }, emailClaim: 'email', groupsClaim: null })
 
         it('rejects an unverified email when verification is required', () => {
-            expect(() => ssoProfile.assertUsable({ profile, requireVerifiedEmail: true })).toThrow(expect.objectContaining({ code: SsoLoginErrorCode.EMAIL_NOT_VERIFIED }))
-            expect(() => ssoProfile.assertUsable({ profile, requireVerifiedEmail: false })).not.toThrow()
+            expect(() => ssoProfile.assertUsable({ profile, requireVerifiedEmail: true, requireEmail: true })).toThrow(expect.objectContaining({ code: SsoLoginErrorCode.EMAIL_NOT_VERIFIED }))
+            expect(() => ssoProfile.assertUsable({ profile, requireVerifiedEmail: false, requireEmail: true })).not.toThrow()
         })
 
         it('rejects a profile without an address', () => {
             const empty = ssoProfile.fromClaims({ claims: { sub: 'u1' }, emailClaim: 'email', groupsClaim: null })
-            expect(() => ssoProfile.assertUsable({ profile: empty, requireVerifiedEmail: false })).toThrow(expect.objectContaining({ code: SsoLoginErrorCode.EMAIL_MISSING }))
+            expect(() => ssoProfile.assertUsable({ profile: empty, requireVerifiedEmail: false, requireEmail: true })).toThrow(expect.objectContaining({ code: SsoLoginErrorCode.EMAIL_MISSING }))
+        })
+
+        it('lets a profile without an address through when the address is not needed for matching', () => {
+            const empty = ssoProfile.fromClaims({ claims: { sub: 'member-1' }, emailClaim: 'email', groupsClaim: null })
+            expect(() => ssoProfile.assertUsable({ profile: empty, requireVerifiedEmail: true, requireEmail: false })).not.toThrow()
+            expect(ssoProfile.hasEmail(empty)).toBe(false)
+        })
+
+        it('still checks verification when an address is present although it is not needed', () => {
+            expect(() => ssoProfile.assertUsable({ profile, requireVerifiedEmail: true, requireEmail: false })).toThrow(expect.objectContaining({ code: SsoLoginErrorCode.EMAIL_NOT_VERIFIED }))
         })
 
         it('accepts any domain when the allow list is empty and enforces it otherwise', () => {

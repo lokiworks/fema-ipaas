@@ -17,6 +17,7 @@ import { auditEventModule } from './audit/audit-event.module'
 import { authenticationModule } from './authentication/authentication.module'
 import { localAuthnModule } from './authentication/local-authn/local-authn.module'
 import { otpModule } from './authentication/otp/otp-module'
+import { smsOperatorModule } from './authentication/sms/sms-operator.module'
 import { backupModule } from './backup/backup.module'
 import { restoreMaintenance } from './backup/maintenance'
 import { componentModule } from './components/component.module'
@@ -59,6 +60,8 @@ import { mappingTableModule } from './mapping-table/mapping-table.module'
 import { mcpServerModule } from './mcp-server/mcp-server.module'
 import { mcpServiceModule } from './mcp-service/mcp-service.module'
 import { notificationModule } from './notification/notification.module'
+import { operatorModule } from './operator/operator.module'
+import { platformModule } from './platform/platform.module'
 import { privacyModule } from './privacy/privacy.module'
 import { projectBackgroundJobs } from './project/project.jobs'
 import { projectModule } from './project/project.module'
@@ -73,8 +76,10 @@ import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
 import { tenantModule } from './tenant/tenant.module'
 import { tenantAccessModule } from './tenant-access/tenant-access.module'
+import { tenantDomainModule } from './tenant-domain/tenant-domain.module'
 import { appEventRoutingModule } from './trigger/app-event-routing/app-event-routing.module'
 import { triggerModule } from './trigger/trigger.module'
+import { accountSecurityModule } from './user/account-security.module'
 import { tenantUserModule } from './user/tenant/tenant-user-module'
 import { invitationModule } from './user-invitations/user-invitation.module'
 import { variableModule } from './variable/variable.module'
@@ -231,8 +236,13 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
     await app.register(authenticationModule)
     await app.register(otpModule)
     await app.register(localAuthnModule)
+    await app.register(smsOperatorModule)
+    await app.register(accountSecurityModule)
     await app.register(triggerModule)
     await app.register(tenantModule)
+    await app.register(tenantDomainModule)
+    await app.register(operatorModule)
+    await app.register(platformModule)
     await app.register(projectModule)
     await app.register(humanInputModule)
     await app.register(tenantUserModule)

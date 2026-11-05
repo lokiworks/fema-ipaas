@@ -8,6 +8,7 @@ import { AppSystemProp } from '../../helper/system/system-props'
 import { userService } from '../../user/user-service'
 import { userIdentityService } from '../user-identity/user-identity-service'
 import { sessionRevocation } from './session-revocation'
+import { tenantLookup } from './tenant-lookup'
 
 export const accessTokenManager = (log: FastifyBaseLogger) => ({
     async generateToken(principal: Principal, expiresInSeconds: number = dayjs.duration(7, 'day').asSeconds()): Promise<string> {
@@ -141,6 +142,7 @@ async function assertUserSession(log: FastifyBaseLogger, decoded: Principal | Pr
             },
         })
     }
+    await tenantLookup.assertActive({ tenantId: decoded.tenant.id })
     if (identity.lastLoggedInTenantId !== decoded.tenant.id) {
         await userIdentityService(log).updateLastLoggedInTenantId({ id: identity.id, lastLoggedInTenantId: decoded.tenant.id })
     }

@@ -82,7 +82,7 @@ export default function UsersPage() {
       (scope === 'all' || member.external) &&
       (status === 'any' || member.status === status) &&
       (query.length === 0 ||
-        `${personName.format(member)} ${member.email}`
+        `${personName.format(member)} ${member.email} ${member.phone ?? ''}`
           .toLowerCase()
           .includes(query)),
   );
@@ -275,7 +275,7 @@ export default function UsersPage() {
                       )}
                     </div>
                     <span className="truncate text-xs text-muted-foreground">
-                      {member.email}
+                      {member.email || member.phone}
                     </span>
                     {mobile && (
                       <span className="text-xs text-muted-foreground">
@@ -419,8 +419,8 @@ function MemberActions({
       <ConfirmationDeleteDialog
         title={t('Revoke invitation')}
         message={t('The invitation link stops working right away.')}
-        entityName={member.email}
-        targetName={member.email}
+        entityName={member.email || member.phone || ''}
+        targetName={member.email || member.phone || ''}
         buttonText={t('Revoke')}
         mutationFn={onRevoke}
       >

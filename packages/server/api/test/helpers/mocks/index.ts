@@ -1,6 +1,6 @@
 import { generateId, assertNotNullOrUndefined } from '@fema-ipaas/core-utils'
 import { LATEST_CONTEXT_VERSION, ConnectorMetadata } from '@fema-ipaas/connector-sdk'
-import { Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorSource, ConnectorType, DefaultProjectRole, ProjectMember, Tenant, TenantRole, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema-ipaas/shared'
+import { Connection, ConnectionScope, ConnectionStatus, ConnectionType, ApplicationEvent, ApplicationEventName, ColorName, File, FileCompression, FileLocation, FileType, Workflow, WorkflowOperationStatus, Execution, ExecutionStatus, WorkflowStatus, WorkflowTriggerType, WorkflowVersion, WorkflowVersionState, Folder, InvitationStatus, InvitationType, LATEST_WORKFLOW_SCHEMA_VERSION, OtpModel, OtpState, OtpType, PackageType, ConnectorsFilterType, ConnectorSource, ConnectorType, DefaultProjectRole, ProjectMember, Tenant, TenantMfaPolicy, TenantRole, TenantStatus, Project, ProjectIcon, ProjectType, RunEnvironment, Template, TemplateStatus, TemplateType, User, UserIdentity, UserIdentityProvider, UserInvitation, UserStatus } from '@fema-ipaas/shared'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
@@ -30,6 +30,13 @@ export const createMockUserIdentity = (userIdentity?: Partial<UserIdentity>): Us
         newsLetter: userIdentity?.newsLetter ?? faker.datatype.boolean(),
         verified: userIdentity?.verified ?? faker.datatype.boolean(),
         provider: userIdentity?.provider ?? UserIdentityProvider.EMAIL,
+        contactEmail: userIdentity?.contactEmail ?? null,
+        phone: userIdentity?.phone ?? null,
+        phoneVerified: userIdentity?.phoneVerified ?? false,
+        mfaEnabled: userIdentity?.mfaEnabled ?? false,
+        mfaSecret: userIdentity?.mfaSecret ?? null,
+        mfaRecoveryCodes: userIdentity?.mfaRecoveryCodes ?? null,
+        instanceRole: userIdentity?.instanceRole ?? null,
     }
 }
 
@@ -132,6 +139,12 @@ export const createMockTenant = (tenant?: Partial<Tenant>): Tenant => {
         ssoDomainVerification: tenant?.ssoDomainVerification ?? null,
         passwordMinLength: tenant?.passwordMinLength ?? 10,
         sessionDurationDays: tenant?.sessionDurationDays ?? 7,
+        slug: tenant?.slug ?? `t${generateId().toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12)}`,
+        status: tenant?.status ?? TenantStatus.ACTIVE,
+        externalIssuer: tenant?.externalIssuer ?? null,
+        externalTenantId: tenant?.externalTenantId ?? null,
+        mfaPolicy: tenant?.mfaPolicy ?? TenantMfaPolicy.OPTIONAL,
+        phoneAuthEnabled: tenant?.phoneAuthEnabled ?? true,
     }
 }
 

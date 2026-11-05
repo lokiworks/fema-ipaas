@@ -4,8 +4,8 @@ import { FastifyBaseLogger } from 'fastify'
 import { accessTokenManager } from '../authentication/lib/access-token-manager'
 import { distributedLock, distributedStore } from '../database/redis-connections'
 import Paginator from '../helper/pagination/paginator'
+import { instanceScope } from '../operator/instance-scope'
 import { projectService } from '../project/project-service'
-import { tenantService } from '../tenant/tenant.service'
 import { workflowService } from './workflow/workflow.service'
 
 
@@ -68,11 +68,10 @@ async function resolveCachedScope(input: PrewarmDataRequest, log: FastifyBaseLog
 }
 
 async function computeScope(input: PrewarmDataRequest, log: FastifyBaseLogger): Promise<PrewarmScope | null> {
-    const tenant = await tenantService(log).getOldestTenant()
-    if (isNil(tenant)) {
+    const tenantId = await instanceScope.tenantId()
+    if (isNil(tenantId)) {
         return null
     }
-    const tenantId = tenant.id
 
     const activeWorkflows = await workflowService(log).list({ ...BASE_LIST_PARAMS, tenantId })
     const workflows = activeWorkflows.data.map((workflow) => ({ id: workflow.id, versionId: workflow.version.id, projectId: workflow.projectId }))

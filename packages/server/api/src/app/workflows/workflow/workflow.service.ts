@@ -17,6 +17,7 @@ import { SystemJobName } from '../../helper/system-jobs/common'
 import { systemJobsSchedule } from '../../helper/system-jobs/system-job'
 import { telemetry } from '../../helper/telemetry.utils'
 import { projectService } from '../../project/project-service'
+import { tenantLimitsService } from '../../tenant/tenant-limits.service'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
 import { userRepo } from '../../user/user-service'
 import { workflowFolderService } from '../folder/folder.service'
@@ -756,6 +757,9 @@ async function applyStatusChange(params: {
             })
             if (workflowToUpdate.status === params.newStatus) {
                 return
+            }
+            if (params.newStatus === WorkflowStatus.ENABLED) {
+                await tenantLimitsService(log).assertCanEnableWorkflow({ projectId: params.projectId })
             }
 
             const publishedWorkflowVersionId = workflowToUpdate.publishedVersionId

@@ -1,22 +1,50 @@
 import { ApplicationError, ErrorCode, isNil, TenantId, tryCatch } from '@fema-ipaas/core-utils'
-import { PrincipalType } from '@fema-ipaas/shared'
+import { PrincipalType, SAAS_LIMITS } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { databaseConnection } from '../database/database-connection'
+import { domainHelper } from '../helper/domain-helper'
 import { networkUtils } from '../helper/network-utils'
+import { system } from '../helper/system/system'
+import { AppSystemProp } from '../helper/system/system-props'
+import { tenantDomainService } from '../tenant-domain/tenant-domain.service'
+import { tenantDomainUtils } from '../tenant-domain/tenant-domain.utils'
+import { tenantRequestUtils } from './tenant-request.utils'
 import { tenantService } from './tenant.service'
 
-export const tenantUtils = {
-    async assertPrimaryTenant({ request }: { request: FastifyRequest }): Promise<void> {
-        const primary = await tenantService(request.log).getOldestTenant()
-        const tenantId = request.principal.type === PrincipalType.USER ? request.principal.tenant.id : null
-        if (isNil(primary) || primary.id !== tenantId) {
-            throw new ApplicationError({
-                code: ErrorCode.AUTHORIZATION,
-                params: { message: 'This setting is shared by the whole instance and can only be managed from the primary tenant' },
-            })
-        }
-    },
+async function resolveByHost({ req }: { req: FastifyRequest }): Promise<TenantId | null> {
+    const rawHost = networkUtils.getRequestHost(req)
+    if (isNil(rawHost) || rawHost.length === 0) {
+        return null
+    }
+    const host = tenantDomainUtils.hostWithoutPort({ host: rawHost })
+    const frontendHost = tenantDomainUtils.hostOfUrl({ url: system.getOrThrow(AppSystemProp.FRONTEND_URL) })
+    if (host === frontendHost) {
+        return null
+    }
+    const verifiedHostTenantId = await tenantDomainService(req.log).findTenantIdForHost({ host })
+    if (!isNil(verifiedHostTenantId)) {
+        return verifiedHostTenantId
+    }
+    const slug = tenantDomainUtils.subdomainSlug({ host, baseDomain: system.get(AppSystemProp.TENANT_BASE_DOMAIN) })
+    if (isNil(slug)) {
+        return null
+    }
+    const tenant = await tenantService(req.log).getBySlug(slug)
+    return tenant?.id ?? null
+}
 
+async function resolveExplicit({ req, ref }: { req: FastifyRequest, ref: string }): Promise<TenantId> {
+    const tenant = await tenantService(req.log).getBySlugOrId(ref)
+    if (isNil(tenant)) {
+        throw new ApplicationError({
+            code: ErrorCode.ENTITY_NOT_FOUND,
+            params: { entityType: 'tenant', entityId: ref },
+        })
+    }
+    return tenant.id
+}
+
+export const tenantUtils = {
     async getTenantIdForRequest(req: FastifyRequest): Promise<TenantId | null> {
         if (
             req.principal
@@ -26,8 +54,24 @@ export const tenantUtils = {
         ) {
             return req.principal.tenant.id
         }
-        const oldestTenant = await tenantService(req.log).getOldestTenant()
-        return oldestTenant?.id ?? null
+        const ref = tenantRequestUtils.explicitTenantRef({ header: req.headers[SAAS_LIMITS.tenantHeader], query: req.query })
+        if (!isNil(ref)) {
+            return resolveExplicit({ req, ref })
+        }
+        const byHost = await resolveByHost({ req })
+        if (!isNil(byHost)) {
+            return byHost
+        }
+        return tenantService(req.log).getOnlyTenantId()
+    },
+
+    async getPublicTenantUrl({ slug }: { slug: string }): Promise<string> {
+        const baseDomain = system.get(AppSystemProp.TENANT_BASE_DOMAIN)
+        if (!isNil(baseDomain) && baseDomain.trim().length > 0) {
+            const frontend = new URL(system.getOrThrow(AppSystemProp.FRONTEND_URL))
+            return `${frontend.protocol}//${slug}.${baseDomain.trim()}${frontend.port.length > 0 ? `:${frontend.port}` : ''}`
+        }
+        return domainHelper.getPublicUrl({ path: `${SAAS_LIMITS.tenantPathPrefix}${slug}` })
     },
 
     // temporary helper for sso customers until they update the acs url in saml

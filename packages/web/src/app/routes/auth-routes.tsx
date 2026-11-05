@@ -7,6 +7,7 @@ import { CreateTenantPage } from './create-tenant';
 import { ResetPasswordPage } from './forget-password';
 import { SetupPage } from './setup';
 import { SignInPage } from './sign-in';
+import { TenantSignInPage } from './sign-in/tenant-sign-in';
 import { SignUpPage } from './sign-up';
 
 export const authRoutes = [
@@ -31,6 +32,14 @@ export const authRoutes = [
     element: (
       <PageTitle title="Sign In">
         <SignInPage />
+      </PageTitle>
+    ),
+  },
+  {
+    path: '/t/:slug',
+    element: (
+      <PageTitle title="Sign In">
+        <TenantSignInPage />
       </PageTitle>
     ),
   },

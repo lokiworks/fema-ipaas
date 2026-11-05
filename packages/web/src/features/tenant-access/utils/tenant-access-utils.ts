@@ -1,5 +1,8 @@
 import {
   LoginMethod,
+  SAAS_LIMITS,
+  TenantDomainPurpose,
+  TenantMfaPolicy,
   ModuleAccessRequestStatus,
   OwnedResourceType,
   TENANT_ACCESS_LIMITS,
@@ -88,6 +91,8 @@ function loginMethodLabel(method: LoginMethod): string {
   switch (method) {
     case LoginMethod.EMAIL_PASSWORD:
       return t('Email and password');
+    case LoginMethod.PHONE_SMS:
+      return t('Phone and SMS code');
     case LoginMethod.OIDC:
       return 'OIDC';
     case LoginMethod.SAML:
@@ -140,6 +145,76 @@ function parseEmails(text: string): string[] {
     .map((part) => part.trim().toLowerCase())
     .filter((part) => part.length > 0);
   return [...new Set(parts)];
+}
+
+function normalizePhone(value: string): string {
+  const compact = value.replace(/[\s\-()（）]/g, '');
+  if (/^1\d{10}$/.test(compact)) {
+    return `+86${compact}`;
+  }
+  if (/^86\d{11}$/.test(compact)) {
+    return `+${compact}`;
+  }
+  return compact;
+}
+
+function isPhone(value: string): boolean {
+  return SAAS_LIMITS.phonePattern.test(normalizePhone(value));
+}
+
+function parseContacts(text: string): ParsedContacts {
+  const parts = text
+    .split(/[\n,，;；、]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+  const unique = [...new Set(parts.map((part) => part.toLowerCase()))];
+  const emails = unique.filter((part) => EMAIL_PATTERN.test(part));
+  const phones = [
+    ...new Set(
+      unique
+        .filter((part) => !EMAIL_PATTERN.test(part) && isPhone(part))
+        .map(normalizePhone),
+    ),
+  ];
+  const invalid = unique.filter(
+    (part) => !EMAIL_PATTERN.test(part) && !isPhone(part),
+  );
+  return { emails, phones, invalid };
+}
+
+function mfaPolicyLabel(policy: TenantMfaPolicy): string {
+  return policy === TenantMfaPolicy.REQUIRED
+    ? t('Required for everyone')
+    : t('Optional, members choose');
+}
+
+function domainPurposeLabel(purpose: TenantDomainPurpose): string {
+  return purpose === TenantDomainPurpose.HOST
+    ? t('Dedicated sign-in address')
+    : t('Find my organization by email domain');
+}
+
+function slugError(slug: string): string | null {
+  const value = slug.trim().toLowerCase();
+  const valid =
+    value.length >= 3 &&
+    value.length <= 40 &&
+    SAAS_LIMITS.slugPattern.test(value);
+  return valid ? null : 'tenantSlugInvalid';
+}
+
+function tenantLoginPath(slug: string): string {
+  return `${SAAS_LIMITS.tenantPathPrefix}${slug}`;
+}
+
+function tenantLoginUrl({
+  origin,
+  slug,
+}: {
+  origin: string;
+  slug: string;
+}): string {
+  return `${origin.replace(/\/+$/, '')}${tenantLoginPath(slug)}`;
 }
 
 function isEmail(value: string): boolean {
@@ -244,6 +319,7 @@ function memberDisplayName(member: {
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 const LABEL_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 
 export const tenantAccessUtils = {
@@ -256,6 +332,14 @@ export const tenantAccessUtils = {
   workerStatusLabel,
   dedupeWorkerNodes,
   parseEmails,
+  parseContacts,
+  normalizePhone,
+  isPhone,
+  mfaPolicyLabel,
+  domainPurposeLabel,
+  slugError,
+  tenantLoginPath,
+  tenantLoginUrl,
   isEmail,
   isExternalEmail,
   parseLabels,
@@ -265,4 +349,10 @@ export const tenantAccessUtils = {
   toCsv,
   passwordLengthError,
   memberDisplayName,
+};
+
+type ParsedContacts = {
+  emails: string[];
+  phones: string[];
+  invalid: string[];
 };

@@ -144,7 +144,7 @@
     },
     "packages/connectors/community/beisen": {
       "name": "@fema-ipaas/connector-beisen",
-      "version": "0.4.0",
+      "version": "0.4.3",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -174,7 +174,7 @@
     },
     "packages/connectors/community/feishu": {
       "name": "@fema-ipaas/connector-feishu",
-      "version": "0.5.0",
+      "version": "0.5.4",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -182,6 +182,18 @@
         "@fema-ipaas/core-utils": "workspace:*",
         "tslib": "2.6.2",
         "zod": "4.3.6",
+      },
+      "devDependencies": {
+        "vitest": "3.2.6",
+      },
+    },
+    "packages/connectors/community/fema": {
+      "name": "@fema-ipaas/connector-fema",
+      "version": "0.0.1",
+      "dependencies": {
+        "@fema-ipaas/connector-common": "workspace:*",
+        "@fema-ipaas/connector-sdk": "workspace:*",
+        "tslib": "2.6.2",
       },
       "devDependencies": {
         "vitest": "3.2.6",
@@ -301,7 +313,7 @@
     },
     "packages/connectors/core/data-mapper": {
       "name": "@fema-ipaas/connector-data-mapper",
-      "version": "0.5.0",
+      "version": "0.5.2",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -330,7 +342,7 @@
     },
     "packages/connectors/core/date-helper": {
       "name": "@fema-ipaas/connector-date-helper",
-      "version": "0.1.34",
+      "version": "0.1.36",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -361,7 +373,7 @@
     },
     "packages/connectors/core/file-helper": {
       "name": "@fema-ipaas/connector-file-helper",
-      "version": "0.1.30",
+      "version": "0.1.31",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -378,7 +390,7 @@
     },
     "packages/connectors/core/forms": {
       "name": "@fema-ipaas/connector-forms",
-      "version": "0.4.21",
+      "version": "0.4.22",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -394,7 +406,7 @@
     },
     "packages/connectors/core/http": {
       "name": "@fema-ipaas/connector-http",
-      "version": "0.12.0",
+      "version": "0.12.3",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -422,7 +434,7 @@
     },
     "packages/connectors/core/math-helper": {
       "name": "@fema-ipaas/connector-math-helper",
-      "version": "0.0.30",
+      "version": "0.0.31",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -478,7 +490,7 @@
     },
     "packages/connectors/core/store": {
       "name": "@fema-ipaas/connector-store",
-      "version": "0.6.20",
+      "version": "0.6.21",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -494,7 +506,7 @@
     },
     "packages/connectors/core/subflows": {
       "name": "@fema-ipaas/connector-subflows",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -520,7 +532,7 @@
     },
     "packages/connectors/core/text-helper": {
       "name": "@fema-ipaas/connector-text-helper",
-      "version": "0.6.6",
+      "version": "0.6.9",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -544,7 +556,7 @@
     },
     "packages/connectors/core/webhook": {
       "name": "@fema-ipaas/connector-webhook",
-      "version": "0.1.42",
+      "version": "0.1.43",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -558,7 +570,7 @@
     },
     "packages/connectors/core/xml": {
       "name": "@fema-ipaas/connector-xml",
-      "version": "0.1.21",
+      "version": "0.1.22",
       "dependencies": {
         "@fema-ipaas/connector-common": "workspace:*",
         "@fema-ipaas/connector-sdk": "workspace:*",
@@ -575,7 +587,7 @@
     },
     "packages/connectors/sdk": {
       "name": "@fema-ipaas/connector-sdk",
-      "version": "0.39.0",
+      "version": "0.39.1",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -604,7 +616,7 @@
     },
     "packages/core/execution": {
       "name": "@fema-ipaas/workflow-core",
-      "version": "0.16.0",
+      "version": "0.17.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -636,7 +648,7 @@
     },
     "packages/core/shared": {
       "name": "@fema-ipaas/shared",
-      "version": "0.163.0",
+      "version": "0.168.0",
       "dependencies": {
         "@fema-ipaas/connector-types": "workspace:*",
         "@fema-ipaas/core-utils": "workspace:*",
@@ -661,7 +673,7 @@
     },
     "packages/core/utils": {
       "name": "@fema-ipaas/core-utils",
-      "version": "0.7.0",
+      "version": "0.8.0",
       "dependencies": {
         "deepmerge-ts": "7.1.0",
         "ipaddr.js": "2.3.0",
@@ -720,6 +732,7 @@
         "@fema-ipaas/shared": "workspace:*",
         "@fema-ipaas/workflow-core": "workspace:*",
         "@modelcontextprotocol/sdk": "1.27.1",
+        "@node-saml/node-saml": "5.2.0",
         "@openrouter/ai-sdk-provider": "3.0.0",
         "@openrouter/sdk": "0.2.9",
         "@sentry/node": "7.120.0",
@@ -812,6 +825,7 @@
         "tsconfig-paths": "4.2.0",
         "vitest": "3.2.6",
         "webpack-ignore-dynamic-require": "1.0.0",
+        "xml-crypto": "6.1.2",
       },
     },
     "packages/server/engine": {
@@ -1040,6 +1054,7 @@
         "papaparse": "5.5.3",
         "posthog-js": "1.393.5",
         "pretty-bytes": "7.1.0",
+        "qrcode.react": "4.2.0",
         "qs": "6.15.2",
         "radix-ui": "1.4.3",
         "react": "19",
@@ -1550,6 +1565,8 @@
 
     "@fema-ipaas/connector-feishu": ["@fema-ipaas/connector-feishu@workspace:packages/connectors/community/feishu"],
 
+    "@fema-ipaas/connector-fema": ["@fema-ipaas/connector-fema@workspace:packages/connectors/community/fema"],
+
     "@fema-ipaas/connector-file-helper": ["@fema-ipaas/connector-file-helper@workspace:packages/connectors/core/file-helper"],
 
     "@fema-ipaas/connector-forms": ["@fema-ipaas/connector-forms@workspace:packages/connectors/core/forms"],
@@ -1739,6 +1756,8 @@
     "@msgpackr-extract/msgpackr-extract-win32-x64": ["@msgpackr-extract/msgpackr-extract-win32-x64@3.0.3", "", { "os": "win32", "cpu": "x64" }, "sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ=="],
 
     "@nodable/entities": ["@nodable/entities@2.1.0", "", {}, "sha512-nyT7T3nbMyBI/lvr6L5TyWbFJAI9FTgVRakNoBqCD+PmID8DzFrrNdLLtHMwMszOtqZa8PAOV24ZqDnQrhQINA=="],
+
+    "@node-saml/node-saml": ["@node-saml/node-saml@5.2.0", "https://registry.npmmirror.com/@node-saml/node-saml/-/node-saml-5.2.0.tgz", { "dependencies": { "@types/qs": "^6.15.1", "@types/xml-encryption": "^1.2.4", "@types/xml2js": "^0.4.14", "@xmldom/is-dom-node": "^1.0.1", "@xmldom/xmldom": "^0.8.15", "xml-crypto": "^6.4.0", "xml-encryption": "^3.1.0", "xml2js": "^0.6.2", "xmlbuilder": "^15.1.1", "xpath": "^0.0.35" } }, "sha512-bWjGrSZmenN+SiFcDxQ7Di2C108nK2jofJ0NT56C/NC/ELmjZS+6QOpf6YByM6f+eLTgfisrYVdwsNRV+XZsxg=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 
@@ -2443,6 +2462,10 @@
     "@types/write-file-atomic": ["@types/write-file-atomic@4.0.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-qdo+vZRchyJIHNeuI1nrpsLw+hnkgqP/8mlaN6Wle/NKhydHmUN9l4p3ZE8yP90AJNJW4uB8HQhedb4f1vNayQ=="],
 
     "@types/ws": ["@types/ws@8.18.1", "", { "dependencies": { "@types/node": "*" } }, "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg=="],
+
+    "@types/xml-encryption": ["@types/xml-encryption@1.2.4", "https://registry.npmmirror.com/@types/xml-encryption/-/xml-encryption-1.2.4.tgz", { "dependencies": { "@types/node": "*" } }, "sha512-I69K/WW1Dv7j6O3jh13z0X8sLWJRXbu5xnHDl9yHzUNDUBtUoBY058eb5s+x/WG6yZC1h8aKdI2EoyEPjyEh+Q=="],
+
+    "@types/xml2js": ["@types/xml2js@0.4.14", "https://registry.npmmirror.com/@types/xml2js/-/xml2js-0.4.14.tgz", { "dependencies": { "@types/node": "*" } }, "sha512-4YnrRemBShWRO2QjvUin8ESA41rH+9nQGLUGZV/1IDhi3SL9OhdpNC/MrulTWuptXKwhx/aDxE7toV0f/ypIXQ=="],
 
     "@types/yauzl": ["@types/yauzl@2.10.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q=="],
 
@@ -4538,6 +4561,8 @@
 
     "pure-color": ["pure-color@1.3.0", "", {}, "sha512-QFADYnsVoBMw1srW7OVKEYjG+MbIa49s54w1MA1EDY6r2r/sTcKKYqRX1f4GYvnXP7eN/Pe9HFcX+hwzmrXRHA=="],
 
+    "qrcode.react": ["qrcode.react@4.2.0", "https://registry.npmmirror.com/qrcode.react/-/qrcode.react-4.2.0.tgz", { "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-QpgqWi8rD9DsS9EP3z7BT+5lY5SFhsqGjpgW5DY/i3mK4M9DTBNz3ErMi8BWYEfI3L0d8GIbGmcdFAS1uIRGjA=="],
+
     "qs": ["qs@6.15.2", "", { "dependencies": { "side-channel": "^1.1.0" } }, "sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw=="],
 
     "query-selector-shadow-dom": ["query-selector-shadow-dom@1.0.1", "", {}, "sha512-lT5yCqEBgfoMYpf3F2xQRK7zEr1rhIIZuceDK6+xRkJQ4NMbHTwXqk4NkwDwQMNqXgG9r9fyHnzwNVs6zV5KRw=="],
@@ -4757,6 +4782,8 @@
     "samlify": ["samlify@2.13.0", "", { "dependencies": { "@authenio/xml-encryption": "^2.0.2", "@xmldom/xmldom": "^0.8.11", "node-rsa": "^1.1.1", "xml": "^1.0.1", "xml-crypto": "^6.1.2", "xml-escape": "^1.1.0", "xpath": "^0.0.34" } }, "sha512-9VyXF9FKUn4D1LFt1KnkcltIk/P0w5WOp13oiGjq6NEVBleBSd3iaFFP7vigmvmCEntaAeyFSSdjMhYc41hptA=="],
 
     "sandbox-agent": ["sandbox-agent@0.4.2", "", { "dependencies": { "@sandbox-agent/cli-shared": "0.4.2", "acp-http-client": "0.4.2" }, "optionalDependencies": { "@sandbox-agent/cli": "0.4.2" }, "peerDependencies": { "@cloudflare/sandbox": ">=0.1.0", "@daytonaio/sdk": ">=0.12.0", "@e2b/code-interpreter": ">=1.0.0", "@fly/sprites": ">=0.0.1", "@vercel/sandbox": ">=0.1.0", "computesdk": ">=0.1.0", "dockerode": ">=4.0.0", "get-port": ">=7.0.0", "modal": ">=0.1.0" }, "optionalPeers": ["@cloudflare/sandbox", "@daytonaio/sdk", "@e2b/code-interpreter", "@fly/sprites", "@vercel/sandbox", "computesdk", "dockerode", "get-port", "modal"] }, "sha512-fH6WDQEaIrgiu93LxZcy+4Dx+t+/cslu+hzXImDyUlsaL6jV2jIv4fdxELkALlo7uzyEDVK9lmqs9qy65RHwBQ=="],
+
+    "sax": ["sax@1.6.1", "https://registry.npmmirror.com/sax/-/sax-1.6.1.tgz", {}, "sha512-42tBVwLWnaQvW5zc4HbZrTuWccECCZfBi92FDuwtqxasH+JbPB3/FOKb1m222K42R4WxuxzzMsTswfzgtSu64Q=="],
 
     "saxes": ["saxes@6.0.0", "", { "dependencies": { "xmlchars": "^2.2.0" } }, "sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA=="],
 
@@ -5330,17 +5357,21 @@
 
     "xml-crypto": ["xml-crypto@6.1.2", "", { "dependencies": { "@xmldom/is-dom-node": "^1.0.1", "@xmldom/xmldom": "^0.8.10", "xpath": "^0.0.33" } }, "sha512-leBOVQdVi8FvPJrMYoum7Ici9qyxfE4kVi+AkpUoYCSXaQF4IlBm1cneTK9oAxR61LpYxTx7lNcsnBIeRpGW2w=="],
 
+    "xml-encryption": ["xml-encryption@3.1.0", "https://registry.npmmirror.com/xml-encryption/-/xml-encryption-3.1.0.tgz", { "dependencies": { "@xmldom/xmldom": "^0.8.5", "escape-html": "^1.0.3", "xpath": "0.0.32" } }, "sha512-PV7qnYpoAMXbf1kvQkqMScLeQpjCMixddAKq9PtqVrho8HnYbBOWNfG0kA4R7zxQDo7w9kiYAyzS/ullAyO55Q=="],
+
     "xml-escape": ["xml-escape@1.1.0", "", {}, "sha512-B/T4sDK8Z6aUh/qNr7mjKAwwncIljFuUP+DO/D5hloYFj+90O88z8Wf7oSucZTHxBAsC1/CTP4rtx/x1Uf72Mg=="],
 
     "xml-name-validator": ["xml-name-validator@5.0.0", "", {}, "sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg=="],
 
-    "xmlbuilder": ["xmlbuilder@10.1.1", "", {}, "sha512-OyzrcFLL/nb6fMGHbiRDuPup9ljBycsdCypwuyg5AAHvyWzGfChJpCXMG88AGTIMFhGZ9RccFN1e6lhg3hkwKg=="],
+    "xml2js": ["xml2js@0.6.2", "https://registry.npmmirror.com/xml2js/-/xml2js-0.6.2.tgz", { "dependencies": { "sax": ">=0.6.0", "xmlbuilder": "~11.0.0" } }, "sha512-T4rieHaC1EXcES0Kxxj4JWgaUQHDk+qwHcYOCFHfiwKz7tOVPLq7Hjq9dM1WCMhylqMEfP7hMcOIChvotiZegA=="],
+
+    "xmlbuilder": ["xmlbuilder@15.1.1", "https://registry.npmmirror.com/xmlbuilder/-/xmlbuilder-15.1.1.tgz", {}, "sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg=="],
 
     "xmlchars": ["xmlchars@2.2.0", "", {}, "sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw=="],
 
     "xmlhttprequest-ssl": ["xmlhttprequest-ssl@2.1.2", "", {}, "sha512-TEU+nJVUUnA4CYJFLvK5X9AOeH4KvDvhIfm0vV1GaQRtchnG0hgK5p8hw/xjv8cunWYCsiPCSDzObPyhEwq3KQ=="],
 
-    "xpath": ["xpath@0.0.34", "", {}, "sha512-FxF6+rkr1rNSQrhUNYrAFJpRXNzlDoMxeXN5qI84939ylEv3qqPFKa85Oxr6tDaJKqwW6KKyo2v26TSv3k6LeA=="],
+    "xpath": ["xpath@0.0.33", "", {}, "sha512-NNXnzrkDrAzalLhIUc01jO2mOzXGXh1JwPgkihcLLzw98c0WgYDmmjSh1Kl3wzaxSVWMuA+fe0WTWOBDWCBmNA=="],
 
     "xtend": ["xtend@4.0.2", "", {}, "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="],
 
@@ -5669,6 +5700,14 @@
     "@jridgewell/source-map/@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@modelcontextprotocol/sdk/ajv": ["ajv@8.18.0", "", { "dependencies": { "fast-deep-equal": "^3.1.3", "fast-uri": "^3.0.1", "json-schema-traverse": "^1.0.0", "require-from-string": "^2.0.2" } }, "sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A=="],
+
+    "@node-saml/node-saml/@types/qs": ["@types/qs@6.15.1", "https://registry.npmmirror.com/@types/qs/-/qs-6.15.1.tgz", {}, "sha512-GZHUBZR9hckSUhrxmp1nG6NwdpM9fCunJwyThLW1X3AyHgd9IlHb6VANpQQqDr2o/qQp6McZ3y/IA2rVzKzSbw=="],
+
+    "@node-saml/node-saml/@xmldom/xmldom": ["@xmldom/xmldom@0.8.15", "https://registry.npmmirror.com/@xmldom/xmldom/-/xmldom-0.8.15.tgz", {}, "sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA=="],
+
+    "@node-saml/node-saml/xml-crypto": ["xml-crypto@6.4.0", "https://registry.npmmirror.com/xml-crypto/-/xml-crypto-6.4.0.tgz", { "dependencies": { "@xmldom/is-dom-node": "^1.0.1", "@xmldom/xmldom": "^0.8.15", "xpath": "^0.0.33" } }, "sha512-d21ModhBO/+QWWAmOjyDeQJuHNmsR/HtOxyBchiTbKfGNKuHYwQNd+SlLhwyyrwoAGLp4Qc6BQ7nAtnM47dHSQ=="],
+
+    "@node-saml/node-saml/xpath": ["xpath@0.0.35", "https://registry.npmmirror.com/xpath/-/xpath-0.0.35.tgz", {}, "sha512-8O+m2N04SwLpGw/1Grz2HD8ejnWDV7M1dMPgKKuOjhYh5W9H4pel/+06kInohIdpS2FeSbL4i8ID8c4tpxwq9Q=="],
 
     "@npmcli/fs/semver": ["semver@7.7.4", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA=="],
 
@@ -6380,6 +6419,8 @@
 
     "mammoth/bluebird": ["bluebird@3.4.7", "", {}, "sha512-iD3898SR7sWVRHbiQv+sHUtHnMvC1o3nW5rAcqnq3uOn07DSAppZYUkIGslDz6gXC7HfunPe7YVBgoEJASPcHA=="],
 
+    "mammoth/xmlbuilder": ["xmlbuilder@10.1.1", "", {}, "sha512-OyzrcFLL/nb6fMGHbiRDuPup9ljBycsdCypwuyg5AAHvyWzGfChJpCXMG88AGTIMFhGZ9RccFN1e6lhg3hkwKg=="],
+
     "markdown-it/argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 
     "markdown-it/entities": ["entities@4.5.0", "", {}, "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw=="],
@@ -6532,6 +6573,8 @@
 
     "rxjs/tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
+    "samlify/xpath": ["xpath@0.0.34", "", {}, "sha512-FxF6+rkr1rNSQrhUNYrAFJpRXNzlDoMxeXN5qI84939ylEv3qqPFKa85Oxr6tDaJKqwW6KKyo2v26TSv3k6LeA=="],
+
     "schema-utils/ajv": ["ajv@8.18.0", "", { "dependencies": { "fast-deep-equal": "^3.1.3", "fast-uri": "^3.0.1", "json-schema-traverse": "^1.0.0", "require-from-string": "^2.0.2" } }, "sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A=="],
 
     "schema-utils/ajv-formats": ["ajv-formats@2.1.1", "", { "dependencies": { "ajv": "^8.0.0" } }, "sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA=="],
@@ -6676,7 +6719,11 @@
 
     "wsl-utils/is-wsl": ["is-wsl@3.1.1", "", { "dependencies": { "is-inside-container": "^1.0.0" } }, "sha512-e6rvdUCiQCAuumZslxRJWR/Doq4VpPR82kqclvcS0efgt430SlGIk05vdCN58+VrzgtIcfNODjozVielycD4Sw=="],
 
-    "xml-crypto/xpath": ["xpath@0.0.33", "", {}, "sha512-NNXnzrkDrAzalLhIUc01jO2mOzXGXh1JwPgkihcLLzw98c0WgYDmmjSh1Kl3wzaxSVWMuA+fe0WTWOBDWCBmNA=="],
+    "xml-encryption/@xmldom/xmldom": ["@xmldom/xmldom@0.8.15", "https://registry.npmmirror.com/@xmldom/xmldom/-/xmldom-0.8.15.tgz", {}, "sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA=="],
+
+    "xml-encryption/xpath": ["xpath@0.0.32", "", {}, "sha512-rxMJhSIoiO8vXcWvSifKqhvV96GjiD5wYb8/QHdoRyQvraTpp4IEv944nhGausZZ3u7dhQXteZuZbaqfpB7uYw=="],
+
+    "xml2js/xmlbuilder": ["xmlbuilder@11.0.1", "https://registry.npmmirror.com/xmlbuilder/-/xmlbuilder-11.0.1.tgz", {}, "sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA=="],
 
     "yauzl/buffer-crc32": ["buffer-crc32@0.2.13", "", {}, "sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ=="],
 
@@ -6873,6 +6920,8 @@
     "@isaacs/cliui/wrap-ansi/ansi-styles": ["ansi-styles@6.2.3", "", {}, "sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg=="],
 
     "@modelcontextprotocol/sdk/ajv/json-schema-traverse": ["json-schema-traverse@1.0.0", "", {}, "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="],
+
+    "@node-saml/node-saml/xml-crypto/xpath": ["xpath@0.0.33", "", {}, "sha512-NNXnzrkDrAzalLhIUc01jO2mOzXGXh1JwPgkihcLLzw98c0WgYDmmjSh1Kl3wzaxSVWMuA+fe0WTWOBDWCBmNA=="],
 
     "@npmcli/move-file/rimraf/glob": ["glob@7.2.3", "", { "dependencies": { "fs.realpath": "^1.0.0", "inflight": "^1.0.4", "inherits": "2", "minimatch": "^3.1.1", "once": "^1.3.0", "path-is-absolute": "^1.0.0" } }, "sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q=="],
 

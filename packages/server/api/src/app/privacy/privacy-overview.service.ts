@@ -16,6 +16,7 @@ import { FastifyBaseLogger } from 'fastify'
 import { In } from 'typeorm'
 import { userIdentityRepository } from '../authentication/user-identity/user-identity-service'
 import { fileRepo, getEffectiveExecutionDataRetentionDays } from '../file/file.service'
+import { identityContact } from '../helper/identity-contact'
 import { projectRepo } from '../project/project-repo'
 import { tenantService } from '../tenant/tenant.service'
 import { userRepo } from '../user/user-service'
@@ -81,7 +82,7 @@ async function rawViewersOf({ log, tenantId, settings }: { log: FastifyBaseLogge
     return withRole
         .flatMap(({ user, role }) => {
             const identity = identityById.get(user.identityId)
-            return isNil(identity) ? [] : [{ userId: user.id, name: `${identity.firstName} ${identity.lastName}`.trim(), email: identity.email, role }]
+            return isNil(identity) ? [] : [{ userId: user.id, name: `${identity.firstName} ${identity.lastName}`.trim(), email: identityContact.of(identity), role }]
         })
         .sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || a.name.localeCompare(b.name))
 }

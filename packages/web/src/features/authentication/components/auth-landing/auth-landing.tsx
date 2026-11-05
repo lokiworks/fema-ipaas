@@ -12,6 +12,7 @@ import { useRedirectAfterLogin } from '@/lib/navigation-utils';
 
 import { AuthDrawerBody, AuthMode } from './auth-drawer-body';
 import { AuthThemeSwitch } from './auth-theme-switch';
+import { useLoginTenant } from './tenant-login-context';
 
 export function AuthLanding({ initialMode }: AuthLandingProps) {
   const redirectAfterLogin = useRedirectAfterLogin();
@@ -93,12 +94,15 @@ export function AuthSplitLayout({
 
 function BrandPanel() {
   const branding = flagsHooks.useWebsiteBranding();
+  const tenant = useLoginTenant();
   return (
     <aside className="hidden flex-col justify-between gap-8 border-r bg-sidebar p-12 lg:flex">
       <BrandPanelContent
-        productName={branding.websiteName}
-        iconUrl={branding.logos.logoIconUrl}
-        welcomeText={branding.welcomeText ?? ''}
+        productName={tenant?.name ?? branding.websiteName}
+        iconUrl={tenant?.logoIconUrl ?? branding.logos.logoIconUrl}
+        welcomeText={
+          tenant ? tenant.welcomeText ?? '' : branding.welcomeText ?? ''
+        }
       />
     </aside>
   );

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="FEMA">
+  <rect width="48" height="48" rx="10" fill="#1F3A5F"/>
+  <path d="M15 13h18v4.4H20v5.2h11.2V27H20v8h-5V13z" fill="#fff"/>
+  <rect x="31" y="31" width="4" height="4" rx="1" fill="#4FD1C5"/>
+</svg>

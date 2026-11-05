@@ -3,6 +3,7 @@ import {
   AddTenantUsersResponse,
   ComponentHealthCheck,
   ComponentHealthReport,
+  CreateTenantDomainRequestBody,
   CreateModuleAccessRequestBody,
   EncryptionKeyStatus,
   ListOwnedResourcesRequestQuery,
@@ -14,16 +15,24 @@ import {
   ModuleAccessRequestWithUsers,
   ModuleAccessSettings,
   MyModuleAccess,
+  PlatformAppBindingView,
   ResetMemberPasswordResponse,
   SsoProvider,
   SsoSettings,
   SsoTestStartResponse,
+  TenantDomain,
   TenantMember,
+  TenantWithoutSensitiveData,
   TransferResourcesRequestBody,
   TransferResourcesResponse,
+  UpdateDingtalkSsoRequestBody,
   UpdateFeishuSsoRequestBody,
   UpdateLoginSecurityRequestBody,
   UpdateOidcSsoRequestBody,
+  UpdateSamlSsoRequestBody,
+  UpdateTenantMfaPolicyRequestBody,
+  UpdateTenantSlugRequestBody,
+  UpdateWecomSsoRequestBody,
   UpdateModuleAccessSettingsRequestBody,
   UpdateTenantMemberAccessRequestBody,
   WorkerFleet,
@@ -183,6 +192,57 @@ export const tenantAccessApi = {
   },
   saveFeishuSso(request: UpdateFeishuSsoRequestBody): Promise<SsoSettings> {
     return api.post<SsoSettings>('/v1/tenant-access/sso/feishu', request);
+  },
+  saveWecomSso(request: UpdateWecomSsoRequestBody): Promise<SsoSettings> {
+    return api.post<SsoSettings>('/v1/tenant-access/sso/wecom', request);
+  },
+  saveDingtalkSso(request: UpdateDingtalkSsoRequestBody): Promise<SsoSettings> {
+    return api.post<SsoSettings>('/v1/tenant-access/sso/dingtalk', request);
+  },
+  saveSamlSso(request: UpdateSamlSsoRequestBody): Promise<SsoSettings> {
+    return api.post<SsoSettings>('/v1/tenant-access/sso/saml', request);
+  },
+  startPlatformBinding(
+    kind: PlatformAppBindingView['kind'],
+  ): Promise<SsoTestStartResponse> {
+    return api.post<SsoTestStartResponse>(
+      `/v1/tenant-access/sso/platform-bindings/${kind}/start`,
+    );
+  },
+  removePlatformBinding(kind: PlatformAppBindingView['kind']): Promise<void> {
+    return api.delete<void>(`/v1/tenant-access/sso/platform-bindings/${kind}`);
+  },
+  updateMfaPolicy(
+    request: UpdateTenantMfaPolicyRequestBody,
+  ): Promise<LoginSecuritySettings> {
+    return api.post<LoginSecuritySettings>(
+      '/v1/tenant-access/login-security/mfa-policy',
+      request,
+    );
+  },
+  listDomains(): Promise<TenantDomain[]> {
+    return api.get<TenantDomain[]>('/v1/tenant-domains');
+  },
+  createDomain(request: CreateTenantDomainRequestBody): Promise<TenantDomain> {
+    return api.post<TenantDomain>('/v1/tenant-domains', request);
+  },
+  verifyDomain(id: string): Promise<TenantDomain> {
+    return api.post<TenantDomain>(`/v1/tenant-domains/${id}/verify`);
+  },
+  removeDomain(id: string): Promise<void> {
+    return api.delete<void>(`/v1/tenant-domains/${id}`);
+  },
+  updateSlug({
+    tenantId,
+    request,
+  }: {
+    tenantId: string;
+    request: UpdateTenantSlugRequestBody;
+  }): Promise<TenantWithoutSensitiveData> {
+    return api.post<TenantWithoutSensitiveData>(
+      `/v1/tenants/${tenantId}/slug`,
+      request,
+    );
   },
   setSsoEnabled({
     provider,

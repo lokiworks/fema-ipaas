@@ -1,15 +1,18 @@
 import { ApplicationError, EntityId, ErrorCode, isNil } from '@fema-ipaas/core-utils'
-import { AuthenticationResponse, CreateTenantRequest, FileType, PrincipalType, ProjectWithLimitsWithTenant, SERVICE_KEY_SECURITY_OPENAPI, TenantWithoutSensitiveData, UpdateTenantRequestBody } from '@fema-ipaas/shared'
+import { ApplicationEventName, AuthenticationResponse, CreateTenantRequest, FileType, PrincipalType, ProjectWithLimitsWithTenant, PublicTenantInfo, SERVICE_KEY_SECURITY_OPENAPI, TenantDiscoveryRequestBody, TenantDiscoveryResponse, TenantWithoutSensitiveData, UpdateTenantRequestBody, UpdateTenantSlugRequestBody } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
+import { authnRateLimit } from '../core/security/rate-limit'
 import { fileService } from '../file/file.service'
+import { applicationEvents } from '../helper/application-events'
 import { attachMultipartFieldsToBody } from '../helper/multipart-body'
 import { projectService } from '../project/project-service'
 import { projectSideEffects } from '../project/project-side-effects'
 import { tenantSettingsGuards } from '../tenant-access/login-security.service'
 import { userService } from '../user/user-service'
+import { tenantPublicInfoService } from './tenant-public-info.service'
 import { tenantService } from './tenant.service'
 
 export const tenantController: FastifyPluginAsyncZod = async (app) => {
@@ -119,6 +122,38 @@ export const tenantController: FastifyPluginAsyncZod = async (app) => {
         return tenant
     })
 
+    app.post('/:id/slug', UpdateSlugRequest, async (req) => {
+        if (req.principal.tenant.id !== req.params.id) {
+            throw new ApplicationError({
+                code: ErrorCode.AUTHORIZATION,
+                params: {
+                    message: 'You are not authorized to access this tenant',
+                },
+            })
+        }
+        const tenant = await tenantService(req.log).updateSlug({ tenantId: req.params.id, slug: req.body.slug })
+        applicationEvents(req.log).sendUserEvent(req, {
+            action: ApplicationEventName.TENANT_SLUG_CHANGED,
+            data: { target: tenant.name, detail: tenant.slug },
+        })
+        return tenantService(req.log).getOneWithLimitsOrThrow(tenant.id)
+    })
+
+    app.get('/public/:slugOrId', GetPublicTenantRequest, async (req) => {
+        const info = await tenantPublicInfoService(req.log).getBySlugOrId({ slugOrId: req.params.slugOrId })
+        if (isNil(info)) {
+            throw new ApplicationError({
+                code: ErrorCode.ENTITY_NOT_FOUND,
+                params: { entityType: 'tenant', entityId: req.params.slugOrId },
+            })
+        }
+        return info
+    })
+
+    app.post('/discover', DiscoverTenantsRequest, async (req) => {
+        return tenantPublicInfoService(req.log).discoverByEmail({ email: req.body.email })
+    })
+
     app.get('/assets/:id', GetAssetRequest, async (req, reply) => {
         const { fileName, metadata, data } = await fileService(app.log).getDataOrThrow({
             fileId: req.params.id,
@@ -193,6 +228,53 @@ const GetTenantRequest = {
         }),
         response: {
             [StatusCodes.OK]: TenantWithoutSensitiveData,
+        },
+    },
+}
+
+const UpdateSlugRequest = {
+    config: {
+        security: securityAccess.tenantAdminOnly([PrincipalType.USER]),
+    },
+    schema: {
+        tags: ['tenants'],
+        description: 'Change the login address (slug) of a tenant',
+        params: z.object({
+            id: EntityId,
+        }),
+        body: UpdateTenantSlugRequestBody,
+        response: {
+            [StatusCodes.OK]: TenantWithoutSensitiveData,
+        },
+    },
+}
+
+const GetPublicTenantRequest = {
+    config: {
+        security: securityAccess.public(),
+        rateLimit: authnRateLimit,
+    },
+    schema: {
+        tags: ['tenants'],
+        params: z.object({
+            slugOrId: z.string().min(1).max(200),
+        }),
+        response: {
+            [StatusCodes.OK]: PublicTenantInfo,
+        },
+    },
+}
+
+const DiscoverTenantsRequest = {
+    config: {
+        security: securityAccess.public(),
+        rateLimit: authnRateLimit,
+    },
+    schema: {
+        tags: ['tenants'],
+        body: TenantDiscoveryRequestBody,
+        response: {
+            [StatusCodes.OK]: TenantDiscoveryResponse,
         },
     },
 }

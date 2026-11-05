@@ -4,6 +4,7 @@ import {
   CreateOtpRequestBody,
   MAX_FULL_NAME_LENGTH,
   OtpType,
+  PublicTenantInfo,
   TelemetryEventName,
 } from '@fema-ipaas/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,11 +12,11 @@ import { useMutation } from '@tanstack/react-query';
 import { HttpStatusCode } from 'axios';
 import { t } from 'i18next';
 import {
-  ArrowLeft,
   ArrowRight,
   CircleAlert,
   Lightbulb,
   Mail,
+  Phone,
   User,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -44,32 +45,41 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { authMutations } from '@/features/authentication/hooks/auth-hooks';
+import {
+  DiscoveredTenants,
+  discoveryHooks,
+} from '@/features/authentication/hooks/discovery-hook';
 import { ssoHooks } from '@/features/authentication/hooks/sso-hooks';
 import { captchaUtils } from '@/features/authentication/utils/captcha-utils';
+import {
+  LoginChallenge,
+  loginChallengeUtils,
+} from '@/features/authentication/utils/login-challenge-utils';
 import { flagsHooks } from '@/hooks/flags-hooks';
 import { HttpError, api } from '@/lib/api';
 import { authenticationSession } from '@/lib/authentication-session';
 import { formatUtils } from '@/lib/format-utils';
 import { useRedirectAfterLogin } from '@/lib/navigation-utils';
+import { tenantContext } from '@/lib/tenant-context';
 import { cn } from '@/lib/utils';
 
 import { CheckEmailNote } from '../check-email-note';
+import { MfaChallengeStep } from '../mfa-challenge-step';
+import { MfaEnrollmentStep } from '../mfa-enrollment-step';
 import { SignInForm } from '../sign-in-form';
 import { SignUpForm } from '../sign-up-form';
+import { SmsLoginStep } from '../sms-login-step';
 import { SsoErrorNote, SsoLoginOptions } from '../sso-login-options';
+import { TenantDiscoveryPanel } from '../tenant-discovery-panel';
+import { TenantSelectionStep } from '../tenant-selection-step';
 
-import { TurnstileWidget, useTurnstileSiteKey } from './turnstile-widget';
+import { AUTH_TITLE_CLASS, BackLink, Heading } from './auth-drawer-parts';
+import { CaptchaWidget } from './captcha-widget';
+import { useLoginTenant } from './tenant-login-context';
 
 const CODE_LENGTH = 6;
 
 const RESEND_COOLDOWN_SECONDS = 60;
-
-// Every title in the card shares this: Inter at 400 rather than the Sentient
-// display serif — on a signup card a headline should read as a calm, modern
-// label, not a statement that slows the eye down. 400 is the lightest weight
-// actually loaded; 300 would silently fall back and look identical.
-const AUTH_TITLE_CLASS =
-  'text-center text-[21px] font-normal leading-snug tracking-[-0.02em] text-balance text-foreground';
 
 // Steps cross-fade instead of snapping, and the card animates to the new
 // height, so moving between email → code → password reads as one surface
@@ -92,6 +102,8 @@ export function AuthDrawerBody({ initialMode }: AuthDrawerBodyProps) {
   );
   const [emailForCode, setEmailForCode] = useState('');
   const [checkEmailNote, setCheckEmailNote] = useState(false);
+  const [challenge, setChallenge] = useState<LoginChallenge | null>(null);
+  const [discovered, setDiscovered] = useState<DiscoveredTenants | null>(null);
   const { capture } = useTelemetry();
   const [captchaToken, setCaptchaToken] = useState<string | undefined>();
   const [captchaReset, setCaptchaReset] = useState(0);
@@ -112,10 +124,17 @@ export function AuthDrawerBody({ initialMode }: AuthDrawerBodyProps) {
     setCaptchaToken(undefined);
     setCaptchaReset((count) => count + 1);
   }, []);
-  const captchaRequired = !isNil(useTurnstileSiteKey()) && !captchaUnavailable;
+  const captchaRequired = !captchaUnavailable;
   const passwordlessAvailable = usePasswordlessAvailable();
+  const phoneAvailable = usePhoneAvailable();
   const challengeApplies =
-    passwordlessAvailable && (step === 'method' || step === 'code');
+    ((passwordlessAvailable || phoneAvailable) &&
+      (step === 'method' || step === 'code')) ||
+    (phoneAvailable && step === 'sms');
+  const handleChallenge = useCallback((next: LoginChallenge) => {
+    setChallenge(next);
+    setStep(stepForChallenge(next));
+  }, []);
 
   return (
     <AutoHeight>
@@ -140,11 +159,15 @@ export function AuthDrawerBody({ initialMode }: AuthDrawerBodyProps) {
             captchaToken={captchaToken}
             captchaRequired={captchaRequired}
             onCaptchaSpent={spendCaptcha}
+            challenge={challenge}
+            onChallenge={handleChallenge}
+            discovered={discovered}
+            setDiscovered={setDiscovered}
           />
         </motion.div>
       </AnimatePresence>
       {challengeApplies && (
-        <TurnstileWidget
+        <CaptchaWidget
           onToken={setCaptchaToken}
           onUnavailable={handleCaptchaUnavailable}
           resetSignal={captchaReset}
@@ -197,7 +220,12 @@ function AuthStep({
   captchaToken,
   captchaRequired,
   onCaptchaSpent,
+  challenge,
+  onChallenge,
+  discovered,
+  setDiscovered,
 }: AuthStepProps) {
+  const tenant = useLoginTenant();
   const { data: emailAuthEnabledFlag } = flagsHooks.useFlag<boolean>(
     FlagId.EMAIL_AUTH_ENABLED,
   );
@@ -212,12 +240,27 @@ function AuthStep({
   // suspense query, so undefined here means missing rather than still loading.
   const firstUser = userCreated !== true;
   const effectiveMode: AuthMode = firstUser ? 'signup' : mode;
-  const emailAuthEnabled = emailAuthEnabledFlag ?? true;
-  const showModeSwitch =
-    !firstUser && ((openSignUpFlag ?? true) || mode === 'signup');
+  const emailAuthEnabled = tenant
+    ? tenant.emailAuthEnabled
+    : emailAuthEnabledFlag ?? true;
+  const { data: multiTenant } = flagsHooks.useFlag<boolean>(
+    FlagId.MULTI_TENANT,
+  );
+  const { data: selfSignup } = flagsHooks.useFlag<boolean>(
+    FlagId.TENANT_SELF_SIGNUP_ENABLED,
+  );
+  const signUpOffered =
+    multiTenant === true
+      ? tenant === null && selfSignup === true
+      : openSignUpFlag ?? true;
+  const showModeSwitch = !firstUser && (signUpOffered || mode === 'signup');
   const passwordlessAvailable = usePasswordlessAvailable();
+  const phoneAvailable = usePhoneAvailable();
+  const discoveryNeeded = useDiscoveryNeeded();
   const { data: ssoData } = ssoHooks.useProviders();
   const ssoProviders = ssoData?.providers ?? [];
+  const discoveredTenants = discovered?.tenants ?? [];
+  const backToMethod = () => setStep('method');
 
   // The confirmation is a beat, not a screen: hold it just long enough to read
   // as "that worked" before the name question replaces it.
@@ -254,13 +297,69 @@ function AuthStep({
     );
   }
 
-  // Email sign-in is the only way in, so turning it off leaves nobody a way in.
-  // Say so, rather than showing an empty panel.
-  if (!emailAuthEnabled && ssoProviders.length > 0) {
+  if (step === 'mfa' && challenge?.kind === 'mfa') {
+    return (
+      <DrawerShell>
+        <MfaChallengeStep
+          challengeToken={challenge.challengeToken}
+          onBack={backToMethod}
+          onChallenge={onChallenge}
+        />
+      </DrawerShell>
+    );
+  }
+
+  if (step === 'mfa-enrollment' && challenge?.kind === 'mfa-enrollment') {
+    return (
+      <DrawerShell>
+        <MfaEnrollmentStep
+          challengeToken={challenge.challengeToken}
+          onBack={backToMethod}
+          onSessionLost={backToMethod}
+        />
+      </DrawerShell>
+    );
+  }
+
+  if (step === 'select-tenant' && challenge?.kind === 'tenant-selection') {
+    return (
+      <DrawerShell>
+        <TenantSelectionStep
+          selectionToken={challenge.selectionToken}
+          onBack={backToMethod}
+          onChallenge={onChallenge}
+        />
+      </DrawerShell>
+    );
+  }
+
+  if (step === 'sms' && phoneAvailable) {
+    return (
+      <DrawerShell>
+        <SmsLoginStep
+          captchaToken={captchaToken}
+          captchaRequired={captchaRequired}
+          onCaptchaSpent={onCaptchaSpent}
+          onBack={backToMethod}
+          onNeedsName={() => setStep('verified')}
+          onChallenge={onChallenge}
+        />
+      </DrawerShell>
+    );
+  }
+
+  if (!emailAuthEnabled && (ssoProviders.length > 0 || phoneAvailable)) {
     return (
       <DrawerShell>
         <Heading title={t('Welcome back')} />
-        <SsoLoginOptions providers={ssoProviders} withDivider={false} />
+        <SsoLoginOptions
+          providers={ssoProviders}
+          withDivider={phoneAvailable && ssoProviders.length > 0}
+        />
+        {phoneAvailable && (
+          <PhoneLink onClick={() => setStep('sms')} prominent />
+        )}
+        <OrganizationNote />
       </DrawerShell>
     );
   }
@@ -290,6 +389,7 @@ function AuthStep({
               : t('Welcome back')
           }
         />
+        <TenantDiscoveryPanel tenants={discoveredTenants} />
         <SsoLoginOptions providers={ssoProviders} withDivider />
         {effectiveMode === 'signup' ? (
           <SignUpForm
@@ -297,9 +397,15 @@ function AuthStep({
             setShowCheckYourEmailNote={setCheckEmailNote}
           />
         ) : (
-          <SignInForm />
+          <SignInForm
+            onChallenge={onChallenge}
+            discoveryEnabled={discoveryNeeded}
+            onDiscovered={setDiscovered}
+          />
         )}
+        {phoneAvailable && <PhoneLink onClick={() => setStep('sms')} />}
         {showModeSwitch && <ModeSwitch mode={mode} onSwitch={setMode} />}
+        <OrganizationNote />
       </DrawerShell>
     );
   }
@@ -321,7 +427,11 @@ function AuthStep({
             setShowCheckYourEmailNote={setCheckEmailNote}
           />
         ) : (
-          <SignInForm onForgotPassword={() => setStep('reset')} />
+          <SignInForm
+            onForgotPassword={() => setStep('reset')}
+            onChallenge={onChallenge}
+            defaultEmail={discovered?.email}
+          />
         )}
       </DrawerShell>
     );
@@ -350,6 +460,7 @@ function AuthStep({
           email={emailForCode}
           onBack={() => setStep('method')}
           onNeedsName={() => setStep('verified')}
+          onChallenge={onChallenge}
         />
       </DrawerShell>
     );
@@ -358,14 +469,20 @@ function AuthStep({
   return (
     <DrawerShell>
       <h1 className={cn(AUTH_TITLE_CLASS, 'mb-6')}>
-        {t('Dream big. Automate the rest.')}
+        {tenant
+          ? t('Sign in to {name}', { name: tenant.name })
+          : t('Dream big. Automate the rest.')}
       </h1>
+      <TenantDiscoveryPanel tenants={discoveredTenants} />
       <SsoLoginOptions providers={ssoProviders} withDivider />
       <EmailStep
         invitedEmail={invitedEmail}
         captchaToken={captchaToken}
         captchaRequired={captchaRequired}
         onCaptchaSpent={onCaptchaSpent}
+        discoveryEnabled={discoveryNeeded}
+        discovered={discovered}
+        onDiscovered={setDiscovered}
         onCodeSent={(email) => {
           setEmailForCode(email);
           setStep('code');
@@ -380,7 +497,21 @@ function AuthStep({
         >
           {t('Use password')}
         </button>
+        {phoneAvailable && (
+          <>
+            <span aria-hidden>·</span>
+            <button
+              type="button"
+              onClick={() => setStep('sms')}
+              data-testid="auth-use-phone"
+              className="transition-colors hover:text-foreground"
+            >
+              {t('Use phone number')}
+            </button>
+          </>
+        )}
       </div>
+      <OrganizationNote />
       <LegalNote />
     </DrawerShell>
   );
@@ -443,11 +574,14 @@ function EmailStep({
   captchaToken,
   captchaRequired,
   onCaptchaSpent,
+  discoveryEnabled,
+  discovered,
+  onDiscovered,
   onCodeSent,
 }: EmailStepProps) {
   const form = useForm<EmailSchema>({
     resolver: zodResolver(EmailZodSchema),
-    defaultValues: { email: invitedEmail },
+    defaultValues: { email: discovered?.email ?? invitedEmail },
     // Never call an address invalid before the user has actually tried to
     // continue — not while typing, not on blur. After a failed submit it
     // corrects live as they fix it.
@@ -475,9 +609,27 @@ function EmailStep({
     },
   });
 
+  const { discover, isDiscovering } = discoveryHooks.useDiscovery({
+    onDiscovered,
+  });
+
   const onSubmit: SubmitHandler<EmailSchema> = (data) => {
     form.clearErrors('root.serverError');
-    mutate({ email: data.email.trim(), captchaToken });
+    const email = data.email.trim();
+    const alreadyDiscovered =
+      discovered?.email === discoveryHooks.normalizeEmail(email);
+    if (discoveryEnabled && !alreadyDiscovered) {
+      discover({
+        email,
+        onFinished: (hasSso) => {
+          if (!hasSso) {
+            mutate({ email, captchaToken });
+          }
+        },
+      });
+      return;
+    }
+    mutate({ email, captchaToken });
   };
 
   return (
@@ -508,10 +660,20 @@ function EmailStep({
                     placeholder={t('name@work.com')}
                     className="h-12 border-0 bg-transparent pl-11 pr-14 text-[15px] shadow-none focus-visible:ring-0"
                     data-testid="auth-email"
+                    onChange={(event) => {
+                      field.onChange(event);
+                      if (
+                        discovered !== null &&
+                        discovered.email !==
+                          discoveryHooks.normalizeEmail(event.target.value)
+                      ) {
+                        onDiscovered(null);
+                      }
+                    }}
                   />
                   <Button
                     type="submit"
-                    loading={isPending}
+                    loading={isPending || isDiscovering}
                     disabled={captchaRequired && isNil(captchaToken)}
                     aria-label={t('Continue')}
                     data-testid="auth-continue"
@@ -748,6 +910,7 @@ function CodeStep({
   email,
   onBack,
   onNeedsName,
+  onChallenge,
 }: CodeStepProps) {
   const [code, setCode] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -777,6 +940,11 @@ function CodeStep({
       },
       onError: (error) => {
         setCode('');
+        const challenge = loginChallengeUtils.parse(error);
+        if (challenge !== null) {
+          onChallenge(challenge);
+          return;
+        }
         setErrorMessage(codeErrorMessage(error));
         capture({
           name: TelemetryEventName.EMAIL_CODE_REJECTED,
@@ -855,11 +1023,17 @@ function CodeStep({
 
 function DrawerShell({ children }: { children: React.ReactNode }) {
   const branding = flagsHooks.useWebsiteBranding();
-  const welcomeText = branding.welcomeText?.trim() ?? '';
+  const tenant = useLoginTenant();
+  const welcomeText =
+    (tenant ? tenant.welcomeText : branding.welcomeText)?.trim() ?? '';
   return (
     <div className="flex w-full flex-col px-8 pb-7 pt-9">
       <div className="mb-5 flex justify-center lg:hidden">
-        <FullLogo className="h-7" />
+        {tenant ? (
+          <TenantBrand tenant={tenant} />
+        ) : (
+          <FullLogo className="h-7" />
+        )}
       </div>
       {welcomeText.length > 0 && (
         <p className="mb-4 text-sm text-muted-foreground lg:hidden">
@@ -872,29 +1046,75 @@ function DrawerShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Heading({ title, subtitle }: { title: string; subtitle?: string }) {
+function TenantBrand({ tenant }: { tenant: PublicTenantInfo }) {
   return (
-    <div className="mb-6 text-center">
-      <h1 className={AUTH_TITLE_CLASS}>{title}</h1>
-      {subtitle && (
-        <p className="mx-auto mt-1.5 max-w-[19rem] text-balance text-sm font-medium text-muted-foreground">
-          {subtitle}
-        </p>
+    <div className="flex items-center gap-2">
+      {tenant.logoIconUrl.length > 0 && (
+        <img
+          src={tenant.logoIconUrl}
+          alt=""
+          className="size-8 rounded-md object-contain"
+        />
       )}
+      <span className="text-base font-semibold">{tenant.name}</span>
     </div>
   );
 }
 
-function BackLink({ onClick }: { onClick: () => void }) {
+function PhoneLink({
+  onClick,
+  prominent,
+}: {
+  onClick: () => void;
+  prominent?: boolean;
+}) {
+  if (prominent) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        className="h-10 w-full gap-2"
+        onClick={onClick}
+        data-testid="auth-use-phone"
+      >
+        <Phone className="size-4" />
+        {t('Sign in with phone number')}
+      </Button>
+    );
+  }
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="mx-auto mb-4 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-    >
-      <ArrowLeft className="size-3.5" />
-      {t('Back')}
-    </button>
+    <div className="mt-4 text-center">
+      <button
+        type="button"
+        onClick={onClick}
+        data-testid="auth-use-phone"
+        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {t('Use phone number')}
+      </button>
+    </div>
+  );
+}
+
+function OrganizationNote() {
+  const tenant = useLoginTenant();
+  if (tenant === null && tenantContext.get() === null) {
+    return null;
+  }
+  return (
+    <div className="mt-4 text-center">
+      <button
+        type="button"
+        onClick={() => {
+          tenantContext.clear();
+          window.location.assign('/sign-in');
+        }}
+        data-testid="auth-switch-organization"
+        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {t('Not your organization? Sign in elsewhere')}
+      </button>
+    </div>
   );
 }
 
@@ -923,13 +1143,46 @@ function ModeSwitch({
 }
 
 function usePasswordlessAvailable(): boolean {
+  const tenant = useLoginTenant();
   const { data: emailAuthEnabled } = flagsHooks.useFlag<boolean>(
     FlagId.EMAIL_AUTH_ENABLED,
   );
   const { data: smtpConfigured } = flagsHooks.useFlag<boolean>(
     FlagId.SMTP_CONFIGURED,
   );
-  return (emailAuthEnabled ?? true) && !!smtpConfigured;
+  const emailEnabled = tenant
+    ? tenant.emailAuthEnabled
+    : emailAuthEnabled ?? true;
+  return emailEnabled && !!smtpConfigured;
+}
+
+function usePhoneAvailable(): boolean {
+  const tenant = useLoginTenant();
+  const { data: smsAvailable } = flagsHooks.useFlag<boolean>(
+    FlagId.SMS_AUTH_AVAILABLE,
+  );
+  return smsAvailable === true && (tenant ? tenant.phoneAuthEnabled : true);
+}
+
+function useDiscoveryNeeded(): boolean {
+  const tenant = useLoginTenant();
+  const { data: multiTenant } = flagsHooks.useFlag<boolean>(
+    FlagId.MULTI_TENANT,
+  );
+  return (
+    multiTenant === true && tenant === null && tenantContext.get() === null
+  );
+}
+
+function stepForChallenge(challenge: LoginChallenge): Step {
+  switch (challenge.kind) {
+    case 'mfa':
+      return 'mfa';
+    case 'mfa-enrollment':
+      return 'mfa-enrollment';
+    default:
+      return 'select-tenant';
+  }
 }
 
 // Country variants are endless (yahoo.co.uk, hotmail.fr, …), so match the
@@ -957,8 +1210,12 @@ function requestErrorMessage(error: HttpError): string {
     if (errorCode === ErrorCode.EMAIL_AUTH_DISABLED) {
       return t('Email sign-in is disabled');
     }
-    if (captchaUtils.isRejection(error)) {
+    if (captchaUtils.needsFreshToken(error)) {
       return t('That verification expired. Please try again.');
+    }
+    const challengeMessage = loginChallengeUtils.messageFor(error);
+    if (challengeMessage !== null) {
+      return challengeMessage;
     }
   }
   return t('Something went wrong, please try again later');
@@ -979,6 +1236,10 @@ function codeErrorMessage(error: HttpError): string {
     }
     if (errorCode === ErrorCode.INVITATION_ONLY_SIGN_UP) {
       return t('You need an invitation to sign up.');
+    }
+    const challengeMessage = loginChallengeUtils.messageFor(error);
+    if (challengeMessage !== null) {
+      return challengeMessage;
     }
   }
   return t('Something went wrong, please try again later');
@@ -1035,6 +1296,7 @@ type CodeStepProps = {
   email: string;
   onBack: () => void;
   onNeedsName: () => void;
+  onChallenge: (challenge: LoginChallenge) => void;
 };
 
 type EmailStepProps = {
@@ -1042,6 +1304,9 @@ type EmailStepProps = {
   captchaToken: string | undefined;
   captchaRequired: boolean;
   onCaptchaSpent: () => void;
+  discoveryEnabled: boolean;
+  discovered: DiscoveredTenants | null;
+  onDiscovered: (discovered: DiscoveredTenants | null) => void;
   onCodeSent: (email: string) => void;
 };
 
@@ -1066,9 +1331,23 @@ type AuthStepProps = {
   captchaToken: string | undefined;
   captchaRequired: boolean;
   onCaptchaSpent: () => void;
+  challenge: LoginChallenge | null;
+  onChallenge: (challenge: LoginChallenge) => void;
+  discovered: DiscoveredTenants | null;
+  setDiscovered: (discovered: DiscoveredTenants | null) => void;
 };
 
-type Step = 'method' | 'code' | 'verified' | 'name' | 'password' | 'reset';
+type Step =
+  | 'method'
+  | 'code'
+  | 'verified'
+  | 'name'
+  | 'password'
+  | 'reset'
+  | 'sms'
+  | 'mfa'
+  | 'mfa-enrollment'
+  | 'select-tenant';
 
 export type AuthMode = 'signin' | 'signup';
 

@@ -4,34 +4,58 @@ import { UserIdentity } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
 import { repoFactory } from '../../core/db/repo-factory'
+import { identityContact } from '../../helper/identity-contact'
 import { passwordHasher } from '../lib/password-hasher'
 import { UserIdentityEntity } from './user-identity-entity'
 
 export const userIdentityRepository = repoFactory(UserIdentityEntity)
 
 export const userIdentityService = (log: FastifyBaseLogger) => ({
-    async create(params: Pick<UserIdentity, 'email' | 'password' | 'firstName' | 'lastName' | 'trackEvents' | 'newsLetter' | 'provider' | 'verified'> & { imageUrl?: string }): Promise<UserIdentity> {
+    async create(params: CreateIdentityParams): Promise<UserIdentity> {
+        const cleanedEmail = isNil(params.email) ? null : params.email.toLowerCase().trim()
+        const cleanedPhone = isNil(params.phone) ? null : params.phone.trim()
         log.info({
-            email: params.email,
+            email: cleanedEmail,
+            phone: isNil(cleanedPhone) ? null : maskPhone({ phone: cleanedPhone }),
         }, 'Creating user identity')
 
-        const cleanedEmail = params.email.toLowerCase().trim()
         const hashedPassword = await passwordHasher.hash(params.password)
-        const userByEmail = await userIdentityRepository().findOne({ where: { email: cleanedEmail } })
-        if (userByEmail) {
-            throw new ApplicationError({
-                code: ErrorCode.EXISTING_USER,
-                params: {
-                    email: cleanedEmail,
-                    tenantId: null,
-                },
-            })
+        if (!isNil(cleanedEmail)) {
+            const userByEmail = await userIdentityRepository().findOne({ where: { email: cleanedEmail } })
+            if (userByEmail) {
+                throw new ApplicationError({
+                    code: ErrorCode.EXISTING_USER,
+                    params: {
+                        email: cleanedEmail,
+                        tenantId: null,
+                    },
+                })
+            }
+        }
+        if (!isNil(cleanedPhone)) {
+            const userByPhone = await userIdentityRepository().findOne({ where: { phone: cleanedPhone } })
+            if (userByPhone) {
+                throw new ApplicationError({
+                    code: ErrorCode.EXISTING_USER,
+                    params: {
+                        email: cleanedPhone,
+                        tenantId: null,
+                    },
+                })
+            }
         }
         const newUserIdentity: UserIdentity = {
             firstName: params.firstName,
             lastName: params.lastName,
             provider: params.provider,
             email: cleanedEmail,
+            contactEmail: isNil(params.contactEmail) ? null : params.contactEmail.toLowerCase().trim(),
+            phone: cleanedPhone,
+            phoneVerified: params.phoneVerified ?? false,
+            mfaEnabled: false,
+            mfaSecret: null,
+            mfaRecoveryCodes: null,
+            instanceRole: null,
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             verified: params.verified,
@@ -57,7 +81,7 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
             throw new ApplicationError({
                 code: ErrorCode.EMAIL_IS_NOT_VERIFIED,
                 params: {
-                    email: userIdentity.email,
+                    email: identityContact.of(userIdentity),
                 },
             })
         }
@@ -74,6 +98,9 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
     async getIdentityByEmail(email: string): Promise<UserIdentity | null> {
         const cleanedEmail = email.toLowerCase().trim()
         return userIdentityRepository().findOneBy({ email: cleanedEmail })
+    },
+    async getByPhone(phone: string): Promise<UserIdentity | null> {
+        return userIdentityRepository().findOneBy({ phone: phone.trim() })
     },
     async getOneOrFail(params: GetOneOrFailParams): Promise<UserIdentity> {
         const userIdentity = await userIdentityRepository().findOneByOrFail({ id: params.id })
@@ -144,6 +171,30 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
             ...spreadIfDefined('password', params.password ? await passwordHasher.hash(params.password) : undefined),
         })
     },
+    async bindPhone({ id, phone }: BindPhoneParams): Promise<UserIdentity> {
+        await userIdentityRepository().update(id, { phone: phone.trim(), phoneVerified: true })
+        return this.getOneOrFail({ id })
+    },
+    async getMfaSecrets({ id }: GetMfaSecretsParams): Promise<MfaSecrets> {
+        const identity = await userIdentityRepository()
+            .createQueryBuilder('identity')
+            .addSelect(['identity.mfaSecret', 'identity.mfaRecoveryCodes'])
+            .where('identity.id = :id', { id })
+            .getOneOrFail()
+        return {
+            mfaSecret: identity.mfaSecret ?? null,
+            mfaRecoveryCodes: identity.mfaRecoveryCodes ?? [],
+        }
+    },
+    async enableMfa({ id, mfaSecret, mfaRecoveryCodes }: EnableMfaParams): Promise<void> {
+        await userIdentityRepository().update(id, { mfaEnabled: true, mfaSecret, mfaRecoveryCodes })
+    },
+    async setRecoveryCodes({ id, mfaRecoveryCodes }: SetRecoveryCodesParams): Promise<void> {
+        await userIdentityRepository().update(id, { mfaRecoveryCodes })
+    },
+    async disableMfa({ id }: GetMfaSecretsParams): Promise<void> {
+        await userIdentityRepository().update(id, { mfaEnabled: false, mfaSecret: null, mfaRecoveryCodes: null })
+    },
     async updateLastLoggedInTenantId({ id, lastLoggedInTenantId }: UpdateLastLoggedInTenantIdParams): Promise<void> {
         await userIdentityRepository().update(id, { lastLoggedInTenantId })
     },
@@ -153,6 +204,50 @@ export const userIdentityService = (log: FastifyBaseLogger) => ({
 async function getIdentityByEmail(email: string): Promise<UserIdentity | null> {
     const cleanedEmail = email.toLowerCase().trim()
     return userIdentityRepository().findOneBy({ email: cleanedEmail })
+}
+
+function maskPhone({ phone }: BindPhoneParamsWithoutId): string {
+    return phone.length <= 4 ? phone : `${phone.slice(0, 3)}****${phone.slice(-2)}`
+}
+
+export const phoneMasking = {
+    maskPhone,
+}
+
+type CreateIdentityParams = Pick<UserIdentity, 'password' | 'firstName' | 'lastName' | 'trackEvents' | 'newsLetter' | 'provider' | 'verified'> & {
+    email: string | null
+    contactEmail?: string | null
+    phone?: string | null
+    phoneVerified?: boolean
+    imageUrl?: string
+}
+
+type BindPhoneParamsWithoutId = {
+    phone: string
+}
+
+type BindPhoneParams = BindPhoneParamsWithoutId & {
+    id: string
+}
+
+type GetMfaSecretsParams = {
+    id: string
+}
+
+type MfaSecrets = {
+    mfaSecret: string | null
+    mfaRecoveryCodes: string[]
+}
+
+type EnableMfaParams = {
+    id: string
+    mfaSecret: string
+    mfaRecoveryCodes: string[]
+}
+
+type SetRecoveryCodesParams = {
+    id: string
+    mfaRecoveryCodes: string[]
 }
 
 type GetOneOrFailParams = {

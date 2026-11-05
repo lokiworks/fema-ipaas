@@ -5,6 +5,7 @@ import { FastifyInstance } from 'fastify'
 import jwt from 'jsonwebtoken'
 import { databaseConnection } from '../../../src/app/database/database-connection'
 import { generateMockToken } from '../../helpers/auth'
+import { captchaHelper } from '../../helpers/captcha'
 import { db } from '../../helpers/db'
 import { createMockConnection, createMockProject, createMockUserInvitation } from '../../helpers/mocks'
 import { createTestContext, TestContext } from '../../helpers/test-context'
@@ -49,8 +50,8 @@ describe('password policy', () => {
         const email = `invited-${generateId().toLowerCase()}@example.com`
         await db.save('user_invitation', { ...createMockUserInvitation({ email, tenantId: ctx.tenant.id, projectId: null, type: InvitationType.TENANT, status: InvitationStatus.ACCEPTED }), tenantRole: TenantRole.MEMBER, projectRoleId: null })
 
-        const tooShort = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-up', headers: { 'x-real-ip': nextIp() }, body: signUpBody({ email, password: 'only-12-chars' }) })
-        const longEnough = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-up', headers: { 'x-real-ip': nextIp() }, body: signUpBody({ email, password: 'this-is-long-enough' }) })
+        const tooShort = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-up', headers: { 'x-real-ip': nextIp() }, body: { ...signUpBody({ email, password: 'only-12-chars' }), captchaToken: await captchaHelper.solvedToken({ app }) } })
+        const longEnough = await app.inject({ method: 'POST', url: '/api/v1/authentication/sign-up', headers: { 'x-real-ip': nextIp() }, body: { ...signUpBody({ email, password: 'this-is-long-enough' }), captchaToken: await captchaHelper.solvedToken({ app }) } })
 
         expect(tooShort.statusCode).toBe(409)
         expect(tooShort.json().params.message).toContain('14')

@@ -35,6 +35,7 @@ import {
   SidebarGroupLabel,
   SidebarSeparator,
 } from '@/components/ui/sidebar-shadcn';
+import { operatorHooks } from '@/features/operator';
 import { tenantAccessHooks } from '@/features/tenant-access';
 import { useIsTenantAdmin } from '@/hooks/authorization-hooks';
 import { cn } from '@/lib/utils';
@@ -44,6 +45,7 @@ import { SidebarNavItem } from '../sidebar-nav-item';
 export function TenantSidebar({ className }: TenantSidebarProps) {
   const { pathname } = useLocation();
   const isTenantAdmin = useIsTenantAdmin();
+  const isOperator = operatorHooks.useIsOperator();
   const { data: myAccess } = tenantAccessHooks.useMyAccess();
   const pendingRequests = tenantAccessHooks.usePendingRequestCount();
 
@@ -157,11 +159,13 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
           to: '/tenant/infra/workers',
           label: t('Workers'),
           icon: ServerIcon,
+          operatorOnly: true,
         },
         {
           to: '/tenant/infra/health',
           label: t('Health'),
           icon: FileHeartIcon,
+          operatorOnly: true,
         },
         {
           to: '/tenant/infra/triggers',
@@ -177,6 +181,7 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
           to: '/tenant/infra/backup',
           label: t('Backup and restore'),
           icon: DatabaseBackupIcon,
+          operatorOnly: true,
         },
       ],
     },
@@ -209,7 +214,12 @@ export function TenantSidebar({ className }: TenantSidebarProps) {
       ],
     },
   ];
-  const allGroups = isConnectorsModule ? connectorGroups : adminGroups;
+  const allGroups = (isConnectorsModule ? connectorGroups : adminGroups)
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.operatorOnly || isOperator),
+    }))
+    .filter((group) => group.items.length > 0);
   const groups = isTenantAdmin
     ? allGroups
     : allGroups
@@ -297,6 +307,7 @@ type SidebarGroupConfig = {
     icon?: ComponentType<{ className?: string }>;
     badge?: string;
     module?: TenantModule;
+    operatorOnly?: boolean;
   }[];
 };
 

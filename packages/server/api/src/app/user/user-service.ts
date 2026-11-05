@@ -8,11 +8,13 @@ import { signupNames } from '../authentication/lib/signup-names'
 import { userIdentityRepository, userIdentityService } from '../authentication/user-identity/user-identity-service'
 import { repoFactory } from '../core/db/repo-factory'
 import { transaction } from '../core/db/transaction'
+import { identityContact } from '../helper/identity-contact'
 import { buildPaginator } from '../helper/pagination/build-paginator'
 import { paginationHelper } from '../helper/pagination/pagination-utils'
 import { projectAccessRequestSideEffects } from '../project/project-access-request-side-effects'
 import { projectService } from '../project/project-service'
 import { projectSideEffects } from '../project/project-side-effects'
+import { tenantLimitsService } from '../tenant/tenant-limits.service'
 import { tenantService } from '../tenant/tenant.service'
 import { UserEntity, UserSchema } from './user-entity'
 
@@ -22,6 +24,9 @@ export const userRepo = repoFactory(UserEntity)
 export const userService = (log: FastifyBaseLogger) => ({
     async create(params: CreateParams): Promise<User> {
         const isActive = params.isActive ?? true
+        if (isActive && !isNil(params.tenantId)) {
+            await tenantLimitsService(log).assertCanAddUser({ tenantId: params.tenantId })
+        }
         const user: NewUser = {
             id: generateId(),
             identityId: params.identityId,
@@ -224,10 +229,11 @@ export const userService = (log: FastifyBaseLogger) => ({
     },
     async getMetaInformation({ id }: IdParams): Promise<UserWithMetaInformation> {
         const user = await userRepo().findOneByOrFail({ id })
-        const identity = await userIdentityService(log).getBasicInformation(user.identityId)
+        const identity = await userIdentityService(log).getOneOrFail({ id: user.identityId })
         return {
             id: user.id,
-            email: identity.email,
+            email: identityContact.of(identity),
+            instanceRole: identity.instanceRole ?? null,
             firstName: identity.firstName,
             lastName: identity.lastName,
             tenantId: user.tenantId,

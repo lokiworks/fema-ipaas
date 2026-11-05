@@ -493,6 +493,15 @@ function summarize({
     case ApplicationEventName.WORKER_STATE_CHANGED:
     case ApplicationEventName.AUDIT_LOG_EXPORTED:
     case ApplicationEventName.PROJECT_LIMITS_UPDATED:
+    case ApplicationEventName.OPERATOR_TENANT_CREATED:
+    case ApplicationEventName.OPERATOR_TENANT_UPDATED:
+    case ApplicationEventName.OPERATOR_TENANT_STATUS_CHANGED:
+    case ApplicationEventName.OPERATOR_INSTANCE_OPERATOR_CHANGED:
+    case ApplicationEventName.OPERATOR_INSTANCE_SETTINGS_UPDATED:
+    case ApplicationEventName.OPERATOR_PLATFORM_CLIENT_CHANGED:
+    case ApplicationEventName.PLATFORM_API_CALLED:
+    case ApplicationEventName.TENANT_DOMAIN_CHANGED:
+    case ApplicationEventName.TENANT_SLUG_CHANGED:
       return event.data.detail
         ? `${event.data.target} · ${event.data.detail}`
         : event.data.target;
@@ -826,6 +835,24 @@ function withReason({
 }
 
 const ACTION_LABELS: Record<ApplicationEventName, () => string> = {
+  [ApplicationEventName.OPERATOR_TENANT_CREATED]: () =>
+    t('auditActionOperatorTenantCreated'),
+  [ApplicationEventName.OPERATOR_TENANT_UPDATED]: () =>
+    t('auditActionOperatorTenantUpdated'),
+  [ApplicationEventName.OPERATOR_TENANT_STATUS_CHANGED]: () =>
+    t('auditActionOperatorTenantStatus'),
+  [ApplicationEventName.OPERATOR_INSTANCE_OPERATOR_CHANGED]: () =>
+    t('auditActionOperatorOperatorChanged'),
+  [ApplicationEventName.OPERATOR_INSTANCE_SETTINGS_UPDATED]: () =>
+    t('auditActionOperatorInstanceSettings'),
+  [ApplicationEventName.OPERATOR_PLATFORM_CLIENT_CHANGED]: () =>
+    t('auditActionOperatorPlatformClient'),
+  [ApplicationEventName.PLATFORM_API_CALLED]: () =>
+    t('auditActionPlatformApiCalled'),
+  [ApplicationEventName.TENANT_DOMAIN_CHANGED]: () =>
+    t('auditActionTenantDomainChanged'),
+  [ApplicationEventName.TENANT_SLUG_CHANGED]: () =>
+    t('auditActionTenantSlugChanged'),
   [ApplicationEventName.WORKFLOW_CREATED]: () =>
     t('auditActionWorkflowCreated'),
   [ApplicationEventName.WORKFLOW_DELETED]: () =>

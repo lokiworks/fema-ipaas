@@ -2,7 +2,7 @@ import { EncryptionKeyStatus, PrincipalType } from '@fema-ipaas/shared'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { encryptionRotationService, RotationReport } from '../../../helper/encryption-rotation.service'
-import { tenantUtils } from '../../../tenant/tenant.utils'
+import { instanceOperator } from '../../../operator/instance-operator'
 import { securityAccess } from '../authorization/fastify-security'
 import { encryptionStatusService } from './encryption-status.service'
 
@@ -12,7 +12,7 @@ export const encryptionController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.post('/rotate', RotateKeyRequest, async (request): Promise<RotationReport> => {
-        await tenantUtils.assertPrimaryTenant({ request })
+        await instanceOperator.assert({ request })
         const report = await encryptionRotationService(request.log).rotate()
         await encryptionStatusService(request.log).recordReencryption()
         return report

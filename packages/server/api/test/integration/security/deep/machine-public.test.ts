@@ -4,6 +4,7 @@ import { FastifyInstance } from 'fastify'
 import { connectorCache } from '../../../../src/app/connectors/metadata/connector-cache'
 import { flagService } from '../../../../src/app/flags/flag.service'
 import { generateMockToken } from '../../../helpers/auth'
+import { captchaHelper } from '../../../helpers/captcha'
 import { db } from '../../../helpers/db'
 import { createMockConnectorMetadata, createMockWorkflowVersion } from '../../../helpers/mocks'
 import { setupTestEnvironment } from '../../../helpers/test-setup'
@@ -138,7 +139,7 @@ describe('sign up and sign in', () => {
 
         const response = await w.send({
             identity: 'anonymous',
-            request: { method: 'POST', url: '/v1/authentication/sign-up', body: { email, password: 'Sup3r-secret-pass!', firstName: 'a', lastName: 'b', trackEvents: false, newsLetter: false } },
+            request: { method: 'POST', url: '/v1/authentication/sign-up', body: { email, password: 'Sup3r-secret-pass!', firstName: 'a', lastName: 'b', trackEvents: false, newsLetter: false, captchaToken: await captchaHelper.solvedToken({ app }) } },
         })
 
         expect(response.status).toBe(403)

@@ -16,6 +16,7 @@ import { encryptUtils } from '../helper/encryption'
 import { savedOverrides } from '../helper/system/saved-overrides'
 import { system } from '../helper/system/system'
 import { AppSystemProp, SystemProp } from '../helper/system/system-props'
+import { instanceScope } from '../operator/instance-scope'
 import { tenantService } from '../tenant/tenant.service'
 import { userService } from '../user/user-service'
 import { ServiceSettingEntity, ServiceSettingSchema } from './service-setting.entity'
@@ -93,12 +94,12 @@ export const serviceSettingsService = (log: FastifyBaseLogger) => ({
     },
 
     async sync(): Promise<void> {
-        const primary = await tenantService(log).getOldestTenant()
-        if (isNil(primary)) {
+        const anchorTenantId = await instanceScope.tenantId()
+        if (isNil(anchorTenantId)) {
             savedOverrides.replace({ values: new Map() })
             return
         }
-        const rows = await serviceSettingRepo().findBy({ tenantId: primary.id })
+        const rows = await serviceSettingRepo().findBy({ tenantId: anchorTenantId })
         const entries = await Promise.all(rows.filter((row) => !isLocked({ kind: row.kind })).map((row) => overlayOf({ row, log })))
         savedOverrides.replace({ values: new Map(entries.flat()) })
     },

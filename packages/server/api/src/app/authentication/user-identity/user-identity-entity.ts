@@ -8,8 +8,40 @@ export const UserIdentityEntity = new EntitySchema<UserIdentity>({
         ...BaseColumnSchemaPart,
         email: {
             type: String,
-            nullable: false,
+            nullable: true,
             unique: true,
+        },
+        contactEmail: {
+            type: String,
+            nullable: true,
+        },
+        phone: {
+            type: String,
+            nullable: true,
+        },
+        phoneVerified: {
+            type: Boolean,
+            nullable: false,
+            default: false,
+        },
+        mfaEnabled: {
+            type: Boolean,
+            nullable: false,
+            default: false,
+        },
+        mfaSecret: {
+            type: String,
+            nullable: true,
+            select: false,
+        },
+        mfaRecoveryCodes: {
+            type: 'jsonb',
+            nullable: true,
+            select: false,
+        },
+        instanceRole: {
+            type: String,
+            nullable: true,
         },
         password: {
             type: String,
@@ -57,6 +89,12 @@ export const UserIdentityEntity = new EntitySchema<UserIdentity>({
             name: 'idx_user_identity_email',
             columns: ['email'],
             unique: true,
+        },
+        {
+            name: 'idx_user_identity_phone',
+            columns: ['phone'],
+            unique: true,
+            where: '"phone" IS NOT NULL',
         },
     ],
 })

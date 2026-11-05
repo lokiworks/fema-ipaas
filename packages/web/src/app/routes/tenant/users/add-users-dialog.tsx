@@ -84,7 +84,8 @@ function AddUsersForm({
     mode: 'onChange',
     defaultValues: addUsersDefaults(),
   });
-  const emails = tenantAccessUtils.parseEmails(form.watch('emails'));
+  const contacts = tenantAccessUtils.parseContacts(form.watch('emails'));
+  const recipientCount = contacts.emails.length + contacts.phones.length;
 
   if (result) {
     return <InviteResult result={result} onDone={() => onOpenChange(false)} />;
@@ -97,7 +98,8 @@ function AddUsersForm({
         onSubmit={form.handleSubmit((values) =>
           invite(
             {
-              emails: tenantAccessUtils.parseEmails(values.emails),
+              emails: tenantAccessUtils.parseContacts(values.emails).emails,
+              phones: tenantAccessUtils.parseContacts(values.emails).phones,
               tenantRole: values.tenantRole,
               modules: values.modules,
             },
@@ -118,7 +120,7 @@ function AddUsersForm({
           name="emails"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{t('Email addresses')}</FormLabel>
+              <FormLabel>{t('Email addresses or mobile numbers')}</FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
@@ -131,24 +133,31 @@ function AddUsersForm({
                 />
               </FormControl>
               <FormDescription>
-                {t('One per line, or separated by commas')}
+                {t(
+                  'One per line, or separated by commas. Mobile numbers without a country code are taken as mainland China.',
+                )}
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        {emails.length > 0 && (
+        {recipientCount + contacts.invalid.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {emails.map((email) => (
-              <Badge
-                key={email}
-                variant={
-                  tenantAccessUtils.isEmail(email) ? 'outline' : 'destructive'
-                }
-              >
+            {contacts.emails.map((email) => (
+              <Badge key={email} variant="outline">
                 {email}
                 {tenantAccessUtils.isExternalEmail({ email, homeDomains }) &&
                   ` · ${t('External')}`}
+              </Badge>
+            ))}
+            {contacts.phones.map((phone) => (
+              <Badge key={phone} variant="outline">
+                {phone}
+              </Badge>
+            ))}
+            {contacts.invalid.map((value) => (
+              <Badge key={value} variant="destructive">
+                {value}
               </Badge>
             ))}
           </div>
@@ -211,7 +220,7 @@ function AddUsersForm({
             {t('Cancel')}
           </Button>
           <Button type="submit" loading={isPending}>
-            {t('addMembersCount', { count: emails.length })}
+            {t('addMembersCount', { count: recipientCount })}
           </Button>
         </DialogFooter>
       </form>
@@ -242,8 +251,11 @@ function InviteResult({
       </DialogHeader>
       {!result.emailSent &&
         result.invited.map((invite) => (
-          <div key={invite.email} className="flex flex-col gap-1">
-            <span className="text-sm">{invite.email}</span>
+          <div
+            key={invite.email || invite.phone || ''}
+            className="flex flex-col gap-1"
+          >
+            <span className="text-sm">{invite.email || invite.phone}</span>
             {invite.link && (
               <CopyToClipboardInput textToCopy={invite.link} useInput={true} />
             )}
@@ -273,20 +285,20 @@ const INVITABLE_ROLES = [
 const AddUsersFormSchema = z.object({
   emails: z
     .string()
+    .refine((value) => {
+      const contacts = tenantAccessUtils.parseContacts(value);
+      return contacts.emails.length + contacts.phones.length > 0;
+    }, formErrors.required)
+    .refine((value) => {
+      const contacts = tenantAccessUtils.parseContacts(value);
+      return (
+        contacts.emails.length + contacts.phones.length <=
+        TENANT_ACCESS_LIMITS.maxUsersPerBatch
+      );
+    }, 'atMostTenUsers')
     .refine(
-      (value) => tenantAccessUtils.parseEmails(value).length > 0,
-      formErrors.required,
-    )
-    .refine(
-      (value) =>
-        tenantAccessUtils.parseEmails(value).length <=
-        TENANT_ACCESS_LIMITS.maxUsersPerBatch,
-      'atMostTenUsers',
-    )
-    .refine(
-      (value) =>
-        tenantAccessUtils.parseEmails(value).every(tenantAccessUtils.isEmail),
-      'invalidEmail',
+      (value) => tenantAccessUtils.parseContacts(value).invalid.length === 0,
+      'invalidEmailOrPhone',
     ),
   tenantRole: z.enum([
     TenantRole.ADMIN,

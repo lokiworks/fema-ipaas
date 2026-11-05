@@ -91,6 +91,15 @@ export enum ApplicationEventName {
     MAPPING_TABLE_UPDATED = 'mapping_table.updated',
     MAPPING_TABLE_DELETED = 'mapping_table.deleted',
     SOLUTION_INSTALL_RECORD_REMOVED = 'solution.install_record.removed',
+    OPERATOR_TENANT_CREATED = 'operator.tenant.created',
+    OPERATOR_TENANT_UPDATED = 'operator.tenant.updated',
+    OPERATOR_TENANT_STATUS_CHANGED = 'operator.tenant.status.changed',
+    OPERATOR_INSTANCE_OPERATOR_CHANGED = 'operator.instance.operator.changed',
+    OPERATOR_INSTANCE_SETTINGS_UPDATED = 'operator.instance.settings.updated',
+    OPERATOR_PLATFORM_CLIENT_CHANGED = 'operator.platform.client.changed',
+    PLATFORM_API_CALLED = 'platform.api.called',
+    TENANT_DOMAIN_CHANGED = 'tenant.domain.changed',
+    TENANT_SLUG_CHANGED = 'tenant.slug.changed',
 }
 
 const BaseAuditEventProps = {
@@ -447,7 +456,7 @@ export type InvitationEvent = z.infer<typeof InvitationEvent>
 
 const AuthenticationEventData = z.object({
     user: UserMeta.optional(),
-    method: z.enum(['password', 'code', 'sso']).optional(),
+    method: z.enum(['password', 'code', 'sso', 'sms', 'mfa', 'tenant-selection']).optional(),
     provider: z.string().optional(),
 })
 
@@ -666,6 +675,15 @@ export const TenantAdminEvent = z.object({
         z.literal(ApplicationEventName.WORKER_STATE_CHANGED),
         z.literal(ApplicationEventName.AUDIT_LOG_EXPORTED),
         z.literal(ApplicationEventName.PROJECT_LIMITS_UPDATED),
+        z.literal(ApplicationEventName.OPERATOR_TENANT_CREATED),
+        z.literal(ApplicationEventName.OPERATOR_TENANT_UPDATED),
+        z.literal(ApplicationEventName.OPERATOR_TENANT_STATUS_CHANGED),
+        z.literal(ApplicationEventName.OPERATOR_INSTANCE_OPERATOR_CHANGED),
+        z.literal(ApplicationEventName.OPERATOR_INSTANCE_SETTINGS_UPDATED),
+        z.literal(ApplicationEventName.OPERATOR_PLATFORM_CLIENT_CHANGED),
+        z.literal(ApplicationEventName.PLATFORM_API_CALLED),
+        z.literal(ApplicationEventName.TENANT_DOMAIN_CHANGED),
+        z.literal(ApplicationEventName.TENANT_SLUG_CHANGED),
     ]),
     data: z.object({
         target: z.string(),
@@ -933,6 +951,15 @@ export function summarizeApplicationEvent(event: ApplicationEvent) {
         case ApplicationEventName.WORKER_STATE_CHANGED:
         case ApplicationEventName.AUDIT_LOG_EXPORTED:
         case ApplicationEventName.PROJECT_LIMITS_UPDATED:
+        case ApplicationEventName.OPERATOR_TENANT_CREATED:
+        case ApplicationEventName.OPERATOR_TENANT_UPDATED:
+        case ApplicationEventName.OPERATOR_TENANT_STATUS_CHANGED:
+        case ApplicationEventName.OPERATOR_INSTANCE_OPERATOR_CHANGED:
+        case ApplicationEventName.OPERATOR_INSTANCE_SETTINGS_UPDATED:
+        case ApplicationEventName.OPERATOR_PLATFORM_CLIENT_CHANGED:
+        case ApplicationEventName.PLATFORM_API_CALLED:
+        case ApplicationEventName.TENANT_DOMAIN_CHANGED:
+        case ApplicationEventName.TENANT_SLUG_CHANGED:
             return isNil(event.data.detail) ? event.data.target : `${event.data.target}: ${event.data.detail}`
         case ApplicationEventName.DATA_STORE_CREATED:
             return `Data store "${event.data.dataStore.name}" was created`

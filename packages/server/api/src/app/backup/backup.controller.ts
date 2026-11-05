@@ -3,25 +3,26 @@ import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { StatusCodes } from 'http-status-codes'
 import { z } from 'zod'
 import { securityAccess } from '../core/security/authorization/fastify-security'
-import { tenantUtils } from '../tenant/tenant.utils'
+import { instanceOperator } from '../operator/instance-operator'
+import { instanceScope } from '../operator/instance-scope'
 import { backupService } from './backup.service'
 import { restorePrecheckService } from './restore-precheck.service'
 
 export const backupController: FastifyPluginAsyncZod = async (app) => {
     app.get('/overview', OverviewRequest, async (request): Promise<BackupOverview> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return backupService(request.log).getOverview({ tenantId: request.principal.tenant.id })
+        await instanceOperator.assert({ request })
+        return backupService(request.log).getOverview({ tenantId: await instanceScope.requireTenantId() })
     })
 
     app.get('/', ListRequest, async (request): Promise<BackupListItem[]> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return backupService(request.log).list({ tenantId: request.principal.tenant.id })
+        await instanceOperator.assert({ request })
+        return backupService(request.log).list({ tenantId: await instanceScope.requireTenantId() })
     })
 
     app.post('/', CreateRequest, async (request, reply) => {
-        await tenantUtils.assertPrimaryTenant({ request })
+        await instanceOperator.assert({ request })
         const record = await backupService(request.log).start({
-            tenantId: request.principal.tenant.id,
+            tenantId: await instanceScope.requireTenantId(),
             trigger: BackupTrigger.MANUAL,
             createdBy: request.principal.id,
             note: request.body.note,
@@ -30,23 +31,23 @@ export const backupController: FastifyPluginAsyncZod = async (app) => {
     })
 
     app.get('/settings', GetSettingsRequest, async (request): Promise<BackupSettings> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return backupService(request.log).getSettings({ tenantId: request.principal.tenant.id })
+        await instanceOperator.assert({ request })
+        return backupService(request.log).getSettings({ tenantId: await instanceScope.requireTenantId() })
     })
 
     app.post('/settings', UpdateSettingsRequest, async (request): Promise<BackupSettings> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return backupService(request.log).updateSettings({ tenantId: request.principal.tenant.id, request: request.body })
+        await instanceOperator.assert({ request })
+        return backupService(request.log).updateSettings({ tenantId: await instanceScope.requireTenantId(), request: request.body })
     })
 
     app.get('/:id/restore-precheck', PrecheckRequest, async (request): Promise<RestorePrecheck> => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        return restorePrecheckService(request.log).run({ tenantId: request.principal.tenant.id, id: request.params.id })
+        await instanceOperator.assert({ request })
+        return restorePrecheckService(request.log).run({ tenantId: await instanceScope.requireTenantId(), id: request.params.id })
     })
 
     app.delete('/:id', DeleteRequest, async (request, reply) => {
-        await tenantUtils.assertPrimaryTenant({ request })
-        await backupService(request.log).remove({ tenantId: request.principal.tenant.id, id: request.params.id })
+        await instanceOperator.assert({ request })
+        await backupService(request.log).remove({ tenantId: await instanceScope.requireTenantId(), id: request.params.id })
         await reply.status(StatusCodes.NO_CONTENT).send()
     })
 }

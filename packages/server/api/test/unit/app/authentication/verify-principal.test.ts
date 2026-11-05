@@ -26,6 +26,12 @@ vi.mock('../../../../src/app/authentication/user-identity/user-identity-service'
     }),
 }))
 
+vi.mock('../../../../src/app/authentication/lib/tenant-lookup', () => ({
+    tenantLookup: {
+        assertActive: vi.fn().mockResolvedValue(undefined),
+    },
+}))
+
 const revoked = vi.hoisted(() => new Set<string>())
 
 vi.mock('../../../../src/app/authentication/lib/session-revocation', () => ({

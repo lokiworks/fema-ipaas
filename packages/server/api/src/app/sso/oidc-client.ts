@@ -31,12 +31,13 @@ async function discover({ issuer, forceRefresh = false }: DiscoverParams): Promi
         jwksUri: parsed.data.jwks_uri,
         userinfoEndpoint: parsed.data.userinfo_endpoint ?? null,
         tokenAuthMethods: parsed.data.token_endpoint_auth_methods_supported ?? ['client_secret_basic'],
+        scopesSupported: parsed.data.scopes_supported ?? [],
     }
     discoveryCache.set(issuer, { discovery, expiresAt: Date.now() + CACHE_TTL_MS })
     return discovery
 }
 
-function buildAuthorizationUrl({ discovery, clientId, redirectUri, scopes, state, nonce, codeVerifier }: BuildAuthorizationUrlParams): string {
+function buildAuthorizationUrl({ discovery, clientId, redirectUri, scopes, state, nonce, codeVerifier, extraParams }: BuildAuthorizationUrlParams): string {
     const url = new URL(discovery.authorizationEndpoint)
     url.searchParams.set('response_type', 'code')
     url.searchParams.set('client_id', clientId)
@@ -46,16 +47,60 @@ function buildAuthorizationUrl({ discovery, clientId, redirectUri, scopes, state
     url.searchParams.set('nonce', nonce)
     url.searchParams.set('code_challenge', challengeFor(codeVerifier))
     url.searchParams.set('code_challenge_method', 'S256')
+    Object.entries(extraParams ?? {})
+        .filter(([key]) => !RESERVED_AUTHORIZATION_PARAMS.includes(key))
+        .forEach(([key, value]) => url.searchParams.set(key, value))
     return url.toString()
 }
 
 async function exchangeCode({ discovery, clientId, clientSecret, code, redirectUri, codeVerifier }: ExchangeCodeParams): Promise<OidcTokens> {
+    const request = buildTokenRequest({
+        discovery,
+        clientId,
+        clientSecret,
+        params: { grant_type: 'authorization_code', code, redirect_uri: redirectUri, code_verifier: codeVerifier },
+    })
+    try {
+        const response = await safeHttp.axios.post<unknown>(discovery.tokenEndpoint, request.body, { headers: request.headers, timeout: HTTP_TIMEOUT_MS, maxRedirects: 0 })
+        const parsed = TokenResponse.safeParse(response.data)
+        if (!parsed.success) {
+            throw new SsoLoginError({ code: SsoLoginErrorCode.TOKEN_INVALID, detail: 'The token endpoint returned no id_token' })
+        }
+        return { idToken: parsed.data.id_token, accessToken: parsed.data.access_token ?? null, refreshToken: parsed.data.refresh_token ?? null }
+    }
+    catch (error) {
+        throw mapTokenEndpointError(error)
+    }
+}
+
+async function refresh({ discovery, clientId, clientSecret, refreshToken }: RefreshParams): Promise<RefreshOutcome> {
+    const request = buildTokenRequest({
+        discovery,
+        clientId,
+        clientSecret,
+        params: { grant_type: 'refresh_token', refresh_token: refreshToken },
+    })
+    try {
+        const response = await safeHttp.axios.post<unknown>(discovery.tokenEndpoint, request.body, { headers: request.headers, timeout: HTTP_TIMEOUT_MS, maxRedirects: 0 })
+        const parsed = RefreshResponse.safeParse(response.data)
+        return { outcome: 'ok', refreshToken: parsed.success ? (parsed.data.refresh_token ?? null) : null }
+    }
+    catch (error) {
+        if (isAxiosError(error) && !isNil(error.response)) {
+            const body: unknown = error.response.data
+            if (error.response.status === 400 && isRecord(body) && body['error'] === 'invalid_grant') {
+                return { outcome: 'rejected' }
+            }
+            return { outcome: 'unavailable', detail: `The token endpoint answered HTTP ${error.response.status}` }
+        }
+        return { outcome: 'unavailable', detail: isAxiosError(error) ? error.message : 'unknown error' }
+    }
+}
+
+function buildTokenRequest({ discovery, clientId, clientSecret, params }: BuildTokenRequestParams): TokenRequest {
     const useBasic = discovery.tokenAuthMethods.includes('client_secret_basic') || !discovery.tokenAuthMethods.includes('client_secret_post')
     const form = new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-        code_verifier: codeVerifier,
+        ...params,
         ...(useBasic ? {} : { client_id: clientId, client_secret: clientSecret }),
     })
     const headers: Record<string, string> = {
@@ -63,17 +108,7 @@ async function exchangeCode({ discovery, clientId, clientSecret, code, redirectU
         accept: 'application/json',
         ...(useBasic ? { authorization: `Basic ${Buffer.from(`${encodeURIComponent(clientId)}:${encodeURIComponent(clientSecret)}`).toString('base64')}` } : {}),
     }
-    try {
-        const response = await safeHttp.axios.post<unknown>(discovery.tokenEndpoint, form.toString(), { headers, timeout: HTTP_TIMEOUT_MS, maxRedirects: 0 })
-        const parsed = TokenResponse.safeParse(response.data)
-        if (!parsed.success) {
-            throw new SsoLoginError({ code: SsoLoginErrorCode.TOKEN_INVALID, detail: 'The token endpoint returned no id_token' })
-        }
-        return { idToken: parsed.data.id_token, accessToken: parsed.data.access_token ?? null }
-    }
-    catch (error) {
-        throw mapTokenEndpointError(error)
-    }
+    return { body: form.toString(), headers }
 }
 
 async function verifyIdToken({ idToken, discovery, clientId, nonce }: VerifyIdTokenParams): Promise<Record<string, unknown>> {
@@ -235,6 +270,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 const HTTP_TIMEOUT_MS = 10_000
 const CACHE_TTL_MS = 5 * 60 * 1000
 const CLOCK_TOLERANCE_SECONDS = 60
+const RESERVED_AUTHORIZATION_PARAMS = ['response_type', 'client_id', 'redirect_uri', 'scope', 'state', 'nonce', 'code_challenge', 'code_challenge_method']
 const ASYMMETRIC_ALGORITHMS: Algorithm[] = ['RS256', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512', 'ES256', 'ES384', 'ES512']
 
 const discoveryCache = new Map<string, { discovery: OidcDiscovery, expiresAt: number }>()
@@ -249,11 +285,17 @@ const DiscoveryDocument = z.object({
     jwks_uri: httpEndpoint,
     userinfo_endpoint: httpEndpoint.optional(),
     token_endpoint_auth_methods_supported: z.array(z.string()).optional(),
+    scopes_supported: z.array(z.string()).optional(),
 })
 
 const TokenResponse = z.object({
     id_token: z.string(),
     access_token: z.string().optional(),
+    refresh_token: z.string().optional(),
+})
+
+const RefreshResponse = z.object({
+    refresh_token: z.string().optional(),
 })
 
 const Jwk = z.object({
@@ -271,6 +313,7 @@ export const oidcClient = {
     discover,
     buildAuthorizationUrl,
     exchangeCode,
+    refresh,
     verifyIdToken,
     fetchUserinfo,
     randomToken,
@@ -285,12 +328,19 @@ export type OidcDiscovery = {
     jwksUri: string
     userinfoEndpoint: string | null
     tokenAuthMethods: string[]
+    scopesSupported: string[]
 }
 
 export type OidcTokens = {
     idToken: string
     accessToken: string | null
+    refreshToken: string | null
 }
+
+export type RefreshOutcome =
+    | { outcome: 'ok', refreshToken: string | null }
+    | { outcome: 'rejected' }
+    | { outcome: 'unavailable', detail: string }
 
 type Jwk = z.infer<typeof Jwk>
 
@@ -307,6 +357,26 @@ type BuildAuthorizationUrlParams = {
     state: string
     nonce: string
     codeVerifier: string
+    extraParams?: Record<string, string>
+}
+
+type RefreshParams = {
+    discovery: OidcDiscovery
+    clientId: string
+    clientSecret: string
+    refreshToken: string
+}
+
+type BuildTokenRequestParams = {
+    discovery: OidcDiscovery
+    clientId: string
+    clientSecret: string
+    params: Record<string, string>
+}
+
+type TokenRequest = {
+    body: string
+    headers: Record<string, string>
 }
 
 type ExchangeCodeParams = {

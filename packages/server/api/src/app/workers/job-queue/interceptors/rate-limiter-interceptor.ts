@@ -1,21 +1,20 @@
 import { isNil, tryCatch } from '@fema-ipaas/core-utils'
 import { dayjsDuration } from '@fema-ipaas/server-utils'
 import { ExecuteWorkflowJobData, JOB_PRIORITY, JobData, RATE_LIMIT_PRIORITY, RunEnvironment, WorkerJobType } from '@fema-ipaas/shared'
+import { Job } from 'bullmq'
 import { FastifyBaseLogger } from 'fastify'
 import { getConcurrencyPoolSetKey } from '../../../database/redis/keys'
 import { distributedStore, redisConnections } from '../../../database/redis-connections'
 import { system } from '../../../helper/system/system'
 import { AppSystemProp } from '../../../helper/system/system-props'
 import { projectService } from '../../../project/project-service'
+import { tenantLimitsService } from '../../../tenant/tenant-limits.service'
 import { InterceptorResult, InterceptorVerdict, JobInterceptor } from '../job-interceptor'
 
 const RATE_LIMIT_WORKER_JOB_TYPES = [WorkerJobType.EXECUTE_WORKFLOW]
 const PROJECT_CONCURRENCY_TTL_SECONDS = 60
 
-function shouldContinue(jobData: JobData): jobData is ExecuteWorkflowJobData {
-    if (!system.getBoolean(AppSystemProp.PROJECT_RATE_LIMITER_ENABLED)) {
-        return false
-    }
+function isLimitableJob(jobData: JobData): jobData is ExecuteWorkflowJobData {
     if (!RATE_LIMIT_WORKER_JOB_TYPES.includes(jobData.jobType)) {
         return false
     }
@@ -24,6 +23,14 @@ function shouldContinue(jobData: JobData): jobData is ExecuteWorkflowJobData {
         return false
     }
     return true
+}
+
+function isProjectLimiterEnabled(): boolean {
+    return system.getBoolean(AppSystemProp.PROJECT_RATE_LIMITER_ENABLED) === true
+}
+
+function tenantPoolSetKey(tenantId: string): string {
+    return `tenant-quota:concurrency-pool:v1:${tenantId}`
 }
 
 function projectConcurrencyKey(projectId: string): string {
@@ -44,11 +51,25 @@ async function getMaxConcurrentJobs({ projectId, log }: { projectId: string, log
 }
 
 async function tryAcquireSlot({ jobId, jobData, log }: { jobId: string, jobData: ExecuteWorkflowJobData, log: FastifyBaseLogger }): Promise<boolean> {
-    const workflowTimeoutInMilliseconds = dayjsDuration(system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS), 'seconds').add(1, 'minute').asMilliseconds()
     const maxConcurrentJobs = await getMaxConcurrentJobs({ projectId: jobData.projectId, log })
-    const setKey = getConcurrencyPoolSetKey(jobData.projectId)
+    return acquireInPool({
+        setKey: getConcurrencyPoolSetKey(jobData.projectId),
+        member: `${jobData.projectId}:${jobId}`,
+        maxJobs: maxConcurrentJobs,
+    })
+}
+
+async function tryAcquireTenantSlot({ jobId, jobData, maxJobs }: { jobId: string, jobData: ExecuteWorkflowJobData, maxJobs: number }): Promise<boolean> {
+    return acquireInPool({
+        setKey: tenantPoolSetKey(jobData.tenantId),
+        member: `${jobData.projectId}:${jobId}`,
+        maxJobs,
+    })
+}
+
+async function acquireInPool({ setKey, member, maxJobs }: { setKey: string, member: string, maxJobs: number }): Promise<boolean> {
+    const workflowTimeoutInMilliseconds = dayjsDuration(system.getNumberOrThrow(AppSystemProp.WORKFLOW_TIMEOUT_SECONDS), 'seconds').add(1, 'minute').asMilliseconds()
     const currentTime = Date.now()
-    const member = `${jobData.projectId}:${jobId}`
     const redisConnection = await redisConnections.useExisting()
 
     const result = await redisConnection.eval(
@@ -80,7 +101,7 @@ return 0
         setKey,
         currentTime.toString(),
         workflowTimeoutInMilliseconds.toString(),
-        maxConcurrentJobs.toString(),
+        maxJobs.toString(),
         member,
     ) as number
 
@@ -88,8 +109,14 @@ return 0
 }
 
 async function releaseSlot({ jobId, jobData }: { jobId: string, jobData: ExecuteWorkflowJobData }): Promise<void> {
-    const setKey = getConcurrencyPoolSetKey(jobData.projectId)
-    const member = `${jobData.projectId}:${jobId}`
+    await releaseFromPool({ setKey: getConcurrencyPoolSetKey(jobData.projectId), member: `${jobData.projectId}:${jobId}` })
+}
+
+async function releaseTenantSlot({ jobId, jobData }: { jobId: string, jobData: ExecuteWorkflowJobData }): Promise<void> {
+    await releaseFromPool({ setKey: tenantPoolSetKey(jobData.tenantId), member: `${jobData.projectId}:${jobId}` })
+}
+
+async function releaseFromPool({ setKey, member }: { setKey: string, member: string }): Promise<void> {
     const redisConnection = await redisConnections.useExisting()
     await redisConnection.eval(
         `
@@ -106,30 +133,60 @@ return 1
 
 export const rateLimiterInterceptor: JobInterceptor = {
     async preDispatch({ jobId, jobData, job, log }): Promise<InterceptorResult> {
-        if (!shouldContinue(jobData)) {
+        if (!isLimitableJob(jobData)) {
             return { verdict: InterceptorVerdict.ALLOW }
         }
 
-        const allowed = await tryAcquireSlot({ jobId, jobData, log })
-        if (allowed) {
-            log.debug({ job: { id: jobId }, project: { id: jobData.projectId } }, '[rateLimiterInterceptor] Job allowed')
-            return { verdict: InterceptorVerdict.ALLOW }
+        const projectLimiterEnabled = isProjectLimiterEnabled()
+        const projectAllowed = !projectLimiterEnabled || await tryAcquireSlot({ jobId, jobData, log })
+        if (!projectAllowed) {
+            return rejectJob({ jobId, jobData, job, log, dimension: 'project' })
         }
 
-        const delayInMs = Math.min(600_000, 20_000 * Math.pow(2, job.attemptsMade))
-        log.info({ job: { id: jobId }, project: { id: jobData.projectId }, delayInMs }, '[rateLimiterInterceptor] Job rate limited')
-        return {
-            verdict: InterceptorVerdict.REJECT,
-            delayInMs,
-            priority: JOB_PRIORITY[RATE_LIMIT_PRIORITY],
+        const tenantLimit = await tenantLimitsService(log).getConcurrentExecutionsLimit({ tenantId: jobData.tenantId })
+        if (!isNil(tenantLimit)) {
+            const tenantAllowed = await tryAcquireTenantSlot({ jobId, jobData, maxJobs: tenantLimit })
+            if (!tenantAllowed) {
+                if (projectLimiterEnabled) {
+                    await releaseSlot({ jobId, jobData })
+                }
+                return rejectJob({ jobId, jobData, job, log, dimension: 'tenant' })
+            }
         }
+
+        log.debug({ job: { id: jobId }, project: { id: jobData.projectId } }, '[rateLimiterInterceptor] Job allowed')
+        return { verdict: InterceptorVerdict.ALLOW }
     },
 
     async onJobFinished({ jobId, jobData, log }): Promise<void> {
-        if (!shouldContinue(jobData)) {
+        if (!isLimitableJob(jobData)) {
             return
         }
-        await releaseSlot({ jobId, jobData })
+        if (isProjectLimiterEnabled()) {
+            await releaseSlot({ jobId, jobData })
+        }
+        const tenantLimit = await tenantLimitsService(log).getConcurrentExecutionsLimit({ tenantId: jobData.tenantId })
+        if (!isNil(tenantLimit)) {
+            await releaseTenantSlot({ jobId, jobData })
+        }
         log.debug({ job: { id: jobId }, project: { id: jobData.projectId } }, '[rateLimiterInterceptor] Slot released')
     },
+}
+
+function rejectJob({ jobId, jobData, job, log, dimension }: RejectJobParams): InterceptorResult {
+    const delayInMs = Math.min(600_000, 20_000 * Math.pow(2, job.attemptsMade))
+    log.info({ job: { id: jobId }, project: { id: jobData.projectId }, tenant: { id: jobData.tenantId }, dimension, delayInMs }, '[rateLimiterInterceptor] Job rate limited')
+    return {
+        verdict: InterceptorVerdict.REJECT,
+        delayInMs,
+        priority: JOB_PRIORITY[RATE_LIMIT_PRIORITY],
+    }
+}
+
+type RejectJobParams = {
+    jobId: string
+    jobData: ExecuteWorkflowJobData
+    job: Job
+    log: FastifyBaseLogger
+    dimension: 'project' | 'tenant'
 }

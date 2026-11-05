@@ -1,6 +1,7 @@
 import { BaseModelSchema, DateOrString, EntityId, Nullable } from '@fema-ipaas/core-utils'
 import { z } from 'zod'
 import { FederatedAuthnProviderConfig, FederatedAuthnProviderConfigWithoutSensitiveData } from '../../core/federated-authn'
+import { TenantMfaPolicy, TenantStatus } from '../saas/tenancy'
 import { ModuleAccessSettings } from '../tenant-access'
 import { SsoDomainVerification } from './sso-domain-verification'
 
@@ -8,6 +9,7 @@ export const TenantLimits = z.object({
     usersLimit: Nullable(z.number()),
     projectsLimit: Nullable(z.number()),
     activeWorkflowsLimit: Nullable(z.number()),
+    concurrentExecutionsLimit: Nullable(z.number()),
     workerGroupId: Nullable(z.string()),
 })
 export type TenantLimits = z.infer<typeof TenantLimits>
@@ -71,6 +73,12 @@ export const Tenant = z.object({
     ...BaseModelSchema,
     ownerId: EntityId,
     name: z.string(),
+    slug: z.string(),
+    status: z.enum(TenantStatus),
+    externalIssuer: Nullable(z.string()),
+    externalTenantId: Nullable(z.string()),
+    mfaPolicy: z.enum(TenantMfaPolicy),
+    phoneAuthEnabled: z.boolean(),
     primaryColor: z.string(),
     themeColors: Nullable(TenantThemeColors),
     logoIconUrl: z.string(),
@@ -103,6 +111,12 @@ export const TenantWithoutSensitiveData = z.object({
     updated: DateOrString,
     ownerId: EntityId,
     name: z.string(),
+    slug: z.string(),
+    status: z.enum(TenantStatus),
+    externalIssuer: Nullable(z.string()),
+    externalTenantId: Nullable(z.string()),
+    mfaPolicy: z.enum(TenantMfaPolicy),
+    phoneAuthEnabled: z.boolean(),
     primaryColor: z.string(),
     themeColors: Nullable(TenantThemeColors),
     logoIconUrl: z.string(),

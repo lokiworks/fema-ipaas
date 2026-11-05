@@ -1,5 +1,5 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { DefaultProjectRole, PrincipalType, Project, ProjectType, Tenant, TenantRole, User } from '@fema-ipaas/shared'
+import { DefaultProjectRole, InstanceRole, PrincipalType, Project, ProjectType, Tenant, TenantRole, User } from '@fema-ipaas/shared'
 import { FastifyInstance, InjectOptions } from 'fastify'
 import { generateMockToken } from '../../../helpers/auth'
 import { db } from '../../../helpers/db'
@@ -37,6 +37,7 @@ async function buildActor({ identity, user, tenantId }: { identity: Identity, us
 
 async function buildWorld({ app }: { app: FastifyInstance }): Promise<World> {
     const tenantAdminContext = await createTestContext(app, { project: { type: ProjectType.TEAM }, tenant: { emailAuthEnabled: true } })
+    await db.update('user_identity', tenantAdminContext.userIdentity.id, { instanceRole: InstanceRole.OPERATOR })
     const foreignTenantContext = await createTestContext(app, { project: { type: ProjectType.TEAM }, tenant: { emailAuthEnabled: true } })
 
     const projectB: Project = createMockProject({ tenantId: tenantAdminContext.tenant.id, ownerId: tenantAdminContext.user.id, type: ProjectType.TEAM })

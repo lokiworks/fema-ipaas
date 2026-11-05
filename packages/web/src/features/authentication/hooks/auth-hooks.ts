@@ -1,5 +1,11 @@
 import {
   AuthenticationResponse,
+  MfaVerifyRequest,
+  RequestSmsCodeRequest,
+  SelectTenantRequest,
+  TenantDiscoveryRequestBody,
+  TenantDiscoveryResponse,
+  VerifySmsCodeRequest,
   CompleteSignUpRequest,
   CreateOtpRequestBody,
   RequestEmailCodeRequest,
@@ -120,6 +126,69 @@ export const authMutations = {
         authenticationApi.verifyEmail(request),
       onSuccess,
       onError,
+    });
+  },
+  useRequestSmsCode: ({
+    onSuccess,
+    onError,
+  }: {
+    onSuccess: () => void;
+    onError: (error: HttpError) => void;
+  }) => {
+    return useMutation<void, HttpError, RequestSmsCodeRequest>({
+      mutationFn: authenticationApi.requestSmsCode,
+      onSuccess,
+      onError,
+    });
+  },
+  useVerifySmsCode: ({
+    onSuccess,
+    onError,
+  }: {
+    onSuccess: (data: AuthenticationResponse) => void;
+    onError: (error: HttpError) => void;
+  }) => {
+    return useMutation<AuthenticationResponse, HttpError, VerifySmsCodeRequest>(
+      {
+        mutationFn: authenticationApi.verifySmsCode,
+        onSuccess,
+        onError,
+      },
+    );
+  },
+  useVerifyMfa: ({
+    onSuccess,
+    onError,
+  }: {
+    onSuccess: (data: AuthenticationResponse) => void;
+    onError: (error: HttpError) => void;
+  }) => {
+    return useMutation<AuthenticationResponse, HttpError, MfaVerifyRequest>({
+      mutationFn: authenticationApi.verifyMfa,
+      onSuccess,
+      onError,
+    });
+  },
+  useSelectTenant: ({
+    onSuccess,
+    onError,
+  }: {
+    onSuccess: (data: AuthenticationResponse) => void;
+    onError: (error: HttpError) => void;
+  }) => {
+    return useMutation<AuthenticationResponse, HttpError, SelectTenantRequest>({
+      mutationFn: authenticationApi.selectTenant,
+      onSuccess,
+      onError,
+    });
+  },
+  useDiscoverTenants: () => {
+    return useMutation<
+      TenantDiscoveryResponse,
+      HttpError,
+      TenantDiscoveryRequestBody
+    >({
+      mutationFn: authenticationApi.discoverTenants,
     });
   },
 };

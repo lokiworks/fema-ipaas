@@ -80,14 +80,14 @@ async function platform() {
     ctx.usageKey = (await issueApiKey({ token: ctx.admin.token, name: '只读用量', scopes: ['USAGE_READ'] })).secret
   })
 
-  await check('P2 平台接口拒绝：不带凭证 401、伪造密钥 401、缺少 TENANT_PROVISION 权限被拒', async () => {
+  await check('P2 平台接口拒绝：不带凭证 401、伪造密钥 401、缺少 TENANT_PROVISION 权限 403', async () => {
     const body = provisionBody({ tenant: TENANTS.alpha, owner: MEMBERS.aliceA, oidcClient: CLIENTS.oidcA, serviceClient: CLIENTS.serviceA })
     const anonymous = await provision({ apiKey: undefined, body })
     assert(anonymous.status === 401, `不带凭证应 401，实际 ${anonymous.status}`)
     const forged = await provision({ apiKey: 'fpk_forged.not-a-real-secret', body })
     assert(forged.status === 401, `伪造密钥应 401，实际 ${forged.status}`)
     const usageOnly = await provision({ apiKey: ctx.usageKey, body })
-    assert([401, 403].includes(usageOnly.status) && usageOnly.json?.code === 'PLATFORM_CLIENT_UNAUTHORIZED', `只有 USAGE_READ 的密钥开通应被拒（PLATFORM_CLIENT_UNAUTHORIZED），实际 ${usageOnly.status} ${usageOnly.text.slice(0, 200)}`)
+    assert(usageOnly.status === 403 && usageOnly.json?.code === 'AUTHORIZATION', `只有 USAGE_READ 的密钥开通应 403 AUTHORIZATION，实际 ${usageOnly.status} ${usageOnly.text.slice(0, 200)}`)
     const tenants = await api({ path: ROUTES.operatorTenants(), token: ctx.admin.token })
     assert((tenants.json?.data ?? []).length === 1, '被拒的调用不应建出租户')
   })

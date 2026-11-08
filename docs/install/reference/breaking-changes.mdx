@@ -48,6 +48,24 @@ first. Instances that already configured Cloudflare Turnstile keep using it.
 - If you run more than one tenant, update any sign-in links and API clients to name the tenant.
 - If scripts sign up users or request verification codes, add the captcha step.
 
+#### Tenants can be deleted, and a new `DELETING` status
+
+`DELETE /v1/platform/tenants/:id` marks a tenant `DELETING` and purges it in a background
+job. Tenant `status` can now be `ACTIVE`, `SUSPENDED` or `DELETING`. A deleting tenant is
+treated like a suspended one everywhere (sign-in, API keys, executions, webhooks), and it
+cannot be resumed, suspended or provisioned again under the same external reference until
+the purge has finished.
+
+Permanently deleting a project now also removes its remaining project-level records and the
+project's files in storage. Before, those records were left behind after the grace period.
+
+**When is action necessary?**
+
+- If API clients or scripts read tenant `status`, handle `DELETING`; do not assume a tenant
+  that is not `ACTIVE` is `SUSPENDED`.
+- If you relied on records of a permanently deleted project staying in the database, export
+  them before the project's grace period ends.
+
 #### Container database and cache defaults
 
 Containers without database or cache connection settings use PGlite and in-memory Redis.

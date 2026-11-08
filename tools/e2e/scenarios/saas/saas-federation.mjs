@@ -1,4 +1,4 @@
-import { createHmac, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 
 import { CLIENTS, MEMBERS, TENANTS, provisionBody, seedBody } from './saas-fixtures.mjs'
 import {
@@ -101,7 +101,9 @@ async function platform() {
     assert(result.ssoStartUrl, `开通了 OIDC 应返回 ssoStartUrl：${JSON.stringify(result)}`)
     assert(result.connections?.length === 1 && result.connections[0].externalId === 'fema', `应建出 1 条 fema 连接：${JSON.stringify(result.connections)}`)
     ctx.tenants.alpha = { ...result, name: TENANTS.alpha.name, code: TENANTS.alpha.code, connectionId: result.connections[0].connectionId }
-    await iam({ path: '/__control/tenants/update', body: { code: TENANTS.alpha.code, eventsUrl: absolute(result.eventsEndpoint) } })
+    assert(result.memberEvents?.subscriptionId && result.memberEvents.endpoint, `开通应为成员事件登记订阅：${JSON.stringify(result.memberEvents)}`)
+    assert(new URL(result.memberEvents.endpoint, API).pathname.endsWith(`/v1/federation/members/${result.tenantId}`), `成员事件推送地址不对：${result.memberEvents.endpoint}`)
+    await waitMemberSubscription({ subscriptionId: result.memberEvents.subscriptionId })
     const claims = (await iamState()).log.token.slice(before).filter((entry) => entry.grantType === 'client_credentials' && entry.clientId === CLIENTS.serviceA.clientId)
     assert(claims.length > 0, '开通时应以集成服务应用换一次票')
     assert(claims.every((entry) => entry.params.tenant === TENANTS.alpha.code), `换票请求应带 tenant=${TENANTS.alpha.code}：${JSON.stringify(claims.map((entry) => entry.params))}`)
@@ -129,9 +131,13 @@ async function platform() {
     assert(retried.status === 200 || retried.status === 201, `重试开通乙失败：${retried.status} ${retried.text.slice(0, 500)}`)
     ctx.tenants.beta = { ...retried.json, name: TENANTS.beta.name, code: TENANTS.beta.code, connectionId: retried.json.connections[0]?.connectionId }
     ctx.serviceBSecret = rotated.secret
-    await iam({ path: '/__control/tenants/update', body: { code: TENANTS.beta.code, eventsUrl: absolute(retried.json.eventsEndpoint) } })
+    assert(retried.json.memberEvents?.subscriptionId, `重试后应有成员事件订阅：${JSON.stringify(retried.json.memberEvents)}`)
+    await waitFor({ what: '乙的成员事件订阅通过验证', timeoutMs: 20000, probe: async () => (await iamState()).subscriptions.some((subscription) => subscription.id === retried.json.memberEvents.subscriptionId && subscription.activatedAt) })
     const again = await provision({ apiKey: ctx.provisionKey, body: provisionBody({ tenant: TENANTS.beta, owner: MEMBERS.bobB, oidcClient: CLIENTS.oidcB, serviceClient: CLIENTS.serviceB, serviceSecret: rotated.secret }) })
     assert(again.status < 300 && again.json.tenantId === ctx.tenants.beta.tenantId && again.json.connections[0].connectionId === ctx.tenants.beta.connectionId, '再次开通应取回同一个乙和同一条连接')
+    assert(again.json.memberEvents?.reused === true && again.json.memberEvents.subscriptionId === retried.json.memberEvents.subscriptionId, `再次开通应沿用已生效的成员事件订阅：${JSON.stringify(again.json.memberEvents)}`)
+    const betaSubscriptions = (await iamState()).subscriptions.filter((subscription) => subscription.tenant === TENANTS.beta.code && subscription.events.includes('iam-identity.member.remove'))
+    assert(betaSubscriptions.length === 1, `乙在 fema 只应有一条成员事件订阅，实际 ${betaSubscriptions.length}`)
     const tenants = (await api({ path: ROUTES.operatorTenants(), token: ctx.admin.token })).json?.data ?? []
     const betas = tenants.filter((tenant) => tenant.externalRef?.tenantId === TENANTS.beta.code)
     assert(betas.length === 1, `乙应只有 1 个租户，实际 ${betas.length}`)
@@ -286,55 +292,124 @@ async function crossTenant() {
 }
 
 async function removalByEvent() {
-  await check('R1 成员在 fema-iam 被移出（事件路径）：签名事件送达后会话立即失效，成员变为停用', async () => {
+  await check('R1 成员在 fema-iam 被停用（事件路径）：签名推送送达后读成员详情，会话立即失效；恢复正常后能再登录', async () => {
     await addPlatformMember({ apiKey: ctx.provisionKey, tenantId: ctx.tenants.alpha.tenantId, member: { subject: MEMBERS.erinA.id, firstName: 'Erin', role: 'MEMBER' } })
     const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'erin' })
     assert(login.ok, `Erin 登录失败：${login.code}\n${login.trail.join('\n')}`)
-    assert(await sessionAlive({ token: login.token }), '移出前会话应有效')
-    const removed = await iam({ path: '/__control/members/remove', body: { memberId: MEMBERS.erinA.id, notify: true } })
-    ctx.erinEventId = removed.delivered?.id
-    assert(removed.delivered?.status === 200, `联邦事件应被 iPaaS 接受：${JSON.stringify(removed.delivered)}`)
+    assert(await sessionAlive({ token: login.token }), '停用前会话应有效')
+    const suspended = await iam({ path: '/__control/members/suspend', body: { memberId: MEMBERS.erinA.id } })
+    assertDelivered({ result: suspended, what: '停用事件' })
+    ctx.erinSuspendEventId = suspended.event.id
     await waitFor({ what: 'Erin 的会话失效', timeoutMs: 30000, probe: async () => !(await sessionAlive({ token: login.token })) })
-    const members = await platformMembers({ apiKey: ctx.provisionKey, tenantId: ctx.tenants.alpha.tenantId })
-    const erin = members.find((member) => member.subject === MEMBERS.erinA.id)
-    assert(erin && erin.status !== 'ACTIVE', `Erin 应被停用：${JSON.stringify(erin)}`)
+    await waitMemberStatus({ subject: MEMBERS.erinA.id, active: false })
+    assert(memberReads({ state: await iamState(), subject: MEMBERS.erinA.id }) > 0, '收到推送后应读一次成员详情')
+    const activated = await iam({ path: '/__control/members/activate', body: { memberId: MEMBERS.erinA.id } })
+    assertDelivered({ result: activated, what: '恢复事件' })
+    await waitMemberStatus({ subject: MEMBERS.erinA.id, active: true })
     const again = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'erin' })
-    assert(!again.ok, '被移出的成员不应能再次登录')
+    assert(again.ok, `恢复后应能再登录：${again.code}`)
   })
 
-  await check('R2 联邦事件：签名不对的被拒且不生效，同一事件 id 重复送达按已处理返回', async () => {
-    const forged = await iam({ path: '/__control/federation/send', body: { tenant: TENANTS.alpha.code, type: 'MEMBER_REMOVED', subject: MEMBERS.aliceA.id, secret: 'not-the-signing-secret' } })
-    assert([400, 401, 403].includes(forged.delivered?.status), `签名不对的事件应被拒：${JSON.stringify(forged.delivered)}`)
-    assert(await sessionAlive({ token: ctx.sessions.alice.token }), '伪造的移出事件不应让甲属主掉线')
-    const unknownTenant = await iam({ path: '/__control/federation/send', body: { tenant: 't_unknown', type: 'MEMBER_REMOVED', subject: MEMBERS.aliceA.id, secret: TENANTS.alpha.eventSecret, url: absolute(ctx.tenants.alpha.eventsEndpoint) } })
-    assert(unknownTenant.delivered?.status >= 400, `外部租户对不上的事件应被拒：${JSON.stringify(unknownTenant.delivered)}`)
-    const crossSigned = await iam({ path: '/__control/federation/send', body: { tenant: TENANTS.alpha.code, type: 'MEMBER_REMOVED', subject: MEMBERS.aliceA.id, secret: TENANTS.beta.eventSecret } })
-    assert([400, 401, 403].includes(crossSigned.delivered?.status), `用乙的密钥签甲的事件应被拒：${JSON.stringify(crossSigned.delivered)}`)
-    assert(await sessionAlive({ token: ctx.sessions.alice.token }), '跨租户签名的事件不应生效')
-    if (ctx.erinEventId) {
-      const replay = await iam({ path: '/__control/federation/send', body: { tenant: TENANTS.alpha.code, type: 'MEMBER_REMOVED', subject: MEMBERS.erinA.id, id: ctx.erinEventId } })
-      assert(replay.delivered?.status === 200 && JSON.parse(replay.delivered.response).duplicate === true, `重复事件应按已处理返回：${JSON.stringify(replay.delivered)}`)
+  await check('R2 成员被移出（事件路径）：会话失效、不能再登录；fema 找回成员后自动恢复', async () => {
+    const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'erin' })
+    assert(login.ok, `Erin 登录失败：${login.code}`)
+    const removed = await iam({ path: '/__control/members/remove', body: { memberId: MEMBERS.erinA.id } })
+    assertDelivered({ result: removed, what: '移出事件' })
+    await waitFor({ what: 'Erin 的会话失效', timeoutMs: 30000, probe: async () => !(await sessionAlive({ token: login.token })) })
+    await waitMemberStatus({ subject: MEMBERS.erinA.id, active: false })
+    const blocked = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'erin' })
+    assert(!blocked.ok, '被移出的成员不应能登录')
+    const restored = await iam({ path: '/__control/members/restore', body: { memberId: MEMBERS.erinA.id } })
+    assertDelivered({ result: restored, what: '找回事件' })
+    await waitMemberStatus({ subject: MEMBERS.erinA.id, active: true })
+  })
+
+  await check('R3 乱序：成员当前是停用，却先收到「恢复」再收到「停用」——按读到的当前状态处理，始终停用', async () => {
+    await addPlatformMember({ apiKey: ctx.provisionKey, tenantId: ctx.tenants.alpha.tenantId, member: { subject: MEMBERS.hankA.id, firstName: 'Hank', role: 'MEMBER' } })
+    const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'hank' })
+    assert(login.ok, `Hank 登录失败：${login.code}`)
+    await iam({ path: '/__control/members/suspend', body: { memberId: MEMBERS.hankA.id, notify: false } })
+    const late = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'iam-identity.member.activate', object: { code: 'member', id: MEMBERS.hankA.id } } })
+    assertDelivered({ result: late, what: '迟到的恢复事件' })
+    await waitFor({ what: 'Hank 的会话因读到停用而失效', timeoutMs: 30000, probe: async () => !(await sessionAlive({ token: login.token })) })
+    const suspended = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'iam-identity.member.suspend', object: { code: 'member', id: MEMBERS.hankA.id } } })
+    assertDelivered({ result: suspended, what: '停用事件' })
+    await waitMemberStatus({ subject: MEMBERS.hankA.id, active: false })
+  })
+
+  await check('R4 签名错误、跨租户、重复事件：签名不对的不生效；同一事件 id 重复送达只处理一次', async () => {
+    const forged = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'iam-identity.member.suspend', object: { code: 'member', id: MEMBERS.aliceA.id }, tamper: true } })
+    assert(forged.deliveries.length === 1, '伪造推送应送达 iPaaS')
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    assert(await sessionAlive({ token: ctx.sessions.alice.token }), `签名不对的停用事件不应让甲属主掉线（iPaaS 应答 ${forged.deliveries[0].status}）`)
+    const raw = JSON.stringify({ id: `cross-${randomUUID()}`, type: 'iam-identity.member.suspend', tenantId: TENANTS.beta.code, occurredAt: new Date().toISOString(), object: { code: 'member', id: MEMBERS.aliceA.id } })
+    const foreign = await http({ method: 'POST', url: absolute(ctx.tenants.alpha.memberEvents.endpoint), body: raw, headers: { 'x-fema-signature': 'sha256=0000' } })
+    assert(foreign.status < 500, `跨租户的伪造推送不应让 iPaaS 出错：${foreign.status}`)
+    assert(await sessionAlive({ token: ctx.sessions.alice.token }), '跨租户推送不应生效')
+    const before = memberReads({ state: await iamState(), subject: MEMBERS.erinA.id })
+    const twice = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'iam-identity.member.restore', id: `dup-${randomUUID()}`, object: { code: 'member', id: MEMBERS.erinA.id }, times: 3 } })
+    assert(twice.deliveries.length === 3 && twice.deliveries.every((delivery) => delivery.status < 300), `重复送达都应被接受：${JSON.stringify(twice.deliveries.map((delivery) => delivery.status))}`)
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    const reads = memberReads({ state: await iamState(), subject: MEMBERS.erinA.id }) - before
+    assert(reads <= 1, `同一事件重复送达应只处理一次（读成员详情 ${reads} 次）`)
+  })
+
+  await check('R5a 成员在 fema 已查不到（find-by-id 返回 SUCCESS + data:null，或切到 404 NOT_FOUND）时按已移出处理，两种应答都停用', async () => {
+    for (const [member, username, mode] of [[MEMBERS.umaA, 'uma', 'null'], [MEMBERS.patA, 'pat', '404']]) {
+      const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username })
+      assert(login.ok, `${username} 登录失败：${login.code}`)
+      await iam({ path: '/__control/not-found-mode', body: { mode } })
+      try {
+        const removed = await iam({ path: '/__control/members/remove', body: { memberId: member.id, notify: false } })
+        assert(removed.member, '模拟服务里应有这个成员')
+        await iam({ path: '/__control/members/forget', body: { memberId: member.id } })
+        const pushed = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'iam-identity.member.remove', object: { code: 'member', id: member.id } } })
+        assertDelivered({ result: pushed, what: `${username} 的移出事件（${mode} 模式）` })
+        await waitFor({ what: `${username} 的会话失效（${mode} 模式）`, timeoutMs: 30000, probe: async () => !(await sessionAlive({ token: login.token })) })
+        await waitMemberStatus({ subject: member.id, active: false })
+      }
+      finally {
+        await iam({ path: '/__control/not-found-mode', body: { mode: 'null' } })
+      }
     }
-    const manual = signedFederationEvent({ secret: TENANTS.alpha.eventSecret, event: { id: `manual-${randomUUID()}`, type: 'MEMBER_RESTORED', issuer: ISSUER, externalTenantId: TENANTS.alpha.code, subject: MEMBERS.erinA.id, occurredAt: new Date().toISOString() } })
-    const tampered = await http({ method: 'POST', url: absolute(ctx.tenants.alpha.eventsEndpoint), body: manual.body.replace('MEMBER_RESTORED', 'MEMBER_REMOVED'), headers: { 'x-fema-signature': manual.signature } })
-    assert([400, 401, 403].includes(tampered.status), `签名后改过的请求体应被拒：${tampered.status}`)
+  })
+
+  await check('R5 管理员在 iPaaS 手动停用的成员，不会被 fema 的「恢复」事件重新启用', async () => {
+    await addPlatformMember({ apiKey: ctx.provisionKey, tenantId: ctx.tenants.alpha.tenantId, member: { subject: MEMBERS.ottoA.id, firstName: 'Otto', role: 'MEMBER' } })
+    const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'otto' })
+    assert(login.ok, `Otto 登录失败：${login.code}`)
+    const disabled = await api({ method: 'POST', path: `/v1/tenant-access/members/${login.session.id}/disable`, token: ctx.sessions.alice.token })
+    assert(disabled.status === 200, `管理员停用失败：${disabled.status} ${disabled.text.slice(0, 200)}`)
+    const activated = await iam({ path: '/__control/members/activate', body: { memberId: MEMBERS.ottoA.id } })
+    assertDelivered({ result: activated, what: '恢复事件' })
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    const members = await platformMembers({ apiKey: ctx.provisionKey, tenantId: ctx.tenants.alpha.tenantId })
+    const otto = members.find((member) => member.subject === MEMBERS.ottoA.id)
+    assert(otto && otto.status !== 'ACTIVE', `管理员手动停用的不应被事件恢复：${JSON.stringify(otto)}`)
+    const relogin = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'otto' })
+    assert(!relogin.ok, '管理员手动停用的成员经 fema-iam 登录也不应恢复')
   })
 }
 
 async function removalByRecheck() {
-  await check('R3 成员被移出但没有事件（复核路径）：iPaaS 定期用刷新令牌复核，收到 invalid_grant 后会话失效', async () => {
+  await check('R6 成员被移出但没有事件（复核路径，开通时把复核间隔设为 5 分钟）：iPaaS 定期用刷新令牌复核，收到 invalid_grant 后会话失效', async () => {
     await addPlatformMember({ apiKey: ctx.provisionKey, tenantId: ctx.tenants.alpha.tenantId, member: { subject: MEMBERS.frankA.id, firstName: 'Frank', role: 'MEMBER' } })
     const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'frank' })
     assert(login.ok, `Frank 登录失败：${login.code}\n${login.trail.join('\n')}`)
-    const shortened = await shortenRecheck({ token: ctx.sessions.alice.token })
-    process.stdout.write(`      复核间隔：${shortened ? '已调为 5 分钟' : '未能调短，按默认 15 分钟'}\n`)
     await iam({ path: '/__control/members/remove', body: { memberId: MEMBERS.frankA.id, notify: false } })
     assert(await sessionAlive({ token: login.token }), '没有事件时会话暂时仍有效（等待复核）')
-    const timeoutMs = Number(process.env.SAAS_RECHECK_TIMEOUT_MS ?? (shortened ? 12 * 60 * 1000 : 22 * 60 * 1000))
+    const timeoutMs = Number(process.env.SAAS_RECHECK_TIMEOUT_MS ?? 12 * 60 * 1000)
     await waitFor({ what: 'Frank 的会话经复核失效', timeoutMs, intervalMs: 15000, probe: async () => !(await sessionAlive({ token: login.token })) })
     const refreshes = (await iamState()).log.token.filter((entry) => entry.grantType === 'refresh_token' && entry.memberId === MEMBERS.frankA.id)
     assert(refreshes.some((entry) => entry.error === 'invalid_grant'), `应看到对 Frank 的刷新复核并得到 invalid_grant：${JSON.stringify(refreshes)}`)
     assert(await sessionAlive({ token: ctx.sessions.alice.token }), '复核不应影响仍在租户里的成员')
+  })
+
+  await check('R7 因复核被停用的成员，在 fema 恢复后再次经 fema-iam 登录成功即恢复', async () => {
+    await iam({ path: '/__control/members/restore', body: { memberId: MEMBERS.frankA.id, notify: false } })
+    const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'frank' })
+    assert(login.ok, `复核停用后再次登录应成功并恢复：${login.code} ${login.detail ?? ''}`)
+    await waitMemberStatus({ subject: MEMBERS.frankA.id, active: true })
   })
 }
 
@@ -363,43 +438,32 @@ async function clientCredentialsToken({ client, tenant }) {
   return response.json.access_token
 }
 
-async function shortenRecheck({ token }) {
-  const settings = await api({ path: ROUTES.ssoAdmin, token })
-  const oidc = settings.json?.oidc
-  if (settings.status !== 200 || !oidc) {
-    return false
-  }
-  const saved = await api({
-    method: 'POST',
-    path: `${ROUTES.ssoAdmin}/oidc`,
-    token,
-    body: {
-      enabled: oidc.enabled,
-      displayName: oidc.displayName,
-      allowedDomains: oidc.allowedDomains,
-      autoCreateUsers: oidc.autoCreateUsers,
-      defaultRole: oidc.defaultRole,
-      roleMapping: oidc.roleMapping,
-      defaultProject: oidc.defaultProject,
-      issuer: oidc.issuer,
-      clientId: oidc.clientId,
-      scopes: oidc.scopes,
-      emailClaim: oidc.emailClaim,
-      requireVerifiedEmail: oidc.requireVerifiedEmail,
-      matchBy: oidc.matchBy,
-      extraAuthParams: oidc.extraAuthParams,
-      sessionRecheckMinutes: 5,
-    },
+async function waitMemberSubscription({ subscriptionId }) {
+  return waitFor({
+    what: `成员事件订阅 ${subscriptionId} 生效`,
+    timeoutMs: 30000,
+    probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.id === subscriptionId && subscription.status === 'ACTIVE'),
   })
-  if (saved.status !== 200) {
-    process.stdout.write(`      调短复核间隔失败：${saved.status} ${saved.text.slice(0, 200)}\n`)
-  }
-  return saved.status === 200
 }
 
-function signedFederationEvent({ secret, event }) {
-  const body = JSON.stringify(event)
-  return { body, signature: `sha256=${createHmac('sha256', secret).update(body).digest('hex')}` }
+async function waitMemberStatus({ subject, active }) {
+  return waitFor({
+    what: `成员 ${subject} 变为${active ? '在用' : '停用'}`,
+    timeoutMs: 30000,
+    probe: async () => {
+      const members = await platformMembers({ apiKey: ctx.provisionKey, tenantId: ctx.tenants.alpha.tenantId })
+      const member = members.find((entry) => entry.subject === subject)
+      return member && (member.status === 'ACTIVE') === active ? member : null
+    },
+  })
+}
+
+function assertDelivered({ result, what }) {
+  assert(result.deliveries?.length === 1 && result.deliveries[0].status < 300, `${what}应被 iPaaS 接受：${JSON.stringify(result.deliveries)}`)
+}
+
+function memberReads({ state, subject }) {
+  return state.log.api.filter((entry) => entry.path === 'iam-identity/member/find-by-id' && entry.id === subject).length
 }
 
 function absolute(url) {

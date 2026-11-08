@@ -9,6 +9,7 @@ const ISSUER = `${BASE}/iam`
 const API = `${BASE}/api`
 const SESSION_COOKIE = 'fema_iam_sid'
 const CODE_TTL_MS = 60_000
+const MEMBER_STATUS_NAMES = { PENDING: '待激活', ACTIVE: '正常', SUSPENDED: '停用', REMOVED: '已移出' }
 const ACCESS_TTL_SECONDS = Number(process.env.FEMA_IAM_ACCESS_TTL ?? 300)
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
@@ -30,8 +31,11 @@ function freshState() {
     subscriptions: new Map(),
     objects: new Map(),
     deniedEvents: new Set(),
+    withheldEvents: new Set(),
+    usedCodes: new Set(),
+    notFoundMode: 'null',
     faults: [],
-    log: { authorize: [], token: [], userinfo: [], federation: [], subscriptions: [], deliveries: [], api: [] },
+    log: { authorize: [], token: [], userinfo: [], subscriptions: [], deliveries: [], api: [] },
   }
 }
 
@@ -87,18 +91,36 @@ const ROUTES = {
   },
   'POST /__control/clients/rotate': ({ body }) => rotateClient({ body }),
   'POST /__control/tenants/update': ({ body }) => updateTenant({ body }),
-  'POST /__control/members/remove': ({ body }) => changeMembership({ body, removed: true }),
-  'POST /__control/members/restore': ({ body }) => changeMembership({ body, removed: false }),
-  'POST /__control/federation/send': ({ body }) => sendFederationEvent(body),
+  'POST /__control/members/suspend': ({ body }) => changeMembership({ body, status: 'SUSPENDED', ability: 'suspend' }),
+  'POST /__control/members/activate': ({ body }) => changeMembership({ body, status: 'ACTIVE', ability: 'activate' }),
+  'POST /__control/members/remove': ({ body }) => changeMembership({ body, status: 'REMOVED', ability: 'remove' }),
+  'POST /__control/members/restore': ({ body }) => changeMembership({ body, status: 'ACTIVE', ability: 'restore' }),
+  'POST /__control/members/forget': ({ body }) => {
+    const member = state.members.get(body.memberId)
+    state.members.delete(body.memberId)
+    return json({ payload: { ok: Boolean(member), member: member ?? null } })
+  },
+  'POST /api/webhook/subscription/find-one': ({ req, body }) => findSubscription({ req, body }),
   'POST /__control/objects': ({ body }) => putObject({ body }),
   'POST /__control/events/push': ({ body }) => pushBusinessEvent(body),
   'POST /__control/events/deny': ({ body }) => {
     state.deniedEvents = new Set(Array.isArray(body.events) ? body.events : [])
     return json({ payload: { ok: true } })
   },
+  'POST /__control/not-found-mode': ({ body }) => {
+    state.notFoundMode = body.mode === '404' ? '404' : 'null'
+    return json({ payload: { ok: true, mode: state.notFoundMode } })
+  },
+  'POST /__control/events/withhold': ({ body }) => {
+    state.withheldEvents = new Set(Array.isArray(body.events) ? body.events : [])
+    return json({ payload: { ok: true } })
+  },
 }
 
 function dynamicRoute({ method, pathname }) {
+  if (pathname === '/api/iam-identity/member/find-by-id' && method === 'GET') {
+    return ({ req, url }) => findMember({ req, id: url.searchParams.get('id') ?? '' })
+  }
   const read = pathname.match(/^\/api\/([a-z0-9-]+)\/([a-z0-9-]+)\/find-by-id$/)
   if (read && method === 'GET') {
     return ({ req, url }) => findById({ req, app: read[1], object: read[2], id: url.searchParams.get('id') ?? '' })
@@ -132,13 +154,13 @@ function seed({ body }) {
     resetState()
   }
   for (const tenant of body.tenants ?? []) {
-    state.tenants.set(tenant.code, { status: 'ACTIVE', eventSecret: null, eventsUrl: null, name: tenant.code, ...tenant })
+    state.tenants.set(tenant.code, { status: 'ACTIVE', name: tenant.code, ...tenant })
   }
   for (const person of body.persons ?? []) {
     state.persons.set(person.username, { password: 'Passw0rd!', name: person.username, email: null, emailVerified: false, phone: null, phoneVerified: false, ...person })
   }
   for (const member of body.members ?? []) {
-    state.members.set(member.id, { removed: false, ...member })
+    state.members.set(member.id, { status: 'ACTIVE', ...member })
   }
   for (const client of body.clients ?? []) {
     state.clients.set(client.clientId, { kind: 'oidc', acceptsAnyTenant: false, redirectUris: [], ...client })
@@ -182,63 +204,30 @@ function updateTenant({ body }) {
   return json({ payload: tenant })
 }
 
-async function changeMembership({ body, removed }) {
+async function changeMembership({ body, status, ability }) {
   const member = state.members.get(body.memberId)
   if (!member) {
     return json({ status: 404, payload: { error: 'unknown_member' } })
   }
-  member.removed = removed
-  if (!body.notify) {
-    return json({ payload: { member, delivered: null } })
+  member.status = status
+  member.removedAt = status === 'REMOVED' ? new Date().toISOString() : null
+  if (body.notify === false) {
+    return json({ payload: { member, deliveries: [] } })
   }
-  const delivered = await deliverFederationEvent({ tenantCode: member.tenant, type: removed ? 'MEMBER_REMOVED' : 'MEMBER_RESTORED', subject: member.id })
-  return json({ payload: { member, delivered } })
-}
-
-async function sendFederationEvent(body) {
-  const delivered = await deliverFederationEvent({
-    tenantCode: body.tenant,
-    type: body.type ?? 'MEMBER_REMOVED',
-    subject: body.subject,
-    id: body.id,
-    secret: body.secret,
-    signature: body.signature,
-    url: body.url,
-    rawBody: body.rawBody,
+  const pushed = await deliverEvent({
+    tenant: member.tenant,
+    type: `iam-identity.member.${ability}`,
+    object: { code: 'member', id: member.id },
+    id: body.eventId,
+    times: body.times,
+    tamper: body.tamper,
+    includeUnverified: body.includeUnverified,
   })
-  return json({ payload: { delivered } })
+  return json({ payload: { member, event: pushed.event, deliveries: pushed.deliveries } })
 }
 
-async function deliverFederationEvent({ tenantCode, type, subject, id, secret, signature, url, rawBody }) {
-  const tenant = state.tenants.get(tenantCode)
-  const target = url ?? tenant?.eventsUrl
-  const key = secret ?? tenant?.eventSecret
-  if (!target || !key) {
-    const entry = { at: new Date().toISOString(), tenant: tenantCode, type, subject, status: null, error: 'tenant has no eventsUrl or eventSecret' }
-    state.log.federation.push(entry)
-    return entry
-  }
-  const event = {
-    id: id ?? `fed-${randomUUID()}`,
-    type,
-    issuer: ISSUER,
-    externalTenantId: tenantCode,
-    ...(subject ? { subject } : {}),
-    occurredAt: new Date().toISOString(),
-  }
-  const payload = rawBody ?? JSON.stringify(event)
-  const header = signature ?? signBody({ secret: key, payload })
-  const entry = { at: new Date().toISOString(), tenant: tenantCode, type, subject: subject ?? null, id: event.id, url: target, status: null, response: null }
-  try {
-    const response = await fetch(target, { method: 'POST', headers: { 'content-type': 'application/json', 'x-fema-signature': header }, body: payload, signal: AbortSignal.timeout(15000) })
-    entry.status = response.status
-    entry.response = (await response.text()).slice(0, 500)
-  }
-  catch (error) {
-    entry.error = String(error?.message ?? error)
-  }
-  state.log.federation.push(entry)
-  return entry
+function isActiveMember(member) {
+  return Boolean(member) && member.status === 'ACTIVE'
 }
 
 function authorize({ req, url }) {
@@ -269,7 +258,7 @@ function authorize({ req, url }) {
   }
   const person = state.persons.get(session.username)
   const requestedTenant = query.tenant ?? (client.acceptsAnyTenant ? null : client.tenant)
-  const candidates = [...state.members.values()].filter((member) => member.username === person.username && !member.removed)
+  const candidates = [...state.members.values()].filter((member) => member.username === person.username && isActiveMember(member))
   const chosen = requestedTenant ? candidates.filter((member) => member.tenant === requestedTenant) : candidates
   if (chosen.length === 0) {
     entry.outcome = 'no_member'
@@ -387,7 +376,7 @@ function refresh({ client, body, entry }) {
   entry.memberId = grant.memberId
   const member = state.members.get(grant.memberId)
   const tenant = member ? state.tenants.get(member.tenant) : null
-  if (!member || member.removed || !tenant || tenant.status !== 'ACTIVE') {
+  if (!isActiveMember(member) || !tenant || tenant.status !== 'ACTIVE') {
     state.refreshTokens.delete(body.refresh_token)
     return json({ status: 400, payload: { error: 'invalid_grant', error_description: 'member is no longer active in the tenant' } })
   }
@@ -461,8 +450,8 @@ function userinfo({ req }) {
     return json({ status: 401, payload: { error: 'invalid_token' } })
   }
   const member = state.members.get(grant.sub)
-  if (!member || member.removed) {
-    return json({ status: 401, payload: { error: 'invalid_token', error_description: 'member removed' } })
+  if (!isActiveMember(member)) {
+    return json({ status: 401, payload: { error: 'invalid_token', error_description: 'member is not active' } })
   }
   const person = state.persons.get(member.username)
   const scopes = String(grant.scope ?? 'openid profile email').split(/\s+/)
@@ -476,10 +465,11 @@ function createSubscription({ req, body }) {
   }
   const entry = { at: new Date().toISOString(), action: 'create', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: body.code ?? null, endpoint: body.endpoint ?? null, events: body.events ?? [], outcome: null }
   state.log.subscriptions.push(entry)
+  const fault = takeFault({ kind: 'subscription-create', clientId: grant.claims.client_id })
   const events = Array.isArray(body.events) ? body.events.map(String) : []
-  if (typeof body.code !== 'string' || body.code.length === 0 || events.length === 0) {
+  if (typeof body.code !== 'string' || body.code.length === 0 || body.code.length > 64 || events.length === 0) {
     entry.outcome = 'invalid'
-    return json({ status: 400, payload: { code: 'INVALID_ARGUMENT', message: 'code 与 events 必填' } })
+    return json({ status: 400, payload: { code: 'INVALID_ARGUMENT', message: 'code（不超过 64 个字符）与 events 必填' } })
   }
   if (typeof body.endpoint !== 'string' || !/^https?:\/\//.test(body.endpoint)) {
     entry.outcome = 'invalid_endpoint'
@@ -487,25 +477,47 @@ function createSubscription({ req, body }) {
   }
   const denied = events.find((event) => state.deniedEvents.has(event))
   if (denied) {
-    entry.outcome = 'permission_denied'
-    return json({ payload: { code: 'PERMISSION_DENIED', message: `没有读取 ${denied.split('.').slice(0, 2).join('.')} 的权限，收不到 ${denied} 的通知`, data: null } })
+    entry.outcome = 'forbidden'
+    return json({ status: 403, payload: { code: 'OPERATION_FORBIDDEN', message: `没有读取 ${denied.split('.').slice(0, 2).join('.')} 的权限，收不到 ${denied} 的通知` } })
   }
   const key = `${grant.claims.client_id}|${grant.claims.tenantId}|${body.code}`
-  const existing = [...state.subscriptions.values()].find((subscription) => subscription.key === key)
-  const id = existing?.id ?? `sub-${randomBytes(6).toString('hex')}`
+  if (state.usedCodes.has(key)) {
+    entry.outcome = 'already_exists'
+    return json({ status: 409, payload: { code: 'ALREADY_EXISTS', message: `订阅编码 ${body.code} 已被占用` } })
+  }
+  state.usedCodes.add(key)
+  const id = `${Date.now()}${Math.floor(Math.random() * 1000)}`
   const secret = `whsec_${randomBytes(24).toString('hex')}`
-  const subscription = { id, key, code: body.code, endpoint: body.endpoint, events, tenant: grant.claims.tenantId, clientId: grant.claims.client_id, secret, status: 'PENDING', createdAt: new Date().toISOString(), verification: null }
+  const withheldEvents = events.filter((event) => state.withheldEvents.has(event))
+  const subscription = { id, key, code: body.code, endpoint: body.endpoint, events, withheldEvents, tenant: grant.claims.tenantId, clientId: grant.claims.client_id, secret, status: 'PENDING', createdAt: new Date().toISOString(), verification: null }
   state.subscriptions.set(id, subscription)
-  entry.outcome = existing ? 'replaced' : 'created'
+  entry.outcome = 'created'
+  entry.id = id
   setTimeout(() => {
     void verifySubscription({ subscription })
   }, Number(process.env.FEMA_IAM_VERIFY_DELAY_MS ?? 300))
-  return json({ payload: { code: 'SUCCESS', message: null, data: { id, code: body.code, endpoint: body.endpoint, events, status: 'PENDING', secret } } })
+  if (fault) {
+    return new Promise((resolve) => setTimeout(() => resolve(json({ status: fault.status ?? 504, payload: { code: 'TIMEOUT', message: 'injected fault after the subscription was saved' } })), fault.delayMs ?? 0))
+  }
+  return json({ payload: { code: 'SUCCESS', message: null, data: { ...publicSubscription({ subscription }), plainSecret: secret, ...(withheldEvents.length > 0 ? { withheldEvents } : {}) } } })
+}
+
+function publicSubscription({ subscription }) {
+  const enabled = subscription.status !== 'DISABLED'
+  return {
+    id: subscription.id,
+    code: subscription.code,
+    endpoint: subscription.endpoint,
+    events: subscription.events,
+    status: { '@type': 'SubscriptionStatus', code: enabled ? 'ENABLED' : 'DISABLED', name: enabled ? '启用' : '停用' },
+    activatedAt: subscription.activatedAt ?? null,
+    createdAt: subscription.createdAt,
+  }
 }
 
 async function verifySubscription({ subscription }) {
   const challenge = `chl-${randomBytes(8).toString('hex')}`
-  const payload = JSON.stringify({ type: 'webhook.verification', subscription: subscription.code, challenge })
+  const payload = JSON.stringify({ id: `vrf-${randomBytes(6).toString('hex')}`, type: 'webhook.verification', challenge })
   try {
     const response = await fetch(subscription.endpoint, { method: 'POST', headers: { 'content-type': 'application/json', 'x-fema-signature': signBody({ secret: subscription.secret, payload }) }, body: payload, signal: AbortSignal.timeout(15000) })
     const text = await response.text()
@@ -513,6 +525,7 @@ async function verifySubscription({ subscription }) {
     subscription.verification = { status: response.status, echoed, body: text.slice(0, 300) }
     if (state.subscriptions.get(subscription.id) === subscription) {
       subscription.status = response.ok && echoed ? 'ACTIVE' : 'UNVERIFIED'
+      subscription.activatedAt = response.ok && echoed ? new Date().toISOString() : null
     }
   }
   catch (error) {
@@ -521,37 +534,63 @@ async function verifySubscription({ subscription }) {
   }
 }
 
+function ownSubscriptions({ claims }) {
+  return [...state.subscriptions.values()].filter((subscription) => subscription.clientId === claims.client_id && subscription.tenant === claims.tenantId)
+}
+
+function findSubscription({ req, body }) {
+  const grant = applicationOf({ req })
+  if (grant.error) {
+    return grant.error
+  }
+  const filter = body?.filter
+  if (!filter || typeof filter !== 'object' || typeof filter.code !== 'string') {
+    state.log.subscriptions.push({ at: new Date().toISOString(), action: 'find-one', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: null, bodyKeys: Object.keys(body ?? {}), outcome: 'invalid_query' })
+    return json({ status: 400, payload: { code: 'INVALID_ARGUMENT', message: 'find-one 的请求体是查询规格 {"filter":{...}}' } })
+  }
+  const match = ownSubscriptions({ claims: grant.claims }).find((subscription) => subscription.code === filter.code)
+  state.log.subscriptions.push({ at: new Date().toISOString(), action: 'find-one', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: filter.code, outcome: match ? 'found' : 'not_found' })
+  if (!match) {
+    return json({ payload: { code: 'SUCCESS', message: null, data: null } })
+  }
+  return json({ payload: { code: 'SUCCESS', message: null, data: publicSubscription({ subscription: match }) } })
+}
+
 function deleteSubscription({ req, body }) {
   const grant = applicationOf({ req })
   if (grant.error) {
     return grant.error
   }
-  const match = [...state.subscriptions.values()].find((subscription) => subscription.clientId === grant.claims.client_id && subscription.tenant === grant.claims.tenantId && (subscription.id === body.id || (!body.id && subscription.code === body.code)))
-  state.log.subscriptions.push({ at: new Date().toISOString(), action: 'delete', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: body.code ?? null, id: body.id ?? null, outcome: match ? 'deleted' : 'not_found' })
+  const match = ownSubscriptions({ claims: grant.claims }).find((subscription) => subscription.id === String(body.id ?? ''))
+  state.log.subscriptions.push({ at: new Date().toISOString(), action: 'delete', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, id: body.id ?? null, bodyKeys: Object.keys(body ?? {}), outcome: match ? 'deleted' : 'not_found' })
   if (!match) {
     return json({ status: 404, payload: { code: 'NOT_FOUND', message: '登记不存在' } })
   }
   state.subscriptions.delete(match.id)
-  return json({ payload: { code: 'SUCCESS', message: null, data: { id: match.id, code: match.code } } })
+  return json({ payload: { code: 'SUCCESS', message: null, data: publicSubscription({ subscription: match }) } })
 }
 
 async function pushBusinessEvent(body) {
+  return json({ payload: await deliverEvent({ ...body }) })
+}
+
+async function deliverEvent({ tenant, type, object, id, occurredAt, times, tamper, includeUnverified }) {
   const event = {
-    id: body.id ?? `${Date.now()}${Math.floor(Math.random() * 1000)}`,
-    type: body.type,
-    tenantId: body.tenant,
-    occurredAt: body.occurredAt ?? new Date().toISOString(),
-    object: body.object ?? {},
+    id: id ?? `${Date.now()}${Math.floor(Math.random() * 1000)}`,
+    type,
+    tenantId: tenant,
+    occurredAt: occurredAt ?? new Date().toISOString(),
+    object: { code: object?.code ?? type.split('.')[1], id: String(object?.id ?? '') },
   }
-  const targets = [...state.subscriptions.values()].filter((subscription) => subscription.tenant === body.tenant && subscription.events.includes(body.type) && (body.includeUnverified || subscription.status === 'ACTIVE'))
+  const targets = [...state.subscriptions.values()].filter((subscription) => subscription.tenant === tenant && subscription.events.includes(type) && !subscription.withheldEvents.includes(type) && (includeUnverified || subscription.status === 'ACTIVE'))
   const deliveries = []
   for (const subscription of targets) {
-    for (let attempt = 0; attempt < (body.times ?? 1); attempt += 1) {
+    for (let attempt = 0; attempt < (times ?? 1); attempt += 1) {
       const payload = JSON.stringify(event)
-      const signature = body.tamper ? signBody({ secret: 'not-the-secret', payload }) : signBody({ secret: subscription.secret, payload })
-      const delivery = { at: new Date().toISOString(), subscription: subscription.id, eventId: event.id, type: event.type, endpoint: subscription.endpoint, tampered: Boolean(body.tamper), status: null, response: null }
+      const signature = tamper ? signBody({ secret: 'not-the-secret', payload }) : signBody({ secret: subscription.secret, payload })
+      const delivery = { at: new Date().toISOString(), subscription: subscription.id, eventId: event.id, type: event.type, endpoint: subscription.endpoint, tampered: Boolean(tamper), status: null, response: null }
       try {
-        const response = await fetch(subscription.endpoint, { method: 'POST', headers: { 'content-type': 'application/json', 'x-fema-signature': signature }, body: payload, signal: AbortSignal.timeout(15000) })
+        const response = await fetch(subscription.endpoint, { method: 'POST', headers: { 'content-type': 'application/json', 'x-fema-signature': signature, 'x-fema-event-id': event.id, 'x-fema-event-type': event.type }, body: payload, signal: AbortSignal.timeout(15000) })
         delivery.status = response.status
         delivery.response = (await response.text()).slice(0, 300)
       }
@@ -562,7 +601,32 @@ async function pushBusinessEvent(body) {
       deliveries.push(delivery)
     }
   }
-  return json({ payload: { event, deliveries } })
+  return { event, deliveries }
+}
+
+function findMember({ req, id }) {
+  const grant = applicationOf({ req })
+  if (grant.error) {
+    return grant.error
+  }
+  state.log.api.push({ at: new Date().toISOString(), path: 'iam-identity/member/find-by-id', id, tenant: grant.claims.tenantId })
+  const member = state.members.get(id)
+  if (!member || member.tenant !== grant.claims.tenantId) {
+    return notFound({ message: '成员不存在' })
+  }
+  const person = state.persons.get(member.username)
+  return json({
+    payload: {
+      code: 'SUCCESS',
+      message: null,
+      data: {
+        id: member.id,
+        status: { '@type': 'MemberStatus', code: member.status, name: MEMBER_STATUS_NAMES[member.status] ?? member.status },
+        displayName: person?.name ?? member.username,
+        removedAt: member.removedAt ?? null,
+      },
+    },
+  })
 }
 
 function putObject({ body }) {
@@ -578,9 +642,16 @@ function findById({ req, app, object, id }) {
   state.log.api.push({ at: new Date().toISOString(), path: `${app}/${object}/find-by-id`, id, tenant: grant.claims.tenantId })
   const data = state.objects.get(`${grant.claims.tenantId}|${app}/${object}/${id}`)
   if (data === undefined) {
-    return json({ status: 404, payload: { code: 'NOT_FOUND', message: '对象不存在' } })
+    return notFound({ message: '对象不存在' })
   }
   return json({ payload: { code: 'SUCCESS', message: null, data } })
+}
+
+function notFound({ message }) {
+  if (state.notFoundMode === '404') {
+    return json({ status: 404, payload: { code: 'NOT_FOUND', message } })
+  }
+  return json({ payload: { code: 'SUCCESS', message: null, data: null } })
 }
 
 function echoApi({ req, url, body, method }) {

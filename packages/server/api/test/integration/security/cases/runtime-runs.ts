@@ -5,6 +5,9 @@ import { runtimeChecks } from '../support/runtime-checks'
 import { runtimeSeed } from '../support/runtime-seed'
 
 const ROLES_WITHOUT_RERUN: readonly string[] = ['viewer', 'nonMember', 'foreignProjectAdmin', 'otherTenantAdmin']
+const RERUN_CHECK_SEES_A: readonly string[] = ['projectAdmin', 'developer', 'operator', 'viewer', 'tenantAdmin']
+const RERUN_CHECK_SEES_B: readonly string[] = ['foreignProjectAdmin', 'tenantAdmin']
+const RERUN_CHECK_SEES_T2: readonly string[] = ['otherTenantAdmin']
 
 export const runtimeRunCases: MatrixCase[] = [
     {
@@ -50,6 +53,23 @@ export const runtimeRunCases: MatrixCase[] = [
                 expect(await runtimeChecks.rowExists({ entity: 'execution', where: { rerunOfExecutionId: runIdA } })).toBe(false)
                 expect(response.text).not.toContain('"rerunExecutionId":"')
             }
+        },
+    },
+    {
+        id: 'POST /v1/run-logs/rerun-check',
+        access: { type: 'authenticated' },
+        forbiddenIds: ({ world, identity }) => runtimeSeed.visibleOnlyTo({ world, identity }),
+        prepare: async ({ world }) => {
+            const [a, b, t2] = await Promise.all((['A', 'B', 'T2'] as const).map((scope) => runtimeSeed.issueWithRun({ world, scope })))
+            return {
+                request: { method: 'POST', url: '/v1/run-logs/rerun-check', body: { executionIds: [a.runId, b.runId, t2.runId], strategy: WorkflowRetryStrategy.ON_LATEST_VERSION } },
+                state: { runIdA: a.runId, runIdB: b.runId, runIdT2: t2.runId },
+            }
+        },
+        afterAllowed: async ({ prepared, response, identity }) => {
+            expect(response.text.includes(runtimeChecks.stateString({ prepared, key: 'runIdA' }))).toBe(RERUN_CHECK_SEES_A.includes(identity))
+            expect(response.text.includes(runtimeChecks.stateString({ prepared, key: 'runIdB' }))).toBe(RERUN_CHECK_SEES_B.includes(identity))
+            expect(response.text.includes(runtimeChecks.stateString({ prepared, key: 'runIdT2' }))).toBe(RERUN_CHECK_SEES_T2.includes(identity))
         },
     },
     {

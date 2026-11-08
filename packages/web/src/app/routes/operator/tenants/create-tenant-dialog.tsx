@@ -1,5 +1,7 @@
+import { OperatorCreateTenantRequestBody } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { Button } from '@/components/ui/button';
@@ -11,16 +13,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
-  LimitField,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { internalErrorMessage } from '@/components/ui/sonner';
+import {
+  CreateTenantFormValues,
   LimitFields,
-  LimitInputs,
   operatorHooks,
+  operatorSchemas,
   operatorUtils,
 } from '@/features/operator';
-import { tenantAccessUtils } from '@/features/tenant-access';
+import { FormServerError } from '@/features/tenant-access';
+import { api } from '@/lib/api';
 
 export function CreateTenantDialog({
   open,
@@ -42,20 +54,22 @@ export function CreateTenantDialog({
 }
 
 function CreateTenantForm({ onClose }: { onClose: () => void }) {
+  const form = useForm<CreateTenantFormValues>({
+    mode: 'onChange',
+    resolver: zodResolver(operatorSchemas.createTenantForm),
+    defaultValues: createTenantDefaults(),
+  });
   const {
     mutate: create,
     isPending,
     data: created,
-  } = operatorHooks.useCreateTenant();
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [slugTouched, setSlugTouched] = useState(false);
-  const [contact, setContact] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [limits, setLimits] = useState<LimitInputs>(EMPTY_LIMITS);
-  const [error, setError] = useState<string | null>(null);
-  const [invalidField, setInvalidField] = useState<LimitField | null>(null);
+  } = operatorHooks.useCreateTenant({
+    onError: (error) =>
+      form.setError('root.serverError', {
+        type: 'manual',
+        message: api.extractServerErrorMessage(error, internalErrorMessage()),
+      }),
+  });
 
   if (created) {
     return (
@@ -83,151 +97,189 @@ function CreateTenantForm({ onClose }: { onClose: () => void }) {
     );
   }
 
-  const submit = (): void => {
-    const owner = operatorUtils.buildOwnerInput({
-      contact,
-      firstName,
-      lastName,
-    });
-    if (name.trim().length === 0) {
-      setError(t('Name is required'));
-      return;
-    }
-    const slugValue = slug.trim();
-    if (slugValue.length > 0 && tenantAccessUtils.slugError(slugValue)) {
-      setError(t('tenantSlugInvalid'));
-      return;
-    }
-    if (owner === null) {
-      setError(t('Enter the owner email address or mobile number'));
-      return;
-    }
-    const built = operatorUtils.buildLimitsUpdate(limits);
-    if (!built.ok) {
-      setInvalidField(built.field);
-      setError(t('Limits must be whole numbers of 0 or more.'));
-      return;
-    }
-    setError(null);
-    setInvalidField(null);
-    create({
-      name: name.trim(),
-      ...(slugValue.length > 0 ? { slug: slugValue.toLowerCase() } : {}),
-      owner,
-      limits: built.limits,
-    });
-  };
-
   return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        submit();
-      }}
-    >
-      <DialogHeader>
-        <DialogTitle>{t('New tenant')}</DialogTitle>
-        <DialogDescription>
-          {t(
-            'Create an organization and invite its owner. The owner then manages members and sign-in themselves.',
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          const request = toRequest(values);
+          const parsed = OperatorCreateTenantRequestBody.safeParse(request);
+          if (!parsed.success) {
+            form.setError('root.serverError', {
+              type: 'manual',
+              message: t(parsed.error.issues[0]?.message ?? 'required'),
+            });
+            return;
+          }
+          create(parsed.data);
+        })}
+      >
+        <DialogHeader>
+          <DialogTitle>{t('New tenant')}</DialogTitle>
+          <DialogDescription>
+            {t(
+              'Create an organization and invite its owner. The owner then manages members and sign-in themselves.',
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel showRequiredIndicator>{t('Tenant name')}</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  data-testid="tenant-name"
+                  onChange={(event) => {
+                    field.onChange(event);
+                    if (!form.getFieldState('slug').isDirty) {
+                      form.setValue(
+                        'slug',
+                        operatorUtils.slugFromName(event.target.value),
+                      );
+                    }
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </DialogDescription>
-      </DialogHeader>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tenant-name">{t('Tenant name')}</Label>
-        <Input
-          id="tenant-name"
-          value={name}
-          data-testid="tenant-name"
-          onChange={(event) => {
-            setName(event.target.value);
-            if (!slugTouched) {
-              setSlug(operatorUtils.slugFromName(event.target.value));
-            }
-          }}
         />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tenant-slug">{t('Sign-in address')}</Label>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">/t/</span>
-          <Input
-            id="tenant-slug"
-            value={slug}
-            placeholder="acme"
-            data-testid="tenant-slug"
-            onChange={(event) => {
-              setSlugTouched(true);
-              setSlug(event.target.value);
-            }}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {t(
-            '3 to 40 lowercase letters, digits or hyphens. Leave empty to generate one.',
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('Sign-in address')}</FormLabel>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">/t/</span>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="acme"
+                    data-testid="tenant-slug"
+                  />
+                </FormControl>
+              </div>
+              <FormDescription>
+                {t(
+                  '3 to 40 lowercase letters, digits or hyphens. Leave empty to generate one.',
+                )}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
           )}
-        </p>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tenant-owner">
-          {t('Owner email or mobile number')}
-        </Label>
-        <Input
-          id="tenant-owner"
-          value={contact}
-          placeholder="owner@example.com / 13800138000"
-          data-testid="tenant-owner"
-          onChange={(event) => setContact(event.target.value)}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            value={lastName}
-            aria-label={t('Last name')}
-            placeholder={t('Last name')}
-            onChange={(event) => setLastName(event.target.value)}
+        <div className="flex flex-col gap-1.5">
+          <FormField
+            control={form.control}
+            name="contact"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel showRequiredIndicator>
+                  {t('Owner email or mobile number')}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="owner@example.com / 13800138000"
+                    data-testid="tenant-owner"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          <Input
-            value={firstName}
-            aria-label={t('First name')}
-            placeholder={t('First name')}
-            onChange={(event) => setFirstName(event.target.value)}
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      aria-label={t('Last name')}
+                      placeholder={t('Last name')}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      aria-label={t('First name')}
+                      placeholder={t('First name')}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label>{t('Limits')}</Label>
-        <LimitFields
-          value={limits}
-          onChange={setLimits}
-          invalidField={invalidField}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium">{t('Limits')}</span>
+          <LimitFields />
+        </div>
+        <FormServerError
+          message={form.formState.errors.root?.serverError?.message}
         />
-      </div>
-      {error && (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      )}
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
-          {t('Cancel')}
-        </Button>
-        <Button
-          type="submit"
-          loading={isPending}
-          data-testid="tenant-create-submit"
-        >
-          {t('Create tenant')}
-        </Button>
-      </DialogFooter>
-    </form>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            type="submit"
+            loading={isPending}
+            data-testid="tenant-create-submit"
+          >
+            {t('Create tenant')}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }
 
-const EMPTY_LIMITS: LimitInputs = {
-  usersLimit: '',
-  projectsLimit: '',
-  activeWorkflowsLimit: '',
-  concurrentExecutionsLimit: '',
-  workerGroupId: '',
-};
+function toRequest(values: CreateTenantFormValues) {
+  const owner = operatorUtils.buildOwnerInput({
+    contact: values.contact,
+    firstName: values.firstName,
+    lastName: values.lastName,
+  });
+  const built = operatorUtils.buildLimitsUpdate(values.limits);
+  return {
+    name: values.name,
+    ...(values.slug.length > 0 ? { slug: values.slug.toLowerCase() } : {}),
+    owner,
+    ...(built.ok ? { limits: built.limits } : {}),
+  };
+}
+
+function createTenantDefaults(): CreateTenantFormValues {
+  return {
+    name: '',
+    slug: '',
+    contact: '',
+    lastName: '',
+    firstName: '',
+    limits: operatorUtils.limitsInputsOf({
+      usersLimit: null,
+      projectsLimit: null,
+      activeWorkflowsLimit: null,
+      concurrentExecutionsLimit: null,
+      workerGroupId: null,
+    }),
+  };
+}

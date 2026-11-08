@@ -173,14 +173,14 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
         return externalIdentityRepo().find({ where: { identityId }, order: { created: 'ASC', id: 'ASC' } })
     },
 
-    async upsertOidcConfigForProvisioning({ tenantId, oidc, eventSigningSecret }: UpsertOidcParams): Promise<void> {
+    async upsertOidcConfigForProvisioning({ tenantId, oidc }: UpsertOidcParams): Promise<void> {
         await distributedLock(log).runExclusive({
             key: `sso-settings-${tenantId}`,
             timeoutInSeconds: 30,
             fn: async () => {
                 const tenant = await tenantService(log).getOneWithFederatedAuthOrThrow(tenantId)
                 const previous = tenant.federatedAuthProviders.oidc ?? null
-                const next = await buildProvisionedOidc({ oidc, eventSigningSecret, previous })
+                const next = await buildProvisionedOidc({ oidc, previous })
                 await tenantRepo().update({ id: tenantId }, { federatedAuthProviders: { ...tenant.federatedAuthProviders, oidc: next } })
                 log.info({ tenant: { id: tenantId }, issuer: oidc.issuer }, '[externalIdentity] OIDC configuration provisioned')
             },
@@ -188,9 +188,9 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
     },
 })
 
-async function buildProvisionedOidc({ oidc, eventSigningSecret, previous }: BuildProvisionedParams): Promise<StoredOidcSso> {
+async function buildProvisionedOidc({ oidc, previous }: BuildProvisionedParams): Promise<StoredOidcSso> {
     const clientSecret = await encryptUtils.encryptString(oidc.clientSecret)
-    const signing = isNil(eventSigningSecret) ? previous?.eventSigningSecret : await encryptUtils.encryptString(eventSigningSecret)
+    const memberSubscription = previous?.memberSubscription
     return {
         enabled: true,
         displayName: oidc.displayName ?? previous?.displayName ?? DEFAULT_DISPLAY_NAME,
@@ -209,9 +209,9 @@ async function buildProvisionedOidc({ oidc, eventSigningSecret, previous }: Buil
         requireVerifiedEmail: false,
         matchBy: SsoMatchBy.SUBJECT,
         extraAuthParams: oidc.extraAuthParams ?? {},
-        sessionRecheckMinutes: previous?.sessionRecheckMinutes ?? null,
+        sessionRecheckMinutes: oidc.sessionRecheckMinutes ?? previous?.sessionRecheckMinutes ?? null,
         provisioned: true,
-        ...(isNil(signing) ? {} : { eventSigningSecret: signing }),
+        ...(isNil(memberSubscription) ? {} : { memberSubscription }),
     }
 }
 
@@ -298,12 +298,10 @@ type SaveRefreshTokenParams = {
 type UpsertOidcParams = {
     tenantId: string
     oidc: ProvisionOidcInput
-    eventSigningSecret?: string
 }
 
 type BuildProvisionedParams = {
     oidc: ProvisionOidcInput
-    eventSigningSecret: string | undefined
     previous: StoredOidcSso | null
 }
 

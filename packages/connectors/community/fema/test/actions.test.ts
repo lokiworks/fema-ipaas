@@ -54,6 +54,15 @@ describe('FEMA actions', () => {
     expect(output).toEqual({ found: false, objectPath: 'rental-agreement/contract', objectId: '1', data: null });
   });
 
+  it('treats SUCCESS with null data as not found, as FEMA answers find-by-id for a missing object', async () => {
+    vi.spyOn(httpClient, 'sendRequest').mockResolvedValue({ status: 200, headers: {}, body: { code: 'SUCCESS', message: null, data: null } });
+    const output = await readObject.run({
+      ...createMockActionContext<typeof readObject.props>({ propsValue: { objectPath: 'rental-agreement/contract', objectId: '1' } }),
+      auth,
+    });
+    expect(output).toEqual({ found: false, objectPath: 'rental-agreement/contract', objectId: '1', data: null });
+  });
+
   it('fails when the application may not read the object', async () => {
     vi.spyOn(httpClient, 'sendRequest').mockRejectedValue(new HttpError({}, { status: 403, responseBody: { code: 'FORBIDDEN', message: 'no permission' } }));
     await expect(readObject.run({

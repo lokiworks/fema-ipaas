@@ -15,7 +15,6 @@ export const femaOutputSchemas = {
         children: [
           { key: 'code', label: 'Object Code' },
           { key: 'id', label: 'Object ID' },
-          { key: 'businessKey', label: 'Business Key', description: 'The business number of the object, for example a contract number.' },
         ],
       },
       { key: 'objectPath', label: 'Object Path', description: 'Pass it to Read Object to load the details.' },

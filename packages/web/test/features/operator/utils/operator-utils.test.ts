@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { operatorUtils } from './operator-utils';
+import { operatorUtils } from '@/features/operator/utils/operator-utils';
 
 describe('operatorUtils.isOperator', () => {
   it('is true only for the OPERATOR instance role', () => {

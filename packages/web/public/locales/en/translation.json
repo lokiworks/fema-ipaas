@@ -6829,7 +6829,6 @@
   "tenantSelfSignupDisabled": "Creating an organization by yourself is turned off on this platform",
   "usageRangeInvalid": "Enter a valid date range with the start before the end",
   "usageRangeTooLong": "The date range cannot be longer than 92 days",
-  "eventSigningSecretRequiresOidc": "An event signing secret can only be set together with the OIDC configuration",
   "memberReferenceRequired": "Specify the member by subject or user id",
   "tenantHasNoExternalIssuer": "This organization has no identity provider yet, so members cannot be bound by subject",
   "auditActionOperatorTenantCreated": "Operator created an organization",
@@ -7085,5 +7084,19 @@
   "ssoRecheckRange": "The re-check interval must be between 5 and 1440 minutes",
   "tenantOwnerContactRequired": "Enter an email address, a mobile number or an external identifier",
   "tenantSlugInvalid": "The sign-in address must be 3 to 40 lowercase letters, digits or hyphens, and cannot start or end with a hyphen",
-  "{platform} sign-in app": "{platform} sign-in app"
+  "{platform} sign-in app": "{platform} sign-in app",
+  "memberEventsRequireOidc": "Member events can only be set up together with the single sign-on configuration",
+  "memberEventsConnectionUnavailable": "The connection used for member events is missing or cannot get an access token",
+  "memberEventsRegistrationRejected": "The member event subscription was rejected by the connected system",
+  "memberEventsRegistrationFailed": "The member event subscription could not be registered, try again",
+  "Phone sign-in is turned off": "Phone sign-in is turned off",
+  "This organization has not turned on phone sign-in. Use another sign-in method.": "This organization has not turned on phone sign-in. Use another sign-in method.",
+  "Use another sign-in method": "Use another sign-in method",
+  "This sign-in was set up by the platform that provisioned your tenant. You can turn it on or off, change its button name, decide who may sign in and set how often membership is re-checked.": "This sign-in was set up by the platform that provisioned your tenant. You can turn it on or off, change its button name, decide who may sign in and set how often membership is re-checked.",
+  "Upload metadata file": "Upload metadata file",
+  "Sign-in email": "Sign-in email",
+  "Bind phone number": "Add",
+  "Link organization": "Link",
+  "Signs in with a text message code to activate. No link is needed.": "Signs in with a text message code to activate. No link is needed.",
+  "Human check passed": "Human check passed"
 }

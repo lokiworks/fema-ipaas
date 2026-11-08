@@ -1,6 +1,7 @@
 import { OperatorTenantSummary } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -11,13 +12,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Form } from '@/components/ui/form';
+import { internalErrorMessage } from '@/components/ui/sonner';
 import {
-  LimitField,
   LimitFields,
-  LimitInputs,
+  LimitsFormValues,
   operatorHooks,
+  operatorSchemas,
   operatorUtils,
 } from '@/features/operator';
+import { FormServerError } from '@/features/tenant-access';
+import { api } from '@/lib/api';
 
 export function LimitsDialog({
   tenant,
@@ -48,60 +53,52 @@ function LimitsForm({
   tenant: OperatorTenantSummary;
   onClose: () => void;
 }) {
+  const form = useForm<LimitsFormValues>({
+    mode: 'onChange',
+    resolver: zodResolver(operatorSchemas.limitsForm),
+    defaultValues: { limits: operatorUtils.limitsInputsOf(tenant) },
+  });
   const { mutate: save, isPending } = operatorHooks.useUpdateLimits({
     onSaved: onClose,
+    onError: (error) =>
+      form.setError('root.serverError', {
+        type: 'manual',
+        message: api.extractServerErrorMessage(error, internalErrorMessage()),
+      }),
   });
-  const [value, setValue] = useState<LimitInputs>(inputsOf(tenant));
-  const [invalidField, setInvalidField] = useState<LimitField | null>(null);
   return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const built = operatorUtils.buildLimitsUpdate(value);
-        if (!built.ok) {
-          setInvalidField(built.field);
-          return;
-        }
-        setInvalidField(null);
-        save({ id: tenant.id, request: built.limits });
-      }}
-    >
-      <DialogHeader>
-        <DialogTitle>{t('Edit limits')}</DialogTitle>
-        <DialogDescription>
-          {t('Limits for {name}. They apply to new items right away.', {
-            name: tenant.name,
-          })}
-        </DialogDescription>
-      </DialogHeader>
-      <LimitFields
-        value={value}
-        onChange={setValue}
-        invalidField={invalidField}
-      />
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
-          {t('Cancel')}
-        </Button>
-        <Button type="submit" loading={isPending} data-testid="limits-save">
-          {t('Save')}
-        </Button>
-      </DialogFooter>
-    </form>
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          const built = operatorUtils.buildLimitsUpdate(values.limits);
+          if (built.ok) {
+            save({ id: tenant.id, request: built.limits });
+          }
+        })}
+      >
+        <DialogHeader>
+          <DialogTitle>{t('Edit limits')}</DialogTitle>
+          <DialogDescription>
+            {t('Limits for {name}. They apply to new items right away.', {
+              name: tenant.name,
+            })}
+          </DialogDescription>
+        </DialogHeader>
+        <LimitFields />
+        <FormServerError
+          message={form.formState.errors.root?.serverError?.message}
+        />
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            {t('Cancel')}
+          </Button>
+          <Button type="submit" loading={isPending} data-testid="limits-save">
+            {t('Save')}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
-}
-
-function inputsOf(tenant: OperatorTenantSummary): LimitInputs {
-  return {
-    usersLimit: operatorUtils.limitInputOf(tenant.usersLimit),
-    projectsLimit: operatorUtils.limitInputOf(tenant.projectsLimit),
-    activeWorkflowsLimit: operatorUtils.limitInputOf(
-      tenant.activeWorkflowsLimit,
-    ),
-    concurrentExecutionsLimit: operatorUtils.limitInputOf(
-      tenant.concurrentExecutionsLimit,
-    ),
-    workerGroupId: tenant.workerGroupId ?? '',
-  };
 }

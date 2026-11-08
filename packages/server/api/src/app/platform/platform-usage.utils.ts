@@ -20,8 +20,8 @@ function assertRange({ from, to }: { from: string, to: string }): void {
     }
 }
 
-function buildQuery({ from, to, tenantId, issuer }: BuildQueryParams): UsageQuery {
-    const params: unknown[] = [from, to, FAILED_STATUSES, RunEnvironment.PRODUCTION, WorkflowStatus.ENABLED]
+function buildQuery({ from, to, today, tenantId, issuer }: BuildQueryParams): UsageQuery {
+    const params: unknown[] = [from, to, FAILED_STATUSES, RunEnvironment.PRODUCTION, WorkflowStatus.ENABLED, today]
     const filters: string[] = []
     if (!isNil(tenantId)) {
         params.push(tenantId)
@@ -59,15 +59,31 @@ function buildQuery({ from, to, tenantId, issuer }: BuildQueryParams): UsageQuer
             WHERE p."tenantId" IN (SELECT id FROM scoped_tenants)
               AND p.deleted IS NULL
               AND w.status = $5
+        ),
+        snapshot_bounds AS (
+            SELECT s."tenantId" AS "tenantId", MIN(s.date) AS first_date
+            FROM tenant_usage_snapshot s
+            WHERE s."tenantId" IN (SELECT id FROM scoped_tenants)
+            GROUP BY s."tenantId"
         )
         SELECT st.id AS "tenantId",
                to_char(d.day, 'YYYY-MM-DD') AS date,
                COALESCE(r.executions, 0)::int AS executions,
                COALESCE(r."failedExecutions", 0)::int AS "failedExecutions",
-               (SELECT COUNT(*) FROM enabled en WHERE en."tenantId" = st.id AND en.since <= d.day)::int AS "activeWorkflows"
+               (CASE
+                   WHEN d.day >= $6::date THEN (SELECT COUNT(*) FROM enabled en WHERE en."tenantId" = st.id)
+                   WHEN sb.first_date IS NOT NULL AND d.day >= sb.first_date THEN COALESCE((
+                       SELECT s."activeWorkflows" FROM tenant_usage_snapshot s
+                       WHERE s."tenantId" = st.id AND s.date <= d.day
+                       ORDER BY s.date DESC LIMIT 1
+                   ), 0)
+                   ELSE (SELECT COUNT(*) FROM enabled en WHERE en."tenantId" = st.id AND en.since <= d.day)
+               END)::int AS "activeWorkflows",
+               (d.day = $6::date OR (sb.first_date IS NOT NULL AND d.day >= sb.first_date AND d.day < $6::date)) AS "activeWorkflowsExact"
         FROM scoped_tenants st
         CROSS JOIN days d
         LEFT JOIN runs r ON r."tenantId" = st.id AND r.day = d.day
+        LEFT JOIN snapshot_bounds sb ON sb."tenantId" = st.id
         ORDER BY st.id, d.day
     `
     return { sql, params }
@@ -89,6 +105,7 @@ export const platformUsageUtils = {
 type BuildQueryParams = {
     from: string
     to: string
+    today: string
     tenantId: string | null
     issuer: string | null
 }

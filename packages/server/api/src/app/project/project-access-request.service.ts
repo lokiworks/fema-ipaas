@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode, generateId, isNil, Permission } from '@fema-ipaas/core-utils'
+import { ApplicationError, ErrorCode, generateId, isNil, Permission, tryCatch } from '@fema-ipaas/core-utils'
 import {
     DEFAULT_PROJECT_ACCESS_ROLE,
     DefaultProjectRole,
@@ -143,20 +143,34 @@ export const projectAccessRequestService = (log: FastifyBaseLogger) => ({
             throw validation({ message: 'The requester is no longer a user of this tenant', messageKey: 'projectAccessRequesterGone' })
         }
         const grantedRole = approve ? role ?? DEFAULT_PROJECT_ACCESS_ROLE : null
-        const membership = isNil(grantedRole) ? null : await grantMembership({ log, projectId: project.id, userId: requester.id, role: grantedRole })
+        const status = approve ? ProjectAccessRequestStatus.APPROVED : ProjectAccessRequestStatus.REJECTED
+        const decidedAt = dayjs().toISOString()
+        const claimed = await projectAccessRequestRepo()
+            .createQueryBuilder()
+            .update()
+            .set({ status, decidedBy: actorId, decidedAt, grantedRole })
+            .where({ id: request.id, tenantId, status: ProjectAccessRequestStatus.PENDING })
+            .returning('id')
+            .execute()
+        if (!Array.isArray(claimed.raw) || claimed.raw.length === 0) {
+            throw validation({ message: 'This request has already been decided', messageKey: 'projectAccessAlreadyDecided' })
+        }
+        const { data: membership, error } = await tryCatch(async () => isNil(grantedRole) ? null : grantMembership({ log, projectId: project.id, userId: requester.id, role: grantedRole }))
+        if (!isNil(error)) {
+            await projectAccessRequestRepo().update({ id: request.id, tenantId }, { status: ProjectAccessRequestStatus.PENDING, decidedBy: null, decidedAt: null, grantedRole: null })
+            throw error
+        }
+        const finalRole = membership?.member.role ?? grantedRole
+        if (finalRole !== grantedRole) {
+            await projectAccessRequestRepo().update({ id: request.id, tenantId }, { grantedRole: finalRole })
+        }
         const decided: ProjectAccessRequest = {
             ...request,
-            status: approve ? ProjectAccessRequestStatus.APPROVED : ProjectAccessRequestStatus.REJECTED,
+            status,
             decidedBy: actorId,
-            decidedAt: dayjs().toISOString(),
-            grantedRole: membership?.member.role ?? grantedRole,
+            decidedAt,
+            grantedRole: finalRole,
         }
-        await projectAccessRequestRepo().update({ id: request.id, tenantId }, {
-            status: decided.status,
-            decidedBy: decided.decidedBy,
-            decidedAt: decided.decidedAt,
-            grantedRole: decided.grantedRole,
-        })
         return {
             request: decided,
             project,

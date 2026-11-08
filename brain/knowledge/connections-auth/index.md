@@ -89,3 +89,4 @@ IdP-driven provisioning (Okta/Azure AD/Google). SCIM User → FEMA User+UserIden
 - **EE Authentication (SSO/RBAC)** — SAML 2.0, roles, enforcement
 - **SCIM** — user provisioning (Okta, Microsoft Entra ID)
 - **API Keys** — platform-scoped, hashed, `sk-` prefixed
+- **用真实账号验证登录方式** — 短信、企业微信、钉钉、平台扫码应用、SAML 的联调步骤

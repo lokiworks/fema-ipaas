@@ -113,6 +113,7 @@ export const machineReviews: Record<string, Review> = {
     'POST /v1/otp': { verdict: 'ok', note: '旧版验证码入口，同样限流与一次性' },
     'POST /v1/authn/local/verify-email': { verdict: 'ok', note: '凭验证码，一次性' },
     'POST /v1/authn/local/reset-password': { verdict: 'ok', note: '凭验证码，一次性' },
+    'POST /v1/authn/local/reset-password/check': { verdict: 'ok', note: '公开路由，限流用 authnRateLimit。只校验验证码不消耗它，但每次错误都计入单个验证码 5 次与每个身份每小时 10 次的猜测额度，与真正重置共用同一额度，不能借它绕过暴力破解保护；身份不存在、验证码不存在或已过期都返回同样的 valid: false，不泄露账号是否存在；不返回任何账号数据' },
     'POST /v1/user-invitations/accept': { verdict: 'ok', note: '凭 JWT（受众为邀请，7 天有效）；假 token / 用户令牌都是 404（deep/identity-members.test.ts）' },
     'GET /v1/authn/sso/providers': { verdict: 'ok', note: '只返回当前租户已启用提供方的名称标签，不含任何配置与密钥（deep：sso-oidc 集成测试）' },
     'GET /v1/authn/sso/start': { verdict: 'ok', note: '带认证限流；只会跳到管理员配置并测试通过、已启用的身份提供方；一次性 state、PKCE、nonce 存服务端，浏览器绑定 Cookie 防登录 CSRF；未启用时跳回登录页带错误码' },

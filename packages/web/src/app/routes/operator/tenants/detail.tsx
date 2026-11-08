@@ -4,7 +4,7 @@ import { ArrowLeft, Pencil } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { CopyButton } from '@/components/custom/clipboard/copy-button';
+import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { ConsolePage } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { FormattedDate } from '@/components/custom/formatted-date';
@@ -18,8 +18,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { internalErrorMessage } from '@/components/ui/sonner';
 import { operatorHooks, operatorUtils, UsageCell } from '@/features/operator';
 import { SlugDialog, tenantAccessUtils } from '@/features/tenant-access';
+import { api } from '@/lib/api';
 
 import { LimitsDialog } from './limits-dialog';
 
@@ -38,8 +40,13 @@ export function OperatorTenantDetailPage() {
 
 function TenantDetail({ tenant }: { tenant: OperatorTenantSummary }) {
   const lifecycle = operatorHooks.useTenantLifecycle();
+  const [slugError, setSlugError] = useState<string | null>(null);
   const updateSlug = operatorHooks.useUpdateTenantSlug({
     onSaved: () => setSlugOpen(false),
+    onError: (error) =>
+      setSlugError(
+        api.extractServerErrorMessage(error, internalErrorMessage()),
+      ),
   });
   const [limitsOpen, setLimitsOpen] = useState(false);
   const [slugOpen, setSlugOpen] = useState(false);
@@ -109,28 +116,19 @@ function TenantDetail({ tenant }: { tenant: OperatorTenantSummary }) {
             )}
           </Field>
           <Field label={t('Sign-in address')}>
-            <span className="flex items-center gap-2">
-              <code
-                className="break-all text-xs"
-                data-testid="tenant-login-url"
-              >
-                {loginUrl}
-              </code>
-              <CopyButton
-                textToCopy={loginUrl}
-                variant="outline"
-                type="button"
-              />
+            <div className="flex flex-col gap-2" data-testid="tenant-login-url">
+              <CopyToClipboardInput textToCopy={loginUrl} useInput={true} />
               <Button
                 size="sm"
                 variant="basic"
+                className="self-start"
                 onClick={() => setSlugOpen(true)}
                 data-testid="tenant-slug-edit"
               >
                 <Pencil className="size-3.5" />
                 {t('Change')}
               </Button>
-            </span>
+            </div>
           </Field>
         </CardContent>
       </Card>
@@ -213,9 +211,11 @@ function TenantDetail({ tenant }: { tenant: OperatorTenantSummary }) {
         onOpenChange={setSlugOpen}
         currentSlug={tenant.slug}
         pending={updateSlug.isPending}
-        onSubmit={(slug) =>
-          updateSlug.mutate({ id: tenant.id, request: { slug } })
-        }
+        serverError={slugError}
+        onSubmit={(slug) => {
+          setSlugError(null);
+          updateSlug.mutate({ id: tenant.id, request: { slug } });
+        }}
       />
       <ConfirmationDeleteDialog
         open={confirmOpen}

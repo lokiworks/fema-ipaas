@@ -66,7 +66,7 @@ function PowCaptchaWidget({
       {status === 'ready' && (
         <>
           <CircleCheck className="size-3.5 text-primary" />
-          {t('Verified')}
+          {t('Human check passed')}
         </>
       )}
       {status === 'failed' && (

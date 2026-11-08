@@ -37,8 +37,6 @@
   "Occurred At": "发生时间",
   "Object": "对象",
   "Object Code": "对象编码",
-  "Business Key": "业务编号",
-  "The business number of the object, for example a contract number.": "对象的业务编号，例如合同号。",
   "Pass it to Read Object to load the details.": "传给「读取对象」即可读取详情。",
   "Found": "是否找到",
   "Object Details": "对象详情",

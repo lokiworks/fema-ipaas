@@ -8,13 +8,13 @@ status: accepted
 
 新增平台接口 `/v1/platform/*`，只允许平台调用方访问。平台调用方有两种：一是实例运营者签发的 API 密钥；二是受信身份源（比如 fema-iam）以 `client_credentials` 签给业务应用的令牌，要在允许名单里。两种都要单独授予权限，比如 `TENANT_PROVISION`、`TENANT_MEMBERS`、`USAGE_READ`。
 
-`POST /v1/platform/tenants` 一次建好或取回：租户、默认项目、OIDC 登录配置（含附加授权参数 `tenant`）、属主的预绑定（按 issuer + 属主的成员 ID，角色是租户管理员）、事件签名密钥，以及业务连接（OAuth2 `client_credentials`，附加属性带 `tenant`）。幂等键是外部引用"issuer + 外部租户编码"。重复调用时更新密钥，以最后一次为准。
+`POST /v1/platform/tenants` 一次建好或取回：租户、默认项目、OIDC 登录配置（含附加授权参数 `tenant`）、属主的预绑定（按 issuer + 属主的成员 ID，角色是租户管理员）、业务连接（OAuth2 `client_credentials`，附加属性带 `tenant`），并用这家租户的集成服务应用向 fema 登记成员变动的事件订阅。幂等键是外部引用"issuer + 外部租户编码"。重复调用时更新密钥，以最后一次为准。
 
 实例运营者在运营后台做同样的事，调用的也是同一组服务。
 
 ## Context
 
-原来建租户只认首位用户的引导令牌。业务方（比如 rental-saas 的租户初始化）没有任何入口能替一家新租户开户，见 `fema-bpaas/docs/design-iam-ipaas-federation-2026-11-04.md` 第三节。
+原来建租户只认首位用户的引导令牌。业务方（比如 rental-saas 的租户初始化）没有任何入口能替一家新租户开户，见 fema-bpaas 身份联邦设计第三节（2026-11-05 确认，落地后已删稿）。
 
 ## Why
 

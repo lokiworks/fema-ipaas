@@ -4,8 +4,10 @@ import {
   TestSmsSettingsRequestBody,
   UpdateSmsSettingsRequestBody,
 } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,8 +18,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -25,8 +35,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { operatorHooks, operatorUtils } from '@/features/operator';
-import { tenantAccessUtils } from '@/features/tenant-access';
+import { internalErrorMessage } from '@/components/ui/sonner';
+import {
+  operatorHooks,
+  operatorSchemas,
+  operatorUtils,
+  SmsFormValues,
+  SmsTestFormValues,
+} from '@/features/operator';
+import { FormServerError, tenantAccessUtils } from '@/features/tenant-access';
+import { api } from '@/lib/api';
 
 export function SmsCard({ sms }: { sms: SmsSettingsPublic | null }) {
   const [editing, setEditing] = useState(sms === null);
@@ -87,195 +105,237 @@ function SmsForm({
   sms: SmsSettingsPublic | null;
   onSaved: () => void;
 }) {
-  const { mutate: save, isPending } = operatorHooks.useSaveSms({ onSaved });
-  const [provider, setProvider] = useState<SmsProviderKind>(
-    sms?.provider ?? 'ALIYUN',
+  const schema = useMemo(
+    () =>
+      operatorSchemas.smsForm({ hasSecret: sms?.hasAccessKeySecret === true }),
+    [sms?.hasAccessKeySecret],
   );
-  const [accessKeyId, setAccessKeyId] = useState(sms?.accessKeyId ?? '');
-  const [accessKeySecret, setAccessKeySecret] = useState('');
-  const [signName, setSignName] = useState(sms?.signName ?? '');
-  const [templateCode, setTemplateCode] = useState(sms?.templateCode ?? '');
-  const [sdkAppId, setSdkAppId] = useState(sms?.sdkAppId ?? '');
-  const [region, setRegion] = useState(sms?.region ?? '');
-  const [error, setError] = useState<string | null>(null);
-
-  const submit = (): void => {
-    const parsed = UpdateSmsSettingsRequestBody.safeParse({
-      provider,
-      accessKeyId,
-      ...(accessKeySecret.length > 0 ? { accessKeySecret } : {}),
-      signName,
-      templateCode,
-      sdkAppId: provider === 'TENCENT' ? emptyToNull(sdkAppId) : null,
-      region: emptyToNull(region),
-    });
-    if (!parsed.success) {
-      setError(t(parsed.error.issues[0]?.message ?? 'required'));
-      return;
-    }
-    if (!sms?.hasAccessKeySecret && accessKeySecret.length === 0) {
-      setError(t('required'));
-      return;
-    }
-    setError(null);
-    save(parsed.data);
-  };
+  const form = useForm<SmsFormValues>({
+    mode: 'onChange',
+    resolver: zodResolver(schema),
+    defaultValues: smsDefaults(sms),
+  });
+  const provider = form.watch('provider');
+  const { mutate: save, isPending } = operatorHooks.useSaveSms({
+    onSaved,
+    onError: (error) =>
+      form.setError('root.serverError', {
+        type: 'manual',
+        message: api.extractServerErrorMessage(error, internalErrorMessage()),
+      }),
+  });
 
   return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        submit();
-      }}
-    >
-      <div className="flex flex-col gap-1.5">
-        <Label>{t('Provider')}</Label>
-        <Select
-          value={provider}
-          onValueChange={(value) =>
-            setProvider(value === 'TENCENT' ? 'TENCENT' : 'ALIYUN')
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          const parsed = UpdateSmsSettingsRequestBody.safeParse(
+            operatorUtils.smsRequest(values),
+          );
+          if (parsed.success) {
+            save(parsed.data);
           }
-        >
-          <SelectTrigger className="w-64" data-testid="sms-provider">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALIYUN">
-              {operatorUtils.smsProviderLabel('ALIYUN')}
-            </SelectItem>
-            <SelectItem value="TENCENT">
-              {operatorUtils.smsProviderLabel('TENCENT')}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <TextRow
-        id="sms-key-id"
-        label={t('AccessKey ID')}
-        value={accessKeyId}
-        onChange={setAccessKeyId}
-      />
-      <TextRow
-        id="sms-key-secret"
-        label={t('AccessKey secret')}
-        value={accessKeySecret}
-        type="password"
-        placeholder={
-          sms?.hasAccessKeySecret ? t('Saved. Leave empty to keep it.') : ''
-        }
-        onChange={setAccessKeySecret}
-      />
-      <TextRow
-        id="sms-sign"
-        label={t('Signature name')}
-        value={signName}
-        onChange={setSignName}
-      />
-      <TextRow
-        id="sms-template"
-        label={t('Template code')}
-        value={templateCode}
-        onChange={setTemplateCode}
-      />
-      {provider === 'TENCENT' && (
-        <TextRow
-          id="sms-sdk-app"
-          label={t('SDK app ID')}
-          value={sdkAppId}
-          onChange={setSdkAppId}
+        })}
+      >
+        <FormField
+          control={form.control}
+          name="provider"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('Provider')}</FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={(value) =>
+                  field.onChange(value === 'TENCENT' ? 'TENCENT' : 'ALIYUN')
+                }
+              >
+                <FormControl>
+                  <SelectTrigger className="w-64" data-testid="sms-provider">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {SmsProviderKind.options.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {operatorUtils.smsProviderLabel(option)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      )}
-      <TextRow
-        id="sms-region"
-        label={t('Region')}
-        value={region}
-        placeholder={provider === 'TENCENT' ? 'ap-guangzhou' : 'cn-hangzhou'}
-        onChange={setRegion}
-      />
-      {error && (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      )}
-      <div>
-        <Button type="submit" loading={isPending} data-testid="sms-save">
-          {t('Save')}
-        </Button>
-      </div>
-    </form>
+        <TextRow
+          form={form}
+          name="accessKeyId"
+          label={t('AccessKey ID')}
+          required
+        />
+        <TextRow
+          form={form}
+          name="accessKeySecret"
+          label={t('AccessKey secret')}
+          required={sms?.hasAccessKeySecret !== true}
+          type="password"
+          placeholder={
+            sms?.hasAccessKeySecret ? t('Saved. Leave empty to keep it.') : ''
+          }
+        />
+        <TextRow
+          form={form}
+          name="signName"
+          label={t('Signature name')}
+          required
+        />
+        <TextRow
+          form={form}
+          name="templateCode"
+          label={t('Template code')}
+          required
+        />
+        {provider === 'TENCENT' && (
+          <TextRow form={form} name="sdkAppId" label={t('SDK app ID')} />
+        )}
+        <TextRow
+          form={form}
+          name="region"
+          label={t('Region')}
+          placeholder={provider === 'TENCENT' ? 'ap-guangzhou' : 'cn-hangzhou'}
+        />
+        <FormServerError
+          message={form.formState.errors.root?.serverError?.message}
+        />
+        <div>
+          <Button type="submit" loading={isPending} data-testid="sms-save">
+            {t('Save')}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
 
 function SmsTest() {
-  const { mutate: sendTest, isPending } = operatorHooks.useTestSms();
-  const [phone, setPhone] = useState('');
-  const normalized = tenantAccessUtils.normalizePhone(phone);
-  const parsed = TestSmsSettingsRequestBody.safeParse({ phone: normalized });
+  const form = useForm<SmsTestFormValues>({
+    mode: 'onChange',
+    resolver: zodResolver(operatorSchemas.smsTestForm),
+    defaultValues: { phone: '' },
+  });
+  const { mutate: sendTest, isPending } = operatorHooks.useTestSms({
+    onError: (error) =>
+      form.setError('root.serverError', {
+        type: 'manual',
+        message: api.extractServerErrorMessage(error, internalErrorMessage()),
+      }),
+  });
   return (
-    <div className="flex flex-col gap-1.5 border-t pt-4">
-      <Label htmlFor="sms-test-phone">{t('Send a test message')}</Label>
-      <div className="flex items-center gap-2">
-        <Input
-          id="sms-test-phone"
-          className="w-64"
-          value={phone}
-          placeholder="13800138000"
-          data-testid="sms-test-phone"
-          onChange={(event) => setPhone(event.target.value)}
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-1.5 border-t pt-4"
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          const parsed = TestSmsSettingsRequestBody.safeParse({
+            phone: tenantAccessUtils.normalizePhone(values.phone),
+          });
+          if (parsed.success) {
+            sendTest(parsed.data);
+          }
+        })}
+      >
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('Send a test message')}</FormLabel>
+              <div className="flex items-center gap-2">
+                <FormControl>
+                  <Input
+                    {...field}
+                    className="w-64"
+                    placeholder="13800138000"
+                    data-testid="sms-test-phone"
+                  />
+                </FormControl>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  loading={isPending}
+                  data-testid="sms-test-send"
+                >
+                  {t('Send test')}
+                </Button>
+              </div>
+              <FormDescription>
+                {t('A successful test marks the settings as tested.')}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        <Button
-          variant="outline"
-          loading={isPending}
-          disabled={!parsed.success}
-          data-testid="sms-test-send"
-          onClick={() => {
-            if (parsed.success) {
-              sendTest(parsed.data);
-            }
-          }}
-        >
-          {t('Send test')}
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {t('A successful test marks the settings as tested.')}
-      </p>
-    </div>
+        <FormServerError
+          message={form.formState.errors.root?.serverError?.message}
+        />
+      </form>
+    </Form>
   );
 }
 
 function TextRow({
-  id,
+  form,
+  name,
   label,
-  value,
-  onChange,
   type,
   placeholder,
+  required,
 }: {
-  id: string;
+  form: ReturnType<typeof useForm<SmsFormValues>>;
+  name:
+    | 'accessKeyId'
+    | 'accessKeySecret'
+    | 'signName'
+    | 'templateCode'
+    | 'sdkAppId'
+    | 'region';
   label: string;
-  value: string;
-  onChange: (value: string) => void;
   type?: string;
   placeholder?: string;
+  required?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        type={type ?? 'text'}
-        value={value}
-        placeholder={placeholder}
-        autoComplete="off"
-        data-testid={id}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    </div>
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel showRequiredIndicator={required}>{label}</FormLabel>
+          <FormControl>
+            <Input
+              {...field}
+              type={type ?? 'text'}
+              placeholder={placeholder}
+              autoComplete="off"
+              data-testid={`sms-field-${name}`}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }
 
-function emptyToNull(value: string): string | null {
-  return value.trim().length === 0 ? null : value.trim();
+function smsDefaults(sms: SmsSettingsPublic | null): SmsFormValues {
+  return {
+    provider: sms?.provider ?? 'ALIYUN',
+    accessKeyId: sms?.accessKeyId ?? '',
+    accessKeySecret: '',
+    signName: sms?.signName ?? '',
+    templateCode: sms?.templateCode ?? '',
+    sdkAppId: sms?.sdkAppId ?? '',
+    region: sms?.region ?? '',
+  };
 }

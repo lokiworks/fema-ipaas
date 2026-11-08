@@ -25,6 +25,14 @@ export const runtimeExecutionCases: MatrixCase[] = [
         },
     },
     {
+        id: 'GET /v1/executions/:id/workflow',
+        access: { type: 'project', permission: Permission.READ_WORKFLOW },
+        prepare: async ({ world, scope }) => {
+            const run = await runtimeSeed.run({ world, scope })
+            return { request: { method: 'GET', url: `/v1/executions/${run.id}/workflow` } }
+        },
+    },
+    {
         id: 'GET /v1/executions/count-by-status',
         access: { type: 'project', permission: Permission.READ_RUN },
         scopedRead: true,

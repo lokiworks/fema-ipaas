@@ -77,7 +77,7 @@ export function PlatformBindingsCard({ sso }: { sso: SsoSettings | null }) {
                   data-testid={`platform-bind-${kind}`}
                 >
                   <Link2 className="size-4" />
-                  {t('Link')}
+                  {t('Link organization')}
                 </Button>
               )}
             </div>

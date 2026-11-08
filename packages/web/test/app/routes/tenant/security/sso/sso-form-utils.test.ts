@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ssoFormUtils } from './sso-form-utils';
+import { ssoFormUtils } from '@/app/routes/tenant/security/sso/sso-form-utils';
 
 describe('ssoFormUtils extra authorization parameters', () => {
   it('round-trips rows and parameters', () => {

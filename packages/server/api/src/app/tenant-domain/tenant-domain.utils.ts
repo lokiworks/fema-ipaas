@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { isNil, tryCatchSync } from '@fema-ipaas/core-utils'
 import { SAAS_LIMITS, TenantDomainVerificationRecord } from '@fema-ipaas/shared'
 
-const VALUE_PREFIX = 'fema-ipaas-verification='
+const VALUE_PREFIX = 'ipaas-verification='
 
 function buildVerificationRecord({ domain, token }: { domain: string, token?: string }): TenantDomainVerificationRecord {
     return {

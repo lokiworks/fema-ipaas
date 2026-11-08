@@ -264,5 +264,5 @@ export const SAAS_LIMITS = {
     tenantHeader: 'x-fema-tenant',
     tenantQueryParam: 'tenant',
     tenantPathPrefix: '/t/',
-    domainVerificationRecordPrefix: '_fema-ipaas-verification',
+    domainVerificationRecordPrefix: '_ipaas-verification',
 }

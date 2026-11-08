@@ -76,7 +76,7 @@ export const ssoConfigService = (log: FastifyBaseLogger) => ({
             const clientSecret = await resolveSecret({ provided: request.clientSecret, previous: previous?.clientSecret ?? null })
             const matchBy = request.matchBy ?? previous?.matchBy ?? SsoMatchBy.EMAIL
             const extraAuthParams = request.extraAuthParams ?? previous?.extraAuthParams ?? {}
-            const eventSigningSecret = previous?.eventSigningSecret
+            const memberSubscription = previous?.memberSubscription
             const credentialsChanged = isNil(previous)
                 || previous.issuer !== request.issuer
                 || previous.clientId !== request.clientId
@@ -100,7 +100,7 @@ export const ssoConfigService = (log: FastifyBaseLogger) => ({
                 extraAuthParams,
                 sessionRecheckMinutes: request.sessionRecheckMinutes === undefined ? previous?.sessionRecheckMinutes ?? null : request.sessionRecheckMinutes,
                 provisioned: previous?.provisioned ?? false,
-                ...(isNil(eventSigningSecret) ? {} : { eventSigningSecret }),
+                ...(isNil(memberSubscription) ? {} : { memberSubscription }),
             }
             await persist({ tenant, next: { ...tenant.federatedAuthProviders, oidc: next } })
             return { settings: await ssoConfigService(log).getSettings({ tenantId }), changed: changedFields({ previous, next, secretProvided: !isNil(request.clientSecret) }) }
@@ -368,25 +368,32 @@ export const ssoConfigService = (log: FastifyBaseLogger) => ({
 })
 
 async function rotateProviderSecrets({ providers }: { providers: FederatedAuthnProviderConfig }): Promise<FederatedAuthnProviderConfig | null> {
-    const [oidcSecret, oidcSigning, feishuSecret, wecomSecret, dingtalkSecret] = await Promise.all([
+    const [oidcSecret, memberSecret, feishuSecret, wecomSecret, dingtalkSecret] = await Promise.all([
         rotateSecret(providers.oidc?.clientSecret),
-        rotateSecret(providers.oidc?.eventSigningSecret),
+        rotateSecret(providers.oidc?.memberSubscription?.plainSecret),
         rotateSecret(providers.feishu?.appSecret),
         rotateSecret(providers.wecom?.secret),
         rotateSecret(providers.dingtalk?.appSecret),
     ])
-    if ([oidcSecret, oidcSigning, feishuSecret, wecomSecret, dingtalkSecret].every(isNil)) {
+    if ([oidcSecret, memberSecret, feishuSecret, wecomSecret, dingtalkSecret].every(isNil)) {
         return null
     }
     return {
         ...providers,
-        ...(isNil(providers.oidc) || (isNil(oidcSecret) && isNil(oidcSigning))
+        ...(isNil(providers.oidc) || (isNil(oidcSecret) && isNil(memberSecret))
             ? {}
-            : { oidc: { ...providers.oidc, ...(isNil(oidcSecret) ? {} : { clientSecret: oidcSecret }), ...(isNil(oidcSigning) ? {} : { eventSigningSecret: oidcSigning }) } }),
+            : { oidc: { ...providers.oidc, ...(isNil(oidcSecret) ? {} : { clientSecret: oidcSecret }), ...rotatedMemberSubscription({ oidc: providers.oidc, memberSecret }) } }),
         ...(isNil(providers.feishu) || isNil(feishuSecret) ? {} : { feishu: { ...providers.feishu, appSecret: feishuSecret } }),
         ...(isNil(providers.wecom) || isNil(wecomSecret) ? {} : { wecom: { ...providers.wecom, secret: wecomSecret } }),
         ...(isNil(providers.dingtalk) || isNil(dingtalkSecret) ? {} : { dingtalk: { ...providers.dingtalk, appSecret: dingtalkSecret } }),
     }
+}
+
+function rotatedMemberSubscription({ oidc, memberSecret }: { oidc: StoredOidcSso, memberSecret: SsoEncryptedSecret | null }): Pick<StoredOidcSso, 'memberSubscription'> {
+    if (isNil(oidc.memberSubscription) || isNil(memberSecret)) {
+        return {}
+    }
+    return { memberSubscription: { ...oidc.memberSubscription, plainSecret: memberSecret } }
 }
 
 async function rotateSecret(secret: SsoEncryptedSecret | undefined): Promise<SsoEncryptedSecret | null> {
@@ -444,7 +451,6 @@ function assertProvisionedUnchanged({ previous, request }: { previous: StoredOid
         || request.requireVerifiedEmail !== previous.requireVerifiedEmail
         || (!isNil(request.matchBy) && request.matchBy !== (previous.matchBy ?? SsoMatchBy.EMAIL))
         || (!isNil(request.extraAuthParams) && JSON.stringify(request.extraAuthParams) !== JSON.stringify(previous.extraAuthParams ?? {}))
-        || (request.sessionRecheckMinutes !== undefined && request.sessionRecheckMinutes !== (previous.sessionRecheckMinutes ?? null))
     if (locked) {
         throw validation('This connection was set up by the platform; only the display name, the switch and the access rules can be changed')
     }
@@ -514,7 +520,7 @@ function validation(message: string): ApplicationError {
 }
 
 const SSO_CALLBACK_PATH = '/v1/authn/sso/callback'
-const SECRET_KEYS = ['clientSecret', 'appSecret', 'secret', 'eventSigningSecret', 'idpMetadataXml']
+const SECRET_KEYS = ['clientSecret', 'appSecret', 'secret', 'memberSubscription', 'idpMetadataXml']
 
 const PLATFORM_KIND_PROVIDER: Record<PlatformLoginAppKind, SsoProvider> = {
     FEISHU: SsoProvider.FEISHU,

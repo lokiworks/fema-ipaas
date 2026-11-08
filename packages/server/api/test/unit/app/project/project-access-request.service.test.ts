@@ -21,6 +21,28 @@ function matches(row: Record<string, unknown>, where: Record<string, unknown>): 
     })
 }
 
+function conditionalUpdate() {
+    const state: { patch: Record<string, unknown>, where: Record<string, unknown> } = { patch: {}, where: {} }
+    const builder = {
+        update: () => builder,
+        set: (patch: Record<string, unknown>) => {
+            state.patch = patch
+            return builder
+        },
+        where: (where: Record<string, unknown>) => {
+            state.where = where
+            return builder
+        },
+        returning: () => builder,
+        execute: async () => {
+            const claimed = mocks.requests.filter((row) => matches(row, state.where))
+            mocks.requests = mocks.requests.map((row) => matches(row, state.where) ? { ...row, ...state.patch } : row)
+            return { raw: claimed.map((row) => ({ id: row.id })), generatedMaps: [] }
+        },
+    }
+    return builder
+}
+
 vi.mock('../../../../src/app/core/db/repo-factory', () => ({
     repoFactory: () => () => ({
         findOneBy: async (where: Record<string, unknown>) => mocks.requests.find((row) => matches(row, where)) ?? null,
@@ -32,6 +54,7 @@ vi.mock('../../../../src/app/core/db/repo-factory', () => ({
         update: async (where: Record<string, unknown>, patch: Record<string, unknown>) => {
             mocks.requests = mocks.requests.map((row) => matches(row, where) ? { ...row, ...patch } : row)
         },
+        createQueryBuilder: () => conditionalUpdate(),
     }),
 }))
 vi.mock('../../../../src/app/project/project-repo', () => ({
@@ -175,6 +198,28 @@ describe('projectAccessRequestService', () => {
         await expect(projectAccessRequestService(log).decide({ tenantId: 't1', requestId: request.id, actorId: 'owner', approve: true })).rejects.toMatchObject({
             error: { params: { messageKey: 'projectAccessAlreadyDecided' } },
         })
+    })
+
+    it('lets only one of two simultaneous approvers decide', async () => {
+        mocks.roles.set('p1:admin', DefaultProjectRole.ADMIN)
+        const { request } = await projectAccessRequestService(log).create({ tenantId: 't1', userId: 'asker', projectId: 'p1' })
+        const results = await Promise.allSettled([
+            projectAccessRequestService(log).decide({ tenantId: 't1', requestId: request.id, actorId: 'owner', approve: false }),
+            projectAccessRequestService(log).decide({ tenantId: 't1', requestId: request.id, actorId: 'admin', approve: true }),
+        ])
+        expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+        expect(results.filter((result) => result.status === 'rejected')).toEqual([
+            expect.objectContaining({ reason: expect.objectContaining({ error: expect.objectContaining({ params: expect.objectContaining({ messageKey: 'projectAccessAlreadyDecided' }) }) }) }),
+        ])
+        expect(mocks.upsert).not.toHaveBeenCalled()
+        expect(mocks.requests[0]).toMatchObject({ status: ProjectAccessRequestStatus.REJECTED, decidedBy: 'owner' })
+    })
+
+    it('puts the request back to pending when adding the member fails', async () => {
+        mocks.upsert.mockRejectedValueOnce(new Error('member insert failed'))
+        const { request } = await projectAccessRequestService(log).create({ tenantId: 't1', userId: 'asker', projectId: 'p1' })
+        await expect(projectAccessRequestService(log).decide({ tenantId: 't1', requestId: request.id, actorId: 'owner', approve: true })).rejects.toThrow('member insert failed')
+        expect(mocks.requests[0]).toMatchObject({ status: ProjectAccessRequestStatus.PENDING, decidedBy: null, decidedAt: null, grantedRole: null })
     })
 
     it('lists only the pending requests of the asked project with requester names', async () => {

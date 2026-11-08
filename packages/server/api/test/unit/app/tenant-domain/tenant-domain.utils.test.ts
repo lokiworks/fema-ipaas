@@ -8,8 +8,8 @@ describe('tenant domain utils', () => {
 
             expect(record).toEqual({
                 type: 'TXT',
-                name: '_fema-ipaas-verification.acme.com',
-                value: 'fema-ipaas-verification=abc123',
+                name: '_ipaas-verification.acme.com',
+                value: 'ipaas-verification=abc123',
             })
         })
 
@@ -23,8 +23,8 @@ describe('tenant domain utils', () => {
         it('matches a TXT answer even when the provider splits it into chunks', () => {
             const expected = tenantDomainUtils.buildVerificationRecord({ domain: 'acme.com', token: 'abc123' })
 
-            expect(tenantDomainUtils.txtMatches({ answers: [['v=spf1'], ['fema-ipaas-verification=', 'abc123']], expected })).toBe(true)
-            expect(tenantDomainUtils.txtMatches({ answers: [['fema-ipaas-verification=other']], expected })).toBe(false)
+            expect(tenantDomainUtils.txtMatches({ answers: [['v=spf1'], ['ipaas-verification=', 'abc123']], expected })).toBe(true)
+            expect(tenantDomainUtils.txtMatches({ answers: [['ipaas-verification=other']], expected })).toBe(false)
             expect(tenantDomainUtils.txtMatches({ answers: [], expected })).toBe(false)
         })
     })

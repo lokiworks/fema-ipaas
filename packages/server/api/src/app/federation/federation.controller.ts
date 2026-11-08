@@ -1,4 +1,4 @@
-import { ApplicationError, ErrorCode, isNil } from '@fema-ipaas/core-utils'
+import { isNil } from '@fema-ipaas/core-utils'
 import { FEDERATION_LIMITS } from '@fema-ipaas/shared'
 import { FastifyRequest } from 'fastify'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
@@ -8,21 +8,24 @@ import { securityAccess } from '../core/security/authorization/fastify-security'
 import { networkUtils } from '../helper/network-utils'
 import { system } from '../helper/system/system'
 import { AppSystemProp } from '../helper/system/system-props'
-import { federationEventService } from './federation-event.service'
+import { memberEventService } from './member-event.service'
 
 export const federationController: FastifyPluginAsyncZod = async (app) => {
-    app.post('/events', EventsRequest, async (request): Promise<EventsResponse> => {
+    app.post('/members/:tenantId', MemberEventsRequest, async (request): Promise<MemberEventsResponse> => {
         const rawBody = request.rawBody
         if (typeof rawBody !== 'string') {
-            throw new ApplicationError({ code: ErrorCode.AUTHENTICATION, params: { message: 'The federation event signature is invalid' } })
+            return { received: false }
         }
         const signature = request.headers[FEDERATION_LIMITS.signatureHeader]
-        const result = await federationEventService(request.log).receive({
+        const result = await memberEventService(request.log).receive({
+            tenantId: request.params.tenantId,
             rawBody,
             signature: Array.isArray(signature) ? signature[0] : signature,
             ip: clientIp(request),
         })
-        return { received: true, duplicate: result.duplicate }
+        return result.outcome === 'verification' && !isNil(result.challenge)
+            ? { received: true, challenge: result.challenge }
+            : { received: result.outcome !== 'ignored' }
     })
 }
 
@@ -31,13 +34,13 @@ function clientIp(request: FastifyRequest): string | undefined {
     return isNil(ip) ? undefined : ip
 }
 
-const EventsResponse = z.object({
+const MemberEventsResponse = z.object({
     received: z.boolean(),
-    duplicate: z.boolean(),
+    challenge: z.string().optional(),
 })
-type EventsResponse = z.infer<typeof EventsResponse>
+type MemberEventsResponse = z.infer<typeof MemberEventsResponse>
 
-const EventsRequest = {
+const MemberEventsRequest = {
     config: {
         rawBody: true,
         security: securityAccess.public(),
@@ -48,7 +51,8 @@ const EventsRequest = {
     },
     schema: {
         tags: ['federation'],
+        params: z.object({ tenantId: z.string().min(1).max(21) }),
         body: z.unknown(),
-        response: { [StatusCodes.OK]: EventsResponse },
+        response: { [StatusCodes.OK]: MemberEventsResponse },
     },
 }

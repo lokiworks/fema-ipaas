@@ -27,6 +27,7 @@ export enum SystemJobName {
     BACKUP_TICK = 'backup-tick',
     RECONCILE = 'reconcile',
     FEDERATION_SESSION_RECHECK = 'federation-session-recheck',
+    TENANT_USAGE_SNAPSHOT = 'tenant-usage-snapshot',
 }
 
 type DeleteWorkflowDurableSystemJobData =  {
@@ -80,6 +81,7 @@ type SystemJobDataMap = {
     [SystemJobName.BACKUP_TICK]: Record<string, never>
     [SystemJobName.RECONCILE]: { ruleId: string, projectId: string, runId?: string }
     [SystemJobName.FEDERATION_SESSION_RECHECK]: Record<string, never>
+    [SystemJobName.TENANT_USAGE_SNAPSHOT]: Record<string, never>
 }
 
 export type SystemJobData<T extends SystemJobName = SystemJobName> = T extends SystemJobName ? SystemJobDataMap[T] : never

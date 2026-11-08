@@ -12,13 +12,6 @@ export enum SsoMatchBy {
     SUBJECT = 'SUBJECT',
 }
 
-export enum FederationEventType {
-    MEMBER_REMOVED = 'MEMBER_REMOVED',
-    MEMBER_RESTORED = 'MEMBER_RESTORED',
-    TENANT_SUSPENDED = 'TENANT_SUSPENDED',
-    TENANT_RESUMED = 'TENANT_RESUMED',
-}
-
 export const ExternalIdentity = z.object({
     id: EntityId,
     created: DateOrString,
@@ -34,19 +27,38 @@ export const ExternalIdentity = z.object({
 })
 export type ExternalIdentity = z.infer<typeof ExternalIdentity>
 
-export const FederationEvent = z.object({
+export const MEMBER_EVENT_TYPES = [
+    'iam-identity.member.suspend',
+    'iam-identity.member.activate',
+    'iam-identity.member.remove',
+    'iam-identity.member.restore',
+] as const
+
+export const MemberEventType = z.enum(MEMBER_EVENT_TYPES)
+export type MemberEventType = z.infer<typeof MemberEventType>
+
+export const MemberWebhookEvent = z.object({
     id: z.string().min(1).max(200),
-    type: z.enum(FederationEventType),
-    issuer: z.string().min(1).max(500),
-    externalTenantId: z.string().min(1).max(200),
-    subject: z.string().max(200).optional(),
-    occurredAt: z.string(),
+    type: MemberEventType,
+    tenantId: z.string().min(1).max(200),
+    occurredAt: z.string().optional(),
+    object: z.object({
+        code: z.string().max(200).optional(),
+        id: z.string().min(1).max(200),
+    }),
 })
-export type FederationEvent = z.infer<typeof FederationEvent>
+export type MemberWebhookEvent = z.infer<typeof MemberWebhookEvent>
+
+export const WebhookVerification = z.object({
+    id: z.string().max(200).optional(),
+    type: z.literal('webhook.verification'),
+    challenge: z.string().min(1).max(500),
+})
+export type WebhookVerification = z.infer<typeof WebhookVerification>
 
 export const FEDERATION_LIMITS = {
     signatureHeader: 'x-fema-signature',
-    eventDedupeTtlSeconds: 7 * 24 * 60 * 60,
+    memberEventDedupeTtlSeconds: 24 * 60 * 60,
     defaultSessionRecheckMinutes: 15,
     federatedSessionHours: 8,
 }

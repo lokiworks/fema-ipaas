@@ -1,9 +1,11 @@
 import {
   CaptchaProvider,
   InstanceRole,
+  OperatorTenantSummary,
   PlatformClientKind,
   PlatformLoginAppKind,
   PlatformScope,
+  SmsProviderKind,
   TenantLimitsUpdate,
   TenantOwnerInput,
   TenantStatus,
@@ -186,6 +188,93 @@ function smsProviderLabel(provider: 'ALIYUN' | 'TENCENT'): string {
     : t('Tencent Cloud SMS');
 }
 
+function platformClientRequest({
+  kind,
+  name,
+  issuer,
+  subjects,
+  scopes,
+}: {
+  kind: PlatformClientKind;
+  name: string;
+  issuer: string;
+  subjects: string;
+  scopes: PlatformScope[];
+}) {
+  if (kind === PlatformClientKind.API_KEY) {
+    return { kind, name, scopes };
+  }
+  return {
+    kind,
+    name,
+    issuer,
+    allowedSubjects: parseSubjects(subjects),
+    scopes,
+  };
+}
+
+function emptyToNull(value: string): string | null {
+  return value.trim().length === 0 ? null : value.trim();
+}
+
+function smsRequest(values: {
+  provider: SmsProviderKind;
+  accessKeyId: string;
+  accessKeySecret: string;
+  signName: string;
+  templateCode: string;
+  sdkAppId: string;
+  region: string;
+}) {
+  return {
+    provider: values.provider,
+    accessKeyId: values.accessKeyId,
+    ...(values.accessKeySecret.length > 0
+      ? { accessKeySecret: values.accessKeySecret }
+      : {}),
+    signName: values.signName,
+    templateCode: values.templateCode,
+    sdkAppId:
+      values.provider === 'TENCENT' ? emptyToNull(values.sdkAppId) : null,
+    region: emptyToNull(values.region),
+  };
+}
+
+function loginAppRequest(values: {
+  enabled: boolean;
+  appId: string;
+  appSecret: string;
+  region: string;
+  allowSelfSignup: boolean;
+}) {
+  return {
+    enabled: values.enabled,
+    appId: values.appId,
+    ...(values.appSecret.length > 0 ? { appSecret: values.appSecret } : {}),
+    region: emptyToNull(values.region),
+    allowSelfSignup: values.allowSelfSignup,
+  };
+}
+
+function limitsInputsOf(
+  tenant: Pick<
+    OperatorTenantSummary,
+    | 'usersLimit'
+    | 'projectsLimit'
+    | 'activeWorkflowsLimit'
+    | 'concurrentExecutionsLimit'
+    | 'workerGroupId'
+  >,
+): LimitInputs {
+  return {
+    usersLimit: limitInputOf(tenant.usersLimit),
+    projectsLimit: limitInputOf(tenant.projectsLimit),
+    activeWorkflowsLimit: limitInputOf(tenant.activeWorkflowsLimit),
+    concurrentExecutionsLimit: limitInputOf(tenant.concurrentExecutionsLimit),
+    workerGroupId: tenant.workerGroupId ?? '',
+  };
+}
+
 export const operatorUtils = {
   isOperator,
   tenantStatusLabel,
@@ -203,6 +292,11 @@ export const operatorUtils = {
   captchaLabel,
   loginAppLabel,
   smsProviderLabel,
+  platformClientRequest,
+  smsRequest,
+  loginAppRequest,
+  limitsInputsOf,
+  emptyToNull,
 };
 
 export type LimitField =

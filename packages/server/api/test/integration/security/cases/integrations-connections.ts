@@ -130,6 +130,19 @@ const connectionReadCases: MatrixCase[] = [
             expect(response.text).not.toContain(integrationsSeed.SECRET_MARKER)
         },
     }),
+    ...exposureCases({
+        id: 'GET /v1/connections/:id/prefill',
+        need: 'manage',
+        connectionOptions: {
+            type: ConnectionType.BASIC_AUTH,
+            value: { type: ConnectionType.BASIC_AUTH, username: 'sec-prefill-user', password: integrationsSeed.SECRET_MARKER },
+        },
+        request: async ({ connectionId }) => ({ request: { method: 'GET', url: `/v1/connections/${connectionId}/prefill` } }),
+        afterAllowed: async ({ response }) => {
+            expect(response.text).toContain('sec-prefill-user')
+            expect(response.text).not.toContain(integrationsSeed.SECRET_MARKER)
+        },
+    }),
     selfListCase({ id: 'GET /v1/connections/accessible', url: '/v1/connections/accessible' }),
     selfListCase({ id: 'GET /v1/connections/share-candidates', url: '/v1/connections/share-candidates' }),
 ]
@@ -416,5 +429,5 @@ type ExposureCaseParams = {
     identities?: readonly Identity[]
     afterDenied?: (params: MatrixHookParams) => Promise<void>
     afterAllowed?: (params: MatrixHookParams) => Promise<void>
-    connectionOptions?: { type?: ConnectionType, status?: ConnectionStatus }
+    connectionOptions?: { type?: ConnectionType, status?: ConnectionStatus, value?: Record<string, unknown> }
 }

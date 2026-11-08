@@ -181,9 +181,9 @@ jobs:
         working-directory: packages/server/api
         run: |
           set -a; . ./.env.tests; set +a
-          npx vitest run test/integration --bail 1 --passWithNoTests=false \
-            --exclude 'test/integration/security/**' \
-            --exclude 'test/integration/solution/solution.test.ts'
+          npx vitest run test/integration --passWithNoTests=false \
+            --exclude '**/test/integration/security/**' \
+            --exclude '**/test/integration/solution/solution.test.ts'
 
       - name: Run API security and solution integration tests one file at a time
         working-directory: packages/server/api

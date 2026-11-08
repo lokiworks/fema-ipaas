@@ -52,3 +52,23 @@ icon: 🧪
    - 断言过期。
    - 元数据里的证书被换掉。
 5. 签名 AuthnRequest 暂不支持，因为没有 SP 证书，所以不要在 IdP 侧强制要求签名请求。
+
+## fema-iam（平台开通）
+
+fema-iam 不需要为 ipaas 另开接口，开通方（比如 rental-saas 的租户初始化）在 fema-iam 里按下面的顺序替这家租户登记，再把结果交给 `POST /v1/platform/tenants`：
+
+1. **ipaas 登录客户端**：
+   - 在这家租户名下建应用，类型 `THIRD_PARTY_APP`，再由全局租户审批（租户自己审批会被拒）。
+   - 建 `oauth-client`，设置如下：
+     - 回调地址填上面的单点登录回调。
+     - `requireAuthorizationConsent: false`。这个类型默认要同意页，不关的话每个成员首次登录都会被问一次。
+     - 受众保持缺省的 `OWNER_TENANT`，即只接纳本租户。
+   - 用 `oauth-client-credential/rotate` 取 `plainSecret`。这个类型带 refresh_token，ipaas 的会话复核要靠它。
+2. **集成服务应用**：
+   - 同样在这家租户名下建应用，类型 `CONFIDENTIAL_SERVICE`（`client_credentials`）。审批、建客户端、轮换密钥的步骤同上。
+   - ipaas 的连接带 `tenant=<租户编码>` 换票。成员事件订阅也用它，所以它要在本租户有成员对象的读权限，否则 fema 会把成员事件列进 `withheldEvents`。
+3. **重试**：
+   - 应用编码全局唯一，重复建应用会返回「已存在」，这时改为读取已有的那条。
+   - 密钥只在轮换时出现一次，所以每次重试都要轮换，并把新密钥交给 ipaas。ipaas 以最后一次为准。
+
+fema-iam 的 id_token 和 userinfo 只在申请了 `email` 范围、并且邮箱已验证时，才给 `email` 和 `email_verified`。ipaas 开通时默认申请 `openid email profile`。成员被移出后，fema-iam 续期时返回 `invalid_grant`，ipaas 的复核据此让会话失效。

@@ -72,7 +72,7 @@ describe('FEMA business event trigger', () => {
     expect(requests[0].method).toBe(HttpMethod.POST);
     expect(requests[0].url).toBe('https://api.example.com/webhook/subscription/create');
     expect(requests[0].authentication).toEqual({ type: 'BEARER_TOKEN', token: 'app-token' });
-    expect(requests[0].body).toEqual({ code: expect.stringMatching(/^ipaas-[0-9a-f]{24}-[0-9a-f]{16}$/), endpoint: webhookUrl, events: ['rental-agreement.contract.activate'] });
+    expect(requests[0].body).toEqual({ code: expect.stringMatching(/^ipaas-[0-9a-f]{24}-[0-9a-f]{16}$/), endpoint: webhookUrl, events: { value: ['rental-agreement.contract.activate'] } });
     expect(store.snapshot()['fema_subscription']).toEqual({ id: 'sub-1', code: expect.any(String), secret, events: ['rental-agreement.contract.activate'], withheldEvents: [] });
     expect(store.snapshot()['fema_subscription_pending_code']).toBeUndefined();
   });

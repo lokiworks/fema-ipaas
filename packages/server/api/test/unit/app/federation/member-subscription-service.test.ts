@@ -103,7 +103,7 @@ describe('member subscription', () => {
             expect(result).toEqual({ subscriptionId: 'sub-1', endpoint, reused: false, withheldEvents: [] })
             expect(calls).toHaveLength(1)
             expect(calls[0].accessToken).toBe('access-token')
-            expect(calls[0].body).toMatchObject({ endpoint, events: [...MEMBER_EVENT_TYPES] })
+            expect(calls[0].body).toMatchObject({ endpoint, events: { value: [...MEMBER_EVENT_TYPES] } })
         })
 
         it('uses a fresh code of at most 64 characters each time', async () => {

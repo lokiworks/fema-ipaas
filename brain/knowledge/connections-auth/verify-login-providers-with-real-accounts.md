@@ -66,7 +66,8 @@ fema-iam 不需要为 ipaas 另开接口，开通方（比如 rental-saas 的租
    - 用 `oauth-client-credential/rotate` 取 `plainSecret`。这个类型带 refresh_token，ipaas 的会话复核要靠它。
 2. **集成服务应用**：
    - 同样在这家租户名下建应用，类型 `CONFIDENTIAL_SERVICE`（`client_credentials`）。审批、建客户端、轮换密钥的步骤同上。
-   - ipaas 的连接带 `tenant=<租户编码>` 换票。成员事件订阅也用它，所以它要在本租户有成员对象的读权限，否则 fema 会把成员事件列进 `withheldEvents`。
+   - ipaas 的连接带 `tenant=<租户编码>` 换票。成员事件订阅也用它，所以它要能读成员对象，否则 fema 会把成员事件列进 `withheldEvents`。应用的读权限只能由平台在全局租户签（LICENSE 行），在租户名下授给应用会被拒（`OPERATION_FORBIDDEN`）。
+   - 订阅请求体里的 `events` 是 fema 的列表字段，wire 形状是 `{"value":[...]}`，写成裸数组会被拒（400 `FEMA_RUNTIME_REQUEST_BODY_MALFORMED`）。
 3. **重试**：
    - 应用编码全局唯一，重复建应用会返回「已存在」，这时改为读取已有的那条。
    - 密钥只在轮换时出现一次，所以每次重试都要轮换，并把新密钥交给 ipaas。ipaas 以最后一次为准。

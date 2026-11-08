@@ -107,7 +107,7 @@ async function run() {
     const accessToken = (await tokenRequest({ client: CLIENTS.serviceA, form: { grant_type: 'client_credentials', tenant: TENANTS.alpha.code } })).json.access_token
     const endpoint = `http://127.0.0.1:${RECEIVER_PORT}/webhooks/selftest`
     const before = received.length
-    const created = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: ['rental-agreement.contract.activate'] } })
+    const created = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: { value: ['rental-agreement.contract.activate'] } } })
     assert(created.json.code === 'SUCCESS' && created.json.data.plainSecret && !('secret' in created.json.data), `登记应返回 plainSecret：${created.text}`)
     const secret = created.json.data.plainSecret
     await waitFor({ what: '订阅生效', probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.code === 'ipaas-selftest-1')?.status === 'ACTIVE' })
@@ -132,7 +132,9 @@ async function run() {
 
   await check('S8 订阅编码永久占位：重复即 ALREADY_EXISTS（撤销后也是）；按编码查得到；撤销只认 id，不存在的返回 NOT_FOUND；无权限 OPERATION_FORBIDDEN；部分权限给 withheldEvents', async () => {
     const { accessToken, endpoint, id } = state.selftest
-    const duplicate = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: ['rental-agreement.contract.activate'] } })
+    const bareList = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-bare', endpoint, events: ['rental-agreement.contract.activate'] } })
+    assert(bareList.status === 400 && bareList.json?.code === 'FEMA_RUNTIME_REQUEST_BODY_MALFORMED', `events 写成裸数组应被拒（fema 的列表字段是 {value:[...]}）：${bareList.status} ${bareList.text.slice(0, 200)}`)
+    const duplicate = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: { value: ['rental-agreement.contract.activate'] } } })
     assert(duplicate.status === 409 && duplicate.json.code === 'ALREADY_EXISTS', `重复编码应 ALREADY_EXISTS：${duplicate.text}`)
     const found = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/find-one`, token: accessToken, body: { filter: { code: 'ipaas-selftest-1' } } })
     assert(found.json.data.id === id && !('plainSecret' in found.json.data), `按编码应查到且不带密钥：${found.text}`)
@@ -145,15 +147,15 @@ async function run() {
     assert(removed.json.code === 'SUCCESS', '撤销失败')
     const again = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/delete`, token: accessToken, body: { id } })
     assert(again.status === 404 && again.json.code === 'NOT_FOUND', `撤销不存在的应 NOT_FOUND：${again.text}`)
-    const reused = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: ['rental-agreement.contract.activate'] } })
+    const reused = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: { value: ['rental-agreement.contract.activate'] } } })
     assert(reused.json.code === 'ALREADY_EXISTS', '撤销后编码也不回收')
     const after = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'rental-agreement.contract.activate', object: { code: 'contract', id: '981233' } } })
     assert(after.deliveries.length === 0, '撤销后不应再推')
     await iam({ path: '/__control/events/deny', body: { events: ['billing.bill.issue'] } })
-    const denied = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-bill', endpoint, events: ['billing.bill.issue'] } })
+    const denied = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-bill', endpoint, events: { value: ['billing.bill.issue'] } } })
     assert(denied.status === 403 && denied.json.code === 'OPERATION_FORBIDDEN', '无读权限时应拒绝登记')
     await iam({ path: '/__control/events/withhold', body: { events: ['rental-agreement.contract.terminate'] } })
-    const partial = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-partial', endpoint, events: ['rental-agreement.contract.activate', 'rental-agreement.contract.terminate'] } })
+    const partial = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-partial', endpoint, events: { value: ['rental-agreement.contract.activate', 'rental-agreement.contract.terminate'] } } })
     assert(JSON.stringify(partial.json.data.withheldEvents) === JSON.stringify(['rental-agreement.contract.terminate']), `应返回 withheldEvents：${partial.text}`)
     await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/delete`, token: accessToken, body: { id: partial.json.data.id } })
   })
@@ -162,7 +164,7 @@ async function run() {
     const accessToken = (await tokenRequest({ client: CLIENTS.serviceA, form: { grant_type: 'client_credentials', tenant: TENANTS.alpha.code } })).json.access_token
     const endpoint = `http://127.0.0.1:${RECEIVER_PORT}/members/alpha`
     const events = ['iam-identity.member.suspend', 'iam-identity.member.activate', 'iam-identity.member.remove', 'iam-identity.member.restore']
-    const created = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-members-1', endpoint, events } })
+    const created = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-members-1', endpoint, events: { value: events } } })
     await waitFor({ what: '成员订阅生效', probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.code === 'ipaas-members-1')?.status === 'ACTIVE' })
     const secret = created.json.data.plainSecret
     const steps = [['suspend', 'SUSPENDED'], ['activate', 'ACTIVE'], ['remove', 'REMOVED'], ['restore', 'ACTIVE']]
@@ -196,7 +198,7 @@ async function run() {
       res.end('{"ok":true}')
     }).listen(RECEIVER_PORT + 1, '127.0.0.1')
     try {
-      await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-silent', endpoint: `http://127.0.0.1:${RECEIVER_PORT + 1}/x`, events } })
+      await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-silent', endpoint: `http://127.0.0.1:${RECEIVER_PORT + 1}/x`, events: { value: events } } })
       await waitFor({ what: '不回显的登记被判为未验证', probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.code === 'ipaas-silent')?.status === 'UNVERIFIED' })
     }
     finally {

@@ -83,7 +83,7 @@ async function register({ log, apiUrl, accessToken, endpoint }: RegisterParams):
             path: '/webhook/subscription/create',
             method: 'POST',
             accessToken,
-            body: { code, endpoint, events: [...MEMBER_EVENT_TYPES] },
+            body: { code, endpoint, events: { value: [...MEMBER_EVENT_TYPES] } },
         })
         if (femaApiClient.isSuccess(result) && result.kind === 'response') {
             const parsed = CreatedSubscription.safeParse(result.data)

@@ -156,7 +156,7 @@ async function createSubscription({ auth, code, webhookUrl, events }: CreateSubs
     auth,
     method: HttpMethod.POST,
     path: 'webhook/subscription/create',
-    body: { code, endpoint: webhookUrl, events },
+    body: { code, endpoint: webhookUrl, events: { value: events } },
   });
 }
 

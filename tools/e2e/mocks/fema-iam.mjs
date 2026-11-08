@@ -463,10 +463,14 @@ function createSubscription({ req, body }) {
   if (grant.error) {
     return grant.error
   }
-  const entry = { at: new Date().toISOString(), action: 'create', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: body.code ?? null, endpoint: body.endpoint ?? null, events: body.events ?? [], outcome: null }
+  const entry = { at: new Date().toISOString(), action: 'create', clientId: grant.claims.client_id, tenant: grant.claims.tenantId, code: body.code ?? null, endpoint: body.endpoint ?? null, events: body.events?.value ?? [], outcome: null }
   state.log.subscriptions.push(entry)
+  if (body.events !== undefined && !Array.isArray(body.events?.value)) {
+    entry.outcome = 'malformed'
+    return json({ status: 400, payload: { code: 'FEMA_RUNTIME_REQUEST_BODY_MALFORMED', message: 'events 是列表字段，wire 形状为 {"value":[...]}' } })
+  }
   const fault = takeFault({ kind: 'subscription-create', clientId: grant.claims.client_id })
-  const events = Array.isArray(body.events) ? body.events.map(String) : []
+  const events = Array.isArray(body.events?.value) ? body.events.value.map(String) : []
   if (typeof body.code !== 'string' || body.code.length === 0 || body.code.length > 64 || events.length === 0) {
     entry.outcome = 'invalid'
     return json({ status: 400, payload: { code: 'INVALID_ARGUMENT', message: 'code（不超过 64 个字符）与 events 必填' } })
@@ -508,7 +512,7 @@ function publicSubscription({ subscription }) {
     id: subscription.id,
     code: subscription.code,
     endpoint: subscription.endpoint,
-    events: subscription.events,
+    events: { value: subscription.events },
     status: { '@type': 'SubscriptionStatus', code: enabled ? 'ENABLED' : 'DISABLED', name: enabled ? '启用' : '停用' },
     activatedAt: subscription.activatedAt ?? null,
     createdAt: subscription.createdAt,

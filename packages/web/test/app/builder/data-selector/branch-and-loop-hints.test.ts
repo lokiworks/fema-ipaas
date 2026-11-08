@@ -2,7 +2,10 @@
 import { WorkflowAction, WorkflowActionType } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
-import { DataSelectorTreeNode } from '@/app/builder/data-selector/type';
+import {
+  DataSelectorTreeNode,
+  DataSelectorTreeNodeData,
+} from '@/app/builder/data-selector/type';
 import { dataSelectorUtils } from '@/app/builder/data-selector/utils';
 
 function loopStep({ items }: { items: string }): WorkflowAction {
@@ -11,11 +14,12 @@ function loopStep({ items }: { items: string }): WorkflowAction {
     type: WorkflowActionType.LOOP_ON_ITEMS,
     displayName: 'Loop',
     valid: true,
+    lastUpdatedDate: '2026-11-09T00:00:00.000Z',
     settings: { items },
   };
 }
 
-const stepNode: DataSelectorTreeNode = {
+const stepNode: DataSelectorTreeNode<DataSelectorTreeNodeData> = {
   key: 'step_5',
   data: {
     type: 'value',
@@ -54,7 +58,7 @@ describe('dataSelectorUtils.branchConditionLabel', () => {
     const node = dataSelectorUtils.withBranchCondition({
       node: {
         ...stepNode,
-        data: { ...stepNode.data, type: 'value', badge: 'Not tested' },
+        data: { ...stepNode.data, badge: 'Not tested' },
       },
       label: 'Only set on branch 1',
     });

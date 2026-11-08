@@ -168,6 +168,9 @@ jobs:
         if: steps.check-framework-common.outputs.framework_or_common_changed == 'true'
         run: npx turbo run build --filter='@fema-ipaas/connector-*'
 
+      - name: Type-check web and API, test files included
+        run: npx turbo run typecheck --filter=web --filter=api
+
       - name: Run unit tests
         run: npm run test-unit
 

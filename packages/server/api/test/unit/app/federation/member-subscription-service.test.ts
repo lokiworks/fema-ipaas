@@ -125,6 +125,7 @@ describe('member subscription', () => {
             script({ '/webhook/subscription/create': () => ok({ id: 'sub-1', plainSecret: 'whsec-1', withheldEvents: ['iam-identity.member.remove'] }) })
             const result = await ensure()
             expect(result.withheldEvents).toEqual(['iam-identity.member.remove'])
+            expect(savedSubscription()).toMatchObject({ withheldEvents: ['iam-identity.member.remove'] })
             expect(log.warn).toHaveBeenCalled()
         })
 

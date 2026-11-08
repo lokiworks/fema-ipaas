@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 import { chromium } from '@playwright/test'
 
-import { ADMIN, ISSUER, STATE_DIR, WEB, api, assert, cookieJar, iam, sleep, ssoLogin } from './saas-kit.mjs'
+import { ADMIN, FEMA_API, ISSUER, STATE_DIR, TOKEN_URL, WEB, api, assert, cookieJar, iam, sleep, ssoLogin } from './saas-kit.mjs'
 
 const OUT = process.env.SAAS_SCREENS_DIR ?? `${STATE_DIR}/ui-shots`
 const THEMES = (process.env.SAAS_SCREENS_THEMES ?? 'light,dark').split(',')
@@ -36,6 +36,18 @@ finally {
   }
 }
 
+function memberEventsFor({ code }) {
+  return {
+    memberEvents: { connectionExternalId: 'fema', apiUrl: FEMA_API },
+    connections: [{
+      externalId: 'fema',
+      connectorName: '@fema-ipaas/connector-fema',
+      displayName: 'FEMA 业务接口',
+      auth: { type: 'OAUTH2_CLIENT_CREDENTIALS', tokenUrl: TOKEN_URL, clientId: `svc-${code}`, clientSecret: 'svc-alpha-secret', props: { apiUrl: FEMA_API, tenant: code } },
+    }],
+  }
+}
+
 async function seed() {
   await iam({
     path: '/__control/seed',
@@ -61,12 +73,14 @@ async function seed() {
         { clientId: 'ipaas-t_beta', secret: 'oidc-beta-secret', kind: 'oidc', tenant: 't_beta' },
         { clientId: 'ipaas-t_gamma', secret: 'oidc-gamma-secret', kind: 'oidc', tenant: 't_gamma' },
         { clientId: 'ipaas-dev', secret: 'oidc-dev-secret', kind: 'oidc', tenant: 't_alpha' },
+        { clientId: 'svc-t_alpha', secret: 'svc-alpha-secret', kind: 'service', tenant: 't_alpha' },
       ],
     },
   })
   const dev = await signIn({ email: ADMIN.email, password: ADMIN.password })
   const apiKey = await must(api({ method: 'POST', path: '/v1/operator/platform-clients', token: dev.token, body: { kind: 'API_KEY', name: 'rental-saas 租户初始化', scopes: ['TENANT_PROVISION', 'TENANT_MEMBERS', 'USAGE_READ'] } }), 'issue api key')
   await must(api({ method: 'POST', path: '/v1/operator/platform-clients', token: dev.token, body: { kind: 'TRUSTED_ISSUER', name: 'fema-iam 平台应用', issuer: ISSUER, allowedSubjects: ['svc-platform'], scopes: ['TENANT_MEMBERS'] } }), 'trusted issuer client')
+  await iam({ path: '/__control/events/withhold', body: { events: ['iam-identity.member.remove'] } })
   const tenants = {}
   for (const [key, code, name, owner, ownerEmail] of [['alpha', 't_alpha', '甲租赁', 'm-alpha-alice', 'alice@alpha.test'], ['beta', 't_beta', '乙设备', 'm-beta-bob', 'bob@beta.test'], ['gamma', 't_gamma', '丙物流', 'm-gamma-gus', 'gus@gamma.test']]) {
     const provisioned = await must(api({
@@ -81,6 +95,7 @@ async function seed() {
         oidc: { issuer: ISSUER, clientId: `ipaas-${code}`, clientSecret: `oidc-${key}-secret`, scopes: 'openid profile email', extraAuthParams: { tenant: code }, displayName: 'FEMA' },
         eventSigningSecret: `evt-${key}-screens-0000000000000000`.slice(0, 40),
         limits: { usersLimit: 50, projectsLimit: 10, activeWorkflowsLimit: 100, concurrentExecutionsLimit: 5 },
+        ...(key === 'alpha' ? memberEventsFor({ code }) : {}),
       },
     }), `provision ${key}`)
     tenants[key] = provisioned
@@ -188,6 +203,7 @@ async function tenantScreens() {
   await shoot({ name: 'tenant-sso', session: alice, go: async (page) => {
     await page.goto(`${WEB}/tenant/security/authentication`)
     await page.getByTestId('login-method-OIDC').waitFor()
+    await page.getByTestId('sso-member-events-withheld').waitFor()
     await page.getByTestId('login-domains').waitFor()
   } })
   await shoot({ name: 'tenant-sso-oidc-provisioned', session: alice, full: false, go: async (page) => {

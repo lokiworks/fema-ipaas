@@ -7098,5 +7098,6 @@
   "Bind phone number": "Add",
   "Link organization": "Link",
   "Signs in with a text message code to activate. No link is needed.": "Signs in with a text message code to activate. No link is needed.",
-  "Human check passed": "Human check passed"
+  "Human check passed": "Human check passed",
+  "FEMA withholds some member changes because the integration application cannot read every member. When such members are suspended or removed, their sessions end only at the next re-check.": "FEMA withholds some member changes because the integration application cannot read every member. When such members are suspended or removed, their sessions end only at the next re-check."
 }

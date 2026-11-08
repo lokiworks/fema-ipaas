@@ -57,6 +57,12 @@ if ! curl -s --noproxy '*' -o /dev/null "http://127.0.0.1:${IAM_PORT}/"; then
   done
 fi
 
+started_worker=0
+if [ ! -f "${STATE_DIR}/worker.pid" ] || ! kill -0 "$(cat "${STATE_DIR}/worker.pid")" 2>/dev/null; then
+  bash tools/e2e/stack/start-worker.sh "${SLOT}"
+  started_worker=1
+fi
+
 status=0
 if [ "${BROWSER}" = "local" ]; then
   SAAS_SCREENS_DIR="${OUT}" SAAS_SCREENS_ONLY="${SAAS_SCREENS_ONLY:-}" SAAS_SCREENS_THEMES="${SAAS_SCREENS_THEMES:-light,dark}" \
@@ -69,6 +75,9 @@ else
     "${PW_IMAGE}" node tools/e2e/scenarios/saas/saas-screens.mjs || status=1
 fi
 
+if [ "${started_worker}" = "1" ]; then
+  bash tools/e2e/stack/stop-worker.sh "${SLOT}"
+fi
 stop_port "${IAM_PORT}"
 echo "screens: ${OUT}"
 exit "${status}"

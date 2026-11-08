@@ -44,6 +44,7 @@ export const memberSubscriptionService = (log: FastifyBaseLogger) => ({
             connectionExternalId: input.connectionExternalId,
             projectId,
             createdAt: dayjs().toISOString(),
+            withheldEvents: registered.withheldEvents,
         }
         await persist({ log, tenantId, subscription: stored })
         if (registered.withheldEvents.length > 0) {

@@ -7098,5 +7098,6 @@
   "Bind phone number": "绑定",
   "Link organization": "关联",
   "Signs in with a text message code to activate. No link is needed.": "用手机号和短信验证码登录即可激活，不需要链接。",
-  "Human check passed": "已通过人机验证"
+  "Human check passed": "已通过人机验证",
+  "FEMA withholds some member changes because the integration application cannot read every member. When such members are suspended or removed, their sessions end only at the next re-check.": "FEMA 不会推送部分成员变动：集成服务应用读不到这些成员。他们被停用或移出后，要等下一次复核会话才会失效。"
 }

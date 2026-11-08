@@ -58,6 +58,7 @@ export const StoredMemberSubscription = z.object({
     connectionExternalId: z.string(),
     projectId: z.string(),
     createdAt: z.string(),
+    withheldEvents: z.array(z.string()).optional(),
 })
 export type StoredMemberSubscription = z.infer<typeof StoredMemberSubscription>
 

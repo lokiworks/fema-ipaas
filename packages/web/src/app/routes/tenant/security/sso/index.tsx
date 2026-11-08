@@ -237,6 +237,9 @@ function LoginMethodRow({
     isPending || setSsoEnabled.isPending || updateMfaPolicy.isPending;
   const provisioned =
     provider === SsoProvider.OIDC && sso?.oidc?.provisioned === true;
+  const withheldMemberEvents = provisioned
+    ? sso?.oidc?.memberEventsWithheld ?? []
+    : [];
   return (
     <Item variant="outline" data-testid={`login-method-${method.method}`}>
       <ItemMedia variant="icon">{methodIcon(method.method)}</ItemMedia>
@@ -263,6 +266,17 @@ function LoginMethodRow({
               verifiedAt: verified,
               lastLoginAt: config.lastLoginAt ?? null,
             })}
+          </ItemDescription>
+        )}
+        {withheldMemberEvents.length > 0 && (
+          <ItemDescription
+            className="flex items-start gap-1.5 text-warning"
+            data-testid="sso-member-events-withheld"
+          >
+            <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+            {t(
+              'FEMA withholds some member changes because the integration application cannot read every member. When such members are suspended or removed, their sessions end only at the next re-check.',
+            )}
           </ItemDescription>
         )}
       </ItemContent>

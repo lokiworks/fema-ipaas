@@ -7,6 +7,7 @@ import { IAM_BASE, ISSUER, TOKEN_URL, assert, check, cookieJar, http, iam, iamSt
 const RECEIVER_PORT = Number(process.env.SELFTEST_RECEIVER_PORT ?? 19390)
 const REDIRECT = `http://127.0.0.1:${RECEIVER_PORT}/callback`
 const received = []
+const state = {}
 
 const receiver = createServer(async (req, res) => {
   const chunks = []
@@ -102,42 +103,107 @@ async function run() {
     assert(faulted.status === 503 && recovered.status === 200, '注入的故障应只生效一次')
   })
 
-  await check('S7 联邦事件：移出成员并通知时按 sha256=HMAC(原始请求体) 签名发到登记地址', async () => {
-    await iam({ path: '/__control/tenants/update', body: { code: TENANTS.alpha.code, eventsUrl: `http://127.0.0.1:${RECEIVER_PORT}/v1/federation/events` } })
-    const before = received.length
-    const result = await iam({ path: '/__control/members/remove', body: { memberId: MEMBERS.erinA.id, notify: true } })
-    assert(result.delivered.status === 200, `应送达：${JSON.stringify(result.delivered)}`)
-    const hit = received[before]
-    const expected = `sha256=${createHmac('sha256', TENANTS.alpha.eventSecret).update(hit.raw).digest('hex')}`
-    assert(hit.headers['x-fema-signature'] === expected, '签名不对')
-    const event = JSON.parse(hit.raw)
-    assert(event.type === 'MEMBER_REMOVED' && event.subject === MEMBERS.erinA.id && event.issuer === ISSUER && event.externalTenantId === TENANTS.alpha.code && event.id, `事件内容不对：${hit.raw}`)
-  })
-
-  await check('S8 业务事件订阅：登记返回一次性密钥并发验证请求，回显后生效；推送带签名；撤销后不再推', async () => {
+  await check('S7 业务事件订阅：登记返回一次性 plainSecret；验证请求带签名与 id，回显 challenge 后才生效；推送带签名、不带 businessKey', async () => {
     const accessToken = (await tokenRequest({ client: CLIENTS.serviceA, form: { grant_type: 'client_credentials', tenant: TENANTS.alpha.code } })).json.access_token
     const endpoint = `http://127.0.0.1:${RECEIVER_PORT}/webhooks/selftest`
-    const created = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest', endpoint, events: ['rental-agreement.contract.activate'] } })
-    assert(created.json.code === 'SUCCESS' && created.json.data.secret, `登记失败：${created.text}`)
-    const secret = created.json.data.secret
-    await waitFor({ what: '订阅生效', probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.code === 'ipaas-selftest')?.status === 'ACTIVE' })
     const before = received.length
+    const created = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: { value: ['rental-agreement.contract.activate'] } } })
+    assert(created.json.code === 'SUCCESS' && created.json.data.plainSecret && !('secret' in created.json.data), `登记应返回 plainSecret：${created.text}`)
+    const secret = created.json.data.plainSecret
+    await waitFor({ what: '订阅生效', probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.code === 'ipaas-selftest-1')?.status === 'ACTIVE' })
+    const verification = received[before]
+    const body = JSON.parse(verification.raw)
+    assert(body.type === 'webhook.verification' && body.id && body.challenge, `验证请求体不对：${verification.raw}`)
+    assert(verification.headers['x-fema-signature'] === `sha256=${createHmac('sha256', secret).update(verification.raw).digest('hex')}`, '验证请求应带签名')
+    const pushedAt = received.length
     const pushed = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'rental-agreement.contract.activate', object: { code: 'contract', id: '981233' } } })
     assert(pushed.deliveries.length === 1, '应推一次')
-    const hit = received[before]
+    const hit = received[pushedAt]
     assert(hit.headers['x-fema-signature'] === `sha256=${createHmac('sha256', secret).update(hit.raw).digest('hex')}`, '推送签名不对')
+    assert(hit.headers['x-fema-event-id'] === pushed.event.id && hit.headers['x-fema-event-type'] === 'rental-agreement.contract.activate', '应带事件 id 与类型头')
+    assert(!('businessKey' in JSON.parse(hit.raw).object), '推送体不应带 businessKey')
     const read = await http({ url: `${IAM_BASE}/api/rental-agreement/contract/find-by-id?id=981233`, token: accessToken })
     assert(read.json.data.code === 'HT-2026-0001', '应读到甲的合同')
     const otherToken = (await tokenRequest({ client: CLIENTS.serviceB, form: { grant_type: 'client_credentials', tenant: TENANTS.beta.code } })).json.access_token
     const otherRead = await http({ url: `${IAM_BASE}/api/rental-agreement/contract/find-by-id?id=981233`, token: otherToken })
     assert(otherRead.json.data.code === 'HT-BETA-9', '乙只读到乙的数据')
-    await iam({ path: '/__control/events/deny', body: { events: ['billing.bill.issue'] } })
-    const denied = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-bill', endpoint, events: ['billing.bill.issue'] } })
-    assert(denied.json.code === 'PERMISSION_DENIED', '无读权限时应拒绝登记')
-    const removed = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/delete`, token: accessToken, body: { id: created.json.data.id } })
+    state.selftest = { accessToken, endpoint, id: created.json.data.id }
+  })
+
+  await check('S8 订阅编码永久占位：重复即 ALREADY_EXISTS（撤销后也是）；按编码查得到；撤销只认 id，不存在的返回 NOT_FOUND；无权限 OPERATION_FORBIDDEN；部分权限给 withheldEvents', async () => {
+    const { accessToken, endpoint, id } = state.selftest
+    const bareList = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-bare', endpoint, events: ['rental-agreement.contract.activate'] } })
+    assert(bareList.status === 400 && bareList.json?.code === 'FEMA_RUNTIME_REQUEST_BODY_MALFORMED', `events 写成裸数组应被拒（fema 的列表字段是 {value:[...]}）：${bareList.status} ${bareList.text.slice(0, 200)}`)
+    const duplicate = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: { value: ['rental-agreement.contract.activate'] } } })
+    assert(duplicate.status === 409 && duplicate.json.code === 'ALREADY_EXISTS', `重复编码应 ALREADY_EXISTS：${duplicate.text}`)
+    const found = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/find-one`, token: accessToken, body: { filter: { code: 'ipaas-selftest-1' } } })
+    assert(found.json.data.id === id && !('plainSecret' in found.json.data), `按编码应查到且不带密钥：${found.text}`)
+    assert(found.json.data.status.code === 'ENABLED' && found.json.data.activatedAt, `查回的登记应带 status 与 activatedAt：${found.text}`)
+    const flat = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/find-one`, token: accessToken, body: { code: 'ipaas-selftest-1' } })
+    assert(flat.status === 400, `find-one 只接受查询规格 {filter:{code}}：${flat.status}`)
+    const missing = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/find-one`, token: accessToken, body: { filter: { code: 'ipaas-no-such' } } })
+    assert(missing.status === 200 && missing.json.code === 'SUCCESS' && missing.json.data === null, `查不到应返回 SUCCESS + data:null：${missing.text}`)
+    const removed = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/delete`, token: accessToken, body: { id } })
     assert(removed.json.code === 'SUCCESS', '撤销失败')
+    const again = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/delete`, token: accessToken, body: { id } })
+    assert(again.status === 404 && again.json.code === 'NOT_FOUND', `撤销不存在的应 NOT_FOUND：${again.text}`)
+    const reused = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-selftest-1', endpoint, events: { value: ['rental-agreement.contract.activate'] } } })
+    assert(reused.json.code === 'ALREADY_EXISTS', '撤销后编码也不回收')
     const after = await iam({ path: '/__control/events/push', body: { tenant: TENANTS.alpha.code, type: 'rental-agreement.contract.activate', object: { code: 'contract', id: '981233' } } })
     assert(after.deliveries.length === 0, '撤销后不应再推')
+    await iam({ path: '/__control/events/deny', body: { events: ['billing.bill.issue'] } })
+    const denied = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-bill', endpoint, events: { value: ['billing.bill.issue'] } } })
+    assert(denied.status === 403 && denied.json.code === 'OPERATION_FORBIDDEN', '无读权限时应拒绝登记')
+    await iam({ path: '/__control/events/withhold', body: { events: ['rental-agreement.contract.terminate'] } })
+    const partial = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-partial', endpoint, events: { value: ['rental-agreement.contract.activate', 'rental-agreement.contract.terminate'] } } })
+    assert(JSON.stringify(partial.json.data.withheldEvents) === JSON.stringify(['rental-agreement.contract.terminate']), `应返回 withheldEvents：${partial.text}`)
+    await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/delete`, token: accessToken, body: { id: partial.json.data.id } })
+  })
+
+  await check('S9 成员事件走业务事件通道：停用/恢复/移出/找回各推一条 iam-identity.member.*，object.id=成员 ID；成员详情返回当前状态；不回显 challenge 的登记不生效', async () => {
+    const accessToken = (await tokenRequest({ client: CLIENTS.serviceA, form: { grant_type: 'client_credentials', tenant: TENANTS.alpha.code } })).json.access_token
+    const endpoint = `http://127.0.0.1:${RECEIVER_PORT}/members/alpha`
+    const events = ['iam-identity.member.suspend', 'iam-identity.member.activate', 'iam-identity.member.remove', 'iam-identity.member.restore']
+    const created = await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-members-1', endpoint, events: { value: events } } })
+    await waitFor({ what: '成员订阅生效', probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.code === 'ipaas-members-1')?.status === 'ACTIVE' })
+    const secret = created.json.data.plainSecret
+    const steps = [['suspend', 'SUSPENDED'], ['activate', 'ACTIVE'], ['remove', 'REMOVED'], ['restore', 'ACTIVE']]
+    for (const [ability, status] of steps) {
+      const before = received.length
+      const result = await iam({ path: `/__control/members/${ability}`, body: { memberId: MEMBERS.erinA.id } })
+      assert(result.deliveries.length === 1 && result.deliveries[0].status === 200, `${ability} 应推送一次`)
+      const hit = received[before]
+      const event = JSON.parse(hit.raw)
+      assert(event.type === `iam-identity.member.${ability}` && event.object.code === 'member' && event.object.id === MEMBERS.erinA.id && event.tenantId === TENANTS.alpha.code, `事件不对：${hit.raw}`)
+      assert(hit.headers['x-fema-signature'] === `sha256=${createHmac('sha256', secret).update(hit.raw).digest('hex')}`, '签名不对')
+      const member = await http({ url: `${IAM_BASE}/api/iam-identity/member/find-by-id?id=${MEMBERS.erinA.id}`, token: accessToken })
+      assert(member.json.data.status.code === status, `成员状态应为 ${status}：${member.text}`)
+    }
+    const otherToken = (await tokenRequest({ client: CLIENTS.serviceB, form: { grant_type: 'client_credentials', tenant: TENANTS.beta.code } })).json.access_token
+    const foreign = await http({ url: `${IAM_BASE}/api/iam-identity/member/find-by-id?id=${MEMBERS.erinA.id}`, token: otherToken })
+    assert(foreign.status === 200 && foreign.json.data === null, `别家读不到这个成员（默认 SUCCESS + data:null）：${foreign.text}`)
+    await iam({ path: '/__control/not-found-mode', body: { mode: '404' } })
+    const foreign404 = await http({ url: `${IAM_BASE}/api/iam-identity/member/find-by-id?id=${MEMBERS.erinA.id}`, token: otherToken })
+    const object404 = await http({ url: `${IAM_BASE}/api/rental-agreement/contract/find-by-id?id=no-such`, token: accessToken })
+    await iam({ path: '/__control/not-found-mode', body: { mode: 'null' } })
+    assert(foreign404.status === 404 && foreign404.json.code === 'NOT_FOUND' && object404.status === 404, '切到 404 模式后查不到应返回 404 NOT_FOUND')
+    const objectNull = await http({ url: `${IAM_BASE}/api/rental-agreement/contract/find-by-id?id=no-such`, token: accessToken })
+    assert(objectNull.status === 200 && objectNull.json.data === null, '对象查不到默认 SUCCESS + data:null')
+    await iam({ path: '/__control/members/suspend', body: { memberId: MEMBERS.frankA.id, notify: false } })
+    const suspended = await codeFlow({ jar: cookieJar(), client: CLIENTS.oidcA, username: 'frank', tenant: TENANTS.alpha.code, expectError: true })
+    assert(suspended.error === 'access_denied', '停用的成员不能登录')
+    await iam({ path: '/__control/members/activate', body: { memberId: MEMBERS.frankA.id, notify: false } })
+    const silent = createServer((req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end('{"ok":true}')
+    }).listen(RECEIVER_PORT + 1, '127.0.0.1')
+    try {
+      await http({ method: 'POST', url: `${IAM_BASE}/api/webhook/subscription/create`, token: accessToken, body: { code: 'ipaas-silent', endpoint: `http://127.0.0.1:${RECEIVER_PORT + 1}/x`, events: { value: events } } })
+      await waitFor({ what: '不回显的登记被判为未验证', probe: async () => (await iamState()).subscriptions.find((subscription) => subscription.code === 'ipaas-silent')?.status === 'UNVERIFIED' })
+    }
+    finally {
+      silent.close()
+    }
   })
 }
 

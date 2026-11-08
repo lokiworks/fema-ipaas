@@ -190,7 +190,7 @@ describe('external identity service', () => {
 
         it('writes a verified, enabled configuration that matches by subject', async () => {
             const service = await loadService()
-            await service.upsertOidcConfigForProvisioning({ tenantId: 'tenant-1', oidc, eventSigningSecret: 'signing-secret-123456' })
+            await service.upsertOidcConfigForProvisioning({ tenantId: 'tenant-1', oidc })
             const written = state.tenantUpdates[0].patch['federatedAuthProviders'] as { oidc: Record<string, unknown> }
             expect(written.oidc).toMatchObject({
                 enabled: true,
@@ -202,7 +202,6 @@ describe('external identity service', () => {
                 autoCreateUsers: false,
                 scopes: 'openid email profile',
                 clientSecret: { data: 'enc:secret' },
-                eventSigningSecret: { data: 'enc:signing-secret-123456' },
             })
             expect(typeof written.oidc['verifiedAt']).toBe('string')
         })
@@ -214,15 +213,37 @@ describe('external identity service', () => {
                 oidc: {
                     enabled: false, displayName: 'Mine', allowedDomains: ['acme.test'], autoCreateUsers: true, defaultRole: TenantRole.OPERATOR, roleMapping: null, defaultProject: null,
                     verifiedAt: null, lastLoginAt: '2026-11-01T00:00:00.000Z', issuer, clientId: 'old', clientSecret: { iv: 'i', data: 'enc:old' }, scopes: 'openid', emailClaim: 'email',
-                    requireVerifiedEmail: false, sessionRecheckMinutes: 30, eventSigningSecret: { iv: 'i', data: 'enc:kept' },
+                    requireVerifiedEmail: false, sessionRecheckMinutes: 30, memberSubscription: { subscriptionId: 'sub-1', plainSecret: { iv: 'i', data: 'enc:kept' } },
                 },
             }
             await service.upsertOidcConfigForProvisioning({ tenantId: 'tenant-1', oidc })
             const written = state.tenantUpdates[0].patch['federatedAuthProviders'] as { oidc: Record<string, unknown> }
             expect(written.oidc).toMatchObject({
                 enabled: true, displayName: 'Mine', allowedDomains: ['acme.test'], autoCreateUsers: true, defaultRole: TenantRole.OPERATOR,
-                lastLoginAt: '2026-11-01T00:00:00.000Z', clientId: 'client', sessionRecheckMinutes: 30, eventSigningSecret: { data: 'enc:kept' },
+                lastLoginAt: '2026-11-01T00:00:00.000Z', clientId: 'client', sessionRecheckMinutes: 30, memberSubscription: { subscriptionId: 'sub-1', plainSecret: { data: 'enc:kept' } },
             })
+        })
+
+        it('writes the session recheck interval the platform asks for', async () => {
+            const service = await loadService()
+            await service.upsertOidcConfigForProvisioning({ tenantId: 'tenant-1', oidc: { ...oidc, sessionRecheckMinutes: 30 } })
+            const written = state.tenantUpdates[0].patch['federatedAuthProviders'] as { oidc: Record<string, unknown> }
+            expect(written.oidc['sessionRecheckMinutes']).toBe(30)
+        })
+
+        it('leaves the interval empty when none was asked for the first time', async () => {
+            const service = await loadService()
+            await service.upsertOidcConfigForProvisioning({ tenantId: 'tenant-1', oidc })
+            const written = state.tenantUpdates[0].patch['federatedAuthProviders'] as { oidc: Record<string, unknown> }
+            expect(written.oidc['sessionRecheckMinutes']).toBeNull()
+        })
+
+        it('replaces the interval when it is provisioned again with a new one', async () => {
+            const service = await loadService()
+            state.tenantProviders = { saml: null, oidc: { enabled: true, displayName: 'x', allowedDomains: [], autoCreateUsers: false, defaultRole: TenantRole.MEMBER, roleMapping: null, defaultProject: null, verifiedAt: null, lastLoginAt: null, issuer, clientId: 'c', clientSecret: { iv: 'i', data: 'enc:s' }, scopes: 'openid', emailClaim: 'email', requireVerifiedEmail: false, sessionRecheckMinutes: 30 } }
+            await service.upsertOidcConfigForProvisioning({ tenantId: 'tenant-1', oidc: { ...oidc, sessionRecheckMinutes: 10 } })
+            const written = state.tenantUpdates[0].patch['federatedAuthProviders'] as { oidc: Record<string, unknown> }
+            expect(written.oidc['sessionRecheckMinutes']).toBe(10)
         })
 
         it('keeps the other providers of the tenant', async () => {

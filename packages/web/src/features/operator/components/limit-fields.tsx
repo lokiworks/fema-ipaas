@@ -1,19 +1,19 @@
 import { t } from 'i18next';
+import { useFormContext } from 'react-hook-form';
 
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 import { LimitField, LimitInputs } from '../utils/operator-utils';
 
-export function LimitFields({
-  value,
-  onChange,
-  invalidField,
-}: {
-  value: LimitInputs;
-  onChange: (value: LimitInputs) => void;
-  invalidField: LimitField | null;
-}) {
+export function LimitFields() {
+  const { control } = useFormContext<LimitsShape>();
   const numeric: { field: LimitField; label: string }[] = [
     { field: 'usersLimit', label: t('Members') },
     { field: 'projectsLimit', label: t('Projects') },
@@ -23,40 +23,50 @@ export function LimitFields({
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-3">
-        {numeric.map(({ field, label }) => (
-          <div key={field} className="flex flex-col gap-1.5">
-            <Label htmlFor={`limit-${field}`}>{label}</Label>
-            <Input
-              id={`limit-${field}`}
-              inputMode="numeric"
-              placeholder={t('Unlimited')}
-              value={value[field]}
-              aria-invalid={invalidField === field}
-              data-testid={`limit-${field}`}
-              onChange={(event) =>
-                onChange({ ...value, [field]: event.target.value })
-              }
-            />
-          </div>
+        {numeric.map(({ field: name, label }) => (
+          <FormField
+            key={name}
+            control={control}
+            name={`limits.${name}`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{label}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    inputMode="numeric"
+                    placeholder={t('Unlimited')}
+                    data-testid={`limit-${name}`}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         ))}
       </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="limit-workerGroupId">{t('Worker group')}</Label>
-        <Input
-          id="limit-workerGroupId"
-          placeholder={t('Shared workers')}
-          value={value.workerGroupId}
-          data-testid="limit-workerGroupId"
-          onChange={(event) =>
-            onChange({ ...value, workerGroupId: event.target.value })
-          }
-        />
-      </div>
+      <FormField
+        control={control}
+        name="limits.workerGroupId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t('Worker group')}</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder={t('Shared workers')}
+                data-testid="limit-workerGroupId"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       <p className="text-xs text-muted-foreground">
-        {invalidField === null
-          ? t('Leave a field empty for no limit. 0 blocks new items.')
-          : t('Limits must be whole numbers of 0 or more.')}
+        {t('Leave a field empty for no limit. 0 blocks new items.')}
       </p>
     </div>
   );
 }
+
+type LimitsShape = { limits: LimitInputs };

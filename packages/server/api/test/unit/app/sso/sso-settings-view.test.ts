@@ -37,9 +37,9 @@ describe('sso settings view', () => {
     })
 
     it('shows the platform written fields of a provisioned configuration', () => {
-        const view = ssoSettingsView.toOidcSettings({ ...oidc, matchBy: SsoMatchBy.SUBJECT, extraAuthParams: { tenant: 'acme' }, sessionRecheckMinutes: 30, provisioned: true, eventSigningSecret: secret })
+        const view = ssoSettingsView.toOidcSettings({ ...oidc, matchBy: SsoMatchBy.SUBJECT, extraAuthParams: { tenant: 'acme' }, sessionRecheckMinutes: 30, provisioned: true, memberSubscription: { subscriptionId: 'sub-1', code: 'ipaas-members-x', plainSecret: secret, endpoint: 'https://ipaas.test/api/v1/federation/members/tenant-1', apiUrl: 'https://fema.test', connectionExternalId: 'fema-iam', projectId: 'project-1', createdAt: '2026-11-05T00:00:00.000Z' } })
         expect(view).toMatchObject({ matchBy: SsoMatchBy.SUBJECT, extraAuthParams: { tenant: 'acme' }, sessionRecheckMinutes: 30, provisioned: true })
-        expect(JSON.stringify(view)).not.toContain('eventSigningSecret')
+        expect(JSON.stringify(view)).not.toContain('memberSubscription')
     })
 
     it('patches only the provider it was asked to patch', () => {

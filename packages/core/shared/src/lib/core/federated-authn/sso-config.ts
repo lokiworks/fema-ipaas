@@ -49,6 +49,19 @@ const SsoProviderCommon = {
     lastLoginAt: Nullable(z.string()),
 }
 
+export const StoredMemberSubscription = z.object({
+    subscriptionId: z.string(),
+    code: z.string(),
+    plainSecret: SsoEncryptedSecret,
+    endpoint: z.string(),
+    apiUrl: z.string(),
+    connectionExternalId: z.string(),
+    projectId: z.string(),
+    createdAt: z.string(),
+    withheldEvents: z.array(z.string()).optional(),
+})
+export type StoredMemberSubscription = z.infer<typeof StoredMemberSubscription>
+
 export const StoredOidcSso = z.object({
     ...SsoProviderCommon,
     issuer: z.string(),
@@ -61,7 +74,7 @@ export const StoredOidcSso = z.object({
     extraAuthParams: z.record(z.string(), z.string()).optional(),
     sessionRecheckMinutes: Nullable(z.number()),
     provisioned: z.boolean().optional(),
-    eventSigningSecret: SsoEncryptedSecret.optional(),
+    memberSubscription: StoredMemberSubscription.optional(),
 })
 export type StoredOidcSso = z.infer<typeof StoredOidcSso>
 

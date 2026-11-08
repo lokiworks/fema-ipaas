@@ -3,11 +3,13 @@ import {
   TenantDomain,
   TenantDomainPurpose,
 } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
-import { CopyButton } from '@/components/custom/clipboard/copy-button';
+import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +28,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -34,7 +43,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
+import { internalErrorMessage } from '@/components/ui/sonner';
+import {
+  FormServerError,
+  tenantAccessHooks,
+  tenantAccessUtils,
+} from '@/features/tenant-access';
+import { api } from '@/lib/api';
 
 export function LoginDomainsCard() {
   const { data } = tenantAccessHooks.useDomains();
@@ -144,12 +159,9 @@ function TxtRecord({ domain }: { domain: TenantDomain }) {
 
 function RecordLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="w-12 shrink-0 text-muted-foreground">{label}</span>
-      <code className="min-w-0 flex-1 break-all" data-testid="txt-record">
-        {value}
-      </code>
-      <CopyButton textToCopy={value} variant="outline" type="button" />
+    <div className="flex flex-col gap-1" data-testid="txt-record">
+      <span className="text-muted-foreground">{label}</span>
+      <CopyToClipboardInput textToCopy={value} useInput={true} />
     </div>
   );
 }
@@ -174,78 +186,98 @@ function AddDomainDialog({
 }
 
 function AddDomainForm({ onClose }: { onClose: () => void }) {
+  const form = useForm<CreateTenantDomainRequestBody>({
+    mode: 'onChange',
+    resolver: zodResolver(CreateTenantDomainRequestBody),
+    defaultValues: {
+      domain: '',
+      purpose: TenantDomainPurpose.LOGIN_DISCOVERY,
+    },
+  });
   const { mutate: create, isPending } = tenantAccessHooks.useCreateDomain({
     onCreated: onClose,
+    onError: (error) =>
+      form.setError('root.serverError', {
+        type: 'manual',
+        message: api.extractServerErrorMessage(error, internalErrorMessage()),
+      }),
   });
-  const [domain, setDomain] = useState('');
-  const [purpose, setPurpose] = useState<TenantDomainPurpose>(
-    TenantDomainPurpose.LOGIN_DISCOVERY,
-  );
-  const [error, setError] = useState<string | null>(null);
   return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const parsed = CreateTenantDomainRequestBody.safeParse({
-          domain,
-          purpose,
-        });
-        if (!parsed.success) {
-          setError(t(parsed.error.issues[0]?.message ?? 'invalidDomain'));
-          return;
-        }
-        setError(null);
-        create(parsed.data);
-      }}
-    >
-      <DialogHeader>
-        <DialogTitle>{t('Add domain')}</DialogTitle>
-        <DialogDescription>
-          {t('You will get a TXT record to add before it counts.')}
-        </DialogDescription>
-      </DialogHeader>
-      <Input
-        value={domain}
-        placeholder="acme.com"
-        aria-label={t('Domain')}
-        data-testid="domain-input"
-        onChange={(event) => setDomain(event.target.value)}
-      />
-      <Select
-        value={purpose}
-        onValueChange={(value) =>
-          setPurpose(
-            value === TenantDomainPurpose.HOST
-              ? TenantDomainPurpose.HOST
-              : TenantDomainPurpose.LOGIN_DISCOVERY,
-          )
-        }
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          create(values);
+        })}
       >
-        <SelectTrigger data-testid="domain-purpose">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.values(TenantDomainPurpose).map((value) => (
-            <SelectItem key={value} value={value}>
-              {tenantAccessUtils.domainPurposeLabel(value)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {error && (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      )}
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
-          {t('Cancel')}
-        </Button>
-        <Button type="submit" loading={isPending} data-testid="domain-submit">
-          {t('Add')}
-        </Button>
-      </DialogFooter>
-    </form>
+        <DialogHeader>
+          <DialogTitle>{t('Add domain')}</DialogTitle>
+          <DialogDescription>
+            {t('You will get a TXT record to add before it counts.')}
+          </DialogDescription>
+        </DialogHeader>
+        <FormField
+          control={form.control}
+          name="domain"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="acme.com"
+                  aria-label={t('Domain')}
+                  data-testid="domain-input"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="purpose"
+          render={({ field }) => (
+            <FormItem>
+              <Select
+                value={field.value}
+                onValueChange={(value) =>
+                  field.onChange(
+                    value === TenantDomainPurpose.HOST
+                      ? TenantDomainPurpose.HOST
+                      : TenantDomainPurpose.LOGIN_DISCOVERY,
+                  )
+                }
+              >
+                <FormControl>
+                  <SelectTrigger data-testid="domain-purpose">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {Object.values(TenantDomainPurpose).map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {tenantAccessUtils.domainPurposeLabel(value)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormServerError
+          message={form.formState.errors.root?.serverError?.message}
+        />
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            {t('Cancel')}
+          </Button>
+          <Button type="submit" loading={isPending} data-testid="domain-submit">
+            {t('Add')}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }

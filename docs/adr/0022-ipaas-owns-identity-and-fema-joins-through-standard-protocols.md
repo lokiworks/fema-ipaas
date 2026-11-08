@@ -9,7 +9,7 @@ status: accepted
 一个实例可以承载任意多个互相隔离的租户。iPaaS 保留完整的账号、租户和权限体系，同一套代码有两种用法：
 
 - **独立出售**：自己的账号体系，支持自助注册建租户，租户自己配置单点登录。
-- **FEMA 套件**：和 fema-bpaas、fema-apaas 组成闭环，按 `fema-bpaas/docs/design-iam-ipaas-federation-2026-11-04.md`（2026-11-05 确认）运行。fema-iam 是身份源，两边的租户一一对应；人按 issuer + sub 认（决定 000046）；租户、登录配置和连接由业务方的租户初始化调用平台开通接口一次建好（决定 000047）；fema 的业务事件以签名 webhook 推给 iPaaS，触发流程。
+- **FEMA 套件**：和 fema-bpaas、fema-apaas 组成闭环，按 fema-bpaas 的身份联邦设计（2026-11-05 确认，落地后已按 fema 规矩删稿）运行。fema-iam 是身份源，两边的租户一一对应；人按 issuer + sub 认（决定 000046）；租户、登录配置和连接由业务方的租户初始化调用平台开通接口一次建好（决定 000047）。fema 的业务事件与成员变动都走 fema 的对外事件出口（签名 webhook），接口约定见 `fema-bpaas/docs/design-runtime-ipaas-webhook-contract-2026-11-08.md`（2026-11-08 负责人确认）。
 
 两种用法之间不设开关，也不分版本。区别只在于实例运营者配置了什么、开通了哪些租户。
 

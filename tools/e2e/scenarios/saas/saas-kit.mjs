@@ -129,6 +129,9 @@ export async function api({ method = 'GET', path: route, token, body, headers })
 export function cookieJar() {
   const cookies = new Map()
   return {
+    valueOf({ url, name }) {
+      return cookies.get(new URL(url).host)?.get(name) ?? null
+    },
     headerFor({ url }) {
       const bag = cookies.get(url.host)
       return bag && bag.size > 0 ? [...bag.entries()].map(([name, value]) => `${name}=${value}`).join('; ') : null

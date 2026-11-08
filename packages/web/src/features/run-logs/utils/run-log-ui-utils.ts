@@ -196,14 +196,22 @@ function projectRetention({
   if (isNil(scope)) {
     return null;
   }
-  const project = scope.projects.find((candidate) => candidate.id === projectId);
+  const project = scope.projects.find(
+    (candidate) => candidate.id === projectId,
+  );
   return isNil(project)
-    ? { logDays: scope.tenantRetentionDays, rawDays: scope.tenantRawRetentionDays }
+    ? {
+        logDays: scope.tenantRetentionDays,
+        rawDays: scope.tenantRawRetentionDays,
+      }
     : { logDays: project.retentionDays, rawDays: project.rawRetentionDays };
 }
 
 function runDataState(
-  run: Pick<Execution, 'logsFileId' | 'displayLogsFileId' | 'rawPayloadExpired'>,
+  run: Pick<
+    Execution,
+    'logsFileId' | 'displayLogsFileId' | 'rawPayloadExpired'
+  >,
 ): RunDataState {
   if (!isNil(run.logsFileId)) {
     return 'RAW';

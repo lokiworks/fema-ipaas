@@ -19,7 +19,7 @@ async function statusOf({ tenantId, now }: { tenantId: TenantId, now: number }):
 
 async function assertActive({ tenantId }: { tenantId: TenantId }): Promise<void> {
     const status = await statusOf({ tenantId, now: Date.now() })
-    if (status === TenantStatus.SUSPENDED) {
+    if (isBlocked({ status })) {
         throw new ApplicationError({
             code: ErrorCode.TENANT_SUSPENDED,
             params: { tenantId },
@@ -29,7 +29,11 @@ async function assertActive({ tenantId }: { tenantId: TenantId }): Promise<void>
 
 async function isActive({ tenantId }: { tenantId: TenantId }): Promise<boolean> {
     const status = await statusOf({ tenantId, now: Date.now() })
-    return status !== TenantStatus.SUSPENDED
+    return !isBlocked({ status })
+}
+
+function isBlocked({ status }: { status: TenantStatus | null }): boolean {
+    return !isNil(status) && status !== TenantStatus.ACTIVE
 }
 
 function invalidate({ tenantId }: { tenantId: TenantId }): void {

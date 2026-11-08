@@ -267,7 +267,22 @@ describe('Solutions API', () => {
         expect(created.json().package.workflows).toHaveLength(1)
     })
 
-    it('records every recommended check that did not pass as skipped, acknowledged or not', async () => {
+    it('records every recommended check that was not confirmed as skipped', async () => {
+        const ctx = await createTestContext(app!)
+        const workflowId = await savePublishedWorkflow({ ctx, name: 'Onboard' })
+        const solution = (await ctx.post('/v1/solutions', {
+            ...createBody({ ctx, workflowIds: [workflowId] }),
+            manualChecks: [{ label: 'Scope granted' }, { label: 'Departments mapped' }],
+        })).json()
+
+        const install = await ctx.post(`/v1/solutions/${solution.id}/install`, installBody({ ctx }))
+
+        expect(install.statusCode).toBe(StatusCodes.CREATED)
+        expect(install.json().skippedChecks).toEqual(['Scope granted', 'Departments mapped'])
+        expect(install.json().install.skippedChecks).toEqual(['Scope granted', 'Departments mapped'])
+    })
+
+    it('does not count a manual check the installer confirmed as skipped', async () => {
         const ctx = await createTestContext(app!)
         const workflowId = await savePublishedWorkflow({ ctx, name: 'Onboard' })
         const solution = (await ctx.post('/v1/solutions', {
@@ -278,8 +293,8 @@ describe('Solutions API', () => {
         const install = await ctx.post(`/v1/solutions/${solution.id}/install`, installBody({ ctx, acknowledgedChecks: ['manual:1'] }))
 
         expect(install.statusCode).toBe(StatusCodes.CREATED)
-        expect(install.json().skippedChecks).toEqual(['Scope granted', 'Departments mapped'])
-        expect(install.json().install.skippedChecks).toEqual(['Scope granted', 'Departments mapped'])
+        expect(install.json().skippedChecks).toEqual(['Departments mapped'])
+        expect(install.json().install.skippedChecks).toEqual(['Departments mapped'])
     })
 
     it('refuses to install into a project without room for the workflows and creates nothing', async () => {

@@ -64,10 +64,15 @@ function messageFor(error: unknown): string | null {
   }
 }
 
+function isForbidden(error: unknown): boolean {
+  return errorCode(error) === ErrorCode.AUTHORIZATION;
+}
+
 export const loginChallengeUtils = {
   parse,
   errorCode,
   messageFor,
+  isForbidden,
 };
 
 export type LoginChallenge =

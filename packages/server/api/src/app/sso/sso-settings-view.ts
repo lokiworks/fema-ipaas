@@ -39,6 +39,7 @@ function toOidcSettings(stored: StoredOidcSso): OidcSsoSettings {
         extraAuthParams: stored.extraAuthParams ?? {},
         sessionRecheckMinutes: stored.sessionRecheckMinutes ?? null,
         provisioned: stored.provisioned ?? false,
+        memberEventsWithheld: stored.memberSubscription?.withheldEvents ?? [],
     }
 }
 

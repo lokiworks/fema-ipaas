@@ -2,8 +2,10 @@ import {
   GrantInstanceOperatorRequestBody,
   InstanceOperator,
 } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 import {
   ConsolePage,
@@ -11,8 +13,16 @@ import {
 } from '@/components/custom/console-page';
 import { ConfirmationDeleteDialog } from '@/components/custom/delete-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { internalErrorMessage } from '@/components/ui/sonner';
 import {
   Table,
   TableBody,
@@ -22,16 +32,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { operatorHooks } from '@/features/operator';
+import { FormServerError } from '@/features/tenant-access';
+import { api } from '@/lib/api';
 
 export function OperatorOperatorsPage() {
   const { data, isLoading } = operatorHooks.useOperators();
   const revoke = operatorHooks.useRevokeOperator();
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [grantRound, setGrantRound] = useState(0);
   const [removing, setRemoving] = useState<InstanceOperator | null>(null);
-  const { mutate: grant, isPending } = operatorHooks.useGrantOperator({
-    onGranted: () => setEmail(''),
-  });
   const operators = data ?? [];
 
   return (
@@ -41,38 +49,10 @@ export function OperatorOperatorsPage() {
         'People who run this instance: they see every tenant, the instance settings and the infrastructure pages. The person must already have an account.',
       )}
     >
-      <form
-        className="flex flex-wrap items-start gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const parsed = GrantInstanceOperatorRequestBody.safeParse({ email });
-          if (!parsed.success) {
-            setError(t(parsed.error.issues[0]?.message ?? 'invalidEmail'));
-            return;
-          }
-          setError(null);
-          grant(parsed.data);
-        }}
-      >
-        <div className="flex flex-col gap-1">
-          <Input
-            className="w-80 max-w-full"
-            value={email}
-            placeholder="name@example.com"
-            aria-label={t('Email address')}
-            data-testid="operator-email"
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          {error && (
-            <span className="text-sm text-destructive" role="alert">
-              {error}
-            </span>
-          )}
-        </div>
-        <Button type="submit" loading={isPending} data-testid="operator-grant">
-          {t('Add operator')}
-        </Button>
-      </form>
+      <GrantForm
+        key={grantRound}
+        onGranted={() => setGrantRound((round) => round + 1)}
+      />
       {isLoading ? (
         <Skeleton className="h-48 w-full" />
       ) : (
@@ -133,5 +113,59 @@ export function OperatorOperatorsPage() {
         />
       )}
     </ConsolePage>
+  );
+}
+
+function GrantForm({ onGranted }: { onGranted: () => void }) {
+  const form = useForm<GrantInstanceOperatorRequestBody>({
+    mode: 'onChange',
+    resolver: zodResolver(GrantInstanceOperatorRequestBody),
+    defaultValues: { email: '' },
+  });
+  const { mutate: grant, isPending } = operatorHooks.useGrantOperator({
+    onGranted,
+    onError: (error) =>
+      form.setError('root.serverError', {
+        type: 'manual',
+        message: api.extractServerErrorMessage(error, internalErrorMessage()),
+      }),
+  });
+  return (
+    <Form {...form}>
+      <form
+        className="flex flex-wrap items-start gap-2"
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          grant(values);
+        })}
+      >
+        <div className="flex flex-col gap-1">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...field}
+                    className="w-80 max-w-full"
+                    placeholder="name@example.com"
+                    aria-label={t('Email address')}
+                    data-testid="operator-email"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormServerError
+            message={form.formState.errors.root?.serverError?.message}
+          />
+        </div>
+        <Button type="submit" loading={isPending} data-testid="operator-grant">
+          {t('Add operator')}
+        </Button>
+      </form>
+    </Form>
   );
 }

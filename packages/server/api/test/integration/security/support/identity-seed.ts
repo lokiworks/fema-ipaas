@@ -1,5 +1,5 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { DefaultProjectRole, PersonalAccessTokenExpiry, ProjectType, TenantRole, User } from '@fema-ipaas/shared'
+import { DefaultProjectRole, PersonalAccessTokenExpiry, ProjectAccessRequestStatus, ProjectType, TenantRole, User } from '@fema-ipaas/shared'
 import { db } from '../../../helpers/db'
 import { createMockProject } from '../../../helpers/mocks'
 import { Identity, Scope, securityWorld, World } from './world'
@@ -56,6 +56,27 @@ async function personalAccessToken({ world, identity }: { world: World, identity
     return { id: body.token.id, value: body.value }
 }
 
+async function pendingAccessRequest({ world, scope, requesterId }: { world: World, scope: Scope, requesterId?: string }): Promise<{ id: string, requesterId: string, projectId: string }> {
+    const info = world.scopes[scope]
+    const userId = requesterId ?? (await tenantUser({ world, scope })).id
+    const id = generateId()
+    const now = new Date().toISOString()
+    await db.save('project_access_request', {
+        id,
+        created: now,
+        updated: now,
+        tenantId: info.tenant.id,
+        projectId: info.project.id,
+        userId,
+        reason: 'sec-audit',
+        status: ProjectAccessRequestStatus.PENDING,
+        decidedBy: null,
+        decidedAt: null,
+        grantedRole: null,
+    })
+    return { id, requesterId: userId, projectId: info.project.id }
+}
+
 function tenantAdminIdentityOf({ scope }: { scope: Scope }): Identity {
     return scope === 'T2' ? 'otherTenantAdmin' : 'tenantAdmin'
 }
@@ -63,6 +84,7 @@ function tenantAdminIdentityOf({ scope }: { scope: Scope }): Identity {
 export const identitySeed = {
     tenantAdminIdentityOf,
     freshTeamProject,
+    pendingAccessRequest,
     tenantUser,
     personalAccessToken,
 }

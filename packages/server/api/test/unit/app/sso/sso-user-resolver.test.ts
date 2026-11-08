@@ -4,6 +4,7 @@ import type { RuntimePolicy } from '../../../../src/app/sso/sso-runtime'
 
 const touchLogin = vi.fn()
 const bindToUser = vi.fn()
+const restoreBySubject = vi.fn()
 const getUser = vi.fn()
 const getOneByIdentityAndTenant = vi.fn()
 const getOrCreateWithProject = vi.fn()
@@ -19,7 +20,7 @@ const upsertMember = vi.fn()
 const sendUserEvent = vi.fn()
 
 vi.mock('../../../../src/app/federation/external-identity.service', () => ({
-    externalIdentityService: () => ({ touchLogin, bindToUser }),
+    externalIdentityService: () => ({ touchLogin, bindToUser, restoreBySubject }),
 }))
 vi.mock('../../../../src/app/user/user-service', () => ({
     userService: () => ({ get: getUser, getOneByIdentityAndTenant, getOrCreateWithProject, update: updateUser }),
@@ -126,10 +127,27 @@ describe('sso user resolver', () => {
                 .rejects.toMatchObject({ code: SsoLoginErrorCode.USER_NOT_PROVISIONED })
         })
 
-        it('refuses a binding revoked by the identity provider', async () => {
+        it('brings a binding revoked earlier back when the member signs in through the identity provider again', async () => {
             const resolver = await loadResolver()
-            await expect(resolver.resolve({ log: log as never, policy: subjectPolicy, profile: profileOf(), tenantId: 'tenant-1', binding: bindingOf({ status: ExternalIdentityStatus.REVOKED }), ip: undefined }))
+            getUser.mockResolvedValue(activeUser)
+            const resolved = await resolver.resolve({ log: log as never, policy: subjectPolicy, profile: profileOf(), tenantId: 'tenant-1', binding: bindingOf({ status: ExternalIdentityStatus.REVOKED }), ip: undefined })
+            expect(restoreBySubject).toHaveBeenCalledWith({ issuer: 'https://iam.test', subject: 'member-1', tenantId: 'tenant-1' })
+            expect(resolved).toEqual({ userId: 'user-1', externalIdentityId: 'bind-1' })
+        })
+
+        it('does not restore anything for a binding that was never revoked', async () => {
+            const resolver = await loadResolver()
+            getUser.mockResolvedValue(activeUser)
+            await resolver.resolve({ log: log as never, policy: subjectPolicy, profile: profileOf(), tenantId: 'tenant-1', binding: bindingOf(), ip: undefined })
+            expect(restoreBySubject).not.toHaveBeenCalled()
+        })
+
+        it('leaves a user whom an administrator deactivated deactivated', async () => {
+            const resolver = await loadResolver()
+            getUser.mockResolvedValue({ ...activeUser, status: UserStatus.INACTIVE })
+            await expect(resolver.resolve({ log: log as never, policy: subjectPolicy, profile: profileOf(), tenantId: 'tenant-1', binding: bindingOf(), ip: undefined }))
                 .rejects.toMatchObject({ code: SsoLoginErrorCode.USER_DISABLED })
+            expect(restoreBySubject).not.toHaveBeenCalled()
         })
 
         it('refuses a deactivated user', async () => {

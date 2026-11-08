@@ -131,7 +131,9 @@ function SolutionInstallsList({ onBrowse }: SolutionInstallsListProps) {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <ResourceStatusBadge status={install.resourceStatus} />
+                          <ResourceStatusBadge
+                            status={install.resourceStatus}
+                          />
                         </TableCell>
                         <TableCell>
                           {t('{existing} of {total}', {
@@ -232,7 +234,10 @@ function ResourceStatusBadge({
       return <Badge variant="success">{t('Resources intact')}</Badge>;
     case SolutionInstallResourceStatus.PARTIALLY_DELETED:
       return (
-        <Badge variant="outline" className="border-warning-600 text-warning-700">
+        <Badge
+          variant="outline"
+          className="border-warning-600 text-warning-700"
+        >
           {t('Partly deleted')}
         </Badge>
       );
@@ -356,8 +361,7 @@ function RemoveRecordDialog({
   install: SolutionInstall | null;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { mutate: remove, isPending } =
-    solutionsHooks.useRemoveInstallRecord();
+  const { mutate: remove, isPending } = solutionsHooks.useRemoveInstallRecord();
   return (
     <Dialog open={install !== null} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">

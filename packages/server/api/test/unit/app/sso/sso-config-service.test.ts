@@ -63,7 +63,7 @@ const provisionedOidc = {
     extraAuthParams: { tenant: 'acme' },
     sessionRecheckMinutes: null,
     provisioned: true,
-    eventSigningSecret: { iv: 'iv', data: 'enc:signing' },
+    memberSubscription: { subscriptionId: 'sub-1', code: 'ipaas-members-x', plainSecret: { iv: 'iv', data: 'enc:signing' }, endpoint: 'https://ipaas.test/api/v1/federation/members/tenant-1', apiUrl: 'https://fema.test', connectionExternalId: 'fema-iam', projectId: 'project-1', createdAt: '2026-11-05T00:00:00.000Z' },
 }
 
 function oidcRequest(overrides: Record<string, unknown> = {}) {
@@ -112,10 +112,10 @@ describe('sso config service', () => {
             expect(lastOidc()).toMatchObject({ enabled: false, displayName: 'Renamed', provisioned: true, matchBy: SsoMatchBy.SUBJECT, issuer: 'https://iam.test', clientId: 'client-1' })
         })
 
-        it('keeps the signing secret, the extra parameters and the verification', async () => {
+        it('keeps the member subscription, the extra parameters and the verification', async () => {
             const service = await loadService()
             await service.saveOidc({ tenantId: 'tenant-1', request: oidcRequest({ displayName: 'Renamed' }) })
-            expect(lastOidc()).toMatchObject({ eventSigningSecret: { data: 'enc:signing' }, extraAuthParams: { tenant: 'acme' }, verifiedAt: '2026-11-05T00:00:00.000Z' })
+            expect(lastOidc()).toMatchObject({ memberSubscription: { subscriptionId: 'sub-1', plainSecret: { data: 'enc:signing' } }, extraAuthParams: { tenant: 'acme' }, verifiedAt: '2026-11-05T00:00:00.000Z' })
         })
 
         it.each([
@@ -125,12 +125,31 @@ describe('sso config service', () => {
             ['scopes', { scopes: 'openid admin' }],
             ['match mode', { matchBy: SsoMatchBy.EMAIL }],
             ['extra parameters', { extraAuthParams: { tenant: 'other' } }],
-            ['recheck interval', { sessionRecheckMinutes: 60 }],
             ['email claim', { emailClaim: 'upn' }],
         ])('refuses to change the %s', async (_name, change) => {
             const service = await loadService()
             await expect(service.saveOidc({ tenantId: 'tenant-1', request: oidcRequest(change) })).rejects.toMatchObject({ error: { code: 'VALIDATION' } })
             expect(state.updates).toHaveLength(0)
+        })
+
+        it('lets the administrator tune the session recheck interval', async () => {
+            const service = await loadService()
+            await service.saveOidc({ tenantId: 'tenant-1', request: oidcRequest({ sessionRecheckMinutes: 60 }) })
+            expect(lastOidc()).toMatchObject({ sessionRecheckMinutes: 60, provisioned: true, issuer: 'https://iam.test', memberSubscription: { subscriptionId: 'sub-1' } })
+        })
+
+        it('lets the administrator clear the interval back to the default', async () => {
+            const service = await loadService()
+            state.providers = { saml: null, oidc: { ...provisionedOidc, sessionRecheckMinutes: 60 } }
+            await service.saveOidc({ tenantId: 'tenant-1', request: oidcRequest({ sessionRecheckMinutes: null }) })
+            expect(lastOidc()['sessionRecheckMinutes']).toBeNull()
+        })
+
+        it('keeps the interval when the request does not mention it', async () => {
+            const service = await loadService()
+            state.providers = { saml: null, oidc: { ...provisionedOidc, sessionRecheckMinutes: 45 } }
+            await service.saveOidc({ tenantId: 'tenant-1', request: oidcRequest() })
+            expect(lastOidc()['sessionRecheckMinutes']).toBe(45)
         })
 
         it('allows the access rules to be tuned', async () => {

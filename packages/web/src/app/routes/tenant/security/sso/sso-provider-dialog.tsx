@@ -20,11 +20,11 @@ import {
   WecomSsoSettings,
 } from '@fema-ipaas/shared';
 import { t } from 'i18next';
-import { Plus, X } from 'lucide-react';
+import { FileUp, Plus, X } from 'lucide-react';
 import { useRef } from 'react';
 import { FieldPath, useFieldArray, useForm } from 'react-hook-form';
 
-import { CopyButton } from '@/components/custom/clipboard/copy-button';
+import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -131,7 +131,7 @@ function SsoProviderDialog({
           <DialogDescription>
             {locked
               ? t(
-                  'This sign-in was set up by the platform that provisioned your tenant. You can turn it on or off, change its button name and decide who may sign in.',
+                  'This sign-in was set up by the platform that provisioned your tenant. You can turn it on or off, change its button name, decide who may sign in and set how often membership is re-checked.',
                 )
               : dialogDescription(provider)}
           </DialogDescription>
@@ -156,6 +156,8 @@ function SsoProviderDialog({
                 settings={settings}
               />
             )}
+
+            {locked && <RecheckField form={form} />}
 
             <TextField
               form={form}
@@ -473,17 +475,23 @@ function OidcFields({ form, existing }: FieldsProps<OidcSsoSettings>) {
           </FormItem>
         )}
       />
-      <TextField
-        form={form}
-        name="sessionRecheckMinutes"
-        label={t('Re-check interval (minutes)')}
-        placeholder={t('Off')}
-        description={t(
-          'Ask the provider this often whether the person is still a member. 5 to 1440. Empty turns it off.',
-        )}
-      />
+      <RecheckField form={form} />
       <ExtraAuthParams form={form} />
     </>
+  );
+}
+
+function RecheckField({ form }: { form: FormApi }) {
+  return (
+    <TextField
+      form={form}
+      name="sessionRecheckMinutes"
+      label={t('Re-check interval (minutes)')}
+      placeholder={t('Off')}
+      description={t(
+        'Ask the provider this often whether the person is still a member. 5 to 1440. Empty turns it off.',
+      )}
+    />
   );
 }
 
@@ -604,6 +612,42 @@ function DingtalkFields({ form, existing }: FieldsProps<DingtalkSsoSettings>) {
   );
 }
 
+function MetadataFileButton({
+  onLoaded,
+}: {
+  onLoaded: (text: string) => void;
+}) {
+  const fileInput = useRef<HTMLInputElement>(null);
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        ref={fileInput}
+        type="file"
+        accept=".xml,text/xml,application/xml"
+        data-testid="sso-metadata-file"
+        className="hidden"
+        onChange={async (event) => {
+          const file = event.target.files?.[0];
+          if (!file) {
+            return;
+          }
+          onLoaded(await file.text());
+          event.target.value = '';
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => fileInput.current?.click()}
+      >
+        <FileUp className="size-4" />
+        {t('Upload metadata file')}
+      </Button>
+    </div>
+  );
+}
+
 function SamlFields({ form, existing }: FieldsProps<SamlSsoSettings>) {
   return (
     <>
@@ -631,20 +675,7 @@ function SamlFields({ form, existing }: FieldsProps<SamlSsoSettings>) {
                 data-testid="sso-field-idpMetadataXml"
               />
             </FormControl>
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                accept=".xml,text/xml,application/xml"
-                data-testid="sso-metadata-file"
-                className="text-xs"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) {
-                    file.text().then((text) => field.onChange(text));
-                  }
-                }}
-              />
-            </div>
+            <MetadataFileButton onLoaded={field.onChange} />
             <FormDescription>
               {t(
                 'Upload the file your provider gives you, or paste its content.',
@@ -719,16 +750,9 @@ function InfoBox({
   testId: string;
 }) {
   return (
-    <div className="rounded-md border bg-muted/40 p-3">
-      <div className="mb-1 text-xs font-medium text-muted-foreground">
-        {label}
-      </div>
-      <div className="flex items-center gap-2">
-        <code className="min-w-0 flex-1 break-all text-xs" data-testid={testId}>
-          {value}
-        </code>
-        <CopyButton textToCopy={value} variant="outline" type="button" />
-      </div>
+    <div className="flex flex-col gap-1" data-testid={testId}>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <CopyToClipboardInput textToCopy={value} useInput={true} />
     </div>
   );
 }

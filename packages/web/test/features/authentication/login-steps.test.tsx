@@ -226,13 +226,15 @@ describe('login steps', () => {
   });
 
   describe('SmsLoginStep', () => {
-    function renderSms(overrides: { captchaToken?: string } = {}) {
+    function renderSms(
+      overrides: { captchaToken?: string; onBack?: () => void } = {},
+    ) {
       return harness.render(
         <SmsLoginStep
           captchaToken={overrides.captchaToken}
           captchaRequired
           onCaptchaSpent={vi.fn()}
-          onBack={vi.fn()}
+          onBack={overrides.onBack ?? vi.fn()}
           onNeedsName={vi.fn()}
           onChallenge={vi.fn()}
         />,
@@ -294,6 +296,68 @@ describe('login steps', () => {
       await harness.click('[data-testid="sms-send"]');
 
       expect(harness.text()).toContain('not available');
+    });
+
+    it('explains that the organization turned phone sign-in off and offers another method', async () => {
+      const onBack = vi.fn();
+      mocks.requestSmsCode.mockRejectedValue(
+        serverError({ code: ErrorCode.AUTHORIZATION, params: {} }),
+      );
+      await renderSms({ captchaToken: 'pow-token', onBack });
+      await harness.type({
+        selector: '[data-testid="sms-phone"]',
+        value: '13812345678',
+      });
+
+      await harness.click('[data-testid="sms-send"]');
+
+      expect(
+        harness.query('[data-testid="sms-phone-disabled"]'),
+      ).not.toBeNull();
+      expect(harness.text()).toContain('has not turned on phone sign-in');
+      expect(harness.query('[data-testid="sms-send"]')).toBeNull();
+
+      await harness.click('[data-testid="sms-use-other-method"]');
+
+      expect(onBack).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows the same notice when the code check is refused for the same reason', async () => {
+      mocks.requestSmsCode.mockResolvedValue(undefined);
+      mocks.verifySmsCode.mockRejectedValue(
+        serverError({ code: ErrorCode.AUTHORIZATION, params: {} }),
+      );
+      await renderSms({ captchaToken: 'pow-token' });
+      await harness.type({
+        selector: '[data-testid="sms-phone"]',
+        value: '13812345678',
+      });
+      await harness.click('[data-testid="sms-send"]');
+
+      await harness.type({
+        selector: '[data-testid="sms-code"]',
+        value: '123456',
+      });
+
+      expect(
+        harness.query('[data-testid="sms-phone-disabled"]'),
+      ).not.toBeNull();
+    });
+
+    it('keeps the generic message for other refusals', async () => {
+      mocks.requestSmsCode.mockRejectedValue(
+        serverError({ code: ErrorCode.VALIDATION, params: {} }),
+      );
+      await renderSms({ captchaToken: 'pow-token' });
+      await harness.type({
+        selector: '[data-testid="sms-phone"]',
+        value: '13812345678',
+      });
+
+      await harness.click('[data-testid="sms-send"]');
+
+      expect(harness.query('[data-testid="sms-phone-disabled"]')).toBeNull();
+      expect(harness.text()).toContain('Something went wrong');
     });
   });
 });

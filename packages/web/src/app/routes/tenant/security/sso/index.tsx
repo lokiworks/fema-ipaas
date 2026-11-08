@@ -77,6 +77,7 @@ import { ssoUtils } from '@/features/authentication';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { formatUtils } from '@/lib/format-utils';
+import { cn } from '@/lib/utils';
 
 const AuthenticationPage = () => {
   const { tenant, refetch } = tenantHooks.useCurrentTenant();
@@ -167,11 +168,12 @@ function SsoTestResult() {
       role="alert"
       data-testid="sso-test-result"
       data-result={result}
-      className={
+      className={cn(
+        'flex items-start gap-2 rounded-md border px-3 py-2 text-sm',
         passed
-          ? 'flex items-start gap-2 rounded-md border border-success/50 bg-success-100/10 px-3 py-2 text-sm text-success-700 dark:text-success-300'
-          : 'flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive'
-      }
+          ? 'border-success/50 bg-success-100/10 text-success-700 dark:text-success-300'
+          : 'border-destructive/40 bg-destructive/5 text-destructive',
+      )}
     >
       {!passed && <TriangleAlert className="mt-0.5 size-4 shrink-0" />}
       <span className="flex-1">
@@ -235,6 +237,9 @@ function LoginMethodRow({
     isPending || setSsoEnabled.isPending || updateMfaPolicy.isPending;
   const provisioned =
     provider === SsoProvider.OIDC && sso?.oidc?.provisioned === true;
+  const withheldMemberEvents = provisioned
+    ? sso?.oidc?.memberEventsWithheld ?? []
+    : [];
   return (
     <Item variant="outline" data-testid={`login-method-${method.method}`}>
       <ItemMedia variant="icon">{methodIcon(method.method)}</ItemMedia>
@@ -261,6 +266,17 @@ function LoginMethodRow({
               verifiedAt: verified,
               lastLoginAt: config.lastLoginAt ?? null,
             })}
+          </ItemDescription>
+        )}
+        {withheldMemberEvents.length > 0 && (
+          <ItemDescription
+            className="flex items-start gap-1.5 text-warning"
+            data-testid="sso-member-events-withheld"
+          >
+            <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+            {t(
+              'FEMA withholds some member changes because the integration application cannot read every member. When such members are suspended or removed, their sessions end only at the next re-check.',
+            )}
           </ItemDescription>
         )}
       </ItemContent>

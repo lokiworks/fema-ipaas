@@ -19,6 +19,7 @@ export enum PlatformMemberStatus {
     ACTIVE = 'ACTIVE',
     INACTIVE = 'INACTIVE',
     PENDING_BINDING = 'PENDING_BINDING',
+    INVITED = 'INVITED',
 }
 
 const httpsUrl = z.string().trim().max(500, 'urlTooLong').regex(/^https?:\/\/\S+$/, 'invalidHttpUrl')
@@ -69,6 +70,7 @@ export const ProvisionOidcInput = z.object({
     scopes: z.string().max(300).optional(),
     extraAuthParams: stringMap.optional(),
     displayName: z.string().max(20).optional(),
+    sessionRecheckMinutes: z.number().int().min(5).max(1440).optional(),
 })
 export type ProvisionOidcInput = z.infer<typeof ProvisionOidcInput>
 
@@ -87,13 +89,28 @@ export const ProvisionConnectionInput = z.object({
 })
 export type ProvisionConnectionInput = z.infer<typeof ProvisionConnectionInput>
 
+export const ProvisionMemberEventsInput = z.object({
+    connectionExternalId: z.string().min(1).max(200),
+    apiUrl: httpsUrl,
+    rotateSecret: z.boolean().optional(),
+})
+export type ProvisionMemberEventsInput = z.infer<typeof ProvisionMemberEventsInput>
+
+export const ProvisionMemberEventsResult = z.object({
+    subscriptionId: z.string(),
+    endpoint: z.string(),
+    reused: z.boolean(),
+    withheldEvents: z.array(z.string()),
+})
+export type ProvisionMemberEventsResult = z.infer<typeof ProvisionMemberEventsResult>
+
 export const ProvisionTenantRequestBody = z.object({
     externalRef: TenantExternalRef,
     name: z.string().trim().min(1, formErrors.required).max(100),
     slug: z.string().trim().toLowerCase().max(40).optional(),
     owner: TenantOwnerInput,
     oidc: ProvisionOidcInput.optional(),
-    eventSigningSecret: z.string().min(16).max(500).optional(),
+    memberEvents: ProvisionMemberEventsInput.optional(),
     connections: z.array(ProvisionConnectionInput).max(20).optional(),
     limits: TenantLimitsUpdate.optional(),
 })
@@ -106,7 +123,7 @@ export const ProvisionTenantResponse = z.object({
     created: z.boolean(),
     loginUrl: z.string(),
     ssoStartUrl: Nullable(z.string()),
-    eventsEndpoint: z.string(),
+    memberEvents: Nullable(ProvisionMemberEventsResult),
     connections: z.array(z.object({
         externalId: z.string(),
         connectionId: EntityId,
@@ -154,6 +171,7 @@ export const PlatformMember = z.object({
     name: z.string(),
     role: z.enum(TenantRole),
     status: z.enum(PlatformMemberStatus),
+    notified: z.boolean(),
 })
 export type PlatformMember = z.infer<typeof PlatformMember>
 
@@ -176,6 +194,7 @@ export const TenantUsageDay = z.object({
     executions: z.number(),
     failedExecutions: z.number(),
     activeWorkflows: z.number(),
+    activeWorkflowsExact: z.boolean(),
 })
 export type TenantUsageDay = z.infer<typeof TenantUsageDay>
 
@@ -187,5 +206,5 @@ export type PlatformUsageResponse = z.infer<typeof PlatformUsageResponse>
 export const PLATFORM_API = {
     apiKeyPrefix: 'fpk_',
     basePath: '/v1/platform',
-    federationEventsPath: '/v1/federation/events',
+    memberEventsPathPrefix: '/v1/federation/members',
 }

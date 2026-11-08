@@ -7,9 +7,10 @@ import {
   isObject,
   tryCatch,
 } from '@fema-ipaas/connector-sdk';
+import type { Store } from '@fema-ipaas/connector-sdk';
 
 import { femaAuth } from '../auth';
-import { FEMA_SECRET_STORE_KEY, FEMA_SIGNATURE_HEADER, FemaSubscription, femaCommon } from '../common';
+import { FEMA_PENDING_CODE_KEY, FEMA_SECRET_STORE_KEY, FEMA_SIGNATURE_HEADER, FemaConnection, FemaSubscription, femaCommon } from '../common';
 import { femaOutputSchemas } from '../output-schemas';
 
 export const businessEvent = createTrigger({
@@ -47,7 +48,7 @@ export const businessEvent = createTrigger({
     occurredAt: '2026-11-04T03:21:07Z',
     app: 'rental-agreement',
     ability: 'activate',
-    object: { code: 'contract', id: '981233', businessKey: 'HT-2026-0001' },
+    object: { code: 'contract', id: '981233' },
     objectPath: 'rental-agreement/contract',
   },
   async onHandshake(context) {
@@ -64,41 +65,47 @@ export const businessEvent = createTrigger({
     if (events.length === 0) {
       throw new Error('请至少填写一个事件类型，例如 rental-agreement.contract.activate');
     }
-    const code = femaCommon.subscriptionCode({ webhookUrl: context.webhookUrl });
-    const created = await femaCommon.call({
-      auth: context.auth,
-      method: HttpMethod.POST,
-      path: 'webhook/subscription/create',
-      body: { code, endpoint: context.webhookUrl, events },
-    });
-    const secret = secretOf({ created });
-    if (!secret) {
-      throw new Error('FEMA 接受了登记，但没有返回签名密钥，无法校验之后的推送');
+    const previous = await context.store.get<FemaSubscription>(FEMA_SECRET_STORE_KEY);
+    if (previous?.id) {
+      await removeById({ auth: context.auth, id: previous.id });
+      await context.store.delete(FEMA_SECRET_STORE_KEY);
     }
+    const registration = await register({ auth: context.auth, store: context.store, webhookUrl: context.webhookUrl, events });
+    const secret = secretOf({ created: registration.created });
+    if (!secret) {
+      const orphan = idOf({ created: registration.created });
+      if (orphan) {
+        await removeById({ auth: context.auth, id: orphan });
+      }
+      throw new Error('FEMA 接受了登记，但没有返回签名密钥（plainSecret），无法校验之后的推送');
+    }
+    const withheldEvents = withheldOf({ created: registration.created });
     await context.store.put<FemaSubscription>(FEMA_SECRET_STORE_KEY, {
-      id: idOf({ created }),
-      code,
+      id: idOf({ created: registration.created }),
+      code: registration.code,
       secret,
       events,
+      withheldEvents,
     });
+    await context.store.delete(FEMA_PENDING_CODE_KEY);
+    if (withheldEvents.length > 0) {
+      console.warn(`FEMA 已登记，但这些事件暂时不会推送：${withheldEvents.join('、')}。连接里的应用对相应对象只有部分数据的读权限，请在 FEMA 给它完整的读权限。`);
+    }
   },
   async onDisable(context) {
     const subscription = await context.store.get<FemaSubscription>(FEMA_SECRET_STORE_KEY);
-    if (!subscription) {
-      return;
+    const pendingCode = await context.store.get<string>(FEMA_PENDING_CODE_KEY);
+    if (subscription?.id) {
+      await removeById({ auth: context.auth, id: subscription.id });
     }
-    const { error } = await tryCatch(() =>
-      femaCommon.call({
-        auth: context.auth,
-        method: HttpMethod.POST,
-        path: 'webhook/subscription/delete',
-        body: { ...(subscription.id ? { id: subscription.id } : {}), code: subscription.code },
-      }),
-    );
-    if (error && !isGone({ error })) {
-      throw error;
+    else if (subscription?.code) {
+      await discardByCode({ auth: context.auth, code: subscription.code });
+    }
+    if (pendingCode && pendingCode !== subscription?.code) {
+      await discardByCode({ auth: context.auth, code: pendingCode });
     }
     await context.store.delete(FEMA_SECRET_STORE_KEY);
+    await context.store.delete(FEMA_PENDING_CODE_KEY);
   },
   async run(context) {
     const subscription = await context.store.get<FemaSubscription>(FEMA_SECRET_STORE_KEY);
@@ -127,12 +134,87 @@ export const businessEvent = createTrigger({
   },
 });
 
+async function register({ auth, store, webhookUrl, events }: RegisterParams): Promise<Registration> {
+  const firstCode = femaCommon.subscriptionCode({ webhookUrl });
+  await store.put<string>(FEMA_PENDING_CODE_KEY, firstCode);
+  const first = await tryCatch(() => createSubscription({ auth, code: firstCode, webhookUrl, events }));
+  if (!first.error) {
+    return { code: firstCode, created: first.data };
+  }
+  if (!isUncertain({ error: first.error })) {
+    throw first.error;
+  }
+  await discardByCode({ auth, code: firstCode });
+  const retryCode = femaCommon.subscriptionCode({ webhookUrl });
+  await store.put<string>(FEMA_PENDING_CODE_KEY, retryCode);
+  const created = await createSubscription({ auth, code: retryCode, webhookUrl, events });
+  return { code: retryCode, created };
+}
+
+async function createSubscription({ auth, code, webhookUrl, events }: CreateSubscriptionParams): Promise<unknown> {
+  return femaCommon.call({
+    auth,
+    method: HttpMethod.POST,
+    path: 'webhook/subscription/create',
+    body: { code, endpoint: webhookUrl, events: { value: events } },
+  });
+}
+
+async function discardByCode({ auth, code }: { auth: FemaConnection; code: string }): Promise<void> {
+  const { data, error } = await tryCatch(() =>
+    femaCommon.call({
+      auth,
+      method: HttpMethod.POST,
+      path: 'webhook/subscription/find-one',
+      body: { filter: { code } },
+    }),
+  );
+  if (error && isGone({ error })) {
+    return;
+  }
+  if (error) {
+    throw error;
+  }
+  const id = idOf({ created: data });
+  if (id) {
+    await removeById({ auth, id });
+  }
+}
+
+async function removeById({ auth, id }: { auth: FemaConnection; id: string }): Promise<void> {
+  const { error } = await tryCatch(() =>
+    femaCommon.call({
+      auth,
+      method: HttpMethod.POST,
+      path: 'webhook/subscription/delete',
+      body: { id },
+    }),
+  );
+  if (error && !isGone({ error })) {
+    throw error;
+  }
+}
+
+function isUncertain({ error }: { error: unknown }): boolean {
+  if (!(error instanceof femaCommon.FemaApiError)) {
+    return true;
+  }
+  return error.code === 'ALREADY_EXISTS' || error.status >= 500 || error.status === 408 || error.status === 429;
+}
+
 function secretOf({ created }: { created: unknown }): string | null {
   if (!isObject(created)) {
     return null;
   }
-  const secret = created['secret'] ?? created['signingSecret'];
+  const secret = created['plainSecret'];
   return typeof secret === 'string' && secret.length > 0 ? secret : null;
+}
+
+function withheldOf({ created }: { created: unknown }): string[] {
+  if (!isObject(created) || !Array.isArray(created['withheldEvents'])) {
+    return [];
+  }
+  return created['withheldEvents'].map((event: unknown) => String(event));
 }
 
 function idOf({ created }: { created: unknown }): string | null {
@@ -146,3 +228,22 @@ function idOf({ created }: { created: unknown }): string | null {
 function isGone({ error }: { error: unknown }): boolean {
   return error instanceof femaCommon.FemaApiError && (error.status === 404 || error.code === 'NOT_FOUND');
 }
+
+type RegisterParams = {
+  auth: FemaConnection;
+  store: Store;
+  webhookUrl: string;
+  events: string[];
+};
+
+type CreateSubscriptionParams = {
+  auth: FemaConnection;
+  code: string;
+  webhookUrl: string;
+  events: string[];
+};
+
+type Registration = {
+  code: string;
+  created: unknown;
+};

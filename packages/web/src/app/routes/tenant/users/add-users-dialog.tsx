@@ -249,8 +249,9 @@ function InviteResult({
               )}
         </DialogDescription>
       </DialogHeader>
-      {!result.emailSent &&
-        result.invited.map((invite) => (
+      {result.invited
+        .filter((invite) => !result.emailSent || Boolean(invite.phone))
+        .map((invite) => (
           <div
             key={invite.email || invite.phone || ''}
             className="flex flex-col gap-1"
@@ -258,6 +259,13 @@ function InviteResult({
             <span className="text-sm">{invite.email || invite.phone}</span>
             {invite.link && (
               <CopyToClipboardInput textToCopy={invite.link} useInput={true} />
+            )}
+            {!invite.link && invite.phone && (
+              <p className="text-xs text-muted-foreground">
+                {t(
+                  'Signs in with a text message code to activate. No link is needed.',
+                )}
+              </p>
             )}
           </div>
         ))}

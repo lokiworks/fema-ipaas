@@ -36,7 +36,7 @@ function AccountSecurityCard() {
       </CardHeader>
       <CardContent className="flex flex-col divide-y">
         <SecurityRow
-          label={t('Email')}
+          label={t('Sign-in email')}
           value={status.email ?? t('Not linked')}
           badge={
             status.email === null
@@ -63,7 +63,7 @@ function AccountSecurityCard() {
               onClick={() => setDialog('phone')}
               data-testid="security-phone-action"
             >
-              {status.phone === null ? t('Link') : t('Change')}
+              {status.phone === null ? t('Bind phone number') : t('Change')}
             </Button>
           }
         />
@@ -124,7 +124,7 @@ function MfaRow({
       value={t('recoveryCodesRemainingCount', {
         count: status.recoveryCodesRemaining,
       })}
-      badge={t('On')}
+      badge={t('Turned on')}
       action={
         <div className="flex gap-2">
           <Button

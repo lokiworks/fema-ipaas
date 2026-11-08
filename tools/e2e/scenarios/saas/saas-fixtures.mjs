@@ -7,8 +7,8 @@ const run = randomBytes(3).toString('hex')
 export const PASSWORD = 'Passw0rd!'
 
 export const TENANTS = {
-  alpha: { code: 't_alpha', name: `甲租赁 ${run}`, slug: `alpha-${run}`, eventSecret: `evt-alpha-${randomBytes(16).toString('hex')}` },
-  beta: { code: 't_beta', name: `乙设备 ${run}`, slug: `beta-${run}`, eventSecret: `evt-beta-${randomBytes(16).toString('hex')}` },
+  alpha: { code: 't_alpha', name: `甲租赁 ${run}`, slug: `alpha-${run}` },
+  beta: { code: 't_beta', name: `乙设备 ${run}`, slug: `beta-${run}` },
 }
 
 export const PERSONS = [
@@ -21,6 +21,8 @@ export const PERSONS = [
   { username: 'erin', name: '将被移出的 Erin', email: `erin-${run}@alpha.test`, emailVerified: true },
   { username: 'frank', name: '复核移出的 Frank', email: `frank-${run}@alpha.test`, emailVerified: true },
   { username: 'gina', name: '未受邀的 Gina', email: `gina-${run}@alpha.test`, emailVerified: true },
+  { username: 'hank', name: '乱序事件的 Hank', email: `hank-${run}@alpha.test`, emailVerified: true },
+  { username: 'otto', name: '被管理员停用的 Otto', email: `otto-${run}@alpha.test`, emailVerified: true },
 ].map((person) => ({ password: PASSWORD, ...person }))
 
 export const MEMBERS = {
@@ -34,6 +36,8 @@ export const MEMBERS = {
   erinA: { id: `m-a-erin-${run}`, tenant: TENANTS.alpha.code, username: 'erin' },
   frankA: { id: `m-a-frank-${run}`, tenant: TENANTS.alpha.code, username: 'frank' },
   ginaA: { id: `m-a-gina-${run}`, tenant: TENANTS.alpha.code, username: 'gina' },
+  hankA: { id: `m-a-hank-${run}`, tenant: TENANTS.alpha.code, username: 'hank' },
+  ottoA: { id: `m-a-otto-${run}`, tenant: TENANTS.alpha.code, username: 'otto' },
 }
 
 export const CLIENTS = {
@@ -47,7 +51,7 @@ export const CLIENTS = {
 export function seedBody() {
   return {
     reset: true,
-    tenants: Object.values(TENANTS).map(({ code, name, eventSecret }) => ({ code, name, eventSecret })),
+    tenants: Object.values(TENANTS).map(({ code, name }) => ({ code, name })),
     persons: PERSONS,
     members: Object.values(MEMBERS),
     clients: Object.values(CLIENTS),
@@ -71,8 +75,9 @@ export function provisionBody({ tenant, owner, oidcClient, serviceClient, servic
       scopes: 'openid profile email',
       extraAuthParams: { tenant: tenant.code },
       displayName: 'FEMA',
+      sessionRecheckMinutes: 5,
     },
-    eventSigningSecret: tenant.eventSecret,
+    memberEvents: { connectionExternalId: 'fema', apiUrl: FEMA_API },
     connections: [{
       externalId: 'fema',
       connectorName: '@fema-ipaas/connector-fema',

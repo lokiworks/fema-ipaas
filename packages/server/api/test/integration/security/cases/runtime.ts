@@ -23,6 +23,7 @@ export const runtimeDomain: DomainModule = {
         'GET /v1/run-logs': memberScoped('服务层先用 memberProjectIds 解析用户可见项目（租户管理员为全部、其他人为所属或自己拥有的项目），再按这些项目和各自保留期过滤；请求里的 projectId 与可见项目取交集'),
         'GET /v1/run-logs/scope': memberScoped('只返回 memberProjectIds 解析出的项目、这些项目里的流程和连接器名，没有成员关系时返回空'),
         'POST /v1/run-logs/rerun': memberScoped('只在 memberProjectIds 内查找运行记录，找不到的 id 当作不存在；每条再按项目内角色是否含 WRITE_RUN 判定 canRerun，没有写权限的返回 VIEW_ONLY 而不执行重跑'),
+        'POST /v1/run-logs/rerun-check': memberScoped('只在 memberProjectIds 解析出的项目里按 id 查生产环境运行记录，找不到的 id 当作不存在；只读判断，不重跑也不改数据，响应仅含这些运行自己的 executionId 与原因；矩阵用三个范围里带问题的运行断言不会出现别的项目或租户的运行'),
         'GET /v1/run-monitor/summary': memberScoped('resolveScope 把请求的 projectIds 与 memberProjectIds 取交集，没有传时用全部可见项目，SQL 全部按这个范围过滤'),
         'GET /v1/run-monitor/ai-usage': memberScoped('与 summary 共用 resolveScope，AI 用量按可见项目过滤'),
         'GET /v1/run-monitor/options': memberScoped('项目和流程列表只来自 memberProjectIds'),

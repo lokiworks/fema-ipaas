@@ -313,7 +313,9 @@ export const TiptapEditor = ({
   ]);
   const pendingTriggerRef = useRef<string | null>(null);
   const [capsule, setCapsule] = useState<CapsuleToolbarState | null>(null);
-  const capsuleHideTimer = useRef<ReturnType<typeof setTimeout>>();
+  const capsuleHideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   const projectId = authenticationSession.getProjectId();
   const { data: variablesPage } = variablesQueries.useVariables({

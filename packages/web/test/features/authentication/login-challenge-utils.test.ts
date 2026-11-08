@@ -80,3 +80,27 @@ describe('loginChallengeUtils.messageFor', () => {
     ).toBeNull();
   });
 });
+
+describe('loginChallengeUtils.isForbidden', () => {
+  it('is true only for an authorization refusal', () => {
+    expect(
+      loginChallengeUtils.isForbidden(
+        errorWith({ code: ErrorCode.AUTHORIZATION, params: {} }),
+      ),
+    ).toBe(true);
+    expect(
+      loginChallengeUtils.isForbidden(
+        errorWith({ code: ErrorCode.VALIDATION, params: {} }),
+      ),
+    ).toBe(false);
+    expect(loginChallengeUtils.isForbidden(new Error('boom'))).toBe(false);
+  });
+
+  it('is not turned into a message by messageFor, so other callers are unaffected', () => {
+    expect(
+      loginChallengeUtils.messageFor(
+        errorWith({ code: ErrorCode.AUTHORIZATION, params: {} }),
+      ),
+    ).toBeNull();
+  });
+});

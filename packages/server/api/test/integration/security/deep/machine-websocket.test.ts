@@ -22,7 +22,7 @@ function currentWorld(): World {
 }
 
 type FakeClient = {
-    send: (params: { event: WebsocketServerEvent, data: unknown }) => Promise<unknown>
+    send: (params: { event: string, data: unknown }) => Promise<unknown>
     joinedRooms: string[]
     registeredEvents: () => string[]
 }
@@ -65,14 +65,25 @@ async function connect({ identity, projectScope }: { identity: Identity, project
 }
 
 describe('realtime collaboration stays inside the project and the role of the connection', () => {
-    it('does not register any handler or room for a user who asks for a project they cannot open', async () => {
+    it('joins no room and lets no handler run for a user who asks for a project they cannot open', async () => {
+        const w = currentWorld()
+        const foreign = await seed.workflow({ world: w, scope: 'B' })
         const outsider = await connect({ identity: 'projectAdmin', projectScope: 'B' })
         const foreignTenant = await connect({ identity: 'otherTenantAdmin', projectScope: 'A' })
+        const foreignOwner = await connect({ identity: 'foreignProjectAdmin', projectScope: 'B' })
+
+        const outsiderReplies = await Promise.all(outsider.registeredEvents().map((event) => outsider.send({ event, data: { resourceId: foreign.id, force: true } })))
+        const foreignTenantReplies = await Promise.all(foreignTenant.registeredEvents().map((event) => foreignTenant.send({ event, data: { resourceId: foreign.id, force: true } })))
+        const ownerLock = await foreignOwner.send({ event: WebsocketServerEvent.LOCK_RESOURCE, data: { resourceId: foreign.id } })
+        const ownerPresence = await foreignOwner.send({ event: WebsocketServerEvent.JOIN_PRESENCE, data: { resourceId: foreign.id } })
 
         expect(outsider.joinedRooms).toEqual([])
-        expect(outsider.registeredEvents()).toEqual([])
         expect(foreignTenant.joinedRooms).toEqual([])
-        expect(foreignTenant.registeredEvents()).toEqual([])
+        expect(outsiderReplies.every((reply) => reply === 'no-reply')).toBe(true)
+        expect(foreignTenantReplies.every((reply) => reply === 'no-reply')).toBe(true)
+        expect(ownerLock).toMatchObject({ acquired: true })
+        expect(JSON.stringify(ownerPresence)).not.toContain(w.actors.projectAdmin.userId as string)
+        expect(JSON.stringify(ownerPresence)).not.toContain(w.actors.otherTenantAdmin.userId as string)
     })
 
     it('does not let a viewer take the edit lock of a workflow, which would stop the developers from publishing', async () => {

@@ -2,7 +2,7 @@ import { t } from 'i18next';
 import { Pencil } from 'lucide-react';
 import { useState } from 'react';
 
-import { CopyButton } from '@/components/custom/clipboard/copy-button';
+import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,18 +11,25 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { internalErrorMessage } from '@/components/ui/sonner';
 import {
   SlugDialog,
   tenantAccessHooks,
   tenantAccessUtils,
 } from '@/features/tenant-access';
 import { tenantHooks } from '@/hooks/tenant-hooks';
+import { api } from '@/lib/api';
 
 export function SignInAddressCard() {
   const { tenant } = tenantHooks.useCurrentTenant();
   const [open, setOpen] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const update = tenantAccessHooks.useUpdateSlug({
     onSaved: () => setOpen(false),
+    onError: (error) =>
+      setServerError(
+        api.extractServerErrorMessage(error, internalErrorMessage()),
+      ),
   });
   const url = tenantAccessUtils.tenantLoginUrl({
     origin: window.location.origin,
@@ -38,17 +45,14 @@ export function SignInAddressCard() {
           )}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-wrap items-center gap-2">
-        <code
-          className="min-w-0 break-all rounded-md border bg-muted/40 px-3 py-1.5 text-sm"
-          data-testid="tenant-sign-in-url"
-        >
-          {url}
-        </code>
-        <CopyButton textToCopy={url} variant="outline" type="button" />
+      <CardContent className="flex flex-col gap-2">
+        <div data-testid="tenant-sign-in-url">
+          <CopyToClipboardInput textToCopy={url} useInput={true} />
+        </div>
         <Button
           variant="outline"
           size="sm"
+          className="self-start"
           onClick={() => setOpen(true)}
           data-testid="change-slug"
         >
@@ -61,9 +65,11 @@ export function SignInAddressCard() {
         onOpenChange={setOpen}
         currentSlug={tenant.slug}
         pending={update.isPending}
-        onSubmit={(slug) =>
-          update.mutate({ tenantId: tenant.id, request: { slug } })
-        }
+        serverError={serverError}
+        onSubmit={(slug) => {
+          setServerError(null);
+          update.mutate({ tenantId: tenant.id, request: { slug } });
+        }}
       />
     </Card>
   );

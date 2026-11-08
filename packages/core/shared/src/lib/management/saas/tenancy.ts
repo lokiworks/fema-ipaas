@@ -6,6 +6,7 @@ import { formErrors } from '../../form-errors'
 export enum TenantStatus {
     ACTIVE = 'ACTIVE',
     SUSPENDED = 'SUSPENDED',
+    DELETING = 'DELETING',
 }
 
 export enum InstanceRole {
@@ -264,5 +265,5 @@ export const SAAS_LIMITS = {
     tenantHeader: 'x-fema-tenant',
     tenantQueryParam: 'tenant',
     tenantPathPrefix: '/t/',
-    domainVerificationRecordPrefix: '_fema-ipaas-verification',
+    domainVerificationRecordPrefix: '_ipaas-verification',
 }

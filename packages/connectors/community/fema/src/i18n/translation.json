@@ -37,8 +37,6 @@
   "Occurred At": "Occurred At",
   "Object": "Object",
   "Object Code": "Object Code",
-  "Business Key": "Business Key",
-  "The business number of the object, for example a contract number.": "The business number of the object, for example a contract number.",
   "Pass it to Read Object to load the details.": "Pass it to Read Object to load the details.",
   "Found": "Found",
   "Object Details": "Object Details",

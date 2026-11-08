@@ -29,6 +29,7 @@ import { McpServerEntity } from '../mcp-server/mcp-server.entity'
 import { McpServiceEntity, McpServiceMemberEntity, McpServiceUsageEntity } from '../mcp-service/mcp-service.entity'
 import { NotificationEntity } from '../notification/notification.entity'
 import { PlatformClientEntity } from '../platform/platform-client.entity'
+import { TenantUsageSnapshotEntity } from '../platform/tenant-usage-snapshot.entity'
 import { DataErasureRequestEntity } from '../privacy/data-erasure.entity'
 import { PrivacySettingsEntity } from '../privacy/privacy-settings.entity'
 import { ProjectAccessRequestEntity } from '../project/project-access-request.entity'
@@ -117,6 +118,7 @@ function getEntities(): EntitySchema<unknown>[] {
         ExternalIdentityEntity,
         TenantDomainEntity,
         PlatformClientEntity,
+        TenantUsageSnapshotEntity,
         NotificationEntity,
         PersonalAccessTokenEntity,
         DedupedEventEntity,

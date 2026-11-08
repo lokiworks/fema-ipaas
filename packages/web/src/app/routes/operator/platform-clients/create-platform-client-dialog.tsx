@@ -3,9 +3,10 @@ import {
   PlatformClientKind,
   PlatformScope,
 } from '@fema-ipaas/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { t } from 'i18next';
 import { TriangleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 import { CopyToClipboardInput } from '@/components/custom/clipboard/copy-to-clipboard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,11 +20,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { internalErrorMessage } from '@/components/ui/sonner';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { operatorHooks, operatorUtils } from '@/features/operator';
+import {
+  operatorHooks,
+  operatorSchemas,
+  operatorUtils,
+  PlatformClientFormValues,
+} from '@/features/operator';
+import { FormServerError } from '@/features/tenant-access';
+import { api } from '@/lib/api';
 
 export function CreatePlatformClientDialog({
   open,
@@ -45,21 +62,23 @@ export function CreatePlatformClientDialog({
 }
 
 function CreateForm({ onClose }: { onClose: () => void }) {
+  const form = useForm<PlatformClientFormValues>({
+    mode: 'onChange',
+    resolver: zodResolver(operatorSchemas.platformClientForm),
+    defaultValues: platformClientDefaults(),
+  });
+  const kind = form.watch('kind');
   const {
     mutate: create,
     isPending,
     data: created,
-  } = operatorHooks.useCreatePlatformClient();
-  const [kind, setKind] = useState<PlatformClientKind>(
-    PlatformClientKind.API_KEY,
-  );
-  const [name, setName] = useState('');
-  const [issuer, setIssuer] = useState('');
-  const [subjects, setSubjects] = useState('');
-  const [scopes, setScopes] = useState<PlatformScope[]>([
-    PlatformScope.TENANT_PROVISION,
-  ]);
-  const [error, setError] = useState<string | null>(null);
+  } = operatorHooks.useCreatePlatformClient({
+    onError: (error) =>
+      form.setError('root.serverError', {
+        type: 'manual',
+        message: api.extractServerErrorMessage(error, internalErrorMessage()),
+      }),
+  });
 
   if (created) {
     return (
@@ -94,145 +113,152 @@ function CreateForm({ onClose }: { onClose: () => void }) {
     );
   }
 
-  const submit = (): void => {
-    const request = buildRequest({ kind, name, issuer, subjects, scopes });
-    const parsed = CreatePlatformClientRequestBody.safeParse(request);
-    if (!parsed.success) {
-      setError(t(parsed.error.issues[0]?.message ?? 'required'));
-      return;
-    }
-    setError(null);
-    create(parsed.data);
-  };
-
   return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        submit();
-      }}
-    >
-      <DialogHeader>
-        <DialogTitle>{t('New platform client')}</DialogTitle>
-        <DialogDescription>
-          {t('Choose how the other system proves who it is.')}
-        </DialogDescription>
-      </DialogHeader>
-      <Tabs
-        value={kind}
-        onValueChange={(value) =>
-          setKind(
-            value === PlatformClientKind.TRUSTED_ISSUER
-              ? PlatformClientKind.TRUSTED_ISSUER
-              : PlatformClientKind.API_KEY,
-          )
-        }
+    <Form {...form}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={form.handleSubmit((values) => {
+          form.clearErrors('root.serverError');
+          const parsed = CreatePlatformClientRequestBody.safeParse(
+            operatorUtils.platformClientRequest(values),
+          );
+          if (parsed.success) {
+            create(parsed.data);
+          }
+        })}
       >
-        <TabsList>
-          <TabsTrigger value={PlatformClientKind.API_KEY}>
-            {t('API key')}
-          </TabsTrigger>
-          <TabsTrigger value={PlatformClientKind.TRUSTED_ISSUER}>
-            {t('Trusted issuer')}
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="client-name">{t('Name')}</Label>
-        <Input
-          id="client-name"
-          value={name}
-          data-testid="client-name"
-          onChange={(event) => setName(event.target.value)}
+        <DialogHeader>
+          <DialogTitle>{t('New platform client')}</DialogTitle>
+          <DialogDescription>
+            {t('Choose how the other system proves who it is.')}
+          </DialogDescription>
+        </DialogHeader>
+        <Tabs
+          value={kind}
+          onValueChange={(value) =>
+            form.setValue(
+              'kind',
+              value === PlatformClientKind.TRUSTED_ISSUER
+                ? PlatformClientKind.TRUSTED_ISSUER
+                : PlatformClientKind.API_KEY,
+            )
+          }
+        >
+          <TabsList>
+            <TabsTrigger value={PlatformClientKind.API_KEY}>
+              {t('API key')}
+            </TabsTrigger>
+            <TabsTrigger value={PlatformClientKind.TRUSTED_ISSUER}>
+              {t('Trusted issuer')}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel showRequiredIndicator>{t('Name')}</FormLabel>
+              <FormControl>
+                <Input {...field} data-testid="client-name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      {kind === PlatformClientKind.TRUSTED_ISSUER && (
-        <>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="client-issuer">{t('Issuer URL')}</Label>
-            <Input
-              id="client-issuer"
-              value={issuer}
-              placeholder="https://iam.example.com"
-              data-testid="client-issuer"
-              onChange={(event) => setIssuer(event.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="client-subjects">{t('Allowed subjects')}</Label>
-            <Textarea
-              id="client-subjects"
-              value={subjects}
-              minRows={2}
-              data-testid="client-subjects"
-              onChange={(event) => setSubjects(event.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              {t(
-                'Client IDs or subjects allowed to call, one per line. Matched against sub, client_id and azp.',
+        {kind === PlatformClientKind.TRUSTED_ISSUER && (
+          <>
+            <FormField
+              control={form.control}
+              name="issuer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel showRequiredIndicator>{t('Issuer URL')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="https://iam.example.com"
+                      data-testid="client-issuer"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </p>
-          </div>
-        </>
-      )}
-      <div className="flex flex-col gap-2">
-        <Label>{t('Permissions')}</Label>
-        {Object.values(PlatformScope).map((scope) => (
-          <label key={scope} className="flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={scopes.includes(scope)}
-              data-testid={`scope-${scope}`}
-              onCheckedChange={(checked) =>
-                setScopes((current) =>
-                  checked === true
-                    ? [...current, scope]
-                    : current.filter((value) => value !== scope),
-                )
-              }
             />
-            {operatorUtils.scopeLabel(scope)}
-          </label>
-        ))}
-      </div>
-      {error && (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      )}
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
-          {t('Cancel')}
-        </Button>
-        <Button type="submit" loading={isPending} data-testid="client-submit">
-          {t('Create')}
-        </Button>
-      </DialogFooter>
-    </form>
+            <FormField
+              control={form.control}
+              name="subjects"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel showRequiredIndicator>
+                    {t('Allowed subjects')}
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      minRows={2}
+                      data-testid="client-subjects"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t(
+                      'Client IDs or subjects allowed to call, one per line. Matched against sub, client_id and azp.',
+                    )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
+        <FormField
+          control={form.control}
+          name="scopes"
+          render={({ field }) => (
+            <FormItem className="flex flex-col gap-2">
+              <FormLabel>{t('Permissions')}</FormLabel>
+              {Object.values(PlatformScope).map((scope) => (
+                <label key={scope} className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={field.value.includes(scope)}
+                    data-testid={`scope-${scope}`}
+                    onCheckedChange={(checked) =>
+                      field.onChange(
+                        checked === true
+                          ? [...field.value, scope]
+                          : field.value.filter((value) => value !== scope),
+                      )
+                    }
+                  />
+                  {operatorUtils.scopeLabel(scope)}
+                </label>
+              ))}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormServerError
+          message={form.formState.errors.root?.serverError?.message}
+        />
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            {t('Cancel')}
+          </Button>
+          <Button type="submit" loading={isPending} data-testid="client-submit">
+            {t('Create')}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }
 
-function buildRequest({
-  kind,
-  name,
-  issuer,
-  subjects,
-  scopes,
-}: {
-  kind: PlatformClientKind;
-  name: string;
-  issuer: string;
-  subjects: string;
-  scopes: PlatformScope[];
-}) {
-  if (kind === PlatformClientKind.API_KEY) {
-    return { kind, name, scopes };
-  }
+function platformClientDefaults(): PlatformClientFormValues {
   return {
-    kind,
-    name,
-    issuer,
-    allowedSubjects: operatorUtils.parseSubjects(subjects),
-    scopes,
+    kind: PlatformClientKind.API_KEY,
+    name: '',
+    issuer: '',
+    subjects: '',
+    scopes: [PlatformScope.TENANT_PROVISION],
   };
 }

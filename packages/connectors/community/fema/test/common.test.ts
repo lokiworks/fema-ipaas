@@ -11,7 +11,7 @@ const event = {
   type: 'rental-agreement.contract.activate',
   tenantId: 't_8f2c',
   occurredAt: '2026-11-04T03:21:07Z',
-  object: { code: 'contract', id: '981233', businessKey: 'HT-2026-0001' },
+  object: { code: 'contract', id: '981233' },
 };
 const rawBody = JSON.stringify(event);
 const signature = `sha256=${createHmac('sha256', secret).update(rawBody).digest('hex')}`;
@@ -85,11 +85,15 @@ describe('femaCommon events', () => {
     expect(femaCommon.matchesEvents({ type: 'a.b.d', events: ['a.b.c'] })).toBe(false);
   });
 
-  it('derives a stable subscription code per webhook address', () => {
+  it('derives a fresh subscription code per enable that stays recognisable per webhook address', () => {
     const first = femaCommon.subscriptionCode({ webhookUrl: 'https://ipaas.example.com/api/v1/webhooks/abc' });
-    expect(first).toMatch(/^ipaas-[0-9a-f]{24}$/);
-    expect(femaCommon.subscriptionCode({ webhookUrl: 'https://ipaas.example.com/api/v1/webhooks/abc' })).toBe(first);
-    expect(femaCommon.subscriptionCode({ webhookUrl: 'https://ipaas.example.com/api/v1/webhooks/abd' })).not.toBe(first);
+    const second = femaCommon.subscriptionCode({ webhookUrl: 'https://ipaas.example.com/api/v1/webhooks/abc' });
+    const other = femaCommon.subscriptionCode({ webhookUrl: 'https://ipaas.example.com/api/v1/webhooks/abd' });
+    expect(first).toMatch(/^ipaas-[0-9a-f]{24}-[0-9a-f]{16}$/);
+    expect(first.length).toBeLessThanOrEqual(64);
+    expect(second).not.toBe(first);
+    expect(second.slice(0, 30)).toBe(first.slice(0, 30));
+    expect(other.slice(0, 30)).not.toBe(first.slice(0, 30));
   });
 });
 

@@ -1,9 +1,12 @@
-import { PlatformScope, TenantStatus } from '@fema-ipaas/shared'
+import { generateId } from '@fema-ipaas/core-utils'
+import { PlatformScope, TenantStatus, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../src/app/database/database-connection'
+import { tenantUsageSnapshotService } from '../../../src/app/platform/tenant-usage-snapshot.service'
 import { tenantLimitsService } from '../../../src/app/tenant/tenant-limits.service'
 import { db } from '../../helpers/db'
+import { createMockWorkflow } from '../../helpers/mocks'
 import { createTestContext, TestContext } from '../../helpers/test-context'
 import { setupTestEnvironment, teardownTestEnvironment } from '../../helpers/test-setup'
 
@@ -52,7 +55,6 @@ const PROVISION_BODY = {
         clientSecret: 'a-very-secret-client-secret',
         extraAuthParams: { tenant: 'T-1001' },
     },
-    eventSigningSecret: 'signing-secret-0123456789',
 }
 
 describe('instance operator access', () => {
@@ -262,7 +264,7 @@ describe('platform api', () => {
         expect(response.json()[0].keyPrefix).toHaveLength(12)
     })
 
-    it('provisions a tenant with its owner, sign-in configuration and event endpoint', async () => {
+    it('provisions a tenant with its owner, sign-in configuration and no member subscription when none is asked for', async () => {
         const operator = await createOperator()
         const key = await issuePlatformKey({ operator, scopes: [PlatformScope.TENANT_PROVISION, PlatformScope.TENANT_MEMBERS] })
 
@@ -272,7 +274,8 @@ describe('platform api', () => {
         const body = response.json()
         expect(body.created).toBe(true)
         expect(body.slug).toMatch(/^northwind-rentals$/)
-        expect(body.eventsEndpoint).toContain('/api/v1/federation/events')
+        expect(body.memberEvents).toBeNull()
+        expect(body).not.toHaveProperty('eventsEndpoint')
         expect(body.ssoStartUrl).toContain('tenant=northwind-rentals')
 
         const tenant = await databaseConnection().getRepository('tenant').findOneByOrFail({ id: body.tenantId })
@@ -280,6 +283,19 @@ describe('platform api', () => {
         const binding = await databaseConnection().getRepository('external_identity').findOneByOrFail({ issuer: 'https://iam.example.com', subject: 'member-owner' })
         expect(binding.tenantId).toBe(body.tenantId)
         expect(binding.userId).toBe(tenant.ownerId)
+    })
+
+    it('stores the session recheck interval of the sign-in configuration and rejects one that is out of range', async () => {
+        const operator = await createOperator()
+        const key = await issuePlatformKey({ operator, scopes: [PlatformScope.TENANT_PROVISION] })
+
+        const tooShort = await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: { ...PROVISION_BODY, oidc: { ...PROVISION_BODY.oidc, sessionRecheckMinutes: 3 } } })
+        const accepted = await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: { ...PROVISION_BODY, oidc: { ...PROVISION_BODY.oidc, sessionRecheckMinutes: 30 } } })
+
+        expect(tooShort.statusCode).toBe(StatusCodes.BAD_REQUEST)
+        expect(accepted.statusCode).toBe(StatusCodes.OK)
+        const raw = await databaseConnection().query<{ minutes: number | null }[]>('select ("federatedAuthProviders" -> \'oidc\' ->> \'sessionRecheckMinutes\')::int as minutes from tenant where id = $1', [accepted.json().tenantId])
+        expect(raw[0]?.minutes).toBe(30)
     })
 
     it('provisions the same external tenant only once however often it is called', async () => {
@@ -295,14 +311,14 @@ describe('platform api', () => {
         expect(await databaseConnection().getRepository('tenant').countBy({ externalTenantId: 'T-1001' })).toBe(1)
     })
 
-    it('refuses an event signing secret without the sign-in configuration it belongs to', async () => {
+    it('refuses member events without the sign-in configuration they belong to', async () => {
         const operator = await createOperator()
         const key = await issuePlatformKey({ operator, scopes: [PlatformScope.TENANT_PROVISION] })
 
-        const response = await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: { ...PROVISION_BODY, oidc: undefined } })
+        const response = await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: { ...PROVISION_BODY, oidc: undefined, memberEvents: { connectionExternalId: 'fema-iam', apiUrl: 'https://fema.example.com' } } })
 
         expect(response.statusCode).toBe(StatusCodes.CONFLICT)
-        expect(response.json().params.message).toBe('eventSigningSecretRequiresOidc')
+        expect(response.json().params.message).toBe('memberEventsRequireOidc')
     })
 
     it('reads, updates, suspends and resumes a provisioned tenant', async () => {
@@ -368,10 +384,71 @@ describe('platform api', () => {
 
         expect(response.statusCode).toBe(StatusCodes.OK)
         expect(response.json().data).toEqual([
-            { tenantId, date: '2026-11-01', executions: 0, failedExecutions: 0, activeWorkflows: 0 },
-            { tenantId, date: '2026-11-02', executions: 0, failedExecutions: 0, activeWorkflows: 0 },
-            { tenantId, date: '2026-11-03', executions: 0, failedExecutions: 0, activeWorkflows: 0 },
+            { tenantId, date: '2026-11-01', executions: 0, failedExecutions: 0, activeWorkflows: 0, activeWorkflowsExact: false },
+            { tenantId, date: '2026-11-02', executions: 0, failedExecutions: 0, activeWorkflows: 0, activeWorkflowsExact: false },
+            { tenantId, date: '2026-11-03', executions: 0, failedExecutions: 0, activeWorkflows: 0, activeWorkflowsExact: false },
         ])
+    })
+
+    it('uses the stored snapshots for the days they cover and says which values are exact', async () => {
+        const operator = await createOperator()
+        const key = await issuePlatformKey({ operator, scopes: [PlatformScope.TENANT_PROVISION, PlatformScope.USAGE_READ] })
+        const { tenantId } = (await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: PROVISION_BODY })).json()
+        await db.save('tenant_usage_snapshot', { id: generateId(), tenantId, date: '2026-11-02', activeWorkflows: 3 })
+        await db.save('tenant_usage_snapshot', { id: generateId(), tenantId, date: '2026-11-04', activeWorkflows: 5 })
+
+        const response = await platformCall({ key, method: 'GET', url: `/v1/platform/usage?tenantId=${tenantId}&from=2026-11-01&to=2026-11-05` })
+
+        expect(response.json().data.map((day: { date: string, activeWorkflows: number, activeWorkflowsExact: boolean }) => [day.date, day.activeWorkflows, day.activeWorkflowsExact])).toEqual([
+            ['2026-11-01', 0, false],
+            ['2026-11-02', 3, true],
+            ['2026-11-03', 3, true],
+            ['2026-11-04', 5, true],
+            ['2026-11-05', 5, true],
+        ])
+    })
+
+    it('counts the enabled workflows live for today', async () => {
+        const operator = await createOperator()
+        const key = await issuePlatformKey({ operator, scopes: [PlatformScope.TENANT_PROVISION, PlatformScope.USAGE_READ] })
+        const { tenantId, projectId } = (await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: PROVISION_BODY })).json()
+        await db.save('workflow', createMockWorkflow({ projectId, status: WorkflowStatus.ENABLED, folderId: null, publishedVersionId: null }))
+        await db.save('workflow', createMockWorkflow({ projectId, status: WorkflowStatus.DISABLED, folderId: null, publishedVersionId: null }))
+        const today = new Date().toISOString().slice(0, 10)
+
+        const response = await platformCall({ key, method: 'GET', url: `/v1/platform/usage?tenantId=${tenantId}&from=${today}&to=${today}` })
+
+        expect(response.json().data).toEqual([
+            { tenantId, date: today, executions: 0, failedExecutions: 0, activeWorkflows: 1, activeWorkflowsExact: true },
+        ])
+    })
+
+    it('writes a snapshot for every tenant when the daily job runs', async () => {
+        const operator = await createOperator()
+        const key = await issuePlatformKey({ operator, scopes: [PlatformScope.TENANT_PROVISION] })
+        const { tenantId, projectId } = (await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: PROVISION_BODY })).json()
+        await db.save('workflow', createMockWorkflow({ projectId, status: WorkflowStatus.ENABLED, folderId: null, publishedVersionId: null }))
+
+        await tenantUsageSnapshotService(app!.log).recordAll()
+        await tenantUsageSnapshotService(app!.log).recordAll()
+
+        const rows = await databaseConnection().getRepository('tenant_usage_snapshot').findBy({ tenantId })
+        expect(rows).toHaveLength(1)
+        expect(rows[0].activeWorkflows).toBe(1)
+        expect(await databaseConnection().getRepository('tenant_usage_snapshot').count()).toBe(2)
+    })
+
+    it('refreshes the snapshot of today after a workflow changes status', async () => {
+        const operator = await createOperator()
+        const key = await issuePlatformKey({ operator, scopes: [PlatformScope.TENANT_PROVISION] })
+        const { tenantId, projectId } = (await platformCall({ key, method: 'POST', url: '/v1/platform/tenants', body: PROVISION_BODY })).json()
+        await tenantUsageSnapshotService(app!.log).recordTenant({ tenantId })
+        await db.save('workflow', createMockWorkflow({ projectId, status: WorkflowStatus.ENABLED, folderId: null, publishedVersionId: null }))
+
+        await tenantUsageSnapshotService(app!.log).recordForProject({ projectId })
+
+        const rows = await databaseConnection().getRepository('tenant_usage_snapshot').findBy({ tenantId })
+        expect(rows.map((row) => row.activeWorkflows)).toEqual([1])
     })
 
     it('rejects a usage range that is too long', async () => {
@@ -392,7 +469,7 @@ describe('tenant domains', () => {
         const verified = await ctx.post(`/v1/tenant-domains/${added.json().id}/verify`)
 
         expect(added.json()).toMatchObject({ domain: 'acme.test', verifiedAt: null })
-        expect(added.json().verificationRecord.name).toBe('_fema-ipaas-verification.acme.test')
+        expect(added.json().verificationRecord.name).toBe('_ipaas-verification.acme.test')
         expect(verified.statusCode).toBe(StatusCodes.CONFLICT)
         expect(verified.json().params.message).toBe('domainVerificationFailed')
     })

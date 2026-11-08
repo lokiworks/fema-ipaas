@@ -48,6 +48,7 @@ function SmsLoginStep({
   const [nationalNumber, setNationalNumber] = useState('');
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [phoneDisabled, setPhoneDisabled] = useState(false);
 
   const { mutate: requestCode, isPending: isRequesting } =
     authMutations.useRequestSmsCode({
@@ -56,6 +57,10 @@ function SmsLoginStep({
       },
       onError: (error) => {
         onCaptchaSpent();
+        if (loginChallengeUtils.isForbidden(error)) {
+          setPhoneDisabled(true);
+          return;
+        }
         setErrorMessage(requestErrorMessage(error));
       },
     });
@@ -75,6 +80,10 @@ function SmsLoginStep({
     );
   };
 
+  if (phoneDisabled) {
+    return <PhoneDisabledNotice onBack={onBack} />;
+  }
+
   if (sentTo !== null) {
     return (
       <SmsCodeEntry
@@ -83,6 +92,7 @@ function SmsLoginStep({
         captchaRequired={captchaRequired}
         onCaptchaSpent={onCaptchaSpent}
         onBack={() => setSentTo(null)}
+        onPhoneDisabled={() => setPhoneDisabled(true)}
         onNeedsName={onNeedsName}
         onChallenge={onChallenge}
       />
@@ -166,6 +176,7 @@ function SmsCodeEntry({
   captchaRequired,
   onCaptchaSpent,
   onBack,
+  onPhoneDisabled,
   onNeedsName,
   onChallenge,
 }: SmsCodeEntryProps) {
@@ -199,6 +210,10 @@ function SmsCodeEntry({
           onChallenge(challenge);
           return;
         }
+        if (loginChallengeUtils.isForbidden(error)) {
+          onPhoneDisabled();
+          return;
+        }
         setErrorMessage(verifyErrorMessage(error));
       },
     });
@@ -211,6 +226,10 @@ function SmsCodeEntry({
       },
       onError: (error) => {
         onCaptchaSpent();
+        if (loginChallengeUtils.isForbidden(error)) {
+          onPhoneDisabled();
+          return;
+        }
         setErrorMessage(requestErrorMessage(error));
       },
     });
@@ -271,6 +290,32 @@ function SmsCodeEntry({
   );
 }
 
+function PhoneDisabledNotice({ onBack }: { onBack: () => void }) {
+  return (
+    <>
+      <Heading title={t('Phone sign-in is turned off')} />
+      <p
+        className="text-center text-sm text-muted-foreground"
+        role="alert"
+        data-testid="sms-phone-disabled"
+      >
+        {t(
+          'This organization has not turned on phone sign-in. Use another sign-in method.',
+        )}
+      </p>
+      <Button
+        type="button"
+        variant="outline"
+        className="mt-6 h-11 w-full rounded-lg"
+        onClick={onBack}
+        data-testid="sms-use-other-method"
+      >
+        {t('Use another sign-in method')}
+      </Button>
+    </>
+  );
+}
+
 function requestErrorMessage(error: HttpError): string {
   if (captchaUtils.needsFreshToken(error)) {
     return t('That verification expired. Please try again.');
@@ -306,4 +351,5 @@ type SmsLoginStepProps = SmsStepSharedProps;
 
 type SmsCodeEntryProps = SmsStepSharedProps & {
   phone: string;
+  onPhoneDisabled: () => void;
 };

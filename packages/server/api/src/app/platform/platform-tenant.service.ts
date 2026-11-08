@@ -6,6 +6,7 @@ import {
     PlatformTenant,
     PlatformUpdateTenantRequestBody,
     ProvisionConnectionInput,
+    ProvisionMemberEventsResult,
     ProvisionTenantRequestBody,
     ProvisionTenantResponse,
     Tenant,
@@ -17,8 +18,10 @@ import {
 import { FastifyBaseLogger } from 'fastify'
 import { connectionService } from '../connection/connection-service/connection-service'
 import { externalIdentityService } from '../federation/external-identity.service'
+import { memberSubscriptionService } from '../federation/member-subscription.service'
 import { domainHelper } from '../helper/domain-helper'
 import { tenantOwnerService } from '../tenant/tenant-owner.service'
+import { tenantSideEffects } from '../tenant/tenant-side-effects'
 import { tenantRepo, tenantService } from '../tenant/tenant.service'
 import { tenantUtils } from '../tenant/tenant.utils'
 import { platformAccessUtils } from './platform-access.utils'
@@ -28,17 +31,15 @@ import { platformClientUtils } from './platform-client.utils'
 export const platformTenantService = (log: FastifyBaseLogger) => ({
     async provision({ request, caller }: ProvisionParams): Promise<ProvisionTenantResponse> {
         assertIssuerAllowed({ caller, issuer: request.externalRef.issuer })
-        if (!isNil(request.eventSigningSecret) && isNil(request.oidc)) {
-            throw new ApplicationError({
-                code: ErrorCode.VALIDATION,
-                params: { message: 'eventSigningSecretRequiresOidc' },
-            })
-        }
         const existing = await tenantService(log).getByExternalRef(request.externalRef)
+        assertNotBeingDeleted({ tenant: existing })
         const base = isNil(existing) ? await this.createNew({ request }) : await this.reuseExisting({ request, existing })
         await this.configureOidc({ request, tenantId: base.tenantId })
         const connections = await this.provisionConnections({ request, tenantId: base.tenantId, projectId: base.projectId, ownerUserId: base.ownerUserId })
-        return this.buildResponse({ tenantId: base.tenantId, projectId: base.projectId, created: base.created, hasOidc: !isNil(request.oidc), connections })
+        const memberEvents = isNil(request.memberEvents)
+            ? null
+            : await memberSubscriptionService(log).ensure({ tenantId: base.tenantId, projectId: base.projectId, input: request.memberEvents })
+        return this.buildResponse({ tenantId: base.tenantId, projectId: base.projectId, created: base.created, hasOidc: !isNil(request.oidc), connections, memberEvents })
     },
 
     async createNew({ request }: { request: ProvisionTenantRequestBody }): Promise<ProvisionBase> {
@@ -97,7 +98,6 @@ export const platformTenantService = (log: FastifyBaseLogger) => ({
         await externalIdentityService(log).upsertOidcConfigForProvisioning({
             tenantId,
             oidc: request.oidc,
-            eventSigningSecret: request.eventSigningSecret,
         })
     },
 
@@ -111,7 +111,7 @@ export const platformTenantService = (log: FastifyBaseLogger) => ({
         }, Promise.resolve([]))
     },
 
-    async buildResponse({ tenantId, projectId, created, hasOidc, connections }: BuildResponseParams): Promise<ProvisionTenantResponse> {
+    async buildResponse({ tenantId, projectId, created, hasOidc, connections, memberEvents }: BuildResponseParams): Promise<ProvisionTenantResponse> {
         const tenant = await tenantService(log).getOneOrThrow(tenantId)
         return {
             tenantId,
@@ -120,7 +120,7 @@ export const platformTenantService = (log: FastifyBaseLogger) => ({
             created,
             loginUrl: await tenantUtils.getPublicTenantUrl({ slug: tenant.slug }),
             ssoStartUrl: hasOidc ? await ssoStartUrlOf({ slug: tenant.slug }) : null,
-            eventsEndpoint: await domainHelper.getPublicApiUrl({ path: 'v1/federation/events' }),
+            memberEvents,
             connections,
         }
     },
@@ -156,6 +156,13 @@ export const platformTenantService = (log: FastifyBaseLogger) => ({
         return this.getOrThrow({ tenantId, caller })
     },
 
+    async requestDeletion({ tenantId, caller }: AccessParams): Promise<PlatformTenant> {
+        await loadAccessible({ tenantId, caller })
+        await tenantService(log).markDeleting({ tenantId })
+        await tenantSideEffects(log).scheduleHardDelete({ tenantId })
+        return this.getOrThrow({ tenantId, caller })
+    },
+
     async loadAccessibleTenant({ tenantId, caller }: AccessParams): Promise<Tenant & TenantLimits> {
         return loadAccessible({ tenantId, caller })
     },
@@ -178,6 +185,15 @@ function assertIssuerAllowed({ caller, issuer }: { caller: PlatformCaller, issue
         throw new ApplicationError({
             code: ErrorCode.AUTHORIZATION,
             params: { message: 'The caller may only manage tenants of its own issuer' },
+        })
+    }
+}
+
+function assertNotBeingDeleted({ tenant }: { tenant: Pick<Tenant, 'status'> | null }): void {
+    if (tenant?.status === TenantStatus.DELETING) {
+        throw new ApplicationError({
+            code: ErrorCode.VALIDATION,
+            params: { message: 'tenantIsBeingDeleted' },
         })
     }
 }
@@ -279,6 +295,7 @@ type BuildResponseParams = {
     created: boolean
     hasOidc: boolean
     connections: Array<{ externalId: string, connectionId: string }>
+    memberEvents: ProvisionMemberEventsResult | null
 }
 
 type AccessParams = {

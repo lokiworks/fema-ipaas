@@ -396,7 +396,13 @@ function useDomains() {
   });
 }
 
-function useCreateDomain({ onCreated }: { onCreated?: () => void } = {}) {
+function useCreateDomain({
+  onCreated,
+  onError,
+}: {
+  onCreated?: () => void;
+  onError?: (error: unknown) => void;
+} = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: CreateTenantDomainRequestBody) =>
@@ -405,7 +411,7 @@ function useCreateDomain({ onCreated }: { onCreated?: () => void } = {}) {
       queryClient.invalidateQueries({ queryKey: tenantAccessKeys.domains });
       onCreated?.();
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
@@ -440,7 +446,13 @@ function useRemoveDomain() {
   });
 }
 
-function useUpdateSlug({ onSaved }: { onSaved?: () => void } = {}) {
+function useUpdateSlug({
+  onSaved,
+  onError,
+}: {
+  onSaved?: () => void;
+  onError?: (error: unknown) => void;
+} = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -455,7 +467,7 @@ function useUpdateSlug({ onSaved }: { onSaved?: () => void } = {}) {
       toast.success(t('Sign-in address updated'));
       onSaved?.();
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 

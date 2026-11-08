@@ -46,7 +46,9 @@ function useTenant(id: string) {
   });
 }
 
-function useCreateTenant() {
+function useCreateTenant({
+  onError,
+}: { onError?: (error: unknown) => void } = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: OperatorCreateTenantRequestBody) =>
@@ -54,7 +56,7 @@ function useCreateTenant() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: operatorKeys.tenants });
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
@@ -79,7 +81,13 @@ function useTenantLifecycle() {
   });
 }
 
-function useUpdateLimits({ onSaved }: { onSaved?: () => void } = {}) {
+function useUpdateLimits({
+  onSaved,
+  onError,
+}: {
+  onSaved?: () => void;
+  onError?: (error: unknown) => void;
+} = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -95,11 +103,17 @@ function useUpdateLimits({ onSaved }: { onSaved?: () => void } = {}) {
       toast.success(t('Limits saved'));
       onSaved?.();
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
-function useUpdateTenantSlug({ onSaved }: { onSaved?: () => void } = {}) {
+function useUpdateTenantSlug({
+  onSaved,
+  onError,
+}: {
+  onSaved?: () => void;
+  onError?: (error: unknown) => void;
+} = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -115,7 +129,7 @@ function useUpdateTenantSlug({ onSaved }: { onSaved?: () => void } = {}) {
       toast.success(t('Sign-in address updated'));
       onSaved?.();
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
@@ -127,7 +141,13 @@ function useOperators() {
   });
 }
 
-function useGrantOperator({ onGranted }: { onGranted?: () => void } = {}) {
+function useGrantOperator({
+  onGranted,
+  onError,
+}: {
+  onGranted?: () => void;
+  onError?: (error: unknown) => void;
+} = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: GrantInstanceOperatorRequestBody) =>
@@ -136,7 +156,7 @@ function useGrantOperator({ onGranted }: { onGranted?: () => void } = {}) {
       queryClient.invalidateQueries({ queryKey: operatorKeys.operators });
       onGranted?.();
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
@@ -173,7 +193,13 @@ function useUpdateSettings() {
   });
 }
 
-function useSaveSms({ onSaved }: { onSaved?: () => void } = {}) {
+function useSaveSms({
+  onSaved,
+  onError,
+}: {
+  onSaved?: () => void;
+  onError?: (error: unknown) => void;
+} = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: UpdateSmsSettingsRequestBody) =>
@@ -184,22 +210,28 @@ function useSaveSms({ onSaved }: { onSaved?: () => void } = {}) {
       toast.success(t('Saved'));
       onSaved?.();
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
-function useTestSms() {
+function useTestSms({ onError }: { onError?: (error: unknown) => void } = {}) {
   return useMutation({
     mutationFn: (request: TestSmsSettingsRequestBody) =>
       operatorApi.testSmsSettings(request),
     onSuccess: () => {
       toast.success(t('Test message sent'));
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
-function useSavePlatformLoginApp({ onSaved }: { onSaved?: () => void } = {}) {
+function useSavePlatformLoginApp({
+  onSaved,
+  onError,
+}: {
+  onSaved?: () => void;
+  onError?: (error: unknown) => void;
+} = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -215,7 +247,7 @@ function useSavePlatformLoginApp({ onSaved }: { onSaved?: () => void } = {}) {
       toast.success(t('Saved'));
       onSaved?.();
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 
@@ -227,7 +259,9 @@ function usePlatformClients() {
   });
 }
 
-function useCreatePlatformClient() {
+function useCreatePlatformClient({
+  onError,
+}: { onError?: (error: unknown) => void } = {}) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (request: CreatePlatformClientRequestBody) =>
@@ -235,7 +269,7 @@ function useCreatePlatformClient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: operatorKeys.platformClients });
     },
-    onError: showError,
+    onError: onError ?? showError,
   });
 }
 

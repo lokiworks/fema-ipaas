@@ -1,4 +1,4 @@
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 import { AuthenticationType, HttpError, HttpMethod, httpClient } from '@fema-ipaas/connector-common';
 import { isObject, tryCatch, tryCatchSync } from '@fema-ipaas/connector-sdk';
@@ -66,7 +66,7 @@ function trimSlashes({ value }: { value: string }): string {
 }
 
 function subscriptionCode({ webhookUrl }: { webhookUrl: string }): string {
-  return `ipaas-${createHash('sha256').update(webhookUrl).digest('hex').slice(0, 24)}`;
+  return `ipaas-${createHash('sha256').update(webhookUrl).digest('hex').slice(0, 24)}-${randomBytes(8).toString('hex')}`;
 }
 
 function sign({ secret, payload }: { secret: string; payload: string }): string {
@@ -122,7 +122,6 @@ function parseEvent({ body }: { body: unknown }): FemaEvent | null {
     object: {
       code: stringOrNull({ value: object['code'] }),
       id: stringOrNull({ value: object['id'] }),
-      businessKey: stringOrNull({ value: object['businessKey'] }),
     },
   };
 }
@@ -225,6 +224,7 @@ export const femaCommon = {
 
 export const FEMA_SIGNATURE_HEADER = 'x-fema-signature';
 export const FEMA_SECRET_STORE_KEY = 'fema_subscription';
+export const FEMA_PENDING_CODE_KEY = 'fema_subscription_pending_code';
 
 export type FemaConnection = ConnectionValueForAuthProperty<typeof femaAuth>;
 
@@ -233,7 +233,7 @@ export type FemaEvent = {
   type: string;
   tenantId: string | null;
   occurredAt: string | null;
-  object: { code: string | null; id: string | null; businessKey: string | null };
+  object: { code: string | null; id: string | null };
 };
 
 export type FlatFemaEvent = FemaEvent & {
@@ -247,6 +247,7 @@ export type FemaSubscription = {
   code: string;
   secret: string;
   events: string[];
+  withheldEvents: string[];
 };
 
 type CallParams = {

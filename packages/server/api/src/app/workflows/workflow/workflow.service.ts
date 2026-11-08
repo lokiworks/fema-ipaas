@@ -16,6 +16,7 @@ import { AppSystemProp } from '../../helper/system/system-props'
 import { SystemJobName } from '../../helper/system-jobs/common'
 import { systemJobsSchedule } from '../../helper/system-jobs/system-job'
 import { telemetry } from '../../helper/telemetry.utils'
+import { tenantUsageSnapshotService } from '../../platform/tenant-usage-snapshot.service'
 import { projectService } from '../../project/project-service'
 import { tenantLimitsService } from '../../tenant/tenant-limits.service'
 import { triggerSourceService } from '../../trigger/trigger-source/trigger-source-service'
@@ -783,6 +784,7 @@ async function applyStatusChange(params: {
                 publishedVersionId: publishedWorkflowVersion.id,
             })
             await workflowExecutionCache(log).invalidate(params.id)
+            rejectedPromiseHandler(tenantUsageSnapshotService(log).recordForProject({ projectId: params.projectId }), log)
         },
     })
 }

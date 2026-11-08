@@ -100,11 +100,11 @@ function TenantOptionButton({
   disabled: boolean;
   onChoose: () => void;
 }) {
-  const suspended = option.status === TenantStatus.SUSPENDED;
+  const unavailable = option.status !== TenantStatus.ACTIVE;
   return (
     <button
       type="button"
-      disabled={disabled || suspended}
+      disabled={disabled || unavailable}
       onClick={onChoose}
       data-testid={`tenant-option-${option.slug}`}
       className={cn(
@@ -116,7 +116,7 @@ function TenantOptionButton({
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-medium">{option.name}</span>
         <span className="truncate text-xs text-muted-foreground">
-          {suspended ? t('Suspended') : option.slug}
+          {unavailable ? unavailableLabel(option.status) : option.slug}
         </span>
       </span>
       {pending && <Loader2 className="size-4 animate-spin" />}
@@ -144,3 +144,7 @@ type TenantSelectionStepProps = {
   onBack: () => void;
   onChallenge: (challenge: LoginChallenge) => void;
 };
+
+function unavailableLabel(status: TenantStatus): string {
+  return status === TenantStatus.DELETING ? t('Deleting') : t('Suspended');
+}

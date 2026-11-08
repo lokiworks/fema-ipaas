@@ -65,12 +65,12 @@ export function IssueReplayDialog({
       ...groups[ReplayCategory.REPLAYABLE],
       ...(includeDataProblems ? groups[ReplayCategory.DATA_PROBLEM] : []),
     ].map((item) => ({
-        workflowId: item.workflowId,
-        workflowName,
-        workflowVersionId: item.workflowVersionId,
-        versionNumber: item.versionNumber,
-        failedStepName: item.failedStepName,
-      })),
+      workflowId: item.workflowId,
+      workflowName,
+      workflowVersionId: item.workflowVersionId,
+      versionNumber: item.versionNumber,
+      failedStepName: item.failedStepName,
+    })),
   });
 
   const writeSteps = (check?.items ?? [])

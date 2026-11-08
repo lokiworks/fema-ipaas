@@ -23,8 +23,9 @@ import { SsoLoginError } from './sso-errors'
 import { ssoProfile, SsoProfile } from './sso-profile'
 import { RuntimePolicy } from './sso-runtime'
 
-async function resolve({ log, policy, profile, tenantId, binding, ip }: ResolveParams): Promise<ResolvedUser> {
-    assertBindingUsable({ binding, tenantId })
+async function resolve({ log, policy, profile, tenantId, binding: found, ip }: ResolveParams): Promise<ResolvedUser> {
+    assertBindingUsable({ binding: found, tenantId })
+    const binding = await reviveRevokedBinding({ log, binding: found, tenantId })
     const boundUser = await loadBoundUser({ log, binding, tenantId })
     if (!isNil(boundUser) && !isNil(binding)) {
         await signInUser({ log, user: boundUser, policy, profile, tenantId, ip })
@@ -159,15 +160,17 @@ async function bindUser({ log, policy, profile, tenantId, identityId, userId }: 
     })
 }
 
+async function reviveRevokedBinding({ log, binding, tenantId }: { log: FastifyBaseLogger, binding: ExternalIdentityRecord | null, tenantId: string }): Promise<ExternalIdentityRecord | null> {
+    if (isNil(binding) || binding.status !== ExternalIdentityStatus.REVOKED) {
+        return binding
+    }
+    await externalIdentityService(log).restoreBySubject({ issuer: binding.issuer, subject: binding.subject, tenantId })
+    return { ...binding, status: ExternalIdentityStatus.ACTIVE }
+}
+
 function assertBindingUsable({ binding, tenantId }: { binding: ExternalIdentityRecord | null, tenantId: string }): void {
-    if (isNil(binding)) {
-        return
-    }
-    if (binding.tenantId !== tenantId) {
+    if (!isNil(binding) && binding.tenantId !== tenantId) {
         throw new SsoLoginError({ code: SsoLoginErrorCode.USER_NOT_PROVISIONED, detail: 'This account belongs to a different tenant' })
-    }
-    if (binding.status === ExternalIdentityStatus.REVOKED) {
-        throw new SsoLoginError({ code: SsoLoginErrorCode.USER_DISABLED, detail: 'This account was removed at the identity provider' })
     }
 }
 

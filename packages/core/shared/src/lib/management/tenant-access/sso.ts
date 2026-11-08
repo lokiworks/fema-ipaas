@@ -66,6 +66,7 @@ export const OidcSsoSettings = z.object({
     extraAuthParams: z.record(z.string(), z.string()),
     sessionRecheckMinutes: Nullable(z.number()),
     provisioned: z.boolean(),
+    memberEventsWithheld: z.array(z.string()),
 })
 export type OidcSsoSettings = z.infer<typeof OidcSsoSettings>
 

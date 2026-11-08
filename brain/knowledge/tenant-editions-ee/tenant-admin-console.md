@@ -22,9 +22,9 @@ icon: 🛠️
 
 ## Gotchas
 - **运营后台的权限只看 `instanceRole`，不看租户角色。** 租户管理员不是运营者；`OperatorLayout` 对非运营者直接跳回首页，侧栏和全局导航也不显示入口。
-- **平台应用绑定和租户自建的 SSO 是两条路。** 单点登录页的「关联你的企业」只在实例配置了平台登录应用（`availablePlatformApps` 非空）时出现；`provisioned` 的 OIDC 只允许开关和改按钮名称，其余字段隐藏。
+- **平台应用绑定和租户自建的 SSO 是两条路。** 单点登录页的「关联你的企业」只在实例配置了平台登录应用（`availablePlatformApps` 非空）时出现；`provisioned` 的 OIDC 只开放开关、按钮名称、准入规则和复核间隔，连接字段隐藏。
 - **SAML 的 SP 信息在配置前就能拿到。** `SsoSettings.samlServiceProvider` 始终有值；`idpMetadataXml` 首次配置必填，已有配置留空表示保留原元数据。
-- **平台开通（`provisioned`）的 OIDC 只锁连接参数。** 服务端拒绝改 issuer、客户端、密钥、scopes、emailClaim、匹配方式、附加参数、复核间隔；展示名、开关、准入规则（自动建用户、默认角色、允许域名、默认项目）仍可改，前端隐藏的是组到角色的映射和连接字段。
+- **平台开通（`provisioned`）的 OIDC 只锁连接参数。** 服务端拒绝改 issuer、客户端、密钥、scopes、emailClaim、匹配方式、附加参数；展示名、开关、复核间隔、准入规则（自动建用户、默认角色、允许域名、默认项目）仍可改，前端隐藏的是组到角色的映射和连接字段。
 - **成员邀请里手机号不带区号按中国大陆补 +86。** 解析在 `tenantAccessUtils.parseContacts`，邀请请求的 `emails` 和 `phones` 至少一项非空。
 - **连接总览和项目「连接」页用同一套列与详情抽屉**：列表接口 `listForTenant` 本来就带 `workflowIds`（被引用），行点开是 `ConnectionDetailSheet`；租户管理员的 `memberProjectIds` 是全部项目，所以详情能打开任何连接。
 
@@ -36,7 +36,9 @@ icon: 🛠️
 - **未登录请求怎么认租户。** `getTenantIdForRequest` 依次看：令牌 → 头 `x-fema-tenant` / 查询参数 `tenant`（slug 或 id，认不出直接 404）→ 已验证的 HOST 域名或 `<slug>.FEMA_TENANT_BASE_DOMAIN` → 实例只有一个租户就取它 → `null`。不再落到最早的租户；`FEMA_TENANT_BASE_DOMAIN` 没设就没有子域名这一条。
 - **单点登录按 `issuer + subject` 认人（`external_identity`），邮箱只是显示用。** `matchBy=SUBJECT`（fema-iam 开通的配置）的身份不写 `user_identity.email`，邮箱放 `contactEmail` 和绑定行；`matchBy=EMAIL` 才按邮箱关联并补建绑定。`EMAIL_MISSING` 只在「按邮箱匹配、没有绑定、又没拿到邮箱」时出现。代码在 `sso/sso-user-resolver.ts`、`federation/external-identity.service.ts`。
 - **联邦会话 8 小时，另有定时复核。** `matchBy=SUBJECT` 的登录在 `redeemTicket` 里换成短会话；`federation-session-recheck` 每 5 分钟扫一遍，按租户的 `sessionRecheckMinutes`（默认 15）用刷新令牌向身份源复核，只有 `invalid_grant` 才停用，网络错误只记日志。刷新令牌只在身份源发现文档列出 `offline_access` 时才会拿到。
-- **联邦事件接口 `POST /v1/federation/events` 的验签密钥存在 OIDC 配置里**（`oidc.eventSigningSecret`，加密）。先按 `issuer + externalTenantId` 找租户再验原始请求体的 HMAC；验签失败、未知租户、没有密钥一律同样的 401。事件 id 在 Redis 去重 7 天，处理失败会释放 id 让对方重发。
+- **成员变动走 fema 的业务事件通道，不是 ipaas 自己的联邦事件接口。** 开通时（请求体 `memberEvents`）用租户的集成服务应用（`client_credentials` 带 `tenant`）调 fema 的 `POST /webhook/subscription/create`，订阅 `iam-identity.member.{suspend,activate,remove,restore}`，推送地址是 `POST /v1/federation/members/:tenantId`；订阅 id、`plainSecret`（加密）存在 `oidc.memberSubscription`。`code` 每次新生成且撤销后 fema 也不回收；登记不确定时按 code `find-one`、撤销、换新 code 重建；轮换密钥就是撤销重建（`memberEvents.rotateSecret`）。
+- **收到成员推送不按事件类型改状态。** 验证请求（`webhook.verification`）不依赖已存密钥，原样回显 `challenge`；推送用 `plainSecret` 验原始请求体 HMAC，签名不对、事件不在四种之内、`tenantId` 不是该租户的 `externalTenantId` 都返回 2xx 丢弃；按事件 id 去重 24 小时；然后用集成服务应用读 `GET /iam-identity/member/find-by-id`，`ACTIVE` 或 `PENDING`（待激活，fema 的 `isInGoodStanding`）→启用绑定与用户，`SUSPENDED`、`REMOVED`、没找到→停用并吊销会话；状态字段是 fema 枚举序列化出的对象 `{"@type", "code", "name"}`，订阅的 `status`（要 `ENABLED` 且 `activatedAt` 非空才算生效）同样，也兼容裸字符串。读不到成员（fema 不可达、没有读权限、连接缺失）返回 5xx 并释放事件 id，让 fema 重推。租户停用不推送，靠刷新令牌的 `invalid_grant` 和换票的 `invalid_target` 兜底。
+- **因复核或成员事件被停用的用户，再次经 fema-iam 登录成功会自动恢复。** `external_identity.status = REVOKED` 只会由联邦复核或成员事件写入，管理员手动停用只动用户行，所以登录时见到 REVOKED 就恢复绑定和用户，手动停用的仍然进不去。
 - **SAML 的 ACS 是跨站 POST，拿不到 Lax 的浏览器绑定 Cookie。** 所以 ACS 只校验签名并把结果按 state 存进 Redis，再 303 回 `/callback`（顶层 GET，Cookie 才会带上）；请求 ID 由我们生成并记在 state 里，`node-saml` 用 `validateInResponseTo: always` 校验。暂不支持签名 AuthnRequest（没有 SP 证书）。
 - **平台登录应用的配置存在 flag 表 `PLATFORM_LOGIN_CONFIG`（≤21 字符是 id 列的限制）。** 企业微信平台应用走服务商扫码（`get_provider_token` + `get_login_info`），`appId` 填服务商 corpid；对应的接口形状按官方文档实现，没有对真实服务验证过。
 - **回调用的是前端地址。** 重定向地址是 `FEMA_FRONTEND_URL` + `/api/v1/authn/sso/callback`，要原样登记在身份提供方；浏览器绑定 Cookie 的路径是 `/api/v1/authn/sso`，反向代理改了前缀就会收到 `BROWSER_MISMATCH`。
@@ -50,6 +52,8 @@ icon: 🛠️
 - **停用租户靠 `tenantStatusGuard.assertActive`。** 状态在进程内缓存 5 秒，多台服务器之间最多滞后 5 秒；登录、换租户、令牌校验都要调它。
 - **租户上限取租户行与 `SYSTEM_LIMITS` 中更严的。** 成员数数的是启用的用户，项目数只数团队项目，启用流程数按租户下未删项目里状态为 ENABLED 的流程；并发上限在 `rateLimiterInterceptor` 里和项目维度同时生效，不受 `PROJECT_RATE_LIMITER_ENABLED` 开关影响。租户的 `workerGroupId` 在项目没有自己的节点组时生效，缓存最多 5 分钟。
 - **自助建租户的开关在 `createTenantWithProject` 里判。** 实例里还没有租户时放行；已有租户时要实例设置 `tenantSelfSignup` 为开，否则 `INVITATION_ONLY_SIGN_UP`。运营者建租户和平台开通走 `provisionTenant`，不经过这个开关。
+- **平台用量的「启用流程数」靠按日快照。** 表 `tenant_usage_snapshot`（租户 + UTC 日期唯一）由每天 00:05 的系统任务写入，每次启用/停用流程后也会刷新当天的行。`GET /v1/platform/usage` 对当天用实时计数，快照开始之后的日子取不晚于该日的最近快照，之前的日子仍是「现在启用的流程里创建日不晚于该日」的近似值，响应里 `activeWorkflowsExact` 为 false；删除流程不触发快照，当天值最迟到次日 00:05 才更正。
+- **平台加成员的通知规则。** 有邮箱且配置了 SMTP：走租户邀请（待接受的邀请在成员列表里是 `INVITED`，`notified: true`）；没配 SMTP 或只有手机号：直接建账号，`notified: false`，手机号成员不发短信（短信模板只有验证码一个变量），让用户用短信登录；按 subject 预绑定的联邦成员不发任何通知。已是成员的邮箱只改角色，不重复邀请。
 - **平台接口的受信 issuer 只能操作 `externalIssuer` 与自己一致的租户。** API 密钥不受这个限制；密钥明文只在签发时返回一次，库里只存 sha256。
 - **管理员重置密码会改全局的 `user_identity`。** 同一个身份如果还属于别的租户就拒绝，否则等于替别的租户改了密码。
 - **移除用户会软删他的个人项目。** 所以移除前的资源转移会把个人项目改成团队项目再转给接收人，不然里面的工作流会跟着被删。

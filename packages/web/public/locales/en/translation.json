@@ -7086,6 +7086,7 @@
   "tenantSlugInvalid": "The sign-in address must be 3 to 40 lowercase letters, digits or hyphens, and cannot start or end with a hyphen",
   "{platform} sign-in app": "{platform} sign-in app",
   "memberEventsRequireOidc": "Member events can only be set up together with the single sign-on configuration",
+  "tenantIsBeingDeleted": "This tenant is being deleted and can no longer be changed or provisioned again",
   "memberEventsConnectionUnavailable": "The connection used for member events is missing or cannot get an access token",
   "memberEventsRegistrationRejected": "The member event subscription was rejected by the connected system",
   "memberEventsRegistrationFailed": "The member event subscription could not be registered, try again",

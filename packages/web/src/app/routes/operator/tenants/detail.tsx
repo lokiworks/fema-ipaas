@@ -52,6 +52,24 @@ function TenantDetail({ tenant }: { tenant: OperatorTenantSummary }) {
   const [slugOpen, setSlugOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const suspended = tenant.status === TenantStatus.SUSPENDED;
+  const deleting = tenant.status === TenantStatus.DELETING;
+  const lifecycleAction = suspended ? (
+    <Button
+      loading={lifecycle.isPending}
+      onClick={() => lifecycle.mutate({ id: tenant.id, action: 'resume' })}
+      data-testid="tenant-resume"
+    >
+      {t('Resume tenant')}
+    </Button>
+  ) : (
+    <Button
+      variant="outline"
+      onClick={() => setConfirmOpen(true)}
+      data-testid="tenant-suspend"
+    >
+      {t('Suspend tenant')}
+    </Button>
+  );
   const loginUrl = tenantAccessUtils.tenantLoginUrl({
     origin: window.location.origin,
     slug: tenant.slug,
@@ -62,7 +80,11 @@ function TenantDetail({ tenant }: { tenant: OperatorTenantSummary }) {
       title={
         <span className="flex items-center gap-2">
           {tenant.name}
-          <Badge variant={suspended ? 'destructive' : 'success'}>
+          <Badge
+            variant={
+              tenant.status === TenantStatus.ACTIVE ? 'success' : 'destructive'
+            }
+          >
             {operatorUtils.tenantStatusLabel(tenant.status)}
           </Badge>
         </span>
@@ -76,27 +98,7 @@ function TenantDetail({ tenant }: { tenant: OperatorTenantSummary }) {
           {t('All tenants')}
         </Link>
       }
-      actions={
-        suspended ? (
-          <Button
-            loading={lifecycle.isPending}
-            onClick={() =>
-              lifecycle.mutate({ id: tenant.id, action: 'resume' })
-            }
-            data-testid="tenant-resume"
-          >
-            {t('Resume tenant')}
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            onClick={() => setConfirmOpen(true)}
-            data-testid="tenant-suspend"
-          >
-            {t('Suspend tenant')}
-          </Button>
-        )
-      }
+      actions={deleting ? null : lifecycleAction}
     >
       <Card>
         <CardHeader>

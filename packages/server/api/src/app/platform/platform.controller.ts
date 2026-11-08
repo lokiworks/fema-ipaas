@@ -71,6 +71,12 @@ export const platformController: FastifyPluginAsyncZod = async (app) => {
         return tenant
     })
 
+    app.delete('/tenants/:id', TenantDeleteRequest, async (request, reply) => {
+        const caller = platformAuth.callerOf({ request })
+        const tenant = await platformTenantService(request.log).requestDeletion({ tenantId: request.params.id, caller })
+        return reply.status(StatusCodes.ACCEPTED).send(tenant)
+    })
+
     app.get('/tenants/:id/members', MembersReadRequest, async (request) => {
         const caller = platformAuth.callerOf({ request })
         await platformTenantService(request.log).loadAccessibleTenant({ tenantId: request.params.id, caller })
@@ -147,6 +153,16 @@ const TenantReadRequest = {
         tags: ['platform'],
         params: TenantIdParams,
         response: { [StatusCodes.OK]: PlatformTenant },
+    },
+}
+
+const TenantDeleteRequest = {
+    config: publicRoute,
+    preHandler: platformAuth.preHandler(PlatformScope.TENANT_PROVISION),
+    schema: {
+        tags: ['platform'],
+        params: TenantIdParams,
+        response: { [StatusCodes.ACCEPTED]: PlatformTenant },
     },
 }
 

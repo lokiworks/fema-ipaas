@@ -22,7 +22,14 @@ function isOperator(
 }
 
 function tenantStatusLabel(status: TenantStatus): string {
-  return status === TenantStatus.ACTIVE ? t('Active') : t('Suspended');
+  switch (status) {
+    case TenantStatus.ACTIVE:
+      return t('Active');
+    case TenantStatus.SUSPENDED:
+      return t('Suspended');
+    case TenantStatus.DELETING:
+      return t('Deleting');
+  }
 }
 
 function limitLabel(limit: number | null | undefined): string {

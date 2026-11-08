@@ -6,6 +6,7 @@ import { formErrors } from '../../form-errors'
 export enum TenantStatus {
     ACTIVE = 'ACTIVE',
     SUSPENDED = 'SUSPENDED',
+    DELETING = 'DELETING',
 }
 
 export enum InstanceRole {

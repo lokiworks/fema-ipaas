@@ -27,6 +27,7 @@ DELETE /v1/mcp-services/:id/obtain | TENANT_ANY_MEMBER | USER | - | -
 DELETE /v1/mcp/:id | PUBLIC | - | - | -
 DELETE /v1/operator/operators/:identityId | UNSCOPED | USER | - | -
 DELETE /v1/operator/platform-login-apps/:kind | UNSCOPED | USER | - | -
+DELETE /v1/platform/tenants/:id | PUBLIC | - | - | -
 DELETE /v1/platform/tenants/:id/members | PUBLIC | - | - | -
 DELETE /v1/project-members/:id | PROJECT | USER,SERVICE | MEMBER:MANAGE | QUERY:projectId
 DELETE /v1/project-workspace/batch | PROJECT | USER | WORKFLOW:DELETE | BODY:projectId

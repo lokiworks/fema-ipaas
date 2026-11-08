@@ -24,6 +24,7 @@ const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 
 export const fileRepo = repoFactory<File>(FileEntity)
 const EXECUTION_DATA_RETENTION_DAYS = system.getNumberOrThrow(AppSystemProp.EXECUTION_DATA_RETENTION_DAYS)
 const MIN_RETENTION_DAYS = 1
+const PURGE_BATCH_SIZE = 1000
 const OPEN_EXECUTION_STATUSES = [ExecutionStatus.QUEUED, ExecutionStatus.RUNNING, ExecutionStatus.PAUSED]
 const privacySettingsRepo = repoFactory(PrivacySettingsEntity)
 
@@ -160,6 +161,18 @@ export const fileService = (log: FastifyBaseLogger) => ({
             await s3Helper(log).deleteFiles([file.s3Key])
         }
         await fileRepo().delete({ id: file.id })
+    },
+    async deleteAllOf({ owner }: { owner: FileOwner }): Promise<number> {
+        const where = 'projectId' in owner ? { projectId: owner.projectId } : { tenantId: owner.tenantId }
+        let total = 0
+        let batch = await fileRepo().find({ select: ['id', 's3Key'], where, take: PURGE_BATCH_SIZE })
+        while (batch.length > 0) {
+            await s3Helper(log).deleteFiles(batch.flatMap((file) => isNil(file.s3Key) ? [] : [file.s3Key]))
+            await fileRepo().delete({ id: In(batch.map((file) => file.id)) })
+            total += batch.length
+            batch = batch.length === PURGE_BATCH_SIZE ? await fileRepo().find({ select: ['id', 's3Key'], where, take: PURGE_BATCH_SIZE }) : []
+        }
+        return total
     },
     async deleteStaleBulk(types: FileType[]) {
         const maximumFilesToDeletePerIteration = 4000
@@ -415,6 +428,8 @@ function isExecutionDataFileThatExpires(type: FileType) {
             throw new Error(`File type ${type} is not supported`)
     }
 }
+
+type FileOwner = { projectId: ProjectId } | { tenantId: string }
 
 type SaveParams = {
     fileId?: FileId | undefined

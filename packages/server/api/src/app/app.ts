@@ -74,6 +74,7 @@ import { serviceSettingsModule } from './service-settings/service-settings.modul
 import { solutionModule } from './solution/solution.module'
 import { storeEntryModule } from './store-entry/store-entry.module'
 import { templateModule } from './template/template.module'
+import { tenantBackgroundJobs } from './tenant/tenant.jobs'
 import { tenantModule } from './tenant/tenant.module'
 import { tenantAccessModule } from './tenant-access/tenant-access.module'
 import { tenantDomainModule } from './tenant-domain/tenant-domain.module'
@@ -259,6 +260,7 @@ export const setupApp = async (app: FastifyInstance): Promise<FastifyInstance> =
 
     systemJobHandlers.registerJobHandler(SystemJobName.DELETE_WORKFLOW, (data) => workflowBackgroundJobs(app.log).deleteWorkflowHandler(data))
     systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_PROJECT, (data) => projectBackgroundJobs(app.log).hardDeleteProjectHandler(data))
+    systemJobHandlers.registerJobHandler(SystemJobName.HARD_DELETE_TENANT, (data) => tenantBackgroundJobs(app.log).hardDeleteTenantHandler(data))
 
     app.get(
         '/redirect',

@@ -90,6 +90,9 @@ export function OperatorTenantsPage() {
             <SelectItem value={TenantStatus.SUSPENDED}>
               {t('Suspended')}
             </SelectItem>
+            <SelectItem value={TenantStatus.DELETING}>
+              {t('Deleting')}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -7086,6 +7086,7 @@
   "tenantSlugInvalid": "登录地址需为 3 到 40 位小写字母、数字或连字符，且不能以连字符开头或结尾",
   "{platform} sign-in app": "{platform} 登录应用",
   "memberEventsRequireOidc": "成员事件只能和单点登录配置一起设置",
+  "tenantIsBeingDeleted": "这个租户正在删除中，不能再恢复、停用或重新开通",
   "memberEventsConnectionUnavailable": "成员事件使用的连接不存在，或取不到访问令牌",
   "memberEventsRegistrationRejected": "对方系统拒绝了成员事件订阅",
   "memberEventsRegistrationFailed": "成员事件订阅登记失败，请重试",

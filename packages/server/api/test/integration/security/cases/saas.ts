@@ -114,6 +114,7 @@ const saasReviews: Record<string, Review> = {
     'POST /v1/platform/tenants/:id': operatorReview(PLATFORM_ONLY),
     'POST /v1/platform/tenants/:id/suspend': operatorReview(PLATFORM_ONLY),
     'POST /v1/platform/tenants/:id/resume': operatorReview(PLATFORM_ONLY),
+    'DELETE /v1/platform/tenants/:id': operatorReview(`${PLATFORM_ONLY}；只把租户标记为 DELETING 并排 HARD_DELETE_TENANT 作业，租户从此刻起被 tenantStatusGuard 挡住；未知或别的 issuer 的租户返回 404，集成覆盖见 integration/saas/tenant-deletion.test.ts`),
     'GET /v1/platform/tenants/:id/members': operatorReview(PLATFORM_ONLY),
     'POST /v1/platform/tenants/:id/members': operatorReview(PLATFORM_ONLY),
     'DELETE /v1/platform/tenants/:id/members': operatorReview(`${PLATFORM_ONLY}；租户所有者不能被移除`),

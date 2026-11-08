@@ -1,3 +1,4 @@
+import { TenantStatus } from '@fema-ipaas/shared';
 import { describe, expect, it } from 'vitest';
 
 import { operatorUtils } from '@/features/operator/utils/operator-utils';
@@ -8,6 +9,18 @@ describe('operatorUtils.isOperator', () => {
     expect(operatorUtils.isOperator({ instanceRole: null })).toBe(false);
     expect(operatorUtils.isOperator({})).toBe(false);
     expect(operatorUtils.isOperator(null)).toBe(false);
+  });
+});
+
+describe('operatorUtils.tenantStatusLabel', () => {
+  it('names every status so a deleting tenant never reads as active', () => {
+    expect(operatorUtils.tenantStatusLabel(TenantStatus.ACTIVE)).toBe('Active');
+    expect(operatorUtils.tenantStatusLabel(TenantStatus.SUSPENDED)).toBe(
+      'Suspended',
+    );
+    expect(operatorUtils.tenantStatusLabel(TenantStatus.DELETING)).toBe(
+      'Deleting',
+    );
   });
 });
 

@@ -2,6 +2,7 @@ import { ApplicationError, ErrorCode, generateId, isNil, spreadIfDefined, spread
 import { AuthenticationResponse, InstanceRole, ProjectType, SsoDomainVerification, SYSTEM_LIMITS, Tenant, TENANT_ACCESS_LIMITS, TenantExternalRef, TenantLimits, TenantLimitsUpdate, TenantMfaPolicy, TenantRole, TenantStatus, TenantWithoutFederatedAuth, TenantWithoutSensitiveData, UpdateTenantRequestBody, User, UserStatus } from '@fema-ipaas/shared'
 import { FastifyBaseLogger } from 'fastify'
 import { nanoid } from 'nanoid'
+import { Not } from 'typeorm'
 import { authenticationUtils } from '../authentication/authentication-utils'
 import { signupNames } from '../authentication/lib/signup-names'
 import { userIdentityRepository, userIdentityService } from '../authentication/user-identity/user-identity-service'
@@ -201,9 +202,22 @@ export const tenantService = (log: FastifyBaseLogger) => ({
         return this.getOneOrThrow(tenantId)
     },
     async setStatus({ tenantId, status }: SetStatusParams): Promise<TenantWithoutFederatedAuth> {
-        await tenantRepo().update({ id: tenantId }, { status })
+        await tenantRepo().update({ id: tenantId, status: Not(TenantStatus.DELETING) }, { status })
         tenantStatusGuard.invalidate({ tenantId })
+        const tenant = await this.getOneOrThrow(tenantId)
+        if (tenant.status === TenantStatus.DELETING) {
+            throw new ApplicationError({
+                code: ErrorCode.VALIDATION,
+                params: { message: 'tenantIsBeingDeleted' },
+            })
+        }
         log.info({ tenant: { id: tenantId }, status }, 'Tenant status changed')
+        return tenant
+    },
+    async markDeleting({ tenantId }: { tenantId: TenantId }): Promise<TenantWithoutFederatedAuth> {
+        await tenantRepo().update({ id: tenantId }, { status: TenantStatus.DELETING })
+        tenantStatusGuard.invalidate({ tenantId })
+        log.info({ tenant: { id: tenantId } }, 'Tenant marked for deletion')
         return this.getOneOrThrow(tenantId)
     },
     async updateLimits({ tenantId, limits }: UpdateLimitsParams): Promise<TenantWithoutFederatedAuth> {

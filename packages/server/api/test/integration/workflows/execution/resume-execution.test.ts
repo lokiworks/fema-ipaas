@@ -544,6 +544,25 @@ describe('Resume workflow run', () => {
         expect(runAfter).toBeNull()
     })
 
+    it('deletes every run of a workflow even when there are more than one batch', async () => {
+        const { workflow, workflowVersion } = await createPausedExecutionWithWaitpoint({
+            projectId: ctx.project.id,
+        })
+        const runs = Array.from({ length: 1001 }, () => createMockExecution({
+            projectId: ctx.project.id,
+            workflowId: workflow.id,
+            workflowVersionId: workflowVersion.id,
+            status: ExecutionStatus.SUCCEEDED,
+            environment: RunEnvironment.PRODUCTION,
+        }))
+        await db.save('execution', runs)
+
+        await batchDeleteByWorkflowId(workflow.id)
+
+        const remaining = await db.findOneBy('execution', { workflowId: workflow.id })
+        expect(remaining).toBeNull()
+    })
+
     it('V0 async: should resume via waitpoint path when V0 waitpoint exists', async () => {
         const { execution } = await createPausedExecutionWithWaitpoint({
             projectId: ctx.project.id,

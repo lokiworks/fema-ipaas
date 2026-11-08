@@ -10,7 +10,7 @@ import { reconciliationRuleRepo } from './reconciliation.service'
 
 export const reconciliationSideEffects = (log: FastifyBaseLogger) => ({
     async syncSchedule(rule: ReconciliationRule): Promise<void> {
-        const jobId = `recon-${rule.id}`
+        const jobId = scheduleJobId({ ruleId: rule.id })
         if (!rule.enabled) {
             await systemJobsQueue.removeJobScheduler(jobId)
             return
@@ -18,14 +18,19 @@ export const reconciliationSideEffects = (log: FastifyBaseLogger) => ({
         if (!isValidCron(rule.cron)) throw new Error('reconciliation.invalidCron')
         await systemJobsSchedule(log).upsertJob({ job: { name: SystemJobName.RECONCILE, jobId, data: { ruleId: rule.id, projectId: rule.projectId } }, schedule: { type: 'repeated', cron: rule.cron } })
     },
+    async removeSchedules({ ruleIds }: { ruleIds: string[] }): Promise<void> {
+        for (const ruleId of ruleIds) {
+            await systemJobsQueue.removeJobScheduler(scheduleJobId({ ruleId }))
+        }
+    },
     async onRuleDeleted(rule: ReconciliationRule): Promise<void> {
-        await systemJobsQueue.removeJobScheduler(`recon-${rule.id}`)
+        await systemJobsQueue.removeJobScheduler(scheduleJobId({ ruleId: rule.id }))
         await issueService(log).recordReconciliation({ projectId: rule.projectId, ruleId: rule.id, workflowId: rule.workflowId, name: rule.name, openCount: 0 })
     },
     async onWorkflowDeleted({ workflowId, projectId }: { workflowId: string, projectId: string }): Promise<void> {
         const rules = await reconciliationRuleRepo().findBy({ workflowId, projectId })
         for (const rule of rules) {
-            await systemJobsQueue.removeJobScheduler(`recon-${rule.id}`)
+            await systemJobsQueue.removeJobScheduler(scheduleJobId({ ruleId: rule.id }))
             await issueService(log).recordReconciliation({ projectId, ruleId: rule.id, workflowId, name: rule.name, openCount: 0 })
         }
     },
@@ -42,3 +47,7 @@ export const reconciliationSideEffects = (log: FastifyBaseLogger) => ({
         }
     },
 })
+
+function scheduleJobId({ ruleId }: { ruleId: string }): string {
+    return `recon-${ruleId}`
+}

@@ -36,11 +36,11 @@ export const tenantSuspensionInterceptor: JobInterceptor = {
         if (!isSuspendable({ jobData })) {
             return { verdict: InterceptorVerdict.ALLOW }
         }
-        const active = await tenantStatusGuard.isActive({ tenantId: jobData.tenantId })
-        if (active) {
+        const standing = await tenantStatusGuard.standingOf({ tenantId: jobData.tenantId })
+        if (standing === 'ACTIVE') {
             return { verdict: InterceptorVerdict.ALLOW }
         }
-        log.info({ job: { id: jobId, type: jobData.jobType }, tenant: { id: jobData.tenantId }, project: { id: jobData.projectId } }, '[tenantSuspensionInterceptor] Tenant is suspended, discarding the job without retry')
+        log.info({ job: { id: jobId, type: jobData.jobType }, tenant: { id: jobData.tenantId, standing }, project: { id: jobData.projectId } }, '[tenantSuspensionInterceptor] Tenant is suspended or no longer exists, discarding the job without retry')
         await cancelQueuedRun({ jobData, log })
         return { verdict: InterceptorVerdict.DISCARD }
     },

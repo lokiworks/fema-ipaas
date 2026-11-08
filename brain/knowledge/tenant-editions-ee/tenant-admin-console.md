@@ -52,6 +52,7 @@ icon: 🛠️
 - **workerId 每次启动都会变。** 所以标签不能存在服务端按 workerId 记，只能由节点通过 `FEMA_WORKER_LABELS` 自己上报；重启后的节点在列表里是一条新记录，旧记录 24 小时后自动清掉。
 - **排空、恢复、移除、备份、服务设置、密钥轮换只有实例运营者能做。** 判定是 `instanceOperator.assert`（身份的 `instanceRole === OPERATOR`），不再是「最早的租户」。备份记录和服务设置仍存在最早租户名下（`instanceScope`，只当存放锚点，不做授权），所以那个租户不要删。
 - **停用租户靠 `tenantStatusGuard.assertActive`。** 状态在进程内缓存 5 秒，多台服务器之间最多滞后 5 秒；登录、换租户、令牌校验都要调它。
+- **清除租户时缓存和定时任务也要跟着作废，不只删行。** 工作流的执行状态在 `distributedStore` 里缓存 30 天（`workflowExecutionCache`），清除时直接删工作流行不会让它失效，Webhook 拿着缓存一路走到写文件，撞外键 `fk_file_project_id` 答 500；对账规则的 `recon-<ruleId>` 定时任务也不随规则行消失。所以 `projectPurgeService` 逐个作废执行缓存、先撤对账定时任务，`tenantStatusGuard.standingOf` 把查不到的租户算作 `GONE`：Webhook 答 410 并删掉缓存，排队和延时的作业直接丢弃。`assertActive`、`isActive` 仍放行查不到的租户，交给别的检查拒绝。
 - **租户上限取租户行与 `SYSTEM_LIMITS` 中更严的。** 成员数数的是启用的用户，项目数只数团队项目，启用流程数按租户下未删项目里状态为 ENABLED 的流程；并发上限在 `rateLimiterInterceptor` 里和项目维度同时生效，不受 `PROJECT_RATE_LIMITER_ENABLED` 开关影响。租户的 `workerGroupId` 在项目没有自己的节点组时生效，缓存最多 5 分钟。
 - **自助建租户的开关在 `createTenantWithProject` 里判。** 实例里还没有租户时放行；已有租户时要实例设置 `tenantSelfSignup` 为开，否则 `INVITATION_ONLY_SIGN_UP`。运营者建租户和平台开通走 `provisionTenant`，不经过这个开关。
 - **平台用量的「启用流程数」靠按日快照。** 表 `tenant_usage_snapshot`（租户 + UTC 日期唯一）由每天 00:05 的系统任务写入，每次启用/停用流程后也会刷新当天的行。`GET /v1/platform/usage` 对当天用实时计数，快照开始之后的日子取不晚于该日的最近快照，之前的日子仍是「现在启用的流程里创建日不晚于该日」的近似值，响应里 `activeWorkflowsExact` 为 false；删除流程不触发快照，当天值最迟到次日 00:05 才更正。

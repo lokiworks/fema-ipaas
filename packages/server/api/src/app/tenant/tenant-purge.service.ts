@@ -38,6 +38,7 @@ import { UserEntity } from '../user/user-entity'
 import { UserInvitationEntity } from '../user-invitations/user-invitation.entity'
 import { VariableEntity } from '../variable/variable.entity'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
+import { tenantStatusGuard } from './tenant-status-guard'
 import { TenantEntity } from './tenant.entity'
 
 export const tenantPurgeService = (log: FastifyBaseLogger) => ({
@@ -49,6 +50,7 @@ export const tenantPurgeService = (log: FastifyBaseLogger) => ({
         }
         await purgeTenantData({ tenantId, log })
         await removeTenantAndMembers({ tenantId })
+        tenantStatusGuard.invalidate({ tenantId })
         log.info({ tenant: { id: tenantId }, projectCount: projectIds.length }, '[tenantPurgeService] Tenant permanently deleted')
     },
 })

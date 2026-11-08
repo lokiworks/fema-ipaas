@@ -30,6 +30,7 @@ Webhooks are the primary entry point for event-driven workflow execution from ou
 - **Size guard**: `FEMA_MAX_WEBHOOK_PAYLOAD_SIZE_MB` (default 5MB) → 413. Raw-binary bodies pipe through `enforceByteLimit`; oversized multipart parts are failed at end-of-stream (busboy flags `truncated` cleanly rather than erroring).
 - **Handshake** runs BEFORE the disabled-workflow guard, so ownership pings work both during the publish window and for re-verification on enabled workflows. Strategies: `HEADER_PRESENT`, `QUERY_PRESENT`, `BODY_PARAM_PRESENT`, `NONE`, `HEAD_REQUEST` (e.g. Trello).
 - Workflow resolution returns 410 GONE if not found; 404 if disabled (unless the request matches the workflow's handshake config).
+- **The workflow lookup is cached for 30 days** (`workflowExecutionCache`, in `distributedStore`). Anything that deletes workflow rows without `workflowExecutionCache.invalidate` leaves webhooks resolving a workflow that is gone. The tenant gate is the backstop: a tenant that no longer exists answers 410 like an unknown workflow and drops the cached entry; a suspended or deleting tenant answers 403.
 
 ### Editions
 Full functionality in CE/EE/Cloud; Cloud makes payload size and timeout configurable per environment.

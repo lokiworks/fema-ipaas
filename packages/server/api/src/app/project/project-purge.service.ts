@@ -10,6 +10,7 @@ import { fileService } from '../file/file.service'
 import { IssueActivityEntity, IssueEntity, IssueWorkflowEntity } from '../issue/issue.entity'
 import { MappingTableEntity } from '../mapping-table/mapping-table.entity'
 import { McpServiceEntity, McpServiceMemberEntity, McpServiceUsageEntity } from '../mcp-service/mcp-service.entity'
+import { reconciliationSideEffects } from '../reconciliation/reconciliation-side-effects'
 import { ReconciliationDifferenceEntity, ReconciliationRuleEntity, ReconciliationRunEntity } from '../reconciliation/reconciliation.entity'
 import { ConnectionReplacementEntity, ReleaseChangeEntity, WorkflowReleaseEntity } from '../release/release.entity'
 import { ReliabilityEventEntity } from '../reliability/reliability-event.entity'
@@ -24,6 +25,7 @@ import { VariableEntity } from '../variable/variable.entity'
 import { ExecutionEntity } from '../workflows/execution/execution-entity'
 import { WaitpointEntity } from '../workflows/execution/waitpoint/waitpoint-entity'
 import { folderRepo } from '../workflows/folder/folder.service'
+import { workflowExecutionCache } from '../workflows/workflow/workflow-execution-cache'
 import { batchDeleteByWorkflowId } from '../workflows/workflow/workflow.jobs'
 import { workflowRepo } from '../workflows/workflow/workflow.repo'
 import { projectMemberRepo } from './project-member.repo'
@@ -32,9 +34,12 @@ import { projectRepo } from './project-repo'
 export const projectPurgeService = (log: FastifyBaseLogger) => ({
     async purge({ projectId }: { projectId: ProjectId }): Promise<{ workflowCount: number }> {
         const workflows = await workflowRepo().find({ where: { projectId }, select: ['id'], withDeleted: true })
+        const reconciliationRuleIds = await purgeBatch.idsWhere({ entity: ReconciliationRuleEntity, column: 'projectId', value: projectId })
+        await reconciliationSideEffects(log).removeSchedules({ ruleIds: reconciliationRuleIds })
         for (const workflow of workflows) {
             await batchDeleteByWorkflowId(workflow.id)
             await workflowRepo().delete({ id: workflow.id })
+            await workflowExecutionCache(log).invalidate(workflow.id)
         }
         await purgeMcpServices({ projectId })
         for (const entity of PROJECT_OWNED_ENTITIES) {

@@ -32,6 +32,14 @@ async function isActive({ tenantId }: { tenantId: TenantId }): Promise<boolean> 
     return !isBlocked({ status })
 }
 
+async function standingOf({ tenantId }: { tenantId: TenantId }): Promise<TenantStanding> {
+    const status = await statusOf({ tenantId, now: Date.now() })
+    if (isNil(status)) {
+        return 'GONE'
+    }
+    return isBlocked({ status }) ? 'BLOCKED' : 'ACTIVE'
+}
+
 function isBlocked({ status }: { status: TenantStatus | null }): boolean {
     return !isNil(status) && status !== TenantStatus.ACTIVE
 }
@@ -47,11 +55,14 @@ function clear(): void {
 export const tenantStatusGuard = {
     assertActive,
     isActive,
+    standingOf,
     invalidate,
     clear,
 }
 
 const STATUS_CACHE_TTL_MS = 5_000
+
+export type TenantStanding = 'ACTIVE' | 'BLOCKED' | 'GONE'
 
 type CachedStatus = {
     status: TenantStatus | null

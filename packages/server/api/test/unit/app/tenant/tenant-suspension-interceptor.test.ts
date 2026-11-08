@@ -4,14 +4,14 @@ import { InterceptorVerdict } from '../../../../src/app/workers/job-queue/job-in
 import { tenantSuspensionInterceptor, tenantSuspensionUtils } from '../../../../src/app/workers/job-queue/interceptors/tenant-suspension-interceptor'
 
 const update = vi.fn()
-const isActive = vi.fn()
+const standingOf = vi.fn()
 
 vi.mock('../../../../src/app/core/db/repo-factory', () => ({
     repoFactory: () => () => ({ update }),
 }))
 
 vi.mock('../../../../src/app/tenant/tenant-status-guard', () => ({
-    tenantStatusGuard: { isActive: (params: unknown) => isActive(params) },
+    tenantStatusGuard: { standingOf: (params: unknown) => standingOf(params) },
 }))
 
 const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }
@@ -31,18 +31,18 @@ async function preDispatch(jobData: JobData) {
 describe('tenant suspension interceptor', () => {
     beforeEach(() => {
         update.mockReset()
-        isActive.mockReset()
+        standingOf.mockReset()
     })
 
     it('lets the jobs of an active tenant through', async () => {
-        isActive.mockResolvedValue(true)
+        standingOf.mockResolvedValue('ACTIVE')
 
         expect((await preDispatch(executeWorkflowJob())).verdict).toBe(InterceptorVerdict.ALLOW)
         expect(update).not.toHaveBeenCalled()
     })
 
     it('discards a run of a suspended tenant and cancels its queued run record', async () => {
-        isActive.mockResolvedValue(false)
+        standingOf.mockResolvedValue('BLOCKED')
 
         const result = await preDispatch(executeWorkflowJob())
 
@@ -50,8 +50,16 @@ describe('tenant suspension interceptor', () => {
         expect(update).toHaveBeenCalledWith({ id: 'run-1', projectId: 'project-1', status: ExecutionStatus.QUEUED }, { status: ExecutionStatus.CANCELED })
     })
 
+    it('discards the queued and delayed runs of a tenant that has been purged', async () => {
+        standingOf.mockResolvedValue('GONE')
+
+        expect((await preDispatch(executeWorkflowJob())).verdict).toBe(InterceptorVerdict.DISCARD)
+        expect((await preDispatch(job(WorkerJobType.EXECUTE_WEBHOOK))).verdict).toBe(InterceptorVerdict.DISCARD)
+        expect((await preDispatch(job(WorkerJobType.EXECUTE_POLLING))).verdict).toBe(InterceptorVerdict.DISCARD)
+    })
+
     it('discards scheduled polls and webhook runs of a suspended tenant without touching a run record', async () => {
-        isActive.mockResolvedValue(false)
+        standingOf.mockResolvedValue('BLOCKED')
 
         expect((await preDispatch(job(WorkerJobType.EXECUTE_POLLING))).verdict).toBe(InterceptorVerdict.DISCARD)
         expect((await preDispatch(job(WorkerJobType.EXECUTE_WEBHOOK))).verdict).toBe(InterceptorVerdict.DISCARD)
@@ -59,14 +67,14 @@ describe('tenant suspension interceptor', () => {
     })
 
     it('does not look at the tenant for jobs that a signed-in user is waiting on', async () => {
-        isActive.mockResolvedValue(false)
+        standingOf.mockResolvedValue('BLOCKED')
 
         expect((await preDispatch(job(WorkerJobType.EXECUTE_PROPERTY))).verdict).toBe(InterceptorVerdict.ALLOW)
-        expect(isActive).not.toHaveBeenCalled()
+        expect(standingOf).not.toHaveBeenCalled()
     })
 
     it('still discards the job when cancelling the run record fails', async () => {
-        isActive.mockResolvedValue(false)
+        standingOf.mockResolvedValue('BLOCKED')
         update.mockRejectedValue(new Error('database down'))
 
         expect((await preDispatch(executeWorkflowJob())).verdict).toBe(InterceptorVerdict.DISCARD)

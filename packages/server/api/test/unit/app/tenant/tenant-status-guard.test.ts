@@ -56,6 +56,16 @@ describe('tenant status guard', () => {
         await expect(tenantStatusGuard.assertActive({ tenantId: 'missing' })).resolves.toBeUndefined()
     })
 
+    it('tells an active, a blocked and a purged tenant apart', async () => {
+        findOne.mockResolvedValueOnce({ id: 't1', status: TenantStatus.ACTIVE })
+        findOne.mockResolvedValueOnce({ id: 't2', status: TenantStatus.DELETING })
+        findOne.mockResolvedValueOnce(null)
+
+        expect(await tenantStatusGuard.standingOf({ tenantId: 't1' })).toBe('ACTIVE')
+        expect(await tenantStatusGuard.standingOf({ tenantId: 't2' })).toBe('BLOCKED')
+        expect(await tenantStatusGuard.standingOf({ tenantId: 'purged' })).toBe('GONE')
+    })
+
     it('asks the database once while the answer is cached', async () => {
         findOne.mockResolvedValue({ id: 't1', status: TenantStatus.ACTIVE })
 

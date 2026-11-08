@@ -1,11 +1,15 @@
 import { generateId } from '@fema-ipaas/core-utils'
-import { InvitationStatus, InvitationType, PersonalAccessTokenExpiry, PlatformScope, PrincipalType, ProjectType, TenantRole, TenantStatus, UserStatus, WorkflowStatus } from '@fema-ipaas/shared'
+import { InvitationStatus, InvitationType, PersonalAccessTokenExpiry, PlatformScope, PrincipalType, ProjectType, ReconciliationRuleBody, TenantRole, TenantStatus, UserStatus, WorkflowExecutionState, workflowExecutionStateKey, WorkflowStatus } from '@fema-ipaas/shared'
 import { FastifyInstance } from 'fastify'
 import { StatusCodes } from 'http-status-codes'
 import { databaseConnection } from '../../../src/app/database/database-connection'
+import { distributedStore } from '../../../src/app/database/redis-connections'
 import { SystemJobName } from '../../../src/app/helper/system-jobs/common'
-import { systemJobsQueue } from '../../../src/app/helper/system-jobs/system-job'
+import { systemJobHandlers } from '../../../src/app/helper/system-jobs/job-handlers'
+import { systemJobsQueue, systemJobsSchedule } from '../../../src/app/helper/system-jobs/system-job'
 import { projectPurgeService } from '../../../src/app/project/project-purge.service'
+import { reconciliationSideEffects } from '../../../src/app/reconciliation/reconciliation-side-effects'
+import { reconciliationRuleRepo } from '../../../src/app/reconciliation/reconciliation.service'
 import { tenantStatusGuard } from '../../../src/app/tenant/tenant-status-guard'
 import { tenantBackgroundJobs } from '../../../src/app/tenant/tenant.jobs'
 import { webhookTenantGate } from '../../../src/app/webhooks/webhook-tenant-gate'
@@ -112,6 +116,81 @@ describe('deleting a tenant through the platform api', () => {
     })
 })
 
+describe('what still points at a purged tenant', () => {
+    it('answers a webhook of a purged workflow exactly like one of a workflow that never existed, even after it was cached', async () => {
+        const world = await seedWorld()
+        const workflowId = await seedEnabledWorkflow({ projectId: world.projectId })
+        const beforeDeletion = await callWebhook({ workflowId })
+        await platformCall({ key: world.key, method: 'DELETE', url: `/v1/platform/tenants/${world.tenantId}` })
+        await tenantBackgroundJobs(app!.log).hardDeleteTenantHandler({ tenantId: world.tenantId })
+        tenantStatusGuard.clear()
+
+        const afterPurge = await callWebhook({ workflowId })
+        const neverExisted = await callWebhook({ workflowId: generateId() })
+
+        expect(beforeDeletion.statusCode).toBe(StatusCodes.OK)
+        expect(neverExisted.statusCode).toBe(StatusCodes.GONE)
+        expect(afterPurge.statusCode).toBe(neverExisted.statusCode)
+        expect(afterPurge.json()).toEqual(neverExisted.json())
+        expect(await distributedStore.get(workflowExecutionStateKey(workflowId))).toEqual({ exists: false })
+    })
+
+    it('answers GONE and forgets the workflow when a request cached it again while the purge was running', async () => {
+        const world = await seedWorld()
+        const workflowId = await seedEnabledWorkflow({ projectId: world.projectId })
+        await callWebhook({ workflowId })
+        const cachedBeforePurge = await distributedStore.get<WorkflowExecutionState>(workflowExecutionStateKey(workflowId))
+        await platformCall({ key: world.key, method: 'DELETE', url: `/v1/platform/tenants/${world.tenantId}` })
+        await tenantBackgroundJobs(app!.log).hardDeleteTenantHandler({ tenantId: world.tenantId })
+        await distributedStore.put(workflowExecutionStateKey(workflowId), cachedBeforePurge, STALE_ENTRY_TTL_SECONDS)
+        tenantStatusGuard.clear()
+
+        const afterPurge = await callWebhook({ workflowId })
+
+        expect(cachedBeforePurge).toMatchObject({ exists: true, tenantId: world.tenantId })
+        expect(afterPurge.statusCode).toBe(StatusCodes.GONE)
+        expect(afterPurge.json()).toEqual({})
+        expect(await distributedStore.get(workflowExecutionStateKey(workflowId))).toBeNull()
+        expect(await countRows({ table: 'file', column: 'projectId', values: world.projectIds })).toBe(0)
+    })
+
+    it('treats the queued work of a purged tenant as gone, not as active', async () => {
+        const world = await seedWorld()
+        await platformCall({ key: world.key, method: 'DELETE', url: `/v1/platform/tenants/${world.tenantId}` })
+        await tenantBackgroundJobs(app!.log).hardDeleteTenantHandler({ tenantId: world.tenantId })
+        tenantStatusGuard.clear()
+
+        expect(await tenantStatusGuard.standingOf({ tenantId: world.tenantId })).toBe('GONE')
+    })
+
+    it('removes the schedules of the reconciliation rules of its projects', async () => {
+        const world = await seedWorld()
+        const ruleId = await seedScheduledReconciliationRule({ projectId: world.projectId, workflowId: world.workflowIds[0] })
+        const before = await reconciliationScheduleIds()
+        await platformCall({ key: world.key, method: 'DELETE', url: `/v1/platform/tenants/${world.tenantId}` })
+
+        await tenantBackgroundJobs(app!.log).hardDeleteTenantHandler({ tenantId: world.tenantId })
+
+        expect(before).toContain(`recon-${ruleId}`)
+        expect(await reconciliationScheduleIds()).not.toContain(`recon-${ruleId}`)
+    })
+
+    it('drops a reconciliation schedule whose rule no longer exists instead of failing on every tick', async () => {
+        const ctx = await createTestContext(app!)
+        const ruleId = generateId()
+        await systemJobsSchedule(app!.log).upsertJob({
+            job: { name: SystemJobName.RECONCILE, jobId: `recon-${ruleId}`, data: { ruleId, projectId: ctx.project.id } },
+            schedule: { type: 'repeated', cron: '0 * * * *' },
+        })
+        const before = await reconciliationScheduleIds()
+
+        await systemJobHandlers.getJobHandler(SystemJobName.RECONCILE)({ ruleId, projectId: ctx.project.id })
+
+        expect(before).toContain(`recon-${ruleId}`)
+        expect(await reconciliationScheduleIds()).not.toContain(`recon-${ruleId}`)
+    })
+})
+
 describe('purging a deleted tenant', () => {
     it('removes every row of the tenant, keeps the other tenant and the identity it shares, and is a no-op the second time', async () => {
         await assertFullPurge({ withoutForeignKeys: false })
@@ -146,6 +225,36 @@ describe('purging a deleted tenant', () => {
         await assertFullPurge({ withoutForeignKeys: true })
     })
 })
+
+async function seedEnabledWorkflow({ projectId }: { projectId: string }): Promise<string> {
+    const workflow = createMockWorkflow({ projectId, status: WorkflowStatus.ENABLED, folderId: null })
+    await db.save('workflow', workflow)
+    const version = createMockWorkflowVersion({ workflowId: workflow.id })
+    await db.save('workflow_version', version)
+    await db.update('workflow', workflow.id, { publishedVersionId: version.id })
+    return workflow.id
+}
+
+async function seedScheduledReconciliationRule({ projectId, workflowId }: { projectId: string, workflowId: string }): Promise<string> {
+    const endpoint = { connectorName: 'test-source', actionName: 'enumerate', connectionExternalId: 'c', input: {}, keyPath: 'id' }
+    const body = ReconciliationRuleBody.parse({ projectId, name: 'People', workflowId, source: endpoint, target: { ...endpoint, connectorName: 'test-target' }, expectations: [{ aspect: 'account', when: [], expect: { kind: 'EXISTS' } }], repair: { readActionName: 'get', keyInput: 'id' }, cron: '0 * * * *' })
+    const rule = await reconciliationRuleRepo().save({ ...body, id: generateId() })
+    await reconciliationSideEffects(app!.log).syncSchedule(rule)
+    return rule.id
+}
+
+async function reconciliationScheduleIds(): Promise<string[]> {
+    const schedulers = await systemJobsQueue.getJobSchedulers()
+    return schedulers.map((scheduler) => scheduler.id ?? scheduler.key)
+}
+
+function callWebhook({ workflowId }: { workflowId: string }) {
+    return app!.inject({
+        method: 'POST',
+        url: `/api/v1/webhooks/${workflowId}`,
+        body: { order: 'A-1' },
+    })
+}
 
 async function assertFullPurge({ withoutForeignKeys }: { withoutForeignKeys: boolean }): Promise<void> {
     const world = await seedWorld()
@@ -413,6 +522,7 @@ function platformCall({ key, method, url, body }: { key: string, method: 'GET' |
 }
 
 const OWNER_COLUMNS = ['tenantId', 'projectId']
+const STALE_ENTRY_TTL_SECONDS = 60
 const NUMERIC_TYPES = ['integer', 'bigint', 'smallint', 'numeric', 'double precision', 'real']
 const PASSWORD = 'a-long-enough-password'
 

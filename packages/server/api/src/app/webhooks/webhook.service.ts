@@ -95,10 +95,16 @@ export const webhookService = {
         }
         const { workflow } = workflowExecutionResult
 
-        const suspendedRefusal = await webhookTenantGate.refusalFor({ tenantId: workflowExecutionResult.tenantId, webhookHeader, webhookRequestId })
-        if (webhookTenantGate.isRefusal(suspendedRefusal)) {
+        const tenantRefusal = await webhookTenantGate.refusalFor({ tenantId: workflowExecutionResult.tenantId, webhookHeader, webhookRequestId })
+        if (webhookTenantGate.isRefusal(tenantRefusal)) {
+            if (webhookTenantGate.isTenantGone(tenantRefusal)) {
+                pinoLogger.info({ tenant: { id: workflowExecutionResult.tenantId } }, 'Tenant no longer exists, dropping the cached workflow and returning GONE')
+                wideEvent.set({ webhook: { workflowFound: false } })
+                await workflowExecutionCache(pinoLogger).invalidate(workflowId)
+                return tenantRefusal
+            }
             pinoLogger.info({ tenant: { id: workflowExecutionResult.tenantId } }, 'Tenant is suspended, refusing the webhook')
-            return suspendedRefusal
+            return tenantRefusal
         }
 
         // data() consumes the request body stream (streaming any file straight to storage), which

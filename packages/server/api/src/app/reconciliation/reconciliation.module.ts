@@ -1,3 +1,4 @@
+import { isNil } from '@fema-ipaas/core-utils'
 import { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { SystemJobName } from '../helper/system-jobs/common'
 import { systemJobHandlers } from '../helper/system-jobs/job-handlers'
@@ -11,7 +12,12 @@ export const reconciliationModule: FastifyPluginAsyncZod = async (app) => {
             await reconciliationService(app.log).run({ runId, projectId })
         }
         else {
-            const rule = await reconciliationService(app.log).getRule({ id: ruleId, projectId })
+            const rule = await reconciliationRuleRepo().findOneBy({ id: ruleId, projectId })
+            if (isNil(rule)) {
+                app.log.info({ project: { id: projectId }, reconciliationRule: { id: ruleId } }, '[reconcile] Rule no longer exists, removing its schedule')
+                await reconciliationSideEffects(app.log).removeSchedules({ ruleIds: [ruleId] })
+                return
+            }
             if (rule.enabled) await reconciliationService(app.log).start({ id: ruleId, projectId })
         }
     })

@@ -76,6 +76,7 @@ describe('platform member utils', () => {
             identityId: null,
             userId: null,
             prebindRole: TenantRole.MEMBER,
+            prebindModules: [],
             status: ExternalIdentityStatus.ACTIVE,
             lastVerifiedAt: null,
             email: 'two@acme.test',

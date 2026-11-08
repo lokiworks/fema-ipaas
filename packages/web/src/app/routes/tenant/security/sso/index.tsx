@@ -75,6 +75,7 @@ import {
 } from '@/components/ui/tooltip';
 import { ssoUtils } from '@/features/authentication';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
+import { flagsHooks } from '@/hooks/flags-hooks';
 import { tenantHooks } from '@/hooks/tenant-hooks';
 import { formatUtils } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
@@ -151,6 +152,7 @@ const AuthenticationPage = () => {
 };
 
 function SsoTestResult() {
+  const branding = flagsHooks.useWebsiteBranding();
   const [params, setParams] = useSearchParams();
   const result = params.get('ssoTest');
   if (result === null) {
@@ -179,7 +181,10 @@ function SsoTestResult() {
       <span className="flex-1">
         {passed
           ? t('The test sign-in passed. You can turn this method on now.')
-          : ssoUtils.errorMessage(result)}
+          : ssoUtils.errorMessage({
+              code: result,
+              websiteName: branding.websiteName,
+            })}
       </span>
       <button
         type="button"

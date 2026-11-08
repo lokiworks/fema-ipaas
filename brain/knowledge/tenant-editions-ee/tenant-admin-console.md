@@ -12,7 +12,8 @@ icon: 🛠️
 **模块守卫** — `tenantModuleGuard.requireModule` 挂在插件的 `preHandler` 上：连接器蓝图、OpenAPI 导入要「连接器开发」，`/v1/mcp-services` 要「MCP 服务」。项目权限照旧在 `securityAccess.project` 里判，两层都满足才放行。
 **无权限提示** — `tenant.moduleAccessSettings`：联系管理员 / 指定人 / 网址 / 申请入口。前端 `ModuleGate` 按 `/v1/tenant-access/me` 渲染。
 **权限申请** — `module_access_request` 表，待审核 / 已同意 / 已拒绝，只在平台内审核；飞书审批没有做。
-**待激活** — 就是还没被接受的租户邀请，不是用户表里的状态。
+**待激活** — 还没被接受的租户邀请，或从成员名录选中、还没首次登录的预绑（成员列表里 `kind: BINDING`），都不是用户表里的状态。
+**成员名录** — 身份源里这家租户的成员，用这家的集成服务应用经 fema `POST /iam-identity/member/find-all` 实时读，不落库；只在 `matchBy=SUBJECT` 且有 `oidc.memberSubscription` 的租户出现，见决定 000049。_Avoid_：「通讯录同步」（没有同步，只在选人时读）。
 **集成资源转移** — `ownedResourcesService.transfer`：工作流、连接、MCP 服务、数据存储、项目。自定义连接器（`connector_blueprint`）没有所有者，不参与。
 **登录与安全** — 六种登录方式按固定顺序展示：邮箱和密码、OIDC、飞书可用，SAML（构建里被关掉）、企业微信、钉钉没有实现，显示「暂不可用」。`tenant.passwordMinLength`（8–64，默认 10）在注册和重置密码时校验；`tenant.sessionDurationDays`（1/7/30）决定密码登录和单点登录签发的 JWT 有效期。
 **单点登录** — 配置存在 `tenant.federatedAuthProviders` 的 `oidc` / `feishu` 两个键里（jsonb，不需要迁移），密钥用 `encryptUtils` 加密，读取接口只返回 `hasClientSecret`。流程在 `packages/server/api/src/app/sso`：`/v1/authn/sso/start` 跳身份提供方，`/callback` 校验后发 60 秒一次性票据，SPA 在 `/sso/complete` 用 `/exchange` 换会话。_Avoid_：把令牌放进回调地址。
@@ -25,6 +26,7 @@ icon: 🛠️
 - **平台应用绑定和租户自建的 SSO 是两条路。** 单点登录页的「关联你的企业」只在实例配置了平台登录应用（`availablePlatformApps` 非空）时出现；`provisioned` 的 OIDC 只开放开关、按钮名称、准入规则和复核间隔，连接字段隐藏。
 - **SAML 的 SP 信息在配置前就能拿到。** `SsoSettings.samlServiceProvider` 始终有值；`idpMetadataXml` 首次配置必填，已有配置留空表示保留原元数据。
 - **平台开通（`provisioned`）的 OIDC 只锁连接参数。** 服务端拒绝改 issuer、客户端、密钥、scopes、emailClaim、匹配方式、附加参数；展示名、开关、复核间隔、准入规则（自动建用户、默认角色、允许域名、默认项目）仍可改，前端隐藏的是组到角色的映射和连接字段。
+- **从名录加人只信 fema 的回答。** `POST /v1/tenant-access/members/directory/add` 先按 id 回 fema 复核（在这家名录里、状态 `ACTIVE`/`PENDING`），再按 issuer + 成员 ID 预绑角色和模块（`external_identity.prebindModules`），首次登录时 `sso-user-resolver` 建号并把模块写进 `user.modules`；已有绑定的跳过，所以重复加入是空操作。名录只能按显示名和用户名搜：fema 的成员名片不含手机号。名录读不到时返回 `memberDirectoryUnreachable`（409），不返回空页。
 - **成员邀请里手机号不带区号按中国大陆补 +86。** 解析在 `tenantAccessUtils.parseContacts`，邀请请求的 `emails` 和 `phones` 至少一项非空。
 - **连接总览和项目「连接」页用同一套列与详情抽屉**：列表接口 `listForTenant` 本来就带 `workflowIds`（被引用），行点开是 `ConnectionDetailSheet`；租户管理员的 `memberProjectIds` 是全部项目，所以详情能打开任何连接。
 
@@ -62,7 +64,7 @@ icon: 🛠️
 
 ## Key files
 
-- `packages/server/api/src/app/tenant-access` — `tenantAccessController`、`tenantModuleGuard`、`ownedResourcesService`
+- `packages/server/api/src/app/tenant-access` — `tenantAccessController`、`tenantModuleGuard`、`ownedResourcesService`、`tenantDirectoryService`
 - `packages/server/api/src/app/workers/machine` — `workerFleetService`
 - `packages/server/api/src/app/health` — `componentHealthService`
 - `packages/web/src/features/tenant-access` — `ModuleGate`、`tenantAccessHooks`

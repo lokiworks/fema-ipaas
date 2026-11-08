@@ -1,4 +1,4 @@
-import { ExternalIdentityStatus, SsoMatchBy, TenantRole, UserStatus } from '@fema-ipaas/shared'
+import { ExternalIdentityStatus, SsoMatchBy, TenantModule, TenantRole, UserStatus } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 type Row = Record<string, unknown>
@@ -88,6 +88,16 @@ describe('external identity service', () => {
             await service.prebind({ tenantId: 'tenant-1', issuer, subject: 'm1', role: TenantRole.ADMIN })
             expect(state.rows).toHaveLength(1)
             expect(state.rows[0]['prebindRole']).toBe(TenantRole.ADMIN)
+        })
+
+        it('keeps the module permissions of a pick until the first sign-in, and drops them once the account exists', async () => {
+            const service = await loadService()
+            await service.prebind({ tenantId: 'tenant-1', issuer, subject: 'm1', role: TenantRole.MEMBER, modules: [TenantModule.MCP_SERVICES] })
+            expect(state.rows[0]['prebindModules']).toEqual([TenantModule.MCP_SERVICES])
+            await service.prebind({ tenantId: 'tenant-1', issuer, subject: 'm1', role: TenantRole.ADMIN })
+            expect(state.rows[0]['prebindModules']).toEqual([TenantModule.MCP_SERVICES])
+            await service.bindToUser({ tenantId: 'tenant-1', issuer, subject: 'm1', identityId: 'i1', userId: 'u1' })
+            expect(state.rows[0]['prebindModules']).toEqual([])
         })
 
         it('does not touch a binding that already belongs to a user', async () => {

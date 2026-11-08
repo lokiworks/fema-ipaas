@@ -80,7 +80,7 @@ What the platform checks on every sign-in, and rejects with a readable reason (n
 | Email missing, or not verified (`email_verified`) while verification is required | `EMAIL_MISSING`, `EMAIL_NOT_VERIFIED` |
 | Email domain not on the provider's allowed list, or not allowed by the tenant's allowed domains | `DOMAIN_NOT_ALLOWED` |
 | Account disabled by an administrator | `USER_DISABLED` |
-| No account and automatic creation is off, and the person was not invited | `USER_NOT_PROVISIONED` |
+| No account and automatic creation is off, and the person was neither invited nor added from the member directory | `USER_NOT_PROVISIONED` |
 
 Every rejection is written to **Audit log** as *Sign-in failed* with the reason; successful single
 sign-on sign-ins are recorded with the method, and configuration changes as *Single sign-on settings
@@ -101,6 +101,34 @@ changed* (never with a secret).
   their session immediately (even a token that is still valid); the provider cannot do that for you.
   Select several people and use **Disable selected** for a wave of departures, and transfer their
   workflows and connections first (removing a user asks who takes them over).
+
+### Adding people from the member directory
+
+A tenant opened through the platform API signs people in by their member ID at the identity provider,
+not by email (some members have only a mobile number). In such a tenant, an email or mobile invitation
+creates an account that the company sign-in cannot match, so the person is still refused with
+`USER_NOT_PROVISIONED`. Add them from the directory instead:
+
+<Steps>
+  <Step title="Open the directory">
+    Go to **Members → Add members → From the directory**. The tab appears only when the tenant signs
+    people in by member ID and was given an integration application by the platform; other tenants
+    keep the email and mobile invitation only.
+  </Step>
+  <Step title="Pick people">
+    Search by name or username and tick the people to add. People who are already members, already
+    added, disabled, or suspended or removed at the identity provider cannot be ticked.
+  </Step>
+  <Step title="Choose the role and module permissions">
+    Click **Add**. Nothing is sent to the people you picked. They show as *Pending activation* until
+    they sign in with the company account for the first time; the account is created then, with the
+    role and permissions you chose.
+  </Step>
+</Steps>
+
+The directory is read live from the identity provider with the tenant's integration application, so
+it needs that application to be allowed to read members. Adding the same person twice changes nothing.
+To take back a pick before the person signs in, use **Cancel adding** on their row.
 
 ### Session length
 

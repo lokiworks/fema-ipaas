@@ -62,11 +62,19 @@ async function seed() {
         { username: 'alice', password: 'Passw0rd!', name: '王丽', email: 'alice@alpha.test', emailVerified: true },
         { username: 'bob', password: 'Passw0rd!', name: '李博', email: 'bob@beta.test', emailVerified: true },
         { username: 'gus', password: 'Passw0rd!', name: '高山', email: 'gus@gamma.test', emailVerified: true },
+        { username: 'zhaomin', password: 'Passw0rd!', name: '赵敏', email: null, emailVerified: false, phone: '+8613800002001', phoneVerified: true },
+        { username: 'zhoujie', password: 'Passw0rd!', name: '周杰', email: 'zhoujie@alpha.test', emailVerified: true },
+        { username: 'sunli', password: 'Passw0rd!', name: '孙莉', email: null, emailVerified: false, phone: '+8613800002003', phoneVerified: true },
+        { username: 'wuting', password: 'Passw0rd!', name: '吴婷', email: 'wuting@alpha.test', emailVerified: true },
       ],
       members: [
         { id: 'm-alpha-alice', tenant: 't_alpha', username: 'alice' },
         { id: 'm-beta-bob', tenant: 't_beta', username: 'bob' },
         { id: 'm-gamma-gus', tenant: 't_gamma', username: 'gus' },
+        { id: 'm-alpha-zhaomin', tenant: 't_alpha', username: 'zhaomin' },
+        { id: 'm-alpha-zhoujie', tenant: 't_alpha', username: 'zhoujie' },
+        { id: 'm-alpha-sunli', tenant: 't_alpha', username: 'sunli', status: 'PENDING' },
+        { id: 'm-alpha-wuting', tenant: 't_alpha', username: 'wuting', status: 'SUSPENDED' },
       ],
       clients: [
         { clientId: 'ipaas-t_alpha', secret: 'oidc-alpha-secret', kind: 'oidc', tenant: 't_alpha' },
@@ -245,14 +253,41 @@ async function tenantScreens() {
     await page.goto(`${WEB}/tenant/users`)
     await page.getByRole('button', { name: /添加成员|Add members/ }).first().waitFor()
   } })
+  await shoot({ name: 'tenant-members-directory', session: alice, full: false, go: async (page) => {
+    await page.goto(`${WEB}/tenant/users`)
+    await page.getByRole('button', { name: /添加成员|Add members/ }).first().click()
+    await page.getByTestId('directory-member-m-alpha-zhaomin').waitFor()
+    await page.getByTestId('directory-member-m-alpha-zhaomin').getByRole('checkbox').click()
+  } })
+  await shoot({ name: 'tenant-members-directory-search', session: alice, full: false, go: async (page) => {
+    await page.goto(`${WEB}/tenant/users`)
+    await page.getByRole('button', { name: /添加成员|Add members/ }).first().click()
+    await page.getByTestId('directory-search').fill('周')
+    await page.getByTestId('directory-member-m-alpha-zhoujie').waitFor()
+    await page.getByTestId('directory-member-m-alpha-zhaomin').waitFor({ state: 'detached' })
+  } })
+  await shoot({ name: 'tenant-members-directory-result', session: alice, full: false, go: async (page, theme) => {
+    const subject = theme === 'light' ? 'm-alpha-zhaomin' : 'm-alpha-sunli'
+    await page.goto(`${WEB}/tenant/users`)
+    await page.getByRole('button', { name: /添加成员|Add members/ }).first().click()
+    await page.getByTestId(`directory-member-${subject}`).getByRole('checkbox').click()
+    await page.getByTestId('directory-submit').click()
+    await page.getByTestId('directory-result').waitFor()
+  } })
+  await shoot({ name: 'tenant-members-pending-binding', session: alice, go: async (page) => {
+    await page.goto(`${WEB}/tenant/users`)
+    await page.getByTestId(/^cancel-binding-/).first().waitFor()
+  } })
   await shoot({ name: 'tenant-members-invite', session: alice, full: false, go: async (page, theme) => {
     await page.goto(`${WEB}/tenant/users`)
     await page.getByRole('button', { name: /添加成员|Add members/ }).first().click()
+    await page.getByTestId('add-members-invite').click()
     await page.locator('[role=dialog] textarea').fill(`lily-${theme}@alpha.test\n+86139000000${theme === 'light' ? '01' : '02'}\nnot-an-address`)
   } })
   await shoot({ name: 'tenant-members-invite-result', session: alice, full: false, go: async (page, theme) => {
     await page.goto(`${WEB}/tenant/users`)
     await page.getByRole('button', { name: /添加成员|Add members/ }).first().click()
+    await page.getByTestId('add-members-invite').click()
     await page.locator('[role=dialog] textarea').fill(`rose-${theme}@alpha.test\n+86139000001${theme === 'light' ? '1' : '2'}`)
     const dialog = page.locator('[role=dialog]')
     await dialog.getByRole('button', { name: /添加|邀请|Add|Invite/ }).last().click()
@@ -271,6 +306,10 @@ async function signInScreens() {
   await shoot({ name: 'signin-tenant-page', go: async (page) => {
     await page.goto(`${WEB}/t/${world.tenants.alpha.slug}`)
     await page.getByText(/欢迎回来|Welcome back/).first().waitFor()
+  } })
+  await shoot({ name: 'signin-not-provisioned', go: async (page) => {
+    await page.goto(`${WEB}/t/${world.tenants.alpha.slug}?ssoError=USER_NOT_PROVISIONED`)
+    await page.getByTestId('sso-error').waitFor()
   } })
   await shoot({ name: 'signin-sms', go: async (page) => {
     await stubSmsAvailable({ page })

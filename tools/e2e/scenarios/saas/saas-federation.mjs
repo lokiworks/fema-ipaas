@@ -38,6 +38,7 @@ await platform()
 await multiTenantEntry()
 await loginAndIsolation()
 await crossTenant()
+await memberDirectory()
 await removalByEvent()
 if (process.env.SAAS_WITH_WORKER === '1') {
   await connectorPhase({ ctx })
@@ -288,6 +289,47 @@ async function crossTenant() {
     assert(created.status >= 400, `带乙的 tenant 建连接应失败：${created.status} ${created.text.slice(0, 300)}`)
     const attempts = (await iamState()).log.token.slice(before).filter((entry) => entry.clientId === CLIENTS.serviceA.clientId)
     assert(attempts.some((entry) => entry.params.tenant === TENANTS.beta.code && entry.error === 'invalid_target'), `fema-iam 应以 invalid_target 拒绝这次换票：${JSON.stringify(attempts)}`)
+  })
+}
+
+async function memberDirectory() {
+  await check('D1 甲家管理员读成员名录：用甲的集成服务应用读，只有甲的成员，已在的标「已是成员」', async () => {
+    assert(ctx.sessions.alice, '前置：甲属主未登录')
+    const members = await api({ path: '/v1/tenant-access/members', token: ctx.sessions.alice.token })
+    assert(members.json?.memberDirectory === true, `联邦租户应有成员名录：${members.text.slice(0, 200)}`)
+    const directory = await api({ path: '/v1/tenant-access/members/directory?limit=50', token: ctx.sessions.alice.token })
+    assert(directory.status === 200, `读名录失败：${directory.status} ${directory.text.slice(0, 300)}`)
+    const items = directory.json?.items ?? []
+    const subjects = items.map((item) => item.subject)
+    assert(subjects.includes(MEMBERS.quinnA.id), `名录里应有 Quinn：${JSON.stringify(subjects)}`)
+    assert(!subjects.includes(MEMBERS.daveB.id) && !subjects.includes(MEMBERS.bobB.id), '甲的名录里不应出现乙的成员')
+    assert(items.find((item) => item.subject === MEMBERS.aliceA.id)?.state === 'MEMBER', '甲属主应标为已是成员')
+    assert(items.find((item) => item.subject === MEMBERS.quinnA.id)?.state === 'AVAILABLE', 'Quinn 应可选')
+    const searched = await api({ path: `/v1/tenant-access/members/directory?keyword=${encodeURIComponent('Quinn')}`, token: ctx.sessions.alice.token })
+    assert(JSON.stringify((searched.json?.items ?? []).map((item) => item.subject)) === JSON.stringify([MEMBERS.quinnA.id]), `按名字搜应只剩 Quinn：${searched.text.slice(0, 300)}`)
+    const reads = (await iamState()).log.api.filter((entry) => entry.path === 'iam-identity/member/find-all')
+    assert(reads.length > 0 && reads.every((entry) => entry.tenant === TENANTS.alpha.code), `名录应以甲的身份读：${JSON.stringify(reads.map((entry) => entry.tenant))}`)
+  })
+
+  await check('D2 只有手机号的成员没被加入时点「集成」被拒，提示请管理员加为成员', async () => {
+    const refused = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'quinn' })
+    assert(!refused.ok && refused.code === 'USER_NOT_PROVISIONED', `未加入的成员应被拒：${refused.code}`)
+  })
+
+  await check('D3 管理员从名录选中 Quinn 并给角色，Quinn 再登录就进来，角色是选的那个；重复加入不变', async () => {
+    const added = await api({ method: 'POST', path: '/v1/tenant-access/members/directory/add', token: ctx.sessions.alice.token, body: { subjects: [MEMBERS.quinnA.id], tenantRole: 'OPERATOR', modules: ['CONNECTOR_DEVELOPMENT'] } })
+    assert(added.status === 200 && added.json?.added?.length === 1, `加入失败：${added.status} ${added.text.slice(0, 300)}`)
+    const login = await ssoLogin({ startUrl: ctx.tenants.alpha.ssoStartUrl, username: 'quinn' })
+    assert(login.ok, `加入后应能登录：${login.code}\n${login.trail.join('\n')}`)
+    assert(login.session.tenantRole === 'OPERATOR', `角色应是运维：${login.session.tenantRole}`)
+    const again = await api({ method: 'POST', path: '/v1/tenant-access/members/directory/add', token: ctx.sessions.alice.token, body: { subjects: [MEMBERS.quinnA.id], tenantRole: 'ADMIN', modules: [] } })
+    assert(again.json?.added?.length === 0 && again.json?.skipped?.[0]?.reason === 'ALREADY_MEMBER', `重复加入应跳过：${again.text.slice(0, 300)}`)
+  })
+
+  await check('D4 乙家管理员不能把甲的成员加进乙', async () => {
+    assert(ctx.sessions.bob, '前置：乙属主未登录')
+    const crossed = await api({ method: 'POST', path: '/v1/tenant-access/members/directory/add', token: ctx.sessions.bob.token, body: { subjects: [MEMBERS.quinnA.id], tenantRole: 'ADMIN', modules: [] } })
+    assert(crossed.status === 200 && crossed.json?.skipped?.[0]?.reason === 'NOT_IN_DIRECTORY', `乙不应能加甲的成员：${crossed.status} ${crossed.text.slice(0, 300)}`)
   })
 }
 

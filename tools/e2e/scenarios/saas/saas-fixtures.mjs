@@ -23,6 +23,7 @@ export const PERSONS = [
   { username: 'gina', name: '未受邀的 Gina', email: `gina-${run}@alpha.test`, emailVerified: true },
   { username: 'hank', name: '乱序事件的 Hank', email: `hank-${run}@alpha.test`, emailVerified: true },
   { username: 'otto', name: '被管理员停用的 Otto', email: `otto-${run}@alpha.test`, emailVerified: true },
+  { username: 'quinn', name: '从名录加入的 Quinn', email: null, emailVerified: false, phone: '+8613800000009', phoneVerified: true },
 ].map((person) => ({ password: PASSWORD, ...person }))
 
 export const MEMBERS = {
@@ -38,6 +39,7 @@ export const MEMBERS = {
   ginaA: { id: `m-a-gina-${run}`, tenant: TENANTS.alpha.code, username: 'gina' },
   hankA: { id: `m-a-hank-${run}`, tenant: TENANTS.alpha.code, username: 'hank' },
   ottoA: { id: `m-a-otto-${run}`, tenant: TENANTS.alpha.code, username: 'otto' },
+  quinnA: { id: `m-a-quinn-${run}`, tenant: TENANTS.alpha.code, username: 'quinn' },
 }
 
 export const CLIENTS = {

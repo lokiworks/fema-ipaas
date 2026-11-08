@@ -141,6 +141,49 @@ export const identityTenantCases: MatrixCase[] = [
         }),
     },
     {
+        id: 'GET /v1/tenant-access/members/directory',
+        access: { type: 'tenantAdminSelf' },
+        expectOk: [409],
+        prepare: async () => ({ request: { method: 'GET', url: '/v1/tenant-access/members/directory' } }),
+    },
+    {
+        id: 'POST /v1/tenant-access/members/directory/add',
+        access: { type: 'tenantAdminSelf' },
+        expectOk: [409],
+        prepare: async () => ({
+            request: { method: 'POST', url: '/v1/tenant-access/members/directory/add', body: { subjects: [`member-${generateId()}`], tenantRole: TenantRole.MEMBER, modules: [] } },
+        }),
+    },
+    {
+        id: 'DELETE /v1/tenant-access/members/bindings/:id',
+        access: { type: 'tenantAdmin' },
+        expectOk: [204],
+        prepare: async ({ world, scope }) => {
+            const bindingId = generateId()
+            await db.save('external_identity', {
+                id: bindingId,
+                issuer: 'https://iam.matrix.test',
+                subject: `member-${generateId()}`,
+                tenantId: world.scopes[scope].tenant.id,
+                identityId: null,
+                userId: null,
+                prebindRole: TenantRole.MEMBER,
+                prebindModules: [],
+                status: 'ACTIVE',
+                email: null,
+                displayName: 'Matrix Member',
+                lastVerifiedAt: null,
+                created: new Date().toISOString(),
+                updated: new Date().toISOString(),
+            })
+            return { request: { method: 'DELETE', url: `/v1/tenant-access/members/bindings/${bindingId}` }, state: { bindingId } }
+        },
+        afterDenied: async ({ prepared }) => {
+            const binding = await db.findOneBy('external_identity', { id: String(prepared.state?.bindingId) })
+            expect(binding).not.toBeNull()
+        },
+    },
+    {
         id: 'POST /v1/tenant-access/members/:id/access',
         access: { type: 'tenantAdmin' },
         prepare: async ({ world, scope }) => {

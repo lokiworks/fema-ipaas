@@ -37,6 +37,7 @@ DELETE /v1/run-monitor/views/:id | TENANT_ANY_MEMBER | USER | - | -
 DELETE /v1/service-settings/:kind | TENANT_ADMIN | USER | - | -
 DELETE /v1/store-entries | ENGINE | ENGINE | - | -
 DELETE /v1/templates/:id | TENANT_ANY_MEMBER | USER,SERVICE | - | -
+DELETE /v1/tenant-access/members/bindings/:id | TENANT_ADMIN | USER | - | -
 DELETE /v1/tenant-access/members/:id | TENANT_ADMIN | USER | - | -
 DELETE /v1/tenant-access/sso/platform-bindings/:kind | TENANT_ADMIN | USER | - | -
 DELETE /v1/tenant-domains/:id | TENANT_ADMIN | USER | - | -
@@ -226,6 +227,7 @@ GET /v1/templates/categories | PUBLIC | - | - | -
 GET /v1/tenant-access/login-security | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-access/me | TENANT_ANY_MEMBER | USER | - | -
 GET /v1/tenant-access/members | TENANT_ADMIN | USER | - | -
+GET /v1/tenant-access/members/directory | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-access/module-settings | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-access/requests | TENANT_ADMIN | USER | - | -
 GET /v1/tenant-access/resources | TENANT_ADMIN | USER | - | -
@@ -509,6 +511,7 @@ POST /v1/tenant-access/members/:id/disable | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/members/:id/enable | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/members/:id/reset-mfa | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/members/:id/reset-password | TENANT_ADMIN | USER | - | -
+POST /v1/tenant-access/members/directory/add | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/members/invite | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/module-settings | TENANT_ADMIN | USER | - | -
 POST /v1/tenant-access/requests/:id/approve | TENANT_ADMIN | USER | - | -

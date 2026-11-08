@@ -43,6 +43,7 @@ import { AddNotificationResolution1793200000000 } from './migration/postgres/179
 import { AddExecutionWorkflowSnapshotFile1793210000000 } from './migration/postgres/1793210000000-AddExecutionWorkflowSnapshotFile'
 import { AddSaasTenancy1793300000000 } from './migration/postgres/1793300000000-AddSaasTenancy'
 import { AddTenantUsageSnapshot1793400000000 } from './migration/postgres/1793400000000-AddTenantUsageSnapshot'
+import { AddExternalIdentityPrebindModules1793500000000 } from './migration/postgres/1793500000000-AddExternalIdentityPrebindModules'
 
 const getSslConfig = (): boolean | TlsOptions => {
     const useSsl = system.get(AppSystemProp.POSTGRES_USE_SSL)
@@ -93,6 +94,7 @@ export const getMigrations = (): (new () => Migration)[] => {
         AddExecutionWorkflowSnapshotFile1793210000000,
         AddSaasTenancy1793300000000,
         AddTenantUsageSnapshot1793400000000,
+        AddExternalIdentityPrebindModules1793500000000,
     ]
 }
 

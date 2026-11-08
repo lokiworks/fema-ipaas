@@ -5,11 +5,13 @@ import {
     SSO_LIMITS,
     SsoMatchBy,
     StoredOidcSso,
+    TenantModule,
     TenantRole,
     UserStatus,
 } from '@fema-ipaas/shared'
 import dayjs from 'dayjs'
 import { FastifyBaseLogger } from 'fastify'
+import { In, IsNull } from 'typeorm'
 import { repoFactory } from '../core/db/repo-factory'
 import { distributedLock } from '../database/redis-connections'
 import { encryptUtils } from '../helper/encryption'
@@ -25,7 +27,7 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
         return externalIdentityRepo().findOneBy({ issuer, subject })
     },
 
-    async prebind({ tenantId, issuer, subject, role, email, displayName }: PrebindParams): Promise<ExternalIdentityRecord> {
+    async prebind({ tenantId, issuer, subject, role, modules, email, displayName }: PrebindParams): Promise<ExternalIdentityRecord> {
         return withBindingLock({ log, issuer, subject, fn: async () => {
             const existing = await externalIdentityRepo().findOneBy({ issuer, subject })
             if (isNil(existing)) {
@@ -37,6 +39,7 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
                     identityId: null,
                     userId: null,
                     prebindRole: role,
+                    prebindModules: modules ?? [],
                     status: ExternalIdentityStatus.ACTIVE,
                     email: normalizeEmail(email),
                     displayName: displayName ?? null,
@@ -49,6 +52,7 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
             }
             await externalIdentityRepo().update({ id: existing.id, tenantId }, {
                 prebindRole: role,
+                prebindModules: modules ?? existing.prebindModules,
                 status: ExternalIdentityStatus.ACTIVE,
                 email: normalizeEmail(email) ?? existing.email,
                 displayName: displayName ?? existing.displayName,
@@ -70,6 +74,7 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
                     identityId,
                     userId,
                     prebindRole: null,
+                    prebindModules: [],
                     status: ExternalIdentityStatus.ACTIVE,
                     email: normalizeEmail(email),
                     displayName: displayName ?? null,
@@ -87,6 +92,7 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
                 identityId,
                 userId,
                 prebindRole: null,
+                prebindModules: [],
                 email: normalizeEmail(email) ?? existing.email,
                 displayName: displayName ?? existing.displayName,
                 lastVerifiedAt: now,
@@ -163,6 +169,32 @@ export const externalIdentityService = (log: FastifyBaseLogger) => ({
             await externalIdentityRepo().update({ id: row.id, tenantId: row.tenantId }, { refreshToken })
         }))
         return pending.length
+    },
+
+    async deletePending({ id, tenantId }: { id: string, tenantId: string }): Promise<ExternalIdentityRecord | null> {
+        const binding = await externalIdentityRepo().findOneBy({ id, tenantId })
+        if (isNil(binding) || !isNil(binding.userId)) {
+            return null
+        }
+        return withBindingLock({ log, issuer: binding.issuer, subject: binding.subject, fn: async () => {
+            const current = await externalIdentityRepo().findOneBy({ id, tenantId })
+            if (isNil(current) || !isNil(current.userId)) {
+                return null
+            }
+            await externalIdentityRepo().delete({ id, tenantId })
+            return current
+        } })
+    },
+
+    async listBySubjects({ tenantId, issuer, subjects }: { tenantId: string, issuer: string, subjects: string[] }): Promise<ExternalIdentityRecord[]> {
+        if (subjects.length === 0) {
+            return []
+        }
+        return externalIdentityRepo().findBy({ tenantId, issuer, subject: In(subjects) })
+    },
+
+    async listPendingForTenant({ tenantId }: { tenantId: string }): Promise<ExternalIdentityRecord[]> {
+        return externalIdentityRepo().find({ where: { tenantId, userId: IsNull(), status: ExternalIdentityStatus.ACTIVE }, order: { created: 'ASC', id: 'ASC' } })
     },
 
     async listForTenant({ tenantId }: { tenantId: string }): Promise<ExternalIdentityRecord[]> {
@@ -270,6 +302,7 @@ type ScopedBindingKey = BindingKey & {
 type PrebindParams = BindingKey & {
     tenantId: string
     role: TenantRole
+    modules?: TenantModule[]
     email?: string | null
     displayName?: string | null
 }

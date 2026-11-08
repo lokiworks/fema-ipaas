@@ -1,4 +1,5 @@
 import {
+  AddDirectoryMembersRequestBody,
   AddTenantUsersRequestBody,
   ListOwnedResourcesRequestQuery,
   ModuleAccessRequestStatus,
@@ -18,7 +19,12 @@ import {
   UpdateModuleAccessSettingsRequestBody,
   UpdateTenantMemberAccessRequestBody,
 } from '@fema-ipaas/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
@@ -46,6 +52,54 @@ function useInviteMembers() {
       tenantAccessApi.inviteMembers(request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
+    },
+    onError: showError,
+  });
+}
+
+function useDirectory({
+  keyword,
+  page,
+  enabled,
+}: {
+  keyword: string;
+  page: number;
+  enabled: boolean;
+}) {
+  return useQuery({
+    queryKey: [...tenantAccessKeys.directory, keyword, page],
+    queryFn: () =>
+      tenantAccessApi.listDirectory({
+        keyword: keyword.length > 0 ? keyword : undefined,
+        page,
+        limit: DIRECTORY_PAGE_SIZE,
+      }),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
+}
+
+function useAddFromDirectory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: AddDirectoryMembersRequestBody) =>
+      tenantAccessApi.addFromDirectory(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.directory });
+    },
+    onError: showError,
+  });
+}
+
+function useRemovePendingBinding() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (bindingId: string) =>
+      tenantAccessApi.removePendingBinding(bindingId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.members });
+      queryClient.invalidateQueries({ queryKey: tenantAccessKeys.directory });
     },
     onError: showError,
   });
@@ -587,8 +641,11 @@ function useEncryptionStatus() {
   });
 }
 
+const DIRECTORY_PAGE_SIZE = 20;
+
 export const tenantAccessKeys = {
   members: ['tenant-access', 'members'],
+  directory: ['tenant-access', 'members', 'directory'],
   resourcesRoot: ['tenant-access', 'resources'],
   moduleSettings: ['tenant-access', 'module-settings'],
   requestsRoot: ['tenant-access', 'requests'],
@@ -604,6 +661,9 @@ export const tenantAccessKeys = {
 export const tenantAccessHooks = {
   useMembers,
   useInviteMembers,
+  useDirectory,
+  useAddFromDirectory,
+  useRemovePendingBinding,
   useUpdateAccess,
   useSetEnabled,
   useBulkSetEnabled,

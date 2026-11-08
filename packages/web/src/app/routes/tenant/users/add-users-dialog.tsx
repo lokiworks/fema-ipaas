@@ -38,9 +38,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { tenantAccessHooks, tenantAccessUtils } from '@/features/tenant-access';
 
+import { AddFromDirectoryForm } from './add-from-directory-form';
 import { ModuleCheckboxes } from './module-checkboxes';
 
 export function AddUsersDialog({
@@ -48,27 +50,38 @@ export function AddUsersDialog({
   onOpenChange,
   homeDomains,
   emailDelivery,
+  memberDirectory,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   homeDomains: string[];
   emailDelivery: boolean;
+  memberDirectory: boolean;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
-        <AddUsersForm
-          key={open ? 'open' : 'closed'}
-          homeDomains={homeDomains}
-          emailDelivery={emailDelivery}
-          onOpenChange={onOpenChange}
-        />
+        {memberDirectory ? (
+          <FederatedAddMembers
+            key={open ? 'open' : 'closed'}
+            homeDomains={homeDomains}
+            emailDelivery={emailDelivery}
+            onOpenChange={onOpenChange}
+          />
+        ) : (
+          <AddUsersForm
+            key={open ? 'open' : 'closed'}
+            homeDomains={homeDomains}
+            emailDelivery={emailDelivery}
+            onOpenChange={onOpenChange}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
 }
 
-function AddUsersForm({
+function FederatedAddMembers({
   homeDomains,
   emailDelivery,
   onOpenChange,
@@ -76,6 +89,63 @@ function AddUsersForm({
   homeDomains: string[];
   emailDelivery: boolean;
   onOpenChange: (open: boolean) => void;
+}) {
+  const [source, setSource] = useState<'directory' | 'invite'>('directory');
+  const [finished, setFinished] = useState(false);
+  return (
+    <div className="flex flex-col gap-4">
+      {!finished && (
+        <>
+          <DialogHeader>
+            <DialogTitle>{t('Add members')}</DialogTitle>
+          </DialogHeader>
+          <Tabs
+            value={source}
+            onValueChange={(value) =>
+              setSource(value === 'invite' ? 'invite' : 'directory')
+            }
+          >
+            <TabsList>
+              <TabsTrigger
+                value="directory"
+                data-testid="add-members-directory"
+              >
+                {t('From the directory')}
+              </TabsTrigger>
+              <TabsTrigger value="invite" data-testid="add-members-invite">
+                {t('Invite by email or mobile')}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </>
+      )}
+      {source === 'directory' ? (
+        <AddFromDirectoryForm
+          onOpenChange={onOpenChange}
+          onFinished={() => setFinished(true)}
+        />
+      ) : (
+        <AddUsersForm
+          homeDomains={homeDomains}
+          emailDelivery={emailDelivery}
+          onOpenChange={onOpenChange}
+          embedded={{ onFinished: () => setFinished(true) }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddUsersForm({
+  homeDomains,
+  emailDelivery,
+  onOpenChange,
+  embedded,
+}: {
+  homeDomains: string[];
+  emailDelivery: boolean;
+  onOpenChange: (open: boolean) => void;
+  embedded?: { onFinished: () => void };
 }) {
   const { mutate: invite, isPending } = tenantAccessHooks.useInviteMembers();
   const [result, setResult] = useState<AddTenantUsersResponse | null>(null);
@@ -103,18 +173,38 @@ function AddUsersForm({
               tenantRole: values.tenantRole,
               modules: values.modules,
             },
-            { onSuccess: setResult },
+            {
+              onSuccess: (response) => {
+                setResult(response);
+                embedded?.onFinished();
+              },
+            },
           ),
         )}
       >
-        <DialogHeader>
-          <DialogTitle>{t('Add members')}</DialogTitle>
-          <DialogDescription>
-            {t(
-              'Add up to 10 people at a time. They can sign in after activating their account from the invitation.',
-            )}
-          </DialogDescription>
-        </DialogHeader>
+        {embedded ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              {t(
+                'Add up to 10 people at a time. They can sign in after activating their account from the invitation.',
+              )}
+            </p>
+            <p className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              {t(
+                'People invited this way sign in with a password or a text message code, not with the company account. Add people from the directory when they should use the company account.',
+              )}
+            </p>
+          </div>
+        ) : (
+          <DialogHeader>
+            <DialogTitle>{t('Add members')}</DialogTitle>
+            <DialogDescription>
+              {t(
+                'Add up to 10 people at a time. They can sign in after activating their account from the invitation.',
+              )}
+            </DialogDescription>
+          </DialogHeader>
+        )}
         <FormField
           control={form.control}
           name="emails"

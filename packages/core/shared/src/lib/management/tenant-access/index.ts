@@ -17,6 +17,20 @@ export enum TenantMemberStatus {
     DISABLED = 'DISABLED',
 }
 
+export enum DirectoryMemberState {
+    AVAILABLE = 'AVAILABLE',
+    ADDED = 'ADDED',
+    MEMBER = 'MEMBER',
+    DISABLED = 'DISABLED',
+    UNAVAILABLE = 'UNAVAILABLE',
+}
+
+export enum DirectorySkipReason {
+    ALREADY_MEMBER = 'ALREADY_MEMBER',
+    NOT_IN_DIRECTORY = 'NOT_IN_DIRECTORY',
+    NOT_IN_GOOD_STANDING = 'NOT_IN_GOOD_STANDING',
+}
+
 export enum PermissionDeniedHint {
     ADMINS = 'ADMINS',
     PERSON = 'PERSON',
@@ -49,6 +63,8 @@ export enum LoginMethod {
 }
 
 const MAX_USERS_PER_BATCH = 10
+const MAX_DIRECTORY_MEMBERS_PER_BATCH = 50
+const MAX_DIRECTORY_PAGE_SIZE = 50
 const PASSWORD_MIN_LENGTH_FLOOR = 8
 const PASSWORD_MIN_LENGTH_CEILING = 64
 
@@ -79,7 +95,7 @@ export type UpdateModuleAccessSettingsRequestBody = z.infer<typeof UpdateModuleA
 
 export const TenantMember = z.object({
     id: z.string(),
-    kind: z.enum(['USER', 'INVITATION']),
+    kind: z.enum(['USER', 'INVITATION', 'BINDING']),
     email: z.string(),
     phone: Nullable(z.string()),
     firstName: z.string(),
@@ -99,6 +115,7 @@ export const ListTenantMembersResponse = z.object({
     homeDomains: z.array(z.string()),
     emailAuthEnabled: z.boolean(),
     emailDelivery: z.boolean(),
+    memberDirectory: z.boolean(),
 })
 export type ListTenantMembersResponse = z.infer<typeof ListTenantMembersResponse>
 
@@ -120,6 +137,50 @@ export const AddTenantUsersResponse = z.object({
     emailSent: z.boolean(),
 })
 export type AddTenantUsersResponse = z.infer<typeof AddTenantUsersResponse>
+
+export const TenantDirectoryMember = z.object({
+    subject: z.string(),
+    name: z.string(),
+    username: Nullable(z.string()),
+    state: z.enum(DirectoryMemberState),
+    tenantRole: Nullable(z.enum(TenantRole)),
+})
+export type TenantDirectoryMember = z.infer<typeof TenantDirectoryMember>
+
+export const ListTenantDirectoryRequestQuery = z.object({
+    keyword: z.string().trim().max(100).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(MAX_DIRECTORY_PAGE_SIZE).default(20),
+})
+export type ListTenantDirectoryRequestQuery = z.infer<typeof ListTenantDirectoryRequestQuery>
+
+export const TenantDirectoryPage = z.object({
+    items: z.array(TenantDirectoryMember),
+    page: z.number(),
+    hasNext: z.boolean(),
+    total: Nullable(z.number()),
+})
+export type TenantDirectoryPage = z.infer<typeof TenantDirectoryPage>
+
+export const AddDirectoryMembersRequestBody = z.object({
+    subjects: z.array(z.string().trim().min(1).max(200)).min(1, formErrors.required).max(MAX_DIRECTORY_MEMBERS_PER_BATCH, 'atMostFiftyMembers'),
+    tenantRole: z.enum([TenantRole.ADMIN, TenantRole.MEMBER, TenantRole.OPERATOR]),
+    modules: z.array(z.enum(TenantModule)),
+})
+export type AddDirectoryMembersRequestBody = z.infer<typeof AddDirectoryMembersRequestBody>
+
+export const AddDirectoryMembersResponse = z.object({
+    added: z.array(z.object({
+        subject: z.string(),
+        name: z.string(),
+    })),
+    skipped: z.array(z.object({
+        subject: z.string(),
+        name: Nullable(z.string()),
+        reason: z.enum(DirectorySkipReason),
+    })),
+})
+export type AddDirectoryMembersResponse = z.infer<typeof AddDirectoryMembersResponse>
 
 export const UpdateTenantMemberAccessRequestBody = z.object({
     tenantRole: z.enum(TenantRole).optional(),
@@ -253,6 +314,8 @@ export * from './sso'
 
 export const TENANT_ACCESS_LIMITS = {
     maxUsersPerBatch: MAX_USERS_PER_BATCH,
+    maxDirectoryMembersPerBatch: MAX_DIRECTORY_MEMBERS_PER_BATCH,
+    maxDirectoryPageSize: MAX_DIRECTORY_PAGE_SIZE,
     passwordMinLengthFloor: PASSWORD_MIN_LENGTH_FLOOR,
     passwordMinLengthCeiling: PASSWORD_MIN_LENGTH_CEILING,
     defaultPasswordMinLength: 10,

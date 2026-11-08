@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { flagsHooks } from '@/hooks/flags-hooks';
 import { loginRedirect } from '@/lib/login-redirect';
 import { FROM_QUERY_PARAM } from '@/lib/navigation-utils';
 import { tenantContext } from '@/lib/tenant-context';
@@ -68,6 +69,7 @@ function SsoLoginOptions({
 }
 
 function SsoErrorNote() {
+  const branding = flagsHooks.useWebsiteBranding();
   const [code] = useState(() =>
     new URLSearchParams(window.location.search).get('ssoError'),
   );
@@ -90,7 +92,9 @@ function SsoErrorNote() {
       className="mb-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive"
     >
       <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-      <span>{ssoUtils.errorMessage(code)}</span>
+      <span>
+        {ssoUtils.errorMessage({ code, websiteName: branding.websiteName })}
+      </span>
     </div>
   );
 }

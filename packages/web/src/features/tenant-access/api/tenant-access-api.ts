@@ -1,4 +1,6 @@
 import {
+  AddDirectoryMembersRequestBody,
+  AddDirectoryMembersResponse,
   AddTenantUsersRequestBody,
   AddTenantUsersResponse,
   ComponentHealthCheck,
@@ -8,6 +10,7 @@ import {
   EncryptionKeyStatus,
   ListOwnedResourcesRequestQuery,
   ListOwnedResourcesResponse,
+  ListTenantDirectoryRequestQuery,
   ListTenantMembersResponse,
   LoginSecuritySettings,
   ModuleAccessRequest,
@@ -20,6 +23,7 @@ import {
   SsoProvider,
   SsoSettings,
   SsoTestStartResponse,
+  TenantDirectoryPage,
   TenantDomain,
   TenantMember,
   TenantWithoutSensitiveData,
@@ -51,6 +55,25 @@ export const tenantAccessApi = {
       '/v1/tenant-access/members/invite',
       request,
     );
+  },
+  listDirectory(
+    query: ListTenantDirectoryRequestQuery,
+  ): Promise<TenantDirectoryPage> {
+    return api.get<TenantDirectoryPage>(
+      '/v1/tenant-access/members/directory',
+      query,
+    );
+  },
+  addFromDirectory(
+    request: AddDirectoryMembersRequestBody,
+  ): Promise<AddDirectoryMembersResponse> {
+    return api.post<AddDirectoryMembersResponse>(
+      '/v1/tenant-access/members/directory/add',
+      request,
+    );
+  },
+  removePendingBinding(bindingId: string): Promise<void> {
+    return api.delete<void>(`/v1/tenant-access/members/bindings/${bindingId}`);
   },
   updateAccess({
     userId,

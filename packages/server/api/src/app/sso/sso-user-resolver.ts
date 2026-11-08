@@ -17,6 +17,7 @@ import { ExternalIdentityRecord, externalIdentityService } from '../federation/e
 import { applicationEvents } from '../helper/application-events'
 import { projectMemberService } from '../project/project-member.service'
 import { tenantService } from '../tenant/tenant.service'
+import { tenantAccessUtils } from '../tenant-access/tenant-access.utils'
 import { userService } from '../user/user-service'
 import { userInvitationsService } from '../user-invitations/user-invitation.service'
 import { SsoLoginError } from './sso-errors'
@@ -100,7 +101,8 @@ async function signInUser({ log, user, policy, profile, tenantId, ip }: SignInUs
 }
 
 async function createUser({ log, policy, profile, tenantId, binding, ip }: CreateUserParams): Promise<ResolvedUser> {
-    const prebindRole = isNil(binding) || !isNil(binding.userId) ? null : binding.prebindRole
+    const prebound = isNil(binding) || !isNil(binding.userId) ? null : binding
+    const prebindRole = prebound?.prebindRole ?? null
     const invited = ssoProfile.hasEmail(profile) && await userInvitationsService(log).hasAnyAcceptedInvitations({ tenantId, email: profile.email })
     if (isNil(prebindRole) && !policy.autoCreateUsers && !invited) {
         throw new SsoLoginError({
@@ -111,8 +113,10 @@ async function createUser({ log, policy, profile, tenantId, binding, ip }: Creat
     const identity = await ensureIdentity({ log, policy, profile })
     const created = await userService(log).getOrCreateWithProject({ identity, tenantId })
     const role = prebindRole ?? ssoProfile.resolveRole({ groups: profile.groups, roleMapping: policy.roleMapping, defaultRole: policy.defaultRole })
-    if (role !== created.tenantRole) {
-        await userService(log).update({ id: created.id, tenantId, tenantRole: role })
+    const prebindModules = tenantAccessUtils.assignableModules(prebound?.prebindModules ?? [])
+    const modules = prebindModules.length === 0 ? undefined : prebindModules
+    if (role !== created.tenantRole || !isNil(modules)) {
+        await userService(log).update({ id: created.id, tenantId, tenantRole: role, modules })
     }
     if (!isNil(policy.defaultProject)) {
         await projectMemberService(log).upsert({ projectId: policy.defaultProject.projectId, userId: created.id, role: policy.defaultProject.role })

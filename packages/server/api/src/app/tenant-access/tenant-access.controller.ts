@@ -1,5 +1,7 @@
 import { EntityId, tryCatch } from '@fema-ipaas/core-utils'
 import {
+    AddDirectoryMembersRequestBody,
+    AddDirectoryMembersResponse,
     AddTenantUsersRequestBody,
     AddTenantUsersResponse,
     ApplicationEventName,
@@ -7,6 +9,7 @@ import {
     ListModuleAccessRequestsQuery,
     ListOwnedResourcesRequestQuery,
     ListOwnedResourcesResponse,
+    ListTenantDirectoryRequestQuery,
     ListTenantMembersResponse,
     LoginSecuritySettings,
     ModuleAccessRequest,
@@ -17,6 +20,7 @@ import {
     RemoveTenantMemberRequestQuery,
     ResetMemberPasswordResponse,
     TenantAdminEvent,
+    TenantDirectoryPage,
     TenantMember,
     TransferResourcesRequestBody,
     TransferResourcesResponse,
@@ -35,6 +39,7 @@ import { applicationEvents } from '../helper/application-events'
 import { loginSecurityService } from './login-security.service'
 import { moduleAccessService } from './module-access.service'
 import { ownedResourcesService } from './owned-resources.service'
+import { tenantDirectoryService } from './tenant-directory.service'
 import { tenantMembersService } from './tenant-members.service'
 
 export const tenantAccessController: FastifyPluginAsyncZod = async (app) => {
@@ -46,6 +51,24 @@ export const tenantAccessController: FastifyPluginAsyncZod = async (app) => {
         const result = await tenantMembersService(request.log).invite({ tenantId: request.principal.tenant.id, request: request.body })
         audit({ request, action: ApplicationEventName.TENANT_USERS_INVITED, target: result.invited.map((invite) => invite.email).join(', '), detail: request.body.tenantRole })
         await reply.status(StatusCodes.CREATED).send(result)
+    })
+
+    app.get('/members/directory', ListDirectoryRequest, async (request): Promise<TenantDirectoryPage> => {
+        return tenantDirectoryService(request.log).list({ tenantId: request.principal.tenant.id, query: request.query })
+    })
+
+    app.post('/members/directory/add', AddFromDirectoryRequest, async (request): Promise<AddDirectoryMembersResponse> => {
+        const result = await tenantDirectoryService(request.log).add({ tenantId: request.principal.tenant.id, request: request.body })
+        if (result.added.length > 0) {
+            audit({ request, action: ApplicationEventName.TENANT_USERS_INVITED, target: result.added.map((member) => member.name).join(', '), detail: `${request.body.tenantRole} from the member directory` })
+        }
+        return result
+    })
+
+    app.delete('/members/bindings/:id', RemovePendingBindingRequest, async (request, reply) => {
+        const removed = await tenantDirectoryService(request.log).removePending({ tenantId: request.principal.tenant.id, bindingId: request.params.id })
+        audit({ request, action: ApplicationEventName.TENANT_USER_REMOVED, target: removed.displayName ?? removed.subject, detail: 'before the first sign-in' })
+        await reply.status(StatusCodes.NO_CONTENT).send()
     })
 
     app.post('/members/:id/access', UpdateAccessRequest, async (request): Promise<TenantMember> => {
@@ -211,6 +234,21 @@ function MemberActionRequest<T extends z.ZodType>(response: T) {
 const InviteRequest = {
     config: { security: adminOnly },
     schema: { tags: ['tenant-access'], body: AddTenantUsersRequestBody, response: { [StatusCodes.CREATED]: AddTenantUsersResponse } },
+}
+
+const ListDirectoryRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], querystring: ListTenantDirectoryRequestQuery, response: { [StatusCodes.OK]: TenantDirectoryPage } },
+}
+
+const AddFromDirectoryRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], body: AddDirectoryMembersRequestBody, response: { [StatusCodes.OK]: AddDirectoryMembersResponse } },
+}
+
+const RemovePendingBindingRequest = {
+    config: { security: adminOnly },
+    schema: { tags: ['tenant-access'], params: IdParams },
 }
 
 const UpdateAccessRequest = {

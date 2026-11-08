@@ -1,4 +1,4 @@
-import { ExternalIdentity, SsoEncryptedSecret, Tenant } from '@fema-ipaas/shared'
+import { ExternalIdentity, SsoEncryptedSecret, Tenant, TenantModule } from '@fema-ipaas/shared'
 import { EntitySchema } from 'typeorm'
 import { BaseColumnSchemaPart, EntityIdSchema } from '../database/database-common'
 
@@ -26,6 +26,12 @@ export const ExternalIdentityEntity = new EntitySchema<ExternalIdentitySchema>({
         prebindRole: {
             type: String,
             nullable: true,
+        },
+        prebindModules: {
+            type: String,
+            array: true,
+            nullable: false,
+            default: [],
         },
         status: {
             type: String,
@@ -78,6 +84,7 @@ export const ExternalIdentityEntity = new EntitySchema<ExternalIdentitySchema>({
 })
 
 export type ExternalIdentitySchema = ExternalIdentity & {
+    prebindModules: TenantModule[]
     email: string | null
     displayName: string | null
     refreshToken: SsoEncryptedSecret | null

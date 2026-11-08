@@ -101,6 +101,7 @@ const ROUTES = {
     return json({ payload: { ok: Boolean(member), member: member ?? null } })
   },
   'POST /api/webhook/subscription/find-one': ({ req, body }) => findSubscription({ req, body }),
+  'POST /api/iam-identity/member/find-all': ({ req, body }) => findAllMembers({ req, body }),
   'POST /__control/objects': ({ body }) => putObject({ body }),
   'POST /__control/events/push': ({ body }) => pushBusinessEvent(body),
   'POST /__control/events/deny': ({ body }) => {
@@ -631,6 +632,50 @@ function findMember({ req, id }) {
       },
     },
   })
+}
+
+function findAllMembers({ req, body }) {
+  const grant = applicationOf({ req })
+  if (grant.error) {
+    return grant.error
+  }
+  const page = Number(body.page ?? 1)
+  const size = Number(body.size ?? 20)
+  state.log.api.push({ at: new Date().toISOString(), path: 'iam-identity/member/find-all', filter: body.filter ?? null, page, size, tenant: grant.claims.tenantId })
+  const rows = [...state.members.values()]
+    .filter((member) => member.tenant === grant.claims.tenantId)
+    .map((member) => memberRow({ member }))
+    .filter((row) => memberMatches({ row, filter: body.filter }))
+  const items = rows.slice((page - 1) * size, page * size)
+  return json({ payload: { code: 'SUCCESS', message: null, data: { items, page, pageSize: size, hasNext: page * size < rows.length, total: rows.length } } })
+}
+
+function memberRow({ member }) {
+  const person = state.persons.get(member.username)
+  return {
+    id: member.id,
+    userId: member.username,
+    status: { '@type': 'MemberStatus', code: member.status, name: MEMBER_STATUS_NAMES[member.status] ?? member.status },
+    card: { displayName: person?.name ?? member.username, username: member.username, accountStatus: { code: 'ACTIVE' } },
+    removedAt: member.removedAt ?? null,
+  }
+}
+
+function memberMatches({ row, filter }) {
+  if (!filter) {
+    return true
+  }
+  if (filter.id?.in) {
+    return filter.id.in.map(String).includes(row.id)
+  }
+  if (Array.isArray(filter.$or)) {
+    return filter.$or.some((condition) => {
+      const name = condition['card.displayName']?.like
+      const username = condition['card.username']?.like
+      return (name && row.card.displayName.includes(name)) || (username && row.card.username.includes(username))
+    })
+  }
+  return true
 }
 
 function putObject({ body }) {

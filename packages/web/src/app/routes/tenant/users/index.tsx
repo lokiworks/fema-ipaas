@@ -68,6 +68,8 @@ export default function UsersPage() {
   const { mutate: revokeInvitation } = tenantUserMutations.useDeleteInvitation({
     onSuccess: () => refetch(),
   });
+  const { mutateAsync: removePendingBinding } =
+    tenantAccessHooks.useRemovePendingBinding();
   const currentUserId = authenticationSession.getCurrentUserId();
   const [scope, setScope] = useState<'all' | 'external'>('all');
   const [status, setStatus] = useState<TenantMemberStatus | 'any'>('any');
@@ -307,7 +309,7 @@ export default function UsersPage() {
                   <TableCell className="text-muted-foreground">
                     {member.lastActiveDate ? (
                       <FormattedDate date={new Date(member.lastActiveDate)} />
-                    ) : member.kind === 'INVITATION' ? (
+                    ) : member.kind !== 'USER' ? (
                       t('Never signed in')
                     ) : (
                       '—'
@@ -329,6 +331,9 @@ export default function UsersPage() {
                       })
                     }
                     onRevoke={async () => revokeInvitation(member.id)}
+                    onCancelBinding={async () => {
+                      await removePendingBinding(member.id);
+                    }}
                   />
                 </TableCell>
               </TableRow>
@@ -341,6 +346,7 @@ export default function UsersPage() {
         onOpenChange={setAddOpen}
         homeDomains={data?.homeDomains ?? []}
         emailDelivery={data?.emailDelivery ?? false}
+        memberDirectory={data?.memberDirectory ?? false}
       />
       <EditAccessDialog
         member={dialog?.kind === 'edit' ? dialog.member : null}
@@ -404,6 +410,7 @@ function MemberActions({
   onRemove,
   onToggle,
   onRevoke,
+  onCancelBinding,
 }: {
   member: TenantMember;
   locked: boolean;
@@ -413,7 +420,29 @@ function MemberActions({
   onRemove: () => void;
   onToggle: () => void;
   onRevoke: () => Promise<void>;
+  onCancelBinding: () => Promise<void>;
 }) {
+  if (member.kind === 'BINDING') {
+    return (
+      <ConfirmationDeleteDialog
+        title={t('Cancel adding this member')}
+        message={t(
+          'This person has not signed in yet. After you cancel, signing in with the company account is refused until you add them again.',
+        )}
+        entityName={tenantAccessUtils.memberDisplayName(member)}
+        buttonText={t('Cancel adding')}
+        mutationFn={onCancelBinding}
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          data-testid={`cancel-binding-${member.id}`}
+        >
+          {t('Cancel adding')}
+        </Button>
+      </ConfirmationDeleteDialog>
+    );
+  }
   if (member.kind === 'INVITATION') {
     return (
       <ConfirmationDeleteDialog

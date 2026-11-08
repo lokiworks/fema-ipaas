@@ -5,21 +5,25 @@ import { FastifyBaseLogger } from 'fastify'
 import { isDomainAllowed } from '../authentication/authentication-utils'
 import { phoneNumber } from '../authentication/lib/phone-number'
 import { userIdentityService } from '../authentication/user-identity/user-identity-service'
+import { externalIdentityService } from '../federation/external-identity.service'
 import { emailService } from '../helper/email/email-service'
 import { tenantRepo } from '../tenant/tenant.service'
 import { userRepo, userService } from '../user/user-service'
 import { INVITATION_EXPIRY_SECONDS, userInvitationRepo, userInvitationsService } from '../user-invitations/user-invitation.service'
 import { ownedResourcesService } from './owned-resources.service'
 import { tenantAccessUtils } from './tenant-access.utils'
+import { tenantDirectoryService } from './tenant-directory.service'
 
 const USER_KIND = 'USER'
 const INVITATION_KIND = 'INVITATION'
+const BINDING_KIND = 'BINDING'
 
 export const tenantMembersService = (log: FastifyBaseLogger) => ({
     async list({ tenantId }: TenantParams): Promise<ListTenantMembersResponse> {
         const tenant = await tenantRepo().findOneByOrFail({ id: tenantId })
         const users = await userRepo().find({ where: { tenantId }, relations: { identity: true } })
         const invitations = await userInvitationRepo().find({ where: { tenantId, type: InvitationType.TENANT, status: InvitationStatus.PENDING } })
+        const pendingBindings = await externalIdentityService(log).listPendingForTenant({ tenantId })
         const owner = users.find((user) => user.id === tenant.ownerId)
         const domains = tenantAccessUtils.homeDomains({ allowedAuthDomains: tenant.allowedAuthDomains, ownerEmail: owner?.identity?.email ?? null })
         const userEmails = new Set(users.map((user) => user.identity?.email?.toLowerCase()).filter((email): email is string => !isNil(email)))
@@ -64,12 +68,31 @@ export const tenantMembersService = (log: FastifyBaseLogger) => ({
                         created: invitation.created,
                     }
                 }),
+            ...pendingBindings.map((binding): TenantMember => {
+                const tenantRole = binding.prebindRole ?? TenantRole.MEMBER
+                return {
+                    id: binding.id,
+                    kind: BINDING_KIND,
+                    email: binding.email ?? '',
+                    phone: null,
+                    firstName: binding.displayName ?? binding.subject,
+                    lastName: '',
+                    status: TenantMemberStatus.PENDING,
+                    tenantRole,
+                    isOwner: false,
+                    modules: tenantAccessUtils.effectiveModules({ tenantRole, storedModules: binding.prebindModules }),
+                    external: false,
+                    lastActiveDate: null,
+                    created: binding.created,
+                }
+            }),
         ]
         return {
             members,
             homeDomains: domains,
             emailAuthEnabled: tenant.emailAuthEnabled,
             emailDelivery: emailService(log).isConfigured(),
+            memberDirectory: await tenantDirectoryService(log).isAvailable({ tenantId }),
         }
     },
 

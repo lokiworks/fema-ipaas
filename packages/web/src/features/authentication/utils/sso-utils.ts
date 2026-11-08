@@ -9,7 +9,13 @@ import { t } from 'i18next';
 
 import { API_URL } from '@/lib/api';
 
-function errorMessage(code: string): string {
+function errorMessage({
+  code,
+  websiteName,
+}: {
+  code: string;
+  websiteName: string;
+}): string {
   switch (code) {
     case SsoLoginErrorCode.PROVIDER_NOT_ENABLED:
       return t('This sign-in method is not turned on.');
@@ -56,9 +62,7 @@ function errorMessage(code: string): string {
         'The email domain of your company account is not allowed to sign in here.',
       );
     case SsoLoginErrorCode.USER_NOT_PROVISIONED:
-      return t(
-        'You do not have an account here yet. Ask an administrator to invite you.',
-      );
+      return t('ssoUserNotProvisioned', { websiteName });
     case SsoLoginErrorCode.USER_DISABLED:
       return t('Your account has been disabled. Contact an administrator.');
     case SsoLoginErrorCode.ENTERPRISE_MISMATCH:

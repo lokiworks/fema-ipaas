@@ -1,4 +1,4 @@
-import { ExternalIdentityStatus, SsoLoginErrorCode, SsoMatchBy, TenantRole, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
+import { ExternalIdentityStatus, SsoLoginErrorCode, SsoMatchBy, TenantModule, TenantRole, UserIdentityProvider, UserStatus } from '@fema-ipaas/shared'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { RuntimePolicy } from '../../../../src/app/sso/sso-runtime'
 
@@ -85,6 +85,7 @@ function bindingOf(overrides: Record<string, unknown> = {}) {
         identityId: 'identity-1',
         userId: 'user-1',
         prebindRole: null,
+        prebindModules: [],
         status: ExternalIdentityStatus.ACTIVE,
         email: null,
         displayName: null,
@@ -176,6 +177,21 @@ describe('sso user resolver', () => {
             expect(updateUser).toHaveBeenCalledWith({ id: 'user-new', tenantId: 'tenant-1', tenantRole: TenantRole.ADMIN })
             expect(createIdentity).toHaveBeenCalledWith(expect.objectContaining({ email: null, contactEmail: 'Owner@Acme.test', provider: UserIdentityProvider.OIDC }))
             expect(bindToUser).toHaveBeenCalledWith(expect.objectContaining({ issuer: 'https://iam.test', subject: 'member-1', identityId: 'identity-new', userId: 'user-new' }))
+        })
+
+        it('gives an account created from a directory pick the role and the module permissions chosen by the admin', async () => {
+            const resolver = await loadResolver()
+            createIdentity.mockResolvedValue({ id: 'identity-new', verified: true })
+            getOrCreateWithProject.mockResolvedValue({ id: 'user-new', tenantRole: TenantRole.MEMBER })
+            await resolver.resolve({
+                log: log as never,
+                policy: subjectPolicy,
+                profile: profileOf({ fullName: 'Phone Only' }),
+                tenantId: 'tenant-1',
+                binding: bindingOf({ userId: null, identityId: null, prebindRole: TenantRole.OPERATOR, prebindModules: [TenantModule.CONNECTOR_DEVELOPMENT, TenantModule.PLATFORM_ADMIN] }),
+                ip: undefined,
+            })
+            expect(updateUser).toHaveBeenCalledWith({ id: 'user-new', tenantId: 'tenant-1', tenantRole: TenantRole.OPERATOR, modules: [TenantModule.CONNECTOR_DEVELOPMENT] })
         })
 
         it('keeps the email off the global identity so two tenants can share an address', async () => {

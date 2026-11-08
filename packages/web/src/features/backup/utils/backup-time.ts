@@ -25,7 +25,8 @@ function planShiftMinutes({
   if (serverOffset === null) {
     return null;
   }
-  const shift = -at.getTimezoneOffset() - serverOffset;
+  const browserOffset = 0 - at.getTimezoneOffset();
+  const shift = browserOffset - serverOffset;
   return shift % 60 === 0 ? shift : null;
 }
 

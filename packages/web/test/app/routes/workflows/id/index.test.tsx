@@ -52,6 +52,9 @@ vi.mock('@/app/builder/state/builder-state-provider', () => ({
   BuilderStateProvider: ({ children }: { children: React.ReactNode }) =>
     children,
 }));
+vi.mock('@/app/builder/step-settings/step-selection-url-sync', () => ({
+  StepSelectionUrlSync: () => null,
+}));
 vi.mock('@xyflow/react', () => ({
   ReactFlowProvider: ({ children }: { children: React.ReactNode }) => children,
 }));

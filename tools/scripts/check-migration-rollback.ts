@@ -10,9 +10,9 @@ const MIGRATION_DIRS = [
 ]
 
 function getChangedMigrationFiles(): string[] {
-    const baseBranch = process.env.GITHUB_BASE_REF ?? 'main'
+    const diffBase = process.env.MIGRATION_DIFF_BASE || 'origin/main'
     const diffOutput = execSync(
-        `git diff --name-only --diff-filter=A origin/${baseBranch}...HEAD`,
+        `git diff --name-only --diff-filter=A ${diffBase}...HEAD`,
         { encoding: 'utf-8' },
     ).trim()
 

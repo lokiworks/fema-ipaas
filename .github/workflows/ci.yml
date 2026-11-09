@@ -177,6 +177,8 @@ jobs:
         run: npm run test-unit
 
       - name: Check migrations
+        env:
+          MIGRATION_DIFF_BASE: ${{ github.event_name == 'push' && github.event.before || format('origin/{0}', github.base_ref) }}
         run: |
           set -euo pipefail
           npx turbo run check-migrations --filter=api
